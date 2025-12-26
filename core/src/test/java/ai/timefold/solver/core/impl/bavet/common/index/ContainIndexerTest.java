@@ -9,10 +9,8 @@ import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled
 class ContainIndexerTest extends AbstractIndexerTest {
 
     record TestWorker(String name, List<String> skills, String department) {
@@ -28,16 +26,18 @@ class ContainIndexerTest extends AbstractIndexerTest {
     @Test
     void isEmpty() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        assertThat(getTuples(indexer, List.of("X", "Y"), "Dep1")).isEmpty();
+        assertThat(forEachToTuples(indexer, List.of("X", "Y"), "Dep1")).isEmpty();
     }
 
     @Test
     void put() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         var annTuple = newTuple("Ann-XY-Dep1");
-        assertThat(indexer.size(CompositeKey.ofMany(List.of("X", "Y"), "Dep1"))).isEqualTo(0);
+        assertThat(indexer.size(CompositeKey.ofMany("X", "Dep1"))).isEqualTo(0);
         indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "Dep1"), annTuple);
-        assertThat(indexer.size(CompositeKey.ofMany(List.of("X", "Y"), "Dep1"))).isEqualTo(1);
+        assertThat(indexer.size(CompositeKey.ofMany("X", "Dep1"))).isEqualTo(1);
+
+        // TODO more testing
     }
 
     @Test
@@ -52,7 +52,7 @@ class ContainIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
-    void visit() {
+    void forEach() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
 
         var annTuple = newTuple("Ann-XY-Dep1");
@@ -64,11 +64,11 @@ class ContainIndexerTest extends AbstractIndexerTest {
         var ednaTuple = newTuple("Edna-YZ-Dep1");
         indexer.put(CompositeKey.ofMany(List.of("Y", "Z"), "Dep1"), ednaTuple);
 
-        assertThat(getTuples(indexer, "X", "Dep1")).containsOnly(annTuple, bethTuple);
-        assertThat(getTuples(indexer, "Y", "Dep1")).containsOnly(annTuple, ednaTuple);
-        assertThat(getTuples(indexer, "Z", "Dep1")).containsOnly(bethTuple, ednaTuple);
-        assertThat(getTuples(indexer, "W", "Dep1")).isEmpty();
-        assertThat(getTuples(indexer, "Y", "Dep3")).isEmpty();
+        assertThat(forEachToTuples(indexer, "X", "Dep1")).containsOnly(annTuple, bethTuple);
+        assertThat(forEachToTuples(indexer, "Y", "Dep1")).containsOnly(annTuple, ednaTuple);
+        assertThat(forEachToTuples(indexer, "Z", "Dep1")).containsOnly(bethTuple, ednaTuple);
+        assertThat(forEachToTuples(indexer, "W", "Dep1")).isEmpty();
+        assertThat(forEachToTuples(indexer, "Y", "Dep3")).isEmpty();
     }
 
     private static UniTuple<String> newTuple(String factA) {

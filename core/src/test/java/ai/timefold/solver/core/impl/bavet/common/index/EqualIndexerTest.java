@@ -21,7 +21,7 @@ class EqualIndexerTest extends AbstractIndexerTest {
     @Test
     void isEmpty() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        assertThat(getTuples(indexer, "F", 40)).isEmpty();
+        assertThat(forEachToTuples(indexer, "F", 40)).isEmpty();
     }
 
     @Test
@@ -45,7 +45,7 @@ class EqualIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
-    void visit() {
+    void forEach() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
 
         var annTuple = newTuple("Ann-F-40");
@@ -57,9 +57,9 @@ class EqualIndexerTest extends AbstractIndexerTest {
         var ednaTuple = newTuple("Edna-F-40");
         indexer.put(CompositeKey.ofMany("F", 40), ednaTuple);
 
-        assertThat(getTuples(indexer, "F", 40)).containsOnly(annTuple, ednaTuple);
-        assertThat(getTuples(indexer, "F", 30)).containsOnly(bethTuple);
-        assertThat(getTuples(indexer, "F", 20)).isEmpty();
+        assertThat(forEachToTuples(indexer, "F", 40)).containsOnly(annTuple, ednaTuple);
+        assertThat(forEachToTuples(indexer, "F", 30)).containsOnly(bethTuple);
+        assertThat(forEachToTuples(indexer, "F", 20)).isEmpty();
     }
 
     private static UniTuple<String> newTuple(String factA) {

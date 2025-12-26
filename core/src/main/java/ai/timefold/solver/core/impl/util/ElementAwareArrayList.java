@@ -219,7 +219,6 @@ public final class ElementAwareArrayList<T> {
             this.position = position;
         }
 
-        @Override
         public boolean isRemoved() {
             return position < 0;
         }

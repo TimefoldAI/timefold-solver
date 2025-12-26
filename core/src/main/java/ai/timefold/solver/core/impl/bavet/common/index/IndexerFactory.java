@@ -523,7 +523,7 @@ public final class IndexerFactory<Right_> {
     }
 
     private <T> Indexer<T> buildIndexerPart(boolean isLeftBridge, JoinerType joinerType, KeyRetriever<?> keyRetriever,
-            Supplier<Indexer<T>> backendSupplier) {
+            Supplier<Indexer<T>> downstreamIndexerSupplier) {
         // Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
         // (<A, B> becomes <B, A>.)
         // TODO Does the requiresRandomAccess check make sense?
@@ -537,16 +537,16 @@ public final class IndexerFactory<Right_> {
         }
         switch (joinerType) {
             case EQUAL -> {
-                return new EqualIndexer<>(keyRetriever, backendSupplier);
+                return new EqualIndexer<>(keyRetriever, downstreamIndexerSupplier);
             }
             case LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL -> {
-                return new ComparisonIndexer<>(joinerType, keyRetriever, backendSupplier);
+                return new ComparisonIndexer<>(joinerType, keyRetriever, downstreamIndexerSupplier);
             }
             case CONTAIN -> {
-                return new ContainIndexer<>(keyRetriever, backendSupplier);
+                return new ContainIndexer<>(keyRetriever, downstreamIndexerSupplier);
             }
             case CONTAINED_IN -> {
-                return new ContainedInIndexer<>(keyRetriever, backendSupplier);
+                return new ContainedInIndexer<>(keyRetriever, downstreamIndexerSupplier);
             }
             default -> throw new IllegalStateException(
                     "Impossible state: The joiner type (" + joinerType + ") is not implemented.");
