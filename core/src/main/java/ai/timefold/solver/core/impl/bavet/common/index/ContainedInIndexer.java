@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,24 +65,26 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
 
     @Override
     public int size(Object queryCompositeKey) {
-        throw new UnsupportedOperationException();
-//        Key_ indexKey = queryKeyRetriever.apply(queryCompositeKey);
-//        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
-//        if (downstreamIndexer == null) {
-//            return 0;
-//        }
-//        return downstreamIndexer.size(queryCompositeKey);
+        KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
+        int size = 0;
+        for (Key_ indexKey : indexKeyCollection) {
+            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+            if (downstreamIndexer != null) {
+                size += downstreamIndexer.size(queryCompositeKey);
+            }
+        }
+        return size;
     }
 
     @Override
     public void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
-        throw new UnsupportedOperationException();
-//        Key_ indexKey = queryKeyRetriever.apply(queryCompositeKey);
-//        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
-//        if (downstreamIndexer == null) {
-//            return;
-//        }
-//        downstreamIndexer.forEach(queryCompositeKey, tupleConsumer);
+        KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
+        for (Key_ indexKey : indexKeyCollection) {
+            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+            if (downstreamIndexer != null) {
+                downstreamIndexer.forEach(queryCompositeKey, tupleConsumer);
+            }
+        }
     }
 
     @Override
@@ -92,13 +94,15 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
 
     @Override
     public List<? extends ListEntry<T>> asList(Object queryCompositeKey) {
-        throw new UnsupportedOperationException();
-//        Key_ indexKey = queryKeyRetriever.apply(queryCompositeKey);
-//        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
-//        if (downstreamIndexer == null) {
-//            return Collections.emptyList();
-//        }
-//        return downstreamIndexer.asList(queryCompositeKey);
+        KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
+        List<ListEntry<T>> list = new ArrayList<>(downstreamIndexerMap.size() * 16);
+        for (Key_ indexKey : indexKeyCollection) {
+            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+            if (downstreamIndexer != null) {
+                list.addAll(downstreamIndexer.asList(queryCompositeKey));
+            }
+        }
+        return list;
     }
 
     @Override

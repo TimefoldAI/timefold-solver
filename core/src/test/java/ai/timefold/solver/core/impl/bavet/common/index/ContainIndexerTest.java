@@ -13,10 +13,10 @@ import org.junit.jupiter.api.Test;
 
 class ContainIndexerTest extends AbstractIndexerTest {
 
-    record TestWorker(String name, List<String> skills, String department) {
+    record TestWorker(String name, List<String> skills, String department, String affinity) {
     }
 
-    record TestJob(String department, String skill) {
+    record TestJob(String department, String skill, List<String> affinities) {
     }
 
     private final DefaultBiJoiner<TestWorker, TestJob> joiner =
@@ -26,28 +26,36 @@ class ContainIndexerTest extends AbstractIndexerTest {
     @Test
     void isEmpty() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        assertThat(forEachToTuples(indexer, List.of("X", "Y"), "Dep1")).isEmpty();
+        assertThat(indexer.isEmpty()).isTrue();
     }
 
     @Test
-    void put() {
+    void size() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        var annTuple = newTuple("Ann-XY-Dep1");
-        assertThat(indexer.size(CompositeKey.ofMany("X", "Dep1"))).isEqualTo(0);
-        indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "Dep1"), annTuple);
-        assertThat(indexer.size(CompositeKey.ofMany("X", "Dep1"))).isEqualTo(1);
+        assertThat(indexer.size(CompositeKey.ofMany("X", "1"))).isEqualTo(0);
 
-        // TODO more testing
+        indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "1"), newTuple("Ann"));
+        assertThat(indexer.size(CompositeKey.ofMany("X", "1"))).isEqualTo(1);
+        assertThat(indexer.size(CompositeKey.ofMany("Y", "1"))).isEqualTo(1);
+        assertThat(indexer.size(CompositeKey.ofMany("Z", "1"))).isEqualTo(0);
+        assertThat(indexer.size(CompositeKey.ofMany("X", "3"))).isEqualTo(0);
+
+        indexer.put(CompositeKey.ofMany(List.of("X", "Z"), "1"), newTuple("Beth"));
+        indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "2"), newTuple("Carl"));
+        assertThat(indexer.size(CompositeKey.ofMany("X", "1"))).isEqualTo(2);
+        assertThat(indexer.size(CompositeKey.ofMany("Y", "1"))).isEqualTo(1);
+        assertThat(indexer.size(CompositeKey.ofMany("Z", "1"))).isEqualTo(1);
+        assertThat(indexer.size(CompositeKey.ofMany("X", "3"))).isEqualTo(0);
     }
 
     @Test
     void removeTwice() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        var annTuple = newTuple("Ann-XY-Dep1");
-        var annEntry = indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "Dep1"), annTuple);
+        var annTuple = newTuple("Ann");
+        var annEntry = indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "1"), annTuple);
 
-        indexer.remove(CompositeKey.ofMany(List.of("X", "Y"), "Dep1"), annEntry);
-        assertThatThrownBy(() -> indexer.remove(CompositeKey.ofMany(List.of("X", "Y"), "Dep1"), annEntry))
+        indexer.remove(CompositeKey.ofMany(List.of("X", "Y"), "1"), annEntry);
+        assertThatThrownBy(() -> indexer.remove(CompositeKey.ofMany(List.of("X", "Y"), "1"), annEntry))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -55,20 +63,20 @@ class ContainIndexerTest extends AbstractIndexerTest {
     void forEach() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
 
-        var annTuple = newTuple("Ann-XY-Dep1");
-        indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "Dep1"), annTuple);
-        var bethTuple = newTuple("Beth-XZ-Dep1");
-        indexer.put(CompositeKey.ofMany(List.of("X", "Z"), "Dep1"), bethTuple);
-        indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "Dep2"), newTuple("Carl-XY-Dep2"));
-        indexer.put(CompositeKey.ofMany(List.of("X", "Z"), "Dep3"), newTuple("Dan-XZ-Dep3"));
-        var ednaTuple = newTuple("Edna-YZ-Dep1");
-        indexer.put(CompositeKey.ofMany(List.of("Y", "Z"), "Dep1"), ednaTuple);
+        var annXY1 = newTuple("Ann");
+        indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "1"), annXY1);
+        var bethXZ1 = newTuple("Beth");
+        indexer.put(CompositeKey.ofMany(List.of("X", "Z"), "1"), bethXZ1);
+        indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "2"), newTuple("Carl"));
+        indexer.put(CompositeKey.ofMany(List.of("X", "Z"), "3"), newTuple("Dan"));
+        var ednaYZ1 = newTuple("Edna");
+        indexer.put(CompositeKey.ofMany(List.of("Y", "Z"), "1"), ednaYZ1);
 
-        assertThat(forEachToTuples(indexer, "X", "Dep1")).containsOnly(annTuple, bethTuple);
-        assertThat(forEachToTuples(indexer, "Y", "Dep1")).containsOnly(annTuple, ednaTuple);
-        assertThat(forEachToTuples(indexer, "Z", "Dep1")).containsOnly(bethTuple, ednaTuple);
-        assertThat(forEachToTuples(indexer, "W", "Dep1")).isEmpty();
-        assertThat(forEachToTuples(indexer, "Y", "Dep3")).isEmpty();
+        assertThat(forEachToTuples(indexer, "X", "1")).containsExactlyInAnyOrder(annXY1, bethXZ1);
+        assertThat(forEachToTuples(indexer, "Y", "1")).containsExactlyInAnyOrder(annXY1, ednaYZ1);
+        assertThat(forEachToTuples(indexer, "Z", "1")).containsExactlyInAnyOrder(bethXZ1, ednaYZ1);
+        assertThat(forEachToTuples(indexer, "W", "1")).isEmpty();
+        assertThat(forEachToTuples(indexer, "Y", "3")).isEmpty();
     }
 
     private static UniTuple<String> newTuple(String factA) {

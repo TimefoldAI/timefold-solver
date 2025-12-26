@@ -1,9 +1,10 @@
 package ai.timefold.solver.core.impl.util;
 
-import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.List;
+
+import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Allows to store the same tuple in multiple downstream {@link ElementAwareLinkedList}s.

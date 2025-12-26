@@ -33,6 +33,7 @@ public sealed interface Indexer<T>
 
     /**
      * Modify operation.
+     * 
      * @param modifyCompositeKey modify composite key, never null
      * @param tuple never null
      * @return the entry to allow remove it from the index directly, never null
@@ -41,6 +42,7 @@ public sealed interface Indexer<T>
 
     /**
      * Modify operation.
+     * 
      * @param modifyCompositeKey modify composite key, never null
      * @param entry never null
      */
@@ -48,6 +50,7 @@ public sealed interface Indexer<T>
 
     /**
      * Query operation.
+     * 
      * @param queryCompositeKey query composite key, never null
      * @return at least 0
      */
@@ -55,6 +58,7 @@ public sealed interface Indexer<T>
 
     /**
      * Query operation.
+     * 
      * @param queryCompositeKey query composite key, never null
      * @param tupleConsumer never null
      */
