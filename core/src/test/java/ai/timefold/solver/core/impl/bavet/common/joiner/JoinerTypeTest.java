@@ -1,13 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.joiner;
 
-import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.CONTAINING;
-import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.DISJOINT;
-import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.EQUAL;
-import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.GREATER_THAN;
-import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.GREATER_THAN_OR_EQUAL;
-import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.INTERSECTING;
-import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.LESS_THAN;
-import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.LESS_THAN_OR_EQUAL;
+import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -55,19 +48,26 @@ class JoinerTypeTest {
     }
 
     @Test
-    void containing() {
-        Collection<Integer> collection = Arrays.asList(1);
-        assertThat(CONTAINING.matches(collection, 1)).isTrue();
-        assertThat(CONTAINING.matches(collection, 2)).isFalse();
+    void contain() {
+        Collection<Integer> collection = Arrays.asList(1, 3);
+        assertThat(CONTAIN.matches(collection, 1)).isTrue();
+        assertThat(CONTAIN.matches(collection, 2)).isFalse();
     }
 
     @Test
-    void intersecting() {
+    void containedIn() {
+        Collection<Integer> collection = Arrays.asList(1, 3);
+        assertThat(CONTAINED_IN.matches(1, collection)).isTrue();
+        assertThat(CONTAINED_IN.matches(2, collection)).isFalse();
+    }
+
+    @Test
+    void intersect() {
         Collection<Integer> left = Arrays.asList(1, 2, 3);
         Collection<Integer> right = Arrays.asList(3, 4, 5);
-        assertThat(INTERSECTING.matches(left, right)).isTrue();
-        assertThat(INTERSECTING.matches(right, left)).isTrue();
-        assertThat(INTERSECTING.matches(left, Collections.emptySet())).isFalse();
+        assertThat(INTERSECT.matches(left, right)).isTrue();
+        assertThat(INTERSECT.matches(right, left)).isTrue();
+        assertThat(INTERSECT.matches(left, Collections.emptySet())).isFalse();
     }
 
     @Test
@@ -83,4 +83,5 @@ class JoinerTypeTest {
         assertThat(DISJOINT.matches(Collections.emptyList(), Collections.emptySet())).isTrue();
         assertThat(DISJOINT.matches(first, Collections.emptySet())).isTrue();
     }
+
 }

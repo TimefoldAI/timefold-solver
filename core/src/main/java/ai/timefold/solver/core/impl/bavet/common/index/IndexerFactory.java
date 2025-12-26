@@ -79,6 +79,8 @@ public final class IndexerFactory<Right_> {
 
     public IndexerFactory(AbstractJoiner<Right_> joiner) {
         this.joiner = joiner;
+        // TODO Code encapsulation: remove the field requiresRandomAccess and call joiner.requireRandomAccess() instead?
+        // TODO It also impacts the flip(). Is requiresRandomAccess a good name?
         this.requiresRandomAccess = joiner instanceof DefaultBiEnumeratingJoiner<?, Right_>;
         var joinerCount = joiner.getJoinerCount();
         if (joinerCount < 2) {
@@ -497,46 +499,58 @@ public final class IndexerFactory<Right_> {
             return backendSupplier.get();
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
             var joinerType = joiner.getJoinerType(0);
-            if (joinerType == JoinerType.EQUAL) {
-                return new EqualsIndexer<>(backendSupplier);
-            } else {
-                // Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
-                // (<A, B> becomes <B, A>.)
-                // This does not apply if random access is required,
-                // because in that case we create a right bridge only,
-                // and we query it from the left.
-                var actualJoinerType = isLeftBridge || requiresRandomAccess ? joinerType : joinerType.flip();
-                return new ComparisonIndexer<>(actualJoinerType, backendSupplier);
-            }
+            KeyRetriever<?> keyRetriever = new SingleKeyRetriever<>();
+            return buildIndexerPart(isLeftBridge, joinerType, keyRetriever, backendSupplier);
         }
-        // The following code builds the children first, so it needs to iterate over the joiners in reverse order.
+        // The following code builds the children first, so it iterates over the joiners in reverse order.
         var descendingJoinerTypeMap = joinerTypeMap.descendingMap();
         Supplier<Indexer<T>> downstreamIndexerSupplier = backendSupplier;
         var indexPropertyId = descendingJoinerTypeMap.size() - 1;
         for (var entry : descendingJoinerTypeMap.entrySet()) {
             var joinerType = entry.getValue();
             if (downstreamIndexerSupplier == backendSupplier && indexPropertyId == 0) {
-                if (joinerType == JoinerType.EQUAL) {
-                    downstreamIndexerSupplier = () -> new EqualsIndexer<>(backendSupplier);
-                } else {
-                    var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
-                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType, backendSupplier);
-                }
+                KeyRetriever<?> keyRetriever = new SingleKeyRetriever<>();
+                downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyRetriever, backendSupplier);
             } else {
+                KeyRetriever<?> keyRetriever = new CompositeKeyRetriever<>(indexPropertyId);
                 var actualDownstreamIndexerSupplier = downstreamIndexerSupplier;
-                var effectivelyFinalIndexPropertyId = indexPropertyId;
-                if (joinerType == JoinerType.EQUAL) {
-                    downstreamIndexerSupplier =
-                            () -> new EqualsIndexer<>(effectivelyFinalIndexPropertyId, actualDownstreamIndexerSupplier);
-                } else {
-                    var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
-                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType, effectivelyFinalIndexPropertyId,
-                            actualDownstreamIndexerSupplier);
-                }
+                downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyRetriever,
+                        actualDownstreamIndexerSupplier);
             }
             indexPropertyId--;
         }
         return downstreamIndexerSupplier.get();
+    }
+
+    private <T> Indexer<T> buildIndexerPart(boolean isLeftBridge, JoinerType joinerType, KeyRetriever<?> keyRetriever,
+            Supplier<Indexer<T>> backendSupplier) {
+        // Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
+        // (<A, B> becomes <B, A>.)
+        // TODO Does the requiresRandomAccess check make sense?
+        //      Shouldn't a right bridge always flip, even if there is no left bridge?
+        // TODO For neighborhoods, why create a left bridge index and keep it up to date at all?
+        // This does not apply if random access is required,
+        // because in that case we create a right bridge only,
+        // and we query it from the left.
+        if (!isLeftBridge && !requiresRandomAccess) {
+            joinerType = joinerType.flip();
+        }
+        switch (joinerType) {
+            case EQUAL -> {
+                return new EqualIndexer<>(keyRetriever, backendSupplier);
+            }
+            case LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL -> {
+                return new ComparisonIndexer<>(joinerType, keyRetriever, backendSupplier);
+            }
+            case CONTAIN -> {
+                return new ContainIndexer<>(keyRetriever, backendSupplier);
+            }
+            case CONTAINED_IN -> {
+                return new ContainedInIndexer<>(keyRetriever, backendSupplier);
+            }
+            default -> throw new IllegalStateException(
+                    "Impossible state: The joiner type (" + joinerType + ") is not implemented.");
+        }
     }
 
     /**

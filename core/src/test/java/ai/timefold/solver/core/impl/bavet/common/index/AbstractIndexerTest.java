@@ -5,11 +5,7 @@ import java.util.List;
 
 abstract class AbstractIndexerTest {
 
-    record Person(String gender, int age) {
-
-    }
-
-    protected <T> List<T> getTuples(Indexer<T> indexer, Object... objectProperties) {
+    protected static <T> List<T> getTuples(Indexer<T> indexer, Object... objectProperties) {
         var properties = switch (objectProperties.length) {
             case 0 -> CompositeKey.none();
             case 1 -> CompositeKey.of(objectProperties[0]);

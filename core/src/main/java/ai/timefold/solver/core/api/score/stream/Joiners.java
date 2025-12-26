@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.api.score.stream;
 
+import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -35,7 +36,6 @@ import org.jspecify.annotations.NonNull;
 public final class Joiners {
 
     // TODO Support using non-natural comparators, such as lessThan(leftMapping, rightMapping, comparator).
-    // TODO Support collection-based joiners, such as containing(), intersecting() and disjoint().
 
     // ************************************************************************
     // BiJoiner
@@ -76,6 +76,18 @@ public final class Joiners {
     public static <A, B, Property_> @NonNull BiJoiner<A, B> equal(Function<A, Property_> leftMapping,
             Function<B, Property_> rightMapping) {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
+    }
+
+    // TODO javadoc
+    public static <A, B, Property_> @NonNull BiJoiner<A, B> contain(Function<A, Collection<Property_>> leftMapping,
+            Function<B, Property_> rightMapping) {
+        return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAIN, rightMapping);
+    }
+
+    // TODO javadoc
+    public static <A, B, Property_> @NonNull BiJoiner<A, B> containedIn(Function<A, Property_> leftMapping,
+            Function<B, Collection<Property_>> rightMapping) {
+        return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAINED_IN, rightMapping);
     }
 
     /**

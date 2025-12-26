@@ -25,7 +25,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public sealed interface Indexer<T>
-        permits ComparisonIndexer, EqualsIndexer, IndexerBackend {
+        permits EqualIndexer, ComparisonIndexer, ContainIndexer, ContainedInIndexer, IndexerBackend {
 
     ListEntry<T> put(Object compositeKey, T tuple);
 

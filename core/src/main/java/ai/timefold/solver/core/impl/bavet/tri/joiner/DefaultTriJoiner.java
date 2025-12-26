@@ -17,18 +17,17 @@ public final class DefaultTriJoiner<A, B, C> extends AbstractJoiner<C> implement
     private static final DefaultTriJoiner NONE =
             new DefaultTriJoiner(new BiFunction[0], new JoinerType[0], new Function[0]);
 
-    private final BiFunction<A, B, ?>[] leftMappings;
+    private final BiFunction<A, B, Object>[] leftMappings;
 
-    public <Property_> DefaultTriJoiner(BiFunction<A, B, Property_> leftMapping, JoinerType joinerType,
-            Function<C, Property_> rightMapping) {
+    public DefaultTriJoiner(BiFunction<A, B, ?> leftMapping, JoinerType joinerType, Function<C, ?> rightMapping) {
         super(rightMapping, joinerType);
         this.leftMappings = new BiFunction[] { leftMapping };
     }
 
-    private <Property_> DefaultTriJoiner(BiFunction<A, B, Property_>[] leftMappings, JoinerType[] joinerTypes,
-            Function<C, Property_>[] rightMappings) {
+    private DefaultTriJoiner(BiFunction<A, B, ?>[] leftMappings, JoinerType[] joinerTypes,
+            Function<C, ?>[] rightMappings) {
         super(rightMappings, joinerTypes);
-        this.leftMappings = leftMappings;
+        this.leftMappings = (BiFunction<A, B, Object>[]) Objects.requireNonNull(leftMappings);
     }
 
     public static <A, B, C> DefaultTriJoiner<A, B, C> merge(List<DefaultTriJoiner<A, B, C>> joinerList) {
@@ -57,7 +56,7 @@ public final class DefaultTriJoiner<A, B, C> extends AbstractJoiner<C> implement
     }
 
     public BiFunction<A, B, Object> getLeftMapping(int index) {
-        return (BiFunction<A, B, Object>) leftMappings[index];
+        return leftMappings[index];
     }
 
     public boolean matches(A a, B b, C c) {
