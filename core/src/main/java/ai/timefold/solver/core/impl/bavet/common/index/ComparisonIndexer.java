@@ -25,31 +25,13 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     private final NavigableMap<Key_, Indexer<T>> comparisonMap;
 
     /**
-     * Construct an {@link ComparisonIndexer} which immediately ends in the backend.
-     * This means {@code compositeKey} must be a single key.
-     *
      * @param comparisonJoinerType the type of comparison to use
+     * @param keyRetriever determines if it immediately goes to a {@link IndexerBackend} or if it uses a {@link CompositeKey}.
      * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
-    public ComparisonIndexer(JoinerType comparisonJoinerType, Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this(comparisonJoinerType, new SingleKeyRetriever<>(), downstreamIndexerSupplier);
-    }
-
-    /**
-     * Construct an {@link ComparisonIndexer} which does not immediately go to a {@link IndexerBackend}.
-     * This means {@code compositeKey} must be an instance of {@link CompositeKey}.
-     *
-     * @param comparisonJoinerType the type of comparison to use
-     * @param keyIndex the index of the key to use within {@link CompositeKey}.
-     * @param downstreamIndexerSupplier the supplier of the downstream indexer
-     */
-    public ComparisonIndexer(JoinerType comparisonJoinerType, int keyIndex, Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this(comparisonJoinerType, new CompositeKeyRetriever<>(keyIndex), downstreamIndexerSupplier);
-    }
-
-    private ComparisonIndexer(JoinerType comparisonJoinerType, KeyRetriever<Key_> keyRetriever,
+    public ComparisonIndexer(JoinerType comparisonJoinerType, KeyRetriever<?> keyRetriever,
             Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.keyRetriever = Objects.requireNonNull(keyRetriever);
+        this.keyRetriever = Objects.requireNonNull((KeyRetriever<Key_>) keyRetriever);
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
         // For GT/GTE, the iteration order is reversed.
         // This allows us to iterate over the entire map from the start, stopping when the threshold is reached.

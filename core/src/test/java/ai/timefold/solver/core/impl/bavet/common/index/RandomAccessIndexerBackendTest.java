@@ -14,7 +14,7 @@ class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
     void isEmpty() {
         var indexer = new RandomAccessIndexerBackend<>();
         assertSoftly(softly -> {
-            softly.assertThat(getTuples(indexer)).isEmpty();
+            softly.assertThat(forEachToTuples(indexer)).isEmpty();
             softly.assertThat(indexer.isEmpty()).isTrue();
         });
     }
@@ -28,7 +28,7 @@ class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
         assertThat(indexer.size(CompositeKey.none())).isEqualTo(1);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isFalse();
-            softly.assertThat(getTuples(indexer)).containsExactly(annTuple);
+            softly.assertThat(forEachToTuples(indexer)).containsExactly(annTuple);
         });
     }
 
@@ -39,20 +39,20 @@ class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
         var annEntry = indexer.put(CompositeKey.none(), annTuple);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isFalse();
-            softly.assertThat(getTuples(indexer)).containsExactly(annTuple);
+            softly.assertThat(forEachToTuples(indexer)).containsExactly(annTuple);
         });
 
         indexer.remove(CompositeKey.none(), annEntry);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isTrue();
-            softly.assertThat(getTuples(indexer)).isEmpty();
+            softly.assertThat(forEachToTuples(indexer)).isEmpty();
         });
         assertThatThrownBy(() -> indexer.remove(CompositeKey.none(), annEntry))
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    void visit() {
+    void forEach() {
         var indexer = new RandomAccessIndexerBackend<>();
 
         var annTuple = newTuple("Ann-F-40");
@@ -60,7 +60,7 @@ class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
         var bethTuple = newTuple("Beth-F-30");
         indexer.put(CompositeKey.none(), bethTuple);
 
-        assertThat(getTuples(indexer)).containsOnly(annTuple, bethTuple);
+        assertThat(forEachToTuples(indexer)).containsOnly(annTuple, bethTuple);
     }
 
     private static UniTuple<String> newTuple(String factA) {

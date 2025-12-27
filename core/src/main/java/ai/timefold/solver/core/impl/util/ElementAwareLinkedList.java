@@ -325,7 +325,6 @@ public final class ElementAwareLinkedList<T> implements Iterable<T> {
             list = null;
         }
 
-        @Override
         public boolean isRemoved() {
             return list == null;
         }

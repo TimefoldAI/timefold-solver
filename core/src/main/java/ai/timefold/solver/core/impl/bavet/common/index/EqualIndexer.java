@@ -13,30 +13,18 @@ import ai.timefold.solver.core.impl.util.ListEntry;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class EqualsIndexer<T, Key_> implements Indexer<T> {
+final class EqualIndexer<T, Key_> implements Indexer<T> {
 
     private final KeyRetriever<Key_> keyRetriever;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     private final Map<Key_, Indexer<T>> downstreamIndexerMap = new HashMap<>();
 
     /**
-     * Construct an {@link EqualsIndexer} which immediately ends in the backend.
-     * This means {@code compositeKey} must be a single key.
-     */
-    public EqualsIndexer(Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.keyRetriever = new SingleKeyRetriever<>();
-        this.downstreamIndexerSupplier = downstreamIndexerSupplier;
-    }
-
-    /**
-     * Construct an {@link EqualsIndexer} which does not immediately go to a {@link IndexerBackend}.
-     * This means {@code compositeKey} must be an instance of {@link CompositeKey}.
-     * 
-     * @param keyIndex the index of the key to use within {@link CompositeKey}.
+     * @param keyRetriever determines if it immediately goes to a {@link IndexerBackend} or if it uses a {@link CompositeKey}.
      * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
-    public EqualsIndexer(int keyIndex, Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.keyRetriever = new CompositeKeyRetriever<>(keyIndex);
+    public EqualIndexer(KeyRetriever<Key_> keyRetriever, Supplier<Indexer<T>> downstreamIndexerSupplier) {
+        this.keyRetriever = Objects.requireNonNull(keyRetriever);
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
     }
 
