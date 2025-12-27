@@ -79,6 +79,27 @@ class ContainIndexerTest extends AbstractIndexerTest {
         assertThat(forEachToTuples(indexer, "Y", "3")).isEmpty();
     }
 
+
+    private final DefaultBiJoiner<TestWorker, TestJob> containedInComboJoiner =
+            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.contain(TestWorker::skills, TestJob::skill)
+                    .and(Joiners.containedIn(TestWorker::affinity, TestJob::affinities));
+
+    @Test
+    void forEach_containedInCombo() {
+        var indexer = new IndexerFactory<>(containedInComboJoiner).buildIndexer(true);
+
+        var annXY1 = newTuple("Ann");
+        indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "1"), annXY1);
+        var bethXY2 = newTuple("Beth");
+        indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "2"), bethXY2);
+        var ednaYZ1 = newTuple("Edna");
+        indexer.put(CompositeKey.ofMany(List.of("Y", "Z"), "1"), ednaYZ1);
+
+        assertThat(forEachToTuples(indexer, "X", List.of("1"))).containsExactlyInAnyOrder(annXY1);
+        assertThat(forEachToTuples(indexer, "X", List.of("1", "2"))).containsExactlyInAnyOrder(annXY1, bethXY2);
+        assertThat(forEachToTuples(indexer, "Y", List.of("1", "2"))).containsExactlyInAnyOrder(annXY1, bethXY2, ednaYZ1);
+    }
+
     private static UniTuple<String> newTuple(String factA) {
         return new UniTuple<>(factA, 0);
     }

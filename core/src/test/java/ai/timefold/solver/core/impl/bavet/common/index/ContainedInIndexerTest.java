@@ -95,12 +95,13 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
         var annX12 = newTuple("Ann");
         indexer.put(CompositeKey.ofMany("X", List.of("1", "2")), annX12);
         var bethY13 = newTuple("Beth");
-        indexer.put(CompositeKey.ofMany("Y", List.of("1", "3")), bethY13);
+        indexer.put(CompositeKey.ofMany("Y", List.of("1", "2")), bethY13);
         var ednaX23 = newTuple("Edna");
         indexer.put(CompositeKey.ofMany("X", List.of("2", "3")), ednaX23);
 
         assertThat(forEachToTuples(indexer, List.of("X"), "1")).containsExactlyInAnyOrder(annX12);
         assertThat(forEachToTuples(indexer, List.of("X", "Y"), "1")).containsExactlyInAnyOrder(annX12, bethY13);
+        assertThat(forEachToTuples(indexer, List.of("X", "Y"), "2")).containsExactlyInAnyOrder(annX12, bethY13, ednaX23);
     }
 
     private static UniTuple<String> newTuple(String factA) {
