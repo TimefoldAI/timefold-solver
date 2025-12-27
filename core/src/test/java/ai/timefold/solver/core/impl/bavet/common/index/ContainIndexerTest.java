@@ -79,7 +79,6 @@ class ContainIndexerTest extends AbstractIndexerTest {
         assertThat(forEachToTuples(indexer, "Y", "3")).isEmpty();
     }
 
-
     private final DefaultBiJoiner<TestWorker, TestJob> containedInComboJoiner =
             (DefaultBiJoiner<TestWorker, TestJob>) Joiners.contain(TestWorker::skills, TestJob::skill)
                     .and(Joiners.containedIn(TestWorker::affinity, TestJob::affinities));

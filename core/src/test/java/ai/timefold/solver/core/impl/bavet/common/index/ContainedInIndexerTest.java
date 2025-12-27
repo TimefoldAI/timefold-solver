@@ -87,7 +87,6 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
             (DefaultBiJoiner<TestJob, TestWorker>) Joiners.containedIn(TestJob::skill, TestWorker::skills)
                     .and(Joiners.contain(TestJob::affinities, TestWorker::affinity));
 
-
     @Test
     void forEach_containCombo() {
         var indexer = new IndexerFactory<>(containComboJoiner).buildIndexer(true);
