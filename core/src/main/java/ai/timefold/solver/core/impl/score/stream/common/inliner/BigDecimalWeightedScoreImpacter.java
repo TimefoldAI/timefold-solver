@@ -11,8 +11,7 @@ final class BigDecimalWeightedScoreImpacter<Score_ extends Score<Score_>, Contex
     private final BigDecimalImpactFunction<Score_, Context_> impactFunction;
     private final Context_ context;
 
-    public BigDecimalWeightedScoreImpacter(BigDecimalImpactFunction<Score_, Context_> impactFunction,
-            Context_ context) {
+    public BigDecimalWeightedScoreImpacter(BigDecimalImpactFunction<Score_, Context_> impactFunction, Context_ context) {
         this.impactFunction = Objects.requireNonNull(impactFunction);
         this.context = context;
     }

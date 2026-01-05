@@ -18,8 +18,7 @@ final class SimpleBigDecimalScoreInliner extends AbstractScoreInliner<SimpleBigD
     }
 
     @Override
-    public WeightedScoreImpacter<SimpleBigDecimalScore, ?>
-            buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
+    public WeightedScoreImpacter<SimpleBigDecimalScore, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
         SimpleBigDecimalScore constraintWeight = constraintWeightMap.get(constraint);
         SimpleBigDecimalScoreContext context = new SimpleBigDecimalScoreContext(this, constraint, constraintWeight);
         return WeightedScoreImpacter.of(context, SimpleBigDecimalScoreContext::changeScoreBy);

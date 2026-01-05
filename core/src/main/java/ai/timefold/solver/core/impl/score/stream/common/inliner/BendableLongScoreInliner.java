@@ -14,8 +14,7 @@ public final class BendableLongScoreInliner extends AbstractScoreInliner<Bendabl
     final long[] softScores;
 
     BendableLongScoreInliner(Map<Constraint, BendableLongScore> constraintWeightMap,
-            ConstraintMatchPolicy constraintMatchPolicy,
-            int hardLevelsSize, int softLevelsSize) {
+            ConstraintMatchPolicy constraintMatchPolicy, int hardLevelsSize, int softLevelsSize) {
         super(constraintWeightMap, constraintMatchPolicy);
         hardScores = new long[hardLevelsSize];
         softScores = new long[softLevelsSize];
@@ -40,27 +39,29 @@ public final class BendableLongScoreInliner extends AbstractScoreInliner<Bendabl
             BendableLongScoreContext context = new BendableLongScoreContext(this, constraint, constraintWeight,
                     hardScores.length, softScores.length, level, constraintWeight.hardOrSoftScore(singleLevel));
             if (isHardScore) {
-                return WeightedScoreImpacter.of(context, (BendableLongScoreContext ctx, long impact,
-                        ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) -> ctx.changeHardScoreBy(impact,
-                                constraintMatchSupplier));
+                return WeightedScoreImpacter.of(context,
+                        (BendableLongScoreContext ctx, long impact,
+                                ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) -> ctx
+                                        .changeHardScoreBy(impact, constraintMatchSupplier));
             } else {
-                return WeightedScoreImpacter.of(context, (BendableLongScoreContext ctx, long impact,
-                        ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) -> ctx.changeSoftScoreBy(impact,
-                                constraintMatchSupplier));
+                return WeightedScoreImpacter.of(context,
+                        (BendableLongScoreContext ctx, long impact,
+                                ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) -> ctx
+                                        .changeSoftScoreBy(impact, constraintMatchSupplier));
             }
         } else {
             BendableLongScoreContext context =
                     new BendableLongScoreContext(this, constraint, constraintWeight, hardScores.length, softScores.length);
-            return WeightedScoreImpacter.of(context, (BendableLongScoreContext ctx, long impact,
-                    ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) -> ctx.changeScoreBy(impact,
-                            constraintMatchSupplier));
+            return WeightedScoreImpacter.of(context,
+                    (BendableLongScoreContext ctx, long impact,
+                            ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) -> ctx.changeScoreBy(impact,
+                                    constraintMatchSupplier));
         }
     }
 
     @Override
     public BendableLongScore extractScore() {
-        return BendableLongScore.of(Arrays.copyOf(hardScores, hardScores.length),
-                Arrays.copyOf(softScores, softScores.length));
+        return BendableLongScore.of(Arrays.copyOf(hardScores, hardScores.length), Arrays.copyOf(softScores, softScores.length));
     }
 
     @Override

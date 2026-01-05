@@ -22,8 +22,19 @@ final class HardMediumSoftScoreInliner extends AbstractScoreInliner<HardMediumSo
     public WeightedScoreImpacter<HardMediumSoftScore, ?>
             buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
         var constraintWeight = constraintWeightMap.get(constraint);
+        var softConstraintWeight = constraintWeight.softScore();
+        var mediumConstraintWeight = constraintWeight.mediumScore();
+        var hardConstraintWeight = constraintWeight.hardScore();
         var context = new HardMediumSoftScoreContext(this, constraint, constraintWeight);
-        return WeightedScoreImpacter.of(context, HardMediumSoftScoreContext::changeScoreBy);
+        if (mediumConstraintWeight == 0 && softConstraintWeight == 0) {
+            return WeightedScoreImpacter.of(context, HardMediumSoftScoreContext::changeHardScoreBy);
+        } else if (hardConstraintWeight == 0 && softConstraintWeight == 0) {
+            return WeightedScoreImpacter.of(context, HardMediumSoftScoreContext::changeMediumScoreBy);
+        } else if (hardConstraintWeight == 0 && mediumConstraintWeight == 0) {
+            return WeightedScoreImpacter.of(context, HardMediumSoftScoreContext::changeSoftScoreBy);
+        } else {
+            return WeightedScoreImpacter.of(context, HardMediumSoftScoreContext::changeScoreBy);
+        }
     }
 
     @Override
