@@ -26,7 +26,7 @@ class BendableBigDecimalScoreInlinerTest
     @Test
     void impactHard() {
         var impacter = buildScoreImpacter(buildScore(90, 0, 0));
-        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -48,7 +48,7 @@ class BendableBigDecimalScoreInlinerTest
     @Test
     void impactSoft1() {
         var impacter = buildScoreImpacter(buildScore(0, 90, 0));
-        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -70,7 +70,7 @@ class BendableBigDecimalScoreInlinerTest
     @Test
     void impactSoft2() {
         var impacter = buildScoreImpacter(buildScore(0, 0, 90));
-        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -92,7 +92,7 @@ class BendableBigDecimalScoreInlinerTest
     @Test
     void impactAll() {
         var impacter = buildScoreImpacter(buildScore(10, 100, 1_000));
-        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<BendableBigDecimalScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(BigDecimal.TEN, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())

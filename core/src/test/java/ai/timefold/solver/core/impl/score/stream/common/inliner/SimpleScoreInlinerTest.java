@@ -25,7 +25,7 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, 
     void impact() {
         var constraintWeight = SimpleScore.of(10);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<SimpleScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<SimpleScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())

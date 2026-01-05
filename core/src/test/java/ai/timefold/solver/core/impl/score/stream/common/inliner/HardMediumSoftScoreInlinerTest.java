@@ -26,7 +26,7 @@ class HardMediumSoftScoreInlinerTest
     void impactHard() {
         var constraintWeight = HardMediumSoftScore.ofHard(90);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -49,7 +49,7 @@ class HardMediumSoftScoreInlinerTest
     void impactMedium() {
         var constraintWeight = HardMediumSoftScore.ofMedium(90);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -72,7 +72,7 @@ class HardMediumSoftScoreInlinerTest
     void impactSoft() {
         var constraintWeight = HardMediumSoftScore.ofSoft(90);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -95,7 +95,7 @@ class HardMediumSoftScoreInlinerTest
     void impactAll() {
         var constraintWeight = HardMediumSoftScore.of(10, 100, 1_000);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())

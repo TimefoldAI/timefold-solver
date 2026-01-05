@@ -27,7 +27,7 @@ class HardMediumSoftBigDecimalScoreInlinerTest
     void impactHard() {
         var constraintWeight = HardMediumSoftBigDecimalScore.ofHard(BigDecimal.valueOf(90));
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -50,7 +50,7 @@ class HardMediumSoftBigDecimalScoreInlinerTest
     void impactMedium() {
         var constraintWeight = HardMediumSoftBigDecimalScore.ofMedium(BigDecimal.valueOf(90));
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -73,7 +73,7 @@ class HardMediumSoftBigDecimalScoreInlinerTest
     void impactSoft() {
         var constraintWeight = HardMediumSoftBigDecimalScore.ofSoft(BigDecimal.valueOf(90));
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -97,7 +97,7 @@ class HardMediumSoftBigDecimalScoreInlinerTest
         var constraintWeight =
                 HardMediumSoftBigDecimalScore.of(BigDecimal.valueOf(10), BigDecimal.valueOf(100), BigDecimal.valueOf(1_000));
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftBigDecimalScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(BigDecimal.TEN, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())

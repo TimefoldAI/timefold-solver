@@ -27,7 +27,7 @@ class SimpleBigDecimalScoreInlinerTest
     void impact() {
         var constraintWeight = SimpleBigDecimalScore.of(BigDecimal.valueOf(10));
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<SimpleBigDecimalScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<SimpleBigDecimalScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(BigDecimal.TEN, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())

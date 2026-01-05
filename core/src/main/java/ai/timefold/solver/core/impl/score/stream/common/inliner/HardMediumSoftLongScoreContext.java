@@ -17,10 +17,10 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
         var hardImpact = constraintWeight.hardScore() * matchWeight;
         var mediumImpact = constraintWeight.mediumScore() * matchWeight;
         var softImpact = constraintWeight.softScore() * matchWeight;
-        parent.hardScore += hardImpact;
-        parent.mediumScore += mediumImpact;
-        parent.softScore += softImpact;
-        var scoreImpact = new HardMediumSoftLongImpact(parent, hardImpact, mediumImpact, softImpact);
+        inliner.hardScore += hardImpact;
+        inliner.mediumScore += mediumImpact;
+        inliner.softScore += softImpact;
+        var scoreImpact = new ComplexImpact(inliner, hardImpact, mediumImpact, softImpact);
         if (!constraintMatchPolicy.isEnabled()) {
             return scoreImpact;
         }
@@ -28,10 +28,8 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
     }
 
     @NullMarked
-    private record HardMediumSoftLongImpact(HardMediumSoftLongScoreInliner inliner, long hardImpact, long mediumImpact,
-            long softImpact)
-            implements
-                ScoreImpact<HardMediumSoftLongScore> {
+    private record ComplexImpact(HardMediumSoftLongScoreInliner inliner, long hardImpact, long mediumImpact,
+            long softImpact) implements ScoreImpact<HardMediumSoftLongScore> {
 
         @Override
         public AbstractScoreInliner<HardMediumSoftLongScore> scoreInliner() {

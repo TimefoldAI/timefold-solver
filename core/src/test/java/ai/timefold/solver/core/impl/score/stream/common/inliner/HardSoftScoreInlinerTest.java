@@ -25,7 +25,7 @@ class HardSoftScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHardSoft
     void impactHard() {
         var constraintWeight = HardSoftScore.ofHard(90);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardSoftScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardSoftScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -48,7 +48,7 @@ class HardSoftScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHardSoft
     void impactSoft() {
         var constraintWeight = HardSoftScore.ofSoft(90);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardSoftScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardSoftScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -71,7 +71,7 @@ class HardSoftScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHardSoft
     void impactAll() {
         var constraintWeight = HardSoftScore.of(10, 100);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardSoftScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardSoftScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())

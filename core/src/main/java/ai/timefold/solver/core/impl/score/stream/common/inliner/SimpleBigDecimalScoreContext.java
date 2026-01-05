@@ -17,8 +17,8 @@ final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalSc
     public ScoreImpact<SimpleBigDecimalScore> changeScoreBy(BigDecimal matchWeight,
             ConstraintMatchSupplier<SimpleBigDecimalScore> constraintMatchSupplier) {
         var impact = constraintWeight.score().multiply(matchWeight);
-        parent.score = parent.score.add(impact);
-        var scoreImpact = new SimpleBigDecimalImpact(parent, impact);
+        inliner.score = inliner.score.add(impact);
+        var scoreImpact = new Impact(inliner, impact);
         if (!constraintMatchPolicy.isEnabled()) {
             return scoreImpact;
         }
@@ -26,9 +26,8 @@ final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalSc
     }
 
     @NullMarked
-    private record SimpleBigDecimalImpact(SimpleBigDecimalScoreInliner inliner, BigDecimal impact)
-            implements
-                ScoreImpact<SimpleBigDecimalScore> {
+    private record Impact(SimpleBigDecimalScoreInliner inliner,
+            BigDecimal impact) implements ScoreImpact<SimpleBigDecimalScore> {
 
         @Override
         public AbstractScoreInliner<SimpleBigDecimalScore> scoreInliner() {

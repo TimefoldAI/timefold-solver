@@ -17,8 +17,8 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
     public ScoreImpact<HardSoftBigDecimalScore> changeSoftScoreBy(BigDecimal matchWeight,
             ConstraintMatchSupplier<HardSoftBigDecimalScore> constraintMatchSupplier) {
         var softImpact = constraintWeight.softScore().multiply(matchWeight);
-        parent.softScore = parent.softScore.add(softImpact);
-        var scoreImpact = new SoftBigDecimalImpact(parent, softImpact);
+        inliner.softScore = inliner.softScore.add(softImpact);
+        var scoreImpact = new SoftImpact(inliner, softImpact);
         if (!constraintMatchPolicy.isEnabled()) {
             return scoreImpact;
         }
@@ -28,8 +28,8 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
     public ScoreImpact<HardSoftBigDecimalScore> changeHardScoreBy(BigDecimal matchWeight,
             ConstraintMatchSupplier<HardSoftBigDecimalScore> constraintMatchSupplier) {
         var hardImpact = constraintWeight.hardScore().multiply(matchWeight);
-        parent.hardScore = parent.hardScore.add(hardImpact);
-        var scoreImpact = new HardBigDecimalImpact(parent, hardImpact);
+        inliner.hardScore = inliner.hardScore.add(hardImpact);
+        var scoreImpact = new HardImpact(inliner, hardImpact);
         if (!constraintMatchPolicy.isEnabled()) {
             return scoreImpact;
         }
@@ -40,9 +40,9 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
             ConstraintMatchSupplier<HardSoftBigDecimalScore> constraintMatchSupplier) {
         var hardImpact = constraintWeight.hardScore().multiply(matchWeight);
         var softImpact = constraintWeight.softScore().multiply(matchWeight);
-        parent.hardScore = parent.hardScore.add(hardImpact);
-        parent.softScore = parent.softScore.add(softImpact);
-        var scoreImpact = new HardSoftBigDecimalImpact(parent, hardImpact, softImpact);
+        inliner.hardScore = inliner.hardScore.add(hardImpact);
+        inliner.softScore = inliner.softScore.add(softImpact);
+        var scoreImpact = new ComplexImpact(inliner, hardImpact, softImpact);
         if (!constraintMatchPolicy.isEnabled()) {
             return scoreImpact;
         }
@@ -50,9 +50,8 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
     }
 
     @NullMarked
-    private record SoftBigDecimalImpact(HardSoftBigDecimalScoreInliner inliner, BigDecimal impact)
-            implements
-                ScoreImpact<HardSoftBigDecimalScore> {
+    private record SoftImpact(HardSoftBigDecimalScoreInliner inliner,
+            BigDecimal impact) implements ScoreImpact<HardSoftBigDecimalScore> {
 
         @Override
         public AbstractScoreInliner<HardSoftBigDecimalScore> scoreInliner() {
@@ -72,9 +71,8 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
     }
 
     @NullMarked
-    private record HardBigDecimalImpact(HardSoftBigDecimalScoreInliner inliner, BigDecimal impact)
-            implements
-                ScoreImpact<HardSoftBigDecimalScore> {
+    private record HardImpact(HardSoftBigDecimalScoreInliner inliner,
+            BigDecimal impact) implements ScoreImpact<HardSoftBigDecimalScore> {
 
         @Override
         public AbstractScoreInliner<HardSoftBigDecimalScore> scoreInliner() {
@@ -94,10 +92,8 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
     }
 
     @NullMarked
-    private record HardSoftBigDecimalImpact(HardSoftBigDecimalScoreInliner inliner, BigDecimal hardImpact,
-            BigDecimal softImpact)
-            implements
-                ScoreImpact<HardSoftBigDecimalScore> {
+    private record ComplexImpact(HardSoftBigDecimalScoreInliner inliner, BigDecimal hardImpact,
+            BigDecimal softImpact) implements ScoreImpact<HardSoftBigDecimalScore> {
 
         @Override
         public AbstractScoreInliner<HardSoftBigDecimalScore> scoreInliner() {

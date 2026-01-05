@@ -26,7 +26,7 @@ class HardMediumSoftLongScoreInlinerTest
     void impactHard() {
         var constraintWeight = HardMediumSoftLongScore.ofHard(90);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftLongScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftLongScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -49,7 +49,7 @@ class HardMediumSoftLongScoreInlinerTest
     void impactMedium() {
         var constraintWeight = HardMediumSoftLongScore.ofMedium(90);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftLongScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftLongScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -72,7 +72,7 @@ class HardMediumSoftLongScoreInlinerTest
     void impactSoft() {
         var constraintWeight = HardMediumSoftLongScore.ofSoft(90);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftLongScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftLongScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -95,7 +95,7 @@ class HardMediumSoftLongScoreInlinerTest
     void impactAll() {
         var constraintWeight = HardMediumSoftLongScore.of(10, 100, 1_000);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<HardMediumSoftLongScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<HardMediumSoftLongScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())

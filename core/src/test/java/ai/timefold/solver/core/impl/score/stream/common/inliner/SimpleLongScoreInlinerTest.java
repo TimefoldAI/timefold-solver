@@ -25,7 +25,7 @@ class SimpleLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSimple
     void impact() {
         var constraintWeight = SimpleLongScore.of(10);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<SimpleLongScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<SimpleLongScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())

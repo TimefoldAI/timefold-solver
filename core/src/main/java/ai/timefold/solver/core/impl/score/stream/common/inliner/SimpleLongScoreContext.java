@@ -15,8 +15,8 @@ final class SimpleLongScoreContext extends ScoreContext<SimpleLongScore, SimpleL
     public ScoreImpact<SimpleLongScore> changeScoreBy(long matchWeight,
             ConstraintMatchSupplier<SimpleLongScore> constraintMatchSupplier) {
         var impact = constraintWeight.score() * matchWeight;
-        parent.score += impact;
-        var scoreImpact = new SimpleLongImpact(parent, impact);
+        inliner.score += impact;
+        var scoreImpact = new Impact(inliner, impact);
         if (!constraintMatchPolicy.isEnabled()) {
             return scoreImpact;
         }
@@ -24,9 +24,7 @@ final class SimpleLongScoreContext extends ScoreContext<SimpleLongScore, SimpleL
     }
 
     @NullMarked
-    private record SimpleLongImpact(SimpleLongScoreInliner inliner, long impact)
-            implements
-                ScoreImpact<SimpleLongScore> {
+    private record Impact(SimpleLongScoreInliner inliner, long impact) implements ScoreImpact<SimpleLongScore> {
 
         @Override
         public AbstractScoreInliner<SimpleLongScore> scoreInliner() {

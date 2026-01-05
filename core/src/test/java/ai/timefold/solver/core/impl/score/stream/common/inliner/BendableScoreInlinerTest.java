@@ -25,7 +25,7 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
     void impactHard() {
         var constraintWeight = buildScore(90, 0, 0);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -48,7 +48,7 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
     void impactSoft1() {
         var constraintWeight = buildScore(0, 90, 0);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -71,7 +71,7 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
     void impactSoft2() {
         var constraintWeight = buildScore(0, 0, 90);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
@@ -94,7 +94,7 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
     void impactAll() {
         var constraintWeight = buildScore(10, 100, 1_000);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<BendableScore>) impacter.getContext().inliner;
 
         var impact1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
