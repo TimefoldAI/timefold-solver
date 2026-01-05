@@ -23,8 +23,8 @@ public final class BendableLongScoreInliner extends AbstractScoreInliner<Bendabl
     @Override
     public WeightedScoreImpacter<BendableLongScore, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
         Integer singleLevel = null;
-        BendableLongScore constraintWeight = constraintWeightMap.get(constraint);
-        for (int i = 0; i < constraintWeight.levelsSize(); i++) {
+        var constraintWeight = constraintWeightMap.get(constraint);
+        for (var i = 0; i < constraintWeight.levelsSize(); i++) {
             if (constraintWeight.hardOrSoftScore(i) != 0L) {
                 if (singleLevel != null) {
                     singleLevel = null;
@@ -34,9 +34,9 @@ public final class BendableLongScoreInliner extends AbstractScoreInliner<Bendabl
             }
         }
         if (singleLevel != null) {
-            boolean isHardScore = singleLevel < constraintWeight.hardLevelsSize();
-            int level = isHardScore ? singleLevel : singleLevel - constraintWeight.hardLevelsSize();
-            BendableLongScoreContext context = new BendableLongScoreContext(this, constraint, constraintWeight,
+            var isHardScore = singleLevel < constraintWeight.hardLevelsSize();
+            var level = isHardScore ? singleLevel : singleLevel - constraintWeight.hardLevelsSize();
+            var context = new BendableLongScoreContext(this, constraint, constraintWeight,
                     hardScores.length, softScores.length, level, constraintWeight.hardOrSoftScore(singleLevel));
             if (isHardScore) {
                 return WeightedScoreImpacter.of(context,
@@ -50,7 +50,7 @@ public final class BendableLongScoreInliner extends AbstractScoreInliner<Bendabl
                                         .changeSoftScoreBy(impact, constraintMatchSupplier));
             }
         } else {
-            BendableLongScoreContext context =
+            var context =
                     new BendableLongScoreContext(this, constraint, constraintWeight, hardScores.length, softScores.length);
             return WeightedScoreImpacter.of(context,
                     (BendableLongScoreContext ctx, long impact,
