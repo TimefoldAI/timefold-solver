@@ -34,4 +34,9 @@ public final class CompositeListEntry<Key_, T> implements ListEntry<T> {
         return children;
     }
 
+    @Override
+    public String toString() {
+        return element.toString();
+    }
+
 }

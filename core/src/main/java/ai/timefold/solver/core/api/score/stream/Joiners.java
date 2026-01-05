@@ -90,6 +90,12 @@ public final class Joiners {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAINED_IN, rightMapping);
     }
 
+    // TODO javadoc
+    public static <A, B, Property_> @NonNull BiJoiner<A, B> containAny(Function<A, Collection<Property_>> leftMapping,
+            Function<B, Collection<Property_>> rightMapping) {
+        return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAIN_ANY, rightMapping);
+    }
+
     /**
      * As defined by {@link #lessThan(Function, Function)} with both arguments using the same mapping.
      *

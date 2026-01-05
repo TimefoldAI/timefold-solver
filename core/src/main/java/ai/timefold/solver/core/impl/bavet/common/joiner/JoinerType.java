@@ -12,8 +12,9 @@ public enum JoinerType {
     GREATER_THAN_OR_EQUAL((a, b) -> ((Comparable) a).compareTo(b) >= 0),
     CONTAIN((a, b) -> ((Collection) a).contains(b)),
     CONTAINED_IN((a, b) -> ((Collection) b).contains(a)),
-    INTERSECT((a, b) -> intersecting((Collection) a, (Collection) b)),
-    DISJOINT((a, b) -> disjoint((Collection) a, (Collection) b));
+    CONTAIN_ANY((a, b) -> containAny((Collection) a, (Collection) b)),
+    CONTAIN_ALL((a, b) -> containAll((Collection) a, (Collection) b)),
+    CONTAIN_NONE((a, b) -> containNone((Collection) a, (Collection) b));
 
     private final BiPredicate<Object, Object> matcher;
 
@@ -30,6 +31,9 @@ public enum JoinerType {
             case GREATER_THAN_OR_EQUAL -> LESS_THAN_OR_EQUAL;
             case CONTAIN -> CONTAINED_IN;
             case CONTAINED_IN -> CONTAIN;
+            case CONTAIN_ANY -> this;
+            case CONTAIN_ALL -> this;
+            case CONTAIN_NONE -> this;
             default -> throw new IllegalStateException("The joinerType (%s) cannot be flipped."
                     .formatted(this));
         };
@@ -45,14 +49,20 @@ public enum JoinerType {
         }
     }
 
-    private static boolean intersecting(Collection<?> leftCollection, Collection<?> rightCollection) {
-        return leftCollection.stream().anyMatch(rightCollection::contains) ||
-                rightCollection.stream().anyMatch(leftCollection::contains);
+    private static boolean containAny(Collection<?> leftCollection, Collection<?> rightCollection) {
+        if (leftCollection.isEmpty() && rightCollection.isEmpty()) {
+            // Deliberately not aligned with anyMatch() because this is a very common case in constraints
+            return true;
+        }
+        return leftCollection.stream().anyMatch(rightCollection::contains);
     }
 
-    private static boolean disjoint(Collection<?> leftCollection, Collection<?> rightCollection) {
-        return leftCollection.stream().noneMatch(rightCollection::contains) &&
-                rightCollection.stream().noneMatch(leftCollection::contains);
+    private static boolean containAll(Collection<?> leftCollection, Collection<?> rightCollection) {
+        return leftCollection.containsAll(rightCollection);
+    }
+
+    private static boolean containNone(Collection<?> leftCollection, Collection<?> rightCollection) {
+        return leftCollection.stream().noneMatch(rightCollection::contains);
     }
 
 }
