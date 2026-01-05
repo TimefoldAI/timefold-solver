@@ -17,19 +17,11 @@ final class SimpleLongScoreContext extends ScoreContext<SimpleLongScore, SimpleL
         var impact = constraintWeight.score() * matchWeight;
         inliner.score += impact;
         var scoreImpact = new Impact(inliner, impact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     @NullMarked
     private record Impact(SimpleLongScoreInliner inliner, long impact) implements ScoreImpact<SimpleLongScore> {
-
-        @Override
-        public AbstractScoreInliner<SimpleLongScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {

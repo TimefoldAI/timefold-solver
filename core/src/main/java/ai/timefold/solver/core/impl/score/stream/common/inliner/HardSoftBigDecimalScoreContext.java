@@ -19,10 +19,7 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
         var softImpact = constraintWeight.softScore().multiply(matchWeight);
         inliner.softScore = inliner.softScore.add(softImpact);
         var scoreImpact = new SoftImpact(inliner, softImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardSoftBigDecimalScore> changeHardScoreBy(BigDecimal matchWeight,
@@ -30,10 +27,7 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
         var hardImpact = constraintWeight.hardScore().multiply(matchWeight);
         inliner.hardScore = inliner.hardScore.add(hardImpact);
         var scoreImpact = new HardImpact(inliner, hardImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardSoftBigDecimalScore> changeScoreBy(BigDecimal matchWeight,
@@ -43,20 +37,12 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
         inliner.hardScore = inliner.hardScore.add(hardImpact);
         inliner.softScore = inliner.softScore.add(softImpact);
         var scoreImpact = new ComplexImpact(inliner, hardImpact, softImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     @NullMarked
     private record SoftImpact(HardSoftBigDecimalScoreInliner inliner,
             BigDecimal impact) implements ScoreImpact<HardSoftBigDecimalScore> {
-
-        @Override
-        public AbstractScoreInliner<HardSoftBigDecimalScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {
@@ -75,11 +61,6 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
             BigDecimal impact) implements ScoreImpact<HardSoftBigDecimalScore> {
 
         @Override
-        public AbstractScoreInliner<HardSoftBigDecimalScore> scoreInliner() {
-            return inliner;
-        }
-
-        @Override
         public void undo() {
             inliner.hardScore = inliner.hardScore.subtract(impact);
         }
@@ -94,11 +75,6 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
     @NullMarked
     private record ComplexImpact(HardSoftBigDecimalScoreInliner inliner, BigDecimal hardImpact,
             BigDecimal softImpact) implements ScoreImpact<HardSoftBigDecimalScore> {
-
-        @Override
-        public AbstractScoreInliner<HardSoftBigDecimalScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {

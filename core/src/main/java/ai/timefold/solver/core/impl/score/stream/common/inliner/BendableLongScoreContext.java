@@ -32,10 +32,7 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
         var softImpact = scoreLevelWeight * matchWeight;
         inliner.softScores[scoreLevel] += softImpact;
         var scoreImpact = new SingleSoftImpact(this, softImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<BendableLongScore> changeHardScoreBy(long matchWeight,
@@ -43,10 +40,7 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
         var hardImpact = scoreLevelWeight * matchWeight;
         inliner.hardScores[scoreLevel] += hardImpact;
         var scoreImpact = new SingleHardImpact(this, hardImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<BendableLongScore> changeScoreBy(long matchWeight,
@@ -64,20 +58,12 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
             inliner.softScores[softScoreLevel] += softImpact;
         }
         var scoreImpact = new ComplexImpact(this, hardImpacts, softImpacts);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     @NullMarked
     private record SingleSoftImpact(BendableLongScoreContext ctx,
             long impact) implements ScoreImpact<BendableLongScore> {
-
-        @Override
-        public AbstractScoreInliner<BendableLongScore> scoreInliner() {
-            return ctx.inliner;
-        }
 
         @Override
         public void undo() {
@@ -95,11 +81,6 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
             long impact) implements ScoreImpact<BendableLongScore> {
 
         @Override
-        public AbstractScoreInliner<BendableLongScore> scoreInliner() {
-            return ctx.inliner;
-        }
-
-        @Override
         public void undo() {
             ctx.inliner.hardScores[ctx.scoreLevel] -= impact;
         }
@@ -113,11 +94,6 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
     @NullMarked
     private record ComplexImpact(BendableLongScoreContext ctx, long[] hardImpacts,
             long[] softImpacts) implements ScoreImpact<BendableLongScore> {
-
-        @Override
-        public AbstractScoreInliner<BendableLongScore> scoreInliner() {
-            return ctx.inliner;
-        }
 
         @Override
         public void undo() {

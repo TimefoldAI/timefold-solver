@@ -20,10 +20,7 @@ final class HardMediumSoftBigDecimalScoreContext
         var softImpact = constraintWeight.softScore().multiply(matchWeight);
         inliner.softScore = inliner.softScore.add(softImpact);
         var scoreImpact = new SoftImpact(inliner, softImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardMediumSoftBigDecimalScore> changeMediumScoreBy(BigDecimal matchWeight,
@@ -31,10 +28,7 @@ final class HardMediumSoftBigDecimalScoreContext
         var mediumImpact = constraintWeight.mediumScore().multiply(matchWeight);
         inliner.mediumScore = inliner.mediumScore.add(mediumImpact);
         var scoreImpact = new MediumImpact(inliner, mediumImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardMediumSoftBigDecimalScore> changeHardScoreBy(BigDecimal matchWeight,
@@ -42,10 +36,7 @@ final class HardMediumSoftBigDecimalScoreContext
         var hardImpact = constraintWeight.hardScore().multiply(matchWeight);
         inliner.hardScore = inliner.hardScore.add(hardImpact);
         var scoreImpact = new HardImpact(inliner, hardImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardMediumSoftBigDecimalScore> changeScoreBy(BigDecimal matchWeight,
@@ -57,20 +48,12 @@ final class HardMediumSoftBigDecimalScoreContext
         inliner.mediumScore = inliner.mediumScore.add(mediumImpact);
         inliner.softScore = inliner.softScore.add(softImpact);
         var scoreImpact = new ComplexImpact(inliner, hardImpact, mediumImpact, softImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     @NullMarked
     private record SoftImpact(HardMediumSoftBigDecimalScoreInliner inliner,
             BigDecimal impact) implements ScoreImpact<HardMediumSoftBigDecimalScore> {
-
-        @Override
-        public AbstractScoreInliner<HardMediumSoftBigDecimalScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {
@@ -89,11 +72,6 @@ final class HardMediumSoftBigDecimalScoreContext
             BigDecimal impact) implements ScoreImpact<HardMediumSoftBigDecimalScore> {
 
         @Override
-        public AbstractScoreInliner<HardMediumSoftBigDecimalScore> scoreInliner() {
-            return inliner;
-        }
-
-        @Override
         public void undo() {
             inliner.mediumScore = inliner.mediumScore.subtract(impact);
         }
@@ -108,11 +86,6 @@ final class HardMediumSoftBigDecimalScoreContext
     @NullMarked
     private record HardImpact(HardMediumSoftBigDecimalScoreInliner inliner,
             BigDecimal impact) implements ScoreImpact<HardMediumSoftBigDecimalScore> {
-
-        @Override
-        public AbstractScoreInliner<HardMediumSoftBigDecimalScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {
@@ -130,11 +103,6 @@ final class HardMediumSoftBigDecimalScoreContext
     private record ComplexImpact(HardMediumSoftBigDecimalScoreInliner inliner, BigDecimal hardImpact,
             BigDecimal mediumImpact,
             BigDecimal softImpact) implements ScoreImpact<HardMediumSoftBigDecimalScore> {
-
-        @Override
-        public AbstractScoreInliner<HardMediumSoftBigDecimalScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {

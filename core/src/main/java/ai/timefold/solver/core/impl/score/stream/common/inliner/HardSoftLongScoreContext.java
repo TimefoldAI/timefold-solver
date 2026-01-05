@@ -17,10 +17,7 @@ final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore, Har
         var softImpact = constraintWeight.softScore() * matchWeight;
         inliner.softScore += softImpact;
         var scoreImpact = new SoftImpact(inliner, softImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardSoftLongScore> changeHardScoreBy(long matchWeight,
@@ -28,10 +25,7 @@ final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore, Har
         var hardImpact = constraintWeight.hardScore() * matchWeight;
         inliner.hardScore += hardImpact;
         var scoreImpact = new HardImpact(inliner, hardImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardSoftLongScore> changeScoreBy(long matchWeight,
@@ -41,20 +35,12 @@ final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore, Har
         inliner.hardScore += hardImpact;
         inliner.softScore += softImpact;
         var scoreImpact = new ComplexImpact(inliner, hardImpact, softImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     @NullMarked
     private record SoftImpact(HardSoftLongScoreInliner inliner,
             long softImpact) implements ScoreImpact<HardSoftLongScore> {
-
-        @Override
-        public AbstractScoreInliner<HardSoftLongScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {
@@ -73,11 +59,6 @@ final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore, Har
             long hardImpact) implements ScoreImpact<HardSoftLongScore> {
 
         @Override
-        public AbstractScoreInliner<HardSoftLongScore> scoreInliner() {
-            return inliner;
-        }
-
-        @Override
         public void undo() {
             inliner.hardScore -= hardImpact;
         }
@@ -92,11 +73,6 @@ final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore, Har
     @NullMarked
     private record ComplexImpact(HardSoftLongScoreInliner inliner, long hardImpact,
             long softImpact) implements ScoreImpact<HardSoftLongScore> {
-
-        @Override
-        public AbstractScoreInliner<HardSoftLongScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {

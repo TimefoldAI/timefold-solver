@@ -17,10 +17,7 @@ final class HardMediumSoftScoreContext extends ScoreContext<HardMediumSoftScore,
         var softImpact = constraintWeight.softScore() * matchWeight;
         inliner.softScore += softImpact;
         var scoreImpact = new SoftImpact(inliner, softImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardMediumSoftScore> changeMediumScoreBy(int matchWeight,
@@ -28,10 +25,7 @@ final class HardMediumSoftScoreContext extends ScoreContext<HardMediumSoftScore,
         var mediumImpact = constraintWeight.mediumScore() * matchWeight;
         inliner.mediumScore += mediumImpact;
         var scoreImpact = new MediumImpact(inliner, mediumImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardMediumSoftScore> changeHardScoreBy(int matchWeight,
@@ -39,10 +33,7 @@ final class HardMediumSoftScoreContext extends ScoreContext<HardMediumSoftScore,
         var hardImpact = constraintWeight.hardScore() * matchWeight;
         inliner.hardScore += hardImpact;
         var scoreImpact = new HardImpact(inliner, hardImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardMediumSoftScore> changeScoreBy(int matchWeight,
@@ -54,20 +45,12 @@ final class HardMediumSoftScoreContext extends ScoreContext<HardMediumSoftScore,
         inliner.mediumScore += mediumImpact;
         inliner.softScore += softImpact;
         var scoreImpact = new ComplexImpact(inliner, hardImpact, mediumImpact, softImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     @NullMarked
     private record SoftImpact(HardMediumSoftScoreInliner inliner,
             int softImpact) implements ScoreImpact<HardMediumSoftScore> {
-
-        @Override
-        public AbstractScoreInliner<HardMediumSoftScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {
@@ -86,11 +69,6 @@ final class HardMediumSoftScoreContext extends ScoreContext<HardMediumSoftScore,
             int mediumImpact) implements ScoreImpact<HardMediumSoftScore> {
 
         @Override
-        public AbstractScoreInliner<HardMediumSoftScore> scoreInliner() {
-            return inliner;
-        }
-
-        @Override
         public void undo() {
             inliner.mediumScore -= mediumImpact;
         }
@@ -107,11 +85,6 @@ final class HardMediumSoftScoreContext extends ScoreContext<HardMediumSoftScore,
             int hardImpact) implements ScoreImpact<HardMediumSoftScore> {
 
         @Override
-        public AbstractScoreInliner<HardMediumSoftScore> scoreInliner() {
-            return inliner;
-        }
-
-        @Override
         public void undo() {
             inliner.hardScore -= hardImpact;
         }
@@ -126,11 +99,6 @@ final class HardMediumSoftScoreContext extends ScoreContext<HardMediumSoftScore,
     @NullMarked
     private record ComplexImpact(HardMediumSoftScoreInliner inliner, int hardImpact, int mediumImpact,
             int softImpact) implements ScoreImpact<HardMediumSoftScore> {
-
-        @Override
-        public AbstractScoreInliner<HardMediumSoftScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {

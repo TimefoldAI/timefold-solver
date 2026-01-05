@@ -21,13 +21,11 @@ final class HardSoftLongScoreInliner extends AbstractScoreInliner<HardSoftLongSc
     @Override
     public WeightedScoreImpacter<HardSoftLongScore, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
         var constraintWeight = constraintWeightMap.get(constraint);
-        var softConstraintWeight = constraintWeight.softScore();
-        var hardConstraintWeight = constraintWeight.hardScore();
         var context = new HardSoftLongScoreContext(this, constraint, constraintWeight);
-        if (softConstraintWeight == 0) {
+        if (constraintWeight.softScore() == 0) {
             return WeightedScoreImpacter.of(context,
                     (LongImpactFunction<HardSoftLongScore, HardSoftLongScoreContext>) HardSoftLongScoreContext::changeHardScoreBy);
-        } else if (hardConstraintWeight == 0) {
+        } else if (constraintWeight.hardScore() == 0) {
             return WeightedScoreImpacter.of(context,
                     (LongImpactFunction<HardSoftLongScore, HardSoftLongScoreContext>) HardSoftLongScoreContext::changeSoftScoreBy);
         } else {

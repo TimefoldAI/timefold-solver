@@ -153,24 +153,20 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
          */
         var entry = constraintMatchList.add(new ConstraintMatchCarrier<>(constraintMatchSupplier, constraint, scoreImpact));
         clearMaps();
-        return new WrappingScoreImpact<>(scoreImpact, entry);
+        return new WrappingScoreImpact<>(this, scoreImpact, entry);
     }
 
-    private record WrappingScoreImpact<Score_ extends Score<Score_>>(ScoreImpact<Score_> delegate,
+    private record WrappingScoreImpact<Score_ extends Score<Score_>>(AbstractScoreInliner<Score_> inliner,
+            ScoreImpact<Score_> delegate,
             ElementAwareLinkedList.Entry<ConstraintMatchCarrier<Score_>> entry)
             implements
                 ScoreImpact<Score_> {
 
         @Override
-        public AbstractScoreInliner<Score_> scoreInliner() {
-            return delegate.scoreInliner();
-        }
-
-        @Override
         public void undo() {
             delegate.undo();
             entry.remove();
-            delegate.scoreInliner().clearMaps();
+            inliner.clearMaps();
         }
 
         @Override

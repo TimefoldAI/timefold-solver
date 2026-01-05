@@ -4,8 +4,6 @@ import ai.timefold.solver.core.api.score.Score;
 
 public interface ScoreImpact<Score_ extends Score<Score_>> {
 
-    AbstractScoreInliner<Score_> scoreInliner();
-
     void undo();
 
     Score_ toScore();

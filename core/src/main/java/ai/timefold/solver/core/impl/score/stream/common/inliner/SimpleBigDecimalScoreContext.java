@@ -19,20 +19,12 @@ final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalSc
         var impact = constraintWeight.score().multiply(matchWeight);
         inliner.score = inliner.score.add(impact);
         var scoreImpact = new Impact(inliner, impact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     @NullMarked
     private record Impact(SimpleBigDecimalScoreInliner inliner,
             BigDecimal impact) implements ScoreImpact<SimpleBigDecimalScore> {
-
-        @Override
-        public AbstractScoreInliner<SimpleBigDecimalScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {

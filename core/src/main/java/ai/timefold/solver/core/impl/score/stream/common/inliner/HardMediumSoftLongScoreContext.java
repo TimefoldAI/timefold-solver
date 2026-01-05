@@ -17,10 +17,7 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
         var softImpact = constraintWeight.softScore() * matchWeight;
         inliner.softScore += softImpact;
         var scoreImpact = new SoftImpact(inliner, softImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardMediumSoftLongScore> changeMediumScoreBy(long matchWeight,
@@ -28,10 +25,7 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
         var mediumImpact = constraintWeight.mediumScore() * matchWeight;
         inliner.mediumScore += mediumImpact;
         var scoreImpact = new MediumImpact(inliner, mediumImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardMediumSoftLongScore> changeHardScoreBy(long matchWeight,
@@ -39,10 +33,7 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
         var hardImpact = constraintWeight.hardScore() * matchWeight;
         inliner.hardScore += hardImpact;
         var scoreImpact = new HardImpact(inliner, hardImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardMediumSoftLongScore> changeScoreBy(long matchWeight,
@@ -54,20 +45,12 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
         inliner.mediumScore += mediumImpact;
         inliner.softScore += softImpact;
         var scoreImpact = new ComplexImpact(inliner, hardImpact, mediumImpact, softImpact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return scoreImpact;
-        }
-        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     @NullMarked
     private record SoftImpact(HardMediumSoftLongScoreInliner inliner,
             long softImpact) implements ScoreImpact<HardMediumSoftLongScore> {
-
-        @Override
-        public AbstractScoreInliner<HardMediumSoftLongScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {
@@ -86,11 +69,6 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
             long mediumImpact) implements ScoreImpact<HardMediumSoftLongScore> {
 
         @Override
-        public AbstractScoreInliner<HardMediumSoftLongScore> scoreInliner() {
-            return inliner;
-        }
-
-        @Override
         public void undo() {
             inliner.mediumScore -= mediumImpact;
         }
@@ -107,11 +85,6 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
             long hardImpact) implements ScoreImpact<HardMediumSoftLongScore> {
 
         @Override
-        public AbstractScoreInliner<HardMediumSoftLongScore> scoreInliner() {
-            return inliner;
-        }
-
-        @Override
         public void undo() {
             inliner.hardScore -= hardImpact;
         }
@@ -126,11 +99,6 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
     @NullMarked
     private record ComplexImpact(HardMediumSoftLongScoreInliner inliner, long hardImpact, long mediumImpact,
             long softImpact) implements ScoreImpact<HardMediumSoftLongScore> {
-
-        @Override
-        public AbstractScoreInliner<HardMediumSoftLongScore> scoreInliner() {
-            return inliner;
-        }
 
         @Override
         public void undo() {
