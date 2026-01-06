@@ -15,18 +15,16 @@ public final class DefaultBiJoiner<A, B> extends AbstractJoiner<B> implements Bi
 
     private static final DefaultBiJoiner NONE = new DefaultBiJoiner(new Function[0], new JoinerType[0], new Function[0]);
 
-    private final Function<A, ?>[] leftMappings;
+    private final Function<A, Object>[] leftMappings;
 
-    public <Property_> DefaultBiJoiner(Function<A, Property_> leftMapping, JoinerType joinerType,
-            Function<B, Property_> rightMapping) {
+    public DefaultBiJoiner(Function<A, ?> leftMapping, JoinerType joinerType, Function<B, ?> rightMapping) {
         super(rightMapping, joinerType);
         this.leftMappings = new Function[] { leftMapping };
     }
 
-    public <Property_> DefaultBiJoiner(Function<A, Property_>[] leftMappings, JoinerType[] joinerTypes,
-            Function<B, Property_>[] rightMappings) {
+    public DefaultBiJoiner(Function<A, ?>[] leftMappings, JoinerType[] joinerTypes, Function<B, ?>[] rightMappings) {
         super(rightMappings, joinerTypes);
-        this.leftMappings = leftMappings;
+        this.leftMappings = (Function<A, Object>[]) Objects.requireNonNull(leftMappings);
     }
 
     public static <A, B> DefaultBiJoiner<A, B> merge(List<DefaultBiJoiner<A, B>> joinerList) {
@@ -55,7 +53,7 @@ public final class DefaultBiJoiner<A, B> extends AbstractJoiner<B> implements Bi
     }
 
     public Function<A, Object> getLeftMapping(int index) {
-        return (Function<A, Object>) leftMappings[index];
+        return leftMappings[index];
     }
 
     public boolean matches(A a, B b) {

@@ -17,18 +17,18 @@ public final class DefaultQuadJoiner<A, B, C, D> extends AbstractJoiner<D> imple
     private static final DefaultQuadJoiner NONE =
             new DefaultQuadJoiner(new TriFunction[0], new JoinerType[0], new Function[0]);
 
-    private final TriFunction<A, B, C, ?>[] leftMappings;
+    private final TriFunction<A, B, C, Object>[] leftMappings;
 
-    public <Property_> DefaultQuadJoiner(TriFunction<A, B, C, Property_> leftMapping, JoinerType joinerType,
-            Function<D, Property_> rightMapping) {
+    public DefaultQuadJoiner(TriFunction<A, B, C, ?> leftMapping, JoinerType joinerType,
+            Function<D, ?> rightMapping) {
         super(rightMapping, joinerType);
         this.leftMappings = new TriFunction[] { leftMapping };
     }
 
-    private <Property_> DefaultQuadJoiner(TriFunction<A, B, C, Property_>[] leftMappings, JoinerType[] joinerTypes,
-            Function<D, Property_>[] rightMappings) {
+    private DefaultQuadJoiner(TriFunction<A, B, C, ?>[] leftMappings, JoinerType[] joinerTypes,
+            Function<D, ?>[] rightMappings) {
         super(rightMappings, joinerTypes);
-        this.leftMappings = leftMappings;
+        this.leftMappings = (TriFunction<A, B, C, Object>[]) Objects.requireNonNull(leftMappings);
     }
 
     public static <A, B, C, D> DefaultQuadJoiner<A, B, C, D> merge(List<DefaultQuadJoiner<A, B, C, D>> joinerList) {
@@ -57,7 +57,7 @@ public final class DefaultQuadJoiner<A, B, C, D> extends AbstractJoiner<D> imple
     }
 
     public TriFunction<A, B, C, Object> getLeftMapping(int index) {
-        return (TriFunction<A, B, C, Object>) leftMappings[index];
+        return leftMappings[index];
     }
 
     public boolean matches(A a, B b, C c, D d) {

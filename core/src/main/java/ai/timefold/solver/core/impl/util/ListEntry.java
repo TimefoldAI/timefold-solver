@@ -4,9 +4,7 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public sealed interface ListEntry<T>
-        permits ElementAwareLinkedList.Entry, ElementAwareArrayList.Entry {
-
-    boolean isRemoved();
+        permits ElementAwareLinkedList.Entry, ElementAwareArrayList.Entry, CompositeListEntry {
 
     T getElement();
 
