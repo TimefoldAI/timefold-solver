@@ -676,7 +676,6 @@ Use a <<chainedPlanningVariable,chained planning variable>> instead of a plannin
 if you need any of the following planning techniques:
 
 - xref:optimization-algorithms/exhaustive-search.adoc#exhaustiveSearch[exhaustive search],
-- xref:enterprise-edition/enterprise-edition.adoc#partitionedSearch[partitioned search],
 - coexistence with another list variable.
 ====
 
