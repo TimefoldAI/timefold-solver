@@ -31,7 +31,7 @@ public record Triple<A, B, C>(A a, B b, C c) {
         var hash = 1;
         hash = 31 * hash + (a == null ? 0 : a.hashCode());
         hash = 31 * hash + (b == null ? 0 : b.hashCode());
-        hash = 31 * hash + (c == null ? 0 : c.hashCode());
+        return 31 * hash + (c == null ? 0 : c.hashCode());
         return hash;
     }
 
