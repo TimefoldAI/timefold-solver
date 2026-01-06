@@ -29,7 +29,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public sealed interface Indexer<T>
-        permits EqualIndexer, ComparisonIndexer, ContainIndexer, ContainedInIndexer, IndexerBackend {
+        permits EqualIndexer, ComparisonIndexer, ContainIndexer, ContainedInIndexer, ContainAnyIndexer, IndexerBackend {
 
     /**
      * Modify operation.

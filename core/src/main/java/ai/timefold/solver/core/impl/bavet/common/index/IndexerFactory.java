@@ -548,6 +548,9 @@ public final class IndexerFactory<Right_> {
             case CONTAINED_IN -> {
                 return new ContainedInIndexer<>(keyRetriever, downstreamIndexerSupplier);
             }
+            case CONTAIN_ANY -> {
+                return new ContainAnyIndexer<>(keyRetriever, downstreamIndexerSupplier);
+            }
             default -> throw new IllegalStateException(
                     "Impossible state: The joiner type (" + joinerType + ") is not implemented.");
         }
