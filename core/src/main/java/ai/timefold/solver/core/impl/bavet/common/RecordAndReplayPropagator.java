@@ -28,8 +28,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <Tuple_>
  */
 @NullMarked
-public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
-        implements Propagator {
+public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple> implements Propagator {
 
     private final Set<Object> retractQueue;
     private final Set<Object> insertQueue;
@@ -42,14 +41,13 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
     private final Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier;
     private final UnaryOperator<Tuple_> internalTupleToOutputTupleMapper;
     private final Map<Object, List<Tuple_>> objectToOutputTuplesMap;
-    private final Map<Class<?>, Boolean> objectClassToIsEntitySourceClass;
+    private final Set<Object> alreadyUpdatingSet = Collections.newSetFromMap(new IdentityHashMap<>());
+    private final Map<Class<?>, Boolean> objectClassToIsEntitySourceClassMap;
 
     private final StaticPropagationQueue<Tuple_> propagationQueue;
 
-    public RecordAndReplayPropagator(
-            Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
-            UnaryOperator<Tuple_> internalTupleToOutputTupleMapper,
-            TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
+    public RecordAndReplayPropagator(Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
+            UnaryOperator<Tuple_> internalTupleToOutputTupleMapper, TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
         this.precomputeBuildHelperSupplier = precomputeBuildHelperSupplier;
         this.internalTupleToOutputTupleMapper = internalTupleToOutputTupleMapper;
         this.objectToOutputTuplesMap = CollectionUtils.newIdentityHashMap(size);
@@ -57,17 +55,15 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
         // Guesstimate that updates are dominant.
         this.retractQueue = CollectionUtils.newIdentityHashSet(size / 20);
         this.insertQueue = CollectionUtils.newIdentityHashSet(size / 20);
-        this.objectClassToIsEntitySourceClass = new HashMap<>();
+        this.objectClassToIsEntitySourceClassMap = new HashMap<>();
         this.seenEntitySet = CollectionUtils.newIdentityHashSet(size);
         this.seenFactSet = CollectionUtils.newIdentityHashSet(size);
 
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
-    public RecordAndReplayPropagator(
-            Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
-            UnaryOperator<Tuple_> internalTupleToOutputTupleMapper,
-            TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+    public RecordAndReplayPropagator(Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
+            UnaryOperator<Tuple_> internalTupleToOutputTupleMapper, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         this(precomputeBuildHelperSupplier, internalTupleToOutputTupleMapper, nextNodesTupleLifecycle, 1000);
     }
 
@@ -77,14 +73,18 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
     }
 
     public void update(Object object) {
+        if (!alreadyUpdatingSet.add(object)) {
+            // The list was already sent to the propagation queue.
+            // Don't iterate over it again, even though the queue would deduplicate its contents.
+            return;
+        }
         // Updates happen very frequently, so we optimize by avoiding the update queue
         // and going straight to the propagation queue.
         // The propagation queue deduplicates updates internally.
         var outTupleList = objectToOutputTuplesMap.get(object);
-        if (outTupleList == null) {
-            return;
+        if (outTupleList != null) {
+            outTupleList.forEach(propagationQueue::update);
         }
-        outTupleList.forEach(propagationQueue::update);
     }
 
     public void retract(Object object) {
@@ -122,7 +122,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
             // Do not remove queued retracts from inserts; if a fact property
             // change, there will be both a retract and insert for that fact
             for (var object : insertQueue) {
-                if (objectClassToIsEntitySourceClass.computeIfAbsent(object.getClass(),
+                if (objectClassToIsEntitySourceClassMap.computeIfAbsent(object.getClass(),
                         precomputeBuildHelper::isSourceEntityClass)) {
                     seenEntitySet.add(object);
                 } else {
@@ -158,6 +158,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
     @Override
     public void propagateUpdates() {
         propagationQueue.propagateUpdates();
+        alreadyUpdatingSet.clear();
     }
 
     @Override
@@ -192,8 +193,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
         objectToOutputTuplesMap.clear();
     }
 
-    private void recalculateTuples(NodeNetwork internalNodeNetwork,
-            Map<Class<?>, List<BavetRootNode<?>>> classToRootNodeList,
+    private void recalculateTuples(NodeNetwork internalNodeNetwork, Map<Class<?>, List<BavetRootNode<?>>> classToRootNodeList,
             RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle) {
         var internalTupleToOutputTupleMap = new IdentityHashMap<Tuple_, Tuple_>(seenEntitySet.size());
         for (var invalidated : seenEntitySet) {
@@ -207,7 +207,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
                 internalNodeNetwork.settle();
             }
             if (mappedTuples.isEmpty()) {
-                objectToOutputTuplesMap.put(invalidated, Collections.emptyList());
+                objectToOutputTuplesMap.remove(invalidated);
             } else {
                 objectToOutputTuplesMap.put(invalidated, mappedTuples);
             }
