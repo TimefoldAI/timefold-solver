@@ -133,7 +133,7 @@ public final class NullAllowingCountableValueRange<T> extends AbstractCountableV
         // We do not use Objects.hashCode() due to https://bugs.openjdk.org/browse/JDK-8015417.
         var hash = 1;
         hash = 31 * hash + Long.hashCode(size);
-        hash = 31 * hash + childValueRange.hashCode();
+        return 31 * hash + childValueRange.hashCode();
         return hash;
     }
 
