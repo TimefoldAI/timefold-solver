@@ -31,7 +31,7 @@ record BiCompositeKey<A, B>(A propertyA, B propertyB) implements CompositeKey {
         // We do not use Objects.hashCode() due to https://bugs.openjdk.org/browse/JDK-8015417.
         var hash = 1;
         hash = 31 * hash + (propertyA == null ? 0 : propertyA.hashCode());
-        hash = 31 * hash + (propertyB == null ? 0 : propertyB.hashCode());
+        return 31 * hash + (propertyB == null ? 0 : propertyB.hashCode());
         return hash;
     }
 
