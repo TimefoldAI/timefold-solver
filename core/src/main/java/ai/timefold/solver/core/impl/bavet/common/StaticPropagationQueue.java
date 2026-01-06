@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -73,10 +74,8 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
 
     @Override
     public void propagateRetracts() {
-        if (retractQueue.isEmpty()) {
-            return;
-        }
-        for (var tuple : retractQueue) {
+        while (!retractQueue.isEmpty()) {
+            var tuple = retractQueue.poll();
             switch (tuple.state) {
                 case DYING -> {
                     // Change state before propagation, so that the next node can't make decisions on the original state.
@@ -86,43 +85,34 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
                 case ABORTING -> tuple.state = TupleState.DEAD;
             }
         }
-        retractQueue.clear();
     }
 
     @Override
     public void propagateUpdates() {
-        processAndClear(updateQueue);
+        processAndClear(updateQueue, nextNodesTupleLifecycle::update);
     }
 
-    private void processAndClear(Deque<Tuple_> dirtyQueue) {
-        if (dirtyQueue.isEmpty()) {
-            return;
-        }
-        for (var tuple : dirtyQueue) {
+    private static <Tuple_ extends AbstractTuple> void processAndClear(Deque<Tuple_> dirtyQueue,
+            Consumer<Tuple_> tupleLifecycle) {
+        while (!dirtyQueue.isEmpty()) {
+            var tuple = dirtyQueue.poll();
             if (tuple.state == TupleState.DEAD) {
-                /*
-                 * DEAD signifies the tuple was both in insert/update and retract queues.
-                 * This happens when a tuple was inserted/updated and subsequently retracted, all before propagation.
-                 * We can safely ignore the later insert/update,
-                 * as by this point the more recent retract has already been processed,
-                 * setting the state to DEAD.
-                 */
+                // DEAD signifies the tuple was both in insert/update and retract queues.
+                // This happens when a tuple was inserted/updated and subsequently retracted, all before propagation.
+                // We can safely ignore the later insert/update,
+                // as by this point the more recent retract has already been processed,
+                // setting the state to DEAD.
                 continue;
             }
             // Change state before propagation, so that the next node can't make decisions on the original state.
             tuple.state = TupleState.OK;
-            if (dirtyQueue == updateQueue) {
-                nextNodesTupleLifecycle.update(tuple);
-            } else {
-                nextNodesTupleLifecycle.insert(tuple);
-            }
+            tupleLifecycle.accept(tuple);
         }
-        dirtyQueue.clear();
     }
 
     @Override
     public void propagateInserts() {
-        processAndClear(insertQueue);
+        processAndClear(insertQueue, nextNodesTupleLifecycle::insert);
         if (!retractQueue.isEmpty()) {
             throw new IllegalStateException("Impossible state: The retract queue (%s) is not empty."
                     .formatted(retractQueue));
