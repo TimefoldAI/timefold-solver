@@ -96,10 +96,8 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
         if (this == o) {
             return true;
         }
-        if (!(o instanceof CompositeCountableValueRange<?> that)) {
-            return false;
-        }
-        return isValueImmutable == that.isValueImmutable &&
+        return o instanceof CompositeCountableValueRange<?> that &&
+                isValueImmutable == that.isValueImmutable &&
                 valueRangeList.equals(that.valueRangeList);
     }
 
@@ -110,7 +108,6 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
         var hash = 1;
         hash = 31 * hash + Boolean.hashCode(isValueImmutable);
         return 31 * hash + valueRangeList.hashCode();
-        return hash;
     }
 
 }

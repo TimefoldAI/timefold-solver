@@ -32,7 +32,6 @@ record BiCompositeKey<A, B>(A propertyA, B propertyB) implements CompositeKey {
         var hash = 1;
         hash = 31 * hash + (propertyA == null ? 0 : propertyA.hashCode());
         return 31 * hash + (propertyB == null ? 0 : propertyB.hashCode());
-        return hash;
     }
 
 }

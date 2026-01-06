@@ -150,7 +150,6 @@ public final class BigIntegerValueRange extends AbstractCountableValueRange<BigI
         hash = 31 * hash + from.hashCode();
         hash = 31 * hash + to.hashCode();
         return 31 * hash + incrementUnit.hashCode();
-        return hash;
     }
 
     @Override

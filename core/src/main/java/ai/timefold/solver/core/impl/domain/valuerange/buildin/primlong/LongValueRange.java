@@ -142,10 +142,8 @@ public final class LongValueRange extends AbstractCountableValueRange<Long> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof LongValueRange that)) {
-            return false;
-        }
-        return from == that.from &&
+        return o instanceof LongValueRange that &&
+                from == that.from &&
                 to == that.to &&
                 incrementUnit == that.incrementUnit;
     }

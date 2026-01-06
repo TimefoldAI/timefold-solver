@@ -137,10 +137,8 @@ public final class IntValueRange extends AbstractCountableValueRange<Integer> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof IntValueRange that)) {
-            return false;
-        }
-        return from == that.from &&
+        return o instanceof IntValueRange that &&
+                from == that.from &&
                 to == that.to &&
                 incrementUnit == that.incrementUnit;
     }

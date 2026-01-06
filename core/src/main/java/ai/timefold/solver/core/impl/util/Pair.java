@@ -29,7 +29,6 @@ public record Pair<Key_, Value_>(Key_ key, Value_ value) {
         var hash = 1;
         hash = 31 * hash + (key == null ? 0 : key.hashCode());
         return 31 * hash + (value == null ? 0 : value.hashCode());
-        return hash;
     }
 
 }

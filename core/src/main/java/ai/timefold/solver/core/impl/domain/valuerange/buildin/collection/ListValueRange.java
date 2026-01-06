@@ -82,10 +82,8 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ListValueRange<?> that)) {
-            return false;
-        }
-        return isValueImmutable == that.isValueImmutable &&
+        return o instanceof ListValueRange<?> that &&
+                isValueImmutable == that.isValueImmutable &&
                 list.equals(that.list);
     }
 
@@ -96,7 +94,6 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
         var hash = 1;
         hash = 31 * hash + Boolean.hashCode(isValueImmutable);
         return 31 * hash + list.hashCode();
-        return hash;
     }
 
     @Override

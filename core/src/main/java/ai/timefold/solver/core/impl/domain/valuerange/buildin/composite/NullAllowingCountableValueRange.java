@@ -120,10 +120,8 @@ public final class NullAllowingCountableValueRange<T> extends AbstractCountableV
         if (this == o) {
             return true;
         }
-        if (!(o instanceof NullAllowingCountableValueRange<?> that)) {
-            return false;
-        }
-        return size == that.size &&
+        return o instanceof NullAllowingCountableValueRange<?> that &&
+                size == that.size &&
                 childValueRange.equals(that.childValueRange);
     }
 
@@ -134,7 +132,6 @@ public final class NullAllowingCountableValueRange<T> extends AbstractCountableV
         var hash = 1;
         hash = 31 * hash + Long.hashCode(size);
         return 31 * hash + childValueRange.hashCode();
-        return hash;
     }
 
     @Override

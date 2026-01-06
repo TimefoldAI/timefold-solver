@@ -184,10 +184,8 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
         if (this == o) {
             return true;
         }
-        if (!(o instanceof TemporalValueRange<?> that)) {
-            return false;
-        }
-        return incrementUnitAmount == that.incrementUnitAmount &&
+        return o instanceof TemporalValueRange<?> that &&
+                incrementUnitAmount == that.incrementUnitAmount &&
                 incrementUnitType.equals(that.incrementUnitType) &&
                 from.equals(that.from) &&
                 to.equals(that.to);

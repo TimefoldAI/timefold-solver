@@ -83,10 +83,8 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof SetValueRange<?> that)) {
-            return false;
-        }
-        return isValueImmutable == that.isValueImmutable &&
+        return o instanceof SetValueRange<?> that &&
+                isValueImmutable == that.isValueImmutable &&
                 set.equals(that.set);
     }
 
@@ -97,7 +95,6 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
         var hash = 1;
         hash = 31 * hash + Boolean.hashCode(isValueImmutable);
         return 31 * hash + set.hashCode();
-        return hash;
     }
 
     @Override

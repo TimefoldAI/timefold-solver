@@ -35,7 +35,6 @@ public record Quadruple<A, B, C, D>(A a, B b, C c, D d) {
         hash = 31 * hash + (b == null ? 0 : b.hashCode());
         hash = 31 * hash + (c == null ? 0 : c.hashCode());
         return 31 * hash + (d == null ? 0 : d.hashCode());
-        return hash;
     }
 
 }
