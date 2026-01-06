@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 
@@ -27,7 +27,7 @@ public final class DataNodeBuildHelper<Solution_> extends AbstractNodeBuildHelpe
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public <Tuple_ extends AbstractTuple> void putInsertUpdateRetract(AbstractEnumeratingStream<Solution_> stream,
+    public <Tuple_ extends Tuple> void putInsertUpdateRetract(AbstractEnumeratingStream<Solution_> stream,
             TupleLifecycle<Tuple_> tupleLifecycle) {
         super.putInsertUpdateRetract(stream, tupleLifecycle);
         if (tupleLifecycle instanceof AbstractDatasetInstance datasetInstance) {

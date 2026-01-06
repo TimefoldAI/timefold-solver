@@ -20,12 +20,12 @@ public final class Group1Mapping0CollectorUniNode<OldA, A>
     }
 
     static <A, OldA> A createGroupKey(Function<OldA, A> groupKeyMapping, UniTuple<OldA> tuple) {
-        return groupKeyMapping.apply(tuple.factA);
+        return groupKeyMapping.apply(tuple.getA());
     }
 
     @Override
     protected UniTuple<A> createOutTuple(A a) {
-        return new UniTuple<>(a, outputStoreSize);
+        return UniTuple.of(a, outputStoreSize);
     }
 
     @Override

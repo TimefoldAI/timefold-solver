@@ -3,20 +3,35 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
+import org.jspecify.annotations.NullMarked;
+
 final class SimpleScoreContext extends ScoreContext<SimpleScore, SimpleScoreInliner> {
 
     public SimpleScoreContext(SimpleScoreInliner parent, AbstractConstraint<?, ?, ?> constraint, SimpleScore constraintWeight) {
         super(parent, constraint, constraintWeight);
     }
 
-    public UndoScoreImpacter changeScoreBy(int matchWeight, ConstraintMatchSupplier<SimpleScore> constraintMatchSupplier) {
-        int impact = constraintWeight.score() * matchWeight;
-        parent.score += impact;
-        UndoScoreImpacter undoScoreImpact = () -> parent.score -= impact;
-        if (!constraintMatchPolicy.isEnabled()) {
-            return undoScoreImpact;
+    public ScoreImpact<SimpleScore> changeScoreBy(int matchWeight,
+            ConstraintMatchSupplier<SimpleScore> constraintMatchSupplier) {
+        var impact = constraintWeight.score() * matchWeight;
+        inliner.score += impact;
+        var scoreImpact = new Impact(inliner, impact);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
+    }
+
+    @NullMarked
+    private record Impact(SimpleScoreInliner inliner, int impact) implements ScoreImpact<SimpleScore> {
+
+        @Override
+        public void undo() {
+            inliner.score -= impact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, SimpleScore.of(impact), constraintMatchSupplier);
+
+        @Override
+        public SimpleScore toScore() {
+            return SimpleScore.of(impact);
+        }
+
     }
 
 }

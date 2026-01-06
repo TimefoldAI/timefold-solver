@@ -25,21 +25,21 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, 
     void impact() {
         var constraintWeight = SimpleScore.of(10);
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<SimpleScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<SimpleScore>) impacter.getContext().inliner;
 
-        var undo1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleScore.of(100));
 
-        var undo2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleScore.of(300));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleScore.of(100));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleScore.of(0));
     }

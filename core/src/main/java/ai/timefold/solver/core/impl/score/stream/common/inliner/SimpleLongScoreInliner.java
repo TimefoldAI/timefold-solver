@@ -16,14 +16,13 @@ final class SimpleLongScoreInliner extends AbstractScoreInliner<SimpleLongScore>
     }
 
     @Override
-    public WeightedScoreImpacter<SimpleLongScore, ?> buildWeightedScoreImpacter(
-            AbstractConstraint<?, ?, ?> constraint) {
-        SimpleLongScore constraintWeight = constraintWeightMap.get(constraint);
-        SimpleLongScoreContext context = new SimpleLongScoreContext(this, constraint, constraintWeight);
+    public WeightedScoreImpacter<SimpleLongScore, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
+        var constraintWeight = constraintWeightMap.get(constraint);
+        var context = new SimpleLongScoreContext(this, constraint, constraintWeight);
         return WeightedScoreImpacter.of(context,
                 (SimpleLongScoreContext ctx, long matchWeight,
-                        ConstraintMatchSupplier<SimpleLongScore> constraintMatchSupplier) -> ctx
-                                .changeScoreBy(matchWeight, constraintMatchSupplier));
+                        ConstraintMatchSupplier<SimpleLongScore> constraintMatchSupplier) -> ctx.changeScoreBy(matchWeight,
+                                constraintMatchSupplier));
     }
 
     @Override

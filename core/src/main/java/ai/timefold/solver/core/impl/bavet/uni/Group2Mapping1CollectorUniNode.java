@@ -27,12 +27,12 @@ public final class Group2Mapping1CollectorUniNode<OldA, A, B, C, ResultContainer
 
     @Override
     protected TriTuple<A, B, C> createOutTuple(Pair<A, B> groupKey) {
-        return new TriTuple<>(groupKey.key(), groupKey.value(), null, outputStoreSize);
+        return TriTuple.of(groupKey.key(), groupKey.value(), outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleToResult(TriTuple<A, B, C> outTuple, C c) {
-        outTuple.factC = c;
+        outTuple.setC(c);
     }
 
 }

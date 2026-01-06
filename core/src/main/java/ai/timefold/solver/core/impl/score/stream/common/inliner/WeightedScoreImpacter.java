@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 
 import ai.timefold.solver.core.api.score.Score;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * There are several valid ways how an impacter could be called from a constraint stream:
  *
@@ -21,6 +24,7 @@ import ai.timefold.solver.core.api.score.Score;
  * for the method types it doesn't support. The CS API guarantees no types are mixed. For example,
  * a {@link BigDecimal} parameter method won't be called on an instance built with an {@link IntImpactFunction}.
  */
+@NullMarked
 public interface WeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
     static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> WeightedScoreImpacter<Score_, Context_>
@@ -40,46 +44,51 @@ public interface WeightedScoreImpacter<Score_ extends Score<Score_>, Context_ ex
 
     /**
      * @param matchWeight never null
-     * @param constraintMatchSupplier ignored unless constraint match enableds
+     * @param constraintMatchSupplier ignored unless constraint match enabled
      * @return never null
      */
-    UndoScoreImpacter impactScore(int matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
+    ScoreImpact<Score_> impactScore(int matchWeight, @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     /**
      * @param matchWeight never null
      * @param constraintMatchSupplier ignored unless constraint match enabled
      * @return never null
      */
-    UndoScoreImpacter impactScore(long matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
+    ScoreImpact<Score_> impactScore(long matchWeight, @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     /**
      * @param matchWeight never null
      * @param constraintMatchSupplier ignored unless constraint match enabled
      * @return never null
      */
-    UndoScoreImpacter impactScore(BigDecimal matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
+    ScoreImpact<Score_> impactScore(BigDecimal matchWeight, @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     Context_ getContext();
 
+    @NullMarked
     @FunctionalInterface
     interface IntImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
-        UndoScoreImpacter impact(Context_ context, int matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
+        ScoreImpact<Score_> impact(Context_ context, int matchWeight,
+                @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     }
 
+    @NullMarked
     @FunctionalInterface
     interface LongImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
-        UndoScoreImpacter impact(Context_ context, long matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
+        ScoreImpact<Score_> impact(Context_ context, long matchWeight,
+                @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     }
 
+    @NullMarked
     @FunctionalInterface
     interface BigDecimalImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
-        UndoScoreImpacter impact(Context_ context, BigDecimal matchWeight,
-                ConstraintMatchSupplier<Score_> constraintMatchSupplier);
+        ScoreImpact<Score_> impact(Context_ context, BigDecimal matchWeight,
+                @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     }
 

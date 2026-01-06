@@ -8,19 +8,19 @@ import java.util.function.Predicate;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.TriPredicate;
 
-public interface TupleLifecycle<Tuple_ extends AbstractTuple> {
+public interface TupleLifecycle<Tuple_ extends Tuple> {
 
-    static <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> ofLeft(LeftTupleLifecycle<Tuple_> leftTupleLifecycle) {
+    static <Tuple_ extends Tuple> TupleLifecycle<Tuple_> ofLeft(LeftTupleLifecycle<Tuple_> leftTupleLifecycle) {
         return new LeftTupleLifecycleImpl<>(leftTupleLifecycle);
     }
 
-    static <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> ofRight(RightTupleLifecycle<Tuple_> rightTupleLifecycle) {
+    static <Tuple_ extends Tuple> TupleLifecycle<Tuple_> ofRight(RightTupleLifecycle<Tuple_> rightTupleLifecycle) {
         return new RightTupleLifecycleImpl<>(rightTupleLifecycle);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @SafeVarargs
-    static <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> aggregate(TupleLifecycle<Tuple_>... tupleLifecycles) {
+    static <Tuple_ extends Tuple> TupleLifecycle<Tuple_> aggregate(TupleLifecycle<Tuple_>... tupleLifecycles) {
         var distinctTupleLifecycles = Arrays.stream(Objects.requireNonNull(tupleLifecycles))
                 .distinct()
                 .toArray(TupleLifecycle[]::new);
@@ -32,26 +32,27 @@ public interface TupleLifecycle<Tuple_ extends AbstractTuple> {
     }
 
     static <A> TupleLifecycle<UniTuple<A>> conditionally(TupleLifecycle<UniTuple<A>> tupleLifecycle, Predicate<A> predicate) {
-        return new ConditionalTupleLifecycle<>(tupleLifecycle, tuple -> predicate.test(tuple.factA));
+        return new ConditionalTupleLifecycle<>(tupleLifecycle, tuple -> predicate.test(tuple.getA()));
     }
 
     static <A, B> TupleLifecycle<BiTuple<A, B>> conditionally(TupleLifecycle<BiTuple<A, B>> tupleLifecycle,
             BiPredicate<A, B> predicate) {
-        return new ConditionalTupleLifecycle<>(tupleLifecycle, tuple -> predicate.test(tuple.factA, tuple.factB));
+        return new ConditionalTupleLifecycle<>(tupleLifecycle, tuple -> predicate.test(tuple.getA(), tuple.getB()));
     }
 
     static <A, B, C> TupleLifecycle<TriTuple<A, B, C>> conditionally(TupleLifecycle<TriTuple<A, B, C>> tupleLifecycle,
             TriPredicate<A, B, C> predicate) {
-        return new ConditionalTupleLifecycle<>(tupleLifecycle, tuple -> predicate.test(tuple.factA, tuple.factB, tuple.factC));
+        return new ConditionalTupleLifecycle<>(tupleLifecycle,
+                tuple -> predicate.test(tuple.getA(), tuple.getB(), tuple.getC()));
     }
 
     static <A, B, C, D> TupleLifecycle<QuadTuple<A, B, C, D>>
             conditionally(TupleLifecycle<QuadTuple<A, B, C, D>> tupleLifecycle, QuadPredicate<A, B, C, D> predicate) {
         return new ConditionalTupleLifecycle<>(tupleLifecycle,
-                tuple -> predicate.test(tuple.factA, tuple.factB, tuple.factC, tuple.factD));
+                tuple -> predicate.test(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD()));
     }
 
-    static <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> recording() {
+    static <Tuple_ extends Tuple> TupleLifecycle<Tuple_> recording() {
         return new RecordingTupleLifecycle<>();
     }
 

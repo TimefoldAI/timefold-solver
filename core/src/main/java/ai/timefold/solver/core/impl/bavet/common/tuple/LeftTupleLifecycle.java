@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple;
 
-public interface LeftTupleLifecycle<Tuple_ extends AbstractTuple> {
+public interface LeftTupleLifecycle<Tuple_ extends Tuple> {
 
     void insertLeft(Tuple_ tuple);
 

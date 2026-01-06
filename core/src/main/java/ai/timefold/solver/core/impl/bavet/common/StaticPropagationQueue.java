@@ -4,7 +4,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 
@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
  *
  * @param <Tuple_>
  */
-public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
+public final class StaticPropagationQueue<Tuple_ extends Tuple>
         implements PropagationQueue<Tuple_> {
 
     private final Deque<Tuple_> retractQueue;
@@ -38,26 +38,26 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
 
     @Override
     public void insert(Tuple_ carrier) {
-        if (carrier.state == TupleState.CREATING) {
+        if (carrier.getState() == TupleState.CREATING) {
             throw new IllegalStateException("Impossible state: The tuple (%s) is already in the insert queue."
                     .formatted(carrier));
         }
-        carrier.state = TupleState.CREATING;
+        carrier.setState(TupleState.CREATING);
         insertQueue.add(carrier);
     }
 
     @Override
     public void update(Tuple_ carrier) {
-        if (carrier.state == TupleState.UPDATING) { // Skip double updates.
+        if (carrier.getState() == TupleState.UPDATING) { // Skip double updates.
             return;
         }
-        carrier.state = TupleState.UPDATING;
+        carrier.setState(TupleState.UPDATING);
         updateQueue.add(carrier);
     }
 
     @Override
     public void retract(Tuple_ carrier, TupleState state) {
-        var carrierState = carrier.state;
+        var carrierState = carrier.getState();
         if (carrierState == state) { // Skip double retracts.
             return;
         }
@@ -68,7 +68,7 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
             throw new IllegalStateException("Impossible state: The tuple (%s) is already in the retract queue."
                     .formatted(carrier));
         }
-        carrier.state = state;
+        carrier.setState(state);
         retractQueue.add(carrier);
     }
 
@@ -76,13 +76,13 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
     public void propagateRetracts() {
         while (!retractQueue.isEmpty()) {
             var tuple = retractQueue.poll();
-            switch (tuple.state) {
+            switch (tuple.getState()) {
                 case DYING -> {
                     // Change state before propagation, so that the next node can't make decisions on the original state.
-                    tuple.state = TupleState.DEAD;
+                    tuple.setState(TupleState.DEAD);
                     nextNodesTupleLifecycle.retract(tuple);
                 }
-                case ABORTING -> tuple.state = TupleState.DEAD;
+                case ABORTING -> tuple.setState(TupleState.DEAD);
             }
         }
     }
@@ -92,11 +92,11 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
         processAndClear(updateQueue, nextNodesTupleLifecycle::update);
     }
 
-    private static <Tuple_ extends AbstractTuple> void processAndClear(Deque<Tuple_> dirtyQueue,
+    private static <Tuple_ extends Tuple> void processAndClear(Deque<Tuple_> dirtyQueue,
             Consumer<Tuple_> tupleLifecycle) {
         while (!dirtyQueue.isEmpty()) {
             var tuple = dirtyQueue.poll();
-            if (tuple.state == TupleState.DEAD) {
+            if (tuple.getState() == TupleState.DEAD) {
                 // DEAD signifies the tuple was both in insert/update and retract queues.
                 // This happens when a tuple was inserted/updated and subsequently retracted, all before propagation.
                 // We can safely ignore the later insert/update,
@@ -105,7 +105,7 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
                 continue;
             }
             // Change state before propagation, so that the next node can't make decisions on the original state.
-            tuple.state = TupleState.OK;
+            tuple.setState(TupleState.OK);
             tupleLifecycle.accept(tuple);
         }
     }

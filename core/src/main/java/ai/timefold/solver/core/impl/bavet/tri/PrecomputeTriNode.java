@@ -23,6 +23,6 @@ public final class PrecomputeTriNode<A, B, C> extends AbstractPrecomputeNode<Tri
 
     @Override
     protected TriTuple<A, B, C> remapTuple(TriTuple<A, B, C> tuple) {
-        return new TriTuple<>(tuple.factA, tuple.factB, tuple.factC, outputStoreSize);
+        return TriTuple.of(tuple.getA(), tuple.getB(), tuple.getC(), outputStoreSize);
     }
 }

@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 
 /**
@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
  * in order to be able to store metadata on them.
  * This metadata is necessary for efficient operation of the queue.
  */
-sealed abstract class AbstractPropagationMetadataCarrier<Tuple_ extends AbstractTuple>
+sealed abstract class AbstractPropagationMetadataCarrier<Tuple_ extends Tuple>
         permits Group, ExistsCounter {
 
     public int positionInDirtyList = -1;

@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.bavet.common.tuple;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-public record ConditionalTupleLifecycle<Tuple_ extends AbstractTuple>(TupleLifecycle<Tuple_> downstreamLifecycle,
+public record ConditionalTupleLifecycle<Tuple_ extends Tuple>(TupleLifecycle<Tuple_> downstreamLifecycle,
         TuplePredicate<Tuple_> predicate)
         implements
             TupleLifecycle<Tuple_> {
@@ -40,7 +40,7 @@ public record ConditionalTupleLifecycle<Tuple_ extends AbstractTuple>(TupleLifec
     }
 
     @FunctionalInterface
-    interface TuplePredicate<Tuple_ extends AbstractTuple> extends Predicate<Tuple_> {
+    interface TuplePredicate<Tuple_ extends Tuple> extends Predicate<Tuple_> {
     }
 
 }

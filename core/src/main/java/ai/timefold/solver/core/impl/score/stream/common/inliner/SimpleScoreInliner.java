@@ -16,10 +16,9 @@ final class SimpleScoreInliner extends AbstractScoreInliner<SimpleScore> {
     }
 
     @Override
-    public WeightedScoreImpacter<SimpleScore, ?> buildWeightedScoreImpacter(
-            AbstractConstraint<?, ?, ?> constraint) {
-        SimpleScore constraintWeight = constraintWeightMap.get(constraint);
-        SimpleScoreContext context = new SimpleScoreContext(this, constraint, constraintWeight);
+    public WeightedScoreImpacter<SimpleScore, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
+        var constraintWeight = constraintWeightMap.get(constraint);
+        var context = new SimpleScoreContext(this, constraint, constraintWeight);
         return WeightedScoreImpacter.of(context, SimpleScoreContext::changeScoreBy);
     }
 

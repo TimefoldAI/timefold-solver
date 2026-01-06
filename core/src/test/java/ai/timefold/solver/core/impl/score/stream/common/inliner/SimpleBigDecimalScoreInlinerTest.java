@@ -27,21 +27,21 @@ class SimpleBigDecimalScoreInlinerTest
     void impact() {
         var constraintWeight = SimpleBigDecimalScore.of(BigDecimal.valueOf(10));
         var impacter = buildScoreImpacter(constraintWeight);
-        var scoreInliner = (AbstractScoreInliner<SimpleBigDecimalScore>) impacter.getContext().parent;
+        var scoreInliner = (AbstractScoreInliner<SimpleBigDecimalScore>) impacter.getContext().inliner;
 
-        var undo1 = impacter.impactScore(BigDecimal.TEN, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(BigDecimal.TEN, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(100)));
 
-        var undo2 = impacter.impactScore(BigDecimal.valueOf(20), ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(BigDecimal.valueOf(20), ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(300)));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(100)));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.ZERO));
     }

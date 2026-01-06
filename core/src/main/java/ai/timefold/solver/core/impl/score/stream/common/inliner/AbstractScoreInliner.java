@@ -144,21 +144,36 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
      */
     public abstract WeightedScoreImpacter<Score_, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint);
 
-    protected final UndoScoreImpacter addConstraintMatch(Constraint constraint, Score_ score,
-            ConstraintMatchSupplier<Score_> constraintMatchSupplier, UndoScoreImpacter undoScoreImpact) {
+    protected final ScoreImpact<Score_> addConstraintMatch(Constraint constraint,
+            ConstraintMatchSupplier<Score_> constraintMatchSupplier, ScoreImpact<Score_> scoreImpact) {
         var constraintMatchList = getConstraintMatchList(constraint);
         /*
          * Creating a constraint match is a heavy operation which may yet be undone.
          * Defer creation of the constraint match until a later point.
          */
-        var entry =
-                constraintMatchList.add(new ConstraintMatchCarrier<>(constraintMatchSupplier, constraint, score));
+        var entry = constraintMatchList.add(new ConstraintMatchCarrier<>(constraintMatchSupplier, constraint, scoreImpact));
         clearMaps();
-        return () -> {
-            undoScoreImpact.run();
+        return new WrappingScoreImpact<>(this, scoreImpact, entry);
+    }
+
+    private record WrappingScoreImpact<Score_ extends Score<Score_>>(AbstractScoreInliner<Score_> inliner,
+            ScoreImpact<Score_> delegate,
+            ElementAwareLinkedList.Entry<ConstraintMatchCarrier<Score_>> entry)
+            implements
+                ScoreImpact<Score_> {
+
+        @Override
+        public void undo() {
+            delegate.undo();
             entry.remove();
-            clearMaps();
-        };
+            inliner.clearMaps();
+        }
+
+        @Override
+        public Score_ toScore() {
+            return delegate.toScore();
+        }
+
     }
 
     private ElementAwareLinkedList<ConstraintMatchCarrier<Score_>> getConstraintMatchList(Constraint constraint) {
@@ -260,21 +275,21 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
 
         private final Constraint constraint;
         private final ConstraintMatchSupplier<Score_> constraintMatchSupplier;
-        private final Score_ score;
+        private final ScoreImpact<Score_> scoreImpact;
         private ConstraintMatch<Score_> constraintMatch;
 
         private ConstraintMatchCarrier(ConstraintMatchSupplier<Score_> constraintMatchSupplier, Constraint constraint,
-                Score_ score) {
+                ScoreImpact<Score_> scoreImpact) {
             this.constraint = constraint;
             this.constraintMatchSupplier = constraintMatchSupplier;
-            this.score = score;
+            this.scoreImpact = scoreImpact;
         }
 
         @Override
         public ConstraintMatch<Score_> get() {
             if (constraintMatch == null) {
                 // Repeated requests for score explanation should not create the same constraint match over and over.
-                constraintMatch = constraintMatchSupplier.apply(constraint, score);
+                constraintMatch = constraintMatchSupplier.apply(constraint, scoreImpact.toScore());
             }
             return constraintMatch;
         }

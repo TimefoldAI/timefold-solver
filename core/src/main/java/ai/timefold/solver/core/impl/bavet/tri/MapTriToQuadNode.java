@@ -29,30 +29,22 @@ public final class MapTriToQuadNode<A, B, C, NewA, NewB, NewC, NewD>
 
     @Override
     protected QuadTuple<NewA, NewB, NewC, NewD> map(TriTuple<A, B, C> tuple) {
-        A factA = tuple.factA;
-        B factB = tuple.factB;
-        C factC = tuple.factC;
-        return new QuadTuple<>(
-                mappingFunctionA.apply(factA, factB, factC),
-                mappingFunctionB.apply(factA, factB, factC),
-                mappingFunctionC.apply(factA, factB, factC),
-                mappingFunctionD.apply(factA, factB, factC),
-                outputStoreSize);
+        var factA = tuple.getA();
+        var factB = tuple.getB();
+        var factC = tuple.getC();
+        return QuadTuple.of(mappingFunctionA.apply(factA, factB, factC), mappingFunctionB.apply(factA, factB, factC),
+                mappingFunctionC.apply(factA, factB, factC), mappingFunctionD.apply(factA, factB, factC), outputStoreSize);
     }
 
     @Override
     protected void remap(TriTuple<A, B, C> inTuple, QuadTuple<NewA, NewB, NewC, NewD> outTuple) {
-        A factA = inTuple.factA;
-        B factB = inTuple.factB;
-        C factC = inTuple.factC;
-        NewA newA = mappingFunctionA.apply(factA, factB, factC);
-        NewB newB = mappingFunctionB.apply(factA, factB, factC);
-        NewC newC = mappingFunctionC.apply(factA, factB, factC);
-        NewD newD = mappingFunctionD.apply(factA, factB, factC);
-        outTuple.factA = newA;
-        outTuple.factB = newB;
-        outTuple.factC = newC;
-        outTuple.factD = newD;
+        var factA = inTuple.getA();
+        var factB = inTuple.getB();
+        var factC = inTuple.getC();
+        outTuple.setA(mappingFunctionA.apply(factA, factB, factC));
+        outTuple.setB(mappingFunctionB.apply(factA, factB, factC));
+        outTuple.setC(mappingFunctionC.apply(factA, factB, factC));
+        outTuple.setD(mappingFunctionD.apply(factA, factB, factC));
     }
 
 }

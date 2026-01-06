@@ -10,12 +10,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
-public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, OutTuple_ extends AbstractTuple, EffectiveItem_, FlattenedItem_>
+public abstract class AbstractFlattenLastNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, EffectiveItem_, FlattenedItem_>
         extends AbstractNode
         implements TupleLifecycle<InTuple_> {
 
@@ -103,7 +103,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
     }
 
     private void removeTuple(OutTuple_ outTuple) {
-        var state = outTuple.state;
+        var state = outTuple.getState();
         if (!state.isActive()) {
             throw new IllegalStateException("Impossible state: The tuple (%s) is in an unexpected state (%s)."
                     .formatted(outTuple, state));

@@ -1,20 +1,35 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple;
 
-public final class BiTuple<A, B> extends AbstractTuple {
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-    // Only a tuple's origin node may modify a fact.
-    public A factA;
-    public B factB;
+@NullMarked
+public sealed interface BiTuple<A, B> extends Tuple permits UniversalTuple {
 
-    public BiTuple(A factA, B factB, int storeSize) {
-        super(storeSize);
-        this.factA = factA;
-        this.factB = factB;
+    static <A, B> BiTuple<A, B> of(int storeSize) {
+        return new UniversalTuple<A, B, Void, Void>(storeSize, 2);
     }
 
-    @Override
-    public String toString() {
-        return "{" + factA + ", " + factB + "}";
+    static <A, B> BiTuple<A, B> of(@Nullable A a, int storeSize) {
+        var tuple = BiTuple.<A, B> of(storeSize);
+        tuple.setA(a);
+        return tuple;
     }
+
+    static <A, B> BiTuple<A, B> of(@Nullable A a, @Nullable B b, int storeSize) {
+        var tuple = BiTuple.<A, B> of(a, storeSize);
+        tuple.setB(b);
+        return tuple;
+    }
+
+    @Nullable
+    A getA();
+
+    void setA(@Nullable A a);
+
+    @Nullable
+    B getB();
+
+    void setB(@Nullable B b);
 
 }

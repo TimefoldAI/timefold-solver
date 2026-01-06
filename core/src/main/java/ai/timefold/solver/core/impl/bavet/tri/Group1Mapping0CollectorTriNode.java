@@ -21,12 +21,12 @@ public final class Group1Mapping0CollectorTriNode<OldA, OldB, OldC, A>
 
     static <A, OldA, OldB, OldC> A createGroupKey(TriFunction<OldA, OldB, OldC, A> groupKeyMapping,
             TriTuple<OldA, OldB, OldC> tuple) {
-        return groupKeyMapping.apply(tuple.factA, tuple.factB, tuple.factC);
+        return groupKeyMapping.apply(tuple.getA(), tuple.getB(), tuple.getC());
     }
 
     @Override
     protected UniTuple<A> createOutTuple(A a) {
-        return new UniTuple<>(a, outputStoreSize);
+        return UniTuple.of(a, outputStoreSize);
     }
 
     @Override

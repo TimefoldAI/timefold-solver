@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
+import ai.timefold.solver.core.impl.score.stream.common.inliner.WeightedScoreImpacter.LongImpactFunction;
 
 final class HardSoftLongScoreInliner extends AbstractScoreInliner<HardSoftLongScore> {
 
@@ -19,23 +20,17 @@ final class HardSoftLongScoreInliner extends AbstractScoreInliner<HardSoftLongSc
 
     @Override
     public WeightedScoreImpacter<HardSoftLongScore, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
-        HardSoftLongScore constraintWeight = constraintWeightMap.get(constraint);
-        HardSoftLongScoreContext context = new HardSoftLongScoreContext(this, constraint, constraintWeight);
-        if (constraintWeight.softScore() == 0L) {
+        var constraintWeight = constraintWeightMap.get(constraint);
+        var context = new HardSoftLongScoreContext(this, constraint, constraintWeight);
+        if (constraintWeight.softScore() == 0) {
             return WeightedScoreImpacter.of(context,
-                    (HardSoftLongScoreContext ctx, long matchWeight,
-                            ConstraintMatchSupplier<HardSoftLongScore> constraintMatchSupplier) -> ctx
-                                    .changeHardScoreBy(matchWeight, constraintMatchSupplier));
-        } else if (constraintWeight.hardScore() == 0L) {
+                    (LongImpactFunction<HardSoftLongScore, HardSoftLongScoreContext>) HardSoftLongScoreContext::changeHardScoreBy);
+        } else if (constraintWeight.hardScore() == 0) {
             return WeightedScoreImpacter.of(context,
-                    (HardSoftLongScoreContext ctx, long matchWeight,
-                            ConstraintMatchSupplier<HardSoftLongScore> constraintMatchSupplier) -> ctx
-                                    .changeSoftScoreBy(matchWeight, constraintMatchSupplier));
+                    (LongImpactFunction<HardSoftLongScore, HardSoftLongScoreContext>) HardSoftLongScoreContext::changeSoftScoreBy);
         } else {
             return WeightedScoreImpacter.of(context,
-                    (HardSoftLongScoreContext ctx, long matchWeight,
-                            ConstraintMatchSupplier<HardSoftLongScore> constraintMatchSupplier) -> ctx
-                                    .changeScoreBy(matchWeight, constraintMatchSupplier));
+                    (LongImpactFunction<HardSoftLongScore, HardSoftLongScoreContext>) HardSoftLongScoreContext::changeScoreBy);
         }
     }
 

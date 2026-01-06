@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
+import org.jspecify.annotations.NullMarked;
+
 final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalScore, SimpleBigDecimalScoreInliner> {
 
     public SimpleBigDecimalScoreContext(SimpleBigDecimalScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
@@ -12,15 +14,28 @@ final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalSc
         super(parent, constraint, constraintWeight);
     }
 
-    public UndoScoreImpacter changeScoreBy(BigDecimal matchWeight,
+    public ScoreImpact<SimpleBigDecimalScore> changeScoreBy(BigDecimal matchWeight,
             ConstraintMatchSupplier<SimpleBigDecimalScore> constraintMatchSupplier) {
-        BigDecimal impact = constraintWeight.score().multiply(matchWeight);
-        parent.score = parent.score.add(impact);
-        UndoScoreImpacter undoScoreImpact = () -> parent.score = parent.score.subtract(impact);
-        if (!constraintMatchPolicy.isEnabled()) {
-            return undoScoreImpact;
+        var impact = constraintWeight.score().multiply(matchWeight);
+        inliner.score = inliner.score.add(impact);
+        var scoreImpact = new Impact(inliner, impact);
+        return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
+    }
+
+    @NullMarked
+    private record Impact(SimpleBigDecimalScoreInliner inliner,
+            BigDecimal impact) implements ScoreImpact<SimpleBigDecimalScore> {
+
+        @Override
+        public void undo() {
+            inliner.score = inliner.score.subtract(impact);
         }
-        return impactWithConstraintMatch(undoScoreImpact, SimpleBigDecimalScore.of(impact), constraintMatchSupplier);
+
+        @Override
+        public SimpleBigDecimalScore toScore() {
+            return SimpleBigDecimalScore.of(impact);
+        }
+
     }
 
 }
