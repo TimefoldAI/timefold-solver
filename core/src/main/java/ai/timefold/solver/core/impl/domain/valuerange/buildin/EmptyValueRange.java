@@ -63,7 +63,7 @@ public final class EmptyValueRange<T> extends AbstractCountableValueRange<T> {
 
     @Override
     public int hashCode() {
-        return 7; // All instances are equal.
+        return 0; // All instances are equal.
     }
 
     @Override
