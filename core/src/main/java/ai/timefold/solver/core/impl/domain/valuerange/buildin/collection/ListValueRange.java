@@ -95,7 +95,7 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
         // We do not use Objects.hashCode() due to https://bugs.openjdk.org/browse/JDK-8015417.
         var hash = 1;
         hash = 31 * hash + Boolean.hashCode(isValueImmutable);
-        hash = 31 * hash + list.hashCode();
+        return 31 * hash + list.hashCode();
         return hash;
     }
 
