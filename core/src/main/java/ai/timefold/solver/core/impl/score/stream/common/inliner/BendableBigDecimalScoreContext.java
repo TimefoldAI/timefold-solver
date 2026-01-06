@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
@@ -116,6 +118,35 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
         public BendableBigDecimalScore toScore() {
             return BendableBigDecimalScore.of(hardImpacts, softImpacts);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ComplexImpact that)) {
+                return false;
+            }
+            return Objects.equals(ctx, that.ctx) &&
+                    Objects.deepEquals(hardImpacts, that.hardImpacts) &&
+                    Objects.deepEquals(softImpacts, that.softImpacts);
+        }
+
+        @Override
+        public int hashCode() {
+            var hash = 1;
+            hash = 31 * hash + ctx.hashCode();
+            hash = 31 * hash + Arrays.hashCode(hardImpacts);
+            hash = 31 * hash + Arrays.hashCode(softImpacts);
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "Impact(hard: %s, soft: %s)"
+                    .formatted(Arrays.toString(hardImpacts), Arrays.toString(softImpacts));
+        }
+
     }
 
 }
