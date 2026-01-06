@@ -92,7 +92,7 @@ public final class StaticPropagationQueue<Tuple_ extends Tuple>
         processAndClear(updateQueue, nextNodesTupleLifecycle::update);
     }
 
-    private static <Tuple_ extends AbstractTuple> void processAndClear(Deque<Tuple_> dirtyQueue,
+    private static <Tuple_ extends Tuple> void processAndClear(Deque<Tuple_> dirtyQueue,
             Consumer<Tuple_> tupleLifecycle) {
         while (!dirtyQueue.isEmpty()) {
             var tuple = dirtyQueue.poll();
