@@ -111,15 +111,6 @@ public final class DeepCloningUtils {
                         .formatted(clz.getName(), PlanningId.class.getSimpleName(), PlanningId.class.getSimpleName()));
             }
             return true;
-        } else if (PlanningImmutable.class.isAssignableFrom(clz)) {
-            if (PlanningCloneable.class.isAssignableFrom(clz)) {
-                throw new IllegalStateException("""
-                        The class (%s) implements %s, but it is %s.
-                        Immutable objects can not be cloned."""
-                        .formatted(clz.getName(), PlanningCloneable.class.getSimpleName(),
-                                PlanningImmutable.class.getSimpleName()));
-            }
-            return true;
         }
         return IMMUTABLE_CLASSES.contains(clz);
     }

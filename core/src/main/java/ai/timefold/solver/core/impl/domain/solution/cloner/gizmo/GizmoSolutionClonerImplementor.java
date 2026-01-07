@@ -30,7 +30,6 @@ import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoClassLoade
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.DeepCloningUtils;
 import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutionCloner;
-import ai.timefold.solver.core.impl.domain.solution.cloner.PlanningCloneable;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 import io.quarkus.gizmo2.ClassOutput;
@@ -289,15 +288,8 @@ public class GizmoSolutionClonerImplementor {
 
                                     var clone = isExactMatchWithCastBranch.localVar("newClone", solutionSubclass,
                                             Const.ofNull(solutionSubclass));
-                                    if (PlanningCloneable.class.isAssignableFrom(solutionSubclass)) {
-                                        var newInstance = isExactMatchWithCastBranch.invokeInterface(
-                                                MethodDesc.of(PlanningCloneable.class, "createNewInstance", Object.class),
-                                                castedSolution);
-                                        isExactMatchWithCastBranch.set(clone, newInstance);
-                                    } else {
-                                        isExactMatchWithCastBranch.set(clone,
-                                                isExactMatchWithCastBranch.new_(ConstructorDesc.of(solutionSubclass)));
-                                    }
+                                    isExactMatchWithCastBranch.set(clone,
+                                            isExactMatchWithCastBranch.new_(ConstructorDesc.of(solutionSubclass)));
                                     isExactMatchWithCastBranch.withMap(createdCloneMap).put(castedSolution, clone);
 
                                     cloneShallowlyClonedFieldsOfObject(solutionSubclassDescriptor, clonerDescriptor,
@@ -644,9 +636,8 @@ public class GizmoSolutionClonerImplementor {
     }
 
     /**
-     * Write the following code
-     * <p>
-     * 
+     * Writes the following code:
+     *
      * <pre>
      * if (constructedCollection instanceof deeplyClonedFieldClass temp) {
      *     cloneResultHolder = temp;
@@ -970,13 +961,7 @@ public class GizmoSolutionClonerImplementor {
                         newNoCloneBranch -> {
                             LocalVar cloneObj =
                                     newNoCloneBranch.localVar("clonedObject", entityClass, Const.ofNull(entityClass));
-                            if (PlanningCloneable.class.isAssignableFrom(entityClass)) {
-                                newNoCloneBranch.set(cloneObj, newNoCloneBranch.invokeInterface(
-                                        MethodDesc.of(PlanningCloneable.class, "createNewInstance", Object.class),
-                                        toClone));
-                            } else {
-                                newNoCloneBranch.set(cloneObj, newNoCloneBranch.new_(entityClass));
-                            }
+                            newNoCloneBranch.set(cloneObj, newNoCloneBranch.new_(entityClass));
                             newNoCloneBranch.withMap(cloneMap).put(toClone, cloneObj);
 
                             // When deep cloning fields, they cannot be the first entity in the stack, since

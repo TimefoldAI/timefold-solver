@@ -136,19 +136,10 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
         }
 
         var declaringClass = (Class<C>) original.getClass();
-        var clone = constructClone(original, declaringClassMetadata);
+        var clone = FieldAccessingSolutionCloner.<C> constructClone(declaringClassMetadata);
         originalToCloneMap.put(original, clone);
         copyFields(declaringClass, original, clone, unprocessedQueue, declaringClassMetadata);
         return clone;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <C> C constructClone(C original, ClassMetadata classMetadata) {
-        if (original instanceof PlanningCloneable<?> planningCloneable) {
-            return (C) planningCloneable.createNewInstance();
-        } else {
-            return constructClone(classMetadata);
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -231,12 +222,8 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
         return cloneCollection;
     }
 
-    @SuppressWarnings("unchecked")
     public static <E> Collection<E> constructCloneCollection(Collection<E> originalCollection) {
         // TODO Don't hardcode all standard collections
-        if (originalCollection instanceof PlanningCloneable<?> planningCloneable) {
-            return (Collection<E>) planningCloneable.createNewInstance();
-        }
         if (originalCollection instanceof LinkedList) {
             return new LinkedList<>();
         }
@@ -301,11 +288,7 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
         return cloneMap;
     }
 
-    @SuppressWarnings("unchecked")
     public static <K, V> Map<K, V> constructCloneMap(Map<K, V> originalMap) {
-        if (originalMap instanceof PlanningCloneable<?> planningCloneable) {
-            return (Map<K, V>) planningCloneable.createNewInstance();
-        }
         // Normally, a Map will never be selected for cloning, but extending implementations might anyway.
         if (originalMap instanceof SortedMap<K, V> map) {
             var setComparator = map.comparator();

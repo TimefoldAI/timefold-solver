@@ -34,8 +34,6 @@ import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChaine
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedEntity;
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedObject;
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedSolution;
-import ai.timefold.solver.core.testdomain.clone.cloneable.PlanningCloneableEntity;
-import ai.timefold.solver.core.testdomain.clone.cloneable.PlanningCloneableSolution;
 import ai.timefold.solver.core.testdomain.clone.deepcloning.AnnotatedTestdataVariousTypes;
 import ai.timefold.solver.core.testdomain.clone.deepcloning.TestdataDeepCloningEntity;
 import ai.timefold.solver.core.testdomain.clone.deepcloning.TestdataDeepCloningSolution;
@@ -1208,50 +1206,6 @@ public abstract class AbstractSolutionClonerTest {
 
         assertThat(clone.shadowEntityList.get(0))
                 .isNotSameAs(original.shadowEntityList.get(0));
-    }
-
-    @Test
-    void clonePlanningCloneableItems() {
-        var solutionDescriptor = PlanningCloneableSolution.buildSolutionDescriptor();
-        var cloner = createSolutionCloner(solutionDescriptor);
-
-        var entityA = new PlanningCloneableEntity("A");
-        var entityB = new PlanningCloneableEntity("B");
-        var entityC = new PlanningCloneableEntity("C");
-
-        var original = new PlanningCloneableSolution(List.of(entityA, entityB, entityC));
-        var clone = cloner.cloneSolution(original);
-
-        assertThat(clone.entityList)
-                .hasSize(3)
-                .isNotSameAs(original.entityList)
-                .first()
-                .isNotNull();
-
-        assertThat(clone.entityList.get(0))
-                .isNotSameAs(original.entityList.get(0))
-                .hasFieldOrPropertyWithValue("code", "A");
-
-        assertThat(clone.entityList.get(1))
-                .isNotSameAs(original.entityList.get(1))
-                .hasFieldOrPropertyWithValue("code", "B");
-
-        assertThat(clone.entityList.get(2))
-                .isNotSameAs(original.entityList.get(2))
-                .hasFieldOrPropertyWithValue("code", "C");
-
-        assertThat(clone.codeToEntity)
-                .hasSize(3)
-                .isNotSameAs(original.codeToEntity);
-
-        assertThat(clone.codeToEntity.get("A"))
-                .isSameAs(clone.entityList.get(0));
-
-        assertThat(clone.codeToEntity.get("B"))
-                .isSameAs(clone.entityList.get(1));
-
-        assertThat(clone.codeToEntity.get("C"))
-                .isSameAs(clone.entityList.get(2));
     }
 
     private static class MaxStackFrameFinder {
