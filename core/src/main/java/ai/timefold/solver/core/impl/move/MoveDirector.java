@@ -100,6 +100,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         externalScoreDirector.beforeVariableChanged(variableDescriptor, entity);
         variableDescriptor.setValue(entity, newValue);
         externalScoreDirector.afterVariableChanged(variableDescriptor, entity);
+        externalScoreDirector.triggerVariableListeners();
     }
 
     @SuppressWarnings("unchecked")

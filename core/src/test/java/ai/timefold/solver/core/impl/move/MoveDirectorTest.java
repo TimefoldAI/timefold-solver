@@ -44,6 +44,9 @@ import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascading
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullEntity;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullMultiSwapListMove;
@@ -542,6 +545,46 @@ class MoveDirectorTest {
         // Undo it.
         moveDirector.close();
         assertThat(entityA.getValueList()).containsExactly(expectedValueA1, expectedValueA2, expectedValueA3);
+    }
+
+    @Test
+    void twoChangesInARow() {
+        var solutionDescriptor = TestdataMixedSolution.buildSolutionDescriptor();
+        var solutionMetaModel = solutionDescriptor.getMetaModel();
+        var firstVariableMetaModel = solutionMetaModel.entity(TestdataMixedEntity.class)
+                .basicVariable("basicValue", TestdataMixedOtherValue.class);
+        var secondVariableMetaModel = solutionMetaModel.entity(TestdataMixedEntity.class)
+                .basicVariable("secondBasicValue", TestdataMixedOtherValue.class);
+
+        var expectedValueA1 = new TestdataMixedOtherValue("valueA1", 0);
+        var expectedValueA2 = new TestdataMixedOtherValue("valueA2", 0);
+
+        var entityA = new TestdataMixedEntity("entityA", 0);
+        var solution = new TestdataMixedSolution();
+        solution.setEntityList(List.of(entityA));
+        solution.setValueList(List.of());
+        solution.setOtherValueList(List.of(expectedValueA1, expectedValueA2));
+
+        var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintFactory -> new Constraint[] {
+                constraintFactory.forEach(TestdataMixedEntity.class)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint("Dummy constraint")
+        }, EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f)
+                .build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+
+        var moveDirector = new MoveDirector<>(scoreDirector).ephemeral();
+        moveDirector.changeVariable(firstVariableMetaModel, entityA, expectedValueA1);
+        moveDirector.changeVariable(secondVariableMetaModel, entityA, expectedValueA2);
+        assertThat(entityA.getBasicValue()).isSameAs(expectedValueA1);
+        assertThat(entityA.getSecondBasicValue()).isSameAs(expectedValueA2);
+
+        // Undo it.
+        moveDirector.close();
+        assertThat(entityA.getBasicValue()).isNull();
+        assertThat(entityA.getSecondBasicValue()).isNull();
     }
 
 }
