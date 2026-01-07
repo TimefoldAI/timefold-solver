@@ -17,7 +17,22 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     private final KeyRetriever<Key_> keyRetriever;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
-    private final Map<Key_, Indexer<T>> downstreamIndexerMap = new HashMap<>();
+    /**
+     * The number 16 is chosen as that is the default initial capacity of a HashMap
+     * and we have no good way of estimating the number of keys up-front.
+     * Any reasonable problem will quickly resize the map, and by a lot.
+     * Since the solver is typically a long-running process,
+     * this initial overhead is negligible in the grand scheme of things.
+     * <p>
+     * 0.5f has been established experimentally as a good load factor for this map,
+     * balancing its memory consumption with lookup speed.
+     * On index-heavy problems, higher load factors were observed to lead to significant lookup slowdowns.
+     * Even lower load factors (0.25, 0.1) were tested and yielded further performance improvements,
+     * but the memory consumption impact was deemed too high to justify it.
+     * This trade-off may change with future versions of the JDK,
+     * and should be re-evaluated occasionally.
+     */
+    private final Map<Key_, Indexer<T>> downstreamIndexerMap = new HashMap<>(16, 0.5f);
 
     /**
      * Construct an {@link EqualsIndexer} which immediately ends in the backend.
