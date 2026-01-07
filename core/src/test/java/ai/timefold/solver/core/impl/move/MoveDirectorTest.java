@@ -15,6 +15,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -28,6 +30,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAss
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -503,6 +507,41 @@ class MoveDirectorTest {
 
         // After the move is undone, the cascade value must be reset
         assertThat(valueA.getCascadeValue()).isNull();
+    }
+
+    @Test
+    void twoUnassignsInARow() {
+        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
+        var solutionMetaModel = solutionDescriptor.getMetaModel();
+        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
+
+        var expectedValueA1 = new TestdataListValue("valueA1");
+        var expectedValueA2 = new TestdataListValue("valueA2");
+        var expectedValueA3 = new TestdataListValue("valueA3");
+        var entityA = TestdataListEntity.createWithValues("A", expectedValueA1, expectedValueA2, expectedValueA3);
+        var solution = new TestdataListSolution();
+        solution.setEntityList(List.of(entityA));
+        solution.setValueList(List.of(expectedValueA1, expectedValueA2, expectedValueA3));
+
+        var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintFactory -> new Constraint[] {
+                constraintFactory.forEach(TestdataListEntity.class)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint("Dummy constraint")
+        }, EnvironmentMode.FULL_ASSERT);
+        var scoreDirector = new BavetConstraintStreamScoreDirector.Builder<>(f)
+                .build();
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.calculateScore();
+
+        var moveDirector = new MoveDirector<>(scoreDirector).ephemeral();
+        moveDirector.unassignValue(variableMetaModel, expectedValueA2);
+        moveDirector.unassignValue(variableMetaModel, expectedValueA3);
+        assertThat(entityA.getValueList()).containsExactly(expectedValueA1);
+
+        // Undo it.
+        moveDirector.close();
+        assertThat(entityA.getValueList()).containsExactly(expectedValueA1, expectedValueA2, expectedValueA3);
     }
 
 }
