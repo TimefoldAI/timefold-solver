@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.domain.solution.cloner.DeepCloningUtils;
-import ai.timefold.solver.core.impl.domain.solution.cloner.PlanningCloneable;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 public final class GizmoCloningUtils {
@@ -51,7 +50,6 @@ public final class GizmoCloningUtils {
                 if (DeepCloningUtils.isFieldDeepCloned(solutionDescriptor, field, clazz)
                         && !Collection.class.isAssignableFrom(field.getType())
                         && !Map.class.isAssignableFrom(field.getType())
-                        && !PlanningCloneable.class.isAssignableFrom(field.getType())
                         && !deepClonedClassSet.contains(field.getType())) {
                     classesToProcess.add(field.getType());
                     deepClonedClassSet.add(field.getType());
