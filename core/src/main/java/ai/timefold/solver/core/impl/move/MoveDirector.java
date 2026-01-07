@@ -59,6 +59,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         externalScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
                 destinationIndex + 1);
         externalScoreDirector.afterListVariableElementAssigned(variableDescriptor, planningValue);
+        externalScoreDirector.triggerVariableListeners();
     }
 
     @Override
@@ -90,6 +91,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         variableDescriptor.getValue(entity).remove(index);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, entity, index, index);
         externalScoreDirector.afterListVariableElementUnassigned(variableDescriptor, movedValue);
+        externalScoreDirector.triggerVariableListeners();
     }
 
     public final <Entity_, Value_> void changeVariable(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
@@ -112,12 +114,14 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
         var element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
+        externalScoreDirector.triggerVariableListeners();
 
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
                 destinationIndex);
         variableDescriptor.addElement(destinationEntity, destinationIndex, element);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
                 destinationIndex + 1);
+        externalScoreDirector.triggerVariableListeners();
 
         return element;
     }
@@ -138,6 +142,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         Value_ element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
         variableDescriptor.addElement(sourceEntity, destinationIndex, element);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
+        externalScoreDirector.triggerVariableListeners();
 
         return element;
     }
@@ -157,6 +162,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             variableDescriptor.setElement(rightEntity, rightIndex, oldLeftElement);
             externalScoreDirector.afterListVariableChanged(variableDescriptor, leftEntity, leftIndex, leftIndex + 1);
             externalScoreDirector.afterListVariableChanged(variableDescriptor, rightEntity, rightIndex, rightIndex + 1);
+            externalScoreDirector.triggerVariableListeners();
         }
     }
 
@@ -176,6 +182,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
                 variableDescriptor.setElement(entity, leftIndex, variableDescriptor.getElement(entity, rightIndex));
         variableDescriptor.setElement(entity, rightIndex, oldLeftElement);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
+        externalScoreDirector.triggerVariableListeners();
     }
 
     @Override
