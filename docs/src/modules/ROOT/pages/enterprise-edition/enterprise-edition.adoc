@@ -608,7 +608,7 @@ without any of the constraints crossing boundaries between partitions.
 
 [WARNING]
 ====
-Models with xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained variables] or xref:using-timefold-solver/modeling-planning-problems.adoc#mixedModels[mixed models] cannot apply the partitioned search method.
+Models with xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained variables] cannot apply the partitioned search method.
 ====
 
 [#partitionedSearchConfiguration]
@@ -721,15 +721,6 @@ add the `solutionPartitionerCustomProperties` element and use xref:using-timefol
     </solutionPartitionerCustomProperties>
   </partitionedSearch>
 ----
-
-[WARNING]
-====
-When working with a model that includes a xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable],
-it's essential to remember that a xref:using-timefold-solver/modeling-planning-problems.adoc#planningValue[planning value] can be assigned to only one xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntity[entity].
-Therefore,
-ensure that your partitioner returns distinct value lists for each entity
-or the solver may fail to optimize the problem.
-====
 
 [#runnablePartThreadLimit]
 ===== Runnable part thread limit
