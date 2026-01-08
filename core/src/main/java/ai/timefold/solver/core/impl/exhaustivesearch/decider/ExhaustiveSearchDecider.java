@@ -132,7 +132,7 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         var move = moveNode.getMove();
         var undoMove = scoreDirector.getMoveDirector().executeTemporary(move,
                 (score, undo) -> {
-                    processMove(stepScope, moveNode);
+                    processMove(stepScope, moveNode, score);
                     return undo;
                 });
         moveNode.setUndoMove(undoMove);
@@ -152,12 +152,11 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
 
     @SuppressWarnings("unchecked")
     private <Score_ extends Score<Score_>> void processMove(ExhaustiveSearchStepScope<Solution_> stepScope,
-            ExhaustiveSearchNode moveNode) {
+            ExhaustiveSearchNode moveNode, InnerScore<Score_> score) {
         var phaseScope = stepScope.getPhaseScope();
         var lastLayer = moveNode.isLastLayer();
         if (!scoreBounderEnabled) {
             if (lastLayer) {
-                var score = phaseScope.<Score_> calculateScore();
                 moveNode.setScore(score);
                 if (assertMoveScoreFromScratch) {
                     phaseScope.assertWorkingScoreFromScratch(score, moveNode.getMove());
