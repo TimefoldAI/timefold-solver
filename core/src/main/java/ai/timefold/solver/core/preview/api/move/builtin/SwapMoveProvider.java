@@ -13,24 +13,24 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.BiMoveConstructor;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.EnumeratingJoiners;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class SwapMoveDefinition<Solution_, Entity_>
-        implements MoveDefinition<Solution_> {
+public class SwapMoveProvider<Solution_, Entity_>
+        implements MoveProvider<Solution_> {
 
     private final PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel;
     private final List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList;
     private final @Nullable Function<Entity_, Comparable> planningIdGetter;
 
     @SuppressWarnings("unchecked")
-    public SwapMoveDefinition(PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel) {
+    public SwapMoveProvider(PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel) {
         this.entityMetaModel = Objects.requireNonNull(entityMetaModel);
         this.variableMetaModelList = entityMetaModel.variables().stream()
                 .flatMap(v -> {
@@ -44,7 +44,7 @@ public class SwapMoveDefinition<Solution_, Entity_>
             throw new IllegalArgumentException("The entityClass (%s) has no basic planning variables."
                     .formatted(entityMetaModel.type().getCanonicalName()));
         }
-        this.planningIdGetter = SwapMoveDefinition.getPlanningIdGetter(entityMetaModel);
+        this.planningIdGetter = SwapMoveProvider.getPlanningIdGetter(entityMetaModel);
     }
 
     @SuppressWarnings("rawtypes")
@@ -58,7 +58,7 @@ public class SwapMoveDefinition<Solution_, Entity_>
         return planningIdMemberAccessor.getGetterFunction();
     }
 
-    public SwapMoveDefinition(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList) {
+    public SwapMoveProvider(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList) {
         this.variableMetaModelList = Objects.requireNonNull(variableMetaModelList);
         var entityMetaModels = variableMetaModelList.stream()
                 .map(VariableMetaModel::entity)
@@ -72,7 +72,7 @@ public class SwapMoveDefinition<Solution_, Entity_>
                     "The variableMetaModelList (%s) contains variables from multiple entity classes."
                             .formatted(variableMetaModelList));
         };
-        this.planningIdGetter = SwapMoveDefinition.getPlanningIdGetter(entityMetaModel);
+        this.planningIdGetter = SwapMoveProvider.getPlanningIdGetter(entityMetaModel);
     }
 
     @Override
@@ -83,13 +83,13 @@ public class SwapMoveDefinition<Solution_, Entity_>
         if (planningIdGetter == null) { // If the user hasn't defined a planning ID, we will follow a slower path.
             return moveStreamFactory.pick(entityStream)
                     .pick(entityStream,
-                            EnumeratingJoiners.filtering(this::isValidSwap))
+                            NeighborhoodsJoiners.filtering(this::isValidSwap))
                     .asMove(moveConstructor);
         } else {
             return moveStreamFactory.pick(entityStream)
                     .pick(entityStream,
-                            EnumeratingJoiners.lessThan(planningIdGetter),
-                            EnumeratingJoiners.filtering(this::isValidSwap))
+                            NeighborhoodsJoiners.lessThan(planningIdGetter),
+                            NeighborhoodsJoiners.filtering(this::isValidSwap))
                     .asMove(moveConstructor);
         }
     }

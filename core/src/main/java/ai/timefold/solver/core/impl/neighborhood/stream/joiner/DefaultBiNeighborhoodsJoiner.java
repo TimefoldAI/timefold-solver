@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner;
+package ai.timefold.solver.core.impl.neighborhood.stream.joiner;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,36 +8,36 @@ import java.util.function.Function;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.joiner.AbstractJoiner;
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingJoiner;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 
 import org.jspecify.annotations.NullMarked;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 @NullMarked
-public final class DefaultBiEnumeratingJoiner<A, B> extends AbstractJoiner<B> implements BiEnumeratingJoiner<A, B> {
+public final class DefaultBiNeighborhoodsJoiner<A, B> extends AbstractJoiner<B> implements BiNeighborhoodsJoiner<A, B> {
 
-    private static final DefaultBiEnumeratingJoiner NONE =
-            new DefaultBiEnumeratingJoiner(new Function[0], new JoinerType[0], new Function[0]);
+    private static final DefaultBiNeighborhoodsJoiner NONE =
+            new DefaultBiNeighborhoodsJoiner(new Function[0], new JoinerType[0], new Function[0]);
 
     private final Function<A, Object>[] leftMappings;
 
-    public <Property_> DefaultBiEnumeratingJoiner(Function<A, Property_> leftMapping, JoinerType joinerType,
+    public <Property_> DefaultBiNeighborhoodsJoiner(Function<A, Property_> leftMapping, JoinerType joinerType,
             Function<B, Property_> rightMapping) {
         super(rightMapping, joinerType);
         this.leftMappings = new Function[] { leftMapping };
     }
 
-    private <Property_> DefaultBiEnumeratingJoiner(Function<A, Property_>[] leftMappings, JoinerType[] joinerTypes,
+    private <Property_> DefaultBiNeighborhoodsJoiner(Function<A, Property_>[] leftMappings, JoinerType[] joinerTypes,
             Function<B, Property_>[] rightMappings) {
         super(rightMappings, joinerTypes);
         this.leftMappings = (Function<A, Object>[]) leftMappings;
     }
 
-    public static <A, B> DefaultBiEnumeratingJoiner<A, B> merge(List<DefaultBiEnumeratingJoiner<A, B>> joinerList) {
+    public static <A, B> DefaultBiNeighborhoodsJoiner<A, B> merge(List<DefaultBiNeighborhoodsJoiner<A, B>> joinerList) {
         if (joinerList.size() == 1) {
             return joinerList.get(0);
         }
-        return joinerList.stream().reduce(NONE, DefaultBiEnumeratingJoiner::and);
+        return joinerList.stream().reduce(NONE, DefaultBiNeighborhoodsJoiner::and);
     }
 
     public AbstractJoiner<B> toBiJoiner() {
@@ -45,8 +45,8 @@ public final class DefaultBiEnumeratingJoiner<A, B> extends AbstractJoiner<B> im
     }
 
     @Override
-    public DefaultBiEnumeratingJoiner<A, B> and(BiEnumeratingJoiner<A, B> otherJoiner) {
-        var castJoiner = (DefaultBiEnumeratingJoiner<A, B>) otherJoiner;
+    public DefaultBiNeighborhoodsJoiner<A, B> and(BiNeighborhoodsJoiner<A, B> otherJoiner) {
+        var castJoiner = (DefaultBiNeighborhoodsJoiner<A, B>) otherJoiner;
         var joinerCount = getJoinerCount();
         var castJoinerCount = castJoiner.getJoinerCount();
         var newJoinerCount = joinerCount + castJoinerCount;
@@ -59,7 +59,7 @@ public final class DefaultBiEnumeratingJoiner<A, B> extends AbstractJoiner<B> im
             newLeftMappings[newJoinerIndex] = castJoiner.getLeftMapping(i);
             newRightMappings[newJoinerIndex] = castJoiner.getRightMapping(i);
         }
-        return new DefaultBiEnumeratingJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
+        return new DefaultBiNeighborhoodsJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
     }
 
     public Function<A, Object> getLeftMapping(int index) {
@@ -81,7 +81,7 @@ public final class DefaultBiEnumeratingJoiner<A, B> extends AbstractJoiner<B> im
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof DefaultBiEnumeratingJoiner<?, ?> other
+        return o instanceof DefaultBiNeighborhoodsJoiner<?, ?> other
                 && Arrays.equals(joinerTypes, other.joinerTypes)
                 && Arrays.equals(leftMappings, other.leftMappings)
                 && Arrays.equals(rightMappings, other.rightMappings);

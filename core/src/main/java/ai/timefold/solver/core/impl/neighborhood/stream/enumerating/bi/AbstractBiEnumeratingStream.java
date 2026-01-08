@@ -12,8 +12,8 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridg
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.BiEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingMapper;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -32,7 +32,7 @@ public abstract class AbstractBiEnumeratingStream<Solution_, A, B> extends Abstr
     }
 
     @Override
-    public final BiEnumeratingStream<Solution_, A, B> filter(BiEnumeratingPredicate<Solution_, A, B> filter) {
+    public final BiEnumeratingStream<Solution_, A, B> filter(BiNeighborhoodsPredicate<Solution_, A, B> filter) {
         return shareAndAddChild(new FilterBiEnumeratingStream<>(enumeratingStreamFactory, this, filter));
     }
 
@@ -51,7 +51,7 @@ public abstract class AbstractBiEnumeratingStream<Solution_, A, B> extends Abstr
     }
 
     @Override
-    public <ResultA_> UniEnumeratingStream<Solution_, ResultA_> map(BiEnumeratingMapper<Solution_, A, B, ResultA_> mapping) {
+    public <ResultA_> UniEnumeratingStream<Solution_, ResultA_> map(BiNeighborhoodsMapper<Solution_, A, B, ResultA_> mapping) {
         var stream = shareAndAddChild(new UniMapBiEnumeratingStream<>(enumeratingStreamFactory, this, mapping));
         return enumeratingStreamFactory.share(new AftBridgeUniEnumeratingStream<>(enumeratingStreamFactory, stream),
                 stream::setAftBridge);
@@ -59,8 +59,8 @@ public abstract class AbstractBiEnumeratingStream<Solution_, A, B> extends Abstr
 
     @Override
     public <ResultA_, ResultB_> BiEnumeratingStream<Solution_, ResultA_, ResultB_>
-            map(BiEnumeratingMapper<Solution_, A, B, ResultA_> mappingA,
-                    BiEnumeratingMapper<Solution_, A, B, ResultB_> mappingB) {
+            map(BiNeighborhoodsMapper<Solution_, A, B, ResultA_> mappingA,
+                    BiNeighborhoodsMapper<Solution_, A, B, ResultB_> mappingB) {
         var stream = shareAndAddChild(new BiMapBiEnumeratingStream<>(enumeratingStreamFactory, this, mappingA, mappingB));
         return enumeratingStreamFactory.share(new AftBridgeBiEnumeratingStream<>(enumeratingStreamFactory, stream),
                 stream::setAftBridge);

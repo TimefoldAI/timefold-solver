@@ -14,13 +14,13 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Abstr
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeUniEnumeratingStream;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.BiEnumeratingJoinerComber;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.BiNeighborhoodsJoinerComber;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.BiEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingJoiner;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingFilter;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -39,17 +39,17 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
     }
 
     @Override
-    public final UniEnumeratingStream<Solution_, A> filter(UniEnumeratingFilter<Solution_, A> filter) {
+    public final UniEnumeratingStream<Solution_, A> filter(UniNeighborhoodsPredicate<Solution_, A> filter) {
         return shareAndAddChild(new FilterUniEnumeratingStream<>(enumeratingStreamFactory, this, filter));
     }
 
     @Override
     public <B> BiEnumeratingStream<Solution_, A, B> join(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B>... joiners) {
+            BiNeighborhoodsJoiner<A, B>... joiners) {
         var other = (AbstractUniEnumeratingStream<Solution_, B>) otherStream;
         var leftBridge = new ForeBridgeUniEnumeratingStream<Solution_, A>(enumeratingStreamFactory, this);
         var rightBridge = new ForeBridgeUniEnumeratingStream<Solution_, B>(enumeratingStreamFactory, other);
-        var joinerComber = BiEnumeratingJoinerComber.<Solution_, A, B> comb(joiners);
+        var joinerComber = BiNeighborhoodsJoinerComber.<Solution_, A, B> comb(joiners);
         var joinStream = new JoinBiEnumeratingStream<>(enumeratingStreamFactory, leftBridge, rightBridge,
                 joinerComber.mergedJoiner(), joinerComber.mergedFiltering());
         return enumeratingStreamFactory.share(joinStream, joinStream_ -> {
@@ -60,41 +60,42 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
     }
 
     @Override
-    public <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiEnumeratingJoiner<A, B>... joiners) {
+    public <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiNeighborhoodsJoiner<A, B>... joiners) {
         return join(enumeratingStreamFactory.forEachNonDiscriminating(otherClass, false), joiners);
     }
 
     @SafeVarargs
     @Override
-    public final <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiEnumeratingJoiner<A, B>... joiners) {
+    public final <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiNeighborhoodsJoiner<A, B>... joiners) {
         return ifExists(enumeratingStreamFactory.forEachNonDiscriminating(otherClass, false), joiners);
     }
 
     @SafeVarargs
     @Override
     public final <B> UniEnumeratingStream<Solution_, A> ifExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B>... joiners) {
+            BiNeighborhoodsJoiner<A, B>... joiners) {
         return ifExistsOrNot(true, otherStream, joiners);
     }
 
     @SafeVarargs
     @Override
-    public final <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass, BiEnumeratingJoiner<A, B>... joiners) {
+    public final <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass,
+            BiNeighborhoodsJoiner<A, B>... joiners) {
         return ifExistsOrNot(false, enumeratingStreamFactory.forEachNonDiscriminating(otherClass, false), joiners);
     }
 
     @SafeVarargs
     @Override
     public final <B> UniEnumeratingStream<Solution_, A> ifNotExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B>... joiners) {
+            BiNeighborhoodsJoiner<A, B>... joiners) {
         return ifExistsOrNot(false, otherStream, joiners);
     }
 
     private <B> UniEnumeratingStream<Solution_, A> ifExistsOrNot(boolean shouldExist,
             UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B>[] joiners) {
+            BiNeighborhoodsJoiner<A, B>[] joiners) {
         var other = (AbstractUniEnumeratingStream<Solution_, B>) otherStream;
-        var joinerComber = BiEnumeratingJoinerComber.<Solution_, A, B> comb(joiners);
+        var joinerComber = BiNeighborhoodsJoinerComber.<Solution_, A, B> comb(joiners);
         var parentBridgeB =
                 other.shareAndAddChild(new ForeBridgeUniEnumeratingStream<Solution_, B>(enumeratingStreamFactory, other));
         return enumeratingStreamFactory
@@ -128,7 +129,7 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
     }
 
     @Override
-    public <ResultA_> UniEnumeratingStream<Solution_, ResultA_> map(UniEnumeratingMapper<Solution_, A, ResultA_> mapping) {
+    public <ResultA_> UniEnumeratingStream<Solution_, ResultA_> map(UniNeighborhoodsMapper<Solution_, A, ResultA_> mapping) {
         var stream = shareAndAddChild(new UniMapUniEnumeratingStream<>(enumeratingStreamFactory, this, mapping));
         return enumeratingStreamFactory.share(new AftBridgeUniEnumeratingStream<>(enumeratingStreamFactory, stream),
                 stream::setAftBridge);
@@ -136,8 +137,8 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
 
     @Override
     public <ResultA_, ResultB_> BiEnumeratingStream<Solution_, ResultA_, ResultB_> map(
-            UniEnumeratingMapper<Solution_, A, ResultA_> mappingA,
-            UniEnumeratingMapper<Solution_, A, ResultB_> mappingB) {
+            UniNeighborhoodsMapper<Solution_, A, ResultA_> mappingA,
+            UniNeighborhoodsMapper<Solution_, A, ResultB_> mappingB) {
         var stream = shareAndAddChild(new BiMapUniEnumeratingStream<>(enumeratingStreamFactory, this, mappingA, mappingB));
         return enumeratingStreamFactory.share(new AftBridgeBiEnumeratingStream<>(enumeratingStreamFactory, stream),
                 stream::setAftBridge);
@@ -157,7 +158,7 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
     }
 
     public <Other_> UniRightDataset<Solution_, Other_, A>
-            createRightDataset(BiEnumeratingJoinerComber<Solution_, Other_, A> joinerComber) {
+            createRightDataset(BiNeighborhoodsJoinerComber<Solution_, Other_, A> joinerComber) {
         var stream = shareAndAddChild(new RightTerminalUniEnumeratingStream<>(enumeratingStreamFactory, this, joinerComber));
         return stream.getDataset();
     }

@@ -4,17 +4,17 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractRightDataset;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.BiEnumeratingJoinerComber;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.BiNeighborhoodsJoinerComber;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class UniRightDataset<Solution_, A, B> extends AbstractRightDataset<Solution_, B> {
 
-    private final BiEnumeratingJoinerComber<Solution_, A, B> joinerComber;
+    private final BiNeighborhoodsJoinerComber<Solution_, A, B> joinerComber;
 
     public UniRightDataset(AbstractUniEnumeratingStream<Solution_, B> parent,
-            BiEnumeratingJoinerComber<Solution_, A, B> joinerComber) {
+            BiNeighborhoodsJoinerComber<Solution_, A, B> joinerComber) {
         super(parent);
         this.joinerComber = joinerComber;
     }

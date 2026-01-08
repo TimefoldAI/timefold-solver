@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -34,7 +34,7 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class ChangeMoveDefinitionTest {
+class ChangeMoveProviderTest {
 
     @Test
     void fromSolution() {
@@ -51,7 +51,7 @@ class ChangeMoveDefinitionTest {
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
 
-        var moveIterable = createMoveIterable(new ChangeMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new ChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         assertThat(moveIterable).hasSize(4);
 
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
@@ -111,7 +111,7 @@ class ChangeMoveDefinitionTest {
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
 
-        var moveIterable = createMoveIterable(new ChangeMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new ChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         assertThat(moveIterable).hasSize(4);
 
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
@@ -168,7 +168,7 @@ class ChangeMoveDefinitionTest {
         // - firstEntity is already assigned to firstValue, the only possible value; skip.
         // - Assign secondEntity to firstValue,
         //   as it is currently assigned to secondValue, and the value range only contains firstValue.
-        var moveIterable = createMoveIterable(new ChangeMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new ChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         assertThat(moveIterable).hasSize(1);
 
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
@@ -205,7 +205,7 @@ class ChangeMoveDefinitionTest {
         //   as it is currently assigned to secondValue, and the value range only contains firstValue.
         // Null is not in the value range, but as documented,
         // null is added automatically to value ranges when allowsUnassigned is true.
-        var moveIterable = createMoveIterable(new ChangeMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new ChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         assertThat(moveIterable).hasSize(3);
 
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
@@ -255,7 +255,7 @@ class ChangeMoveDefinitionTest {
 
         // Filters out moves that would change the value to the value the entity already has.
         // Therefore this will have 4 moves (2 entities * 2 values) as opposed to 6 (2 entities * 3 values).
-        var moveIterable = createMoveIterable(new ChangeMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new ChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
                 .map(m -> (ChangeMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue>) m)
                 .toList();
@@ -297,10 +297,10 @@ class ChangeMoveDefinitionTest {
 
     }
 
-    private <Solution_> Iterable<Move<Solution_>> createMoveIterable(MoveDefinition<Solution_> moveDefinition,
+    private <Solution_> Iterable<Move<Solution_>> createMoveIterable(MoveProvider<Solution_> moveProvider,
             SolutionDescriptor<Solution_> solutionDescriptor, Solution_ solution) {
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.TRACKED_FULL_ASSERT);
-        var moveStream = moveDefinition.build(moveStreamFactory);
+        var moveStream = moveProvider.build(moveStreamFactory);
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
         var neighborhoodSession = moveStreamFactory.createSession(new SessionContext<>(scoreDirector));
         solutionDescriptor.visitAll(scoreDirector.getWorkingSolution(), neighborhoodSession::insert);

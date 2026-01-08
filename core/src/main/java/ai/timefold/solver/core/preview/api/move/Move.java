@@ -82,12 +82,17 @@ public interface Move<Solution_> {
      * It must not depend on the state of the {@link PlanningVariable planning variables}.
      * One thread might rebase a move before, amid or after another thread does that same move instance.
      * <p>
-     * This method is thread-safe.
+     * The default implementation throws an {@link UnsupportedOperationException},
+     * making multithreaded solving impossible unless the move class implements this method.
      *
      * @param rebaser Do not store this parameter in a field
      * @return New move that does the same change as this move on another solution instance
      */
-    Move<Solution_> rebase(Rebaser rebaser);
+    default Move<Solution_> rebase(Rebaser rebaser) {
+        throw new UnsupportedOperationException(
+                "Move class (%s) doesn't implement the rebase() method, so multithreaded solving is impossible."
+                        .formatted(getClass()));
+    }
 
     /**
      * Returns all planning entities that this move is changing.
@@ -98,6 +103,9 @@ public interface Move<Solution_> {
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.
      * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
+     * <p>
+     * The default implementation throws an {@link UnsupportedOperationException},
+     * making tabu search impossible unless the move class implements this method.
      *
      * @return Each entity only once.
      */
@@ -116,6 +124,9 @@ public interface Move<Solution_> {
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.
      * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
+     * <p>
+     * The default implementation throws an {@link UnsupportedOperationException},
+     * making tabu search impossible unless the move class implements this method.
      *
      * @return Each value only once. May contain null.
      */
@@ -141,13 +152,5 @@ public interface Move<Solution_> {
     default String describe() {
         return getClass().getSimpleName();
     }
-
-    /**
-     * The solver will make sure to only call this when the move is actually printed out during debug logging.
-     *
-     * @return A description of the move, ideally including the state of the planning entities being changed.
-     */
-    @Override
-    String toString();
 
 }

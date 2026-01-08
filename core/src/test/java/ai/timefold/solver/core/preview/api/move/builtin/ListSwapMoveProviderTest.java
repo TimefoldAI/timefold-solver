@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -27,7 +27,7 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class ListSwapMoveDefinitionTest {
+class ListSwapMoveProviderTest {
 
     @Test
     void fromSolution() {
@@ -47,7 +47,7 @@ class ListSwapMoveDefinitionTest {
         e2.getValueList().add(assignedValue3);
         solution.getEntityList().forEach(TestdataListEntity::setUpShadowVariables);
 
-        var moveIterable = createMoveIterable(new ListSwapMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new ListSwapMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
                 .toList();
         assertThat(moveList).hasSize(3);
@@ -100,7 +100,7 @@ class ListSwapMoveDefinitionTest {
         e2.getValueList().add(initiallyAssignedValue);
         solution.getEntityList().forEach(TestdataListEntityProvidingEntity::setUpShadowVariables);
 
-        var moveIterable = createMoveIterable(new ListSwapMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new ListSwapMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
                 .toList();
 
@@ -109,10 +109,10 @@ class ListSwapMoveDefinitionTest {
         assertThat(moveList).isEmpty();
     }
 
-    private <Solution_> Iterable<Move<Solution_>> createMoveIterable(MoveDefinition<Solution_> moveDefinition,
+    private <Solution_> Iterable<Move<Solution_>> createMoveIterable(MoveProvider<Solution_> moveProvider,
             SolutionDescriptor<Solution_> solutionDescriptor, Solution_ solution) {
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.TRACKED_FULL_ASSERT);
-        var moveStream = moveDefinition.build(moveStreamFactory);
+        var moveStream = moveProvider.build(moveStreamFactory);
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
         var neighborhoodSession = moveStreamFactory.createSession(new SessionContext<>(scoreDirector));
         solutionDescriptor.visitAll(scoreDirector.getWorkingSolution(), neighborhoodSession::insert);

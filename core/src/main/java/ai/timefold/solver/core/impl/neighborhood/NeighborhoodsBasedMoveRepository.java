@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -32,7 +32,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
     private @Nullable Random workingRandom;
 
     public NeighborhoodsBasedMoveRepository(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
-            List<MoveDefinition<Solution_>> neighborhood, boolean random) {
+            List<MoveProvider<Solution_>> neighborhood, boolean random) {
         this.moveStreamFactory = Objects.requireNonNull(moveStreamFactory);
         this.moveStreamList = Objects.requireNonNull(neighborhood).stream()
                 .map(d -> (InnerMoveStream<Solution_>) d.build(moveStreamFactory))

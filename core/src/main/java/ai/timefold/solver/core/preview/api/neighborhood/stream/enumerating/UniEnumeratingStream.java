@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating;
 
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingJoiner;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingPredicate;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingFilter;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -12,356 +12,360 @@ import org.jspecify.annotations.NullMarked;
 public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
 
     /**
-     * Exhaustively test each fact against the {@link UniEnumeratingFilter}
-     * and match if {@link UniEnumeratingFilter#test(SolutionView, Object)} returns true.
+     * Exhaustively test each fact against the {@link UniNeighborhoodsPredicate}
+     * and match if {@link UniNeighborhoodsPredicate#test(SolutionView, Object)} returns true.
      */
-    UniEnumeratingStream<Solution_, A> filter(UniEnumeratingFilter<Solution_, A> filter);
+    UniEnumeratingStream<Solution_, A> filter(UniNeighborhoodsPredicate<Solution_, A> filter);
 
     /**
-     * As defined by {@link #join(UniEnumeratingStream, BiEnumeratingJoiner[])}, with the array being empty.
+     * As defined by {@link #join(UniEnumeratingStream, BiNeighborhoodsJoiner[])}, with the array being empty.
      */
     @SuppressWarnings("unchecked")
     default <B> BiEnumeratingStream<Solution_, A, B> join(UniEnumeratingStream<Solution_, B> otherStream) {
-        return join(otherStream, new BiEnumeratingJoiner[0]);
+        return join(otherStream, new BiNeighborhoodsJoiner[0]);
     }
 
     /**
-     * As defined by {@link #join(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #join(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> BiEnumeratingStream<Solution_, A, B> join(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner) {
-        return join(otherStream, new BiEnumeratingJoiner[] { joiner });
+            BiNeighborhoodsJoiner<A, B> joiner) {
+        return join(otherStream, new BiNeighborhoodsJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #join(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #join(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> BiEnumeratingStream<Solution_, A, B> join(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2) {
-        return join(otherStream, new BiEnumeratingJoiner[] { joiner1, joiner2 });
+            BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2) {
+        return join(otherStream, new BiNeighborhoodsJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #join(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #join(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> BiEnumeratingStream<Solution_, A, B> join(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2, BiEnumeratingJoiner<A, B> joiner3) {
-        return join(otherStream, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3 });
+            BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2, BiNeighborhoodsJoiner<A, B> joiner3) {
+        return join(otherStream, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #join(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #join(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> BiEnumeratingStream<Solution_, A, B> join(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2, BiEnumeratingJoiner<A, B> joiner3, BiEnumeratingJoiner<A, B> joiner4) {
-        return join(otherStream, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+            BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2, BiNeighborhoodsJoiner<A, B> joiner3, BiNeighborhoodsJoiner<A, B> joiner4) {
+        return join(otherStream, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * Create a new {@link BiEnumeratingStream} for every combination of A and B for which the {@link BiEnumeratingJoiner}
+     * Create a new {@link BiEnumeratingStream} for every combination of A and B for which the {@link BiNeighborhoodsJoiner}
      * is true (for the properties it extracts from both facts).
      * <p>
-     * Important: Joining is faster and more scalable than a {@link BiEnumeratingStream#filter(BiEnumeratingPredicate) filter},
+     * Important: Joining is faster and more scalable than a {@link BiEnumeratingStream#filter(BiNeighborhoodsPredicate)
+     * filter},
      * because it applies hashing and/or indexing on the properties,
      * so it doesn't create nor checks every combination of A and B.
      *
      * @param <B> the type of the second matched fact
-     * @return a stream that matches every combination of A and B for which the {@link BiEnumeratingJoiner} is true
+     * @return a stream that matches every combination of A and B for which the {@link BiNeighborhoodsJoiner} is true
      */
     <B> BiEnumeratingStream<Solution_, A, B> join(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B>... joiners);
+            BiNeighborhoodsJoiner<A, B>... joiners);
 
     /**
-     * As defined by {@link #join(Class, BiEnumeratingJoiner[])}, with the array being empty.
+     * As defined by {@link #join(Class, BiNeighborhoodsJoiner[])}, with the array being empty.
      */
     @SuppressWarnings("unchecked")
     default <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass) {
-        return join(otherClass, new BiEnumeratingJoiner[0]);
+        return join(otherClass, new BiNeighborhoodsJoiner[0]);
     }
 
     /**
-     * As defined by {@link #join(Class, BiEnumeratingJoiner[])}
+     * As defined by {@link #join(Class, BiNeighborhoodsJoiner[])}
      */
     @SuppressWarnings("unchecked")
-    default <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner) {
-        return join(otherClass, new BiEnumeratingJoiner[] { joiner });
+    default <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner) {
+        return join(otherClass, new BiNeighborhoodsJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #join(Class, BiEnumeratingJoiner[])}
+     * As defined by {@link #join(Class, BiNeighborhoodsJoiner[])}
      */
     @SuppressWarnings("unchecked")
-    default <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2) {
-        return join(otherClass, new BiEnumeratingJoiner[] { joiner1, joiner2 });
+    default <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2) {
+        return join(otherClass, new BiNeighborhoodsJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #join(Class, BiEnumeratingJoiner[])}
+     * As defined by {@link #join(Class, BiNeighborhoodsJoiner[])}
      */
     @SuppressWarnings("unchecked")
-    default <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2,
-            BiEnumeratingJoiner<A, B> joiner3) {
-        return join(otherClass, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3 });
+    default <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2,
+            BiNeighborhoodsJoiner<A, B> joiner3) {
+        return join(otherClass, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #join(Class, BiEnumeratingJoiner[])}
+     * As defined by {@link #join(Class, BiNeighborhoodsJoiner[])}
      */
     @SuppressWarnings("unchecked")
-    default <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2,
-            BiEnumeratingJoiner<A, B> joiner3, BiEnumeratingJoiner<A, B> joiner4) {
-        return join(otherClass, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    default <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2,
+            BiNeighborhoodsJoiner<A, B> joiner3, BiNeighborhoodsJoiner<A, B> joiner4) {
+        return join(otherClass, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
      * Create a new {@link BiEnumeratingStream} for every combination of A and B
-     * for which the {@link BiEnumeratingJoiner} is true (for the properties it extracts from both facts).
+     * for which the {@link BiNeighborhoodsJoiner} is true (for the properties it extracts from both facts).
      * The stream will include all facts or entities of the given class,
      * regardless of their pinning status.
      * <p>
-     * Important: Joining is faster and more scalable than a {@link BiEnumeratingStream#filter(BiEnumeratingPredicate) filter},
+     * Important: Joining is faster and more scalable than a {@link BiEnumeratingStream#filter(BiNeighborhoodsPredicate)
+     * filter},
      * because it applies hashing and/or indexing on the properties,
      * so it doesn't create nor checks every combination of A and B.
      *
      * @param <B> the type of the second matched fact
-     * @return a stream that matches every combination of A and B for which the {@link BiEnumeratingJoiner} is true
+     * @return a stream that matches every combination of A and B for which the {@link BiNeighborhoodsJoiner} is true
      */
-    <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiEnumeratingJoiner<A, B>... joiners);
+    <B> BiEnumeratingStream<Solution_, A, B> join(Class<B> otherClass, BiNeighborhoodsJoiner<A, B>... joiners);
 
     /**
-     * As defined by {@link #ifExists(UniEnumeratingStream, BiEnumeratingJoiner[])}, with the array being empty.
+     * As defined by {@link #ifExists(UniEnumeratingStream, BiNeighborhoodsJoiner[])}, with the array being empty.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifExists(UniEnumeratingStream<Solution_, B> otherStream) {
-        return ifExists(otherStream, new BiEnumeratingJoiner[0]);
+        return ifExists(otherStream, new BiNeighborhoodsJoiner[0]);
     }
 
     /**
-     * As defined by {@link #ifExists(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifExists(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner) {
-        return ifExists(otherStream, new BiEnumeratingJoiner[] { joiner });
+            BiNeighborhoodsJoiner<A, B> joiner) {
+        return ifExists(otherStream, new BiNeighborhoodsJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifExists(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifExists(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2) {
-        return ifExists(otherStream, new BiEnumeratingJoiner[] { joiner1, joiner2 });
+            BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2) {
+        return ifExists(otherStream, new BiNeighborhoodsJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifExists(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifExists(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2, BiEnumeratingJoiner<A, B> joiner3) {
-        return ifExists(otherStream, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3 });
+            BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2, BiNeighborhoodsJoiner<A, B> joiner3) {
+        return ifExists(otherStream, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifExists(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifExists(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2, BiEnumeratingJoiner<A, B> joiner3, BiEnumeratingJoiner<A, B> joiner4) {
-        return ifExists(otherStream, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+            BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2, BiNeighborhoodsJoiner<A, B> joiner3, BiNeighborhoodsJoiner<A, B> joiner4) {
+        return ifExists(otherStream, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * Create a new {@link UniEnumeratingStream} for every A where B exists for which all {@link BiEnumeratingJoiner}s are true
+     * Create a new {@link UniEnumeratingStream} for every A where B exists for which all {@link BiNeighborhoodsJoiner}s are
+     * true
      * (for the properties it extracts from both facts).
      *
      * @param <B> the type of the second matched fact
-     * @return a stream that matches every A where B exists for which the {@link BiEnumeratingJoiner}s are true
+     * @return a stream that matches every A where B exists for which the {@link BiNeighborhoodsJoiner}s are true
      */
     @SuppressWarnings("unchecked")
     <B> UniEnumeratingStream<Solution_, A> ifExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B>... joiners);
+            BiNeighborhoodsJoiner<A, B>... joiners);
 
     /**
-     * As defined by {@link #ifExists(Class, BiEnumeratingJoiner[])}, with the array being empty.
+     * As defined by {@link #ifExists(Class, BiNeighborhoodsJoiner[])}, with the array being empty.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass) {
-        return ifExists(otherClass, new BiEnumeratingJoiner[0]);
+        return ifExists(otherClass, new BiNeighborhoodsJoiner[0]);
     }
 
     /**
-     * As defined by {@link #ifExists(Class, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifExists(Class, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
-    default <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner) {
-        return ifExists(otherClass, new BiEnumeratingJoiner[] { joiner });
+    default <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner) {
+        return ifExists(otherClass, new BiNeighborhoodsJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifExists(Class, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifExists(Class, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
-    default <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2) {
-        return ifExists(otherClass, new BiEnumeratingJoiner[] { joiner1, joiner2 });
+    default <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2) {
+        return ifExists(otherClass, new BiNeighborhoodsJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifExists(Class, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifExists(Class, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
-    default <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2,
-            BiEnumeratingJoiner<A, B> joiner3) {
-        return ifExists(otherClass, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3 });
+    default <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2,
+            BiNeighborhoodsJoiner<A, B> joiner3) {
+        return ifExists(otherClass, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifExists(Class, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifExists(Class, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
-    default <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2, BiEnumeratingJoiner<A, B> joiner3, BiEnumeratingJoiner<A, B> joiner4) {
-        return ifExists(otherClass, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    default <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2, BiNeighborhoodsJoiner<A, B> joiner3, BiNeighborhoodsJoiner<A, B> joiner4) {
+        return ifExists(otherClass, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * Create a new {@link UniEnumeratingStream} for every A where B exists for which all {@link BiEnumeratingJoiner}s are true
+     * Create a new {@link UniEnumeratingStream} for every A where B exists for which all {@link BiNeighborhoodsJoiner}s are
+     * true
      * (for the properties they extract from both facts).
      *
      * @param <B> the type of the second matched fact
-     * @return a stream that matches every A where B exists for which the {@link BiEnumeratingJoiner}s are true
+     * @return a stream that matches every A where B exists for which the {@link BiNeighborhoodsJoiner}s are true
      */
     @SuppressWarnings("unchecked")
-    <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiEnumeratingJoiner<A, B>... joiners);
+    <B> UniEnumeratingStream<Solution_, A> ifExists(Class<B> otherClass, BiNeighborhoodsJoiner<A, B>... joiners);
 
     /**
-     * As defined by {@link #ifNotExists(UniEnumeratingStream, BiEnumeratingJoiner[])}, with the array being empty.
+     * As defined by {@link #ifNotExists(UniEnumeratingStream, BiNeighborhoodsJoiner[])}, with the array being empty.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifNotExists(UniEnumeratingStream<Solution_, B> otherStream) {
-        return ifNotExists(otherStream, new BiEnumeratingJoiner[0]);
+        return ifNotExists(otherStream, new BiNeighborhoodsJoiner[0]);
     }
 
     /**
-     * As defined by {@link #ifNotExists(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifNotExists(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifNotExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner) {
-        return ifNotExists(otherStream, new BiEnumeratingJoiner[] { joiner });
+            BiNeighborhoodsJoiner<A, B> joiner) {
+        return ifNotExists(otherStream, new BiNeighborhoodsJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifNotExists(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifNotExists(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifNotExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2) {
-        return ifNotExists(otherStream, new BiEnumeratingJoiner[] { joiner1, joiner2 });
+            BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2) {
+        return ifNotExists(otherStream, new BiNeighborhoodsJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifNotExists(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifNotExists(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifNotExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2, BiEnumeratingJoiner<A, B> joiner3) {
-        return ifNotExists(otherStream, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3 });
+            BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2, BiNeighborhoodsJoiner<A, B> joiner3) {
+        return ifNotExists(otherStream, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifNotExists(UniEnumeratingStream, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifNotExists(UniEnumeratingStream, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifNotExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2, BiEnumeratingJoiner<A, B> joiner3, BiEnumeratingJoiner<A, B> joiner4) {
-        return ifNotExists(otherStream, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+            BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2, BiNeighborhoodsJoiner<A, B> joiner3, BiNeighborhoodsJoiner<A, B> joiner4) {
+        return ifNotExists(otherStream, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * Create a new {@link UniEnumeratingStream} for every A where B does not exist for which the {@link BiEnumeratingJoiner}s
+     * Create a new {@link UniEnumeratingStream} for every A where B does not exist for which the {@link BiNeighborhoodsJoiner}s
      * are true
      * (for the properties they extract from both facts).
      *
      * @param <B> the type of the second matched fact
-     * @return a stream that matches every A where B does not exist for which the {@link BiEnumeratingJoiner}s are true
+     * @return a stream that matches every A where B does not exist for which the {@link BiNeighborhoodsJoiner}s are true
      */
     @SuppressWarnings("unchecked")
     <B> UniEnumeratingStream<Solution_, A> ifNotExists(UniEnumeratingStream<Solution_, B> otherStream,
-            BiEnumeratingJoiner<A, B>... joiners);
+            BiNeighborhoodsJoiner<A, B>... joiners);
 
     /**
-     * As defined by {@link #ifNotExists(Class, BiEnumeratingJoiner[])}, with the array being empty.
+     * As defined by {@link #ifNotExists(Class, BiNeighborhoodsJoiner[])}, with the array being empty.
      */
     @SuppressWarnings("unchecked")
     default <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass) {
-        return ifNotExists(otherClass, new BiEnumeratingJoiner[0]);
+        return ifNotExists(otherClass, new BiNeighborhoodsJoiner[0]);
     }
 
     /**
-     * As defined by {@link #ifNotExists(Class, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifNotExists(Class, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
-    default <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner) {
-        return ifNotExists(otherClass, new BiEnumeratingJoiner[] { joiner });
+    default <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner) {
+        return ifNotExists(otherClass, new BiNeighborhoodsJoiner[] { joiner });
     }
 
     /**
-     * As defined by {@link #ifNotExists(Class, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifNotExists(Class, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
-    default <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2) {
-        return ifNotExists(otherClass, new BiEnumeratingJoiner[] { joiner1, joiner2 });
+    default <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2) {
+        return ifNotExists(otherClass, new BiNeighborhoodsJoiner[] { joiner1, joiner2 });
     }
 
     /**
-     * As defined by {@link #ifNotExists(Class, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifNotExists(Class, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
-    default <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2, BiEnumeratingJoiner<A, B> joiner3) {
-        return ifNotExists(otherClass, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3 });
+    default <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2, BiNeighborhoodsJoiner<A, B> joiner3) {
+        return ifNotExists(otherClass, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
-     * As defined by {@link #ifNotExists(Class, BiEnumeratingJoiner[])}.
+     * As defined by {@link #ifNotExists(Class, BiNeighborhoodsJoiner[])}.
      */
     @SuppressWarnings("unchecked")
-    default <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass, BiEnumeratingJoiner<A, B> joiner1,
-            BiEnumeratingJoiner<A, B> joiner2, BiEnumeratingJoiner<A, B> joiner3, BiEnumeratingJoiner<A, B> joiner4) {
-        return ifNotExists(otherClass, new BiEnumeratingJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    default <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass, BiNeighborhoodsJoiner<A, B> joiner1,
+            BiNeighborhoodsJoiner<A, B> joiner2, BiNeighborhoodsJoiner<A, B> joiner3, BiNeighborhoodsJoiner<A, B> joiner4) {
+        return ifNotExists(otherClass, new BiNeighborhoodsJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
     /**
-     * Create a new {@link UniEnumeratingStream} for every A where B does not exist for which the {@link BiEnumeratingJoiner}s
+     * Create a new {@link UniEnumeratingStream} for every A where B does not exist for which the {@link BiNeighborhoodsJoiner}s
      * are true
      * (for the properties they extract from both facts).
      *
      * @param <B> the type of the second matched fact
-     * @return a stream that matches every A where B does not exist for which the {@link BiEnumeratingJoiner}s are true
+     * @return a stream that matches every A where B does not exist for which the {@link BiNeighborhoodsJoiner}s are true
      */
     @SuppressWarnings("unchecked")
-    <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass, BiEnumeratingJoiner<A, B>... joiners);
+    <B> UniEnumeratingStream<Solution_, A> ifNotExists(Class<B> otherClass, BiNeighborhoodsJoiner<A, B>... joiners);
 
     // ************************************************************************
     // Operations with duplicate tuple possibility
@@ -410,10 +414,10 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * @param mapping function to convert the original tuple into the new tuple
      * @param <ResultA_> the type of the only fact in the resulting {@link UniEnumeratingStream}'s tuple
      */
-    <ResultA_> UniEnumeratingStream<Solution_, ResultA_> map(UniEnumeratingMapper<Solution_, A, ResultA_> mapping);
+    <ResultA_> UniEnumeratingStream<Solution_, ResultA_> map(UniNeighborhoodsMapper<Solution_, A, ResultA_> mapping);
 
     /**
-     * As defined by {@link #map(UniEnumeratingMapper)}, only resulting in {@link BiEnumeratingStream}.
+     * As defined by {@link #map(UniNeighborhoodsMapper)}, only resulting in {@link BiEnumeratingStream}.
      *
      * @param mappingA function to convert the original tuple into the first fact of a new tuple
      * @param mappingB function to convert the original tuple into the second fact of a new tuple
@@ -421,8 +425,8 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * @param <ResultB_> the type of the first fact in the resulting {@link BiEnumeratingStream}'s tuple
      */
     <ResultA_, ResultB_> BiEnumeratingStream<Solution_, ResultA_, ResultB_> map(
-            UniEnumeratingMapper<Solution_, A, ResultA_> mappingA,
-            UniEnumeratingMapper<Solution_, A, ResultB_> mappingB);
+            UniNeighborhoodsMapper<Solution_, A, ResultA_> mappingA,
+            UniNeighborhoodsMapper<Solution_, A, ResultB_> mappingB);
 
     /**
      * Transforms the stream in such a way that all the tuples going through it are distinct.
@@ -430,7 +434,7 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      *
      * <p>
      * By default, tuples going through an enumerating stream are distinct.
-     * However, operations such as {@link #map(UniEnumeratingMapper)} may create a stream which breaks that promise.
+     * However, operations such as {@link #map(UniNeighborhoodsMapper)} may create a stream which breaks that promise.
      * By calling this method on such a stream,
      * duplicate copies of the same tuple will be omitted at a performance cost.
      */

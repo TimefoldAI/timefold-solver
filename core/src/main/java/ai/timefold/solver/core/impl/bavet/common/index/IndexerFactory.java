@@ -22,7 +22,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.penta.joiner.DefaultPentaJoiner;
 import ai.timefold.solver.core.impl.bavet.quad.joiner.DefaultQuadJoiner;
 import ai.timefold.solver.core.impl.bavet.tri.joiner.DefaultTriJoiner;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.DefaultBiEnumeratingJoiner;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
 import ai.timefold.solver.core.impl.util.Triple;
@@ -79,7 +79,7 @@ public final class IndexerFactory<Right_> {
 
     public IndexerFactory(AbstractJoiner<Right_> joiner) {
         this.joiner = joiner;
-        this.requiresRandomAccess = joiner instanceof DefaultBiEnumeratingJoiner<?, Right_>;
+        this.requiresRandomAccess = joiner instanceof DefaultBiNeighborhoodsJoiner<?, Right_>;
         var joinerCount = joiner.getJoinerCount();
         if (joinerCount < 2) {
             joinerTypeMap = null;
@@ -114,11 +114,11 @@ public final class IndexerFactory<Right_> {
     private <A> IntFunction<Function<A, Object>> getMappingExtractor() {
         if (joiner instanceof DefaultBiJoiner<?, Right_> castJoiner) {
             return i -> (Function<A, Object>) castJoiner.getLeftMapping(i);
-        } else if (joiner instanceof DefaultBiEnumeratingJoiner<?, Right_> castJoiner) {
+        } else if (joiner instanceof DefaultBiNeighborhoodsJoiner<?, Right_> castJoiner) {
             return i -> (Function<A, Object>) castJoiner.getLeftMapping(i);
         } else {
             throw new IllegalStateException("Impossible state: The joiner (%s) is neither %s nor %s."
-                    .formatted(joiner.getClass(), DefaultBiJoiner.class, DefaultBiEnumeratingJoiner.class));
+                    .formatted(joiner.getClass(), DefaultBiJoiner.class, DefaultBiNeighborhoodsJoiner.class));
         }
     }
 

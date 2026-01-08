@@ -1,0 +1,588 @@
+[#neighborhoods]
+= Neighborhoods: A new way to define custom moves
+:doctype: book
+:sectnums:
+:icons: font
+
+IMPORTANT: The Neighborhoods API is an active research project.
+It intends to simplify the creation of custom moves, eventually replacing xref:optimization-algorithms/move-selector-reference.adoc[move selectors].
+The component is under development and many key features are yet to be delivered.
+While we believe that the basic building blocks of the API are already stable,
+we reserve the right to change the API or remove any part of it.
+Your feedback is highly appreciated and will be imperative in shaping the future of this component.
+
+In operations research, a _neighborhood_ is a set of solutions that are "close" to a given solution.
+The definition of "close" depends on the problem domain and the solution representation.
+For example, in a vehicle routing problem, a neighborhood might consist of all solutions that can be reached by swapping the routes of two vehicles.
+In such a case, the neighborhood would include solutions reachable from the current solution after a perturbation,
+but with slight variations in the routes taken by the vehicles.
+
+The operation of moving from one solution to another within a neighborhood is often referred to as a _move_, or a perturbation.
+Methods such as xref:optimization-algorithms/local-search.adoc[metaheuristics] explore these neighborhoods
+to find better solutions by evaluating the moves and selecting the most promising ones,
+in order to find the best solution according to xref:constraints-and-score/overview.adoc#scoreLevel[user-defined constraints].
+
+In order for a metaheuristics-based solver such as Timefold Solver to explore the solution space effectively,
+it needs a variety of move types to generate a diverse set of neighboring solutions.
+For a long time, that role was fulfilled by xref:optimization-algorithms/move-selector-reference.adoc[move selectors].
+However, move selectors have limitations that make it very difficult to create complex, high-performing moves,
+and this can in turn lead to suboptimal solver performance.
+
+The Neighborhoods API is a new way to define moves in Timefold Solver.
+It is intended to be a flexible and easy way to create more complex but high-performing moves.
+This flexibility allows users to quickly prototype and experiment
+with different move types as well as create their own custom moves.
+
+[#keyConcepts]
+== Key concepts
+
+The Neighborhoods API is built around a few key concepts:
+
+Move:: The bottom-most building block of the Neighborhoods API.
+A move represents a distinct type of change to the solution.
+Examples include changing the value of a planning variable or swapping the values of two planning entities.
+Move Stream:: Builds a set of moves, based on a declarative programming model.
+It defines how to create moves for a given solution.
+For example, if the move is to swap two visits for a vehicle,
+it would specify all pairs of visits that can be swapped for each vehicle.
+Neighborhood:: Bundles all the move streams that together define a full set of moves available for the solver to choose from.
+
+In the following sections, we will explore each of these concepts in more detail.
+
+=== Note on terminology
+
+As much as we try to align with established terminology in the operations research community,
+in this case we make one exception.
+In the rest of this documentation, _a neighborhood_ refers to a set of _moves_ that can be applied to a given solution, and moves from this neighborhood lead the solver to neighboring solutions.
+This is a distinction in name only and has no impact on the underlying concepts.
+
+
+[#neighborhoodsMove]
+== Moves and their purpose
+
+In the Neighborhoods API, a _move_ represents a distinct type of perturbation of the current working solution.
+Moves are the fundamental building blocks of the Neighborhoods API,
+and they define how the solver can explore the solution space.
+For example, in a vehicle routing problem,
+a move might involve changing the assignment of a delivery to a different vehicle
+or swapping the routes of two vehicles.
+
+In technical terms, a move is an implementation of the `ai.timefold.solver.core.preview.api.move.Move` interface.
+Let's explore that interface in detail.
+
+[#neighborhoodsMoveAnatomy]
+=== Anatomy of a move
+
+The `Move` interface specifies the following methods that must be implemented:
+
+`void execute(MutableSolutionView solutionView)`::
+This method makes changes to the given solution.
+`MutableSolutionView` provides methods to safely modify the planning variables of the working solution.
+
+For compatibility with xref:optimization-algorithms/local-search.adoc#tabuSearch[Tabu Search],
+it is also recommended to override the following methods:
+
+- `equals()` and `hashCode()`,
+- `Collection<Object> getPlanningEntities()`,
+- and `Collection<Object> getPlanningValues()`.
+
+Finally, the `Move` interface specifies the following methods
+that the user can optionally override to gain access to additional solver features:
+
+`Move rebase(Rebaser rebaser)`::
+This method creates a copy of the move that is applicable to a different working solution.
+This is only necessary when the solver is configured to use xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving].
+`String describe()`::
+This method returns an identifier for the move type, which is used by parts of xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[the benchmarker]
+to separate results by move type.
+For example, if your move changes the value of variable called "employee" on an entity called "Task",
+you might return "TaskChange(employee)" from this method.
+Avoid whitespace and any special characters.
+
+We encourage you to also override the `toString()` method of your move implementation
+to provide a human-readable description of the specific move instance,
+which is useful for debugging and logging purposes.
+
+[#neighborhoodsMoveExecution]
+=== Move execution
+
+The method `void execute(MutableSolutionView solutionView)` defines how the move modifies the solution.
+It uses `MutableSolutionView` to read information about the solution, and to make changes to it.
+Implementations of the method may be as short as a single line of code:
+
+[source,java,options="nowrap"]
+----
+    PlanningVariableMetaModel<Timetable, Lesson, Timeslot> timeslotVariable = ...;
+    Lesson lesson = ...;
+    Timeslot timeslot = ...;
+
+    @Override
+    public void execute(MutableSolutionView<Timetable> solutionView) {
+        solutionView.changeVariable(timeslotVariable, lesson, timeslot);
+    }
+----
+
+This example changes the value of a planning variable called `timeslotVariable`
+for a planning entity called `lesson`, assigning it the new value `timeslot`.
+
+`solutionView.changeVariable(...)` is a method provided by `MutableSolutionView`
+that safely changes the value of a planning variable on a planning entity.
+It ensures that all necessary notifications are sent to the solver,
+so that the score can be recalculated correctly both after the move is executed and when it is undone.
+This method is just one of many provided by `MutableSolutionView`;
+other examples include specialized methods such as `swapValuesBetweenLists(...)`.
+We invite you to explore the interface to discover all the available options.
+
+`lesson` and `timeslot` are fields of the move class, introduced by the caller.
+
+`timeslotVariable` comes from the Domain MetaModel API,
+and serves to uniquely identify the planning variable which the move will affect.
+
+
+[#neighborhoodsDomainMetamodel]
+==== Domain metamodel
+
+In order to uniquely and quickly identify planning entities and planning variables,
+we use the Domain MetaModel API.
+It provides classes that represent the structure of the planning solution, specifically:
+
+`PlanningSolutionMetaModel`::
+Represents the entire planning solution.
+It gives access to individual planning entity and planning variable metamodels.
+`PlanningEntityMetaModel`::
+Represents a planning entity class.
+It gives access to its planning variable metamodels, both genuine and shadow.
+`VariableMetaModel`::
+Represents a planning variable on a planning entity class.
+It further specializes into `PlanningVariableMetaModel` for a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable],
+`PlanningListVariableMetaModel` for a xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable],
+and `ShadowVariableMetaModel` for a xref:using-timefold-solver/modeling-planning-problems.adoc#shadowPlanningVariables[shadow variable].
+
+These implementations are type-safe and provide methods
+to access the relevant parts of the planning solution structure.
+They do not provide any means of modifying the state of the solution,
+or for reading it.
+
+Here's how you can obtain a `PlanningVariableMetaModel` instance
+for a basic planning variable called `timeslot` on a planning entity called `Lesson`
+from the `Timetable` planning solution class:
+
+[source,java,options="nowrap"]
+----
+PlanningSolutionMetaModel<Timetable> solutionMetaModel = ...; // The solver will give this to you.
+PlanningVariableMetaModel<Timetable, Lesson, Timeslot> timeslotVariable =
+        solutionMetaModel.entity(Lesson.class)
+                .genuineVariable("timeslot");
+----
+
+If any of the entities or variables cannot be found,
+the code will fail with a well-defined exception,
+preventing mistakes from spreading through your code.
+
+The code above can often be simplified with Java's local type inference:
+
+[source,java,options="nowrap"]
+----
+var solutionMetaModel = ...; // The solver will give this to you.
+var timeslotVariable = solutionMetaModel.entity(Lesson.class)
+                .genuineVariable("timeslot", Timeslot.class);
+----
+
+NOTE: Long-time users of Timefold Solver may be familiar with the concept of variable descriptors.
+The Domain MetaModel API is a modern replacement for variable descriptors,
+offering a more type-safe and user-friendly way to interact with the planning solution structure.
+It is recommended to use the Domain MetaModel API for all new developments,
+especially as the variable descriptor API is not public
+and therefore not covered by backward compatibility guarantees.
+
+[#neighborhoodsExampleMove]
+=== Example move implementation
+
+The following example shows a simple move implementation which changes the value of a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable],
+assigning a timeslot to a lesson in the school timetabling problem.
+It brings together all the concepts discussed above.
+
+[source,java,options="nowrap"]
+----
+public final class ChangeMove implements Move<Timetable> {
+
+    private final PlanningVariableMetaModel<Timetable, Lesson, Timeslot> timeslotVariable;
+    private final Lesson lesson;
+    private final Timeslot timeslot;
+
+    public ChangeMove(PlanningVariableMetaModel<Timetable, Lesson, Timeslot> timeslotVariable,
+            Lesson lesson, Timeslot timeslot) {
+        this.timeslotVariable = Objects.requireNonNull(timeslotVariable);
+        this.lesson = Objects.requireNonNull(lesson);
+        this.timeslot = timeslot;
+    }
+
+    @Override
+    public void execute(MutableSolutionView<Timetable> solutionView) {
+        solutionView.changeVariable(timeslotVariable, lesson, timeslot);
+    }
+
+    @Override
+    public ChangeMove rebase(Rebaser rebaser) {
+        return new ChangeMove(timeslotVariable,
+                rebaser.rebase(lesson),
+                rebaser.rebase(timeslot));
+    }
+
+    @Override
+    public Collection<Lesson> getPlanningEntities() {
+        return Collections.singletonList(lesson);
+    }
+
+    @Override
+    public Collection<Timeslot> getPlanningValues() {
+        return Collections.singletonList(timeslot);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ChangeMove other
+                && Objects.equals(timeslotVariable, other.timeslotVariable)
+                && Objects.equals(lesson, other.lesson)
+                && Objects.equals(timeslot, other.timeslot);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(timeslotVariable, lesson, timeslot);
+    }
+
+    @Override
+    public String toString() {
+        return lesson + " -> " + timeslot;
+    }
+
+}
+----
+
+[#neighborhoodsBuiltInMoves]
+=== Built-in moves
+
+Timefold Solver provides several built-in move implementations
+that cover the most common use cases.
+These moves are available through the `ai.timefold.solver.core.preview.api.move.builtin.Moves` class.
+
+For example, here's how you can obtain a `ChangeMove` instance using the built-in implementation:
+
+[source,java,options="nowrap"]
+----
+var timeslotVariable = ...;     // Comes from the solver.
+var lesson = ...;               // Comes from your solution.
+var newTimeslot = ...;          // Comes from your solution.
+var move = Moves.change(timeslotVariable, lesson, newTimeslot);
+----
+
+The built-in moves include, among others:
+
+`ChangeMove`:: Changes the value of a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable] on a planning entity.
+`SwapMove`:: Swaps the values of a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable] between two planning entities.
+`ListChangeMove`:: Changes the position of a value in the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] of a planning entity.
+`ListSwapMove`:: Swaps xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] elements between planning entities.
+
+We encourage you to explore the `ai.timefold.solver.core.preview.api.move.builtin.Moves` API
+to discover all the available built-in move implementations.
+Over time, we expect to add all commonly used move types to this collection,
+reducing the need for custom move implementations in most scenarios.
+
+
+[#neighborhoodsMoveStreams]
+== Producing custom moves using Move Streams
+
+While a move is an atomic change to a solution,
+Move Streams are a way to generate a sequence of moves for the solver to choose from,
+based on the current state of the working solution.
+These moves allow the solver to transition from one solution to a neighboring solution,
+and Move Streams define which moves will be available.
+
+For users familiar with the xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams API],
+many of the concepts of Move Streams will feel familiar.
+We retain the declarative nature of the API with its underlying incremental evaluation and resulting excellent performance characteristics,
+while bringing just-in-time move generation to the table as well.
+
+Users familiar with xref:optimization-algorithms/move-selector-reference.adoc[move selectors] will find that Move Streams provide a more flexible and powerful way to define custom moves.
+Many concepts of move selectors, such as filtering and selection strategies,
+are naturally integrated into the new fluent API,
+while other concepts (such as caching) are handled automatically by the framework.
+
+[#neighborhoodsMoveStreamsArchitecture]
+=== Architecture
+
+Move Streams consist of three key layers:
+
+Dataset enumeration::
+This layer is the most similar to Constraint Streams.
+It uses many of the same building blocks, and the same underlying execution engine,
+to define and efficiently cache a set of values to generate moves from.
+The product of this layer is an in-memory dataset of potential move elements.
+For example, you would enumerate a dataset of entities which your moves may want to change,
+based on some specific criteria.
+Sampling::
+Defines how to pick from the in-memory datasets generated by the enumeration layer.
+Typically, this involves picking a random combination of values from these datasets.
+Unlike the enumeration layer, which keeps its state in memory at all times,
+sampling happens just-in-time when the solver requests a new move.
+This avoids the creation of expensive and potentially huge cross-products.
+For example, if you've enumerated all entities and all possible values they can take,
+the sampling layer would randomly select one entity and one value to create a move.
+Move generation::
+Takes the sample of enumerated values and creates a move out of them.
+This move is then returned to the solver for execution.
+For example, having picked an entity and a value,
+you'd generate a change move to assign the value to that entity's variable.
+
+All three of these layers are defined together
+in an implementation of the `ai.timefold.solver.core.preview.api.neighborhood.MoveProvider` interface.
+Each such move provider is expected to describe a single type of move -
+for example, a move which tries different timeslot assignments in a school lesson.
+
+[source,java,options="nowrap"]
+----
+public class TimeslotChangeMoveProvider
+        implements MoveProvider<Timetable> {
+
+    private PlanningVariableMetaModel<Timetable, Lesson, Timeslot> timeslotVariable;
+
+    public TimeslotChangeMoveProvider(PlanningVariableMetaModel<Timetable, Lesson, Timeslot> timeslotVariable) {
+        this.timeslotVariable = Objects.requireNonNull(timeslotVariable);
+    }
+
+    @Override
+    public MoveStream<Timetable> build(MoveStreamFactory<Timetable> factory) {
+        var lessonEnumeration = factory.forEach(Lesson.class, false); // False means no null values.
+        var timeslotEnumeration = factory.forEach(Timeslot.class, false);
+        return factory.pick(lessonEnumeration)
+                .pick(timeslotEnumeration,
+                        filtering((solutionView, lesson, newTimeslot) -> lesson.timeslot != newTimeslot)) // Avoid no-op.
+                .asMove((solutionView, lesson, newTimeslot) -> Moves.change(timeslotVariable, lesson, newTimeslot));
+    }
+
+}
+----
+
+We will explore each of these concepts in more detail below.
+
+
+[#neighborhoodsEnumeration]
+=== Dataset enumeration
+
+The goal of dataset enumeration is to produce in-memory collections of values for the sampling layer to choose from.
+This in-memory collection is kept up-to-date incrementally as the working solution changes.
+The entry point for enumeration is the `MoveStreamFactory.forEach` method,
+which operates much like the xref:constraints-and-score/score-calculation.adoc#constraintStreamsForEach[`forEach()` method of Constraint Streams].
+By default, `forEach` will exclude pinned items, as generating moves for pinned items is typically undesirable.
+Additionally, it allows to specify whether it should include `null` in the resulting dataset or not;
+this is useful when generating moves for nullable planning variables.
+
+From there, many of the same building blocks are available,
+such as xref:constraints-and-score/score-calculation.adoc#constraintStreamsFilter[`filter()`],
+xref:constraints-and-score/score-calculation.adoc#constraintStreamsJoin[`join()`],
+xref:constraints-and-score/score-calculation.adoc#constraintStreamsConditionalPropagation[`ifExists()`]
+and others.
+However, some building blocks from Constraint Streams are not available here,
+and will only become available if we find a good justification to include them.
+We also currently only support streams of cardinality one or two ("uni" and "bi" streams),
+as higher cardinalities are likely unnecessary for move generation.
+
+NOTE: As enumerated datasets are kept in memory at all times,
+be cautious when enumerating large datasets and apply filtering as early as possible.
+Take special care to avoid large cross-products.
+This consideration is part of the rationale behind not including tri- and quad-streams;
+the mere existence of these suggests memory-intensive cross-products.
+
+All performance and functionality characteristics of Constraint Streams still apply here,
+as the same underlying engine is used to execute these streams.
+However, the signature of some of these methods may be slightly different to better suit the purpose of move generation. Consider a simple `filter` in Constraint Streams:
+
+[source,java,options="nowrap"]
+----
+// Only return lessons that are not scheduled on Monday morning.
+var lessonStream = factory.forEach(Lesson.class)
+        .filter(lesson -> lesson.timeslot != MONDAY_MORNING)
+        ...
+----
+
+Notice that the `filter` predicate only has access to the `lesson` instance.
+In dataset enumeration, the predicate also has access to a `SolutionView` instance,
+which provides read-only access to the working solution to be able to make some complex decisions:
+
+[source,java,options="nowrap"]
+----
+// Only return lessons that can be scheduled on Monday morning.
+var lessonEnumeration = factory.forEach(Lesson.class, false)
+        .filter((solutionView, lesson) -> solutionView.isValueInRange(timeslotVariable, lesson, MONDAY_MORNING))
+        ...
+----
+
+In this case, we have used the `SolutionView.isValueInRange` method to check whether
+the `MONDAY_MORNING` timeslot is a valid value for the `timeslotVariable` of the given `lesson`.
+If that's not the case, we filter out this lesson from the enumeration
+and therefore will not generate moves which use this lesson.
+
+The same pattern applies to other building blocks as well, such as `join` and `ifExists`;
+essentially, the `solutionView` argument was added to every predicate or function where it could be useful.
+
+
+[#neighborhoodsSampling]
+=== Sampling the datasets
+
+Once we have defined our enumerations, we need to define how to pick from them to create moves.
+This is done using the `MoveStreamFactory.pick` method,
+which takes an enumeration as argument and returns another builder to continue picking from more enumerations.
+
+The difference between enumeration and sampling is that enumeration keeps its state in memory at all times,
+while sampling happens just-in-time when the solver requests a new move.
+This is important to avoid creating cross-products of enumerated datasets,
+which would make move generation practically impossible within the constraints of today's hardware.
+
+Picking happens randomly; that is, each time the solver requests a new move,
+the sampling phase randomly selects one item from each enumeration.
+This random selection is uniform across the entire dataset; that is, each item has an equal chance of being selected.
+However, we can apply filtering to the sampling phase to avoid certain combinations of items,
+as we've already seen in the simple example above:
+
+[source,java,options="nowrap"]
+----
+public class TimeslotChangeMoveProvider implements MoveProvider<Timetable> {
+
+    ...
+
+    @Override
+    public MoveStream<Timetable> build(MoveStreamFactory<Timetable> factory) {
+        ...
+        return factory.pick(lessonEnumeration)
+                .pick(timeslotEnumeration,
+                        filtering((solutionView, lesson, newTimeslot) -> lesson.timeslot != newTimeslot))
+                ...
+    }
+
+}
+----
+
+The previous code snippet applies a filter to the picking of `timeslotEnumeration`
+in order to avoid picking the same timeslot that the lesson is already assigned to.
+This prevents generating a move which would not change the solution at all.
+It is the responsibility of the move provider to avoid generating no-op moves;
+if the solver receives a no-op move, it will execute it anyway, wasting time and resources.
+
+The end result of the sampling phase is a random combination of items from the enumerations;
+in the example above, this would be a random `Lesson` and a random `Timeslot`.
+This pair of picked items is then passed to the move generation phase,
+and the process of sampling is repeated each time the solver requests a new move to be generated.
+
+The sampling phase currently only supports applying filtering and a limited selection of joiners,
+found in the `ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners` class.
+More advanced selection strategies,
+such as xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection],
+are likely to materialize here in the future as well.
+
+[#neighborhoodsMoveGeneration]
+=== Move Generation
+
+Having already enumerated datasets and defined how to sample from them,
+the final step is to generate a move from the picked items.
+This is done using the `asMove` method on the builder,
+which takes a function that creates a move from the picked items.
+This function also has access to the `SolutionView` instance,
+in case the move generation logic needs to read some additional data from the working solution.
+
+In our simple example, move generation looks like this:
+
+[source,java,options="nowrap"]
+----
+public class TimeslotChangeMoveProvider implements MoveProvider<Timetable> {
+
+    ...
+
+    @Override
+    public MoveStream<Timetable> build(MoveStreamFactory<Timetable> factory) {
+        ...
+        return factory.pick(...)
+                .pick(...)
+                .asMove((solutionView, lesson, newTimeslot) -> Moves.change(timeslotVariable, lesson, newTimeslot));
+    }
+
+}
+----
+
+In the previous example, we created a built-in change move using the `Moves.change` factory method,
+which takes the planning variable meta-model, the entity to change,
+and the new value to assign to the variable.
+This move is then returned to the solver for execution.
+
+The move generation function can create any type of move -
+see the <<neighborhoodsMove,section on moves>> for more details.
+However, we expect that most move providers will eventually be able to use built-in moves,
+which will be expanded over time to cover more use cases.
+
+
+[#neighborhoodsConfiguration]
+== Configuring the solver to use Neighborhoods
+
+To use the Neighborhoods API,
+you need to implement the `ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider` interface
+and reference the implementation class in the solver configuration like so:
+
+[source,xml]
+----
+<solver xmlns="https://timefold.ai/xsd/solver">
+  <enablePreviewFeature>NEIGHBORHOODS</enablePreviewFeature>
+   ...
+  <localSearch>
+    <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
+  </localSearch>
+</solver>
+----
+
+The `NeighborhoodProvider` interface has a single method:
+
+[source,java,options="nowrap"]
+----
+public interface NeighborhoodProvider<Solution_> {
+
+    Neighborhood defineNeighborhood(NeighborhoodBuilder<Solution_> builder);
+
+}
+----
+
+The `defineNeighborhood` method receives a `NeighborhoodBuilder` instance
+that you can use to include your move provider:
+
+[source,java,options="nowrap"]
+----
+public class MyNeighborhoodProvider implements NeighborhoodProvider<MySolution> {
+
+    @Override
+    public Neighborhood defineNeighborhood(NeighborhoodBuilder<MySolution> builder) {
+        var timeslotVariable = builder.getSolutionMetaModel()
+                .entity(Lesson.class)
+                .variable("timeslot", Timeslot.class);
+        return builder.add(new TimeslotChangeMoveProvider(timeslotVariable))
+                .build();
+    }
+
+}
+----
+
+Use the `add` method to include every single move provider you want to use in the neighborhood.
+Finally, call the `build` method to create the `Neighborhood` instance.
+
+[#neighborhoodsRuntimeLimitations]
+=== Runtime limitations
+
+As the Neighborhoods API is still in an early stage of development,
+it has some limitations which we will address in future releases:
+
+- When `neighborhoodProviderClass` is used, it is not yet possible to disable move selector-based neighborhoods.
+You should therefore only include moves which are not included by the solver by default.
+- The Neighborhoods API does not yet support move probability weighting.
+All move providers included in the neighborhood have the same probability of being selected to generate a move.
+- The Neighborhoods API also has the same probability of selection as the move-selector based neighborhood.
+This means that the solver will first pick whether to use the Neighborhoods API or the move selectors to generate the next move, and only then use that particular method to generate the move.
+
+The coexistence of Move Selectors and Neighborhoods is an issue we are actively working on,
+as Neighborhoods is still far from being a full replacement of Move Selectors.

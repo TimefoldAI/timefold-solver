@@ -14,8 +14,8 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Abstr
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.IfExistsEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeUniEnumeratingStream;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.DefaultBiEnumeratingJoiner;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingPredicate;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -28,14 +28,14 @@ final class IfExistsUniEnumeratingStream<Solution_, A, B>
     private final AbstractUniEnumeratingStream<Solution_, A> parentA;
     private final ForeBridgeUniEnumeratingStream<Solution_, B> parentBridgeB;
     private final boolean shouldExist;
-    private final DefaultBiEnumeratingJoiner<A, B> joiner;
-    private final @Nullable BiEnumeratingPredicate<Solution_, A, B> filtering;
+    private final DefaultBiNeighborhoodsJoiner<A, B> joiner;
+    private final @Nullable BiNeighborhoodsPredicate<Solution_, A, B> filtering;
 
     public IfExistsUniEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             AbstractUniEnumeratingStream<Solution_, A> parentA,
             ForeBridgeUniEnumeratingStream<Solution_, B> parentBridgeB, boolean shouldExist,
-            DefaultBiEnumeratingJoiner<A, B> joiner,
-            @Nullable BiEnumeratingPredicate<Solution_, A, B> filtering) {
+            DefaultBiNeighborhoodsJoiner<A, B> joiner,
+            @Nullable BiNeighborhoodsPredicate<Solution_, A, B> filtering) {
         super(enumeratingStreamFactory);
         this.parentA = parentA;
         this.parentBridgeB = parentBridgeB;
