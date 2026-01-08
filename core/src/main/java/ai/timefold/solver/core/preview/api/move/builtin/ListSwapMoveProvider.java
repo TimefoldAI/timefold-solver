@@ -7,24 +7,24 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
-import ai.timefold.solver.core.preview.api.neighborhood.joiner.NeighborhoodsJoiners;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
-        implements MoveDefinition<Solution_> {
+public class ListSwapMoveProvider<Solution_, Entity_, Value_>
+        implements MoveProvider<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final @Nullable Function<Entity_, Comparable> planningIdGetter;
 
-    public ListSwapMoveDefinition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public ListSwapMoveProvider(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
-        this.planningIdGetter = SwapMoveDefinition.getPlanningIdGetter(variableMetaModel.entity());
+        this.planningIdGetter = SwapMoveProvider.getPlanningIdGetter(variableMetaModel.entity());
     }
 
     @Override

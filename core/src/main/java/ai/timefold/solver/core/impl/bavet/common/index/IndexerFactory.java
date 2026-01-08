@@ -22,7 +22,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.penta.joiner.DefaultPentaJoiner;
 import ai.timefold.solver.core.impl.bavet.quad.joiner.DefaultQuadJoiner;
 import ai.timefold.solver.core.impl.bavet.tri.joiner.DefaultTriJoiner;
-import ai.timefold.solver.core.impl.neighborhood.joiner.DefaultBiNeighborhoodsJoiner;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
 import ai.timefold.solver.core.impl.util.Triple;

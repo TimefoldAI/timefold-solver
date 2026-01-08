@@ -10,10 +10,10 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Abstr
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
-import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsMapper;
-import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.BiEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

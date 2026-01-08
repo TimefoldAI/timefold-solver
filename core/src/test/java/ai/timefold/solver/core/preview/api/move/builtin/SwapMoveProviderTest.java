@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
@@ -27,7 +27,7 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class SwapMoveDefinitionTest {
+class SwapMoveProviderTest {
 
     @Test
     void univariate() {
@@ -45,7 +45,7 @@ class SwapMoveDefinitionTest {
         // With 3 entities, only 3 swap moves are possible: e1 <-> e2, e1 <-> e3, e2 <-> e3.
         // But we only have 2 values, guaranteeing that two entities will share a value.
         // Therefore there will only be 2 unique swap moves.
-        var moveIterable = createMoveIterable(new SwapMoveDefinition<>(entityMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new SwapMoveProvider<>(entityMetaModel), solutionDescriptor, solution);
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
                 .map(m -> (SwapMove<TestdataSolution, TestdataEntity>) m)
                 .toList();
@@ -86,7 +86,7 @@ class SwapMoveDefinitionTest {
         // With 3 entities, only 3 swap moves are possible: e1 <-> e2, e1 <-> e3, e2 <-> e3.
         // But we only have 2 unique combinations of values, guaranteeing that two entities will share values.
         // Therefore there will only be 2 unique swap moves.
-        var moveIterable = createMoveIterable(new SwapMoveDefinition<>(entityMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new SwapMoveProvider<>(entityMetaModel), solutionDescriptor, solution);
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
                 .map(m -> (SwapMove<TestdataMultiVarSolution, TestdataMultiVarEntity>) m)
                 .toList();
@@ -124,17 +124,17 @@ class SwapMoveDefinitionTest {
         // We only have 1 value for primary and secondary variables,
         // therefore with the tertiary variable excluded, there will be no swap moves.
         var moveIterable =
-                createMoveIterable(new SwapMoveDefinition<>(allowedVariableMetaModels), solutionDescriptor, solution);
+                createMoveIterable(new SwapMoveProvider<>(allowedVariableMetaModels), solutionDescriptor, solution);
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
                 .map(m -> (SwapMove<TestdataMultiVarSolution, TestdataMultiVarEntity>) m)
                 .toList();
         assertThat(moveList).isEmpty();
     }
 
-    private <Solution_> Iterable<Move<Solution_>> createMoveIterable(MoveDefinition<Solution_> moveDefinition,
+    private <Solution_> Iterable<Move<Solution_>> createMoveIterable(MoveProvider<Solution_> moveProvider,
             SolutionDescriptor<Solution_> solutionDescriptor, Solution_ solution) {
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.TRACKED_FULL_ASSERT);
-        var moveStream = moveDefinition.build(moveStreamFactory);
+        var moveStream = moveProvider.build(moveStreamFactory);
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
         var neighborhoodSession = moveStreamFactory.createSession(new SessionContext<>(scoreDirector));
         solutionDescriptor.visitAll(scoreDirector.getWorkingSolution(), neighborhoodSession::insert);

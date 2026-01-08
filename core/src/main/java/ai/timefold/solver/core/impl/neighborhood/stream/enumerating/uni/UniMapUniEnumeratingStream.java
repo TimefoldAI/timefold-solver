@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.bavet.uni.MapUniToUniNode;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeUniEnumeratingStream;
-import ai.timefold.solver.core.preview.api.neighborhood.function.UniNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

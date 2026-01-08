@@ -9,7 +9,7 @@ public interface NeighborhoodBuilder<Solution_> {
 
     PlanningSolutionMetaModel<Solution_> getSolutionMetaModel();
 
-    NeighborhoodBuilder<Solution_> add(MoveDefinition<Solution_> moveDefinition);
+    NeighborhoodBuilder<Solution_> add(MoveProvider<Solution_> moveProvider);
 
     Neighborhood build();
 

@@ -1,15 +1,15 @@
-package ai.timefold.solver.core.preview.api.neighborhood.joiner;
+package ai.timefold.solver.core.preview.api.neighborhood.stream.joiner;
 
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
-import ai.timefold.solver.core.impl.neighborhood.joiner.DefaultBiNeighborhoodsJoiner;
-import ai.timefold.solver.core.impl.neighborhood.joiner.FilteringBiNeighborhoodsJoiner;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.FilteringBiNeighborhoodsJoiner;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
-import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 
 import org.jspecify.annotations.NullMarked;
 

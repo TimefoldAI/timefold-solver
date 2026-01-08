@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
-import ai.timefold.solver.core.impl.neighborhood.joiner.BiNeighborhoodsJoinerComber;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractRightDataset;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.BiNeighborhoodsJoinerComber;
 
 import org.jspecify.annotations.NullMarked;
 

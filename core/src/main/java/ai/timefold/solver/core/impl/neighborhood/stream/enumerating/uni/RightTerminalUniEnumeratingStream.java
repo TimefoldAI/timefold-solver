@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 
-import ai.timefold.solver.core.impl.neighborhood.joiner.BiNeighborhoodsJoinerComber;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.TerminalEnumeratingStream;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.BiNeighborhoodsJoinerComber;
 
 import org.jspecify.annotations.NullMarked;
 

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.neighborhood.joiner;
+package ai.timefold.solver.core.impl.neighborhood.stream.joiner;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.function.Function;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.joiner.AbstractJoiner;
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
-import ai.timefold.solver.core.preview.api.neighborhood.joiner.BiNeighborhoodsJoiner;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 
 import org.jspecify.annotations.NullMarked;
 

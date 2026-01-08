@@ -7,10 +7,10 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
-import ai.timefold.solver.core.preview.api.neighborhood.joiner.NeighborhoodsJoiners;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -34,12 +34,12 @@ import org.jspecify.annotations.NullMarked;
  * user-defined change move providers needn't be this complex, as they understand the specifics of the domain.
  */
 @NullMarked
-public class ListChangeMoveDefinition<Solution_, Entity_, Value_>
-        implements MoveDefinition<Solution_> {
+public class ListChangeMoveProvider<Solution_, Entity_, Value_>
+        implements MoveProvider<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
 
-    public ListChangeMoveDefinition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public ListChangeMoveProvider(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
     }
 

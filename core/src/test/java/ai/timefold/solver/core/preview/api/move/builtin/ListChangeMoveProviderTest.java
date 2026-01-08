@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
@@ -31,7 +31,7 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class ListChangeMoveDefinitionTest {
+class ListChangeMoveProviderTest {
 
     @Test
     void fromSolution() {
@@ -48,7 +48,7 @@ class ListChangeMoveDefinitionTest {
         e2.getValueList().add(initiallyAssignedValue);
         solution.getEntityList().forEach(TestdataListEntity::setUpShadowVariables);
 
-        var moveIterable = createMoveIterable(new ListChangeMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new ListChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         assertThat(moveIterable).hasSize(4);
 
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
@@ -120,7 +120,7 @@ class ListChangeMoveDefinitionTest {
         e2.getValueList().add(initiallyAssignedValue);
         solution.getEntityList().forEach(TestdataListEntityProvidingEntity::setUpShadowVariables);
 
-        var moveIterable = createMoveIterable(new ListChangeMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new ListChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         assertThat(moveIterable).hasSize(4);
 
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
@@ -190,7 +190,7 @@ class ListChangeMoveDefinitionTest {
         var v3 = solution.getValueList().get(2);
         e2.getValueList().add(v1);
 
-        var moveIterable = createMoveIterable(new ListChangeMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new ListChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         assertThat(moveIterable).hasSize(5);
 
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
@@ -270,7 +270,7 @@ class ListChangeMoveDefinitionTest {
         e2.getValueList().add(v1);
         solution.getEntityList().forEach(TestdataAllowsUnassignedValuesListEntity::setUpShadowVariables);
 
-        var moveIterable = createMoveIterable(new ListChangeMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
+        var moveIterable = createMoveIterable(new ListChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         assertThat(moveIterable).hasSize(5);
 
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
@@ -350,10 +350,10 @@ class ListChangeMoveDefinitionTest {
         return (ListAssignMove<Solution_, Entity_, Value_>) moveList.get(index);
     }
 
-    private <Solution_> Iterable<Move<Solution_>> createMoveIterable(MoveDefinition<Solution_> moveDefinition,
+    private <Solution_> Iterable<Move<Solution_>> createMoveIterable(MoveProvider<Solution_> moveProvider,
             SolutionDescriptor<Solution_> solutionDescriptor, Solution_ solution) {
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.TRACKED_FULL_ASSERT);
-        var moveStream = moveDefinition.build(moveStreamFactory);
+        var moveStream = moveProvider.build(moveStreamFactory);
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
         var neighborhoodSession = moveStreamFactory.createSession(new SessionContext<>(scoreDirector));
         solutionDescriptor.visitAll(scoreDirector.getWorkingSolution(), neighborhoodSession::insert);

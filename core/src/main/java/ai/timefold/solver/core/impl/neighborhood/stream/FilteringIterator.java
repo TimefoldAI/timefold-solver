@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 
 import org.jspecify.annotations.NullMarked;
 

@@ -4,7 +4,7 @@ import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractRightDatasetInstance;
-import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

@@ -8,9 +8,9 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
-import ai.timefold.solver.core.preview.api.neighborhood.function.UniNeighborhoodsFilter;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.EnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.sampling.UniSamplingStream;
 
 import org.jspecify.annotations.NullMarked;
@@ -24,7 +24,7 @@ public interface MoveStreamFactory<Solution_> {
      * or {@link PlanningEntity planning entities}.
      * <p>
      * If the sourceClass is a {@link PlanningEntity}, then it is automatically
-     * {@link UniEnumeratingStream#filter(UniNeighborhoodsFilter) filtered} to only contain entities
+     * {@link UniEnumeratingStream#filter(UniNeighborhoodsPredicate) filtered} to only contain entities
      * which are not pinned.
      * <p>
      * If the sourceClass is a shadow entity (an entity without any genuine planning variables),
@@ -35,7 +35,7 @@ public interface MoveStreamFactory<Solution_> {
      * <p>
      * This stream returns genuine entities regardless of whether they have any null genuine planning variables.
      * This stream returns shadow entities regardless of whether they are assigned to any genuine entity.
-     * They can easily be {@link UniEnumeratingStream#filter(UniNeighborhoodsFilter) filtered out}.
+     * They can easily be {@link UniEnumeratingStream#filter(UniNeighborhoodsPredicate) filtered out}.
      *
      * @return A stream containing a tuple for each of the entities as described above.
      * @see PlanningPin An annotation to mark the entire entity as pinned.

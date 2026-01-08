@@ -12,7 +12,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public interface MoveDefinition<Solution_> {
+public interface MoveProvider<Solution_> {
 
     MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory);
 

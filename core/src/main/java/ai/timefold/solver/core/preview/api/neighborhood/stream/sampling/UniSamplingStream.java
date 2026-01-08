@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.sampling;
 
-import ai.timefold.solver.core.preview.api.neighborhood.joiner.BiNeighborhoodsJoiner;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 
 import org.jspecify.annotations.NullMarked;
 

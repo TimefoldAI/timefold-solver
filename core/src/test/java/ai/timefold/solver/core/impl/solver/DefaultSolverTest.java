@@ -74,8 +74,8 @@ import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.util.Pair;
-import ai.timefold.solver.core.preview.api.move.builtin.ChangeMoveDefinition;
-import ai.timefold.solver.core.preview.api.move.builtin.ListChangeMoveDefinition;
+import ai.timefold.solver.core.preview.api.move.builtin.ChangeMoveProvider;
+import ai.timefold.solver.core.preview.api.move.builtin.ListChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
@@ -2023,7 +2023,7 @@ class DefaultSolverTest {
             var variableMetamodel = builder.getSolutionMetaModel()
                     .entity(TestdataEntity.class)
                     .<TestdataValue> basicVariable();
-            return builder.add(new ChangeMoveDefinition<>(variableMetamodel))
+            return builder.add(new ChangeMoveProvider<>(variableMetamodel))
                     .build();
         }
 
@@ -2057,7 +2057,7 @@ class DefaultSolverTest {
             var variableMetamodel = builder.getSolutionMetaModel()
                     .entity(TestdataListEntity.class)
                     .listVariable();
-            return builder.add(new ListChangeMoveDefinition<>(variableMetamodel))
+            return builder.add(new ListChangeMoveProvider<>(variableMetamodel))
                     .build();
         }
 

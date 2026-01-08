@@ -2,11 +2,11 @@ package ai.timefold.solver.core.impl.neighborhood.stream.sampling;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.neighborhood.joiner.BiNeighborhoodsJoinerComber;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDataset;
-import ai.timefold.solver.core.preview.api.neighborhood.joiner.BiNeighborhoodsJoiner;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.BiNeighborhoodsJoinerComber;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.sampling.BiSamplingStream;
 
 import org.jspecify.annotations.NullMarked;

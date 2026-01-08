@@ -16,12 +16,12 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaM
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
-import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsMapper;
-import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
-import ai.timefold.solver.core.preview.api.neighborhood.function.UniNeighborhoodsFilter;
-import ai.timefold.solver.core.preview.api.neighborhood.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.sampling.UniSamplingStream;
 
 import org.jspecify.annotations.NullMarked;
@@ -141,7 +141,7 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     public record ListVariableNodeSharingSupportFunctions<Solution_, Entity_, Value_>(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniNeighborhoodsFilter<Solution_, Value_> unpinnedValueFilter,
+            UniNeighborhoodsPredicate<Solution_, Value_> unpinnedValueFilter,
             BiNeighborhoodsPredicate<Solution_, Entity_, Value_> valueInRangeFilter,
             BiNeighborhoodsMapper<Solution_, Entity_, Value_, ElementPosition> toElementPositionMapper) {
 

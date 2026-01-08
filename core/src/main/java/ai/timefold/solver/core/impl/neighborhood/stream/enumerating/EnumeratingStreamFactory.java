@@ -16,8 +16,8 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Termi
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.ForEachIncludingPinnedEnumeratingStream;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
-import ai.timefold.solver.core.preview.api.neighborhood.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
 

@@ -63,9 +63,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         var decider = buildDecider(phaseConfigPolicy, phaseTermination);
         return new DefaultLocalSearchPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(), phaseTermination,
-                decider)
-                .enableAssertions(phaseConfigPolicy.getEnvironmentMode())
-                .build();
+                decider).enableAssertions(phaseConfigPolicy.getEnvironmentMode()).build();
     }
 
     private LocalSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> phaseConfigPolicy,
@@ -99,8 +97,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     private LocalSearchDecider<Solution_> buildNeighborhoodsBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
-        return buildDecider(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass),
-                configPolicy, termination);
+        return buildDecider(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass), configPolicy,
+                termination);
     }
 
     private NeighborhoodsBasedMoveRepository<Solution_> buildNeighborhoodsBasedMoveRepository(
@@ -119,26 +117,24 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         }
 
         if (!NeighborhoodProvider.class.isAssignableFrom(neighborhoodProviderClass)) {
-            throw new IllegalArgumentException(
-                    "The neighborhoodProviderClass (%s) does not implement %s."
-                            .formatted(neighborhoodProviderClass, NeighborhoodProvider.class.getSimpleName()));
+            throw new IllegalArgumentException("The neighborhoodProviderClass (%s) does not implement %s."
+                    .formatted(neighborhoodProviderClass, NeighborhoodProvider.class.getSimpleName()));
         }
-        var neighborhoodProvider =
-                ConfigUtils.newInstance(LocalSearchPhaseConfig.class::getSimpleName, "neighborhoodProviderClass",
-                        neighborhoodProviderClass);
+        var neighborhoodProvider = ConfigUtils.newInstance(LocalSearchPhaseConfig.class::getSimpleName,
+                "neighborhoodProviderClass", neighborhoodProviderClass);
         var neighborhoodBuilder = new DefaultNeighborhoodBuilder<>(solutionMetaModel);
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
-        var moveDefinitionList = ((DefaultNeighborhood<Solution_>) neighborhoodProvider.defineNeighborhood(neighborhoodBuilder))
-                .getMoveDefinitionList();
-        return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, moveDefinitionList,
+        return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
+                ((DefaultNeighborhood<Solution_>) neighborhoodProvider.defineNeighborhood(neighborhoodBuilder))
+                        .getMoveProviderList(),
                 pickSelectionOrder() == SelectionOrder.RANDOM);
     }
 
     private LocalSearchDecider<Solution_> buildMixedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
-        var neighborhoodsMoveSelector = new NeighborhoodsMoveSelector<>(
-                buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass));
+        var neighborhoodsMoveSelector =
+                new NeighborhoodsMoveSelector<>(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass));
         var legacyMoveSelector = buildMoveSelector(configPolicy);
         if (legacyMoveSelector instanceof UnionMoveSelector<Solution_> unionMoveSelector) {
             if (unionMoveSelector.getSelectorProbabilityWeightFactory() != null) {
@@ -169,8 +165,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         if (moveRepository.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
             throw new IllegalStateException("""
                     The move repository (%s) is neverEnding (%s), but the forager (%s) does not support it.
-                    Maybe configure the <forager> with an <acceptedCountLimit>."""
-                    .formatted(moveRepository, moveRepository.isNeverEnding(), forager));
+                    Maybe configure the <forager> with an <acceptedCountLimit>.""".formatted(moveRepository,
+                    moveRepository.isNeverEnding(), forager));
         }
         var moveThreadCount = configPolicy.getMoveThreadCount();
         var environmentMode = configPolicy.getEnvironmentMode();
@@ -219,8 +215,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
 
     private Acceptor<Solution_> buildAcceptor(LocalSearchAcceptorConfig acceptorConfig,
             HeuristicConfigPolicy<Solution_> configPolicy) {
-        return AcceptorFactory.<Solution_> create(acceptorConfig)
-                .buildAcceptor(configPolicy);
+        return AcceptorFactory.<Solution_> create(acceptorConfig).buildAcceptor(configPolicy);
     }
 
     protected LocalSearchForager<Solution_> buildForager(HeuristicConfigPolicy<Solution_> configPolicy) {
@@ -255,8 +250,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     foragerConfig_.setPickEarlyType(LocalSearchPickEarlyType.FIRST_LAST_STEP_SCORE_IMPROVING);
                     break;
                 default:
-                    throw new IllegalStateException("The localSearchType (%s) is not implemented."
-                            .formatted(localSearchType_));
+                    throw new IllegalStateException("The localSearchType (%s) is not implemented.".formatted(localSearchType_));
             }
         }
         return LocalSearchForagerFactory.<Solution_> create(foragerConfig_).buildForager();
@@ -281,8 +275,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                 // The move selector config is not a composite selector, but it accepts Nearby autoconfiguration.
                 // We create a new UnionMoveSelectorConfig with the existing selector to enable Nearby autoconfiguration.
                 var moveSelectorCopy = (MoveSelectorConfig) moveSelectorConfig.copyConfig();
-                var updatedConfig = new UnionMoveSelectorConfig()
-                        .withMoveSelectors(moveSelectorCopy);
+                var updatedConfig = new UnionMoveSelectorConfig().withMoveSelectors(moveSelectorCopy);
                 moveSelectorFactory = MoveSelectorFactory.create(updatedConfig);
             }
             moveSelector = moveSelectorFactory.buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
@@ -314,9 +307,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             var basicVariableDescriptorList = solutionDescriptor.getBasicVariableDescriptorList();
             if (solutionDescriptor.hasChainedVariable() && basicVariableDescriptorList.size() == 1) {
                 // if there is only one chained variable, we add TailChainSwapMoveSelectorConfig
-                return new UnionMoveSelectorConfig()
-                        .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig(),
-                                new TailChainSwapMoveSelectorConfig());
+                return new UnionMoveSelectorConfig().withMoveSelectors(new ChangeMoveSelectorConfig(),
+                        new SwapMoveSelectorConfig(), new TailChainSwapMoveSelectorConfig());
             } else {
                 // Basic variables or a mixed model with basic and chained variables
                 return new UnionMoveSelectorConfig().withMoveSelectors(new ChangeMoveSelectorConfig(),

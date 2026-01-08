@@ -8,13 +8,13 @@ import ai.timefold.solver.core.impl.bavet.bi.UnindexedJoinBiNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.neighborhood.joiner.DefaultBiNeighborhoodsJoiner;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.JoinEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeUniEnumeratingStream;
-import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

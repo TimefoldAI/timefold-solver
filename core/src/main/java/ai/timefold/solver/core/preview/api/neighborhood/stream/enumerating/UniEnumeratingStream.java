@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating;
 
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
-import ai.timefold.solver.core.preview.api.neighborhood.function.UniNeighborhoodsFilter;
-import ai.timefold.solver.core.preview.api.neighborhood.function.UniNeighborhoodsMapper;
-import ai.timefold.solver.core.preview.api.neighborhood.joiner.BiNeighborhoodsJoiner;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -12,10 +12,10 @@ import org.jspecify.annotations.NullMarked;
 public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
 
     /**
-     * Exhaustively test each fact against the {@link UniNeighborhoodsFilter}
-     * and match if {@link UniNeighborhoodsFilter#test(SolutionView, Object)} returns true.
+     * Exhaustively test each fact against the {@link UniNeighborhoodsPredicate}
+     * and match if {@link UniNeighborhoodsPredicate#test(SolutionView, Object)} returns true.
      */
-    UniEnumeratingStream<Solution_, A> filter(UniNeighborhoodsFilter<Solution_, A> filter);
+    UniEnumeratingStream<Solution_, A> filter(UniNeighborhoodsPredicate<Solution_, A> filter);
 
     /**
      * As defined by {@link #join(UniEnumeratingStream, BiNeighborhoodsJoiner[])}, with the array being empty.

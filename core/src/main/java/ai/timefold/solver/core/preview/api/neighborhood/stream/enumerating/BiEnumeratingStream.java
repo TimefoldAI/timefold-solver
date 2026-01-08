@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating;
 
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsMapper;
-import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
-import ai.timefold.solver.core.preview.api.neighborhood.function.UniNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
 
 import org.jspecify.annotations.NullMarked;
 

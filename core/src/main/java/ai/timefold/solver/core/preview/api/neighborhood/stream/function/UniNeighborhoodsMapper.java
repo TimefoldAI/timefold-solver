@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.neighborhood.function;
+package ai.timefold.solver.core.preview.api.neighborhood.stream.function;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;

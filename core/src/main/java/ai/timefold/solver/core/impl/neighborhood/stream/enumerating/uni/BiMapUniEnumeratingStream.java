@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingS
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.AbstractBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeBiEnumeratingStream;
-import ai.timefold.solver.core.preview.api.neighborhood.function.UniNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

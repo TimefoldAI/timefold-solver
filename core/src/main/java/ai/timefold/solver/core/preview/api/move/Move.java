@@ -82,7 +82,8 @@ public interface Move<Solution_> {
      * It must not depend on the state of the {@link PlanningVariable planning variables}.
      * One thread might rebase a move before, amid or after another thread does that same move instance.
      * <p>
-     * This method is thread-safe.
+     * The default implementation throws an {@link UnsupportedOperationException},
+     * making multithreaded solving impossible unless the move class implements this method.
      *
      * @param rebaser Do not store this parameter in a field
      * @return New move that does the same change as this move on another solution instance
@@ -102,6 +103,9 @@ public interface Move<Solution_> {
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.
      * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
+     * <p>
+     * The default implementation throws an {@link UnsupportedOperationException},
+     * making tabu search impossible unless the move class implements this method.
      *
      * @return Each entity only once.
      */
@@ -120,6 +124,9 @@ public interface Move<Solution_> {
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.
      * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
+     * <p>
+     * The default implementation throws an {@link UnsupportedOperationException},
+     * making tabu search impossible unless the move class implements this method.
      *
      * @return Each value only once. May contain null.
      */

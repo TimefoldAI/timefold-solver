@@ -4,20 +4,20 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
-import ai.timefold.solver.core.preview.api.neighborhood.joiner.NeighborhoodsJoiners;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class ChangeMoveDefinition<Solution_, Entity_, Value_>
-        implements MoveDefinition<Solution_> {
+public class ChangeMoveProvider<Solution_, Entity_, Value_>
+        implements MoveProvider<Solution_> {
 
     private final PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
 
-    public ChangeMoveDefinition(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public ChangeMoveProvider(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
     }
 
