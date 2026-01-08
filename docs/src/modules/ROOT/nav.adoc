@@ -36,3 +36,11 @@
 ** xref:upgrading-timefold-solver/upgrade-from-optaplanner.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/backwards-compatibility.adoc[leveloffset=+1]
 * xref:enterprise-edition/enterprise-edition.adoc[leveloffset=+1]
+
+'''
+
+* Neighborhoods API (Preview)
+** xref:neighborhoods/overview.adoc[leveloffset=+1]
+** xref:neighborhoods/move.adoc[leveloffset=+1]
+** xref:neighborhoods/move-streams.adoc[leveloffset=+1]
+** xref:neighborhoods/configuring.adoc[leveloffset=+1]

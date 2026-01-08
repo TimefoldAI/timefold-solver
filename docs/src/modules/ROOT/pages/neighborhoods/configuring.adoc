@@ -1,0 +1,79 @@
+[#neighborhoodsConfiguring]
+= Configuring the solver to use Neighborhoods
+:doctype: book
+:sectnums:
+:icons: font
+
+IMPORTANT: The Neighborhoods API is an active research project.
+It intends to simplify the creation of custom moves, eventually replacing xref:optimization-algorithms/move-selector-reference.adoc[move selectors].
+The component is under development and many key features are yet to be delivered.
+While we believe that the basic building blocks of the API are already stable,
+we reserve the right to change the API or remove any part of it.
+Your feedback is highly appreciated and will be imperative in shaping the future of this component.
+
+[#neighborhoodsNeighborhoodProvider]
+== Neighborhood Provider
+
+To use Neighborhoods, you need to implement the `ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider` interface
+and reference the implementation class in the solver configuration like so:
+
+[source,xml]
+----
+<solver xmlns="https://timefold.ai/xsd/solver">
+  <enablePreviewFeature>NEIGHBORHOODS</enablePreviewFeature>
+   ...
+  <localSearch>
+    <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
+  </localSearch>
+</solver>
+----
+
+The `NeighborhoodProvider` interface has a single method:
+
+[source,java]
+----
+public interface NeighborhoodProvider<Solution_> {
+
+    Neighborhood defineNeighborhood(NeighborhoodBuilder<Solution_> builder);
+
+}
+----
+
+The `defineNeighborhood` method receives a `NeighborhoodBuilder` instance
+that you can use to include your move definitions:
+
+[source,java]
+----
+public class MyNeighborhoodProvider implements NeighborhoodProvider<MySolution> {
+
+    @Override
+    public Neighborhood defineNeighborhood(NeighborhoodBuilder<MySolution> builder) {
+        var timeslotVariable = builder.getSolutionMetaModel()
+                .entity(Lesson.class)
+                .variable("timeslot", Timeslot.class);
+        return builder.add(new TimeslotChangeMoveDefinition(timeslotVariable))
+                .build();
+    }
+
+}
+----
+
+Use the `add` method to include every single move definition you want to use in the neighborhood.
+Finally, call the `build` method to create the `Neighborhood` instance.
+
+[#neighborhoodsLimitations]
+== Limitations
+
+As the Neighborhoods API is still in an early stage of development,
+it has some limitations which we will address in future releases:
+
+- When `neighborhoodProviderClass` is used, it is not yet possible to disable move selector-based neighborhoods.
+You should therefore only include moves which are not included by the solver by default.
+If you wish to use the Neighborhoods API exclusively, you have to disable all move selectors manually.
+- The Neighborhoods API does not yet support move probability weighting.
+All move definitions included in the neighborhood have the same probability of being selected to generate a move.
+- The Neighborhoods API also has the same probability of selection as the move-selector based neighborhood.
+This means that the solver will first pick whether to use the Neighborhoods API or the move selectors to generate a move, and only then use that particular method to generate a move.
+
+The coexistence of Move Selectors and Neighborhoods is an issue we are actively working on,
+as Neighborhoods is still far from being a full replacement of Move Selectors.

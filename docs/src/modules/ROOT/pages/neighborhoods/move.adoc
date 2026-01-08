@@ -1,0 +1,244 @@
+[#neighborhoodsMove]
+= Moves and their purpose
+:doctype: book
+:sectnums:
+:icons: font
+
+IMPORTANT: The Neighborhoods API is an active research project.
+It intends to simplify the creation of custom moves, eventually replacing xref:optimization-algorithms/move-selector-reference.adoc[move selectors].
+The component is under development and many key features are yet to be delivered.
+While we believe that the basic building blocks of the API are already stable,
+we reserve the right to change the API or remove any part of it.
+Your feedback is highly appreciated and will be imperative in shaping the future of this component.
+
+[#neighborhoodsWhatIsAMove]
+== What is a Move?
+
+In the Neighborhoods API, a _move_ represents a distinct type of change to the solution.
+Moves are the fundamental building blocks of the Neighborhoods API,
+and they define how the solver can explore the solution space.
+For example, in a vehicle routing problem,
+a move might involve changing the assignment of a delivery to a different vehicle
+or swapping the routes of two vehicles.
+
+In technical terms, a move is an implementation of the `ai.timefold.solver.core.preview.api.move.Move` interface.
+Let's explore that interface in detail.
+
+[#neighborhoodsMoveAnatomy]
+== Anatomy of a move
+
+The `Move` interface defines the following methods which the user is required to implement:
+
+`void execute(MutableSolutionView solutionView)`::
+This method makes changes to the given solution.
+`MutableSolutionView` provides methods to safely modify the planning variables of the working solution.
+
+If you wish to use xref:optimization-algorithms/local-search.adoc#tabuSearch[Tabu Search],
+it is also recommended to override the following methods:
+
+`equals()` and `hashCode()` methods::
+Override to ensure that moves can be compared for equality.
+`Collection<Object> getPlanningEntities()`::
+Returns the planning entities that are affected by this move.
+`Collection<Object> getPlanningValues()`::
+Returns the planning values that are affected by this move.
+
+Finally, the `Move` interface defines the following methods
+that the user can optionally override to gain access to additional solver features:
+
+`Move rebase(Rebaser rebaser)`::
+This method creates a copy of the move that is applicable to a different working solution.
+This is only necessary when the solver is configured to use xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving].
+`String describe()`::
+This method returns an identifier for the move type, which is used by parts of xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[the benchmarker]
+to separate results by move type.
+For example, if your move changes the value of variable called "employee" on an entity called "Task",
+you might return "TaskChange(employee)" from this method.
+Avoid whitespace and any special characters.
+
+We encourage you to also override the `toString()` method of your move implementation
+to provide a human-readable description of the specific move instance,
+which is useful for debugging and logging purposes.
+
+[#neighborhoodsMoveExecution]
+== Move execution
+
+The `void execute(MutableSolutionView solutionView)` defines how the move modifies the solution.
+It uses `MutableSolutionView` to read information about the solution, and to make changes to it.
+
+The `execute` method implementation may be as short as a single line of code:
+
+[source,java]
+----
+    @Override
+    public void execute(MutableSolutionView<Timetable> solutionView) {
+        solutionView.changeVariable(timeslotVariable, lesson, timeslot);
+    }
+----
+
+This example changes the value of a planning variable called `timeslotVariable`
+for a planning entity called `lesson`, assigning it the new value `timeslot`.
+
+`solutionView.changeVariable(...)` is a method provided by `MutableSolutionView`
+that safely changes the value of a planning variable on a planning entity.
+It ensures that all necessary notifications are sent to the solver,
+so that the score can be recalculated correctly both after the move is executed and when it is undone.
+This method is just one of many provided by `MutableSolutionView`;
+other examples include specialized methods such as `swapValuesBetweenLists(...)`.
+We invite you to explore the interface to discover all the available options.
+
+`lesson` and `timeslot` are fields of the move class, provided by move definition logic.
+
+`timeslotVariable` comes from the Domain MetaModel API,
+and serves to uniquely identify the planning variable which the move will affect.
+
+
+[#neighborhoodsDomainMetamodel]
+=== Domain metamodel
+
+In order to uniquely and quickly identify planning entities and planning variables,
+we use the Domain MetaModel API.
+It provides classes that represent the structure of the planning solution, specifically:
+
+`PlanningSolutionMetaModel`::
+Represents the entire planning solution.
+It gives access to individual planning entity and planning variable metamodels.
+`PlanningEntityMetaModel`::
+Represents a planning entity class.
+It gives access to its planning variable metamodels, both genuine and shadow.
+`VariableMetaModel`::
+Represents a planning variable on a planning entity class.
+It further specializes into `PlanningVariableMetaModel` for a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable],
+`PlanningListVariableMetaModel` for a xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable],
+and `ShadowVariableMetaModel` for a xref:using-timefold-solver/modeling-planning-problems.adoc#shadowPlanningVariables[shadow variable].
+
+These implementations are type-safe and provide methods
+to access the relevant parts of the planning solution structure.
+They do not provide any means of modifying the state of the solution,
+or for reading it.
+
+Here's how you can obtain a `PlanningVariableMetaModel` instance
+for a basic planning variable called `timeslot` on a planning entity called `Lesson`
+from the `Timetable` planning solution class:
+
+[source,java]
+----
+PlanningSolutionMetaModel<Timetable> solutionMetaModel = ...; // The solver will give this to you.
+PlanningVariableMetaModel<Timetable, Lesson, Timeslot> timeslotVariable =
+        solutionMetaModel.entity(Lesson.class)
+                .genuineVariable("timeslot");
+----
+
+If any of the entities or variables cannot be found,
+the code will fail with a well-defined exception,
+preventing mistakes from spreading through your code.
+
+The code above can often be simplified with Java's local type inference:
+
+[source,java]
+----
+var solutionMetaModel = ...; // The solver will give this to you.
+var timeslotVariable = solutionMetaModel.entity(Lesson.class)
+                .genuineVariable("timeslot", Timeslot.class);
+----
+
+NOTE: Long-time users of Timefold Solver may be familiar with the concept of variable descriptors.
+The Domain MetaModel API is a modern replacement for variable descriptors,
+offering a more type-safe and user-friendly way to interact with the planning solution structure.
+It is recommended to use the Domain MetaModel API for all new developments,
+especially as the variable descriptor API is not public
+and therefore not covered by backward compatibility guarantees.
+
+[#neighborhoodsExampleMove]
+== Example move implementation
+
+The following example shows a simple move implementation which changes the value of a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable],
+assigning a timeslot to a lesson in the school timetabling problem.
+It brings together all the concepts discussed above.
+
+[source,java]
+----
+public final class ChangeMove implements Move<Timetable> {
+
+    private final PlanningVariableMetaModel<Timetable, Lesson, Timeslot> timeslotVariable;
+    private final Lesson lesson;
+    private final Timeslot timeslot;
+
+    public ChangeMove(PlanningVariableMetaModel<Timetable, Lesson, Timeslot> timeslotVariable,
+            Lesson lesson, Timeslot timeslot) {
+        this.timeslotVariable = Objects.requireNonNull(timeslotVariable);
+        this.lesson = Objects.requireNonNull(lesson);
+        this.timeslot = timeslot;
+    }
+
+    @Override
+    public void execute(MutableSolutionView<Timetable> solutionView) {
+        solutionView.changeVariable(timeslotVariable, lesson, timeslot);
+    }
+
+    @Override
+    public ChangeMove rebase(Rebaser rebaser) {
+        return new ChangeMove(timeslotVariable,
+                rebaser.rebase(lesson),
+                rebaser.rebase(timeslot));
+    }
+
+    @Override
+    public Collection<Lesson> getPlanningEntities() {
+        return Collections.singletonList(lesson);
+    }
+
+    @Override
+    public Collection<Timeslot> getPlanningValues() {
+        return Collections.singletonList(timeslot);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ChangeMove other
+                && Objects.equals(timeslotVariable, other.timeslotVariable)
+                && Objects.equals(lesson, other.lesson)
+                && Objects.equals(timeslot, other.timeslot);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(timeslotVariable, lesson, timeslot);
+    }
+
+    @Override
+    public String toString() {
+        return lesson + " -> " + timeslot;
+    }
+
+}
+----
+
+[#neighborhoodsBuiltInMoves]
+== Built-in moves
+
+Timefold Solver provides several built-in move implementations
+that cover the most common use cases.
+These moves are available through the `ai.timefold.solver.core.preview.api.move.builtin.Moves` class.
+
+For example, here's how you can obtain a `ChangeMove` instance using the built-in implementation:
+
+[source,java]
+----
+var timeslotVariable = ...;     // Comes from the solver.
+var lesson = ...;               // Comes from your solution.
+var newTimeslot = ...;          // Comes from your solution.
+var move = Moves.change(timeslotVariable, lesson, newTimeslot);
+----
+
+The built-in moves include, among others:
+
+`ChangeMove`:: Changes the value of a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable] on a planning entity.
+`SwapMove`:: Swaps the values of a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable] between two planning entities.
+`ListChangeMove`:: Changes the position of a value in the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] of a planning entity.
+`ListSwapMove`:: Swaps xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] elements between planning entities.
+
+We encourage you to explore the `ai.timefold.solver.core.preview.api.move.builtin.Moves` API
+to discover all the available built-in move implementations.
+Over time, we expect to add all commonly used move types to this collection,
+reducing the need for custom move implementations in most scenarios.

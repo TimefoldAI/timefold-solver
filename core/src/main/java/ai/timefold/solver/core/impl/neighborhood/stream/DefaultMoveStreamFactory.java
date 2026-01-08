@@ -16,12 +16,12 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaM
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
+import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.function.UniNeighborhoodsFilter;
+import ai.timefold.solver.core.preview.api.neighborhood.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.EnumeratingJoiners;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingMapper;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingPredicate;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingFilter;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.sampling.UniSamplingStream;
 
 import org.jspecify.annotations.NullMarked;
@@ -104,7 +104,7 @@ public final class DefaultMoveStreamFactory<Solution_>
         // eliminating values which do not match that entity's value range.
         // It maps these pairs to expected target positions in that entity's list variable.
         return unpinnedEntities.join(unpinnedValues,
-                EnumeratingJoiners.filtering(nodeSharingSupportFunctions.valueInRangeFilter))
+                NeighborhoodsJoiners.filtering(nodeSharingSupportFunctions.valueInRangeFilter))
                 .map(nodeSharingSupportFunctions.toElementPositionMapper)
                 .distinct();
     }
@@ -128,8 +128,8 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     public record NodeSharingSupportFunctions<Solution_, Entity_, Value_>(
             PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            BiEnumeratingPredicate<Solution_, Entity_, Value_> differentValueFilter,
-            BiEnumeratingPredicate<Solution_, Entity_, Value_> valueInRangeFilter) {
+            BiNeighborhoodsPredicate<Solution_, Entity_, Value_> differentValueFilter,
+            BiNeighborhoodsPredicate<Solution_, Entity_, Value_> valueInRangeFilter) {
 
         public NodeSharingSupportFunctions(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
             this(variableMetaModel,
@@ -141,9 +141,9 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     public record ListVariableNodeSharingSupportFunctions<Solution_, Entity_, Value_>(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniEnumeratingFilter<Solution_, Value_> unpinnedValueFilter,
-            BiEnumeratingPredicate<Solution_, Entity_, Value_> valueInRangeFilter,
-            BiEnumeratingMapper<Solution_, Entity_, Value_, ElementPosition> toElementPositionMapper) {
+            UniNeighborhoodsFilter<Solution_, Value_> unpinnedValueFilter,
+            BiNeighborhoodsPredicate<Solution_, Entity_, Value_> valueInRangeFilter,
+            BiNeighborhoodsMapper<Solution_, Entity_, Value_, ElementPosition> toElementPositionMapper) {
 
         public ListVariableNodeSharingSupportFunctions(
                 PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {

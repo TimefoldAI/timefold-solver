@@ -411,6 +411,7 @@ only set the distribution type (so without a `distributionSizeMaximum` parameter
 ----
 
 
+[#multithreadedSolving]
 [#enterpriseMultithreadedSolving]
 === Multi-threaded solving
 

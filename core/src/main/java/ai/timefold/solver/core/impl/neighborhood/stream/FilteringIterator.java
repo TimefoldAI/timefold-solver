@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -17,7 +17,7 @@ final class FilteringIterator<Solution_, A, B> implements Iterator<UniTuple<B>> 
     private static final UniTuple EMPTY_TUPLE = UniTuple.of(0);
 
     private final SolutionView<Solution_> solutionView;
-    private final BiEnumeratingPredicate<Solution_, A, B> filter;
+    private final BiNeighborhoodsPredicate<Solution_, A, B> filter;
     private final UniTuple<A> leftTuple;
     private final Iterator<UniTuple<B>> rightTupleIterator;
 
@@ -27,7 +27,7 @@ final class FilteringIterator<Solution_, A, B> implements Iterator<UniTuple<B>> 
     @SuppressWarnings("unchecked")
     private UniTuple<B> next = EMPTY_TUPLE;
 
-    public FilteringIterator(BiEnumeratingPredicate<Solution_, A, B> filter, SolutionView<Solution_> solutionView,
+    public FilteringIterator(BiNeighborhoodsPredicate<Solution_, A, B> filter, SolutionView<Solution_> solutionView,
             UniTuple<A> leftTuple, Iterator<UniTuple<B>> rightTupleIterator) {
         this.solutionView = Objects.requireNonNull(solutionView);
         this.rightTupleIterator = Objects.requireNonNull(rightTupleIterator);

@@ -87,7 +87,11 @@ public interface Move<Solution_> {
      * @param rebaser Do not store this parameter in a field
      * @return New move that does the same change as this move on another solution instance
      */
-    Move<Solution_> rebase(Rebaser rebaser);
+    default Move<Solution_> rebase(Rebaser rebaser) {
+        throw new UnsupportedOperationException(
+                "Move class (%s) doesn't implement the rebase() method, so multithreaded solving is impossible."
+                        .formatted(getClass()));
+    }
 
     /**
      * Returns all planning entities that this move is changing.
@@ -141,13 +145,5 @@ public interface Move<Solution_> {
     default String describe() {
         return getClass().getSimpleName();
     }
-
-    /**
-     * The solver will make sure to only call this when the move is actually printed out during debug logging.
-     *
-     * @return A description of the move, ideally including the state of the planning entities being changed.
-     */
-    @Override
-    String toString();
 
 }

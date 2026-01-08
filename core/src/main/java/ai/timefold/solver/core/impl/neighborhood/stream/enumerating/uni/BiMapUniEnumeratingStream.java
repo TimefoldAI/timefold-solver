@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingS
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.AbstractBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeBiEnumeratingStream;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.function.UniNeighborhoodsMapper;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -16,14 +16,14 @@ import org.jspecify.annotations.Nullable;
 final class BiMapUniEnumeratingStream<Solution_, A, NewA, NewB>
         extends AbstractBiEnumeratingStream<Solution_, NewA, NewB> {
 
-    private final UniEnumeratingMapper<Solution_, A, NewA> mappingFunctionA;
-    private final UniEnumeratingMapper<Solution_, A, NewB> mappingFunctionB;
+    private final UniNeighborhoodsMapper<Solution_, A, NewA> mappingFunctionA;
+    private final UniNeighborhoodsMapper<Solution_, A, NewB> mappingFunctionB;
     private @Nullable AftBridgeBiEnumeratingStream<Solution_, NewA, NewB> aftStream;
 
     public BiMapUniEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             AbstractUniEnumeratingStream<Solution_, A> parent,
-            UniEnumeratingMapper<Solution_, A, NewA> mappingFunctionA,
-            UniEnumeratingMapper<Solution_, A, NewB> mappingFunctionB) {
+            UniNeighborhoodsMapper<Solution_, A, NewA> mappingFunctionA,
+            UniNeighborhoodsMapper<Solution_, A, NewB> mappingFunctionB) {
         super(enumeratingStreamFactory, parent);
         this.mappingFunctionA = mappingFunctionA;
         this.mappingFunctionB = mappingFunctionB;

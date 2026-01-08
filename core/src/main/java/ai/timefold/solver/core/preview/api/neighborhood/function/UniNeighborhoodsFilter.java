@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function;
+package ai.timefold.solver.core.preview.api.neighborhood.function;
 
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -17,14 +17,14 @@ import org.jspecify.annotations.Nullable;
  * @param <A> the type of the first parameter
  */
 @NullMarked
-public interface UniEnumeratingFilter<Solution_, A> extends BiPredicate<SolutionView<Solution_>, A> {
+public interface UniNeighborhoodsFilter<Solution_, A> extends BiPredicate<SolutionView<Solution_>, A> {
 
     @Override
     boolean test(SolutionView<Solution_> solutionView, @Nullable A a);
 
     @Override
-    default UniEnumeratingFilter<Solution_, A> and(BiPredicate<? super SolutionView<Solution_>, ? super A> other) {
-        return (UniEnumeratingFilter<Solution_, A>) BiPredicate.super.and(other);
+    default UniNeighborhoodsFilter<Solution_, A> and(BiPredicate<? super SolutionView<Solution_>, ? super A> other) {
+        return (UniNeighborhoodsFilter<Solution_, A>) BiPredicate.super.and(other);
     }
 
     default Predicate<A> toPredicate(SolutionView<Solution_> solutionView) {

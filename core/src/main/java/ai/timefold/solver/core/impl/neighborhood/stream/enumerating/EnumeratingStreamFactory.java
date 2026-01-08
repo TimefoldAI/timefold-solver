@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Termi
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.ForEachIncludingPinnedEnumeratingStream;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.EnumeratingJoiners;
+import ai.timefold.solver.core.preview.api.neighborhood.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 
 import org.jspecify.annotations.NullMarked;
@@ -63,7 +63,7 @@ public final class EnumeratingStreamFactory<Solution_> {
         // The predicate is cached to allow for node-sharing, which expects identical lambdas.
         var stream = forEachNonDiscriminating(sourceClass, includeNull)
                 .ifNotExists(parentEntityDescriptor.getEntityClass(),
-                        EnumeratingJoiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));
+                        NeighborhoodsJoiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));
         return share((AbstractUniEnumeratingStream<Solution_, A>) stream);
     }
 

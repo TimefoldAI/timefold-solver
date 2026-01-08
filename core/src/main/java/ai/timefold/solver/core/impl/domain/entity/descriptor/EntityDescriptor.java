@@ -71,7 +71,7 @@ import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingFilter;
+import ai.timefold.solver.core.preview.api.neighborhood.function.UniNeighborhoodsFilter;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -134,7 +134,7 @@ public class EntityDescriptor<Solution_> {
     private List<GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorList;
     private List<ListVariableDescriptor<Solution_>> effectiveGenuineListVariableDescriptorList;
 
-    private final UniEnumeratingFilter<Solution_, Object> entityMovablePredicate =
+    private final UniNeighborhoodsFilter<Solution_, Object> entityMovablePredicate =
             (solutionView, entity) -> {
                 var moveDirector = (MoveDirector<Solution_, ?>) solutionView;
                 return !moveDirector.isPinned(this, entity);
@@ -683,8 +683,8 @@ public class EntityDescriptor<Solution_> {
     }
 
     @SuppressWarnings("unchecked")
-    public <A> UniEnumeratingFilter<Solution_, A> getEntityMovablePredicate() {
-        return (UniEnumeratingFilter<Solution_, A>) entityMovablePredicate;
+    public <A> UniNeighborhoodsFilter<Solution_, A> getEntityMovablePredicate() {
+        return (UniNeighborhoodsFilter<Solution_, A>) entityMovablePredicate;
     }
 
     public SelectionSorter<Solution_, Object> getDescendingSorter() {

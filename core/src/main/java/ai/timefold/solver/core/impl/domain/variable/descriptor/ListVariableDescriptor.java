@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
 
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
@@ -25,7 +25,7 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         var list = getValue(entity);
         return list.contains(element);
     };
-    private final BiEnumeratingPredicate<Solution_, Object, Object> entityContainsPinnedValuePredicate =
+    private final BiNeighborhoodsPredicate<Solution_, Object, Object> entityContainsPinnedValuePredicate =
             (solutionView, value, entity) -> {
                 var moveDirector = (MoveDirector<Solution_, ?>) solutionView;
                 return moveDirector.isPinned(this, value);
@@ -48,8 +48,8 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     }
 
     @SuppressWarnings("unchecked")
-    public <A, B> BiEnumeratingPredicate<Solution_, A, B> getEntityContainsPinnedValuePredicate() {
-        return (BiEnumeratingPredicate<Solution_, A, B>) entityContainsPinnedValuePredicate;
+    public <A, B> BiNeighborhoodsPredicate<Solution_, A, B> getEntityContainsPinnedValuePredicate() {
+        return (BiNeighborhoodsPredicate<Solution_, A, B>) entityContainsPinnedValuePredicate;
     }
 
     public boolean allowsUnassignedValues() {

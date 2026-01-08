@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 
+import ai.timefold.solver.core.impl.neighborhood.joiner.BiNeighborhoodsJoinerComber;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.TerminalEnumeratingStream;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.BiEnumeratingJoinerComber;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -15,7 +15,7 @@ final class RightTerminalUniEnumeratingStream<Solution_, A, B>
     private final UniRightDataset<Solution_, A, B> dataset;
 
     public RightTerminalUniEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
-            AbstractUniEnumeratingStream<Solution_, B> parent, BiEnumeratingJoinerComber<Solution_, A, B> joinerComber) {
+            AbstractUniEnumeratingStream<Solution_, B> parent, BiNeighborhoodsJoinerComber<Solution_, A, B> joinerComber) {
         super(enumeratingStreamFactory, parent);
         this.dataset = new UniRightDataset<>(this, joinerComber);
     }

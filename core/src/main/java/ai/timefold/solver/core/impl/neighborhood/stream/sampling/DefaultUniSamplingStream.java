@@ -2,11 +2,11 @@ package ai.timefold.solver.core.impl.neighborhood.stream.sampling;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.BiEnumeratingJoinerComber;
+import ai.timefold.solver.core.impl.neighborhood.joiner.BiNeighborhoodsJoinerComber;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDataset;
+import ai.timefold.solver.core.preview.api.neighborhood.joiner.BiNeighborhoodsJoiner;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingJoiner;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.sampling.BiSamplingStream;
 
 import org.jspecify.annotations.NullMarked;
@@ -27,8 +27,8 @@ public final class DefaultUniSamplingStream<Solution_, A> implements InnerUniSam
 
     @Override
     public <B> BiSamplingStream<Solution_, A, B> pick(UniEnumeratingStream<Solution_, B> uniEnumeratingStream,
-            BiEnumeratingJoiner<A, B>... joiners) {
-        var comber = BiEnumeratingJoinerComber.<Solution_, A, B> comb(joiners);
+            BiNeighborhoodsJoiner<A, B>... joiners) {
+        var comber = BiNeighborhoodsJoinerComber.<Solution_, A, B> comb(joiners);
         return new DefaultBiSamplingStream<>(dataset,
                 ((AbstractUniEnumeratingStream<Solution_, B>) uniEnumeratingStream).createRightDataset(comber));
     }

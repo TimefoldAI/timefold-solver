@@ -1,31 +1,31 @@
-package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating;
+package ai.timefold.solver.core.preview.api.neighborhood.joiner;
 
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.DefaultBiEnumeratingJoiner;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.FilteringBiEnumeratingJoiner;
+import ai.timefold.solver.core.impl.neighborhood.joiner.DefaultBiNeighborhoodsJoiner;
+import ai.timefold.solver.core.impl.neighborhood.joiner.FilteringBiNeighborhoodsJoiner;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingJoiner;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.function.BiNeighborhoodsPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Creates an {@link BiEnumeratingJoiner}, ... instance
- * for use in {@link UniEnumeratingStream#join(Class, BiEnumeratingJoiner[])}, ...
+ * Creates an {@link BiNeighborhoodsJoiner}, ... instance
+ * for use in {@link UniEnumeratingStream#join(Class, BiNeighborhoodsJoiner[])}, ...
  */
 @NullMarked
-public final class EnumeratingJoiners {
+public final class NeighborhoodsJoiners {
 
     /**
      * As defined by {@link #equal(Function)} with {@link Function#identity()} as the argument.
      *
      * @param <A> the type of both objects
      */
-    public static <A> BiEnumeratingJoiner<A, A> equal() {
+    public static <A> BiNeighborhoodsJoiner<A, A> equal() {
         return equal(ConstantLambdaUtils.identity());
     }
 
@@ -36,7 +36,7 @@ public final class EnumeratingJoiners {
      * @param <Property_> the type of the property to compare
      * @param mapping mapping function to apply to both A and B
      */
-    public static <A, Property_> BiEnumeratingJoiner<A, A> equal(Function<A, Property_> mapping) {
+    public static <A, Property_> BiNeighborhoodsJoiner<A, A> equal(Function<A, Property_> mapping) {
         return equal(mapping, mapping);
     }
 
@@ -52,9 +52,9 @@ public final class EnumeratingJoiners {
      * @param leftMapping mapping function to apply to A
      * @param rightMapping mapping function to apply to B
      */
-    public static <A, B, Property_> BiEnumeratingJoiner<A, B> equal(Function<A, Property_> leftMapping,
+    public static <A, B, Property_> BiNeighborhoodsJoiner<A, B> equal(Function<A, Property_> leftMapping,
             Function<B, Property_> rightMapping) {
-        return new DefaultBiEnumeratingJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
+        return new DefaultBiNeighborhoodsJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
     }
 
     /**
@@ -64,7 +64,7 @@ public final class EnumeratingJoiners {
      * @param <A> the type of both objects
      * @param <Property_> the type of the property to compare
      */
-    public static <A, Property_ extends Comparable<Property_>> BiEnumeratingJoiner<A, A>
+    public static <A, Property_ extends Comparable<Property_>> BiNeighborhoodsJoiner<A, A>
             lessThan(Function<A, Property_> mapping) {
         return lessThan(mapping, mapping);
     }
@@ -83,9 +83,9 @@ public final class EnumeratingJoiners {
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
      */
-    public static <A, B, Property_ extends Comparable<Property_>> BiEnumeratingJoiner<A, B> lessThan(
+    public static <A, B, Property_ extends Comparable<Property_>> BiNeighborhoodsJoiner<A, B> lessThan(
             Function<A, Property_> leftMapping, Function<B, Property_> rightMapping) {
-        return new DefaultBiEnumeratingJoiner<>(leftMapping, JoinerType.LESS_THAN, rightMapping);
+        return new DefaultBiNeighborhoodsJoiner<>(leftMapping, JoinerType.LESS_THAN, rightMapping);
     }
 
     /**
@@ -95,7 +95,7 @@ public final class EnumeratingJoiners {
      * @param <A> the type of both objects
      * @param <Property_> the type of the property to compare
      */
-    public static <A, Property_ extends Comparable<Property_>> BiEnumeratingJoiner<A, A> lessThanOrEqual(
+    public static <A, Property_ extends Comparable<Property_>> BiNeighborhoodsJoiner<A, A> lessThanOrEqual(
             Function<A, Property_> mapping) {
         return lessThanOrEqual(mapping, mapping);
     }
@@ -115,9 +115,9 @@ public final class EnumeratingJoiners {
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
      */
-    public static <A, B, Property_ extends Comparable<Property_>> BiEnumeratingJoiner<A, B> lessThanOrEqual(
+    public static <A, B, Property_ extends Comparable<Property_>> BiNeighborhoodsJoiner<A, B> lessThanOrEqual(
             Function<A, Property_> leftMapping, Function<B, Property_> rightMapping) {
-        return new DefaultBiEnumeratingJoiner<>(leftMapping, JoinerType.LESS_THAN_OR_EQUAL, rightMapping);
+        return new DefaultBiNeighborhoodsJoiner<>(leftMapping, JoinerType.LESS_THAN_OR_EQUAL, rightMapping);
     }
 
     /**
@@ -127,7 +127,7 @@ public final class EnumeratingJoiners {
      * @param <A> the type of both objects
      * @param <Property_> the type of the property to compare
      */
-    public static <A, Property_ extends Comparable<Property_>> BiEnumeratingJoiner<A, A> greaterThan(
+    public static <A, Property_ extends Comparable<Property_>> BiNeighborhoodsJoiner<A, A> greaterThan(
             Function<A, Property_> mapping) {
         return greaterThan(mapping, mapping);
     }
@@ -146,9 +146,9 @@ public final class EnumeratingJoiners {
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
      */
-    public static <A, B, Property_ extends Comparable<Property_>> BiEnumeratingJoiner<A, B> greaterThan(
+    public static <A, B, Property_ extends Comparable<Property_>> BiNeighborhoodsJoiner<A, B> greaterThan(
             Function<A, Property_> leftMapping, Function<B, Property_> rightMapping) {
-        return new DefaultBiEnumeratingJoiner<>(leftMapping, JoinerType.GREATER_THAN, rightMapping);
+        return new DefaultBiNeighborhoodsJoiner<>(leftMapping, JoinerType.GREATER_THAN, rightMapping);
     }
 
     /**
@@ -158,7 +158,7 @@ public final class EnumeratingJoiners {
      * @param <A> the type of both objects
      * @param <Property_> the type of the property to compare
      */
-    public static <A, Property_ extends Comparable<Property_>> BiEnumeratingJoiner<A, A> greaterThanOrEqual(
+    public static <A, Property_ extends Comparable<Property_>> BiNeighborhoodsJoiner<A, A> greaterThanOrEqual(
             Function<A, Property_> mapping) {
         return greaterThanOrEqual(mapping, mapping);
     }
@@ -178,9 +178,9 @@ public final class EnumeratingJoiners {
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
      */
-    public static <A, B, Property_ extends Comparable<Property_>> BiEnumeratingJoiner<A, B> greaterThanOrEqual(
+    public static <A, B, Property_ extends Comparable<Property_>> BiNeighborhoodsJoiner<A, B> greaterThanOrEqual(
             Function<A, Property_> leftMapping, Function<B, Property_> rightMapping) {
-        return new DefaultBiEnumeratingJoiner<>(leftMapping, JoinerType.GREATER_THAN_OR_EQUAL, rightMapping);
+        return new DefaultBiNeighborhoodsJoiner<>(leftMapping, JoinerType.GREATER_THAN_OR_EQUAL, rightMapping);
     }
 
     /**
@@ -194,8 +194,8 @@ public final class EnumeratingJoiners {
      * @param <A> type of the first fact in the tuple
      * @param <B> type of the second fact in the tuple
      */
-    public static <Solution_, A, B> BiEnumeratingJoiner<A, B> filtering(BiEnumeratingPredicate<Solution_, A, B> filter) {
-        return new FilteringBiEnumeratingJoiner<>(filter);
+    public static <Solution_, A, B> BiNeighborhoodsJoiner<A, B> filtering(BiNeighborhoodsPredicate<Solution_, A, B> filter) {
+        return new FilteringBiNeighborhoodsJoiner<>(filter);
     }
 
     /**
@@ -213,7 +213,7 @@ public final class EnumeratingJoiners {
      * @param <A> the type of both the first and second argument
      * @param <Property_> the type used to define the interval, comparable
      */
-    public static <A, Property_ extends Comparable<Property_>> BiEnumeratingJoiner<A, A> overlapping(
+    public static <A, Property_ extends Comparable<Property_>> BiNeighborhoodsJoiner<A, A> overlapping(
             Function<A, Property_> startMapping, Function<A, Property_> endMapping) {
         return overlapping(startMapping, endMapping, startMapping, endMapping);
     }
@@ -229,14 +229,14 @@ public final class EnumeratingJoiners {
      * @param <B> the type of the second argument
      * @param <Property_> the type used to define the interval, comparable
      */
-    public static <A, B, Property_ extends Comparable<Property_>> BiEnumeratingJoiner<A, B> overlapping(
+    public static <A, B, Property_ extends Comparable<Property_>> BiNeighborhoodsJoiner<A, B> overlapping(
             Function<A, Property_> leftStartMapping, Function<A, Property_> leftEndMapping,
             Function<B, Property_> rightStartMapping, Function<B, Property_> rightEndMapping) {
-        return EnumeratingJoiners.lessThan(leftStartMapping, rightEndMapping)
-                .and(EnumeratingJoiners.greaterThan(leftEndMapping, rightStartMapping));
+        return NeighborhoodsJoiners.lessThan(leftStartMapping, rightEndMapping)
+                .and(NeighborhoodsJoiners.greaterThan(leftEndMapping, rightStartMapping));
     }
 
-    private EnumeratingJoiners() {
+    private NeighborhoodsJoiners() {
     }
 
 }

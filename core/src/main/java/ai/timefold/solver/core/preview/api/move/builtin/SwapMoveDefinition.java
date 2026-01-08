@@ -14,9 +14,9 @@ import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.BiMoveConstructor;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
+import ai.timefold.solver.core.preview.api.neighborhood.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.EnumeratingJoiners;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -83,13 +83,13 @@ public class SwapMoveDefinition<Solution_, Entity_>
         if (planningIdGetter == null) { // If the user hasn't defined a planning ID, we will follow a slower path.
             return moveStreamFactory.pick(entityStream)
                     .pick(entityStream,
-                            EnumeratingJoiners.filtering(this::isValidSwap))
+                            NeighborhoodsJoiners.filtering(this::isValidSwap))
                     .asMove(moveConstructor);
         } else {
             return moveStreamFactory.pick(entityStream)
                     .pick(entityStream,
-                            EnumeratingJoiners.lessThan(planningIdGetter),
-                            EnumeratingJoiners.filtering(this::isValidSwap))
+                            NeighborhoodsJoiners.lessThan(planningIdGetter),
+                            NeighborhoodsJoiners.filtering(this::isValidSwap))
                     .asMove(moveConstructor);
         }
     }

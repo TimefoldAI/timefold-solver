@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function;
+package ai.timefold.solver.core.preview.api.neighborhood.function;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * @param <A> the type of the first parameter
  */
 @NullMarked
-public interface UniEnumeratingMapper<Solution_, A, Result_> extends BiFunction<SolutionView<Solution_>, A, Result_> {
+public interface UniNeighborhoodsMapper<Solution_, A, Result_> extends BiFunction<SolutionView<Solution_>, A, Result_> {
 
     @Override
     Result_ apply(SolutionView<Solution_> solutionSolutionView, @Nullable A a);

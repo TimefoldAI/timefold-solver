@@ -8,9 +8,9 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
+import ai.timefold.solver.core.preview.api.neighborhood.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.EnumeratingJoiners;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -49,7 +49,7 @@ public class ListChangeMoveDefinition<Solution_, Entity_, Value_>
         var availableValues = moveStreamFactory.forEach(variableMetaModel.type(), false);
         return moveStreamFactory.pick(entityValuePairs)
                 .pick(availableValues,
-                        EnumeratingJoiners.filtering(this::isValidChange))
+                        NeighborhoodsJoiners.filtering(this::isValidChange))
                 .asMove((solutionView, targetPosition, value) -> {
                     var currentPosition = solutionView.getPositionOf(variableMetaModel, Objects.requireNonNull(value));
                     if (targetPosition instanceof UnassignedElement) {
