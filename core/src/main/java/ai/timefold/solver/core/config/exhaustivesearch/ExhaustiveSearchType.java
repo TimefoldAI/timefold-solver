@@ -13,39 +13,24 @@ public enum ExhaustiveSearchType {
     BRANCH_AND_BOUND;
 
     public @NonNull EntitySorterManner getDefaultEntitySorterManner() {
-        switch (this) {
-            case BRUTE_FORCE:
-                return EntitySorterManner.NONE;
-            case BRANCH_AND_BOUND:
-                return EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE;
-            default:
-                throw new IllegalStateException("The exhaustiveSearchType ("
-                        + this + ") is not implemented.");
-        }
+        return switch (this) {
+            case BRUTE_FORCE -> EntitySorterManner.NONE;
+            case BRANCH_AND_BOUND -> EntitySorterManner.DESCENDING_IF_AVAILABLE;
+        };
     }
 
     public @NonNull ValueSorterManner getDefaultValueSorterManner() {
-        switch (this) {
-            case BRUTE_FORCE:
-                return ValueSorterManner.NONE;
-            case BRANCH_AND_BOUND:
-                return ValueSorterManner.INCREASING_STRENGTH_IF_AVAILABLE;
-            default:
-                throw new IllegalStateException("The exhaustiveSearchType ("
-                        + this + ") is not implemented.");
-        }
+        return switch (this) {
+            case BRUTE_FORCE -> ValueSorterManner.NONE;
+            case BRANCH_AND_BOUND -> ValueSorterManner.ASCENDING_IF_AVAILABLE;
+        };
     }
 
     public boolean isScoreBounderEnabled() {
-        switch (this) {
-            case BRUTE_FORCE:
-                return false;
-            case BRANCH_AND_BOUND:
-                return true;
-            default:
-                throw new IllegalStateException("The exhaustiveSearchType ("
-                        + this + ") is not implemented.");
-        }
+        return switch (this) {
+            case BRUTE_FORCE -> false;
+            case BRANCH_AND_BOUND -> true;
+        };
     }
 
 }

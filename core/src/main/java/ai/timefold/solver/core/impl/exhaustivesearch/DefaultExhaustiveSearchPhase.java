@@ -90,7 +90,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         decider.solvingStarted(solverScope);
     }
 
-    public void phaseStarted(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
+    private void phaseStarted(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         entitySelector.phaseStarted(phaseScope);
         decider.phaseStarted(phaseScope);
@@ -147,7 +147,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         phaseScope.getLastCompletedStepScope().setExpandingNode(startNode);
     }
 
-    public void stepStarted(ExhaustiveSearchStepScope<Solution_> stepScope) {
+    private void stepStarted(ExhaustiveSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
         // Skip entitySelector.stepStarted(stepScope)
         decider.stepStarted(stepScope);
@@ -197,7 +197,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         }
     }
 
-    public void stepEnded(ExhaustiveSearchStepScope<Solution_> stepScope) {
+    private void stepEnded(ExhaustiveSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
         // Skip entitySelector.stepEnded(stepScope)
         decider.stepEnded(stepScope);
@@ -214,7 +214,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         }
     }
 
-    public void phaseEnded(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
+    private void phaseEnded(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
         entitySelector.phaseEnded(phaseScope);
         decider.phaseEnded(phaseScope);
