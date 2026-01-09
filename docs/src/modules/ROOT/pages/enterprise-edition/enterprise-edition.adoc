@@ -606,6 +606,10 @@ Partitioning only works for use cases where the planning entities and value rang
 without any of the constraints crossing boundaries between partitions.
 ====
 
+[WARNING]
+====
+Models with xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained variables] cannot apply the partitioned search method.
+====
 
 [#partitionedSearchConfiguration]
 ===== Configuration
@@ -717,7 +721,6 @@ add the `solutionPartitionerCustomProperties` element and use xref:using-timefol
     </solutionPartitionerCustomProperties>
   </partitionedSearch>
 ----
-
 
 [#runnablePartThreadLimit]
 ===== Runnable part thread limit
