@@ -89,10 +89,10 @@ final class ContainAnyIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
         KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
         int size = 0;
         for (Key_ indexKey : indexKeyCollection) {
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
             if (downstreamIndexer != null) {
                 size += downstreamIndexer.size(queryCompositeKey);
-        }
+            }
         }
         return size;
     }
@@ -101,10 +101,10 @@ final class ContainAnyIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
     public void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
         KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
         for (Key_ indexKey : indexKeyCollection) {
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
             if (downstreamIndexer != null) {
-        downstreamIndexer.forEach(queryCompositeKey, tupleConsumer);
-    }
+                downstreamIndexer.forEach(queryCompositeKey, tupleConsumer);
+            }
         }
     }
 
@@ -118,10 +118,10 @@ final class ContainAnyIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
         KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
         List<ListEntry<T>> list = new ArrayList<>(downstreamIndexerMap.size() * 16);
         for (Key_ indexKey : indexKeyCollection) {
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
             if (downstreamIndexer != null) {
                 list.addAll(downstreamIndexer.asList(queryCompositeKey));
-        }
+            }
         }
         return list;
     }
