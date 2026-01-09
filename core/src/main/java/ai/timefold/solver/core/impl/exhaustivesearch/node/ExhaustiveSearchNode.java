@@ -13,8 +13,8 @@ public class ExhaustiveSearchNode {
     private final long breadth;
 
     // The move to get from the parent to this node
-    private Move move;
-    private Move undoMove;
+    private Move<?> move;
+    private Move<?> undoMove;
     private InnerScore<?> score;
     /**
      * Never worse than the best possible score a leaf node below this node might lead to.
@@ -42,19 +42,21 @@ public class ExhaustiveSearchNode {
         return breadth;
     }
 
-    public Move getMove() {
-        return move;
+    @SuppressWarnings("unchecked")
+    public <Solution_> Move<Solution_> getMove() {
+        return (Move<Solution_>) move;
     }
 
-    public void setMove(Move move) {
+    public <Solution_> void setMove(Move<Solution_> move) {
         this.move = move;
     }
 
-    public Move getUndoMove() {
-        return undoMove;
+    @SuppressWarnings("unchecked")
+    public <Solution_> Move<Solution_> getUndoMove() {
+        return (Move<Solution_>) undoMove;
     }
 
-    public void setUndoMove(Move undoMove) {
+    public <Solution_> void setUndoMove(Move<Solution_> undoMove) {
         this.undoMove = undoMove;
     }
 

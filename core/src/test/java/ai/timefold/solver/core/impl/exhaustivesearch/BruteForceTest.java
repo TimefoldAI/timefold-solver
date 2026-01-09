@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.exhaustivesearch;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
@@ -15,6 +16,13 @@ import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.testdomain.TestdataEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListVarEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
@@ -24,7 +32,7 @@ import org.junit.jupiter.api.Test;
 class BruteForceTest {
 
     @Test
-    void doesNotIncludeNullForVariableAllowedUnassigned() {
+    void basicVariableDoesNotIncludeNullForVariableAllowedUnassigned() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
@@ -67,7 +75,7 @@ class BruteForceTest {
     }
 
     @Test
-    void includesNullsForVariableNotAllowedUnassigned() {
+    void basicVariableIncludesNullsForVariableNotAllowedUnassigned() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataAllowsUnassignedSolution.class)
                 .withEntityClasses(TestdataAllowsUnassignedEntity.class)
@@ -110,6 +118,31 @@ class BruteForceTest {
                     .as("The second entity's value was not set.")
                     .isNotNull();
         });
+    }
+
+    @Test
+    void failWithListVariable() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataListSolution.class)
+                .withEntityClasses(TestdataListEntity.class)
+                .withEasyScoreCalculatorClass(TestdataListVarEasyScoreCalculator.class)
+                .withPhases(new ExhaustiveSearchPhaseConfig()
+                        .withExhaustiveSearchType(ExhaustiveSearchType.BRUTE_FORCE));
+        var solverFactory = SolverFactory.<TestdataListSolution> create(solverConfig);
+        assertThatCode(() -> solverFactory.buildSolver()).isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
+    void failWithMixedModel() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataMixedSolution.class)
+                .withEntityClasses(TestdataMixedEntity.class, TestdataMixedOtherValue.class, TestdataMixedValue.class)
+                .withEasyScoreCalculatorClass(TestdataListVarEasyScoreCalculator.class)
+                .withPhases(new ExhaustiveSearchPhaseConfig()
+                        .withExhaustiveSearchType(ExhaustiveSearchType.BRUTE_FORCE));
+
+        assertThatCode(() -> SolverFactory.<TestdataListSolution> create(solverConfig).buildSolver())
+                .hasMessageContaining("Exhaustive Search does not support mixed models");
     }
 
 }
