@@ -28,12 +28,12 @@ public class PlannerBenchmarkConfigIO implements JaxbIO<PlannerBenchmarkConfig> 
              * the solver element in benchmark configuration and thus the solver element's namespace needs to be overridden.
              */
             return genericJaxbIO.readOverridingNamespace(document,
-                    ElementNamespaceOverride.of(SolverConfig.XML_ELEMENT_NAME, SolverConfig.XML_NAMESPACE));
+                    new ElementNamespaceOverride(SolverConfig.XML_ELEMENT_NAME, SolverConfig.XML_NAMESPACE));
         } else if (rootElementNamespace == null || rootElementNamespace.isEmpty()) {
             // If not, add the missing namespace to maintain backward compatibility.
             return genericJaxbIO.readOverridingNamespace(document,
-                    ElementNamespaceOverride.of(PlannerBenchmarkConfig.XML_ELEMENT_NAME, PlannerBenchmarkConfig.XML_NAMESPACE),
-                    ElementNamespaceOverride.of(SolverConfig.XML_ELEMENT_NAME, SolverConfig.XML_NAMESPACE));
+                    new ElementNamespaceOverride(PlannerBenchmarkConfig.XML_ELEMENT_NAME, PlannerBenchmarkConfig.XML_NAMESPACE),
+                    new ElementNamespaceOverride(SolverConfig.XML_ELEMENT_NAME, SolverConfig.XML_NAMESPACE));
         } else { // If there is an unexpected namespace, fail fast.
             String errorMessage = String.format("The <%s/> element belongs to a different namespace (%s) than expected (%s).",
                     PlannerBenchmarkConfig.XML_ELEMENT_NAME, rootElementNamespace, PlannerBenchmarkConfig.XML_NAMESPACE);
