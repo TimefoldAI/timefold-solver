@@ -16,7 +16,6 @@ import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.jackson.impl.domain.solution.JacksonSolutionFileIO;
 import ai.timefold.solver.persistence.common.api.domain.solution.RigidTestdataSolutionFileIO;
-import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,7 @@ class PlannerBenchmarkConfigTest {
     @ParameterizedTest
     @ValueSource(strings = { TEST_PLANNER_BENCHMARK_CONFIG_WITHOUT_NAMESPACE, TEST_PLANNER_BENCHMARK_CONFIG_WITH_NAMESPACE })
     void xmlConfigFileRemainsSameAfterReadWrite(String xmlBenchmarkConfigResource) throws IOException {
-        PlannerBenchmarkConfigIO xmlIO = new PlannerBenchmarkConfigIO();
+        var xmlIO = new PlannerBenchmarkConfigIO();
         PlannerBenchmarkConfig jaxbBenchmarkConfig;
 
         try (Reader reader = new InputStreamReader(
@@ -44,13 +43,13 @@ class PlannerBenchmarkConfigTest {
 
         Writer stringWriter = new StringWriter();
         xmlIO.write(jaxbBenchmarkConfig, stringWriter);
-        String jaxbString = stringWriter.toString();
+        var jaxbString = stringWriter.toString();
 
-        String originalXml = IOUtils.toString(PlannerBenchmarkConfigTest.class.getResourceAsStream(xmlBenchmarkConfigResource),
+        var originalXml = IOUtils.toString(PlannerBenchmarkConfigTest.class.getResourceAsStream(xmlBenchmarkConfigResource),
                 StandardCharsets.UTF_8);
 
         // During writing the benchmark config, the benchmark element's namespace is removed.
-        String benchmarkElementWithNamespace =
+        var benchmarkElementWithNamespace =
                 PlannerBenchmarkConfig.XML_ELEMENT_NAME + " xmlns=\"" + PlannerBenchmarkConfig.XML_NAMESPACE + "\"";
         if (originalXml.contains(benchmarkElementWithNamespace)) {
             originalXml = originalXml.replace(benchmarkElementWithNamespace, PlannerBenchmarkConfig.XML_ELEMENT_NAME);
@@ -60,8 +59,8 @@ class PlannerBenchmarkConfigTest {
 
     @Test
     void readAndValidateInvalidBenchmarkConfig_failsIndicatingTheIssue() {
-        PlannerBenchmarkConfigIO xmlIO = new PlannerBenchmarkConfigIO();
-        String benchmarkConfigXml = "<plannerBenchmark xmlns=\"https://timefold.ai/xsd/benchmark\">\n"
+        var xmlIO = new PlannerBenchmarkConfigIO();
+        var benchmarkConfigXml = "<plannerBenchmark xmlns=\"https://timefold.ai/xsd/benchmark\">\n"
                 + "  <benchmarkDirectory>data</benchmarkDirectory>\n"
                 + "  <parallelBenchmarkCount>AUTO</parallelBenchmarkCount>\n"
                 + "  <solverBenchmark>\n"
@@ -78,19 +77,20 @@ class PlannerBenchmarkConfigTest {
                 + "  </solverBenchmark>\n"
                 + "</plannerBenchmark>\n";
 
-        StringReader stringReader = new StringReader(benchmarkConfigXml);
+        var stringReader = new StringReader(benchmarkConfigXml);
         assertThatExceptionOfType(TimefoldXmlSerializationException.class)
                 .isThrownBy(() -> xmlIO.read(stringReader))
-                .withRootCauseExactlyInstanceOf(SAXParseException.class)
+                .havingRootCause()
+                .isInstanceOf(SAXParseException.class)
                 .withMessageContaining("solutionKlazz");
     }
 
     @Test
     public void assignCustomSolutionIO() {
-        ProblemBenchmarksConfig pbc = new ProblemBenchmarksConfig();
+        var pbc = new ProblemBenchmarksConfig();
         pbc.setSolutionFileIOClass(RigidTestdataSolutionFileIO.class);
 
-        Class<? extends SolutionFileIO<?>> configured = pbc.getSolutionFileIOClass();
+        var configured = pbc.getSolutionFileIOClass();
         assertThat(configured).isNotNull();
     }
 

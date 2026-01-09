@@ -2,8 +2,6 @@ package ai.timefold.solver.core.impl.io.jaxb;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -32,19 +30,6 @@ class GenericJaxbIOTest {
     }
 
     @Test
-    void writeThrowsExceptionOnNullParameters() {
-        assertSoftly(softly -> {
-            softly.assertThat(assertThatNullPointerException().isThrownBy(() -> xmlIO.write(null, new StringWriter())));
-            softly.assertThat(assertThatNullPointerException().isThrownBy(() -> xmlIO.write(new DummyJaxbClass(1, ""), null)));
-        });
-    }
-
-    @Test
-    void readThrowsExceptionOnNullParameter() {
-        assertThatNullPointerException().isThrownBy(() -> new GenericJaxbIO<>(DummyJaxbClass.class).read(null));
-    }
-
-    @Test
     void readThrowsExceptionOnInvalidXml() {
         String invalidXml = "<unknownRootElement/>";
         StringReader stringReader = new StringReader(invalidXml);
@@ -62,7 +47,7 @@ class GenericJaxbIOTest {
         assertThatExceptionOfType(TimefoldXmlSerializationException.class)
                 .isThrownBy(() -> xmlIO.readOverridingNamespace(new StringReader(maliciousXml)))
                 .withRootCauseExactlyInstanceOf(SAXParseException.class)
-                .withStackTraceContaining("accessExternalDTD");
+                .withStackTraceContaining("DOCTYPE is disallowed");
     }
 
     @XmlRootElement

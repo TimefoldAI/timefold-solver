@@ -92,7 +92,7 @@ public class BenchmarkResultIO {
 
     protected PlannerBenchmarkResult read(Reader reader) {
         return genericJaxbIO.readOverridingNamespace(reader,
-                ElementNamespaceOverride.of(SOLVER_CONFIG_XML_ELEMENT_NAME, SolverConfig.XML_NAMESPACE));
+                new ElementNamespaceOverride(SOLVER_CONFIG_XML_ELEMENT_NAME, SolverConfig.XML_NAMESPACE));
     }
 
     protected void write(PlannerBenchmarkResult plannerBenchmarkResult, Writer writer) {

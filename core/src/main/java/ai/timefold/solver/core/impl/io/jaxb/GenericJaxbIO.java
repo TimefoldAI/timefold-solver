@@ -1,17 +1,12 @@
 package ai.timefold.solver.core.impl.io.jaxb;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,7 +23,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
@@ -39,19 +33,64 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
+@NullMarked
 public final class GenericJaxbIO<T> implements JaxbIO<T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenericJaxbIO.class);
+    public static DocumentBuilderFactory createDocumentBuilderFactory() {
+        try {
+            var factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setXIncludeAware(false);
+            factory.setNamespaceAware(true);
+            return factory;
+        } catch (ParserConfigurationException e) {
+            throw new IllegalArgumentException(
+                    "Failed to create a secure %s instance.".formatted(DocumentBuilderFactory.class.getSimpleName()), e);
+        }
+    }
+
+    public static TransformerFactory createTransformerFactory() {
+        var factory = TransformerFactory.newInstance();
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+        return factory;
+    }
+
+    public static SchemaFactory createSchemaFactory(Class<?> rootClass, String schemaResource) {
+        try {
+            var schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+            return schemaFactory;
+        } catch (SAXNotSupportedException | SAXNotRecognizedException saxException) {
+            throw new TimefoldXmlSerializationException(
+                    "Failed to configure the %s to validate an XML for a root class (%s) using the (%s) XML Schema."
+                            .formatted(SchemaFactory.class.getSimpleName(), rootClass.getName(), schemaResource),
+                    saxException);
+        }
+    }
+
+    public static Validator createValidator(Schema schema, Class<?> rootClass) {
+        try {
+            var validator = schema.newValidator();
+            validator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            validator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+            return validator;
+        } catch (SAXNotSupportedException | SAXNotRecognizedException saxException) {
+            throw new TimefoldXmlSerializationException("Failed to configure the %s to validate an XML for a root class (%s)."
+                    .formatted(Validator.class.getSimpleName(), rootClass.getName()), saxException);
+        }
+    }
+
     private static final int DEFAULT_INDENTATION = 2;
 
     private static final String ERR_MSG_WRITE = "Failed to marshall a root element class (%s) to XML.";
@@ -69,7 +108,6 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
     }
 
     public GenericJaxbIO(Class<T> rootClass, int indentation) {
-        Objects.requireNonNull(rootClass);
         this.rootClass = rootClass;
         this.indentation = indentation;
         try {
@@ -78,27 +116,19 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             marshaller.setProperty(Marshaller.JAXB_ENCODING, StandardCharsets.UTF_8.toString());
         } catch (JAXBException jaxbException) {
-            String errorMessage = String.format("Failed to create JAXB Marshaller for a root element class (%s).",
-                    rootClass.getName());
-            throw new TimefoldXmlSerializationException(errorMessage, jaxbException);
+            throw new TimefoldXmlSerializationException(
+                    "Failed to create JAXB Marshaller for a root element class (%s).".formatted(rootClass.getName()),
+                    jaxbException);
         }
     }
 
     @Override
     public T read(Reader reader) {
-        Objects.requireNonNull(reader);
         try {
             return (T) createUnmarshaller().unmarshal(reader);
         } catch (JAXBException jaxbException) {
-            String errorMessage = String.format(ERR_MSG_READ, rootClass.getName());
-            throw new TimefoldXmlSerializationException(errorMessage, jaxbException);
+            throw new TimefoldXmlSerializationException(ERR_MSG_READ.formatted(rootClass.getName()), jaxbException);
         }
-    }
-
-    public T readAndValidate(Reader reader, String schemaResource) {
-        Objects.requireNonNull(reader);
-        Schema schema = readSchemaResource(schemaResource);
-        return readAndValidate(reader, schema);
     }
 
     public T readAndValidate(Document document, String schemaResource) {
@@ -106,69 +136,55 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
     }
 
     private Schema readSchemaResource(String schemaResource) {
-        String nonNullSchemaResource = Objects.requireNonNull(schemaResource);
-        URL schemaResourceUrl = GenericJaxbIO.class.getResource(nonNullSchemaResource);
+        var schemaResourceUrl = GenericJaxbIO.class.getResource(schemaResource);
         if (schemaResourceUrl == null) {
-            throw new IllegalArgumentException("The XML schema (" + nonNullSchemaResource + ") does not exist.\n"
-                    + "Maybe build the sources with Maven first?");
+            throw new IllegalArgumentException("""
+                    The XML schema (%s) does not exist.
+                    Maybe build the sources with Maven first?""".formatted(schemaResource));
         }
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         try {
-            schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-            schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        } catch (SAXNotSupportedException | SAXNotRecognizedException saxException) {
-            String errorMessage = String.format(
-                    "Failed to configure the %s to validate an XML for a root class (%s) using the (%s) XML Schema.",
-                    SchemaFactory.class.getSimpleName(), rootClass.getName(), schemaResource);
-            throw new TimefoldXmlSerializationException(errorMessage, saxException);
-        }
-
-        try {
+            var schemaFactory = createSchemaFactory(rootClass, schemaResource);
             return schemaFactory.newSchema(schemaResourceUrl);
         } catch (SAXException saxException) {
-            String errorMessage =
-                    String.format("Failed to read an XML Schema resource (%s) to validate an XML for a root class (%s).",
-                            nonNullSchemaResource, rootClass.getName());
-            throw new TimefoldXmlSerializationException(errorMessage, saxException);
+            throw new TimefoldXmlSerializationException(
+                    "Failed to read an XML Schema resource (%s) to validate an XML for a root class (%s)."
+                            .formatted(schemaResource, rootClass.getName()),
+                    saxException);
         }
     }
 
     public T readAndValidate(Reader reader, Schema schema) {
-        Document document = parseXml(Objects.requireNonNull(reader));
-        return readAndValidate(document, Objects.requireNonNull(schema));
+        return readAndValidate(parseXml(reader), schema);
     }
 
     public T readAndValidate(Document document, Schema schema) {
-        Document nonNullDocument = Objects.requireNonNull(document);
-        Schema nonNullSchema = Objects.requireNonNull(schema);
-        Unmarshaller unmarshaller = createUnmarshaller();
-        unmarshaller.setSchema(nonNullSchema);
+        var unmarshaller = createUnmarshaller();
+        unmarshaller.setSchema(schema);
 
-        ValidationEventCollector validationEventCollector = new ValidationEventCollector();
+        var validationEventCollector = new ValidationEventCollector();
         try {
             unmarshaller.setEventHandler(validationEventCollector);
         } catch (JAXBException jaxbException) {
-            String errorMessage = String.format("Failed to set a validation event handler to the %s for "
-                    + "a root element class (%s).", Unmarshaller.class.getSimpleName(), rootClass.getName());
-            throw new TimefoldXmlSerializationException(errorMessage, jaxbException);
+            throw new TimefoldXmlSerializationException(
+                    "Failed to set a validation event handler to the %s for a root element class (%s)."
+                            .formatted(Unmarshaller.class.getSimpleName(), rootClass.getName()),
+                    jaxbException);
         }
 
         try {
-            return (T) unmarshaller.unmarshal(nonNullDocument);
+            return (T) unmarshaller.unmarshal(document);
         } catch (JAXBException jaxbException) {
             if (validationEventCollector.hasEvents()) {
-                String errorMessage =
-                        String.format("XML validation failed for a root element class (%s).", rootClass.getName());
-                String validationErrors = Stream.of(validationEventCollector.getEvents())
-                        .map(validationEvent -> validationEvent.getMessage()
-                                + "\nNode: "
-                                + validationEvent.getLocator().getNode().getNodeName())
+                var validationErrors = Stream
+                        .of(validationEventCollector.getEvents()).map(validationEvent -> validationEvent.getMessage()
+                                + "\nNode: " + validationEvent.getLocator().getNode().getNodeName())
                         .collect(Collectors.joining("\n"));
-                String errorMessageWithValidationEvents = errorMessage + "\n" + validationErrors;
-                throw new TimefoldXmlSerializationException(errorMessageWithValidationEvents, jaxbException);
+                throw new TimefoldXmlSerializationException("""
+                        XML validation failed for a root element class (%s).
+                        %s
+                        """.formatted(rootClass.getName(), validationErrors), jaxbException);
             } else {
-                String errorMessage = String.format(ERR_MSG_READ, rootClass.getName());
-                throw new TimefoldXmlSerializationException(errorMessage, jaxbException);
+                throw new TimefoldXmlSerializationException(ERR_MSG_READ.formatted(rootClass.getName()), jaxbException);
             }
         }
     }
@@ -183,8 +199,6 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
      * @return deserialized object representation of the XML.
      */
     public T readOverridingNamespace(Reader reader, ElementNamespaceOverride... elementNamespaceOverrides) {
-        Objects.requireNonNull(reader);
-        Objects.requireNonNull(elementNamespaceOverrides);
         return readOverridingNamespace(parseXml(reader), elementNamespaceOverrides);
     }
 
@@ -198,39 +212,29 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
      * @return deserialized object representation of the XML.
      */
     public T readOverridingNamespace(Document document, ElementNamespaceOverride... elementNamespaceOverrides) {
-        Document translatedDocument =
-                overrideNamespaces(Objects.requireNonNull(document), Objects.requireNonNull(elementNamespaceOverrides));
         try {
+            var translatedDocument = overrideNamespaces(document, elementNamespaceOverrides);
             return (T) createUnmarshaller().unmarshal(translatedDocument);
         } catch (JAXBException e) {
-            final String errorMessage = String.format(ERR_MSG_READ_OVERRIDE_NAMESPACE, rootClass.getName(),
-                    Arrays.toString(elementNamespaceOverrides));
-            throw new TimefoldXmlSerializationException(errorMessage, e);
+            throw new TimefoldXmlSerializationException(
+                    ERR_MSG_READ_OVERRIDE_NAMESPACE.formatted(rootClass.getName(), Arrays.toString(elementNamespaceOverrides)),
+                    e);
         }
     }
 
     public Document parseXml(Reader reader) {
-        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-        documentBuilderFactory.setNamespaceAware(true);
-        DocumentBuilder builder;
-        try {
-            builder = documentBuilderFactory.newDocumentBuilder();
+        try (reader) {
+            var builder = createDocumentBuilderFactory().newDocumentBuilder();
+            return builder.parse(new InputSource(reader));
         } catch (ParserConfigurationException e) {
-            String errorMessage = String.format("Failed to create a %s instance to parse an XML for a root class (%s).",
-                    DocumentBuilder.class.getSimpleName(), rootClass.getName());
-            throw new TimefoldXmlSerializationException(errorMessage, e);
-        }
-
-        try (Reader nonNullReader = Objects.requireNonNull(reader)) {
-            return builder.parse(new InputSource(nonNullReader));
+            throw new TimefoldXmlSerializationException("Failed to create a %s instance to parse an XML for a root class (%s)."
+                    .formatted(DocumentBuilder.class.getSimpleName(), rootClass.getName()), e);
         } catch (SAXException saxException) {
-            String errorMessage = String.format("Failed to parse an XML for a root class (%s).", rootClass.getName());
-            throw new TimefoldXmlSerializationException(errorMessage, saxException);
+            throw new TimefoldXmlSerializationException(
+                    "Failed to parse an XML for a root class (%s).".formatted(rootClass.getName()), saxException);
         } catch (IOException ioException) {
-            String errorMessage = String.format("Failed to read an XML for a root class (%s).", rootClass.getName());
-            throw new TimefoldXmlSerializationException(errorMessage, ioException);
+            throw new TimefoldXmlSerializationException(
+                    "Failed to read an XML for a root class (%s).".formatted(rootClass.getName()), ioException);
         }
     }
 
@@ -238,31 +242,26 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         try {
             return jaxbContext.createUnmarshaller();
         } catch (JAXBException e) {
-            String errorMessage = String.format("Failed to create a JAXB %s for a root element class (%s).",
-                    Unmarshaller.class.getSimpleName(), rootClass.getName());
-            throw new TimefoldXmlSerializationException(errorMessage, e);
+            throw new TimefoldXmlSerializationException("Failed to create a JAXB %s for a root element class (%s)."
+                    .formatted(Unmarshaller.class.getSimpleName(), rootClass.getName()), e);
         }
     }
 
     public void validate(Document document, String schemaResource) {
-        Schema schema = readSchemaResource(Objects.requireNonNull(schemaResource));
-        validate(Objects.requireNonNull(document), schema);
+        validate(document, readSchemaResource(schemaResource));
     }
 
     public void validate(Document document, Schema schema) {
-        Validator validator = Objects.requireNonNull(schema).newValidator();
         try {
-            validator.validate(new DOMSource(Objects.requireNonNull(document)));
+            var validator = createValidator(schema, rootClass);
+            validator.validate(new DOMSource(document));
         } catch (SAXException saxException) {
-            String errorMessage =
-                    String.format("XML validation failed for a root element class (%s).", rootClass.getName())
-                            + "\n"
-                            + saxException.getMessage();
-            throw new TimefoldXmlSerializationException(errorMessage, saxException);
+            throw new TimefoldXmlSerializationException(
+                    "XML validation failed for a root element class (%s).".formatted(rootClass.getName()), saxException);
         } catch (IOException ioException) {
-            String errorMessage = String.format("Failed to read an XML for a root element class (%s) during validation.",
-                    rootClass.getName());
-            throw new TimefoldXmlSerializationException(errorMessage, ioException);
+            throw new TimefoldXmlSerializationException(
+                    "Failed to read an XML for a root element class (%s) during validation.".formatted(rootClass.getName()),
+                    ioException);
         }
     }
 
@@ -271,14 +270,12 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         write(root, writer, null);
     }
 
-    private void write(T root, Writer writer, StreamSource xslt) {
-        DOMResult domResult = marshall(Objects.requireNonNull(root));
-        Writer nonNullWriter = Objects.requireNonNull(writer);
-        formatXml(domResult, xslt, nonNullWriter);
+    private void write(T root, Writer writer, @Nullable StreamSource xslt) {
+        formatXml(marshall(root), xslt, writer);
     }
 
     public void writeWithoutNamespaces(T root, Writer writer) {
-        try (InputStream xsltInputStream = getClass().getResourceAsStream("removeNamespaces.xslt")) {
+        try (var xsltInputStream = getClass().getResourceAsStream("removeNamespaces.xslt")) {
             if (xsltInputStream == null) {
                 throw new IllegalStateException("Impossible state: Failed to load XSLT stylesheet to remove namespaces.");
             }
@@ -289,77 +286,66 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
     }
 
     private DOMResult marshall(T root) {
-        Objects.requireNonNull(root);
-        DOMResult domResult = new DOMResult();
         try {
+            var domResult = new DOMResult();
             marshaller.marshal(root, domResult);
+            return domResult;
         } catch (JAXBException jaxbException) {
             throw new TimefoldXmlSerializationException(String.format(ERR_MSG_WRITE, rootClass.getName()), jaxbException);
         }
-        return domResult;
     }
 
-    private void formatXml(DOMResult domResult, Source transformationTemplate, Writer writer) {
-        /*
-         * The code is not vulnerable to XXE-based attacks as it does not process any external XML nor XSL input.
-         * Should the transformerFactory be used for such purposes, it has to be appropriately secured:
-         * https://owasp.org/www-project-top-ten/OWASP_Top_Ten_2017/Top_10-2017_A4-XML_External_Entities_(XXE)
-         */
-        @SuppressWarnings({ "java:S2755", "java:S4435" })
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+    private void formatXml(DOMResult domResult, @Nullable Source transformationTemplate, Writer writer) {
         try {
-            Transformer transformer = transformationTemplate == null ? transformerFactory.newTransformer()
+            var transformerFactory = createTransformerFactory();
+            var transformer = transformationTemplate == null ? transformerFactory.newTransformer()
                     : transformerFactory.newTransformer(transformationTemplate);
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", String.valueOf(indentation));
             transformer.transform(new DOMSource(domResult.getNode()), new StreamResult(writer));
         } catch (TransformerException transformerException) {
-            String errorMessage = String.format("Failed to format XML for a root element class (%s).", rootClass.getName());
-            throw new TimefoldXmlSerializationException(errorMessage, transformerException);
+            throw new TimefoldXmlSerializationException(
+                    "Failed to format XML for a root element class (%s).".formatted(rootClass.getName()), transformerException);
         }
     }
 
     private Document overrideNamespaces(Document document, ElementNamespaceOverride... elementNamespaceOverrides) {
-        Document nonNullDocument = Objects.requireNonNull(document);
-        final Map<String, String> elementNamespaceOverridesMap = new HashMap<>();
-        for (ElementNamespaceOverride namespaceOverride : Objects.requireNonNull(elementNamespaceOverrides)) {
-            elementNamespaceOverridesMap.put(namespaceOverride.getElementLocalName(),
-                    namespaceOverride.getNamespaceOverride());
+        var elementNamespaceOverridesMap = new HashMap<String, String>();
+        for (var namespaceOverride : elementNamespaceOverrides) {
+            elementNamespaceOverridesMap.put(namespaceOverride.elementLocalName(), namespaceOverride.namespaceOverride());
         }
 
-        final Deque<NamespaceOverride> preOrderNodes = new LinkedList<>();
-        preOrderNodes.push(new NamespaceOverride(nonNullDocument.getDocumentElement(), null));
+        var preOrderNodes = new LinkedList<NamespaceOverride>();
+        preOrderNodes.push(new NamespaceOverride(document.getDocumentElement(), null));
         while (!preOrderNodes.isEmpty()) {
-            NamespaceOverride currentNodeOverride = preOrderNodes.pop();
-            Node currentNode = currentNodeOverride.node;
-            final String elementLocalName =
-                    currentNode.getLocalName() == null ? currentNode.getNodeName() : currentNode.getLocalName();
+            var currentNodeOverride = preOrderNodes.pop();
+            var currentNode = currentNodeOverride.node;
+            var elementLocalName = currentNode.getLocalName() == null ? currentNode.getNodeName() : currentNode.getLocalName();
 
             // Is there any override defined for the current node?
-            String detectedNamespaceOverride = elementNamespaceOverridesMap.get(elementLocalName);
-            String effectiveNamespaceOverride =
+            var detectedNamespaceOverride = elementNamespaceOverridesMap.get(elementLocalName);
+            var effectiveNamespaceOverride =
                     detectedNamespaceOverride != null ? detectedNamespaceOverride : currentNodeOverride.namespace;
 
             if (effectiveNamespaceOverride != null) {
-                nonNullDocument.renameNode(currentNode, effectiveNamespaceOverride, elementLocalName);
+                document.renameNode(currentNode, effectiveNamespaceOverride, elementLocalName);
             }
 
-            processChildNodes(currentNode,
-                    (childNode -> {
-                        if (childNode.getNodeType() == Node.ELEMENT_NODE) {
-                            preOrderNodes.push(new NamespaceOverride(childNode, effectiveNamespaceOverride));
-                        }
-                    }));
+            processChildNodes(currentNode, (childNode -> {
+                if (childNode.getNodeType() == Node.ELEMENT_NODE) {
+                    preOrderNodes.push(new NamespaceOverride(childNode, effectiveNamespaceOverride));
+                }
+            }));
         }
 
-        return nonNullDocument;
+        return document;
     }
 
     private void processChildNodes(Node node, Consumer<Node> nodeConsumer) {
-        NodeList childNodes = node.getChildNodes();
+        var childNodes = node.getChildNodes();
         if (childNodes != null) {
-            for (int i = 0; i < childNodes.getLength(); i++) {
-                Node childNode = childNodes.item(i);
+            for (var i = 0; i < childNodes.getLength(); i++) {
+                var childNode = childNodes.item(i);
                 if (childNode != null) {
                     nodeConsumer.accept(childNode);
                 }
@@ -367,13 +353,6 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         }
     }
 
-    private static final class NamespaceOverride {
-        private final Node node;
-        private final String namespace;
-
-        private NamespaceOverride(Node node, String namespace) {
-            this.node = node;
-            this.namespace = namespace;
-        }
+    private record NamespaceOverride(Node node, @Nullable String namespace) {
     }
 }
