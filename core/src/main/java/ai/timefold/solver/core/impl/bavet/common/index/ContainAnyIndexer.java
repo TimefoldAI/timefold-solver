@@ -1,19 +1,22 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import ai.timefold.solver.core.impl.util.CompositeListEntry;
-import ai.timefold.solver.core.impl.util.ListEntry;
-import ai.timefold.solver.core.impl.util.Pair;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import ai.timefold.solver.core.impl.util.CompositeListEntry;
+import ai.timefold.solver.core.impl.util.ListEntry;
+import ai.timefold.solver.core.impl.util.Pair;
+
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class ContainAnyIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
@@ -87,23 +90,39 @@ final class ContainAnyIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
     @Override
     public int size(Object queryCompositeKey) {
         KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
-        int size = 0;
-        for (Key_ indexKey : indexKeyCollection) {
-            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
-            if (downstreamIndexer != null) {
-                size += downstreamIndexer.size(queryCompositeKey);
-            }
+        if (indexKeyCollection.isEmpty()) {
+            return 0;
+        } else if (indexKeyCollection.size() == 1) {
+            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKeyCollection.iterator().next());
+            return (downstreamIndexer == null) ? 0 : downstreamIndexer.size(queryCompositeKey);
+        } else {
+            AtomicInteger size = new AtomicInteger(0);
+            forEach(queryCompositeKey, tuple -> size.incrementAndGet());
+            return size.get();
         }
-        return size;
     }
 
     @Override
     public void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
         KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
-        for (Key_ indexKey : indexKeyCollection) {
-            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        if (indexKeyCollection.isEmpty()) {
+            return;
+        } else if (indexKeyCollection.size() == 1) {
+            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKeyCollection.iterator().next());
             if (downstreamIndexer != null) {
                 downstreamIndexer.forEach(queryCompositeKey, tupleConsumer);
+            }
+        } else {
+            Set<T> distinctingSet = new HashSet<>(indexKeyCollection.size() * 16);
+            for (Key_ indexKey : indexKeyCollection) {
+                Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+                if (downstreamIndexer != null) {
+                    downstreamIndexer.forEach(queryCompositeKey, tuple -> {
+                        if (distinctingSet.add(tuple)) {
+                            tupleConsumer.accept(tuple);
+                        }
+                    });
+                }
             }
         }
     }
@@ -116,14 +135,30 @@ final class ContainAnyIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
     @Override
     public List<? extends ListEntry<T>> asList(Object queryCompositeKey) {
         KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
-        List<ListEntry<T>> list = new ArrayList<>(downstreamIndexerMap.size() * 16);
-        for (Key_ indexKey : indexKeyCollection) {
+        if (indexKeyCollection.isEmpty()) {
+            return List.of();
+        } else if (indexKeyCollection.size() == 1) {
+            Key_ indexKey = indexKeyCollection.iterator().next();
             Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
-            if (downstreamIndexer != null) {
-                list.addAll(downstreamIndexer.asList(queryCompositeKey));
+            if (downstreamIndexer == null) {
+                return List.of();
             }
+            return downstreamIndexer.asList(queryCompositeKey);
+        } else {
+            List<ListEntry<T>> list = new ArrayList<>(downstreamIndexerMap.size() * 16);
+            Set<T> distinctingSet = new HashSet<>(indexKeyCollection.size() * 16);
+            for (Key_ indexKey : indexKeyCollection) {
+                Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+                if (downstreamIndexer != null) {
+                    downstreamIndexer.forEach(queryCompositeKey, tuple -> {
+                        if (distinctingSet.add(tuple)) {
+                            list.addAll(downstreamIndexer.asList(queryCompositeKey));
+                        }
+                    });
+                }
+            }
+            return list;
         }
-        return list;
     }
 
     @Override
