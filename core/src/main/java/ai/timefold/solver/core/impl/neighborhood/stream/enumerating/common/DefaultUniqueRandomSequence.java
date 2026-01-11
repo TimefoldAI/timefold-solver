@@ -1,12 +1,10 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 
 import java.util.BitSet;
-import java.util.Collections;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.util.ListEntry;
+import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -20,14 +18,15 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequence<T> {
 
-    private static final DefaultUniqueRandomSequence<?> EMPTY = new DefaultUniqueRandomSequence<>(Collections.emptyList());
+    private static final DefaultUniqueRandomSequence<?> EMPTY =
+            new DefaultUniqueRandomSequence<>(new ListBasedElementAccessor<>(new ElementAwareArrayList<>()));
 
     @SuppressWarnings("unchecked")
     public static <T> DefaultUniqueRandomSequence<T> empty() {
         return (DefaultUniqueRandomSequence<T>) EMPTY;
     }
 
-    private final List<ListEntry<T>> originalList;
+    private final ElementAccessor<T> accessor;
     private final int length;
     private final BitSet removed;
 
@@ -35,10 +34,10 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
     private int leftmostIndex;
     private int rightmostIndex;
 
-    DefaultUniqueRandomSequence(List<? extends ListEntry<T>> listOfUniqueItems) {
-        this.originalList = Collections.unmodifiableList(listOfUniqueItems);
-        this.length = listOfUniqueItems.size();
-        this.removed = new BitSet(length);
+    DefaultUniqueRandomSequence(ElementAccessor<T> accessor) {
+        this.accessor = accessor;
+        this.length = accessor.size();
+        this.removed = new BitSet(); // Do not size upfront, we may only remove a few elements.
         this.removedCount = 0;
         this.leftmostIndex = 0;
         this.rightmostIndex = length - 1;
@@ -47,7 +46,7 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
     @Override
     public SequenceElement<T> pick(Random workingRandom) {
         var randomIndex = pickIndex(workingRandom);
-        return new SequenceElement<>(originalList.get(randomIndex).getElement(), randomIndex);
+        return new SequenceElement<>(accessor.get(randomIndex), randomIndex);
     }
 
     private int pickIndex(Random workingRandom) {
@@ -103,6 +102,11 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
      * @throws NoSuchElementException if the index has already been removed
      */
     public T remove(int index) {
+        removeWithoutReturn(index);
+        return accessor.get(index);
+    }
+
+    void removeWithoutReturn(int index) {
         if (removed.get(index)) {
             throw new IllegalArgumentException("The index (%s) has already been removed.".formatted(index));
         }
@@ -116,7 +120,6 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
         if (index == rightmostIndex) {
             rightmostIndex = removed.previousClearBit(rightmostIndex);
         }
-        return originalList.get(index).getElement();
     }
 
     @Override

@@ -72,7 +72,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             PhaseTermination<Solution_> phaseTermination) {
         var neighborhoodsEnabled = phaseConfigPolicy.isPreviewFeatureEnabled(PreviewFeature.NEIGHBORHOODS);
         var neighborhoodProviderClass = phaseConfig.<Solution_> getNeighborhoodProviderClass();
-        if (phaseConfigPolicy.isPreviewFeatureEnabled(PreviewFeature.NEIGHBORHOODS)) {
+        if (neighborhoodsEnabled) {
             if (neighborhoodProviderClass == null) {
                 // Neighborhoods are enabled, but no provider was specified: use the default one.
                 neighborhoodProviderClass = (Class) DefaultNeighborhoodProvider.class;

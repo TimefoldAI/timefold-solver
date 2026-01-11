@@ -71,12 +71,12 @@ final class SelectionProbabilityTest {
                 .isLessThanOrEqualTo(threshold);
     }
 
-    static <T> List<ElementAwareArrayList.Entry<T>> toEntries(List<T> elements) {
+    static <T> ElementAccessor<T> toEntries(List<T> elements) {
         var list = new ElementAwareArrayList<T>();
         for (var element : elements) {
             list.add(element);
         }
-        return list.asList();
+        return new ListBasedElementAccessor<>(list);
     }
 
 }

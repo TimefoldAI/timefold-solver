@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class EqualsIndexer<T, Key_> implements Indexer<T> {
@@ -108,18 +109,29 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public boolean isEmpty() {
-        return downstreamIndexerMap.isEmpty();
-    }
-
-    @Override
-    public List<? extends ListEntry<T>> asList(Object compositeKey) {
+    public Iterator<T> iterator(Object compositeKey) {
         Key_ indexKey = keyRetriever.apply(compositeKey);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
-            return Collections.emptyList();
+            return Collections.emptyIterator();
         }
-        return downstreamIndexer.asList(compositeKey);
+        return downstreamIndexer.iterator(compositeKey);
+    }
+
+    @Override
+    @Nullable
+    public ListEntry<T> get(Object compositeKey, int index) {
+        Key_ indexKey = keyRetriever.apply(compositeKey);
+        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        if (downstreamIndexer == null) {
+            return null;
+        }
+        return downstreamIndexer.get(compositeKey, index);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return downstreamIndexerMap.isEmpty();
     }
 
     @Override

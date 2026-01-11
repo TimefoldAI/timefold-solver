@@ -14,9 +14,9 @@ public abstract class AbstractDatasetInstance<Solution_, Tuple_ extends Tuple>
     private final AbstractDataset<Solution_> parent;
     protected final int entryStoreIndex;
 
-    protected AbstractDatasetInstance(AbstractDataset<Solution_> parent, int rightMostPositionStoreIndex) {
+    protected AbstractDatasetInstance(AbstractDataset<Solution_> parent, int entryStoreIndex) {
         this.parent = Objects.requireNonNull(parent);
-        this.entryStoreIndex = rightMostPositionStoreIndex;
+        this.entryStoreIndex = entryStoreIndex;
     }
 
     public AbstractDataset<Solution_> getParent() {
