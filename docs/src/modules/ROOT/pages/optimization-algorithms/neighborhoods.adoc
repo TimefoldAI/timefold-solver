@@ -571,18 +571,24 @@ public class MyNeighborhoodProvider implements NeighborhoodProvider<MySolution> 
 Use the `add` method to include every single move provider you want to use in the neighborhood.
 Finally, call the `build` method to create the `Neighborhood` instance.
 
+NOTE: Enabling the Neighborhoods API preview feature without specifying a `NeighborhoodProvider` implementation
+will lead to the solver using the default neighborhood,
+which only includes change and swap moves.
+
 [#neighborhoodsRuntimeLimitations]
 === Runtime limitations
 
 As the Neighborhoods API is still in an early stage of development,
 it has some limitations which we will address in future releases:
 
-- When `neighborhoodProviderClass` is used, it is not yet possible to disable move selector-based neighborhoods.
-You should therefore only include moves which are not included by the solver by default.
 - The Neighborhoods API does not yet support move probability weighting.
 All move providers included in the neighborhood have the same probability of being selected to generate a move.
 - The Neighborhoods API also has the same probability of selection as the move-selector based neighborhood.
-This means that the solver will first pick whether to use the Neighborhoods API or the move selectors to generate the next move, and only then use that particular method to generate the move.
+This means that the solver will first pick whether to use the Neighborhoods API or the move selectors to generate the next move,
+and only then use that particular method to generate the move.
 
-The coexistence of Move Selectors and Neighborhoods is an issue we are actively working on,
-as Neighborhoods is still far from being a full replacement of Move Selectors.
+The coexistence of Move Selectors and Neighborhoods is an issue we are actively working on.
+We will also work on adding more advanced moves in the default neighborhood,
+such as 2-opt, 3-opt and xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection].
+The Neighborhoods API is still far from being a full replacement of Move Selectors.
+
