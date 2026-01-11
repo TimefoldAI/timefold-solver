@@ -12,6 +12,7 @@ public abstract class AbstractLeftDataset<Solution_, A> extends AbstractDataset<
         super(parent);
     }
 
-    public abstract AbstractLeftDatasetInstance<Solution_, UniTuple<A>> instantiate(int entryStoreIndex);
+    public abstract AbstractLeftDatasetInstance<Solution_, UniTuple<A>> instantiate(int rightSequenceStoreIndex,
+            int entryStoreIndex);
 
 }

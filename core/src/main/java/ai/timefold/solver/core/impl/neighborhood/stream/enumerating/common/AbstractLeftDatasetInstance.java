@@ -14,9 +14,15 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
         implements Iterable<Tuple_> {
 
     private final ElementAwareArrayList<Tuple_> tupleList = new ElementAwareArrayList<>();
+    private final int rightSequenceStoreIndex;
 
-    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_> parent, int rightMostPositionStoreIndex) {
-        super(parent, rightMostPositionStoreIndex);
+    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_> parent, int rightSequenceStoreIndex, int entryStoreIndex) {
+        super(parent, entryStoreIndex);
+        this.rightSequenceStoreIndex = rightSequenceStoreIndex;
+    }
+
+    public int getRightSequenceStoreIndex() {
+        return rightSequenceStoreIndex;
     }
 
     @Override
@@ -37,11 +43,11 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
 
     @Override
     public Iterator<Tuple_> iterator() {
-        return new UnwrappingIterator<>(tupleList.asList().iterator());
+        return tupleList.iterator();
     }
 
     public DefaultUniqueRandomSequence<Tuple_> buildRandomSequence() {
-        return new DefaultUniqueRandomSequence<>(tupleList.asList());
+        return new DefaultUniqueRandomSequence<>(new ListBasedElementAccessor<>(tupleList));
     }
 
     public int size() {

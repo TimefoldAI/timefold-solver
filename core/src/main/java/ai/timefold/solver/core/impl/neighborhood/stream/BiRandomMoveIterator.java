@@ -1,9 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood.stream;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
@@ -11,7 +9,6 @@ import java.util.Random;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DefaultUniqueRandomSequence;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.UniqueRandomSequence;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
@@ -68,16 +65,15 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
 
     // Fields required for iteration.
     private final DefaultUniqueRandomSequence<UniTuple<A>> leftTupleSequence;
-    private final Map<UniTuple<A>, UniqueRandomSequence<UniTuple<B>>> rightTupleSequenceMap;
+    private final int rightSequenceStoreIndex;
     private @Nullable Move<Solution_> nextMove;
 
     public BiRandomMoveIterator(BiMoveStreamContext<Solution_, A, B> context, Random workingRandom) {
         this.context = Objects.requireNonNull(context);
         this.workingRandom = Objects.requireNonNull(workingRandom);
         var leftDatasetInstance = context.getLeftDatasetInstance();
+        this.rightSequenceStoreIndex = leftDatasetInstance.getRightSequenceStoreIndex();
         this.leftTupleSequence = leftDatasetInstance.buildRandomSequence();
-        this.rightTupleSequenceMap = leftTupleSequence.isEmpty() ? Collections.emptyMap()
-                : CollectionUtils.newIdentityHashMap(leftDatasetInstance.size());
     }
 
     private UniqueRandomSequence<UniTuple<B>> computeRightSequence(UniTuple<A> leftTuple) {
@@ -121,7 +117,11 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
 
     private void pickNextMove(UniqueRandomSequence.SequenceElement<UniTuple<A>> leftElement) {
         var leftTuple = leftElement.value();
-        var rightTupleSequence = rightTupleSequenceMap.computeIfAbsent(leftTuple, this::computeRightSequence);
+        var rightTupleSequence = (UniqueRandomSequence<UniTuple<B>>) leftTuple.getStore(rightSequenceStoreIndex);
+        if (rightTupleSequence == null) {
+            rightTupleSequence = computeRightSequence(leftTuple);
+            leftTuple.setStore(rightSequenceStoreIndex, rightTupleSequence);
+        }
         var remove = false;
         if (rightTupleSequence.isEmpty()) {
             remove = true;
@@ -141,7 +141,7 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
         }
         if (remove) {
             leftTupleSequence.remove(leftElement.index());
-            rightTupleSequenceMap.remove(leftTuple);
+            leftTuple.setStore(rightSequenceStoreIndex, null);
         }
     }
 

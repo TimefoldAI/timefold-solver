@@ -236,7 +236,7 @@ class DefaultSolverTest {
 
         var solution = TestdataSolution.generateSolution(3, 2);
         Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("NEIGHBORHOODS");
     }
 
@@ -253,6 +253,21 @@ class DefaultSolverTest {
                 .withPhases(new LocalSearchPhaseConfig()
                         .withMoveSelectorConfig(new SwapMoveSelectorConfig())
                         .withMoveProviderClass(TestingNeighborhoodProvider.class));
+
+        var solution = TestdataSolution.generateSolution(3, 2);
+        var result = PlannerTestUtils.solve(solverConfig, solution);
+        Assertions.assertThat(result).isNotNull();
+    }
+
+    @Test
+    void solveWithDefaultNeighborhoodProvider() {
+        var solverConfig = new SolverConfig()
+                .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(TestingEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0")); // Should get there quickly.
 
         var solution = TestdataSolution.generateSolution(3, 2);
         var result = PlannerTestUtils.solve(solverConfig, solution);

@@ -24,13 +24,7 @@ public enum PreviewFeature {
     /**
      * Unlike other preview features, Neighborhoods are an active research project.
      * It is intended to simplify the creation of custom moves, eventually replacing move selectors.
-     * The component is under heavy development, entirely undocumented, and many key features are yet to be delivered.
-     * Neither the API nor the feature set are complete, and any part can change or be removed at any time.
-     * 
-     * Neighborhoods will eventually stabilize and be promoted from a research project to a true preview feature.
-     * We only expose it now to be able to use it for experimentation and testing.
-     * As such, it is an exception to the rule;
-     * this preview feature is not finished, and it is not yet ready for feedback.
+     * The component is under development, and many key features are yet to be delivered.
      */
     NEIGHBORHOODS
 

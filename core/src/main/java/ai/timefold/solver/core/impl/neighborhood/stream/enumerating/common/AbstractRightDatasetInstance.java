@@ -7,7 +7,6 @@ import java.util.function.Predicate;
 import ai.timefold.solver.core.impl.bavet.common.index.Indexer;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDatasetInstance.UnwrappingIterator;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -21,8 +20,8 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
 
     protected AbstractRightDatasetInstance(AbstractDataset<Solution_> parent,
             IndexerFactory.KeysExtractor<UniTuple<Right_>> compositeKeyExtractor, int compositeKeyStoreIndex,
-            int rightMostPositionStoreIndex, Indexer<UniTuple<Right_>> indexer) {
-        super(parent, rightMostPositionStoreIndex);
+            int entryStoreIndex, Indexer<UniTuple<Right_>> indexer) {
+        super(parent, entryStoreIndex);
         this.compositeKeyExtractor = compositeKeyExtractor;
         this.compositeKeyStoreIndex = compositeKeyStoreIndex;
         this.indexer = indexer;
@@ -52,17 +51,16 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
     }
 
     public Iterator<UniTuple<Right_>> iterator(Object compositeKey) {
-        var list = indexer.asList(compositeKey);
-        return new UnwrappingIterator<>(list.iterator());
+        return indexer.iterator(compositeKey);
     }
 
     public DefaultUniqueRandomSequence<UniTuple<Right_>> buildRandomSequence(Object compositeKey) {
-        return new DefaultUniqueRandomSequence<>(indexer.asList(compositeKey));
+        return new DefaultUniqueRandomSequence<>(new IndexerBasedElementAccessor<>(indexer, compositeKey));
     }
 
     public FilteredUniqueRandomSequence<UniTuple<Right_>> buildRandomSequence(Object compositeKey,
             Predicate<UniTuple<Right_>> predicate) {
-        return new FilteredUniqueRandomSequence<>(indexer.asList(compositeKey), predicate);
+        return new FilteredUniqueRandomSequence<>(new IndexerBasedElementAccessor<>(indexer, compositeKey), predicate);
     }
 
     public int size(Object compositeKey) {

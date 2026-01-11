@@ -240,12 +240,21 @@ public class HeuristicConfigPolicy<Solution_> {
 
     public static void ensurePreviewFeature(PreviewFeature previewFeature,
             Collection<PreviewFeature> previewFeatureCollection) {
-        if (previewFeatureCollection == null || !previewFeatureCollection.contains(previewFeature)) {
+        if (!isPreviewFeatureEnabled(previewFeature, previewFeatureCollection)) {
             throw new IllegalStateException("""
                     The preview feature %s is not enabled.
                     Maybe add %s to <enablePreviewFeature> in your configuration file?"""
                     .formatted(previewFeature, previewFeature));
         }
+    }
+
+    public boolean isPreviewFeatureEnabled(PreviewFeature previewFeature) {
+        return isPreviewFeatureEnabled(previewFeature, previewFeatureSet);
+    }
+
+    public static boolean isPreviewFeatureEnabled(PreviewFeature previewFeature,
+            Collection<PreviewFeature> previewFeatureCollection) {
+        return previewFeatureCollection != null && previewFeatureCollection.contains(previewFeature);
     }
 
     @Override

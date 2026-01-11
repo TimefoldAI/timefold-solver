@@ -44,28 +44,45 @@ class SwapMoveProviderTest {
 
         // With 3 entities, only 3 swap moves are possible: e1 <-> e2, e1 <-> e3, e2 <-> e3.
         // But we only have 2 values, guaranteeing that two entities will share a value.
-        // Therefore there will only be 2 unique swap moves.
+        // Therefore there will only be 4 swap moves (including duplicates).
         var moveIterable = createMoveIterable(new SwapMoveProvider<>(entityMetaModel), solutionDescriptor, solution);
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
                 .map(m -> (SwapMove<TestdataSolution, TestdataEntity>) m)
                 .toList();
-        assertThat(moveList).hasSize(2);
+        assertThat(moveList).hasSize(4);
 
-        var firstMove = moveList.get(0);
+        var move1 = moveList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(firstMove.getPlanningEntities())
+            softly.assertThat(move1.getPlanningEntities())
                     .containsOnly(e1, e2);
-            softly.assertThat(firstMove.getPlanningValues())
+            softly.assertThat(move1.getPlanningValues())
                     .containsOnly(v1, v2);
         });
 
-        var secondMove = moveList.get(1);
+        var move2 = moveList.get(1);
         assertSoftly(softly -> {
-            softly.assertThat(secondMove.getPlanningEntities())
+            softly.assertThat(move2.getPlanningEntities())
+                    .containsOnly(e1, e2);
+            softly.assertThat(move2.getPlanningValues())
+                    .containsOnly(v1, v2);
+        });
+
+        var move3 = moveList.get(2);
+        assertSoftly(softly -> {
+            softly.assertThat(move3.getPlanningEntities())
                     .containsOnly(e2, e3);
-            softly.assertThat(secondMove.getPlanningValues())
+            softly.assertThat(move3.getPlanningValues())
                     .containsOnly(v2, v1);
         });
+
+        var move4 = moveList.get(3);
+        assertSoftly(softly -> {
+            softly.assertThat(move4.getPlanningEntities())
+                    .containsOnly(e2, e3);
+            softly.assertThat(move4.getPlanningValues())
+                    .containsOnly(v2, v1);
+        });
+
     }
 
     @Test
@@ -85,26 +102,42 @@ class SwapMoveProviderTest {
 
         // With 3 entities, only 3 swap moves are possible: e1 <-> e2, e1 <-> e3, e2 <-> e3.
         // But we only have 2 unique combinations of values, guaranteeing that two entities will share values.
-        // Therefore there will only be 2 unique swap moves.
+        // Therefore there will only be 4 swap moves (including duplicates).
         var moveIterable = createMoveIterable(new SwapMoveProvider<>(entityMetaModel), solutionDescriptor, solution);
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
                 .map(m -> (SwapMove<TestdataMultiVarSolution, TestdataMultiVarEntity>) m)
                 .toList();
-        assertThat(moveList).hasSize(2);
+        assertThat(moveList).hasSize(4);
 
-        var firstMove = moveList.get(0);
+        var move1 = moveList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(firstMove.getPlanningEntities())
+            softly.assertThat(move1.getPlanningEntities())
                     .containsOnly(e1, e2);
-            softly.assertThat(firstMove.getPlanningValues())
+            softly.assertThat(move1.getPlanningValues())
                     .containsOnly(v1, v2, otherV1, otherV2);
         });
 
-        var secondMove = moveList.get(1);
+        var move2 = moveList.get(1);
         assertSoftly(softly -> {
-            softly.assertThat(secondMove.getPlanningEntities())
+            softly.assertThat(move2.getPlanningEntities())
+                    .containsOnly(e1, e2);
+            softly.assertThat(move2.getPlanningValues())
+                    .containsOnly(v1, v2, otherV1, otherV2);
+        });
+
+        var move3 = moveList.get(2);
+        assertSoftly(softly -> {
+            softly.assertThat(move3.getPlanningEntities())
                     .containsOnly(e2, e3);
-            softly.assertThat(secondMove.getPlanningValues())
+            softly.assertThat(move3.getPlanningValues())
+                    .containsOnly(v2, v1, otherV2, otherV1);
+        });
+
+        var move4 = moveList.get(3);
+        assertSoftly(softly -> {
+            softly.assertThat(move4.getPlanningEntities())
+                    .containsOnly(e2, e3);
+            softly.assertThat(move4.getPlanningValues())
                     .containsOnly(v2, v1, otherV2, otherV1);
         });
     }

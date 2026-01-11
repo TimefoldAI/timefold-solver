@@ -1,12 +1,13 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import java.util.List;
+import java.util.Iterator;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An indexer for entity or fact {@code X},
@@ -35,18 +36,11 @@ public sealed interface Indexer<T>
 
     void forEach(Object compositeKey, Consumer<T> tupleConsumer);
 
-    boolean isEmpty();
+    Iterator<T> iterator(Object compositeKey);
 
-    /**
-     * Returns all entries for the given composite key as a list.
-     * The index must not be modified while iterating over the returned list.
-     * If the index is modified, a new instance of this list must be retrieved;
-     * the previous instance is no longer valid and its behavior is undefined.
-     * 
-     * @param compositeKey the composite key
-     * @return all entries for a given composite key;
-     *         the caller must not modify the list
-     */
-    List<? extends ListEntry<T>> asList(Object compositeKey);
+    @Nullable
+    ListEntry<T> get(Object compositeKey, int index);
+
+    boolean isEmpty();
 
 }
