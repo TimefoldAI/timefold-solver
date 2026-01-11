@@ -2,10 +2,8 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
@@ -19,7 +17,6 @@ import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class SwapMoveProvider<Solution_, Entity_>
@@ -27,7 +24,6 @@ public class SwapMoveProvider<Solution_, Entity_>
 
     private final PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel;
     private final List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList;
-    private final @Nullable Function<Entity_, Comparable> planningIdGetter;
 
     @SuppressWarnings("unchecked")
     public SwapMoveProvider(PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel) {
@@ -44,18 +40,6 @@ public class SwapMoveProvider<Solution_, Entity_>
             throw new IllegalArgumentException("The entityClass (%s) has no basic planning variables."
                     .formatted(entityMetaModel.type().getCanonicalName()));
         }
-        this.planningIdGetter = SwapMoveProvider.getPlanningIdGetter(entityMetaModel);
-    }
-
-    @SuppressWarnings("rawtypes")
-    static <Solution_, Entity_> @Nullable Function<Entity_, Comparable>
-            getPlanningIdGetter(PlanningEntityMetaModel<Solution_, Entity_> metaModel) {
-        var solutionDescriptor = ((DefaultPlanningSolutionMetaModel<Solution_>) metaModel.solution()).solutionDescriptor();
-        var planningIdMemberAccessor = solutionDescriptor.getPlanningIdAccessor(metaModel.type());
-        if (planningIdMemberAccessor == null) {
-            return null;
-        }
-        return planningIdMemberAccessor.getGetterFunction();
     }
 
     public SwapMoveProvider(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList) {
@@ -72,7 +56,6 @@ public class SwapMoveProvider<Solution_, Entity_>
                     "The variableMetaModelList (%s) contains variables from multiple entity classes."
                             .formatted(variableMetaModelList));
         };
-        this.planningIdGetter = SwapMoveProvider.getPlanningIdGetter(entityMetaModel);
     }
 
     @Override
@@ -80,18 +63,12 @@ public class SwapMoveProvider<Solution_, Entity_>
         var entityType = entityMetaModel.type();
         var entityStream = moveStreamFactory.forEach(entityType, false);
         var moveConstructor = (BiMoveConstructor<Solution_, Entity_, Entity_>) this::buildMove;
-        if (planningIdGetter == null) { // If the user hasn't defined a planning ID, we will follow a slower path.
-            return moveStreamFactory.pick(entityStream)
-                    .pick(entityStream,
-                            NeighborhoodsJoiners.filtering(this::isValidSwap))
-                    .asMove(moveConstructor);
-        } else {
-            return moveStreamFactory.pick(entityStream)
-                    .pick(entityStream,
-                            NeighborhoodsJoiners.lessThan(planningIdGetter),
-                            NeighborhoodsJoiners.filtering(this::isValidSwap))
-                    .asMove(moveConstructor);
-        }
+        // We do not exclude duplicate swaps (A<>B and B<>A) to keep it simple and fast.
+        // Move selectors don't do anything about duplicate moves either.
+        return moveStreamFactory.pick(entityStream)
+                .pick(entityStream,
+                        NeighborhoodsJoiners.filtering(this::isValidSwap))
+                .asMove(moveConstructor);
     }
 
     private Move<Solution_> buildMove(SolutionView<Solution_> solutionView, Entity_ a, Entity_ b) {

@@ -10,6 +10,9 @@ import org.jspecify.annotations.NullMarked;
  * It accepts a list of unique items on input, and does not copy or modify it.
  * Instead, it keeps metadata on which indexes of the list were removed already, never to return them again.
  * Does not allow null values.
+ * <p>
+ * It is imperative for the overall fairness of the solver that the picking is random and fair,
+ * meaning each unpicked value has the same probability of being picked next.
  * 
  * @param <T>
  */

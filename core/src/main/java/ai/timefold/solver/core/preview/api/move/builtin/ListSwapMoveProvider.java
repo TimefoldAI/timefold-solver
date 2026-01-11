@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -10,21 +9,18 @@ import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class ListSwapMoveProvider<Solution_, Entity_, Value_>
-        implements MoveProvider<Solution_> {
+public class ListSwapMoveProvider<Solution_, Entity_, Value_> implements MoveProvider<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
-    private final @Nullable Function<Entity_, Comparable> planningIdGetter;
 
     public ListSwapMoveProvider(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
-        this.planningIdGetter = SwapMoveProvider.getPlanningIdGetter(variableMetaModel.entity());
     }
 
     @Override
@@ -32,28 +28,24 @@ public class ListSwapMoveProvider<Solution_, Entity_, Value_>
         var assignedValueStream = moveStreamFactory.forEach(variableMetaModel.type(), false)
                 .filter((solutionView, value) -> solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList)
                 .map((solutionView, value) -> new FullElementPosition<>(value,
-                        solutionView.getPositionOf(variableMetaModel, value).ensureAssigned(), planningIdGetter));
-        if (planningIdGetter == null) { // If the user hasn't defined a planning ID, we will follow a slower path.
-            return moveStreamFactory.pick(assignedValueStream)
-                    .pick(assignedValueStream,
-                            NeighborhoodsJoiners.filtering(this::isValidSwap))
-                    .asMove(this::buildMove);
-        } else {
-            return moveStreamFactory.pick(assignedValueStream)
-                    .pick(assignedValueStream,
-                            NeighborhoodsJoiners.lessThan(a -> a),
-                            NeighborhoodsJoiners.filtering(this::isValidSwap))
-                    .asMove(this::buildMove);
-        }
+                        solutionView.getPositionOf(variableMetaModel, value).ensureAssigned()));
+        var predicate =
+                (BiNeighborhoodsPredicate<Solution_, FullElementPosition<Value_>, FullElementPosition<Value_>>) this::isValidSwap;
+        // We do not exclude duplicate swaps (A<>B and B<>A) to keep it simple and fast.
+        // Move selectors don't do anything about duplicate moves either.
+        return moveStreamFactory.pick(assignedValueStream)
+                .pick(assignedValueStream,
+                        NeighborhoodsJoiners.filtering(predicate))
+                .asMove(this::buildMove);
     }
 
-    private Move<Solution_> buildMove(SolutionView<Solution_> solutionView, FullElementPosition<Entity_, Value_> a,
-            FullElementPosition<Entity_, Value_> b) {
+    private Move<Solution_> buildMove(SolutionView<Solution_> solutionView, FullElementPosition<Value_> a,
+            FullElementPosition<Value_> b) {
         return Moves.swap(variableMetaModel, a.elementPosition, b.elementPosition);
     }
 
-    private boolean isValidSwap(SolutionView<Solution_> solutionView, FullElementPosition<Entity_, Value_> leftPosition,
-            FullElementPosition<Entity_, Value_> rightPosition) {
+    private boolean isValidSwap(SolutionView<Solution_> solutionView, FullElementPosition<Value_> leftPosition,
+            FullElementPosition<Value_> rightPosition) {
         if (Objects.equals(leftPosition, rightPosition)) {
             return false;
         }
@@ -62,35 +54,17 @@ public class ListSwapMoveProvider<Solution_, Entity_, Value_>
     }
 
     @NullMarked
-    private record FullElementPosition<Entity_, Value_>(Value_ value, PositionInList elementPosition,
-            @Nullable Function<Entity_, Comparable> planningIdGetter)
-            implements
-                Comparable<FullElementPosition<Entity_, Value_>> {
+    private record FullElementPosition<Value_>(Value_ value, PositionInList elementPosition) {
 
-        public Entity_ entity() {
+        public <Entity_> Entity_ entity() {
             return elementPosition.entity();
-        }
-
-        public int index() {
-            return elementPosition.index();
-        }
-
-        @Override
-        public int compareTo(FullElementPosition<Entity_, Value_> o) {
-            if (planningIdGetter == null) { // The code will not get here if the getter is null.
-                throw new IllegalStateException("Impossible state: The planningIdGetter is null, cannot compare entities.");
-            }
-            var entityComparison = planningIdGetter.apply(this.entity()).compareTo(planningIdGetter.apply(o.entity()));
-            if (entityComparison != 0) {
-                return entityComparison;
-            }
-            return Integer.compare(this.index(), o.index());
         }
 
         @Override
         public String toString() {
             return value + "@" + elementPosition;
         }
+
     }
 
 }

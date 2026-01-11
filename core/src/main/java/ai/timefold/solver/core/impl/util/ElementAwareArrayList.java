@@ -2,7 +2,9 @@ package ai.timefold.solver.core.impl.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.NullMarked;
@@ -40,6 +42,11 @@ public final class ElementAwareArrayList<T> {
         var newEntry = new Entry<>(element, ++lastElementPosition);
         elementList.add(newEntry);
         return newEntry;
+    }
+
+    public Entry<T> get(int index) {
+        compact();
+        return elementList.get(index);
     }
 
     /**
@@ -171,6 +178,11 @@ public final class ElementAwareArrayList<T> {
         clearGaps(indexesToRemove, indexesToRemove.length - 1);
     }
 
+    public Iterator<T> iterator() {
+        compact();
+        return new DefaultIterator<>(elementList);
+    }
+
     /**
      * Returns a standard {@link List} view of this collection.
      * Users mustn't modify the returned list, as that'd also change the underlying data structure.
@@ -232,6 +244,30 @@ public final class ElementAwareArrayList<T> {
         @Override
         public String toString() {
             return isRemoved() ? "null" : element + "@" + position;
+        }
+
+    }
+
+    public static final class DefaultIterator<T> implements Iterator<T> {
+
+        private final List<Entry<T>> list;
+        private int index = 0;
+
+        private DefaultIterator(List<Entry<T>> list) {
+            this.list = list;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index < list.size();
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            return list.get(index++).getElement();
         }
 
     }

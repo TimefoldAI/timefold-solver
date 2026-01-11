@@ -6,33 +6,51 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 
 import org.junit.jupiter.api.Test;
 
 class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
 
-    private final DefaultBiJoiner<Person, Person> joiner =
+    private static final DefaultBiJoiner<Person, Person> JOINER_CONSTRAINTS =
             (DefaultBiJoiner<Person, Person>) Joiners.equal(Person::gender)
                     .and(Joiners.lessThanOrEqual(Person::age));
+    private static final DefaultBiNeighborhoodsJoiner<Person, Person> JOINER_NEIGHBORHOODS =
+            (DefaultBiNeighborhoodsJoiner<Person, Person>) NeighborhoodsJoiners.equal(Person::gender)
+                    .and(NeighborhoodsJoiners.lessThanOrEqual(Person::age));
 
     @Test
     void iEmpty() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+        var indexer = new IndexerFactory<>(JOINER_CONSTRAINTS).buildIndexer(true);
         assertThat(getTuples(indexer, "F", 40)).isEmpty();
     }
 
     @Test
     void put() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+        var indexer = new IndexerFactory<>(JOINER_CONSTRAINTS).buildIndexer(true);
         var annTuple = newTuple("Ann-F-40");
         assertThat(indexer.size(CompositeKey.ofMany("F", 40))).isEqualTo(0);
         indexer.put(CompositeKey.ofMany("F", 40), annTuple);
         assertThat(indexer.size(CompositeKey.ofMany("F", 40))).isEqualTo(1);
+        assertThatThrownBy(() -> indexer.get(CompositeKey.ofMany("F", 40), 0))
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
+    void putWithRandomAccess() {
+        var indexer = new IndexerFactory<>(JOINER_NEIGHBORHOODS).buildIndexer(true);
+        var annTuple = newTuple("Ann-F-40");
+        assertThat(indexer.size(CompositeKey.ofMany("F", 40))).isEqualTo(0);
+        indexer.put(CompositeKey.ofMany("F", 40), annTuple);
+        assertThat(indexer.size(CompositeKey.ofMany("F", 40))).isEqualTo(1);
+        assertThat(indexer.get(CompositeKey.ofMany("F", 40), 0).getElement())
+                .isEqualTo(annTuple);
     }
 
     @Test
     void removeTwice() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+        var indexer = new IndexerFactory<>(JOINER_CONSTRAINTS).buildIndexer(true);
         var annTuple = newTuple("Ann-F-40");
         var annEntry = indexer.put(CompositeKey.ofMany("F", 40), annTuple);
 
@@ -43,7 +61,7 @@ class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
 
     @Test
     void visit() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+        var indexer = new IndexerFactory<>(JOINER_CONSTRAINTS).buildIndexer(true);
 
         var annTuple = newTuple("Ann-F-40");
         indexer.put(CompositeKey.ofMany("F", 40), annTuple);

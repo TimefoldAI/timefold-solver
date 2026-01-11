@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import java.util.List;
+import java.util.Iterator;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
@@ -35,18 +35,20 @@ public sealed interface Indexer<T>
 
     void forEach(Object compositeKey, Consumer<T> tupleConsumer);
 
-    boolean isEmpty();
+    Iterator<T> iterator(Object compositeKey);
 
     /**
-     * Returns all entries for the given composite key as a list.
-     * The index must not be modified while iterating over the returned list.
-     * If the index is modified, a new instance of this list must be retrieved;
-     * the previous instance is no longer valid and its behavior is undefined.
-     * 
-     * @param compositeKey the composite key
-     * @return all entries for a given composite key;
-     *         the caller must not modify the list
+     * Gets the entry at the given position for the given composite key.
+     *
+     * @param compositeKey composite key uniquely identifying the backend or a set of backends
+     * @param index the requested position in the index
+     * @return the entry at the given index for the given composite key
+     * @throws IndexOutOfBoundsException if the position is out of bounds;
+     *         that is, if the index is negative or greater than or equal to {@link #size(Object)}
+     *         for the given composite key
      */
-    List<? extends ListEntry<T>> asList(Object compositeKey);
+    ListEntry<T> get(Object compositeKey, int index);
+
+    boolean isEmpty();
 
 }
