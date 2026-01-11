@@ -2,8 +2,10 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.NavigableMap;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Consumer;
@@ -13,6 +15,7 @@ import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
@@ -138,7 +141,8 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     public void forEach(Object compositeKey, Consumer<T> tupleConsumer) {
         switch (comparisonMap.size()) {
             case 0 -> {
-                /* Nothing to do. */ }
+                /* Nothing to do. */
+            }
             case 1 -> forEachSingleIndexer(compositeKey, tupleConsumer);
             default -> forEachManyIndexers(compositeKey, tupleConsumer);
         }
@@ -165,46 +169,116 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
+    public Iterator<T> iterator(Object compositeKey) {
+        return switch (comparisonMap.size()) {
+            case 0 -> Collections.emptyIterator();
+            case 1 -> iteratorSingleIndexer(compositeKey);
+            default -> new DefaultIterator(compositeKey);
+        };
+    }
+
+    private Iterator<T> iteratorSingleIndexer(Object compositeKey) {
+        var indexKey = keyRetriever.apply(compositeKey);
+        var entry = comparisonMap.firstEntry();
+        if (boundaryReached(entry.getKey(), indexKey)) {
+            return Collections.emptyIterator();
+        }
+        // Boundary condition not yet reached; include the indexer in the range.
+        return entry.getValue().iterator(compositeKey);
+    }
+
+    @Override
     public boolean isEmpty() {
         return comparisonMap.isEmpty();
     }
 
     @Override
-    public List<? extends ListEntry<T>> asList(Object compositeKey) {
+    public ListEntry<T> get(Object compositeKey, int index) {
         return switch (comparisonMap.size()) {
-            case 0 -> Collections.emptyList();
-            case 1 -> asListSingleIndexer(compositeKey);
-            default -> asListManyIndexers(compositeKey);
+            case 0 -> throw new IndexOutOfBoundsException("Index: " + index);
+            case 1 -> getSingleIndexer(compositeKey, index);
+            default -> getManyIndexers(compositeKey, index);
         };
     }
 
-    private List<? extends ListEntry<T>> asListSingleIndexer(Object compositeKey) {
+    private ListEntry<T> getSingleIndexer(Object compositeKey, int index) {
         var indexKey = keyRetriever.apply(compositeKey);
         var entry = comparisonMap.firstEntry();
-        return boundaryReached(entry.getKey(), indexKey) ? Collections.emptyList() : entry.getValue().asList(compositeKey);
+        if (boundaryReached(entry.getKey(), indexKey)) {
+            throw new IndexOutOfBoundsException("Index: " + index);
+        }
+        return entry.getValue().get(compositeKey, index);
     }
 
-    @SuppressWarnings("unchecked")
-    private List<? extends ListEntry<T>> asListManyIndexers(Object compositeKey) {
-        // The index backend's asList() may take a while to build.
-        // At the same time, the elements in these lists will be accessed randomly.
-        // Therefore we build this abstraction to avoid building unnecessary lists that would never get accessed.
-        var result = new ComposingList<ListEntry<T>>();
+    private ListEntry<T> getManyIndexers(Object compositeKey, int index) {
+        var seenCount = 0;
         var indexKey = keyRetriever.apply(compositeKey);
         for (var entry : comparisonMap.entrySet()) {
             if (boundaryReached(entry.getKey(), indexKey)) {
-                return result;
+                break;
             } else { // Boundary condition not yet reached; include the indexer in the range.
                 var value = entry.getValue();
-                result.addSubList(() -> (List<ListEntry<T>>) value.asList(compositeKey), value.size(compositeKey));
+                var size = value.size(compositeKey);
+                if (seenCount + size > index) {
+                    return value.get(compositeKey, index - seenCount);
+                }
+                seenCount += size;
             }
         }
-        return result;
+        throw new IndexOutOfBoundsException("Index: " + index);
     }
 
     @Override
     public String toString() {
         return "size = " + comparisonMap.size();
+    }
+
+    private final class DefaultIterator implements Iterator<T> {
+
+        private final Object compositeKey;
+        private final Key_ indexKey;
+        private final Iterator<Map.Entry<Key_, Indexer<T>>> indexerIterator = comparisonMap.entrySet().iterator();
+        private @Nullable Iterator<T> downstreamIterator = null;
+        private @Nullable T next = null;
+
+        public DefaultIterator(Object compositeKey) {
+            this.compositeKey = compositeKey;
+            this.indexKey = keyRetriever.apply(compositeKey);
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (next != null) {
+                return true;
+            }
+            if (downstreamIterator != null && downstreamIterator.hasNext()) {
+                next = downstreamIterator.next();
+                return true;
+            }
+            while (indexerIterator.hasNext()) {
+                var entry = indexerIterator.next();
+                if (boundaryReached(entry.getKey(), indexKey)) {
+                    return false;
+                }
+                // Boundary condition not yet reached; include the indexer in the range.
+                downstreamIterator = entry.getValue().iterator(compositeKey);
+                if (downstreamIterator.hasNext()) {
+                    next = downstreamIterator.next();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            var result = next;
+            next = null;
+            return result;
+        }
     }
 
 }

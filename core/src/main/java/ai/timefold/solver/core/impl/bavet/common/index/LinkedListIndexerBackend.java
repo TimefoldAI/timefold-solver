@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import java.util.Iterator;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
@@ -35,6 +36,16 @@ public final class LinkedListIndexerBackend<T> implements IndexerBackend<T> {
     @Override
     public void forEach(Object compositeKey, Consumer<T> tupleConsumer) {
         tupleList.forEach(tupleConsumer);
+    }
+
+    @Override
+    public Iterator<T> iterator(Object compositeKey) {
+        return tupleList.iterator();
+    }
+
+    @Override
+    public ListEntry<T> get(Object compositeKey, int index) {
+        throw new UnsupportedOperationException(); // Random access uses a different backend.
     }
 
     @Override

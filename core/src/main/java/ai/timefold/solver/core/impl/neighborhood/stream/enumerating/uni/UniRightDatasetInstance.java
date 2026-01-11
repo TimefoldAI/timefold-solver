@@ -18,8 +18,8 @@ public final class UniRightDatasetInstance<Solution_, A, B>
 
     public UniRightDatasetInstance(AbstractDataset<Solution_> parent, IndexerFactory<B> indexerFactory,
             @Nullable BiNeighborhoodsPredicate<Solution_, A, B> filter, int compositeKeyStoreIndex,
-            int rightMostPositionStoreIndex) {
-        super(parent, indexerFactory.buildRightKeysExtractor(), compositeKeyStoreIndex, rightMostPositionStoreIndex,
+            int entryStoreIndex) {
+        super(parent, indexerFactory.buildRightKeysExtractor(), compositeKeyStoreIndex, entryStoreIndex,
                 indexerFactory.buildIndexer(false));
         this.leftCompositeKeyExtractor = indexerFactory.buildUniLeftKeysExtractor();
         this.filter = filter;

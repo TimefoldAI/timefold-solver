@@ -50,7 +50,7 @@ class ListSwapMoveProviderTest {
         var moveIterable = createMoveIterable(new ListSwapMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
                 .toList();
-        assertThat(moveList).hasSize(3);
+        assertThat(moveList).hasSize(6);
 
         // We have 4 values.
         // One is unassigned, therefore isn't included in the swaps.
@@ -58,7 +58,7 @@ class ListSwapMoveProviderTest {
         // - assignedValue1 <-> assignedValue2
         // - assignedValue1 <-> assignedValue3
         // - assignedValue2 <-> assignedValue3
-        // That makes 3 possible swap moves.
+        // That makes 6 possible swap moves. (Includes duplicates.)
 
         var move1 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(0);
         assertSoftly(softly -> {
@@ -79,8 +79,32 @@ class ListSwapMoveProviderTest {
         var move3 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(2);
         assertSoftly(softly -> {
             softly.assertThat(move3.getPlanningEntities())
-                    .containsOnly(e2);
+                    .containsOnly(e1, e2);
             softly.assertThat(move3.getPlanningValues())
+                    .containsOnly(assignedValue1, assignedValue2);
+        });
+
+        var move4 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(3);
+        assertSoftly(softly -> {
+            softly.assertThat(move4.getPlanningEntities())
+                    .containsOnly(e2);
+            softly.assertThat(move4.getPlanningValues())
+                    .containsOnly(assignedValue2, assignedValue3);
+        });
+
+        var move5 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(4);
+        assertSoftly(softly -> {
+            softly.assertThat(move5.getPlanningEntities())
+                    .containsOnly(e1, e2);
+            softly.assertThat(move5.getPlanningValues())
+                    .containsOnly(assignedValue1, assignedValue3);
+        });
+
+        var move6 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(5);
+        assertSoftly(softly -> {
+            softly.assertThat(move6.getPlanningEntities())
+                    .containsOnly(e2);
+            softly.assertThat(move6.getPlanningValues())
                     .containsOnly(assignedValue2, assignedValue3);
         });
     }

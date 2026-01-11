@@ -1,13 +1,9 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 import java.util.function.Predicate;
-
-import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -25,23 +21,18 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class FilteredUniqueRandomSequence<T> implements UniqueRandomSequence<T> {
 
-    private final List<ListEntry<T>> originalList;
+    private final ElementAccessor<T> accessor;
     private final Predicate<T> filter;
     private final DefaultUniqueRandomSequence<T> delegate;
 
-    FilteredUniqueRandomSequence(List<? extends ListEntry<T>> listOfUniqueItems, Predicate<T> filter) {
-        this.originalList = Collections.unmodifiableList(listOfUniqueItems);
+    FilteredUniqueRandomSequence(ElementAccessor<T> accessor, Predicate<T> filter) {
+        this.accessor = accessor;
         this.filter = Objects.requireNonNull(filter);
-        this.delegate = new DefaultUniqueRandomSequence<>(listOfUniqueItems);
+        this.delegate = new DefaultUniqueRandomSequence<>(accessor);
     }
 
     @Override
     public SequenceElement<T> pick(Random workingRandom) {
-        var index = pickIndex(workingRandom);
-        return new SequenceElement<>(originalList.get(index).getElement(), index);
-    }
-
-    private int pickIndex(Random workingRandom) {
         if (delegate.isEmpty()) {
             throw new NoSuchElementException("No more elements to pick from.");
         }
@@ -54,17 +45,19 @@ public final class FilteredUniqueRandomSequence<T> implements UniqueRandomSequen
             if (delegate.isEmpty()) {
                 throw new NoSuchElementException("No more elements to pick from.");
             }
-            delegate.remove(actualValueIndex);
+            delegate.removeWithoutReturn(actualValueIndex);
             // We try the same random index again; the underlying sequence will find the next best non-removed element.
             actualValueIndex = delegate.pickIndex(workingRandom, originalRandomIndex);
-            value = originalList.get(actualValueIndex).getElement();
+            value = accessor.get(actualValueIndex);
         }
-        return actualValueIndex;
+        return new SequenceElement<>(value, actualValueIndex);
     }
 
     @Override
     public T remove(Random workingRandom) {
-        return delegate.remove(pickIndex(workingRandom));
+        var element = pick(workingRandom);
+        delegate.removeWithoutReturn(element.index());
+        return element.value();
     }
 
     /**
