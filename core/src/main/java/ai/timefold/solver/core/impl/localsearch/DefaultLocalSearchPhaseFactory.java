@@ -36,6 +36,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
+import ai.timefold.solver.core.impl.neighborhood.DefaultNeighborhoodProvider;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.MoveSelectorBasedMoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
@@ -66,20 +67,37 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                 decider).enableAssertions(phaseConfigPolicy.getEnvironmentMode()).build();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private LocalSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> phaseConfigPolicy,
             PhaseTermination<Solution_> phaseTermination) {
+        var neighborhoodsEnabled = phaseConfigPolicy.isPreviewFeatureEnabled(PreviewFeature.NEIGHBORHOODS);
         var neighborhoodProviderClass = phaseConfig.<Solution_> getNeighborhoodProviderClass();
-        var neighborhoodsEnabled = neighborhoodProviderClass != null;
         if (neighborhoodsEnabled) {
-            phaseConfigPolicy.ensurePreviewFeature(PreviewFeature.NEIGHBORHOODS);
+            if (neighborhoodProviderClass == null) {
+                // Neighborhoods are enabled, but no provider was specified: use the default one.
+                neighborhoodProviderClass = (Class) DefaultNeighborhoodProvider.class;
+            }
+            if (phaseConfigPolicy.getNearbyDistanceMeterClass() != null) {
+                throw new IllegalArgumentException(
+                        """
+                                The neighborhoodProviderClass (%s) is not compatible with using the top-level property nearbyDistanceMeterClass (%s).
+                                The Neighborhoods API does not yet support nearby selection.
+                                You may still configure nearby selection in move selectors individually."""
+                                .formatted(neighborhoodProviderClass, phaseConfigPolicy.getNearbyDistanceMeterClass()));
+            }
+        } else if (neighborhoodProviderClass != null) {
+            throw new UnsupportedOperationException("""
+                    The neighborhoodProviderClass (%s) can only be used if the %s preview feature is enabled.
+                    Maybe add <enablePreviewFeature>%s</enablePreviewFeature> to your solver configuration file?"""
+                    .formatted(neighborhoodProviderClass.getCanonicalName(), PreviewFeature.NEIGHBORHOODS,
+                            PreviewFeature.NEIGHBORHOODS));
         }
         var moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
-        var moveSelectorsEnabled = moveSelectorConfig != null;
-        if (moveSelectorsEnabled) {
-            if (!neighborhoodsEnabled) {
-                return buildMoveSelectorBasedDecider(phaseConfigPolicy, phaseTermination);
-            } else {
+        if (moveSelectorConfig != null) {
+            if (neighborhoodsEnabled) {
                 return buildMixedDecider(phaseConfigPolicy, phaseTermination, neighborhoodProviderClass);
+            } else {
+                return buildMoveSelectorBasedDecider(phaseConfigPolicy, phaseTermination);
             }
         } else if (neighborhoodsEnabled) {
             return buildNeighborhoodsBasedDecider(phaseConfigPolicy, phaseTermination, neighborhoodProviderClass);
@@ -90,7 +108,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
 
     private LocalSearchDecider<Solution_> buildMoveSelectorBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination) {
-        var moveRepository = new MoveSelectorBasedMoveRepository<>(buildMoveSelector(configPolicy));
+        var moveRepository = new MoveSelectorBasedMoveRepository<>(buildMoveSelector(configPolicy, false));
         return buildDecider(moveRepository, configPolicy, termination);
     }
 
@@ -133,29 +151,20 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     private LocalSearchDecider<Solution_> buildMixedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
+        var legacyMoveSelector = buildMoveSelector(configPolicy, neighborhoodProviderClass != null);
+        if (legacyMoveSelector instanceof UnionMoveSelector<?> unionMoveSelector
+                && unionMoveSelector.getSelectorProbabilityWeightFactory() != null) {
+            throw new UnsupportedOperationException(
+                    "Probability-weighted move selectors are not supported together with the Neighborhoods API.");
+        } else if (legacyMoveSelector == null) { // There were no move selectors configured.
+            return buildNeighborhoodsBasedDecider(configPolicy, termination, neighborhoodProviderClass);
+        }
         var neighborhoodsMoveSelector =
                 new NeighborhoodsMoveSelector<>(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass));
-        var legacyMoveSelector = buildMoveSelector(configPolicy);
-        if (legacyMoveSelector instanceof UnionMoveSelector<Solution_> unionMoveSelector) {
-            if (unionMoveSelector.getSelectorProbabilityWeightFactory() != null) {
-                throw new UnsupportedOperationException(
-                        "Probability-weighted move selectors are not supported together with the Neighborhoods API.");
-            } else {
-                // We do not need to worry about probabilities, and therefore we just crack the union open
-                // and create a new union including the neighborhoods.
-                var moveSelectorList = new ArrayList<>(unionMoveSelector.getChildMoveSelectorList());
-                moveSelectorList.add(neighborhoodsMoveSelector);
-                var finalMoveSelector =
-                        new UnionMoveSelector<>(moveSelectorList, pickSelectionOrder() == SelectionOrder.RANDOM);
-                var moveRepository = new MoveSelectorBasedMoveRepository<>(finalMoveSelector);
-                return buildDecider(moveRepository, configPolicy, termination);
-            }
-        } else {
-            var unionMoveSelector = new UnionMoveSelector<>(List.of(neighborhoodsMoveSelector, legacyMoveSelector),
-                    pickSelectionOrder() == SelectionOrder.RANDOM);
-            var moveRepository = new MoveSelectorBasedMoveRepository<>(unionMoveSelector);
-            return buildDecider(moveRepository, configPolicy, termination);
-        }
+        var moveSelectorList = List.of(legacyMoveSelector, neighborhoodsMoveSelector);
+        var unionMoveSelector = new UnionMoveSelector<>(moveSelectorList, pickSelectionOrder() == SelectionOrder.RANDOM);
+        var moveRepository = new MoveSelectorBasedMoveRepository<>(unionMoveSelector);
+        return buildDecider(moveRepository, configPolicy, termination);
     }
 
     private LocalSearchDecider<Solution_> buildDecider(MoveRepository<Solution_> moveRepository,
@@ -257,30 +266,31 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     }
 
     @SuppressWarnings("rawtypes")
-    private MoveSelector<Solution_> buildMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy) {
-        MoveSelector<Solution_> moveSelector;
+    private MoveSelector<Solution_> buildMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
+            boolean neighborhoodsEnabled) {
         var defaultCacheType = SelectionCacheType.JUST_IN_TIME;
         var defaultSelectionOrder = pickSelectionOrder();
-
         var moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
         if (moveSelectorConfig == null) {
-            moveSelector = new UnionMoveSelectorFactory<Solution_>(determineDefaultMoveSelectorConfig(configPolicy))
-                    .buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
-        } else {
-            AbstractMoveSelectorFactory<Solution_, ?> moveSelectorFactory = MoveSelectorFactory.create(moveSelectorConfig);
-
-            if (configPolicy.getNearbyDistanceMeterClass() != null
-                    && NearbyAutoConfigurationEnabled.class.isAssignableFrom(moveSelectorConfig.getClass())
-                    && !UnionMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {
-                // The move selector config is not a composite selector, but it accepts Nearby autoconfiguration.
-                // We create a new UnionMoveSelectorConfig with the existing selector to enable Nearby autoconfiguration.
-                var moveSelectorCopy = (MoveSelectorConfig) moveSelectorConfig.copyConfig();
-                var updatedConfig = new UnionMoveSelectorConfig().withMoveSelectors(moveSelectorCopy);
-                moveSelectorFactory = MoveSelectorFactory.create(updatedConfig);
+            if (neighborhoodsEnabled) {
+                // Default moves are already provided by Neighborhoods.
+                return null;
+            } else {
+                return new UnionMoveSelectorFactory<Solution_>(determineDefaultMoveSelectorConfig(configPolicy))
+                        .buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
             }
-            moveSelector = moveSelectorFactory.buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
         }
-        return moveSelector;
+
+        if (configPolicy.getNearbyDistanceMeterClass() != null
+                && NearbyAutoConfigurationEnabled.class.isAssignableFrom(moveSelectorConfig.getClass())
+                && !UnionMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {
+            // The move selector config is not a composite selector, but it accepts Nearby autoconfiguration.
+            // We create a new UnionMoveSelectorConfig with the existing selector to enable Nearby autoconfiguration.
+            var moveSelectorCopy = (MoveSelectorConfig) moveSelectorConfig.copyConfig();
+            moveSelectorConfig = new UnionMoveSelectorConfig().withMoveSelectors(moveSelectorCopy);
+        }
+        AbstractMoveSelectorFactory<Solution_, ?> moveSelectorFactory = MoveSelectorFactory.create(moveSelectorConfig);
+        return moveSelectorFactory.buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
     }
 
     private SelectionOrder pickSelectionOrder() {
