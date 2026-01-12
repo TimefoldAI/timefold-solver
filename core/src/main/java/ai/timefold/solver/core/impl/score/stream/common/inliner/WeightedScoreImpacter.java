@@ -27,17 +27,20 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public interface WeightedScoreImpacter<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
-    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> WeightedScoreImpacter<Score_, Context_>
+    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>>
+            WeightedScoreImpacter<Score_, Context_>
             of(Context_ context, IntImpactFunction<Score_, Context_> impactFunction) {
         return new IntWeightedScoreImpacter<>(impactFunction, context);
     }
 
-    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> WeightedScoreImpacter<Score_, Context_>
+    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>>
+            WeightedScoreImpacter<Score_, Context_>
             of(Context_ context, LongImpactFunction<Score_, Context_> impactFunction) {
         return new LongWeightedScoreImpacter<>(impactFunction, context);
     }
 
-    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> WeightedScoreImpacter<Score_, Context_>
+    static <Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>>
+            WeightedScoreImpacter<Score_, Context_>
             of(Context_ context, BigDecimalImpactFunction<Score_, Context_> impactFunction) {
         return new BigDecimalWeightedScoreImpacter<>(impactFunction, context);
     }

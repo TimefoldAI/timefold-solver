@@ -14,8 +14,8 @@ final class SimpleLongScoreContext extends ScoreContext<SimpleLongScore, SimpleL
 
     public ScoreImpact<SimpleLongScore> changeScoreBy(long matchWeight,
             ConstraintMatchSupplier<SimpleLongScore> constraintMatchSupplier) {
-        var impact = constraintWeight.score() * matchWeight;
-        inliner.score += impact;
+        var impact = Math.multiplyExact(constraintWeight.score(), matchWeight);
+        inliner.score = Math.addExact(inliner.score, impact);
         var scoreImpact = new Impact(inliner, impact);
         return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
@@ -25,7 +25,7 @@ final class SimpleLongScoreContext extends ScoreContext<SimpleLongScore, SimpleL
 
         @Override
         public void undo() {
-            inliner.score -= impact;
+            inliner.score = Math.subtractExact(inliner.score, impact);
         }
 
         @Override

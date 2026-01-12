@@ -7,7 +7,8 @@ import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
 
-final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecimalScore, HardSoftBigDecimalScoreInliner> {
+final class HardSoftBigDecimalScoreContext
+        extends ScoreContext<HardSoftBigDecimalScore, HardSoftBigDecimalScoreInliner> {
 
     public HardSoftBigDecimalScoreContext(HardSoftBigDecimalScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
             HardSoftBigDecimalScore constraintWeight) {

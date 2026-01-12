@@ -32,16 +32,16 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
 
     public ScoreImpact<BendableScore> changeSoftScoreBy(int matchWeight,
             ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
-        var softImpact = scoreLevelWeight * matchWeight;
-        inliner.softScores[scoreLevel] += softImpact;
+        var softImpact = Math.multiplyExact(scoreLevelWeight, matchWeight);
+        inliner.softScores[scoreLevel] = Math.addExact(inliner.softScores[scoreLevel], softImpact);
         var scoreImpact = new SingleSoftImpact(this, softImpact);
         return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<BendableScore> changeHardScoreBy(int matchWeight,
             ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
-        var hardImpact = scoreLevelWeight * matchWeight;
-        inliner.hardScores[scoreLevel] += hardImpact;
+        var hardImpact = Math.multiplyExact(scoreLevelWeight, matchWeight);
+        inliner.hardScores[scoreLevel] = Math.addExact(inliner.hardScores[scoreLevel], hardImpact);
         var scoreImpact = new SingleHardImpact(this, hardImpact);
         return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
@@ -51,14 +51,14 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
         var hardImpacts = new int[hardScoreLevelCount];
         var softImpacts = new int[softScoreLevelCount];
         for (var hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
-            var hardImpact = constraintWeight.hardScore(hardScoreLevel) * matchWeight;
+            var hardImpact = Math.multiplyExact(constraintWeight.hardScore(hardScoreLevel), matchWeight);
             hardImpacts[hardScoreLevel] = hardImpact;
-            inliner.hardScores[hardScoreLevel] += hardImpact;
+            inliner.hardScores[hardScoreLevel] = Math.addExact(inliner.hardScores[hardScoreLevel], hardImpact);
         }
         for (var softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
-            var softImpact = constraintWeight.softScore(softScoreLevel) * matchWeight;
+            var softImpact = Math.multiplyExact(constraintWeight.softScore(softScoreLevel), matchWeight);
             softImpacts[softScoreLevel] = softImpact;
-            inliner.softScores[softScoreLevel] += softImpact;
+            inliner.softScores[softScoreLevel] = Math.addExact(inliner.softScores[softScoreLevel], softImpact);
         }
         var scoreImpact = new ComplexImpact(this, hardImpacts, softImpacts);
         return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
@@ -69,7 +69,7 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
 
         @Override
         public void undo() {
-            ctx.inliner.softScores[ctx.scoreLevel] -= impact;
+            ctx.inliner.softScores[ctx.scoreLevel] = Math.subtractExact(ctx.inliner.softScores[ctx.scoreLevel], impact);
         }
 
         @Override
@@ -83,7 +83,7 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
 
         @Override
         public void undo() {
-            ctx.inliner.hardScores[ctx.scoreLevel] -= impact;
+            ctx.inliner.hardScores[ctx.scoreLevel] = Math.subtractExact(ctx.inliner.hardScores[ctx.scoreLevel], impact);
         }
 
         @Override
@@ -100,10 +100,12 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
         public void undo() {
             var inliner = ctx.inliner;
             for (var hardScoreLevel = 0; hardScoreLevel < ctx.hardScoreLevelCount; hardScoreLevel++) {
-                inliner.hardScores[hardScoreLevel] -= hardImpacts[hardScoreLevel];
+                inliner.hardScores[hardScoreLevel] =
+                        Math.subtractExact(inliner.hardScores[hardScoreLevel], hardImpacts[hardScoreLevel]);
             }
             for (var softScoreLevel = 0; softScoreLevel < ctx.softScoreLevelCount; softScoreLevel++) {
-                inliner.softScores[softScoreLevel] -= softImpacts[softScoreLevel];
+                inliner.softScores[softScoreLevel] =
+                        Math.subtractExact(inliner.softScores[softScoreLevel], softImpacts[softScoreLevel]);
             }
         }
 

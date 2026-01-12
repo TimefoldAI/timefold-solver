@@ -14,26 +14,26 @@ final class HardSoftScoreContext extends ScoreContext<HardSoftScore, HardSoftSco
 
     public ScoreImpact<HardSoftScore> changeSoftScoreBy(int matchWeight,
             ConstraintMatchSupplier<HardSoftScore> constraintMatchSupplier) {
-        var softImpact = constraintWeight.softScore() * matchWeight;
-        inliner.softScore += softImpact;
+        var softImpact = Math.multiplyExact(constraintWeight.softScore(), matchWeight);
+        inliner.softScore = Math.addExact(inliner.softScore, softImpact);
         var scoreImpact = new SoftImpact(inliner, softImpact);
         return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardSoftScore> changeHardScoreBy(int matchWeight,
             ConstraintMatchSupplier<HardSoftScore> constraintMatchSupplier) {
-        var hardImpact = constraintWeight.hardScore() * matchWeight;
-        inliner.hardScore += hardImpact;
+        var hardImpact = Math.multiplyExact(constraintWeight.hardScore(), matchWeight);
+        inliner.hardScore = Math.addExact(inliner.hardScore, hardImpact);
         var scoreImpact = new HardImpact(inliner, hardImpact);
         return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
     public ScoreImpact<HardSoftScore> changeScoreBy(int matchWeight,
             ConstraintMatchSupplier<HardSoftScore> constraintMatchSupplier) {
-        var hardImpact = constraintWeight.hardScore() * matchWeight;
-        var softImpact = constraintWeight.softScore() * matchWeight;
-        inliner.hardScore += hardImpact;
-        inliner.softScore += softImpact;
+        var hardImpact = Math.multiplyExact(constraintWeight.hardScore(), matchWeight);
+        var softImpact = Math.multiplyExact(constraintWeight.softScore(), matchWeight);
+        inliner.hardScore = Math.addExact(inliner.hardScore, hardImpact);
+        inliner.softScore = Math.addExact(inliner.softScore, softImpact);
         var scoreImpact = new ComplexImpact(inliner, hardImpact, softImpact);
         return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
@@ -43,7 +43,7 @@ final class HardSoftScoreContext extends ScoreContext<HardSoftScore, HardSoftSco
 
         @Override
         public void undo() {
-            inliner.softScore -= softImpact;
+            inliner.softScore = Math.subtractExact(inliner.softScore, softImpact);
         }
 
         @Override
@@ -58,7 +58,7 @@ final class HardSoftScoreContext extends ScoreContext<HardSoftScore, HardSoftSco
 
         @Override
         public void undo() {
-            inliner.hardScore -= hardImpact;
+            inliner.hardScore = Math.subtractExact(inliner.hardScore, hardImpact);
         }
 
         @Override
@@ -74,8 +74,8 @@ final class HardSoftScoreContext extends ScoreContext<HardSoftScore, HardSoftSco
 
         @Override
         public void undo() {
-            inliner.hardScore -= hardImpact;
-            inliner.softScore -= softImpact;
+            inliner.hardScore = Math.subtractExact(inliner.hardScore, hardImpact);
+            inliner.softScore = Math.subtractExact(inliner.softScore, softImpact);
         }
 
         @Override

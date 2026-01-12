@@ -9,7 +9,8 @@ import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
 
-final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecimalScore, BendableBigDecimalScoreInliner> {
+final class BendableBigDecimalScoreContext
+        extends ScoreContext<BendableBigDecimalScore, BendableBigDecimalScoreInliner> {
 
     private final int hardScoreLevelCount;
     private final int softScoreLevelCount;
