@@ -85,6 +85,12 @@ public record RootVariableSource<Entity_, Value_>(
         for (var iterator = pathIterator(rootEntityClass, variablePath); iterator.hasNext();) {
             var pathPart = iterator.next();
             if (pathPart.isCollection()) {
+                if (isVariable(solutionMetaModel, pathPart.member().getDeclaringClass(), pathPart.name())) {
+                    throw new IllegalArgumentException(
+                            "The source path (%s) starting from root class (%s) accesses a collection (%s[]) via a variable (%s), which is not allowed."
+                                    .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart.name(),
+                                            pathPart.name()));
+                }
                 if (isAfterVariable) {
                     throw new IllegalArgumentException(
                             "The source path (%s) starting from root class (%s) accesses a collection (%s[]) after a variable (%s), which is not allowed."
