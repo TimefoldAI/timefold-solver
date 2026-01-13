@@ -20,7 +20,6 @@ import org.jspecify.annotations.Nullable;
  * meaning that once a particular (A,B) pair has been returned,
  * it will never be returned again by this iterator.
  * This means that this random move iterator will eventually end.
- * 
  * <p>
  * This iterator's implementation is determined by the following considerations:
  * <ol>
@@ -34,7 +33,6 @@ import org.jspecify.annotations.Nullable;
  * Instead, it will terminate the iteration after selecting just a handful,
  * as the chance of accepting a move grows more and more with each new move.</li>
  * </ol>
- * 
  * <p>
  * From the above, the key design decisions are:
  * <ul>
@@ -53,7 +51,7 @@ import org.jspecify.annotations.Nullable;
  * <li>If the filter rejects the pair, (A,B) is discarded and a new B is selected.
  * This guarantees that A keeps its selection probability of (1/A).</li>
  * </ul>
- * 
+ * <p>
  * This implementation is somewhat expensive in terms of CPU and memory,
  * but it is likely the best we can do given the constraints.
  */
@@ -87,10 +85,9 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
         if (filter == null) { // Shortcut: no filter means we can take the entire right dataset as-is.
             return rightDatasetInstance.buildRandomSequence(compositeKey);
         }
-        var leftFact = leftTuple.getA();
         var solutionView = context.neighborhoodSession().getSolutionView();
         return rightDatasetInstance.buildRandomSequence(compositeKey,
-                rightTuple -> filter.test(solutionView, leftFact, rightTuple.getA()));
+                rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()));
     }
 
     @Override

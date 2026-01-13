@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -166,6 +167,11 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                     AbstractNotifiable.buildNotifiable(scoreDirector, variableListener, globalOrder));
             nextGlobalOrder = globalOrder + 1;
         }
+    }
+
+    @Override
+    public Consumer<Object> getStateChangeNotifier() {
+        return scoreDirector.getNeighborhoodNotifier();
     }
 
     @SuppressWarnings("unchecked")

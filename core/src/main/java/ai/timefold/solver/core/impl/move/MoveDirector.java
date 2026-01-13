@@ -111,19 +111,17 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             return moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
         }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
-
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
         var element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
-        externalScoreDirector.triggerVariableListeners();
 
-        externalScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
-                destinationIndex);
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor,
+                destinationEntity, destinationIndex, destinationIndex);
         variableDescriptor.addElement(destinationEntity, destinationIndex, element);
-        externalScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
-                destinationIndex + 1);
-        externalScoreDirector.triggerVariableListeners();
+        externalScoreDirector.afterListVariableChanged(variableDescriptor,
+                destinationEntity, destinationIndex, destinationIndex + 1);
 
+        externalScoreDirector.triggerVariableListeners();
         return element;
     }
 
@@ -135,12 +133,13 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         if (sourceIndex == destinationIndex) {
             return null;
         }
+
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         var fromIndex = Math.min(sourceIndex, destinationIndex);
         var toIndex = Math.max(sourceIndex, destinationIndex) + 1;
 
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
-        Value_ element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
+        var element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
         variableDescriptor.addElement(sourceEntity, destinationIndex, element);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
         externalScoreDirector.triggerVariableListeners();
@@ -156,11 +155,13 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             swapValuesInList(variableMetaModel, leftEntity, leftIndex, rightIndex);
         } else {
             var variableDescriptor = extractVariableDescriptor(variableMetaModel);
+            var leftElement = variableDescriptor.getElement(leftEntity, leftIndex);
+            var rightElement = variableDescriptor.getElement(rightEntity, rightIndex);
+
             externalScoreDirector.beforeListVariableChanged(variableDescriptor, leftEntity, leftIndex, leftIndex + 1);
             externalScoreDirector.beforeListVariableChanged(variableDescriptor, rightEntity, rightIndex, rightIndex + 1);
-            var oldLeftElement = variableDescriptor.setElement(leftEntity, leftIndex,
-                    variableDescriptor.getElement(rightEntity, rightIndex));
-            variableDescriptor.setElement(rightEntity, rightIndex, oldLeftElement);
+            variableDescriptor.setElement(leftEntity, leftIndex, rightElement);
+            variableDescriptor.setElement(rightEntity, rightIndex, leftElement);
             externalScoreDirector.afterListVariableChanged(variableDescriptor, leftEntity, leftIndex, leftIndex + 1);
             externalScoreDirector.afterListVariableChanged(variableDescriptor, rightEntity, rightIndex, rightIndex + 1);
             externalScoreDirector.triggerVariableListeners();
@@ -175,13 +176,14 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         }
 
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
+        var leftElement = variableDescriptor.getElement(entity, leftIndex);
+        var rightElement = variableDescriptor.getElement(entity, rightIndex);
+
         var fromIndex = Math.min(leftIndex, rightIndex);
         var toIndex = Math.max(leftIndex, rightIndex) + 1;
-
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
-        var oldLeftElement =
-                variableDescriptor.setElement(entity, leftIndex, variableDescriptor.getElement(entity, rightIndex));
-        variableDescriptor.setElement(entity, rightIndex, oldLeftElement);
+        variableDescriptor.setElement(entity, leftIndex, rightElement);
+        variableDescriptor.setElement(entity, rightIndex, leftElement);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         externalScoreDirector.triggerVariableListeners();
     }
@@ -321,7 +323,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      * Allows for reading data produced by a temporary move, before it is undone.
      * The score argument represents the score after executing the move on the solution.
      * The move argument represents the undo move for that move.
-     * 
+     *
      * @param <Solution_> type of the solution
      * @param <Score_> score of the move
      * @param <Result_> user-defined return type of the function

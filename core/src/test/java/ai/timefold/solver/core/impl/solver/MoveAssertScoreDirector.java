@@ -7,10 +7,12 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 public final class MoveAssertScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirector<Solution_, Score_, MoveAssertScoreDirectorFactory<Solution_, Score_>> {
@@ -23,6 +25,7 @@ public final class MoveAssertScoreDirector<Solution_, Score_ extends Score<Score
         super(builder);
         this.moveSolutionConsumer = Objects.requireNonNull(builder.moveSolutionConsumer);
         this.isDerived = isDerived;
+        setMoveRepository(builder.moveRepository);
     }
 
     @Override
@@ -66,6 +69,8 @@ public final class MoveAssertScoreDirector<Solution_, Score_ extends Score<Score
             AbstractScoreDirectorBuilder<Solution_, Score_, MoveAssertScoreDirectorFactory<Solution_, Score_>, MoveAssertScoreDirector.Builder<Solution_, Score_>> {
 
         private Consumer<Solution_> moveSolutionConsumer;
+        @Nullable
+        private MoveRepository<Solution_> moveRepository;
 
         public Builder(MoveAssertScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
             super(scoreDirectorFactory);
@@ -73,6 +78,11 @@ public final class MoveAssertScoreDirector<Solution_, Score_ extends Score<Score
 
         public Builder<Solution_, Score_> withMoveSolutionConsumer(Consumer<Solution_> moveSolutionConsumer) {
             this.moveSolutionConsumer = moveSolutionConsumer;
+            return this;
+        }
+
+        public Builder<Solution_, Score_> withMoveRepository(@Nullable MoveRepository<Solution_> moveRepository) {
+            this.moveRepository = moveRepository;
             return this;
         }
 

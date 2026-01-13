@@ -19,7 +19,6 @@ final class RandomOrderNeighborhoodIterator<Solution_> implements Iterator<Move<
     private final Random workingRandom;
 
     private @Nullable Iterator<Move<Solution_>> currentMoveIterator;
-    private boolean hasNext = true;
 
     public RandomOrderNeighborhoodIterator(List<MoveIterable<Solution_>> moveIterableList, Random workingRandom) {
         this.unexhaustedMoveIteratorList = moveIterableList.stream()
@@ -30,20 +29,19 @@ final class RandomOrderNeighborhoodIterator<Solution_> implements Iterator<Move<
 
     @Override
     public boolean hasNext() {
-        if (!hasNext) {
-            return false;
+        if (currentMoveIterator != null && currentMoveIterator.hasNext()) {
+            return true;
         }
         while (!unexhaustedMoveIteratorList.isEmpty()) {
             var randomIndex = workingRandom.nextInt(unexhaustedMoveIteratorList.size());
             currentMoveIterator = unexhaustedMoveIteratorList.get(randomIndex);
             if (currentMoveIterator.hasNext()) {
-                hasNext = true;
                 return true;
             } else {
                 unexhaustedMoveIteratorList.remove(randomIndex);
             }
         }
-        hasNext = false;
+        currentMoveIterator = null;
         return false;
     }
 

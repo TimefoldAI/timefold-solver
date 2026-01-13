@@ -13,29 +13,31 @@ final class ExternalizedIndexVariableProcessor<Solution_> {
         this.shadowVariableDescriptor = shadowVariableDescriptor;
     }
 
-    public void addElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Integer index) {
-        updateIndex(scoreDirector, element, index);
+    public boolean addElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Integer index) {
+        return updateIndex(scoreDirector, element, index);
     }
 
-    public void removeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
-        updateIndex(scoreDirector, element, null);
+    public boolean removeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
+        return updateIndex(scoreDirector, element, null);
     }
 
-    public void unassignElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
-        removeElement(scoreDirector, element);
+    public boolean unassignElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
+        return removeElement(scoreDirector, element);
     }
 
-    public void changeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Integer index) {
-        updateIndex(scoreDirector, element, index);
+    public boolean changeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Integer index) {
+        return updateIndex(scoreDirector, element, index);
     }
 
-    private void updateIndex(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Integer index) {
+    private boolean updateIndex(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Integer index) {
         var oldIndex = getIndex(element);
         if (!Objects.equals(oldIndex, index)) {
             scoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
             shadowVariableDescriptor.setValue(element, index);
             scoreDirector.afterVariableChanged(shadowVariableDescriptor, element);
+            return true;
         }
+        return false;
     }
 
     public Integer getIndex(Object planningValue) {

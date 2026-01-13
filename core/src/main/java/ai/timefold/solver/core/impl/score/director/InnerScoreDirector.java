@@ -32,6 +32,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
+import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -52,35 +53,29 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         return switch (scoreAnalysisFetchPolicy) {
             case FETCH_ALL -> {
                 // Justification can not be null here, because they are enabled by FETCH_ALL.
-                var deduplicatedConstraintMatchMap = constraintMatchTotal.getConstraintMatchSet()
-                        .stream()
-                        .collect(groupingBy(
-                                c -> (ConstraintJustification) c.getJustification(),
-                                toList()));
+                var deduplicatedConstraintMatchMap = constraintMatchTotal.getConstraintMatchSet().stream()
+                        .collect(groupingBy(c -> (ConstraintJustification) c.getJustification(), toList()));
                 var matchAnalyses = sumMatchesWithSameJustification(constraintMatchTotal, deduplicatedConstraintMatchMap);
                 yield new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(),
                         constraintMatchTotal.getConstraintWeight(), constraintMatchTotal.getScore(), matchAnalyses);
             }
-            case FETCH_MATCH_COUNT -> new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(),
-                    constraintMatchTotal.getConstraintWeight(), constraintMatchTotal.getScore(), null,
-                    constraintMatchTotal.getConstraintMatchCount());
+            case FETCH_MATCH_COUNT ->
+                new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
+                        constraintMatchTotal.getScore(), null, constraintMatchTotal.getConstraintMatchCount());
             case FETCH_SHALLOW ->
                 new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
                         constraintMatchTotal.getScore(), null);
         };
     }
 
-    private static <Score_ extends Score<Score_>> List<MatchAnalysis<Score_>>
-            sumMatchesWithSameJustification(ConstraintMatchTotal<Score_> constraintMatchTotal,
-                    Map<ConstraintJustification, List<ConstraintMatch<Score_>>> deduplicatedConstraintMatchMap) {
-        return deduplicatedConstraintMatchMap.entrySet().stream()
-                .map(entry -> {
-                    var score = entry.getValue().stream()
-                            .map(ConstraintMatch::getScore)
-                            .reduce(constraintMatchTotal.getScore().zero(), Score::add);
-                    return new MatchAnalysis<>(constraintMatchTotal.getConstraintRef(), score, entry.getKey());
-                })
-                .toList();
+    private static <Score_ extends Score<Score_>> List<MatchAnalysis<Score_>> sumMatchesWithSameJustification(
+            ConstraintMatchTotal<Score_> constraintMatchTotal,
+            Map<ConstraintJustification, List<ConstraintMatch<Score_>>> deduplicatedConstraintMatchMap) {
+        return deduplicatedConstraintMatchMap.entrySet().stream().map(entry -> {
+            var score = entry.getValue().stream().map(ConstraintMatch::getScore).reduce(constraintMatchTotal.getScore().zero(),
+                    Score::add);
+            return new MatchAnalysis<>(constraintMatchTotal.getConstraintRef(), score, entry.getKey());
+        }).toList();
     }
 
     /**
@@ -103,14 +98,22 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * Different phases may need different move repositories,
      * as they may be based on different sets of moves.
      * Therefore move repository cannot be injected at score director construction time.
-     * 
+     * <p>
      * A phase may not need a move repository at all,
      * such as construction heuristics, which currently does not support Neighborhoods API.
-     * 
+     * <p>
      * Each phase is responsible for calling this method to set its repository,
      * and also calling it again at the end to null it out.
      */
     void setMoveRepository(@Nullable MoveRepository<Solution_> moveRepository);
+
+    /**
+     * A notifier that can be used to notify a {@link NeighborhoodsBasedMoveRepository} of changes
+     * to the internal state that do not affect any variables (genuine or shadow).
+     *
+     * @return never null
+     */
+    NeighborhoodNotifier<Solution_> getNeighborhoodNotifier();
 
     /**
      * Calculates the {@link Score} and updates the {@link PlanningSolution working solution} accordingly.
@@ -176,6 +179,10 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     /**
      * Executes a move, finds out its score, and immediately undoes it.
+     * If appropriate, consider setting {@link #setAllChangesWillBeUndoneBeforeStepEnds(boolean)} to true beforehand,
+     * and resetting it to false afterward.
+     * There are performance gains to be made
+     * if your use case does not require step-level mechanisms to be aware of the changes.
      *
      * @param move never null
      * @param assertMoveScoreFromScratch true will hurt performance
@@ -188,8 +195,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @return true if the entityList might have a different set of instances now
      */
     boolean isWorkingEntityListDirty(long expectedWorkingEntityListRevision);
-
-    boolean isWorkingSolutionInitialized();
 
     /**
      * Some score directors keep a set of changes
@@ -277,7 +282,11 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     /**
      * Do not waste performance by propagating changes to step (or higher) mechanisms.
      *
-     * @param allChangesWillBeUndoneBeforeStepEnds true if all changes will be undone
+     * @param allChangesWillBeUndoneBeforeStepEnds true if all changes will be undone;
+     *        until reset back to false, any change and resulting before/after events will not be propagated to a neighborhood
+     *        session.
+     *        Moves will only be re-generated once the solution has actually changed,
+     *        which will happen at the end of the step, after {@link #executeMove(Move)} was called.
      */
     void setAllChangesWillBeUndoneBeforeStepEnds(boolean allChangesWillBeUndoneBeforeStepEnds);
 

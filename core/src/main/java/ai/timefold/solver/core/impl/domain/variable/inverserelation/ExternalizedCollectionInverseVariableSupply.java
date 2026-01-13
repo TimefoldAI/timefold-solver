@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -21,11 +22,14 @@ public class ExternalizedCollectionInverseVariableSupply<Solution_> implements
         CollectionInverseVariableSupply {
 
     protected final VariableDescriptor<Solution_> sourceVariableDescriptor;
+    protected final Consumer<Object> notifier;
 
     protected Map<Object, Set<Object>> inverseEntitySetMap = null;
 
-    public ExternalizedCollectionInverseVariableSupply(VariableDescriptor<Solution_> sourceVariableDescriptor) {
+    public ExternalizedCollectionInverseVariableSupply(VariableDescriptor<Solution_> sourceVariableDescriptor,
+            Consumer<Object> notifier) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
+        this.notifier = notifier;
     }
 
     @Override
@@ -70,6 +74,7 @@ public class ExternalizedCollectionInverseVariableSupply<Solution_> implements
                     + ") for sourceVariable (" + sourceVariableDescriptor.getVariableName()
                     + ") cannot be inserted: it was already inserted.");
         }
+        notifier.accept(value);
     }
 
     protected void retract(Object entity) {
@@ -88,6 +93,7 @@ public class ExternalizedCollectionInverseVariableSupply<Solution_> implements
         if (inverseEntitySet.isEmpty()) {
             inverseEntitySetMap.put(value, null);
         }
+        notifier.accept(value);
     }
 
     @Override

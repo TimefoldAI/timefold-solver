@@ -2,9 +2,12 @@ package ai.timefold.solver.core.impl.domain.variable.anchor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.ExternalizedSingletonInverseVariableSupply;
@@ -14,6 +17,7 @@ import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ExternalizedAnchorVariableSupplyTest {
 
@@ -21,8 +25,12 @@ class ExternalizedAnchorVariableSupplyTest {
     void chainedEntity() {
         var variableDescriptor = TestdataChainedEntity.buildVariableDescriptorForChainedObject();
         var scoreDirector = mock(InnerScoreDirector.class);
-        var nextVariableSupply = new ExternalizedSingletonInverseVariableSupply<>(variableDescriptor);
-        var supply = new ExternalizedAnchorVariableSupply<>(variableDescriptor, nextVariableSupply);
+        @SuppressWarnings("unchecked")
+        var notifier = (Consumer<Object>) mock(Consumer.class);
+        // only pass the notifier mock to ExternalizedAnchorVariableSupply, since that what being tested
+        var nextVariableSupply = new ExternalizedSingletonInverseVariableSupply<>(variableDescriptor, ignored -> {
+        });
+        var supply = new ExternalizedAnchorVariableSupply<>(variableDescriptor, nextVariableSupply, notifier);
 
         var a0 = new TestdataChainedAnchor("a0");
         var a1 = new TestdataChainedEntity("a1", a0);
@@ -45,6 +53,13 @@ class ExternalizedAnchorVariableSupplyTest {
         assertThat(supply.getAnchor(a3)).isSameAs(a0);
         assertThat(supply.getAnchor(b1)).isSameAs(b0);
 
+        verify(notifier).accept(a1);
+        verify(notifier).accept(a2);
+        verify(notifier).accept(a3);
+        verify(notifier).accept(b1);
+        verifyNoMoreInteractions(notifier);
+
+        Mockito.reset(notifier);
         var event = new BasicVariableChangeEvent<Object>(a3);
         nextVariableSupply.beforeChange(scoreDirector, event);
         supply.beforeChange(scoreDirector, event);
@@ -56,6 +71,9 @@ class ExternalizedAnchorVariableSupplyTest {
         assertThat(supply.getAnchor(a2)).isSameAs(a0);
         assertThat(supply.getAnchor(a3)).isSameAs(b0);
         assertThat(supply.getAnchor(b1)).isSameAs(b0);
+
+        verify(notifier).accept(a3);
+        verifyNoMoreInteractions(notifier);
 
         nextVariableSupply.close();
         supply.close();

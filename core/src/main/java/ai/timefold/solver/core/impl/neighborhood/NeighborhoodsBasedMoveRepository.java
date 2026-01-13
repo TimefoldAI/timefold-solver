@@ -20,8 +20,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public final class NeighborhoodsBasedMoveRepository<Solution_>
-        implements MoveRepository<Solution_> {
+public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRepository<Solution_> {
 
     private final DefaultMoveStreamFactory<Solution_> moveStreamFactory;
     private final List<InnerMoveStream<Solution_>> moveStreamList;
@@ -35,8 +34,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
             List<MoveProvider<Solution_>> neighborhood, boolean random) {
         this.moveStreamFactory = Objects.requireNonNull(moveStreamFactory);
         this.moveStreamList = Objects.requireNonNull(neighborhood).stream()
-                .map(d -> (InnerMoveStream<Solution_>) d.build(moveStreamFactory))
-                .toList();
+                .map(d -> (InnerMoveStream<Solution_>) d.build(moveStreamFactory)).toList();
         this.random = random;
     }
 
@@ -53,9 +51,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
         neighborhoodSession = moveStreamFactory.createSession(context);
         moveStreamFactory.getSolutionDescriptor().visitAll(context.workingSolution(), neighborhoodSession::insert);
         neighborhoodSession.settle();
-        moveIterableList = moveStreamList.stream()
-                .map(m -> m.getMoveIterable(neighborhoodSession))
-                .toList();
+        moveIterableList = moveStreamList.stream().map(m -> m.getMoveIterable(neighborhoodSession)).toList();
     }
 
     public void insert(Object planningEntityOrProblemFact) {

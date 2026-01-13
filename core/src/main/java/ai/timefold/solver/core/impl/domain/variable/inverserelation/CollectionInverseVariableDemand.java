@@ -21,7 +21,7 @@ public final class CollectionInverseVariableDemand<Solution_>
 
     @Override
     public CollectionInverseVariableSupply createExternalizedSupply(SupplyManager supplyManager) {
-        return new ExternalizedCollectionInverseVariableSupply<>(variableDescriptor);
+        return new ExternalizedCollectionInverseVariableSupply<>(variableDescriptor, supplyManager.getStateChangeNotifier());
     }
 
 }

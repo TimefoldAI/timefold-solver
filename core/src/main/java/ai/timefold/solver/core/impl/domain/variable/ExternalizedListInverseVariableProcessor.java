@@ -16,15 +16,15 @@ final class ExternalizedListInverseVariableProcessor<Solution_> {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
     }
 
-    public void addElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
-        setInverseAsserted(scoreDirector, element, entity, null);
+    public boolean addElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
+        return setInverseAsserted(scoreDirector, element, entity, null);
     }
 
-    private void setInverseAsserted(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Object inverseEntity,
+    private boolean setInverseAsserted(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Object inverseEntity,
             Object expectedOldInverseEntity) {
         var oldInverseEntity = getInverseSingleton(element);
         if (oldInverseEntity == inverseEntity) {
-            return;
+            return false;
         }
         if (scoreDirector.expectShadowVariablesInCorrectState() && oldInverseEntity != expectedOldInverseEntity) {
             throw new IllegalStateException("""
@@ -34,27 +34,25 @@ final class ExternalizedListInverseVariableProcessor<Solution_> {
                     .formatted(inverseEntity, sourceVariableDescriptor.getVariableName(), element,
                             shadowVariableDescriptor.getVariableName(), oldInverseEntity));
         }
-        setInverse(scoreDirector, inverseEntity, element);
+        return setInverse(scoreDirector, inverseEntity, element);
     }
 
-    private void setInverse(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
+    private boolean setInverse(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
         scoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
         shadowVariableDescriptor.setValue(element, entity);
         scoreDirector.afterVariableChanged(shadowVariableDescriptor, element);
+        return true;
     }
 
-    public void removeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
-        setInverseAsserted(scoreDirector, element, null, entity);
+    public boolean unassignElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
+        return changeElement(scoreDirector, null, element);
     }
 
-    public void unassignElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
-        changeElement(scoreDirector, null, element);
-    }
-
-    public void changeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
+    public boolean changeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
         if (getInverseSingleton(element) != entity) {
-            setInverse(scoreDirector, entity, element);
+            return setInverse(scoreDirector, entity, element);
         }
+        return false;
     }
 
     public Object getInverseSingleton(Object planningValue) {

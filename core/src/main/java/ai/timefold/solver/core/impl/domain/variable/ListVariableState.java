@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
@@ -16,6 +17,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 final class ListVariableState<Solution_> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
+    private final Consumer<Object> notifier;
 
     private ExternalizedIndexVariableProcessor<Solution_> externalizedIndexProcessor = null;
     private ExternalizedListInverseVariableProcessor<Solution_> externalizedInverseProcessor = null;
@@ -27,8 +29,10 @@ final class ListVariableState<Solution_> {
     private int unassignedCount = 0;
     private Map<Object, MutablePosition> elementPositionMap;
 
-    public ListVariableState(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
+    public ListVariableState(ListVariableDescriptor<Solution_> sourceVariableDescriptor,
+            Consumer<Object> notifier) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
+        this.notifier = notifier;
     }
 
     public void linkShadowVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
@@ -121,49 +125,26 @@ final class ListVariableState<Solution_> {
                                 .formatted(sourceVariableDescriptor, element, index, oldPosition));
             }
         }
+        var elementUpdateSent = false;
         if (externalizedIndexProcessor != null) {
-            externalizedIndexProcessor.addElement(scoreDirector, element, index);
+            elementUpdateSent = externalizedIndexProcessor.addElement(scoreDirector, element, index);
         }
         if (externalizedInverseProcessor != null) {
-            externalizedInverseProcessor.addElement(scoreDirector, entity, element);
+            elementUpdateSent = externalizedInverseProcessor.addElement(scoreDirector, entity, element) || elementUpdateSent;
         }
         if (externalizedPreviousElementProcessor != null) {
-            externalizedPreviousElementProcessor.setElement(scoreDirector, elements, element, index);
+            elementUpdateSent = externalizedPreviousElementProcessor.setElement(scoreDirector, elements, element, index)
+                    || elementUpdateSent;
         }
         if (externalizedNextElementProcessor != null) {
-            externalizedNextElementProcessor.setElement(scoreDirector, elements, element, index);
+            elementUpdateSent =
+                    externalizedNextElementProcessor.setElement(scoreDirector, elements, element, index) || elementUpdateSent;
         }
         unassignedCount--;
-    }
-
-    public void removeElement(Object entity, Object element, int index) {
-        if (requiresPositionMap) {
-            var oldPosition = elementPositionMap.remove(element);
-            if (oldPosition == null) {
-                throw new IllegalStateException(
-                        "The supply for list variable (%s) is corrupted, because the element (%s) at index (%d) was already unassigned (%s)."
-                                .formatted(sourceVariableDescriptor, element, index, oldPosition));
-            }
-            var oldIndex = oldPosition.getIndex();
-            if (oldIndex != index) {
-                throw new IllegalStateException(
-                        "The supply for list variable (%s) is corrupted, because the element (%s) at index (%d) had an old index (%d) which is not the current index (%d)."
-                                .formatted(sourceVariableDescriptor, element, index, oldIndex, index));
-            }
+        // Trigger notifier if none of the previous methods triggered a shadow var update for this element.
+        if (!elementUpdateSent) {
+            notifier.accept(element);
         }
-        if (externalizedIndexProcessor != null) {
-            externalizedIndexProcessor.removeElement(scoreDirector, element);
-        }
-        if (externalizedInverseProcessor != null) {
-            externalizedInverseProcessor.removeElement(scoreDirector, entity, element);
-        }
-        if (externalizedPreviousElementProcessor != null) {
-            externalizedPreviousElementProcessor.unsetElement(scoreDirector, element);
-        }
-        if (externalizedNextElementProcessor != null) {
-            externalizedNextElementProcessor.unsetElement(scoreDirector, element);
-        }
-        unassignedCount++;
     }
 
     public void unassignElement(Object element) {
@@ -175,37 +156,49 @@ final class ListVariableState<Solution_> {
                                 .formatted(sourceVariableDescriptor, element));
             }
         }
+        var elementUpdateSent = false;
         if (externalizedIndexProcessor != null) {
-            externalizedIndexProcessor.unassignElement(scoreDirector, element);
+            elementUpdateSent = externalizedIndexProcessor.unassignElement(scoreDirector, element);
         }
         if (externalizedInverseProcessor != null) {
-            externalizedInverseProcessor.unassignElement(scoreDirector, element);
+            elementUpdateSent = externalizedInverseProcessor.unassignElement(scoreDirector, element) || elementUpdateSent;
         }
         if (externalizedPreviousElementProcessor != null) {
-            externalizedPreviousElementProcessor.unsetElement(scoreDirector, element);
+            elementUpdateSent = externalizedPreviousElementProcessor.unsetElement(scoreDirector, element) || elementUpdateSent;
         }
         if (externalizedNextElementProcessor != null) {
-            externalizedNextElementProcessor.unsetElement(scoreDirector, element);
+            elementUpdateSent = externalizedNextElementProcessor.unsetElement(scoreDirector, element) || elementUpdateSent;
         }
         unassignedCount++;
+        // Trigger notifier if none of the previous methods triggered a shadow var update for this element.
+        if (!elementUpdateSent) {
+            notifier.accept(element);
+        }
     }
 
     public boolean changeElement(Object entity, List<Object> elements, int index) {
         var element = elements.get(index);
         var difference = processElementPosition(entity, element, index);
+        var elementUpdateSent = false;
         if (difference.indexChanged && externalizedIndexProcessor != null) {
-            externalizedIndexProcessor.changeElement(scoreDirector, element, index);
+            elementUpdateSent = externalizedIndexProcessor.changeElement(scoreDirector, element, index);
         }
         if (difference.entityChanged && externalizedInverseProcessor != null) {
-            externalizedInverseProcessor.changeElement(scoreDirector, entity, element);
+            elementUpdateSent = externalizedInverseProcessor.changeElement(scoreDirector, entity, element) || elementUpdateSent;
         }
         // Next and previous still might have changed, even if the index and entity did not.
         // Those are based on what happened elsewhere in the list.
         if (externalizedPreviousElementProcessor != null) {
-            externalizedPreviousElementProcessor.setElement(scoreDirector, elements, element, index);
+            elementUpdateSent = externalizedPreviousElementProcessor.setElement(scoreDirector, elements, element, index)
+                    || elementUpdateSent;
         }
         if (externalizedNextElementProcessor != null) {
-            externalizedNextElementProcessor.setElement(scoreDirector, elements, element, index);
+            elementUpdateSent =
+                    externalizedNextElementProcessor.setElement(scoreDirector, elements, element, index) || elementUpdateSent;
+        }
+        // Trigger notifier if none of the previous methods triggered a shadow var update for this element.
+        if (!elementUpdateSent) {
+            notifier.accept(element);
         }
         return difference.anythingChanged;
     }

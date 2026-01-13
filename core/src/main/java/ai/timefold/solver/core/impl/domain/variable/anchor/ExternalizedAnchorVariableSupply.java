@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.anchor;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -23,12 +24,15 @@ public class ExternalizedAnchorVariableSupply<Solution_> implements
     protected final VariableDescriptor<Solution_> previousVariableDescriptor;
     protected final SingletonInverseVariableSupply nextVariableSupply;
     protected final Map<Object, @Nullable Object> anchorMap;
+    private final Consumer<Object> notifier;
 
     public ExternalizedAnchorVariableSupply(VariableDescriptor<Solution_> previousVariableDescriptor,
-            SingletonInverseVariableSupply nextVariableSupply) {
+            SingletonInverseVariableSupply nextVariableSupply,
+            Consumer<Object> notifier) {
         this.previousVariableDescriptor = previousVariableDescriptor;
         this.nextVariableSupply = nextVariableSupply;
         this.anchorMap = new IdentityHashMap<>();
+        this.notifier = notifier;
     }
 
     @Override
@@ -72,6 +76,7 @@ public class ExternalizedAnchorVariableSupply<Solution_> implements
         Object nextEntity = entity;
         while (nextEntity != null && anchorMap.get(nextEntity) != anchor) {
             anchorMap.put(nextEntity, anchor);
+            notifier.accept(nextEntity);
             nextEntity = nextVariableSupply.getInverseSingleton(nextEntity);
         }
     }

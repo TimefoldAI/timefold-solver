@@ -27,6 +27,7 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInv
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.NeighborhoodNotifier;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -41,6 +42,7 @@ import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentVa
 import ai.timefold.solver.core.testdomain.shadow.order.TestdataShadowVariableOrderEntity;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class VariableListenerSupportTest {
 
@@ -214,8 +216,12 @@ class VariableListenerSupportTest {
     @Test
     void shadowVariableListGraphEvents() {
         var solutionDescriptor = TestdataConcurrentSolution.buildSolutionDescriptor();
-        InnerScoreDirector<TestdataConcurrentSolution, HardSoftScore> scoreDirector = mock(InnerScoreDirector.class);
+        @SuppressWarnings("unchecked")
+        var scoreDirector = (InnerScoreDirector<TestdataConcurrentSolution, HardSoftScore>) mock(InnerScoreDirector.class);
+        @SuppressWarnings("unchecked")
+        var neighborhoodNotifier = (NeighborhoodNotifier<TestdataConcurrentSolution>) Mockito.mock(NeighborhoodNotifier.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
+        when(scoreDirector.getNeighborhoodNotifier()).thenReturn(neighborhoodNotifier);
         var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
 
