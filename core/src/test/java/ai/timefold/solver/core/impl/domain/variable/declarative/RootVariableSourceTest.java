@@ -546,6 +546,23 @@ class RootVariableSourceTest {
     }
 
     @Test
+    void invalidPathUsingGroupAfterVariable() {
+        assertThatCode(() -> RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeEntity.class,
+                "shadow",
+                "values[].shadow",
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("""
+                        The source path (values[].shadow) starting from root class \
+                        (TestdataInvalidDeclarativeEntity) accesses a collection (values[]) \
+                        via a variable (values), which is not allowed.\
+                        """);
+    }
+
+    @Test
     void invalidPathUsingDeclarativeAfterDeclarative() {
         assertThatCode(() -> RootVariableSource.from(
                 planningSolutionMetaModel,
