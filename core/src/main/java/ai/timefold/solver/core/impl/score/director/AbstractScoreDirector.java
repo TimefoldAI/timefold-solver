@@ -67,24 +67,20 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private static final int CONSTRAINT_MATCH_DISPLAY_LIMIT = 8;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    protected final Factory_ scoreDirectorFactory;
+    /**
+     * Sends entity updates to the {@link MoveRepository} if it is a {@link NeighborhoodsBasedMoveRepository}.
+     * Doesn't send updates if {@link #allChangesWillBeUndoneBeforeStepEnds} is true.
+     * Inserts and retracts need to be handled separately.
+     */
+    private final NeighborhoodNotifier<Solution_> neighborhoodsElementUpdateNotifier;
     private final boolean lookUpEnabled;
     private final LookUpManager lookUpManager;
     protected final ConstraintMatchPolicy constraintMatchPolicy;
-    protected final Factory_ scoreDirectorFactory;
+    private boolean expectShadowVariablesInCorrectState;
     private final VariableDescriptorCache<Solution_> variableDescriptorCache;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
-
-    private boolean expectShadowVariablesInCorrectState;
-
-    private long workingEntityListRevision = 0L;
-    private int workingGenuineEntityCount = 0;
-    private boolean allChangesWillBeUndoneBeforeStepEnds = false;
-    private long calculationCount = 0L;
-    protected Solution_ workingSolution;
-    private int workingInitScore = 0;
-
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
-
     /**
      * Must never be shared between score directors,
      * because it contains state based on the current clone of the working solution.
@@ -93,17 +89,25 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * and operations which do not perform moves do not require them.
      */
     private final ValueRangeManager<Solution_> valueRangeManager;
-    private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
-    private @Nullable MoveRepository<Solution_> moveRepository;
     private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply; // Null when no list variable.
+    private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
+
+    private long workingEntityListRevision = 0L;
+    private int workingGenuineEntityCount = 0;
+    private boolean allChangesWillBeUndoneBeforeStepEnds = false;
+    private long calculationCount = 0L;
+    protected Solution_ workingSolution;
+    private int workingInitScore = 0;
+
+    private @Nullable MoveRepository<Solution_> moveRepository;
 
     protected AbstractScoreDirector(AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder) {
         this.scoreDirectorFactory = builder.scoreDirectorFactory;
+        // Needs early init, as supplies will need the instance to exist.
+        this.neighborhoodsElementUpdateNotifier = new NeighborhoodNotifier<>();
         var solutionDescriptor = this.scoreDirectorFactory.getSolutionDescriptor();
         this.lookUpEnabled = builder.lookUpEnabled;
-        this.lookUpManager = lookUpEnabled
-                ? new LookUpManager(solutionDescriptor.getLookUpStrategyResolver())
-                : null;
+        this.lookUpManager = lookUpEnabled ? new LookUpManager(solutionDescriptor.getLookUpStrategyResolver()) : null;
         this.constraintMatchPolicy = builder.constraintMatchPolicy;
         this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
@@ -119,6 +123,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         } else {
             this.listVariableStateSupply = getSupplyManager().demand(listVariableDescriptor.getStateDemand());
         }
+        setAllChangesWillBeUndoneBeforeStepEnds(false); // Make sure the notifier is correctly initialized.
     }
 
     @Override
@@ -187,6 +192,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void setAllChangesWillBeUndoneBeforeStepEnds(boolean allChangesWillBeUndoneBeforeStepEnds) {
         this.allChangesWillBeUndoneBeforeStepEnds = allChangesWillBeUndoneBeforeStepEnds;
+        this.neighborhoodsElementUpdateNotifier.setTracking(!allChangesWillBeUndoneBeforeStepEnds);
     }
 
     @Override
@@ -217,6 +223,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public MoveDirector<Solution_, Score_> getMoveDirector() {
         return moveDirector;
+    }
+
+    @Override
+    public NeighborhoodNotifier<Solution_> getNeighborhoodNotifier() {
+        return neighborhoodsElementUpdateNotifier;
     }
 
     // ************************************************************************
@@ -303,6 +314,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (moveRepository != null) {
             moveRepository.initialize(new SessionContext<>(this));
         }
+        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+            neighborhoodsElementUpdateNotifier.setMoveRepository(neighborhoodsBasedMoveRepository);
+        } else {
+            neighborhoodsElementUpdateNotifier.setMoveRepository(null);
+        }
     }
 
     private void assertInitScoreZeroOrLess() {
@@ -321,15 +337,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
-        // This change and resulting before/after events will not be propagated to a neighborhood session,
-        // as they will be immediately undone.
-        // Moves will only be re-generated once the solution has actually changed,
-        // which will happen at the end of the step, after executeMove(...) was called.
-        allChangesWillBeUndoneBeforeStepEnds = true;
         if (solutionTracker != null) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
-        var moveScore = assertMoveScoreFromScratch ? moveDirector.executeTemporary(move,
+        return assertMoveScoreFromScratch ? moveDirector.executeTemporary(move,
                 (score, undoMove) -> {
                     if (solutionTracker != null) {
                         solutionTracker.setAfterMoveSolution(workingSolution);
@@ -337,18 +348,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     assertWorkingScoreFromScratch(score, move);
                     return score;
                 }) : moveDirector.executeTemporary(move);
-        allChangesWillBeUndoneBeforeStepEnds = false;
-        return moveScore;
     }
 
     @Override
     public boolean isWorkingEntityListDirty(long expectedWorkingEntityListRevision) {
         return workingEntityListRevision != expectedWorkingEntityListRevision;
-    }
-
-    @Override
-    public boolean isWorkingSolutionInitialized() {
-        return workingInitScore == 0;
     }
 
     private void setWorkingEntityListDirty(@Nullable Solution_ solution) {
@@ -366,8 +370,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             if (!Objects.equals(originalScore, cloneScore)) {
                 throw new CloningCorruptionException("""
                         Cloning corruption: the original's score (%s) is different from the clone's score (%s).
-                        Check the %s."""
-                        .formatted(originalScore, cloneScore, SolutionCloner.class.getSimpleName()));
+                        Check the %s.""".formatted(originalScore, cloneScore, SolutionCloner.class.getSimpleName()));
             }
             var originalEntityMap = new IdentityHashMap<>();
             solutionDescriptor.visitAllEntities(originalSolution,
@@ -377,8 +380,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     throw new CloningCorruptionException("""
                             Cloning corruption: the same entity (%s) is present in both the original and the clone.
                             So when a planning variable in the original solution changes, the cloned solution will change too.
-                            Check the %s."""
-                            .formatted(cloneEntity, SolutionCloner.class.getSimpleName()));
+                            Check the %s.""".formatted(cloneEntity, SolutionCloner.class.getSimpleName()));
                 }
             });
         }
@@ -423,19 +425,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType) {
         // Most score directors don't need derived status; CS will override this.
         if (childThreadType == ChildThreadType.PART_THREAD) {
-            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
-                    .withLookUpEnabled(lookUpEnabled)
-                    .withConstraintMatchPolicy(constraintMatchPolicy)
-                    .buildDerived();
+            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(lookUpEnabled)
+                    .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
             // ScoreCalculationCountTermination takes into account previous phases
             // but the calculationCount of partitions is maxed, not summed.
             childThreadScoreDirector.calculationCount = calculationCount;
             return childThreadScoreDirector;
         } else if (childThreadType == ChildThreadType.MOVE_THREAD) {
-            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
-                    .withLookUpEnabled(true)
-                    .withConstraintMatchPolicy(constraintMatchPolicy)
-                    .buildDerived();
+            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(true)
+                    .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
             childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
             return childThreadScoreDirector;
         } else {
@@ -471,13 +469,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (lookUpEnabled) {
             lookUpManager.addWorkingObject(entity);
         }
-        if (!allChangesWillBeUndoneBeforeStepEnds) {
-            if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
-                neighborhoodsBasedMoveRepository.insert(entity);
-            }
-            // Some selectors depend on this revision value to detect changes in entity value ranges.
-            // Therefore, we need to reset the value range state, but the working solution does not change.
-            setWorkingEntityListDirty(null);
+        if (allChangesWillBeUndoneBeforeStepEnds) {
+            return; // Nothing more to do.
+        }
+        // Some selectors depend on this revision value to detect changes in entity value ranges.
+        // Therefore, we need to reset the value range state, but the working solution does not change.
+        setWorkingEntityListDirty(null);
+        // Notify the move repository of the change, allowing an update to move generating.
+        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+            neighborhoodsBasedMoveRepository.insert(entity);
         }
     }
 
@@ -495,10 +495,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (variableDescriptor.isGenuineAndUninitialized(entity)) {
             workingInitScore--;
         }
-        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
-            neighborhoodsBasedMoveRepository.update(entity);
-        }
         variableListenerSupport.afterVariableChanged(variableDescriptor, entity);
+        neighborhoodsElementUpdateNotifier.accept(entity);
     }
 
     @Override
@@ -511,9 +509,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             workingInitScore++;
             assertInitScoreZeroOrLess();
         }
-        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
-            neighborhoodsBasedMoveRepository.update(element);
-        }
+        neighborhoodsElementUpdateNotifier.accept(element);
     }
 
     @Override
@@ -527,9 +523,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             workingInitScore--;
         }
         variableListenerSupport.afterElementUnassigned(variableDescriptor, element);
-        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
-            neighborhoodsBasedMoveRepository.update(element);
-        }
+        neighborhoodsElementUpdateNotifier.accept(element);
     }
 
     @Override
@@ -549,12 +543,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
-            Object entity, int fromIndex, int toIndex) {
+    public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
+            int toIndex) {
         variableListenerSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
-        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
-            neighborhoodsBasedMoveRepository.update(entity);
-        }
+        neighborhoodsElementUpdateNotifier.accept(entity);
     }
 
     public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
@@ -569,13 +561,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (lookUpEnabled) {
             lookUpManager.removeWorkingObject(entity);
         }
-        if (!allChangesWillBeUndoneBeforeStepEnds) {
-            if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
-                neighborhoodsBasedMoveRepository.retract(entity);
-            }
-            // Some selectors depend on this revision value to detect changes in entity value ranges.
-            // Therefore, we need to reset the value range state, but the working solution does not change.
-            setWorkingEntityListDirty(null);
+        if (allChangesWillBeUndoneBeforeStepEnds) {
+            return; // Nothing more to do.
+        }
+        // Some selectors depend on this revision value to detect changes in entity value ranges.
+        // Therefore, we need to reset the value range state, but the working solution does not change.
+        setWorkingEntityListDirty(null);
+        // Notify the move repository of the change, allowing an update to move generating.
+        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+            neighborhoodsBasedMoveRepository.retract(entity);
         }
     }
 
@@ -594,6 +588,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             lookUpManager.addWorkingObject(problemFact);
         }
         variableListenerSupport.resetWorkingSolution(); // TODO do not nuke the variable listeners
+        // Notify the move repository of the change, allowing an update to move generating.
         if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
             neighborhoodsBasedMoveRepository.insert(problemFact);
         }
@@ -610,9 +605,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             setWorkingSolution(workingSolution); // Nuke everything and recalculate, constraint weights have changed.
         } else {
             variableListenerSupport.resetWorkingSolution(); // TODO do not nuke the variable listeners
-            if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
-                neighborhoodsBasedMoveRepository.update(problemFactOrEntity);
-            }
+            neighborhoodsElementUpdateNotifier.accept(problemFactOrEntity);
         }
     }
 
@@ -631,6 +624,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             lookUpManager.removeWorkingObject(problemFact);
         }
         variableListenerSupport.resetWorkingSolution(); // TODO do not nuke the variable listeners
+        // Notify the move repository of the change, allowing an update to move generating.
         if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
             neighborhoodsBasedMoveRepository.retract(problemFact);
         }
@@ -666,9 +660,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (!expectedWorkingScore.equals(workingScore)) {
             throw new ScoreCorruptionException("""
                     Score corruption (%s): the expectedWorkingScore (%s) is not the workingScore (%s) \
-                    after completedAction (%s)."""
-                    .formatted(expectedWorkingScore.raw().subtract(workingScore.raw()).toShortString(),
-                            expectedWorkingScore, workingScore, completedAction));
+                    after completedAction (%s).""".formatted(
+                    expectedWorkingScore.raw().subtract(workingScore.raw()).toShortString(), expectedWorkingScore, workingScore,
+                    completedAction));
         }
     }
 
@@ -678,8 +672,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (violationMessage != null) {
             throw new VariableCorruptionException("""
                     %s corruption after completedAction (%s):
-                    %s"""
-                    .formatted(ShadowVariable.class.getSimpleName(), completedAction, violationMessage));
+                    %s""".formatted(ShadowVariable.class.getSimpleName(), completedAction, violationMessage));
         }
 
         var workingScore = calculateScore();
@@ -690,11 +683,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     Impossible %s corruption (%s): the expectedWorkingScore (%s) is not the workingScore (%s) \
                     after all %s were updated without changes to the genuine variables after completedAction (%s).
                     All the shadow variable values are still the same, so this is impossible.
-                    Maybe run with %s if you haven't already, to fail earlier."""
-                    .formatted(ShadowVariable.class.getSimpleName(),
-                            expectedWorkingScore.raw().subtract(workingScore.raw()).toShortString(),
-                            expectedWorkingScore, workingScore, ShadowVariable.class.getSimpleName(), completedAction,
-                            EnvironmentMode.TRACKED_FULL_ASSERT));
+                    Maybe run with %s if you haven't already, to fail earlier.""".formatted(
+                    ShadowVariable.class.getSimpleName(),
+                    expectedWorkingScore.raw().subtract(workingScore.raw()).toShortString(), expectedWorkingScore, workingScore,
+                    ShadowVariable.class.getSimpleName(), completedAction, EnvironmentMode.TRACKED_FULL_ASSERT));
         }
     }
 
@@ -708,14 +700,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (violationMessage == null) {
             return """
                     Shadow variable corruption in the %s scoreDirector:
-                      None"""
-                    .formatted(workingLabel);
+                      None""".formatted(workingLabel);
         }
         return """
                 Shadow variable corruption in the %s scoreDirector:
                 %s
-                  Maybe there is a bug in the updater of those shadow variable(s)."""
-                .formatted(workingLabel, violationMessage);
+                  Maybe there is a bug in the updater of those shadow variable(s).""".formatted(workingLabel, violationMessage);
     }
 
     @Override
@@ -735,8 +725,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
-                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                .buildDerived()) {
+                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED).buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
             if (!innerScore.equals(uncorruptedInnerScore)) {
@@ -745,10 +734,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 throw new ScoreCorruptionException("""
                         Score corruption (%s): the %s (%s) is not the uncorruptedScore (%s) after completedAction (%s):
                         %s
-                        %s"""
-                        .formatted(innerScore.raw().subtract(uncorruptedInnerScore.raw()).toShortString(),
-                                predicted ? "predictedScore" : "workingScore", innerScore, uncorruptedInnerScore,
-                                completedAction, scoreCorruptionAnalysis, shadowVariableAnalysis));
+                        %s""".formatted(innerScore.raw().subtract(uncorruptedInnerScore.raw()).toShortString(),
+                        predicted ? "predictedScore" : "workingScore", innerScore, uncorruptedInnerScore, completedAction,
+                        scoreCorruptionAnalysis, shadowVariableAnalysis));
             }
         }
     }
@@ -809,18 +797,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
                 3) If you use custom %ss,
                    check them for shadow variables that are used by score constraints
-                   that could cause the scoreDifference (%s)."""
-                .formatted(scoreDifference, beforeMoveInnerScore, undoInnerScore, undoInnerScore,
-                        corruptionDiagnosis,
-                        EnvironmentMode.TRACKED_FULL_ASSERT, executionPoint,
-                        move.getClass().getSimpleName(), move, undoMoveToString,
-                        ShadowVariable.class.getSimpleName(), scoreDifference);
+                   that could cause the scoreDifference (%s).""".formatted(scoreDifference, beforeMoveInnerScore,
+                undoInnerScore, undoInnerScore, corruptionDiagnosis, EnvironmentMode.TRACKED_FULL_ASSERT, executionPoint,
+                move.getClass().getSimpleName(), move, undoMoveToString, ShadowVariable.class.getSimpleName(), scoreDifference);
 
         if (trackingWorkingSolution) {
-            throw new UndoScoreCorruptionException(corruptionMessage,
-                    solutionTracker.getBeforeMoveSolution(),
-                    solutionTracker.getAfterMoveSolution(),
-                    solutionTracker.getAfterUndoSolution());
+            throw new UndoScoreCorruptionException(corruptionMessage, solutionTracker.getBeforeMoveSolution(),
+                    solutionTracker.getAfterMoveSolution(), solutionTracker.getAfterUndoSolution());
         } else {
             throw new ScoreCorruptionException(corruptionMessage);
         }
@@ -867,9 +850,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             return """
                     Score corruption analysis could not be generated because either corrupted constraintMatchPolicy (%s) \
                     or uncorrupted constraintMatchPolicy (%s) is %s.
-                      Check your score constraints manually."""
-                    .formatted(constraintMatchPolicy, uncorruptedScoreDirector.getConstraintMatchPolicy(),
-                            ConstraintMatchPolicy.DISABLED);
+                      Check your score constraints manually.""".formatted(constraintMatchPolicy,
+                    uncorruptedScoreDirector.getConstraintMatchPolicy(), ConstraintMatchPolicy.DISABLED);
         }
 
         var corruptedAnalysis = buildScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_ALL);
@@ -880,8 +862,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
         uncorruptedAnalysis.constraintMap().forEach((constraintRef, uncorruptedConstraintAnalysis) -> {
             var uncorruptedConstraintMatches = emptyMatchAnalysisIfNull(uncorruptedConstraintAnalysis);
-            var corruptedConstraintMatches = emptyMatchAnalysisIfNull(corruptedAnalysis.constraintMap()
-                    .get(constraintRef));
+            var corruptedConstraintMatches = emptyMatchAnalysisIfNull(corruptedAnalysis.constraintMap().get(constraintRef));
             if (corruptedConstraintMatches.isEmpty()) {
                 missingSet.addAll(uncorruptedConstraintMatches);
             } else {
@@ -892,8 +873,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
         corruptedAnalysis.constraintMap().forEach((constraintRef, corruptedConstraintAnalysis) -> {
             var corruptedConstraintMatches = emptyMatchAnalysisIfNull(corruptedConstraintAnalysis);
-            var uncorruptedConstraintMatches = emptyMatchAnalysisIfNull(uncorruptedAnalysis.constraintMap()
-                    .get(constraintRef));
+            var uncorruptedConstraintMatches = emptyMatchAnalysisIfNull(uncorruptedAnalysis.constraintMap().get(constraintRef));
             if (uncorruptedConstraintMatches.isEmpty()) {
                 excessSet.addAll(corruptedConstraintMatches);
             } else {
@@ -927,8 +907,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                               but this didn't happen here on the solverThread, so we can't detect it.
                         """.stripTrailing());
             } else {
-                analysis.append("  Impossible state. Maybe this is a bug in the scoreDirector (%s)."
-                        .formatted(getClass()));
+                analysis.append("  Impossible state. Maybe this is a bug in the scoreDirector (%s).".formatted(getClass()));
             }
         }
         return analysis.toString();
@@ -952,10 +931,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             analysis.append("""
                       The %s scoreDirector has %s ConstraintMatch(es) which %s:
                     """.formatted(workingLabel, matches.size(), suffix));
-            matches.stream().sorted().limit(CONSTRAINT_MATCH_DISPLAY_LIMIT)
-                    .forEach(match -> analysis.append("""
-                                %s/%s=%s
-                            """.formatted(match.constraintRef().constraintId(), match.justification(), match.score())));
+            matches.stream().sorted().limit(CONSTRAINT_MATCH_DISPLAY_LIMIT).forEach(match -> analysis.append("""
+                        %s/%s=%s
+                    """.formatted(match.constraintRef().constraintId(), match.justification(), match.score())));
             if (matches.size() >= CONSTRAINT_MATCH_DISPLAY_LIMIT) {
                 analysis.append("""
                             ... %s more
@@ -990,8 +968,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (constraintWeightSupplier == null) {
             return false;
         }
-        return constraintWeightSupplier.getProblemFactClass()
-                .isInstance(problemFactOrEntity);
+        return constraintWeightSupplier.getProblemFactClass().isInstance(problemFactOrEntity);
     }
 
     @Override
@@ -1003,7 +980,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * An abstract builder for creating instances of {@link InnerScoreDirector}.
      * This class provides methods to configure the behavior of the score director before building it.
      * Unless the appropriate withers are called, the score director will be built:
-     * 
+     *
      * <ul>
      * <li>With {@link ConstraintMatchPolicy#DISABLED}.</li>
      * <li>With lookup disabled.</li>

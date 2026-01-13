@@ -28,12 +28,13 @@ final class OriginalOrderNeighborhoodIterator<Solution_> implements Iterator<Mov
             return true;
         }
         while (!availableIteratorQueue.isEmpty()) {
-            MoveIterable<Solution_> nextIterable = availableIteratorQueue.poll();
+            var nextIterable = availableIteratorQueue.poll();
             currentMoveIterator = nextIterable.iterator();
             if (currentMoveIterator.hasNext()) {
                 return true;
             }
         }
+        currentMoveIterator = null;
         return false;
     }
 

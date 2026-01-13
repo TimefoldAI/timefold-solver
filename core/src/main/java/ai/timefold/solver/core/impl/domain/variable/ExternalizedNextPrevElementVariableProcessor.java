@@ -29,30 +29,32 @@ final class ExternalizedNextPrevElementVariableProcessor<Solution_> {
         this.modifier = modifier;
     }
 
-    public void setElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable, Object element,
+    public boolean setElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable, Object element,
             int index) {
         var target = index + modifier;
         if (target < 0 || target >= listVariable.size()) {
-            setValue(scoreDirector, element, null);
+            return setValue(scoreDirector, element, null);
         } else {
-            setValue(scoreDirector, element, listVariable.get(target));
+            return setValue(scoreDirector, element, listVariable.get(target));
         }
     }
 
-    private void setValue(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Object value) {
+    private boolean setValue(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Object value) {
         if (getElement(element) != value) {
             scoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
             shadowVariableDescriptor.setValue(element, value);
             scoreDirector.afterVariableChanged(shadowVariableDescriptor, element);
+            return true;
         }
+        return false;
     }
 
     public Object getElement(Object element) {
         return shadowVariableDescriptor.getValue(element);
     }
 
-    public void unsetElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
-        setValue(scoreDirector, element, null);
+    public boolean unsetElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
+        return setValue(scoreDirector, element, null);
     }
 
 }

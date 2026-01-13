@@ -98,8 +98,8 @@ class NeighborhoodsBasedLocalSearchTest {
                 .basicVariable();
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         // Random selection otherwise LS gets stuck in an endless loop.
-        return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, List.of(new ChangeMoveProvider<>(variableMetaModel)),
-                true);
+        return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
+                List.of(new ChangeMoveProvider<>(variableMetaModel)), true);
     }
 
     /**

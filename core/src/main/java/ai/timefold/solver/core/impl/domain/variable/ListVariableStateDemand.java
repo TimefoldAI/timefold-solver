@@ -14,7 +14,7 @@ public final class ListVariableStateDemand<Solution_>
     @Override
     public ListVariableStateSupply<Solution_, Object, Object> createExternalizedSupply(SupplyManager supplyManager) {
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
-        return new ExternalizedListVariableStateSupply<>(listVariableDescriptor);
+        return new ExternalizedListVariableStateSupply<>(listVariableDescriptor, supplyManager.getStateChangeNotifier());
     }
 
 }

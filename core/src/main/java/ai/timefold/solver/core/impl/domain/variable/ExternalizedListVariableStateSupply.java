@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
@@ -27,9 +28,11 @@ final class ExternalizedListVariableStateSupply<Solution_, Entity_>
     @Nullable
     private Solution_ workingSolution;
 
-    public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
+    public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor,
+            Consumer<Object> notifier) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
-        this.listVariableState = new ListVariableState<>(sourceVariableDescriptor);
+        this.listVariableState = new ListVariableState<>(sourceVariableDescriptor,
+                notifier);
     }
 
     @Override

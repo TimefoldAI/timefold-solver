@@ -21,7 +21,8 @@ public final class AnchorVariableDemand<Solution_>
     public AnchorVariableSupply createExternalizedSupply(SupplyManager supplyManager) {
         SingletonInverseVariableSupply inverseVariableSupply = supplyManager
                 .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        return new ExternalizedAnchorVariableSupply<>(variableDescriptor, inverseVariableSupply);
+        return new ExternalizedAnchorVariableSupply<>(variableDescriptor, inverseVariableSupply,
+                supplyManager.getStateChangeNotifier());
     }
 
 }

@@ -26,7 +26,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public sealed interface MoveRepository<Solution_>
         extends Iterable<Move<Solution_>>, PhaseLifecycleListener<Solution_>
-        permits MoveSelectorBasedMoveRepository, NeighborhoodsBasedMoveRepository, PlacerBasedMoveRepository {
+        permits NeighborhoodsBasedMoveRepository, MoveSelectorBasedMoveRepository, PlacerBasedMoveRepository {
 
     boolean isNeverEnding();
 

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.inverserelation;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -18,11 +19,14 @@ public class ExternalizedSingletonInverseVariableSupply<Solution_> implements
         SingletonInverseVariableSupply {
 
     protected final VariableDescriptor<Solution_> sourceVariableDescriptor;
+    private final Consumer<Object> notifier;
 
     protected Map<Object, Object> inverseEntityMap = null;
 
-    public ExternalizedSingletonInverseVariableSupply(VariableDescriptor<Solution_> sourceVariableDescriptor) {
+    public ExternalizedSingletonInverseVariableSupply(VariableDescriptor<Solution_> sourceVariableDescriptor,
+            Consumer<Object> notifier) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
+        this.notifier = notifier;
     }
 
     @Override
@@ -66,6 +70,7 @@ public class ExternalizedSingletonInverseVariableSupply<Solution_> implements
                     + ") cannot be inserted: another entity (" + oldInverseEntity
                     + ") already has that value (" + value + ").");
         }
+        notifier.accept(value);
     }
 
     protected void retract(Object entity) {
@@ -80,6 +85,7 @@ public class ExternalizedSingletonInverseVariableSupply<Solution_> implements
                     + ") for sourceVariable (" + sourceVariableDescriptor.getVariableName()
                     + ") cannot be retracted: the entity was never inserted for that value (" + value + ").");
         }
+        notifier.accept(value);
     }
 
     @Override
