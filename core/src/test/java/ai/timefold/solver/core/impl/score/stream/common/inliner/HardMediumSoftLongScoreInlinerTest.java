@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Collections;
 import java.util.Map;
@@ -112,6 +113,23 @@ class HardMediumSoftLongScoreInlinerTest
         impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftLongScore.of(0, 0, 0));
+    }
+
+    @Test
+    void impactAllMatchWeightOverflow() {
+        var constraintWeight = HardMediumSoftLongScore.of(10, 100, 1_000);
+        var impacter = buildScoreImpacter(constraintWeight);
+        assertThatThrownBy(() -> impacter.impactScore(Long.MAX_VALUE, ConstraintMatchSupplier.empty()))
+                .isInstanceOf(ArithmeticException.class);
+    }
+
+    @Test
+    void impactAllTotalOverflow() {
+        var constraintWeight = HardMediumSoftLongScore.of(Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE);
+        var impacter = buildScoreImpacter(constraintWeight);
+        impacter.impactScore(1, ConstraintMatchSupplier.empty()); // This will send the total right to the limit.
+        assertThatThrownBy(() -> impacter.impactScore(1, ConstraintMatchSupplier.empty()))
+                .isInstanceOf(ArithmeticException.class);
     }
 
     @Override
