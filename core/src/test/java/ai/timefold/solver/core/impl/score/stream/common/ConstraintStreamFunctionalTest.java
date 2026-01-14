@@ -164,6 +164,10 @@ public interface ConstraintStreamFunctionalTest {
         // Quad can't be expanded, so don't force it.
     }
 
+    default void flatten() {
+        // Quad can't be flattened, so don't force it.
+    }
+
     void flattenLastWithDuplicates();
 
     void flattenLastWithoutDuplicates();

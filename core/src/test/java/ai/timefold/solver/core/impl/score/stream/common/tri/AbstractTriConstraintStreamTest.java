@@ -1588,6 +1588,43 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
+    public void flatten() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
+        TestdataLavishEntity entity1 = solution.getFirstEntity();
+        TestdataLavishEntity entity2 = solution.getEntityList().get(1);
+        TestdataLavishEntity entity3 = solution.getEntityList().get(2);
+        TestdataLavishEntityGroup group1 = solution.getFirstEntityGroup();
+        TestdataLavishEntityGroup group2 = solution.getEntityGroupList().get(1);
+
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
+                        .join(TestdataLavishEntity.class, Joiners.filtering((a, b, c) -> a != c && b != c))
+                        .flatten((a, b, c) -> asList(a.getEntityGroup(), b.getEntityGroup(), c.getEntityGroup()))
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2, entity3, group1),
+                assertMatch(entity1, entity2, entity3, group2),
+                assertMatch(entity1, entity2, entity3, group1),
+                assertMatch(entity1, entity3, entity2, group1),
+                assertMatch(entity1, entity3, entity2, group1),
+                assertMatch(entity1, entity3, entity2, group2),
+                assertMatch(entity2, entity3, entity1, group2),
+                assertMatch(entity2, entity3, entity1, group1),
+                assertMatch(entity2, entity3, entity1, group1));
+
+        // Incremental
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
+        assertScore(scoreDirector);
+    }
+
+    @Override
+    @TestTemplate
     public void flattenLastWithDuplicates() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 1, 2, 3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();

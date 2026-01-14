@@ -1425,7 +1425,33 @@ Always check your solver's move evaluation speed to see if the cost is offset by
 Flattening enables you to transform any Java `Iterable` (such as `List` or `Set`)
 into a set of tuples, which are sent downstream.
 (Similar to Java Stream's `flatMap(...)`)
-This is done by applying a mapping function to the final element in the source tuple.
+This is done by applying a mapping function to the source tuple.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    private Constraint requiredJobRoles(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Person.class)              // UniConstraintStream<Person>
+                .join(Job.class,
+                    equal(Function.identity(), Job::getAssignee))   // BiConstraintStream<Person, Job>
+                .flatten((person, job) -> job.getRequiredRoles())   // TriConstraintStream<Person, Job, Role>
+                .filter((person, job, requiredRole) -> ...)
+                ...
+    }
+----
+====
+
+NOTE: In the previous example, the mapping function produces duplicate tuples
+if `Job.getRequiredRoles()` contains duplicate values.
+Assuming that the function returns `[USER, USER, ADMIN]`,
+the tuple `(SomePerson, SomeJob, USER)` is sent downstream twice.
+See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> for how to deal with duplicate tuples.
+
+There is also a simplified version of `flatten` called `flattenLast`,
+which flattens the last element of the tuple, replacing it in the process:
 
 [tabs]
 ====
@@ -1442,15 +1468,6 @@ Java::
                 ...
     }
 ----
-====
-
-[NOTE]
-====
-In the example above, the mapping function produces duplicate tuples
-if `Job.getRequiredRoles()` contains duplicate values.
-Assuming that the function returns `[USER, USER, ADMIN]`,
-the tuple `(SomePerson, USER)` is sent downstream twice.
-See <<constraintStreamsDealingWithDuplicateTuplesUsingDistinct,`distinct()`>> for how to deal with duplicate tuples.
 ====
 
 [#constraintStreamsConcat]
