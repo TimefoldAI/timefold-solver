@@ -467,6 +467,35 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
 
     @Override
     @TestTemplate
+    public void differentParentSameFunctionFlatten() {
+        BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
+        BiFunction<TestdataEntity, TestdataEntity, Iterable<TestdataEntity>> flattener = (a, b) -> Collections.emptyList();
+
+        assertThat(baseStream.flatten(flattener))
+                .isNotSameAs(baseStream.filter(filter1).flatten(flattener));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentFunctionFlatten() {
+        BiFunction<TestdataEntity, TestdataEntity, Iterable<TestdataEntity>> flattener1 = (a, b) -> Collections.emptyList();
+        BiFunction<TestdataEntity, TestdataEntity, Iterable<TestdataEntity>> flattener2 = (a, b) -> Collections.emptySet();
+
+        assertThat(baseStream.flatten(flattener1))
+                .isNotSameAs(baseStream.flatten(flattener2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameFunctionFlatten() {
+        BiFunction<TestdataEntity, TestdataEntity, Iterable<TestdataEntity>> flattener = (a, b) -> Collections.emptyList();
+
+        assertThat(baseStream.flatten(flattener))
+                .isSameAs(baseStream.flatten(flattener));
+    }
+
+    @Override
+    @TestTemplate
     public void differentParentSameFunctionFlattenLast() {
         BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
         Function<TestdataEntity, Iterable<TestdataEntity>> flattener = a -> Collections.emptyList();

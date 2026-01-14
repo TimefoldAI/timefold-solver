@@ -639,6 +639,32 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
     }
 
     @Override
+    public void differentParentSameFunctionFlatten() {
+        Predicate<TestdataEntity> filter1 = a -> true;
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener = a -> Collections.emptyList();
+
+        assertThat(baseStream.flatten(flattener))
+                .isNotSameAs(baseStream.filter(filter1).flatten(flattener));
+    }
+
+    @Override
+    public void sameParentDifferentFunctionFlatten() {
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener1 = a -> Collections.emptyList();
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener2 = a -> Collections.emptySet();
+
+        assertThat(baseStream.flatten(flattener1))
+                .isNotSameAs(baseStream.flatten(flattener2));
+    }
+
+    @Override
+    public void sameParentSameFunctionFlatten() {
+        Function<TestdataEntity, Iterable<TestdataEntity>> flattener = a -> Collections.emptyList();
+
+        assertThat(baseStream.flatten(flattener))
+                .isSameAs(baseStream.flatten(flattener));
+    }
+
+    @Override
     @TestTemplate
     public void differentParentSameFunctionFlattenLast() {
         Predicate<TestdataEntity> filter1 = a -> true;

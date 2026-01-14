@@ -7,11 +7,13 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.PrecomputeFactory;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupport;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamPrecomputeTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamTestExtension;
+import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
@@ -172,6 +174,70 @@ public abstract class AbstractUniConstraintStreamPrecomputeTest extends Abstract
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .filter(entity -> entity.getEntityGroup() != null)
                         .groupBy(TestdataLavishEntity::getEntityGroup));
+    }
+
+    @Override
+    @TestTemplate
+    public void flatten() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup));
+        solution.getEntityGroupList().add(entityGroup);
+        solution.getValueList().add(new TestdataLavishValue());
+
+        assertPrecomputeBi(solution, List.of(new Pair<>(entityWithoutGroup, entityWithoutGroup),
+                new Pair<>(entityWithGroup, entityWithGroup)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .flatten(List::of));
+    }
+
+    private <A, B> void assertPrecomputeBi(TestdataLavishSolution solution, List<Pair<A, B>> expectedValues,
+            Function<PrecomputeFactory, BiConstraintStream<A, B>> entityStreamSupplier) {
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.precompute(entityStreamSupplier)
+                        .ifExists(TestdataLavishEntity.class)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector);
+
+        for (var entity : solution.getEntityList()) {
+            scoreDirector.beforeVariableChanged(entity, "value");
+            entity.setValue(solution.getFirstValue());
+            scoreDirector.afterVariableChanged(entity, "value");
+        }
+
+        assertScore(scoreDirector, expectedValues.stream()
+                .map(pair -> new Object[] { pair.key(), pair.value() })
+                .map(AbstractConstraintStreamTest::assertMatch)
+                .toArray(AssertableMatch[]::new));
+    }
+
+    @Override
+    @TestTemplate
+    public void flattenNewInstances() {
+        // Needed since Integers use a cache of instances that we don't want to accidentally use
+        record ValueHolder(int value) {
+        }
+
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entity1 = new TestdataLavishEntity();
+        entity1.setIntegerProperty(1);
+        var entity2 = new TestdataLavishEntity();
+        entity2.setIntegerProperty(2);
+        solution.getEntityList().addAll(List.of(entity1, entity2));
+        solution.getValueList().add(new TestdataLavishValue());
+
+        assertPrecomputeBi(solution, List.of(
+                new Pair<>(entity1, new ValueHolder(1)),
+                new Pair<>(entity2, new ValueHolder(2))),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .flatten(entity -> List.of(new ValueHolder(entity.getIntegerProperty()))));
     }
 
     @Override
