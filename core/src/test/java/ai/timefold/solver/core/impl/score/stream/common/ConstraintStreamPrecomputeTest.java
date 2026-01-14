@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.common;
 
 public interface ConstraintStreamPrecomputeTest {
+
     void filter_0_changed();
 
     default void filter_1_changed() {
@@ -20,6 +21,14 @@ public interface ConstraintStreamPrecomputeTest {
     void ifNotExists();
 
     void groupBy();
+
+    default void flatten() {
+        // Quad does not support flatten, so don't force it.
+    }
+
+    default void flattenNewInstances() {
+        // Quad does not support flatten, so don't force it.
+    }
 
     void flattenLast();
 

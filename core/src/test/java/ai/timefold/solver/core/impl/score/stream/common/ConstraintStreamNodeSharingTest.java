@@ -195,6 +195,18 @@ public interface ConstraintStreamNodeSharingTest {
 
     void sameParentSameFunctionMap();
 
+    default void differentParentSameFunctionFlatten() {
+        // Quads don't have flatten, so don't force it.
+    }
+
+    default void sameParentDifferentFunctionFlatten() {
+        // Quads don't have flatten, so don't force it.
+    }
+
+    default void sameParentSameFunctionFlatten() {
+        // Quads don't have flatten, so don't force it.
+    }
+
     void differentParentSameFunctionFlattenLast();
 
     void sameParentDifferentFunctionFlattenLast();

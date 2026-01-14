@@ -8,6 +8,7 @@ import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantO
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -1095,6 +1096,19 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
             @NonNull TriFunction<A, B, C, ResultC_> mappingC, @NonNull TriFunction<A, B, C, ResultD_> mappingD);
 
     /**
+     * As defined by {@link BiConstraintStream#flatten(BiFunction)}.
+     *
+     * @param <ResultD_> the type of the last fact in the resulting tuples.
+     *        It is recommended that this type be deeply immutable.
+     *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,
+     *        especially if this value is ever used as a group key.
+     * @param mapping function to convert the original tuple into {@link Iterable}.
+     *        For performance, returning an implementation of {@link Collection} is preferred.
+     */
+    <ResultD_> @NonNull QuadConstraintStream<A, B, C, ResultD_>
+            flatten(@NonNull TriFunction<A, B, C, Iterable<ResultD_>> mapping);
+
+    /**
      * As defined by {@link BiConstraintStream#flattenLast(Function)}.
      *
      * @param <ResultC_> the type of the last fact in the resulting tuples.
@@ -1102,7 +1116,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,
      *        especially if this value is ever used as a group key.
      * @param mapping function to convert the last fact in the original tuple into {@link Iterable}.
-     *        For performance, returning an implementation of {@link java.util.Collection} is preferred.
+     *        For performance, returning an implementation of {@link Collection} is preferred.
      */
     <ResultC_> @NonNull TriConstraintStream<A, B, ResultC_> flattenLast(@NonNull Function<C, Iterable<ResultC_>> mapping);
 

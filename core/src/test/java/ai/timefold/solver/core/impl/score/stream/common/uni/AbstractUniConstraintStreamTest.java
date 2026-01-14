@@ -2493,6 +2493,39 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
+    public void flatten() {
+        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
+        var entity1 = solution.getFirstEntity();
+        var entity2 = solution.getEntityList().get(1);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .flatten(entity -> Arrays.asList(group1, group1, group2))
+                        .distinct()
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, group1),
+                assertMatch(entity1, group2),
+                assertMatch(entity2, group1),
+                assertMatch(entity2, group2));
+
+        // Incremental
+        scoreDirector.beforeEntityRemoved(entity1);
+        solution.getEntityList().remove(entity1);
+        scoreDirector.afterEntityRemoved(entity1);
+        assertScore(scoreDirector,
+                assertMatch(entity2, group1),
+                assertMatch(entity2, group2));
+    }
+
+    @Override
+    @TestTemplate
     public void flattenLastAndDistinctWithDuplicates() {
         var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
         var group1 = solution.getFirstEntityGroup();

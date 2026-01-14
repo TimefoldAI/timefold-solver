@@ -1,27 +1,27 @@
-package ai.timefold.solver.core.impl.score.stream.bavet.uni;
+package ai.timefold.solver.core.impl.score.stream.bavet.bi;
 
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.bavet.uni.FlattenLastUniNode;
+import ai.timefold.solver.core.impl.bavet.bi.FlattenBiNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeTriConstraintStream;
 
-final class BavetFlattenLastUniConstraintStream<Solution_, A, NewA> extends BavetAbstractUniConstraintStream<Solution_, A> {
+final class BavetFlattenBiConstraintStream<Solution_, A, B, NewC> extends BavetAbstractBiConstraintStream<Solution_, A, B> {
 
-    private final Function<A, Iterable<NewA>> mappingFunction;
-    private BavetAftBridgeUniConstraintStream<Solution_, NewA> flattenLastStream;
+    private final BiFunction<A, B, Iterable<NewC>> mappingFunction;
+    private BavetAftBridgeTriConstraintStream<Solution_, A, B, NewC> flattenStream;
 
-    public BavetFlattenLastUniConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractUniConstraintStream<Solution_, A> parent, Function<A, Iterable<NewA>> mappingFunction) {
+    public BavetFlattenBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetAbstractBiConstraintStream<Solution_, A, B> parent, BiFunction<A, B, Iterable<NewC>> mappingFunction) {
         super(constraintFactory, parent);
         this.mappingFunction = mappingFunction;
     }
 
-    public void setAftBridge(BavetAftBridgeUniConstraintStream<Solution_, NewA> flattenLastStream) {
-        this.flattenLastStream = flattenLastStream;
+    public void setAftBridge(BavetAftBridgeTriConstraintStream<Solution_, A, B, NewC> flattenStream) {
+        this.flattenStream = flattenStream;
     }
 
     // ************************************************************************
@@ -36,9 +36,9 @@ final class BavetFlattenLastUniConstraintStream<Solution_, A, NewA> extends Bave
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         assertEmptyChildStreamList();
-        var node = new FlattenLastUniNode<>(buildHelper.reserveTupleStoreIndex(parent.getTupleSource()), mappingFunction,
-                buildHelper.getAggregatedTupleLifecycle(flattenLastStream.getChildStreamList()),
-                buildHelper.extractTupleStoreSize(flattenLastStream));
+        var node = new FlattenBiNode<>(buildHelper.reserveTupleStoreIndex(parent.getTupleSource()), mappingFunction,
+                buildHelper.getAggregatedTupleLifecycle(flattenStream.getChildStreamList()),
+                buildHelper.extractTupleStoreSize(flattenStream));
         buildHelper.addNode(node, this);
     }
 
@@ -52,7 +52,7 @@ final class BavetFlattenLastUniConstraintStream<Solution_, A, NewA> extends Bave
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (BavetFlattenLastUniConstraintStream<?, ?, ?>) object;
+        var that = (BavetFlattenBiConstraintStream<?, ?, ?, ?>) object;
         return Objects.equals(parent, that.parent) && Objects.equals(mappingFunction, that.mappingFunction);
     }
 
@@ -67,7 +67,7 @@ final class BavetFlattenLastUniConstraintStream<Solution_, A, NewA> extends Bave
 
     @Override
     public String toString() {
-        return "FlattenLast()";
+        return "Flatten()";
     }
 
 }

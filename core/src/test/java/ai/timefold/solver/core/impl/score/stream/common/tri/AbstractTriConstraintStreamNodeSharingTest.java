@@ -496,6 +496,39 @@ public abstract class AbstractTriConstraintStreamNodeSharingTest extends Abstrac
 
     @Override
     @TestTemplate
+    public void differentParentSameFunctionFlatten() {
+        TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c) -> true;
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, Iterable<TestdataEntity>> flattener =
+                (a, b, c) -> Collections.emptyList();
+
+        assertThat(baseStream.flatten(flattener))
+                .isNotSameAs(baseStream.filter(filter1).flatten(flattener));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentDifferentFunctionFlatten() {
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, Iterable<TestdataEntity>> flattener1 =
+                (a, b, c) -> Collections.emptyList();
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, Iterable<TestdataEntity>> flattener2 =
+                (a, b, c) -> Collections.emptySet();
+
+        assertThat(baseStream.flatten(flattener1))
+                .isNotSameAs(baseStream.flatten(flattener2));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameParentSameFunctionFlatten() {
+        TriFunction<TestdataEntity, TestdataEntity, TestdataEntity, Iterable<TestdataEntity>> flattener =
+                (a, b, c) -> Collections.emptyList();
+
+        assertThat(baseStream.flatten(flattener))
+                .isSameAs(baseStream.flatten(flattener));
+    }
+
+    @Override
+    @TestTemplate
     public void differentParentSameFunctionFlattenLast() {
         TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c) -> true;
         Function<TestdataEntity, Iterable<TestdataEntity>> flattener = a -> Collections.emptyList();

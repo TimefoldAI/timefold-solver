@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenLastNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -57,7 +57,7 @@ class FlattenLastUniNodeTest {
 
     @Test
     void insertAndRetract() {
-        AbstractFlattenLastNode<UniTuple<String>, UniTuple<String>, String, String> node =
+        AbstractFlattenNode<UniTuple<String>, UniTuple<String>, String> node =
                 new FlattenLastUniNode<>(0, FlattenLastUniNodeTest::split, downstream, 1);
 
         // First tuple is inserted, A and B make it downstream.
@@ -110,7 +110,7 @@ class FlattenLastUniNodeTest {
 
     @Test
     void modify() {
-        AbstractFlattenLastNode<UniTuple<String>, UniTuple<String>, String, String> node =
+        AbstractFlattenNode<UniTuple<String>, UniTuple<String>, String> node =
                 new FlattenLastUniNode<>(0, FlattenLastUniNodeTest::split, downstream, 1);
 
         // First tuple is inserted.

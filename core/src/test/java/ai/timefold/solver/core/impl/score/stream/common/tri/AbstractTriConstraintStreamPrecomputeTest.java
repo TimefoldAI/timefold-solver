@@ -254,6 +254,49 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
+    public void flatten() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup));
+        solution.getEntityGroupList().add(entityGroup);
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(new Triple<>(entityWithoutGroup, entityWithoutGroup, value),
+                new Triple<>(entityWithGroup, entityWithoutGroup, value)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .flatten(List::of)
+                        .join(TestdataLavishValue.class));
+    }
+
+    @Override
+    @TestTemplate
+    public void flattenNewInstances() {
+        // Needed since Integers use a cache of instances that we don't want to accidentally use
+        record ValueHolder(int value) {
+        }
+
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entity1 = new TestdataLavishEntity();
+        entity1.setIntegerProperty(1);
+        var entity2 = new TestdataLavishEntity();
+        entity2.setIntegerProperty(2);
+        solution.getEntityList().addAll(List.of(entity1, entity2));
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(new Triple<>(entity1, new ValueHolder(entity1.getIntegerProperty()), value),
+                new Triple<>(entity2, new ValueHolder(entity2.getIntegerProperty()), value)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .flatten(entity -> List.of(new ValueHolder(entity.getIntegerProperty())))
+                        .join(TestdataLavishValue.class));
+    }
+
+    @Override
+    @TestTemplate
     public void flattenLast() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();

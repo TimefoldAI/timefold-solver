@@ -426,6 +426,14 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     }
 
     @Override
+    public @NonNull <ResultC_> TriConstraintStream<A, B, ResultC_>
+            flatten(@NonNull BiFunction<A, B, @NonNull Iterable<ResultC_>> mapping) {
+        var stream = shareAndAddChild(new BavetFlattenBiConstraintStream<>(constraintFactory, this, mapping));
+        return constraintFactory.share(new BavetAftBridgeTriConstraintStream<>(constraintFactory, stream),
+                stream::setAftBridge);
+    }
+
+    @Override
     public <ResultB_> @NonNull BiConstraintStream<A, ResultB_>
             flattenLast(@NonNull Function<B, @NonNull Iterable<ResultB_>> mapping) {
         var stream = shareAndAddChild(new BavetFlattenLastBiConstraintStream<>(constraintFactory, this, mapping));

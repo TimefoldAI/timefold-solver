@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
@@ -15,30 +14,26 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
-public abstract class AbstractFlattenLastNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, EffectiveItem_, FlattenedItem_>
+public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, FlattenedItem_>
         extends AbstractNode
         implements TupleLifecycle<InTuple_> {
 
-    private final int flattenLastStoreIndex;
-    private final Function<EffectiveItem_, Iterable<FlattenedItem_>> mappingFunction;
+    private final int flattenStoreIndex;
     private final StaticPropagationQueue<OutTuple_> propagationQueue;
 
-    protected AbstractFlattenLastNode(int flattenLastStoreIndex,
-            Function<EffectiveItem_, Iterable<FlattenedItem_>> mappingFunction,
-            TupleLifecycle<OutTuple_> nextNodesTupleLifecycle) {
-        this.flattenLastStoreIndex = flattenLastStoreIndex;
-        this.mappingFunction = Objects.requireNonNull(mappingFunction);
+    protected AbstractFlattenNode(int flattenStoreIndex, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle) {
+        this.flattenStoreIndex = flattenStoreIndex;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
     @Override
     public final void insert(InTuple_ tuple) {
-        if (tuple.getStore(flattenLastStoreIndex) != null) {
+        if (tuple.getStore(flattenStoreIndex) != null) {
             throw new IllegalStateException(
                     "Impossible state: the input for the tuple (%s) was already added in the tupleStore."
                             .formatted(tuple));
         }
-        var iterable = mappingFunction.apply(getEffectiveFactIn(tuple));
+        var iterable = extractIterable(tuple);
         if (iterable instanceof Collection<FlattenedItem_> collection) {
             // Optimization for Collection, where we know the size.
             var size = collection.size();
@@ -49,7 +44,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends Tuple, OutTuple_ 
             for (var item : collection) {
                 addTuple(tuple, item, bagByItem);
             }
-            tuple.setStore(flattenLastStoreIndex, bagByItem);
+            tuple.setStore(flattenStoreIndex, bagByItem);
         } else {
             var iterator = iterable.iterator();
             if (!iterator.hasNext()) {
@@ -59,7 +54,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends Tuple, OutTuple_ 
             while (iterator.hasNext()) {
                 addTuple(tuple, iterator.next(), bagByItem);
             }
-            tuple.setStore(flattenLastStoreIndex, bagByItem);
+            tuple.setStore(flattenStoreIndex, bagByItem);
         }
     }
 
@@ -75,7 +70,7 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends Tuple, OutTuple_ 
 
     @Override
     public final void update(InTuple_ tuple) {
-        FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = tuple.getStore(flattenLastStoreIndex);
+        FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = tuple.getStore(flattenStoreIndex);
         if (bagByItem == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s).
             insert(tuple);
@@ -83,18 +78,18 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends Tuple, OutTuple_ 
         }
 
         bagByItem.resetAll();
-        for (var item : mappingFunction.apply(getEffectiveFactIn(tuple))) {
+        for (var item : extractIterable(tuple)) {
             addTuple(tuple, item, bagByItem);
         }
         bagByItem.getAllBags()
                 .removeIf(bag -> bag.removeExtras(this::removeTuple));
     }
 
-    protected abstract EffectiveItem_ getEffectiveFactIn(InTuple_ tuple);
+    protected abstract Iterable<FlattenedItem_> extractIterable(InTuple_ tuple);
 
     @Override
     public final void retract(InTuple_ tuple) {
-        FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = tuple.removeStore(flattenLastStoreIndex);
+        FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = tuple.removeStore(flattenStoreIndex);
         if (bagByItem == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;

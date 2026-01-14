@@ -5,21 +5,17 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.bi.FlattenLastBiNode;
-import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenLastNode;
-import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
 
-final class BavetFlattenLastBiConstraintStream<Solution_, A, B, NewB>
-        extends BavetAbstractBiConstraintStream<Solution_, A, B> {
+final class BavetFlattenLastBiConstraintStream<Solution_, A, B, NewB> extends BavetAbstractBiConstraintStream<Solution_, A, B> {
 
     private final Function<B, Iterable<NewB>> mappingFunction;
     private BavetAftBridgeBiConstraintStream<Solution_, A, NewB> flattenLastStream;
 
     public BavetFlattenLastBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractBiConstraintStream<Solution_, A, B> parent,
-            Function<B, Iterable<NewB>> mappingFunction) {
+            BavetAbstractBiConstraintStream<Solution_, A, B> parent, Function<B, Iterable<NewB>> mappingFunction) {
         super(constraintFactory, parent);
         this.mappingFunction = mappingFunction;
     }
@@ -40,12 +36,9 @@ final class BavetFlattenLastBiConstraintStream<Solution_, A, B, NewB>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         assertEmptyChildStreamList();
-        int inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
-        int outputStoreSize = buildHelper.extractTupleStoreSize(flattenLastStream);
-        AbstractFlattenLastNode<BiTuple<A, B>, BiTuple<A, NewB>, B, NewB> node = new FlattenLastBiNode<>(
-                inputStoreIndex, mappingFunction,
+        var node = new FlattenLastBiNode<>(buildHelper.reserveTupleStoreIndex(parent.getTupleSource()), mappingFunction,
                 buildHelper.getAggregatedTupleLifecycle(flattenLastStream.getChildStreamList()),
-                outputStoreSize);
+                buildHelper.extractTupleStoreSize(flattenLastStream));
         buildHelper.addNode(node, this);
     }
 
@@ -59,7 +52,7 @@ final class BavetFlattenLastBiConstraintStream<Solution_, A, B, NewB>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        BavetFlattenLastBiConstraintStream<?, ?, ?, ?> that = (BavetFlattenLastBiConstraintStream<?, ?, ?, ?>) object;
+        var that = (BavetFlattenLastBiConstraintStream<?, ?, ?, ?>) object;
         return Objects.equals(parent, that.parent) && Objects.equals(mappingFunction, that.mappingFunction);
     }
 

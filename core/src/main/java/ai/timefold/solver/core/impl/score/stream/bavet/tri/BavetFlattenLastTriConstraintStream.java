@@ -16,8 +16,7 @@ final class BavetFlattenLastTriConstraintStream<Solution_, A, B, C, NewC>
     private BavetAftBridgeTriConstraintStream<Solution_, A, B, NewC> flattenLastStream;
 
     public BavetFlattenLastTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractTriConstraintStream<Solution_, A, B, C> parent,
-            Function<C, Iterable<NewC>> mappingFunction) {
+            BavetAbstractTriConstraintStream<Solution_, A, B, C> parent, Function<C, Iterable<NewC>> mappingFunction) {
         super(constraintFactory, parent);
         this.mappingFunction = mappingFunction;
     }
@@ -38,11 +37,9 @@ final class BavetFlattenLastTriConstraintStream<Solution_, A, B, C, NewC>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         assertEmptyChildStreamList();
-        int inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
-        int outputStoreSize = buildHelper.extractTupleStoreSize(flattenLastStream);
-        var node = new FlattenLastTriNode<>(inputStoreIndex, mappingFunction,
+        var node = new FlattenLastTriNode<>(buildHelper.reserveTupleStoreIndex(parent.getTupleSource()), mappingFunction,
                 buildHelper.getAggregatedTupleLifecycle(flattenLastStream.getChildStreamList()),
-                outputStoreSize);
+                buildHelper.extractTupleStoreSize(flattenLastStream));
         buildHelper.addNode(node, this);
     }
 
