@@ -57,7 +57,7 @@ class FlattenLastUniNodeTest {
 
     @Test
     void insertAndRetract() {
-        AbstractFlattenLastNode<UniTuple<String>, UniTuple<String>, String, String> node =
+        AbstractFlattenLastNode<UniTuple<String>, UniTuple<String>, String> node =
                 new FlattenLastUniNode<>(0, FlattenLastUniNodeTest::split, downstream, 1);
 
         // First tuple is inserted, A and B make it downstream.
@@ -110,7 +110,7 @@ class FlattenLastUniNodeTest {
 
     @Test
     void modify() {
-        AbstractFlattenLastNode<UniTuple<String>, UniTuple<String>, String, String> node =
+        AbstractFlattenLastNode<UniTuple<String>, UniTuple<String>, String> node =
                 new FlattenLastUniNode<>(0, FlattenLastUniNodeTest::split, downstream, 1);
 
         // First tuple is inserted.

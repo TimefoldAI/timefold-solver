@@ -1,5 +1,11 @@
 package ai.timefold.solver.core.api.score.stream.bi;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneLong;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Objects;
@@ -30,13 +36,8 @@ import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
-import org.jspecify.annotations.NonNull;
 
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOne;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneBigDecimal;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneLong;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A {@link ConstraintStream} that matches two facts.
@@ -1104,7 +1105,8 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,
      *        especially if this value is ever used as a group key.
      */
-    <ResultC_> @NonNull TriConstraintStream<A, B, ResultC_> flatten(@NonNull BiFunction<A, B, @NonNull Iterable<ResultC_>> mapping);
+    <ResultC_> @NonNull TriConstraintStream<A, B, ResultC_>
+            flatten(@NonNull BiFunction<A, B, @NonNull Iterable<ResultC_>> mapping);
 
     /**
      * As defined by {@link #flatten(BiFunction)},

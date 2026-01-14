@@ -1,5 +1,11 @@
 package ai.timefold.solver.core.api.score.stream.uni;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEquals;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneLong;
+
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,13 +35,8 @@ import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream;
-import org.jspecify.annotations.NonNull;
 
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEquals;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOne;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneBigDecimal;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneLong;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A {@link ConstraintStream} that matches one fact.

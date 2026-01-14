@@ -1,19 +1,19 @@
-package ai.timefold.solver.core.impl.bavet.tri;
+package ai.timefold.solver.core.impl.bavet.bi;
 
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenLastNode;
+import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
-public final class FlattenLastTriNode<A, B, C, NewC>
-        extends AbstractFlattenLastNode<TriTuple<A, B, C>, TriTuple<A, B, NewC>, NewC> {
+public final class FlattenBiNode<A, B, NewC> extends AbstractFlattenLastNode<BiTuple<A, B>, TriTuple<A, B, NewC>, NewC> {
 
-    private final Function<C, Iterable<NewC>> mappingFunction;
+    private final BiFunction<A, B, Iterable<NewC>> mappingFunction;
     private final int outputStoreSize;
 
-    public FlattenLastTriNode(int flattenLastStoreIndex, Function<C, Iterable<NewC>> mappingFunction,
+    public FlattenBiNode(int flattenLastStoreIndex, BiFunction<A, B, Iterable<NewC>> mappingFunction,
             TupleLifecycle<TriTuple<A, B, NewC>> nextNodesTupleLifecycle, int outputStoreSize) {
         super(flattenLastStoreIndex, nextNodesTupleLifecycle);
         this.mappingFunction = Objects.requireNonNull(mappingFunction);
@@ -21,13 +21,13 @@ public final class FlattenLastTriNode<A, B, C, NewC>
     }
 
     @Override
-    protected TriTuple<A, B, NewC> createTuple(TriTuple<A, B, C> originalTuple, NewC newC) {
+    protected TriTuple<A, B, NewC> createTuple(BiTuple<A, B> originalTuple, NewC newC) {
         return TriTuple.of(originalTuple.getA(), originalTuple.getB(), newC, outputStoreSize);
     }
 
     @Override
-    protected Iterable<NewC> extractIterable(TriTuple<A, B, C> tuple) {
-        return mappingFunction.apply(tuple.getC());
+    protected Iterable<NewC> extractIterable(BiTuple<A, B> tuple) {
+        return mappingFunction.apply(tuple.getA(), tuple.getB());
     }
 
 }

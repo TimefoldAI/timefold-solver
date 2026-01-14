@@ -1,5 +1,12 @@
 package ai.timefold.solver.core.api.score.stream.tri;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneLong;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Objects;
@@ -30,14 +37,8 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
-import org.jspecify.annotations.NonNull;
 
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOne;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneBigDecimal;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneLong;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A {@link ConstraintStream} that matches three facts.
@@ -1104,7 +1105,8 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @param mapping function to convert the original tuple into {@link Iterable}.
      *        For performance, returning an implementation of {@link Collection} is preferred.
      */
-    <ResultD_> @NonNull QuadConstraintStream<A, B, C, ResultD_> flatten(@NonNull TriFunction<A, B, C, Iterable<ResultD_>> mapping);
+    <ResultD_> @NonNull QuadConstraintStream<A, B, C, ResultD_>
+            flatten(@NonNull TriFunction<A, B, C, Iterable<ResultD_>> mapping);
 
     /**
      * As defined by {@link BiConstraintStream#flattenLast(Function)}.

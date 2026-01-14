@@ -16,8 +16,7 @@ final class BavetFlattenLastQuadConstraintStream<Solution_, A, B, C, D, NewD>
     private BavetAftBridgeQuadConstraintStream<Solution_, A, B, C, NewD> flattenLastStream;
 
     public BavetFlattenLastQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> parent,
-            Function<D, Iterable<NewD>> mappingFunction) {
+            BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> parent, Function<D, Iterable<NewD>> mappingFunction) {
         super(constraintFactory, parent);
         this.mappingFunction = mappingFunction;
     }
@@ -38,11 +37,9 @@ final class BavetFlattenLastQuadConstraintStream<Solution_, A, B, C, D, NewD>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         assertEmptyChildStreamList();
-        int inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
-        int outputStoreSize = buildHelper.extractTupleStoreSize(flattenLastStream);
-        var node = new FlattenLastQuadNode<>(inputStoreIndex, mappingFunction,
+        var node = new FlattenLastQuadNode<>(buildHelper.reserveTupleStoreIndex(parent.getTupleSource()), mappingFunction,
                 buildHelper.getAggregatedTupleLifecycle(flattenLastStream.getChildStreamList()),
-                outputStoreSize);
+                buildHelper.extractTupleStoreSize(flattenLastStream));
         buildHelper.addNode(node, this);
     }
 
