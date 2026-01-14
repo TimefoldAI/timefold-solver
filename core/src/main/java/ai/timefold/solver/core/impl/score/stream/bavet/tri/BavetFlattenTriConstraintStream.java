@@ -53,7 +53,7 @@ final class BavetFlattenTriConstraintStream<Solution_, A, B, C, NewD>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        BavetFlattenTriConstraintStream<?, ?, ?, ?, ?> that = (BavetFlattenTriConstraintStream<?, ?, ?, ?, ?>) object;
+        var that = (BavetFlattenTriConstraintStream<?, ?, ?, ?, ?>) object;
         return Objects.equals(parent, that.parent) && Objects.equals(mappingFunction, that.mappingFunction);
     }
 
