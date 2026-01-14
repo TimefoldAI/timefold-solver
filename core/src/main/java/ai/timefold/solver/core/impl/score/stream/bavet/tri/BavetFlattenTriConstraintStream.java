@@ -68,7 +68,7 @@ final class BavetFlattenTriConstraintStream<Solution_, A, B, C, NewD>
 
     @Override
     public String toString() {
-        return "FlattenLast()";
+        return "Flatten()";
     }
 
 }

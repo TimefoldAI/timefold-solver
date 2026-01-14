@@ -1094,7 +1094,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * calling {@code flatten((name, person) -> person.getRoles()))} on such stream will produce a stream of
      * {@code [(Ann, (name = Ann, roles = [USER, ADMIN]), USER),
      * (Ann, (name = Ann, roles = [USER, ADMIN]), ADMIN),
-     * (Beth, (Beth, (name = Beth, roles = [USER])), USER),
+     * (Beth, (name = Beth, roles = [USER]), USER),
      * (Cathy, (name = Cathy, roles = [ADMIN, AUDITOR]), ADMIN),
      * (Cathy, (name = Cathy, roles = [ADMIN, AUDITOR]), AUDITOR)]}.
      *

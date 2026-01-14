@@ -67,7 +67,7 @@ final class BavetFlattenBiConstraintStream<Solution_, A, B, NewC> extends BavetA
 
     @Override
     public String toString() {
-        return "FlattenLast()";
+        return "Flatten()";
     }
 
 }

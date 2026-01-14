@@ -1526,7 +1526,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * <p>
      * Simple example: assuming a constraint stream of tuples of {@code Person}s
      * {@code [Ann(roles = [USER, ADMIN]]), Beth(roles = [USER]), Cathy(roles = [ADMIN, AUDITOR])]},
-     * calling {@code flatten(Person::getRoles)} on such stream will produce
+     * calling {@code flattenLast(Person::getRoles)} on such stream will produce
      * a stream of {@code [(USER), (ADMIN), (USER), (ADMIN), (AUDITOR)]}.
      */
     <ResultA_> @NonNull UniConstraintStream<ResultA_> flattenLast(@NonNull Function<A, Iterable<ResultA_>> mapping);
