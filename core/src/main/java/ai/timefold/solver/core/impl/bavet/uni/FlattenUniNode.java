@@ -13,9 +13,9 @@ public final class FlattenUniNode<A, NewB> extends AbstractFlattenNode<UniTuple<
     private final Function<A, Iterable<NewB>> mappingFunction;
     private final int outputStoreSize;
 
-    public FlattenUniNode(int flattenLastStoreIndex, Function<A, Iterable<NewB>> mappingFunction,
+    public FlattenUniNode(int flattenStoreIndex, Function<A, Iterable<NewB>> mappingFunction,
             TupleLifecycle<BiTuple<A, NewB>> nextNodesTupleLifecycle, int outputStoreSize) {
-        super(flattenLastStoreIndex, nextNodesTupleLifecycle);
+        super(flattenStoreIndex, nextNodesTupleLifecycle);
         this.mappingFunction = Objects.requireNonNull(mappingFunction);
         this.outputStoreSize = outputStoreSize;
     }

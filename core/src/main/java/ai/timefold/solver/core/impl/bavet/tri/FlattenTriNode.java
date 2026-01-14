@@ -14,9 +14,9 @@ public final class FlattenTriNode<A, B, C, NewD>
     private final TriFunction<A, B, C, Iterable<NewD>> mappingFunction;
     private final int outputStoreSize;
 
-    public FlattenTriNode(int flattenLastStoreIndex, TriFunction<A, B, C, Iterable<NewD>> mappingFunction,
+    public FlattenTriNode(int flattenStoreIndex, TriFunction<A, B, C, Iterable<NewD>> mappingFunction,
             TupleLifecycle<QuadTuple<A, B, C, NewD>> nextNodesTupleLifecycle, int outputStoreSize) {
-        super(flattenLastStoreIndex, nextNodesTupleLifecycle);
+        super(flattenStoreIndex, nextNodesTupleLifecycle);
         this.mappingFunction = Objects.requireNonNull(mappingFunction);
         this.outputStoreSize = outputStoreSize;
     }

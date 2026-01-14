@@ -13,9 +13,9 @@ public final class FlattenBiNode<A, B, NewC> extends AbstractFlattenNode<BiTuple
     private final BiFunction<A, B, Iterable<NewC>> mappingFunction;
     private final int outputStoreSize;
 
-    public FlattenBiNode(int flattenLastStoreIndex, BiFunction<A, B, Iterable<NewC>> mappingFunction,
+    public FlattenBiNode(int flattenStoreIndex, BiFunction<A, B, Iterable<NewC>> mappingFunction,
             TupleLifecycle<TriTuple<A, B, NewC>> nextNodesTupleLifecycle, int outputStoreSize) {
-        super(flattenLastStoreIndex, nextNodesTupleLifecycle);
+        super(flattenStoreIndex, nextNodesTupleLifecycle);
         this.mappingFunction = Objects.requireNonNull(mappingFunction);
         this.outputStoreSize = outputStoreSize;
     }

@@ -18,17 +18,17 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
         extends AbstractNode
         implements TupleLifecycle<InTuple_> {
 
-    private final int flattenLastStoreIndex;
+    private final int flattenStoreIndex;
     private final StaticPropagationQueue<OutTuple_> propagationQueue;
 
-    protected AbstractFlattenNode(int flattenLastStoreIndex, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle) {
-        this.flattenLastStoreIndex = flattenLastStoreIndex;
+    protected AbstractFlattenNode(int flattenStoreIndex, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle) {
+        this.flattenStoreIndex = flattenStoreIndex;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
     @Override
     public final void insert(InTuple_ tuple) {
-        if (tuple.getStore(flattenLastStoreIndex) != null) {
+        if (tuple.getStore(flattenStoreIndex) != null) {
             throw new IllegalStateException(
                     "Impossible state: the input for the tuple (%s) was already added in the tupleStore."
                             .formatted(tuple));
@@ -44,7 +44,7 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
             for (var item : collection) {
                 addTuple(tuple, item, bagByItem);
             }
-            tuple.setStore(flattenLastStoreIndex, bagByItem);
+            tuple.setStore(flattenStoreIndex, bagByItem);
         } else {
             var iterator = iterable.iterator();
             if (!iterator.hasNext()) {
@@ -54,7 +54,7 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
             while (iterator.hasNext()) {
                 addTuple(tuple, iterator.next(), bagByItem);
             }
-            tuple.setStore(flattenLastStoreIndex, bagByItem);
+            tuple.setStore(flattenStoreIndex, bagByItem);
         }
     }
 
@@ -70,7 +70,7 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
 
     @Override
     public final void update(InTuple_ tuple) {
-        FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = tuple.getStore(flattenLastStoreIndex);
+        FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = tuple.getStore(flattenStoreIndex);
         if (bagByItem == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s).
             insert(tuple);
@@ -89,7 +89,7 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
 
     @Override
     public final void retract(InTuple_ tuple) {
-        FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = tuple.removeStore(flattenLastStoreIndex);
+        FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = tuple.removeStore(flattenStoreIndex);
         if (bagByItem == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
