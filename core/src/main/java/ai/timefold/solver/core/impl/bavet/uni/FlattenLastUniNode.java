@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.bavet.uni;
 import java.util.Objects;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenLastNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
-public final class FlattenLastUniNode<A, NewA> extends AbstractFlattenLastNode<UniTuple<A>, UniTuple<NewA>, NewA> {
+public final class FlattenLastUniNode<A, NewA> extends AbstractFlattenNode<UniTuple<A>, UniTuple<NewA>, NewA> {
 
     private final Function<A, Iterable<NewA>> mappingFunction;
     private final int outputStoreSize;

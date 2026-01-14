@@ -14,14 +14,14 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
-public abstract class AbstractFlattenLastNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, FlattenedItem_>
+public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, FlattenedItem_>
         extends AbstractNode
         implements TupleLifecycle<InTuple_> {
 
     private final int flattenLastStoreIndex;
     private final StaticPropagationQueue<OutTuple_> propagationQueue;
 
-    protected AbstractFlattenLastNode(int flattenLastStoreIndex, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle) {
+    protected AbstractFlattenNode(int flattenLastStoreIndex, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle) {
         this.flattenLastStoreIndex = flattenLastStoreIndex;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }

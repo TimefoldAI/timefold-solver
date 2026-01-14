@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.bavet.bi;
 import java.util.Objects;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenLastNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
-public final class FlattenLastBiNode<A, B, NewB> extends AbstractFlattenLastNode<BiTuple<A, B>, BiTuple<A, NewB>, NewB> {
+public final class FlattenLastBiNode<A, B, NewB> extends AbstractFlattenNode<BiTuple<A, B>, BiTuple<A, NewB>, NewB> {
 
     private final Function<B, Iterable<NewB>> mappingFunction;
     private final int outputStoreSize;

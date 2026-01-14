@@ -3,13 +3,13 @@ package ai.timefold.solver.core.impl.bavet.tri;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenLastNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
 public final class FlattenTriNode<A, B, C, NewD>
-        extends AbstractFlattenLastNode<TriTuple<A, B, C>, QuadTuple<A, B, C, NewD>, NewD> {
+        extends AbstractFlattenNode<TriTuple<A, B, C>, QuadTuple<A, B, C, NewD>, NewD> {
 
     private final TriFunction<A, B, C, Iterable<NewD>> mappingFunction;
     private final int outputStoreSize;

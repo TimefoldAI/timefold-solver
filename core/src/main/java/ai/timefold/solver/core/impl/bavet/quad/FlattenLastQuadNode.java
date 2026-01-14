@@ -3,12 +3,12 @@ package ai.timefold.solver.core.impl.bavet.quad;
 import java.util.Objects;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenLastNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
 public final class FlattenLastQuadNode<A, B, C, D, NewD>
-        extends AbstractFlattenLastNode<QuadTuple<A, B, C, D>, QuadTuple<A, B, C, NewD>, NewD> {
+        extends AbstractFlattenNode<QuadTuple<A, B, C, D>, QuadTuple<A, B, C, NewD>, NewD> {
 
     private final Function<D, Iterable<NewD>> mappingFunction;
     private final int outputStoreSize;
