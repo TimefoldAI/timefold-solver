@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -11,7 +12,9 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @deprecated Chained variable is deprecated. Use {@link PlanningListVariable list variable} instead.
  */
+@Deprecated(forRemoval = true, since = "1.31.0")
 public class ChainedChangeMove<Solution_> extends ChangeMove<Solution_> {
 
     protected final Object oldTrailingEntity;

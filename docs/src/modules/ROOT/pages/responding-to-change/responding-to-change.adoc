@@ -306,7 +306,7 @@ use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemCha
 [#configureAPinningFilter]
 ==== Configure a `PinningFilter`
 
-WARNING: `PinningFilter` is deprecated for removal in a future version of Timefold Solver.
+WARNING: `PinningFilter` is deprecated and will be removed in Timefold Solver 2.0.
 Use `@PlanningPin` as described above.
 
 Alternatively, to pin some planning entities down,

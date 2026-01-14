@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -21,7 +22,9 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  * This {@link Move} is not cacheable.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @deprecated Chained variable is deprecated. Use {@link PlanningListVariable list variable} instead.
  */
+@Deprecated(forRemoval = true, since = "1.31.0")
 public class SubChainReversingSwapMove<Solution_> extends AbstractMove<Solution_> {
 
     private final GenuineVariableDescriptor<Solution_> variableDescriptor;

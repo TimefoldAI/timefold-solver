@@ -288,6 +288,9 @@ to specify which destination, value, or subList should be nearby the selection.
 
 ==== Nearby selection with a chained variable
 
+NOTE: Chained variable is deprecated and will be removed in Timefold Solver 2.0.
+Use xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] instead.
+
 To quickly configure nearby selection with a chained planning variable,
 add `nearbyDistanceMeterClass` element to your configuration file.
 The following enables nearby selection with a chained variable

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained;
 
 import java.util.Iterator;
 
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -14,6 +15,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChain;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChainSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
+/**
+ * @deprecated Chained variable is deprecated. Use {@link PlanningListVariable list variable} instead.
+ */
+@Deprecated(forRemoval = true, since = "1.31.0")
 public class SubChainSwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
     protected final SubChainSelector<Solution_> leftSubChainSelector;

@@ -315,7 +315,7 @@ As an unwanted consequence,
 behaves unexpectedly for xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[variables with unassigned values].
 These are considered initialized even when `null`,
 and therefore this legacy method could still return entities with `null` variables.
-`from()`, `fromUnfiltered()` and `fromUniquePair()` are now deprecated and will be removed in a future major version of Timefold Solver.
+`from()`, `fromUnfiltered()` and `fromUniquePair()` are now deprecated and will be removed in Timefold Solver 2.0
 ====
 
 [#constraintStreamsPenaltiesRewards]
@@ -341,13 +341,6 @@ The default value is `1`.
 [NOTE]
 ====
 Constraints with zero constraint weight are automatically disabled and do not impose any performance penalty.
-====
-
-[NOTE]
-====
-The constraint has another component: a constraint package.
-It has no practical impact on the solver and it has been deprecated.
-We recommend you don't use constraint packages; the solver will choose a suitable default value.
 ====
 
 The Constraint Streams API supports many different types of penalties.

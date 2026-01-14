@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
@@ -17,6 +18,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveS
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
+/**
+ * @deprecated Chained variable is deprecated. Use {@link PlanningListVariable list variable} instead.
+ */
+@Deprecated(forRemoval = true, since = "1.31.0")
 public class KOptMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
     protected final EntitySelector<Solution_> entitySelector;

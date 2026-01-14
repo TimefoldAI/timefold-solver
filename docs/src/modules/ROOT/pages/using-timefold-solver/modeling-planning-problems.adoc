@@ -670,15 +670,6 @@ it will add and remove elements to the ``Collection``s of those shadow variables
 Use the planning list variable to model problems where the goal is to distribute a number of workload elements among limited resources in a specific order.
 This includes, for example, vehicle routing, traveling salesman, task assigning, and similar problems.
 
-[NOTE]
-====
-Use a <<chainedPlanningVariable,chained planning variable>> instead of a planning list variable,
-if you need any of the following planning techniques:
-
-- xref:optimization-algorithms/exhaustive-search.adoc#exhaustiveSearch[exhaustive search],
-- coexistence with another list variable.
-====
-
 For example, the vehicle routing problem can be modeled as follows:
 
 image::quickstart/vehicle-routing/vehicleRoutingClassDiagramAnnotated.png[]
@@ -1554,6 +1545,9 @@ For example, none of the `timeslot` variables of any `Lesson` may be used to det
 [#chainedPlanningVariable]
 == Chained planning variable (TSP, VRP, ...)
 
+NOTE: Chained variable is deprecated and will be removed in Timefold Solver 2.0.
+Use <<planningListVariable,planning list variable>> instead.
+
 Chained planning variable is one way to implement the xref:design-patterns/design-patterns.adoc#chainedThroughTimePattern[Chained Through Time pattern].
 This pattern is used for some use cases, such as TSP and vehicle routing.
 Only use the chained planning variable to implement this pattern
@@ -1679,6 +1673,9 @@ Despite using the same base annotation as <<planningVariable, basic planning var
 
 [#chainedVariableShadowVariable]
 === Chained variable shadow variables
+
+NOTE: Chained variable is deprecated and will be removed in Timefold Solver 2.0.
+Use <<planningListVariable,planning list variable>> instead.
 
 When a planning entity uses <<chainedPlanningVariable,a chained variable>>, you can use the following built-in annotations to derive shadow variables from that genuine planning variable.
 

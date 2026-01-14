@@ -59,9 +59,28 @@ Every upgrade note indicates how likely your code will be affected by that chang
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin users to translate the changes accordingly.
 
+=== Upgrade from 1.30.0 to 1.31.0
+
+.icon:exclamation-triangle[role=red] Chained shadow variable deprecated for removal
+[%collapsible%open]
+====
+Many years ago, we have introduced the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] as a better alternative to xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained variables],
+easier to both understand and implement.
+We have maintained both these paradigms since then,
+but in the next major version of the solver,
+we will be removing support for chained shadow variables entirely.
+
+The migration from chained variable to list variable requires some effort and it cannot be automated.
+We invite you to read the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable documentation],
+study the xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing quickstart] as an example implementation,
+and reach out to us for help should you find yourself stuck.
+====
+
+'''
+
 === Upgrade from 1.27.0 to 1.28.0
 
-.icon:exclamation-triangle[role=red] `SolverJobBuilder` `with...SolutionConsumer` methods deprecated.
+.icon:exclamation-triangle[role=red] `SolverJobBuilder` `with...SolutionConsumer` methods deprecated for removal
 [%collapsible%open]
 ====
 Some `SolverJobBuilder` 's methods for consuming solution-related events have been deprecated in favor of new methods that provide more context through event objects:
