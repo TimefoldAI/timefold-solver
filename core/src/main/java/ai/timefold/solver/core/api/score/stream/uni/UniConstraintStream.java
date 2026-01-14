@@ -1,13 +1,8 @@
 package ai.timefold.solver.core.api.score.stream.uni;
 
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEquals;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOne;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneBigDecimal;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneLong;
-
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -34,8 +29,13 @@ import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream;
-
 import org.jspecify.annotations.NonNull;
+
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEquals;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneLong;
 
 /**
  * A {@link ConstraintStream} that matches one fact.
@@ -1497,26 +1497,36 @@ public interface UniConstraintStream<A> extends ConstraintStream {
 
     /**
      * Takes each tuple and applies a mapping on it, which turns the tuple into a {@link Iterable}.
-     * Returns a constraint stream consisting of contents of those iterables.
+     * Returns a constraint stream consisting of new tuples,
+     * each made of the original fact and one item from that iterable.
      * This may produce a stream with duplicate tuples.
      * See {@link #distinct()} for details.
      *
      * <p>
-     * In cases where the original tuple is already an {@link Iterable},
-     * use {@link Function#identity()} as the argument.
-     *
-     * <p>
      * Simple example: assuming a constraint stream of tuples of {@code Person}s
      * {@code [Ann(roles = [USER, ADMIN]]), Beth(roles = [USER]), Cathy(roles = [ADMIN, AUDITOR])]},
-     * calling {@code flattenLast(Person::getRoles)} on such stream will produce
-     * a stream of {@code [USER, ADMIN, USER, ADMIN, AUDITOR]}.
+     * calling {@code flatten(Person::getRoles)} on such stream will produce
+     * a stream of {@code [(Ann, USER), (Ann, ADMIN), (Beth, USER), (Cathy, ADMIN), (Cathy, AUDITOR)]}.
      *
      * @param mapping function to convert the original tuple into {@link Iterable}.
-     *        For performance, returning an implementation of {@link java.util.Collection} is preferred.
-     * @param <ResultA_> the type of facts in the resulting tuples.
+     *        For performance, returning an implementation of {@link Collection} is preferred.
+     * @param <ResultA_> the type of the last fact in the resulting tuples.
      *        It is recommended that this type be deeply immutable.
      *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,
      *        especially if this value is ever used as a group key.
+     */
+    <ResultA_> @NonNull BiConstraintStream<A, ResultA_> flatten(@NonNull Function<A, Iterable<ResultA_>> mapping);
+
+    /**
+     * As defined by {@link #flatten(Function)},
+     * only replacing the only fact in the original tuple by an item from the iterable.
+     * This means the resulting stream is a {@link UniConstraintStream},
+     * not a {@link BiConstraintStream}.
+     * <p>
+     * Simple example: assuming a constraint stream of tuples of {@code Person}s
+     * {@code [Ann(roles = [USER, ADMIN]]), Beth(roles = [USER]), Cathy(roles = [ADMIN, AUDITOR])]},
+     * calling {@code flatten(Person::getRoles)} on such stream will produce
+     * a stream of {@code [(USER), (ADMIN), (USER), (ADMIN), (AUDITOR)]}.
      */
     <ResultA_> @NonNull UniConstraintStream<ResultA_> flattenLast(@NonNull Function<A, Iterable<ResultA_>> mapping);
 

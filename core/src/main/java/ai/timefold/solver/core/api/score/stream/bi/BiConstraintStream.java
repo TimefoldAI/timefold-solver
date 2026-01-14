@@ -1,12 +1,7 @@
 package ai.timefold.solver.core.api.score.stream.bi;
 
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOne;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneBigDecimal;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneLong;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
-
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -35,8 +30,13 @@ import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
-
 import org.jspecify.annotations.NonNull;
+
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneLong;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
 
 /**
  * A {@link ConstraintStream} that matches two facts.
@@ -1076,32 +1076,47 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
             @NonNull BiFunction<A, B, ResultD_> mappingD);
 
     /**
-     * Takes each tuple and applies a mapping on the last fact, which turns it into {@link Iterable}.
-     * Returns a constraint stream consisting of tuples of the first fact
-     * and the contents of the {@link Iterable} one after another.
+     * Takes each tuple and applies a mapping on its facts, which turns it into {@link Iterable}.
+     * Returns a constraint stream consisting of new tuples,
+     * each made of the original facts and one item from that iterable.
      * In other words, it will replace the current tuple with new tuples,
-     * a cartesian product of A and the individual items from the {@link Iterable}.
+     * a Cartesian product of (A, B) and the individual items from the {@link Iterable}.
      *
      * <p>
      * This may produce a stream with duplicate tuples.
      * See {@link #distinct()} for details.
      *
      * <p>
-     * In cases where the last fact is already {@link Iterable}, use {@link Function#identity()} as the argument.
+     * Simple example: assuming a constraint stream of {@code (PersonName, Person)}
+     * {@code [(Ann, (name = Ann, roles = [USER, ADMIN])), (Beth, (name = Beth, roles = [USER])),
+     * (Cathy, (name = Cathy, roles = [ADMIN, AUDITOR]))]},
+     * calling {@code flatten((name, person) -> person.getRoles()))} on such stream will produce a stream of
+     * {@code [(Ann, (name = Ann, roles = [USER, ADMIN]), USER),
+     * (Ann, (name = Ann, roles = [USER, ADMIN]), ADMIN),
+     * (Beth, (Beth, (name = Beth, roles = [USER])), USER),
+     * (Cathy, (name = Cathy, roles = [ADMIN, AUDITOR]), ADMIN),
+     * (Cathy, (name = Cathy, roles = [ADMIN, AUDITOR]), AUDITOR)]}.
      *
+     * @param mapping function to convert the original tuple into {@link Iterable}.
+     *        For performance, returning an implementation of {@link Collection} is preferred.
+     * @param <ResultC_> the type of the last fact in the resulting tuples.
+     *        It is recommended that this type be deeply immutable.
+     *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,
+     *        especially if this value is ever used as a group key.
+     */
+    <ResultC_> @NonNull TriConstraintStream<A, B, ResultC_> flatten(@NonNull BiFunction<A, B, @NonNull Iterable<ResultC_>> mapping);
+
+    /**
+     * As defined by {@link #flatten(BiFunction)},
+     * only replacing the last fact in the original tuple by an item from the iterable.
+     * This means the resulting stream will still be a {@link BiConstraintStream},
+     * not a {@link TriConstraintStream}.
      * <p>
      * Simple example: assuming a constraint stream of {@code (PersonName, Person)}
      * {@code [(Ann, (name = Ann, roles = [USER, ADMIN])), (Beth, (name = Beth, roles = [USER])),
      * (Cathy, (name = Cathy, roles = [ADMIN, AUDITOR]))]},
      * calling {@code flattenLast(Person::getRoles)} on such stream will produce a stream of
      * {@code [(Ann, USER), (Ann, ADMIN), (Beth, USER), (Cathy, ADMIN), (Cathy, AUDITOR)]}.
-     *
-     * @param mapping function to convert the last fact in the original tuple into {@link Iterable}.
-     *        For performance, returning an implementation of {@link java.util.Collection} is preferred.
-     * @param <ResultB_> the type of the last fact in the resulting tuples.
-     *        It is recommended that this type be deeply immutable.
-     *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,
-     *        especially if this value is ever used as a group key.
      */
     <ResultB_> @NonNull BiConstraintStream<A, ResultB_> flattenLast(@NonNull Function<B, @NonNull Iterable<ResultB_>> mapping);
 
