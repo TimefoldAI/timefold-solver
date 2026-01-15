@@ -1,0 +1,2 @@
+You must read the project's constitution (#file:../.specify/memory/constitution.md) and use it to guide all your responses.
+Pay special attention to typos and inconsistencies in the reviewed content, as those are often difficult for humans to spot.
