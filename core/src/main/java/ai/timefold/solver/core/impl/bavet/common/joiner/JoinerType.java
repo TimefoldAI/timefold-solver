@@ -34,8 +34,6 @@ public enum JoinerType {
             case CONTAIN_ANY -> this;
             case CONTAIN_ALL -> this;
             case CONTAIN_NONE -> this;
-            default -> throw new IllegalStateException("The joinerType (%s) cannot be flipped."
-                    .formatted(this));
         };
     }
 
@@ -50,10 +48,6 @@ public enum JoinerType {
     }
 
     private static boolean containAny(Collection<?> leftCollection, Collection<?> rightCollection) {
-        if (leftCollection.isEmpty() && rightCollection.isEmpty()) {
-            // Deliberately not aligned with anyMatch() because this is a very common case in constraints
-            return true;
-        }
         return leftCollection.stream().anyMatch(rightCollection::contains);
     }
 

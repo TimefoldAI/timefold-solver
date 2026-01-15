@@ -3,9 +3,6 @@ package ai.timefold.solver.core.impl.bavet.common.joiner;
 import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -69,8 +66,9 @@ class JoinerTypeTest {
         assertThat(CONTAIN_ANY.matches(List.of(1, 2, 3), List.of(4, 5, 6))).isFalse();
         assertThat(CONTAIN_ANY.matches(List.of(1, 2, 3), List.of())).isFalse();
         assertThat(CONTAIN_ANY.matches(List.of(), List.of(1))).isFalse();
-        assertThat(CONTAIN_ANY.matches(List.of(), List.of())).isTrue();
+        assertThat(CONTAIN_ANY.matches(List.of(), List.of())).isFalse();
     }
+
     @Test
     void containAll() {
         assertThat(CONTAIN_ALL.matches(List.of(1, 2, 3), List.of(1, 2, 3))).isTrue();

@@ -7,12 +7,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
 
+/**
+ * As defined by {@link Joiners#containedIn(Function, Function)}
+ */
 @NullMarked
 final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
 

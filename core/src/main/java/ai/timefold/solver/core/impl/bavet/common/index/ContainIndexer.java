@@ -8,14 +8,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.util.CompositeListEntry;
 import ai.timefold.solver.core.impl.util.ListEntry;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.jspecify.annotations.NullMarked;
 
+/**
+ * As defined by {@link Joiners#contain(Function, Function)}
+ */
 @NullMarked
 final class ContainIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
 
