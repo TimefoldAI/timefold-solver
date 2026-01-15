@@ -139,8 +139,8 @@ class BruteForceTest {
             @Override
             public void stepStarted(AbstractStepScope<TestdataListSolution> stepScope) {
                 if (stepScope instanceof ExhaustiveSearchStepScope<TestdataListSolution> exhaustiveSearchStepScope) {
-                    if (exhaustiveSearchStepScope.getStepIndex() == 36) {
-                        fail("The exhaustive search phase was not ended after 36 steps.");
+                    if (exhaustiveSearchStepScope.getStepIndex() == 25) {
+                        fail("The exhaustive search phase was not ended after 25 steps.");
                     }
                 } else {
                     fail("Wrong phase was started: " + stepScope.getClass().getSimpleName());
