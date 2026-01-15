@@ -3,7 +3,10 @@
 This is an open source project, and you are more than welcome to contribute!
 
 - Found an issue? [Submit an issue](https://github.com/TimefoldAI/timefold-solver/issues).
-- Want to fix an issue or contribute an improvement? [Talk to us about your ideas](https://github.com/TimefoldAI/timefold-solver/discussions) or just start coding:
+- Want to fix an issue or contribute an improvement? 
+Talk to us about your ideas [here on Github](https://github.com/TimefoldAI/timefold-solver/discussions), 
+[on Discord](https://discord.gg/976RcEVVHW)
+or just start coding:
 
 1. [Fork it](https://github.com/TimefoldAI/timefold-solver/fork).
 2. Create a feature branch: `git checkout -b feature`
@@ -43,19 +46,6 @@ Use one of the following ways to build this project:
 
 ---
 
-## Set Up Your Development Environment
-
-To develop with IntelliJ IDEA, Eclipse or VSCode, open the root `pom.xml` as a new project and configure a **Run/Debug configuration** like this:
-
-- **Type**: Application
-- **Main class**: `ai.timefold.solver.examples.app.TimefoldExamplesApp`
-- **VM options**: `-Xmx2G` (memory only needed when using the big datasets in the examples)
-- **Program arguments**: (none)
-- **Working directory**: `$MODULE_DIR$` (must resolve to `examples` directory)
-- **Use classpath of module**: `timefold-solver-examples`
-
----
-
 ## Code Style
 
 Your code is automatically formatted according to the project conventions during every Maven build. CI checks enforce those conventions too, so be sure to build your project with Maven before creating your PR:
@@ -75,10 +65,6 @@ For information about how to set up code style checks in your IDE, see [IDE Setu
 ---
 
 ## Commit Messages
-
-- Use the present tense ("Add feature" not "Added feature")
-- Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-- Reference issues and pull requests liberally after the first line
 
 We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for PR titles and commit messages.
 
@@ -107,11 +93,3 @@ PRs that worsen grades below B will fail CI and cannot be merged.
 - Use **JUnit Jupiter (JUnit 5)** for test execution
 - Use **AssertJ** for all assertions (JUnit assertions are forbidden)
 - Mockito allowed for mocking; prefer real objects when practical
-
----
-
-## Questions or Issues?
-
-- **General questions**: [GitHub Discussions](https://github.com/TimefoldAI/timefold-solver/discussions)
-- **Bug reports**: [GitHub Issues](https://github.com/TimefoldAI/timefold-solver/issues)
-- **Security vulnerabilities**: Report privately to maintainers (do NOT create public issues)
