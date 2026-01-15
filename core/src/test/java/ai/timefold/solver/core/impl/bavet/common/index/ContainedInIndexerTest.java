@@ -3,8 +3,6 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,11 +33,11 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
     @Test
     void size() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        
+
         assertSize(indexer, List.of("X"), "1").isEqualTo(0);
 
         putTuple(indexer, "X", "1");
-        
+
         assertSize(indexer, List.of("X"), "1").isEqualTo(1);
         assertSize(indexer, List.of("X", "Y"), "1").isEqualTo(1);
         assertSize(indexer, List.of("X", "AAA"), "1").isEqualTo(1);
@@ -49,7 +47,7 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
 
         putTuple(indexer, "Y", "1");
         putTuple(indexer, "X", "2");
-        
+
         assertSize(indexer, List.of("X"), "1").isEqualTo(1);
         assertSize(indexer, List.of("X", "Y"), "1").isEqualTo(2);
         assertSize(indexer, List.of("X", "AAA"), "1").isEqualTo(1);
@@ -58,7 +56,7 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
         assertSize(indexer, List.of("X"), "999").isEqualTo(0);
 
         putTuple(indexer, null, "1");
-        
+
         assertSize(indexer, List.of(), "1").isEqualTo(0);
         assertSize(indexer, Collections.singletonList((String) null), "1").isEqualTo(1);
         assertSize(indexer, List.of("X"), "1").isEqualTo(1);
@@ -77,7 +75,6 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
     @Test
     void forEach() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-
 
         var annX1 = putTuple(indexer, "X", "1");
         var bethY1 = putTuple(indexer, "Y", "1");

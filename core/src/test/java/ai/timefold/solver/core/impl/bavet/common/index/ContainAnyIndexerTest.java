@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
-import org.assertj.core.api.ListAssert;
 import org.junit.jupiter.api.Test;
 
 class ContainAnyIndexerTest extends AbstractIndexerTest {
@@ -33,7 +32,7 @@ class ContainAnyIndexerTest extends AbstractIndexerTest {
     @Test
     void size() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        
+
         assertSize(indexer, List.of(), "1").isEqualTo(0);
         assertSize(indexer, List.of("X", "Y"), "1").isEqualTo(0);
 

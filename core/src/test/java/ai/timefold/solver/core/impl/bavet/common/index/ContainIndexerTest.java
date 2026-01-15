@@ -102,7 +102,7 @@ class ContainIndexerTest extends AbstractIndexerTest {
         assertForEach(indexer, "X", List.of("1")).containsExactlyInAnyOrder(annXY1);
         assertForEach(indexer, "X", List.of("1", "2")).containsExactlyInAnyOrder(annXY1, bethXY2);
         assertForEach(indexer, "Y", List.of("1", "2")).containsExactlyInAnyOrder(annXY1, bethXY2, ednaYZ1);
-        
+
         assertForEach(indexer, "X", List.of()).isEmpty();
     }
 
