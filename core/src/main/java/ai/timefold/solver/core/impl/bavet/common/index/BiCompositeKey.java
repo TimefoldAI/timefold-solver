@@ -33,4 +33,9 @@ record BiCompositeKey<A, B>(A propertyA, B propertyB) implements CompositeKey {
         return hash;
     }
 
+    @Override
+    public String toString() {
+        return "{" + propertyA + ", " + propertyB + "}";
+    }
+
 }
