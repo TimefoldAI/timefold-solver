@@ -1,46 +1,3 @@
-<!--
-Sync Impact Report:
-Version change: 1.0.0 → 1.3.0
-Modified principles: 
-  - I. Fail Fast (added cross-reference to Principle X)
-  - II. Understandable Error Messages (added Exception Handling standards)
-  - IV. Real World Usefulness (added Documentation Standards)
-  - VI. Good Code Hygiene (added SonarCloud Quality Gates)
-  - VII. Java Language Version (clarified latest JDK testing: JDK 17 + JDK 21 LTS)
-  - X. Security (added Logging Security and Logging Policy)
-Added sections: 
-  - Terminology (RFC 2119 key words)
-  - Technology Stack and Dependency Constraints (NON-NEGOTIABLE)
-    - VII. Java Language Version (JDK 17 requirement, nullability policy)
-    - VIII. Production Code Dependencies (added JSpecify)
-    - IX. Test Infrastructure
-    - X. Security (NON-NEGOTIABLE, with logging policy)
-    - Technology Philosophy (added Performance Considerations)
-  - Package Structure and API Stability
-    - Backward Compatibility Testing
-  - Development Workflow
-    - Deprecation and Migration Policy
-  - Governance
-    - Intellectual Property and Licensing
-Removed sections: 
-  - Lifecycle Management (overly specific)
-  - Generics Guidelines (overly specific)
-Fixed inconsistencies:
-  - Removed @since from deprecation example (aligns with Principle IV)
-  - Clarified code coverage threshold configured in SonarCloud
-Templates requiring updates:
-  - .specify/templates/plan-template.md (⚠ pending - to be created)
-  - .specify/templates/spec-template.md (⚠ pending - to be created)
-  - .specify/templates/tasks-template.md (⚠ pending - to be created)
-Follow-up TODOs: Create template files to align with constitution principles
-Amendment rationale: Added mandatory technology and dependency rules including JDK 17
-  target version, nullability policy with JSpecify, deprecation/migration policy,
-  security requirements with logging policy, documentation standards, exception handling
-  standards, performance considerations, backward compatibility testing, and IP/licensing
-  guidelines to ensure fast, efficient solver performance, secure and maintainable
-  codebase, respectful user migration paths, and clear legal framework.
--->
-
 # Timefold Solver Constitution
 
 ## Terminology
@@ -473,14 +430,16 @@ The codebase is structured into three conceptual parts with different stability 
 
 ### Commit Message Format
 
-Required format: `<type>: <description>`
+This project follows the **[Conventional Commits](https://www.conventionalcommits.org/)** specification.
 
-**Allowed types**: feat, fix, docs, perf, test, build, ci, revert, deps, chore
+**Required format**: `<type>: <description>`
 
 **Style rules**:
 - Use present tense ("Add feature" not "Added feature")
 - Use imperative mood ("Move cursor to..." not "Moves cursor to...")
 - Reference issues and PRs after the first line
+
+For full details on the specification, see https://www.conventionalcommits.org/
 
 ### Build Commands
 
@@ -617,7 +576,7 @@ This constitution is a living document. As the project evolves, principles may b
 
 ---
 
-**Version**: 1.3.0 | **Ratified**: 2026-01-15 | **Last Amended**: 2026-01-15
+**Version**: 1.4.0
 
 
 
