@@ -13,23 +13,80 @@ In summary:
 
 ## Core Principles
 
-### I. Fail Fast (NON-NEGOTIABLE)
+### I. Real World Usefulness
+
+Every feature MUST demonstrate real-world value before delivery:
+
+- Every feature MUST be used in at least one example or quickstart
+- Features are only considered complete when they are:
+  - Fully tested (unit, integration, and where applicable, performance tests)
+  - Fully documented (API docs, user guides, examples)
+  - Validated in a realistic scenario
+
+**Documentation Standards**:
+
+Documentation is a first-class requirement for all features:
+
+1. **Public API Documentation** (MUST):
+   - All public classes, interfaces, and methods MUST have Javadoc
+   - Javadoc MUST include: purpose, parameters (with `@param`), return values (with `@return`), exceptions thrown (with `@throws`)
+   - Complex algorithms SHOULD include implementation comments explaining the approach
+   - **Note**: `@since` tags are NOT required
+
+2. **User-Facing Documentation** (MUST):
+   - New features visible to users MUST have user guide updates
+   - Configuration changes MUST be documented in reference documentation
+   - Breaking changes MUST be documented in migration guides
+
+3. **Examples and Code Samples** (SHOULD):
+   - Documentation SHOULD include code examples demonstrating usage
+   - **Note**: Quickstarts are maintained in an external repository and are not part of this codebase, but features SHOULD have corresponding quickstart examples added there
+
+4. **Implementation Documentation** (MAY):
+   - Complex implementation classes SHOULD have class-level Javadoc explaining their role
+   - Non-obvious implementation details SHOULD be explained with comments
+   - Package-level documentation (package-info.java) is welcome but NOT required
+
+**Rationale**: Features without real-world validation often suffer from usability issues, incomplete requirements, or misaligned design. Examples serve as both validation and living documentation. Documentation is how users discover, understand, and correctly use features - undocumented code is effectively unusable.
+
+### II. Consistent Terminology
+
+Names of features, components, and concepts MUST be unambiguous and used consistently throughout:
+
+- The codebase (implementation, tests, comments)
+- Documentation (user guides, API docs, tutorials)
+- Public communication (issues, discussions, release notes)
+
+**Variable Naming Convention**:
+
+When a variable is a collection or a map, include that type in the variable name:
+
+- ✅ Use `tupleList` instead of `tuples` for a List
+- ✅ Use `scoreMap` instead of `scores` for a Map
+- ✅ Use `entitySet` instead of `entities` for a Set
+- ✅ Use `problemArray` instead of `problems` for an array
+
+This convention makes the data structure immediately clear without needing to inspect the variable declaration, reducing cognitive load during code review and maintenance.
+
+**Rationale**: Consistent terminology reduces cognitive load, prevents misunderstandings, and creates a coherent mental model for users and contributors. Clear variable names that include their data structure type make code self-documenting and easier to understand at a glance.
+
+### III. Fail Fast
 
 Invalid states MUST be checked as early as possible, in the following priority order:
 
-1. **Fail Fast at compile time** - Preferred. Do not accept an `Object` as a parameter if it needs to be a `String` or an `Integer`. Use type safety to prevent errors before runtime.
+1. **Fail Fast at compile time** - Preferred. Do not accept an `Object` as a parameter if it needs to be `String` or an `Integer`. Use type safety to prevent errors before runtime.
 
 2. **Fail Fast at startup time** - If configuration parameters can be validated (e.g., a positive `int` that is negative), fail immediately during initialization.
 
 3. **Fail Fast at runtime** - Validate request parameters and invariants as soon as they are received. For example, if a request requires a double between `0.0` and `1.0`, reject values outside this range immediately.
    
-   **See also**: Principle X for security-related input validation
+   **See also**: Technology Stack Principle IV for security-related input validation
 
 4. **Fail Fast in assertion mode** - For performance-sensitive checks (e.g., verifying that variable A equals the square root of B after every iteration), perform validation only when assertion flags are enabled, typically controlled by the EnvironmentMode.
 
 **Rationale**: Early detection prevents cascading failures, reduces debugging time, and provides clear feedback at the point of error rather than downstream.
 
-### II. Understandable Error Messages (NON-NEGOTIABLE)
+### IV. Understandable Error Messages
 
 All exception messages MUST be clear, actionable, and informative:
 
@@ -70,63 +127,6 @@ Proper exception handling is essential for maintainable and debuggable code:
 5. **Don't catch Exception or Throwable** - Catch specific exception types; catching Exception/Throwable masks errors like OutOfMemoryError
 
 **Rationale**: Developers spend significant time debugging. Clear error messages reduce support burden and accelerate problem resolution. Proper exception handling ensures errors are visible and debuggable rather than silently lost.
-
-### III. Consistent Terminology
-
-Names of features, components, and concepts MUST be unambiguous and used consistently throughout:
-
-- The codebase (implementation, tests, comments)
-- Documentation (user guides, API docs, tutorials)
-- Public communication (issues, discussions, release notes)
-
-**Variable Naming Convention**:
-
-When a variable is a collection or a map, include that type in the variable name:
-
-- ✅ Use `tupleList` instead of `tuples` for a List
-- ✅ Use `scoreMap` instead of `scores` for a Map
-- ✅ Use `entitySet` instead of `entities` for a Set
-- ✅ Use `problemArray` instead of `problems` for an array
-
-This convention makes the data structure immediately clear without needing to inspect the variable declaration, reducing cognitive load during code review and maintenance.
-
-**Rationale**: Consistent terminology reduces cognitive load, prevents misunderstandings, and creates a coherent mental model for users and contributors. Clear variable names that include their data structure type make code self-documenting and easier to understand at a glance.
-
-### IV. Real World Usefulness (NON-NEGOTIABLE)
-
-Every feature MUST demonstrate real-world value before delivery:
-
-- Every feature MUST be used in at least one example or quickstart
-- Features are only considered complete when they are:
-  - Fully tested (unit, integration, and where applicable, performance tests)
-  - Fully documented (API docs, user guides, examples)
-  - Validated in a realistic scenario
-
-**Documentation Standards**:
-
-Documentation is a first-class requirement for all features:
-
-1. **Public API Documentation** (MUST):
-   - All public classes, interfaces, methods, and fields MUST have Javadoc
-   - Javadoc MUST include: purpose, parameters (with `@param`), return values (with `@return`), exceptions thrown (with `@throws`)
-   - Complex algorithms SHOULD include implementation comments explaining the approach
-   - **Note**: `@since` tags are NOT required
-
-2. **User-Facing Documentation** (MUST):
-   - New features visible to users MUST have user guide updates
-   - Configuration changes MUST be documented in reference documentation
-   - Breaking changes MUST be documented in migration guides
-
-3. **Examples and Code Samples** (SHOULD):
-   - Documentation SHOULD include code examples demonstrating usage
-   - **Note**: Quickstarts are maintained in an external repository and are not part of this codebase, but features SHOULD have corresponding quickstart examples added there
-
-4. **Implementation Documentation** (MAY):
-   - Complex implementation classes SHOULD have class-level Javadoc explaining their role
-   - Non-obvious implementation details SHOULD be explained with comments
-   - Package-level documentation (package-info.java) is welcome but NOT required
-
-**Rationale**: Features without real-world validation often suffer from usability issues, incomplete requirements, or misaligned design. Examples serve as both validation and living documentation. Documentation is how users discover, understand, and correctly use features - undocumented code is effectively unusable.
 
 ### V. Automated Testing
 
@@ -194,7 +194,7 @@ Code quality is monitored by **SonarCloud** in CI with mandatory quality gates:
 
 Timefold Solver is a **fast and efficient constraint solver** built with Java. The following technology and dependency rules are MANDATORY to ensure performance, maintainability, and minimal overhead.
 
-### VII. Java Language Version (NON-NEGOTIABLE)
+### I. Java Language Version
 
 The codebase MUST maintain **JDK 17 compile-time compatibility** while supporting the latest JDK runtime:
 
@@ -212,7 +212,7 @@ The codebase MUST maintain **JDK 17 compile-time compatibility** while supportin
 - **Sealed classes** (JDK 17) - For restricted class hierarchies
 - **Switch expressions** (JDK 14+) - For concise, exhaustive switching
 - **Stream API** - Use judiciously; prefer simple for loops when they are clearer and more efficient
-- **String::formatted** (JDK 13+) - For string formatting (as shown in Principle II)
+- **String::formatted** (JDK 13+) - For string formatting (as shown in Principle IV)
 
 **Explicitly AVOIDED features**:
 - **Optional** - Avoid using `Optional` in Java. This is an agreed-upon convention to prevent bike-shedding discussions. Use nullable types with proper `@Nullable` annotations from JSpecify instead (see Nullability Policy below).
@@ -266,7 +266,7 @@ public class ScoreCalculator {
 - Code reviews SHOULD discourage stream overuse
 - All packages/classes SHOULD use `@NullMarked` to make non-null the default contract
 
-### VIII. Production Code Dependencies (NON-NEGOTIABLE)
+### II. Production Code Dependencies
 
 **NO external libraries are allowed in production code** with the following explicit exceptions:
 
@@ -282,7 +282,7 @@ public class ScoreCalculator {
 
 **Enforcement**: Code reviews MUST reject PRs introducing unauthorized production dependencies. Build tools SHOULD enforce dependency constraints where possible.
 
-### IX. Test Infrastructure (NON-NEGOTIABLE)
+### III. Test Infrastructure
 
 All tests MUST use the following standardized frameworks:
 
@@ -310,7 +310,7 @@ All tests MUST use the following standardized frameworks:
 
 **Enforcement**: Code reviews MUST reject tests using JUnit assertions instead of AssertJ. CI SHOULD fail on usage of deprecated assertion styles.
 
-### X. Security (NON-NEGOTIABLE)
+### IV. Security
 
 Security is paramount and MUST be considered in all code changes:
 
@@ -330,7 +330,7 @@ Security is paramount and MUST be considered in all code changes:
 3. **Input Validation** (MUST):
    - All external input (user input, file contents, network data) MUST be validated
    - Assume all input is potentially malicious
-   - Follow Fail Fast principle (Principle I) for invalid input
+   - Follow Fail Fast principle (Principle III) for invalid input
 
 4. **Secure Defaults** (MUST):
    - Default configurations MUST be secure
@@ -567,7 +567,7 @@ This constitution supersedes all other development practices and guidelines. All
 
 - All PRs are checked for constitutional compliance during code review
 - CI enforces automated checks where possible (commit format, code style, test coverage)
-- Violations of NON-NEGOTIABLE principles will block PR approval
+- Violations of principles containing MUST/MUST NOT requirements will block PR approval
 - Complexity and deviations from principles must be explicitly justified
 
 ### Living Document
@@ -576,7 +576,7 @@ This constitution is a living document. As the project evolves, principles may b
 
 ---
 
-**Version**: 1.4.0
+**Version**: 1.0.0
 
 
 
