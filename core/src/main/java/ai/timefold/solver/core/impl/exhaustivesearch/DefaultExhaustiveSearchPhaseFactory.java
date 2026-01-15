@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchType;
 import ai.timefold.solver.core.config.exhaustivesearch.NodeExplorationType;
@@ -23,7 +24,8 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.exhaustivesearch.decider.ExhaustiveSearchDecider;
+import ai.timefold.solver.core.impl.exhaustivesearch.decider.AbstractExhaustiveSearchDecider;
+import ai.timefold.solver.core.impl.exhaustivesearch.decider.BasicExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.ListVariableExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.TrendBasedScoreBounder;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -134,7 +136,8 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         return entityDescriptors.iterator().next();
     }
 
-    private ExhaustiveSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
+    private AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> buildDecider(
+            HeuristicConfigPolicy<Solution_> configPolicy,
             EntitySelector<Solution_> sourceEntitySelector, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             PhaseTermination<Solution_> termination, boolean scoreBounderEnabled) {
         var manualEntityMimicRecorder = new ManualEntityMimicRecorder<>(sourceEntitySelector);
@@ -162,13 +165,13 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         var scoreBounder = scoreBounderEnabled
                 ? new TrendBasedScoreBounder<>(configPolicy.getScoreDefinition(), configPolicy.getInitializingScoreTrend())
                 : null;
-        ExhaustiveSearchDecider<Solution_> decider;
+        AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
         if (listVariable != null) {
             decider = new ListVariableExhaustiveSearchDecider<>(configPolicy.getLogIndentation(), bestSolutionRecaller,
                     termination, sourceEntitySelector, manualEntityMimicRecorder,
                     new MoveSelectorBasedMoveRepository<>(moveSelector), scoreBounderEnabled, scoreBounder);
         } else {
-            decider = new ExhaustiveSearchDecider<>(configPolicy.getLogIndentation(), bestSolutionRecaller,
+            decider = new BasicExhaustiveSearchDecider<>(configPolicy.getLogIndentation(), bestSolutionRecaller,
                     termination, sourceEntitySelector, manualEntityMimicRecorder,
                     new MoveSelectorBasedMoveRepository<>(moveSelector), scoreBounderEnabled, scoreBounder);
 

@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.exhaustivesearch.decider;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.exhaustivesearch.event.ExhaustiveSearchPhaseLifecycleListener;
@@ -20,15 +19,15 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearchPhaseLifecycleListener<Solution_>
-        permits ListVariableExhaustiveSearchDecider {
+public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ extends Score<Score_>>
+        implements ExhaustiveSearchPhaseLifecycleListener<Solution_>
+        permits ListVariableExhaustiveSearchDecider, BasicExhaustiveSearchDecider {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExhaustiveSearchDecider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractExhaustiveSearchDecider.class);
 
     private final String logIndentation;
     private final BestSolutionRecaller<Solution_> bestSolutionRecaller;
@@ -42,7 +41,7 @@ public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSear
     private boolean assertMoveScoreFromScratch = false;
     private boolean assertExpectedUndoMoveScore = false;
 
-    public ExhaustiveSearchDecider(String logIndentation, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+    AbstractExhaustiveSearchDecider(String logIndentation, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             PhaseTermination<Solution_> termination, EntitySelector<Solution_> sourceEntitySelector,
             ManualEntityMimicRecorder<Solution_> manualEntityMimicRecorder, MoveRepository<Solution_> moveRepository,
             boolean scoreBounderEnabled, ScoreBounder<?> scoreBounder) {
@@ -57,7 +56,7 @@ public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSear
     }
 
     @SuppressWarnings("unchecked")
-    public <Score_ extends Score<Score_>> ScoreBounder<Score_> getScoreBounder() {
+    public ScoreBounder<Score_> getScoreBounder() {
         return (ScoreBounder<Score_>) scoreBounder;
     }
 
@@ -73,19 +72,14 @@ public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSear
     // Worker methods
     // ************************************************************************
 
-    public void expandNode(ExhaustiveSearchStepScope<Solution_> stepScope) {
-        var expandingNode = stepScope.getExpandingNode();
-        manualEntityMimicRecorder.setRecordedEntity(expandingNode.getEntity());
-        var moveIndex = new MutableInt(0);
-        // Expand only the current selected node for basic variables
-        var moveLayer = stepScope.getPhaseScope().getLayerList().get(expandingNode.getDepth() + 1);
-        expandNode(stepScope, expandingNode, moveLayer, moveIndex);
-        stepScope.setSelectedMoveCount(moveIndex.longValue());
-    }
+    public abstract void expandNode(ExhaustiveSearchStepScope<Solution_> stepScope);
 
-    public boolean isSolutionComplete(ExhaustiveSearchNode expandingNode) {
-        return expandingNode.getLayer().isLastLayer();
-    }
+    public abstract boolean isSolutionComplete(ExhaustiveSearchNode expandingNode);
+
+    public abstract void restoreWorkingSolution(ExhaustiveSearchStepScope<Solution_> stepScope,
+            boolean assertWorkingSolutionScoreFromScratch, boolean assertExpectedWorkingSolutionScore);
+
+    public abstract boolean isEntityReinitializable(Object entity);
 
     protected void expandNode(ExhaustiveSearchStepScope<Solution_> stepScope, ExhaustiveSearchNode expandingNode,
             ExhaustiveSearchLayer moveLayer, MutableInt moveIndex) {
@@ -108,7 +102,7 @@ public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSear
         }
     }
 
-    protected <Score_ extends Score<Score_>> void doMove(ExhaustiveSearchStepScope<Solution_> stepScope,
+    protected void doMove(ExhaustiveSearchStepScope<Solution_> stepScope,
             ExhaustiveSearchNode moveNode, boolean isSolutionComplete, boolean skipMoveExecution) {
         var scoreDirector = stepScope.<Score_> getScoreDirector();
         Move<Solution_> move = moveNode.getMove();
@@ -134,8 +128,7 @@ public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSear
                 moveNode.getMove());
     }
 
-    @SuppressWarnings("unchecked")
-    private <Score_ extends Score<Score_>> void processMove(ExhaustiveSearchStepScope<Solution_> stepScope,
+    private void processMove(ExhaustiveSearchStepScope<Solution_> stepScope,
             ExhaustiveSearchNode moveNode, boolean isSolutionComplete, InnerScore<Score_> score) {
         if (!scoreBounderEnabled) {
             processMoverWithoutBounder(stepScope, moveNode, isSolutionComplete, score);
@@ -144,7 +137,7 @@ public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSear
         }
     }
 
-    private <Score_ extends Score<Score_>> void processMoverWithoutBounder(ExhaustiveSearchStepScope<Solution_> stepScope,
+    private void processMoverWithoutBounder(ExhaustiveSearchStepScope<Solution_> stepScope,
             ExhaustiveSearchNode moveNode, boolean isSolutionComplete, InnerScore<Score_> score) {
         var phaseScope = stepScope.getPhaseScope();
         if (isSolutionComplete) {
@@ -158,7 +151,7 @@ public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSear
         }
     }
 
-    private <Score_ extends Score<Score_>> void processMoverWithBounder(ExhaustiveSearchStepScope<Solution_> stepScope,
+    private void processMoverWithBounder(ExhaustiveSearchStepScope<Solution_> stepScope,
             ExhaustiveSearchNode moveNode, boolean isSolutionComplete) {
         var phaseScope = stepScope.getPhaseScope();
         var innerScore = phaseScope.<Score_> calculateScore();
@@ -185,7 +178,7 @@ public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSear
         }
     }
 
-    protected void fillLayerList(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
+    private void fillLayerList(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
         var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
         sourceEntitySelector.stepStarted(stepScope);
         var entitySize = sourceEntitySelector.getSize();
@@ -198,11 +191,7 @@ public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSear
         var depth = 0;
         for (var entity : sourceEntitySelector) {
             var layer = new ExhaustiveSearchLayer(depth, entity);
-            // Keep in sync with ExhaustiveSearchPhaseConfig.buildMoveSelectorConfig()
-            // which includes all genuineVariableDescriptors
-            var reinitializeVariableCount = sourceEntitySelector.getEntityDescriptor().countReinitializableVariables(entity);
-            // Ignore entities with only initialized variables to avoid confusing bound decisions
-            if (reinitializeVariableCount == 0) {
+            if (!isEntityReinitializable(entity)) {
                 continue;
             }
             depth++;
@@ -214,7 +203,7 @@ public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSear
         phaseScope.setLayerList(layerList);
     }
 
-    protected <Score_ extends Score<Score_>> void initStartNode(ExhaustiveSearchPhaseScope<Solution_> phaseScope,
+    protected void initStartNode(ExhaustiveSearchPhaseScope<Solution_> phaseScope,
             ExhaustiveSearchLayer layer) {
         var startLayer = layer == null ? phaseScope.getLayerList().get(0) : layer;
         var startNode = new ExhaustiveSearchNode(startLayer, null);
@@ -233,50 +222,6 @@ public sealed class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSear
             phaseScope.addExpandableNode(startNode);
         }
         phaseScope.getLastCompletedStepScope().setExpandingNode(startNode);
-    }
-
-    public <Score_ extends Score<Score_>> void restoreWorkingSolution(ExhaustiveSearchStepScope<Solution_> stepScope,
-            boolean assertWorkingSolutionScoreFromScratch, boolean assertExpectedWorkingSolutionScore) {
-        var phaseScope = stepScope.getPhaseScope();
-        var oldNode = phaseScope.getLastCompletedStepScope().getExpandingNode();
-        var newNode = stepScope.getExpandingNode();
-        var oldMoveList = new ArrayList<Move<Solution_>>(oldNode.getDepth());
-        var newMoveList = new ArrayList<Move<Solution_>>(newNode.getDepth());
-        while (oldNode != newNode) {
-            var oldDepth = oldNode.getDepth();
-            var newDepth = newNode.getDepth();
-            if (oldDepth < newDepth) {
-                newMoveList.add(newNode.getMove());
-                newNode = newNode.getParent();
-            } else {
-                oldMoveList.add(oldNode.getUndoMove());
-                oldNode = oldNode.getParent();
-            }
-        }
-        var restoreMoveList = new ArrayList<Move<Solution_>>(oldMoveList.size() + newMoveList.size());
-        restoreMoveList.addAll(oldMoveList);
-        Collections.reverse(newMoveList);
-        restoreMoveList.addAll(newMoveList);
-        if (restoreMoveList.isEmpty()) {
-            // No moves to restore, so the working solution is already correct
-            return;
-        }
-        var compositeMove = Moves.compose(restoreMoveList);
-        phaseScope.getScoreDirector().executeMove(compositeMove);
-        var startingStepScore = stepScope.<Score_> getStartingStepScore();
-        phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(),
-                (startingStepScore == null ? null : startingStepScore.raw()));
-
-        // In BRUTE_FORCE the stepScore can be null because it was not calculated
-        if (assertWorkingSolutionScoreFromScratch && stepScope.getStartingStepScore() != null) {
-            phaseScope.assertPredictedScoreFromScratch(stepScope.<Score_> getStartingStepScore(), restoreMoveList);
-        }
-
-        // In BRUTE_FORCE the stepScore can be null because it was not calculated
-        if (assertExpectedWorkingSolutionScore && stepScope.getStartingStepScore() != null) {
-            phaseScope.assertExpectedWorkingScore(stepScope.<Score_> getStartingStepScore(), restoreMoveList);
-        }
-
     }
 
     // ************************************************************************

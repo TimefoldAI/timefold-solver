@@ -15,7 +15,7 @@ import java.util.Collections;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
-import ai.timefold.solver.core.impl.exhaustivesearch.decider.ExhaustiveSearchDecider;
+import ai.timefold.solver.core.impl.exhaustivesearch.decider.BasicExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
@@ -81,7 +81,8 @@ class DefaultExhaustiveSearchPhaseTest {
         when(lastCompletedStepScope.getExpandingNode()).thenReturn(node3A);
         when(stepScope.getExpandingNode()).thenReturn(node4B);
 
-        var decider = new ExhaustiveSearchDecider<TestdataSolution>("", null, null, mock(EntitySelector.class), null, null,
+        var decider = new BasicExhaustiveSearchDecider<TestdataSolution, SimpleScore>("", null, null,
+                mock(EntitySelector.class), null, null,
                 false, null);
         decider.restoreWorkingSolution(stepScope, false, false);
 

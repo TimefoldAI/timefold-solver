@@ -25,7 +25,8 @@ import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.builtin.CompositeMove;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 
-public final class ListVariableExhaustiveSearchDecider<Solution_> extends ExhaustiveSearchDecider<Solution_> {
+public final class ListVariableExhaustiveSearchDecider<Solution_, Score_ extends Score<Score_>>
+        extends AbstractExhaustiveSearchDecider<Solution_, Score_> {
 
     private ValueRangeManager<Solution_> valueRangeManager;
     private ListVariableDescriptor<Solution_> listVariableDescriptor;
@@ -98,29 +99,35 @@ public final class ListVariableExhaustiveSearchDecider<Solution_> extends Exhaus
     }
 
     @Override
-    protected void fillLayerList(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
-        var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
-        sourceEntitySelector.stepStarted(stepScope);
-        var entitySize = sourceEntitySelector.getSize();
-        if (entitySize > Integer.MAX_VALUE) {
-            throw new IllegalStateException(
-                    "The entitySelector (%s) has an entitySize (%d) which is higher than Integer.MAX_VALUE."
-                            .formatted(sourceEntitySelector, entitySize));
-        }
-        var layerList = new ArrayList<ExhaustiveSearchLayer>((int) entitySize);
-        var depth = 0;
-        for (var entity : sourceEntitySelector) {
-            var layer = new ExhaustiveSearchLayer(depth++, entity);
-            layerList.add(layer);
-        }
-        var lastLayer = new ExhaustiveSearchLayer(depth, null);
-        layerList.add(lastLayer);
-        sourceEntitySelector.stepEnded(stepScope);
-        phaseScope.setLayerList(layerList);
+    public boolean isEntityReinitializable(Object entity) {
+        // List variables are always initializable
+        return true;
     }
 
+    //    @Override
+    //    protected void fillLayerList(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
+    //        var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
+    //        sourceEntitySelector.stepStarted(stepScope);
+    //        var entitySize = sourceEntitySelector.getSize();
+    //        if (entitySize > Integer.MAX_VALUE) {
+    //            throw new IllegalStateException(
+    //                    "The entitySelector (%s) has an entitySize (%d) which is higher than Integer.MAX_VALUE."
+    //                            .formatted(sourceEntitySelector, entitySize));
+    //        }
+    //        var layerList = new ArrayList<ExhaustiveSearchLayer>((int) entitySize);
+    //        var depth = 0;
+    //        for (var entity : sourceEntitySelector) {
+    //            var layer = new ExhaustiveSearchLayer(depth++, entity);
+    //            layerList.add(layer);
+    //        }
+    //        var lastLayer = new ExhaustiveSearchLayer(depth, null);
+    //        layerList.add(lastLayer);
+    //        sourceEntitySelector.stepEnded(stepScope);
+    //        phaseScope.setLayerList(layerList);
+    //    }
+
     @Override
-    protected <Score_ extends Score<Score_>> void initStartNode(ExhaustiveSearchPhaseScope<Solution_> phaseScope,
+    protected void initStartNode(ExhaustiveSearchPhaseScope<Solution_> phaseScope,
             ExhaustiveSearchLayer layer) {
         currentSearchLayer = layer == null ? phaseScope.getLayerList().get(0) : layer;
         var startNode = new ExhaustiveSearchNode(currentSearchLayer, null);
@@ -257,7 +264,7 @@ public final class ListVariableExhaustiveSearchDecider<Solution_> extends Exhaus
     }
 
     @Override
-    public <Score_ extends Score<Score_>> void restoreWorkingSolution(ExhaustiveSearchStepScope<Solution_> stepScope,
+    public void restoreWorkingSolution(ExhaustiveSearchStepScope<Solution_> stepScope,
             boolean assertWorkingSolutionScoreFromScratch, boolean assertExpectedWorkingSolutionScore) {
         var phaseScope = stepScope.getPhaseScope();
         //First, undo all previous changes

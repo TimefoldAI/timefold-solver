@@ -5,9 +5,10 @@ import java.util.TreeSet;
 import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.exhaustivesearch.decider.ExhaustiveSearchDecider;
+import ai.timefold.solver.core.impl.exhaustivesearch.decider.AbstractExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
@@ -27,7 +28,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
     protected final Comparator<ExhaustiveSearchNode> nodeComparator;
     protected final EntitySelector<Solution_> entitySelector;
-    protected final ExhaustiveSearchDecider<Solution_> decider;
+    protected final AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
 
     protected final boolean assertWorkingSolutionScoreFromScratch;
     protected final boolean assertExpectedWorkingSolutionScore;
@@ -144,14 +145,14 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
         private final Comparator<ExhaustiveSearchNode> nodeComparator;
         private final EntitySelector<Solution_> entitySelector;
-        private final ExhaustiveSearchDecider<Solution_> decider;
+        private final AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
 
         private boolean assertWorkingSolutionScoreFromScratch = false;
         private boolean assertExpectedWorkingSolutionScore = false;
 
         public Builder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination,
                 Comparator<ExhaustiveSearchNode> nodeComparator, EntitySelector<Solution_> entitySelector,
-                ExhaustiveSearchDecider<Solution_> decider) {
+                AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider) {
             super(phaseIndex, logIndentation, phaseTermination);
             this.nodeComparator = nodeComparator;
             this.entitySelector = entitySelector;
