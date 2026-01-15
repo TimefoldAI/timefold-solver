@@ -15,7 +15,10 @@ import ai.timefold.solver.core.api.solver.Solver;
  * variable.
  * <p>
  * It is specified on a getter of a java bean property (or a field) of a {@link PlanningEntity} class.
+ * 
+ * @deprecated Chained variable is deprecated. Use {@link PlanningListVariable list variable} instead.
  */
+@Deprecated(forRemoval = true, since = "1.31.0")
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)
 public @interface AnchorShadowVariable {

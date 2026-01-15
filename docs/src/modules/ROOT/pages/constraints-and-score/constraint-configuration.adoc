@@ -334,7 +334,7 @@ These connect the constraint weight with the constraint implementation.
 
 [NOTE]
 ====
-Constraint packages are optional and have been deprecated.
+Constraint packages are optional, have been deprecated and will be removed in Timefold Solver 2.0.
 We recommend that you don't use them, and instead keep constraint names unique.
 If constraint package is not provided, the solver will transparently provide a default value.
 ====

@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
@@ -17,11 +18,12 @@ import org.jspecify.annotations.Nullable;
  * THIS CLASS IS EXPERIMENTAL AND UNSUPPORTED.
  * Backward compatibility is not guaranteed.
  * It's NOT DOCUMENTED because we'll only document it when it actually works in more than 1 use case.
- *
  * Do not use.
  *
  * @see TailChainSwapMoveSelectorConfig
+ * @deprecated Chained variable is deprecated. Use {@link PlanningListVariable list variable} instead.
  */
+@Deprecated(forRemoval = true, since = "1.31.0")
 @XmlType(propOrder = {
         "entitySelectorConfig",
         "valueSelectorConfig"

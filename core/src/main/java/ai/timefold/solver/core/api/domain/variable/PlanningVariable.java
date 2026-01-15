@@ -56,7 +56,9 @@ public @interface PlanningVariable {
      * as specified by {@link PlanningVariableGraphType}.
      *
      * @return never null, defaults to {@link PlanningVariableGraphType#NONE}
+     * @deprecated Chained variable is deprecated. Use {@link PlanningListVariable list variable} instead.
      */
+    @Deprecated(forRemoval = true, since = "1.31.0")
     PlanningVariableGraphType graphType() default PlanningVariableGraphType.NONE;
 
     /**

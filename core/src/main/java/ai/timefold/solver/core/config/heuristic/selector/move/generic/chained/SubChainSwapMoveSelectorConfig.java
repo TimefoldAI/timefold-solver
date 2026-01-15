@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -12,6 +13,10 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * @deprecated Chained variable is deprecated. Use {@link PlanningListVariable list variable} instead.
+ */
+@Deprecated(forRemoval = true, since = "1.31.0")
 @XmlType(propOrder = {
         "entityClass",
         "subChainSelectorConfig",
