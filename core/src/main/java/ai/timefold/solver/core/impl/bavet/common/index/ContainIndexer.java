@@ -28,6 +28,7 @@ final class ContainIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> imp
     private final KeyRetriever<Key_> queryKeyRetriever;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     private final Map<Key_, Indexer<T>> downstreamIndexerMap = new HashMap<>();
+    private long unremovedSize = 0;
 
     /**
      * @param keyRetriever determines if it immediately goes to a {@link IndexerBackend} or if it uses a {@link CompositeKey}.
@@ -41,6 +42,7 @@ final class ContainIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> imp
 
     @Override
     public ListEntry<T> put(Object modifyCompositeKey, T tuple) {
+        unremovedSize++;
         KeyCollection_ indexKeyCollection = modifyKeyRetriever.apply(modifyCompositeKey);
         List<Pair<Key_, ListEntry<T>>> children = new ArrayList<>(indexKeyCollection.size());
         for (Key_ indexKey : indexKeyCollection) {
@@ -60,6 +62,7 @@ final class ContainIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> imp
 
     @Override
     public void remove(Object modifyCompositeKey, ListEntry<T> entry) {
+        unremovedSize--;
         KeyCollection_ indexKeyCollection = modifyKeyRetriever.apply(modifyCompositeKey);
         List<Pair<Key_, ListEntry<T>>> children = ((CompositeListEntry<Key_, T>) entry).getChildren();
         if (indexKeyCollection.size() != children.size()) {
@@ -74,7 +77,7 @@ final class ContainIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> imp
             // Avoids removeIfAbsent in order to not create lambdas on the hot path.
             Indexer<T> downstreamIndexer = getDownstreamIndexer(modifyCompositeKey, indexKey);
             downstreamIndexer.remove(modifyCompositeKey, childListEntry);
-            if (downstreamIndexer.isEmpty()) {
+            if (downstreamIndexer.isRemovable()) {
                 downstreamIndexerMap.remove(indexKey);
             }
         }
@@ -111,8 +114,8 @@ final class ContainIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> imp
     }
 
     @Override
-    public boolean isEmpty() {
-        return downstreamIndexerMap.isEmpty();
+    public boolean isRemovable() {
+        return unremovedSize == 0;
     }
 
     @Override

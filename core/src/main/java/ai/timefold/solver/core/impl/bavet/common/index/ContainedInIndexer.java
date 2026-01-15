@@ -53,7 +53,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
         Key_ indexKey = modifyKeyRetriever.apply(modifyCompositeKey);
         Indexer<T> downstreamIndexer = getDownstreamIndexer(modifyCompositeKey, indexKey, entry);
         downstreamIndexer.remove(modifyCompositeKey, entry);
-        if (downstreamIndexer.isEmpty()) {
+        if (downstreamIndexer.isRemovable()) {
             downstreamIndexerMap.remove(indexKey);
         }
     }
@@ -93,7 +93,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isRemovable() {
         return downstreamIndexerMap.isEmpty();
     }
 

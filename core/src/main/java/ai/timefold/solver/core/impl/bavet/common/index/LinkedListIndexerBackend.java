@@ -38,7 +38,7 @@ public final class LinkedListIndexerBackend<T> implements IndexerBackend<T> {
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isRemovable() {
         return tupleList.size() == 0;
     }
 

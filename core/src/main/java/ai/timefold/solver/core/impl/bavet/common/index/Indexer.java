@@ -65,9 +65,12 @@ public sealed interface Indexer<T>
     void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer);
 
     /**
-     * @return true if empty
+     * Some indexers can be empty (size 0 and an empty forEach for all keys)
+     * but not yet removable.
+     * 
+     * @return true if empty and all put() calls had a remove() call
      */
-    boolean isEmpty();
+    boolean isRemovable();
 
     /**
      * Returns all entries for the given composite key as a list.

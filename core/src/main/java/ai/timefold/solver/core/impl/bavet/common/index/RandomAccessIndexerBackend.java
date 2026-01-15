@@ -41,7 +41,7 @@ public final class RandomAccessIndexerBackend<T> implements IndexerBackend<T> {
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isRemovable() {
         return tupleList.isEmpty();
     }
 

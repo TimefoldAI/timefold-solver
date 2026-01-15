@@ -60,7 +60,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         var indexKey = keyRetriever.apply(compositeKey);
         var downstreamIndexer = getDownstreamIndexer(compositeKey, indexKey, entry);
         downstreamIndexer.remove(compositeKey, entry);
-        if (downstreamIndexer.isEmpty()) {
+        if (downstreamIndexer.isRemovable()) {
             comparisonMap.remove(indexKey);
         }
     }
@@ -147,7 +147,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isRemovable() {
         return comparisonMap.isEmpty();
     }
 

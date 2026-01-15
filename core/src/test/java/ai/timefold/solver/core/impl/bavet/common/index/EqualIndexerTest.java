@@ -19,7 +19,7 @@ class EqualIndexerTest extends AbstractIndexerTest {
                     .and(Joiners.equal(TestPerson::age));
 
     @Test
-    void isEmpty() {
+    void isRemovable() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         assertThat(forEachToTuples(indexer, "F", 40)).isEmpty();
     }

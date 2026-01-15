@@ -45,7 +45,7 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
         Key_ indexKey = keyRetriever.apply(compositeKey);
         Indexer<T> downstreamIndexer = getDownstreamIndexer(compositeKey, indexKey, entry);
         downstreamIndexer.remove(compositeKey, entry);
-        if (downstreamIndexer.isEmpty()) {
+        if (downstreamIndexer.isRemovable()) {
             downstreamIndexerMap.remove(indexKey);
         }
     }
@@ -81,7 +81,7 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isRemovable() {
         return downstreamIndexerMap.isEmpty();
     }
 

@@ -25,9 +25,9 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
                     .and(Joiners.equal(TestJob::department, TestWorker::department));
 
     @Test
-    void isEmpty() {
+    void isRemovable() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        assertThat(indexer.isEmpty()).isTrue();
+        assertThat(indexer.isRemovable()).isTrue();
     }
 
     @Test
