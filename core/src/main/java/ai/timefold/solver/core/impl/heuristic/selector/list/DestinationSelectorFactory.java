@@ -55,9 +55,16 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
             entitySelectorConfig.setSelectionOrder(SelectionOrder.SORTED);
             entitySelectorConfig.setSorterManner(configPolicy.getEntitySorterManner());
         }
-        var entitySelector = EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
-                .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder,
-                        new ValueRangeRecorderId(entityValueRangeRecorderId, false));
+        var valueRangeRecorderId = new ValueRangeRecorderId(entityValueRangeRecorderId, false);
+        var entitySelector = EntitySelectorFactory.<Solution_> create(entitySelectorConfig).buildEntitySelector(configPolicy,
+                minimumCacheType, selectionOrder, valueRangeRecorderId);
+        if (isExhaustiveSearch) {
+            // By default, exhaustive search will use a replaying entity selector,
+            // but we must filter out the entity
+            // if the selected value does not fall within the entity's value range
+            entitySelector = EntitySelectorFactory.applyEntityValueRangeFilteringForExhaustiveMethod(configPolicy,
+                    entitySelector, valueRangeRecorderId, minimumCacheType, selectionOrder);
+        }
         var valueSelector = buildIterableValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
                 minimumCacheType, selectionOrder, entityValueRangeRecorderId);
         var baseDestinationSelector = new ElementDestinationSelector<>(entitySelector, valueSelector,

@@ -21,6 +21,10 @@ import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListVarEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
@@ -34,7 +38,7 @@ import org.junit.jupiter.api.Test;
 class BruteForceTest {
 
     @Test
-    void basicVariableDoesNotIncludeNullForVariableAllowedUnassigned() {
+    void solveBasicVariableNotAllowedUnassigned() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
@@ -77,7 +81,7 @@ class BruteForceTest {
     }
 
     @Test
-    void basicVariableIncludesNullsForVariableNotAllowedUnassigned() {
+    void solveBasicVariableAllowedUnassigned() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataAllowsUnassignedSolution.class)
                 .withEntityClasses(TestdataAllowsUnassignedEntity.class)
@@ -123,7 +127,7 @@ class BruteForceTest {
     }
 
     @Test
-    void listVariableIncludesNullsForVariableNotAllowedUnassigned() {
+    void solveListVariableNotAllowedUnassigned() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataListSolution.class)
                 .withEntityClasses(TestdataListEntity.class, TestdataListValue.class)
@@ -152,6 +156,38 @@ class BruteForceTest {
         var finalBestSolution = solver.solve(solution);
         var unassignedValues = finalBestSolution.getValueList().stream().filter(value -> value.getEntity() == null).toList();
         assertThat(unassignedValues).isEmpty();
+    }
+
+    @Test
+    void solveListVariableAllowedUnassigned() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataAllowsUnassignedValuesListSolution.class)
+                .withEntityClasses(TestdataAllowsUnassignedValuesListEntity.class, TestdataAllowsUnassignedValuesListValue.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedValuesListEasyScoreCalculator.class)
+                .withPhases(new ExhaustiveSearchPhaseConfig()
+                        .withExhaustiveSearchType(ExhaustiveSearchType.BRUTE_FORCE));
+        var solver = (DefaultSolver<TestdataAllowsUnassignedValuesListSolution>) SolverFactory.<TestdataAllowsUnassignedValuesListSolution> create(solverConfig)
+                .buildSolver();
+
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(3, 2);
+
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void stepStarted(AbstractStepScope<TestdataAllowsUnassignedValuesListSolution> stepScope) {
+                if (stepScope instanceof ExhaustiveSearchStepScope<TestdataAllowsUnassignedValuesListSolution> exhaustiveSearchStepScope) {
+                    if (exhaustiveSearchStepScope.getStepIndex() == 25) {
+                        fail("The exhaustive search phase was not ended after 25 steps.");
+                    }
+                } else {
+                    fail("Wrong phase was started: " + stepScope.getClass().getSimpleName());
+                }
+            }
+
+        });
+
+        var finalBestSolution = solver.solve(solution);
+        var unassignedValues = finalBestSolution.getValueList().stream().filter(value -> value.getEntity() == null).toList();
+        assertThat(unassignedValues).hasSize(3);
     }
 
     @Test

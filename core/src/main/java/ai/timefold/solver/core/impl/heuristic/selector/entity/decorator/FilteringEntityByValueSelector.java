@@ -31,8 +31,8 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * <p>
  * The decorator can only be applied to list variables.
  * <p>
- * <code>
- *
+ * 
+ * <pre>{@code
  * e1 = entity_range[v1, v2, v3]
  * e2 = entity_range[v1, v4]
  *
@@ -43,8 +43,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * v3 = [e1]
  *
  * v4 = [e2]
- *
- * </code>
+ *  }</pre>
  * <p>
  * This node is currently used by the {@link QueuedValuePlacer} to build an initial solution.
  * To illustrate its usage, let’s assume how moves are generated.
@@ -68,16 +67,19 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     private final IterableValueSelector<Solution_> replayingValueSelector;
     private final EntitySelector<Solution_> childEntitySelector;
     private final boolean randomSelection;
+    private final boolean exhaustiveMethod;
 
     private Object replayedValue;
+    private Object replayedEntity;
     private ReachableValues<Object, Object> reachableValues;
     private long entitiesSize;
 
     public FilteringEntityByValueSelector(EntitySelector<Solution_> childEntitySelector,
-            IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection) {
+            IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection, boolean exhaustiveMethod) {
         this.replayingValueSelector = replayingValueSelector;
         this.childEntitySelector = childEntitySelector;
         this.randomSelection = randomSelection;
+        this.exhaustiveMethod = exhaustiveMethod;
     }
 
     // ************************************************************************
@@ -155,6 +157,23 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         return replayedValue;
     }
 
+    /**
+     * The exhaustive method uses a replaying entity selector to guarantee which search node will be explored.
+     * Thus,
+     * the {@code childEntitySelector} will be a replaying selector when {@code isExhaustiveMethod} is set to
+     * {@code true}.
+     */
+    private Object selectReplayedEntity() {
+        if (!exhaustiveMethod) {
+            throw new IllegalStateException("Impossible state: exhaustiveMethod is set to false");
+        }
+        var iterator = childEntitySelector.iterator();
+        if (iterator.hasNext()) {
+            replayedEntity = iterator.next();
+        }
+        return replayedEntity;
+    }
+
     @Override
     public Iterator<Object> endingIterator() {
         return new OriginalFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues);
@@ -163,20 +182,34 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
+            if (exhaustiveMethod) {
+                throw new IllegalStateException("The random iterator is not supported for the exhaustive method.");
+            }
             return new RandomFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues, workingRandom);
         } else {
-            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues);
+            if (exhaustiveMethod) {
+                return new ExhaustiveOriginalFilteringValueRangeIterator<>(this::selectReplayedEntity,
+                        this::selectReplayedValue, reachableValues);
+            } else {
+                return new OriginalFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues);
+            }
         }
     }
 
     @Override
     public ListIterator<Object> listIterator() {
+        if (exhaustiveMethod) {
+            throw new IllegalStateException("The list iterator is not supported for the exhaustive method.");
+        }
         return new OriginalFilteringValueRangeListIterator<>(this::selectReplayedValue, childEntitySelector.listIterator(),
                 reachableValues);
     }
 
     @Override
     public ListIterator<Object> listIterator(int index) {
+        if (exhaustiveMethod) {
+            throw new IllegalStateException("The list iterator is not supported for the exhaustive method.");
+        }
         return new OriginalFilteringValueRangeListIterator<>(this::selectReplayedValue, childEntitySelector.listIterator(index),
                 reachableValues);
     }
@@ -193,11 +226,47 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         return Objects.hash(childEntitySelector, replayingValueSelector);
     }
 
+    private static class ExhaustiveOriginalFilteringValueRangeIterator<Entity_, Value_>
+            extends OriginalFilteringValueRangeIterator<Entity_, Value_> {
+
+        private final Supplier<Entity_> replayingEntitySupplier;
+
+        private ExhaustiveOriginalFilteringValueRangeIterator(Supplier<Entity_> replayingEntitySupplier,
+                Supplier<Value_> upcomingValueSupplier,
+                ReachableValues<Entity_, Value_> reachableValues) {
+            super(upcomingValueSupplier, reachableValues);
+            this.replayingEntitySupplier = replayingEntitySupplier;
+        }
+
+        @Override
+        protected void initialize() {
+            if (entityIterator != null) {
+                return;
+            }
+            var currentUpcomingValue = upcomingValueSupplier.get();
+            if (currentUpcomingValue == null) {
+                entityIterator = Collections.emptyIterator();
+            } else {
+                var currentReplayedEntity = replayingEntitySupplier.get();
+                if (currentReplayedEntity == null) {
+                    entityIterator = Collections.emptyIterator();
+                } else {
+                    if (reachableValues.isEntityReachable(currentUpcomingValue, currentReplayedEntity)) {
+                        // We will only return the replayed entity if it is included in the set of reachable entities
+                        entityIterator = List.of(currentReplayedEntity).iterator();
+                    } else {
+                        entityIterator = Collections.emptyIterator();
+                    }
+                }
+            }
+        }
+    }
+
     private static class OriginalFilteringValueRangeIterator<Entity_, Value_> extends UpcomingSelectionIterator<Entity_> {
 
-        private final Supplier<Value_> upcomingValueSupplier;
-        private final ReachableValues<Entity_, Value_> reachableValues;
-        private Iterator<Entity_> entityIterator;
+        protected final Supplier<Value_> upcomingValueSupplier;
+        protected final ReachableValues<Entity_, Value_> reachableValues;
+        protected Iterator<Entity_> entityIterator;
 
         private OriginalFilteringValueRangeIterator(Supplier<Value_> upcomingValueSupplier,
                 ReachableValues<Entity_, Value_> reachableValues) {
@@ -205,7 +274,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
             this.upcomingValueSupplier = Objects.requireNonNull(upcomingValueSupplier);
         }
 
-        private void initialize() {
+        protected void initialize() {
             if (entityIterator != null) {
                 return;
             }
