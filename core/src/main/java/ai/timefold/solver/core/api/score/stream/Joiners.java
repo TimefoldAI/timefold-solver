@@ -124,6 +124,17 @@ public final class Joiners {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAINED_IN, rightMapping);
     }
 
+    /**
+     * As defined by {@link #containAny(Function, Function)} with both arguments using the same mapping.
+     *
+     * @param mapping mapping function to apply to both A and B
+     * @param <A> the type of both objects
+     * @param <Property_> the type of the property to compare
+     */
+    public static <A, Property_> @NonNull BiJoiner<A, A> containAny(Function<A, Collection<Property_>> mapping) {
+        return containAny(mapping, mapping);
+    }
+
     // TODO Complete javadoc
     /**
      * For example:
