@@ -52,7 +52,7 @@ public interface MoveSelectorFactory<Solution_> {
         if (moveSelectorConfig instanceof ChangeMoveSelectorConfig changeMoveSelectorConfig) {
             return new ChangeMoveSelectorFactory<>(changeMoveSelectorConfig);
         } else if (moveSelectorConfig instanceof ListChangeMoveSelectorConfig listChangeMoveSelectorConfig) {
-            return new ListChangeMoveSelectorFactory<>(listChangeMoveSelectorConfig);
+            return new ListChangeMoveSelectorFactory<>(listChangeMoveSelectorConfig, false);
         } else if (moveSelectorConfig instanceof SwapMoveSelectorConfig swapMoveSelectorConfig) {
             return new SwapMoveSelectorFactory<>(swapMoveSelectorConfig);
         } else if (moveSelectorConfig instanceof ListSwapMoveSelectorConfig listSwapMoveSelectorConfig) {
@@ -99,6 +99,17 @@ public interface MoveSelectorFactory<Solution_> {
         } else {
             throw new IllegalArgumentException(String.format("Unknown %s type: (%s).",
                     MoveSelectorConfig.class.getSimpleName(), moveSelectorConfig.getClass().getName()));
+        }
+    }
+
+    static <Solution_> AbstractMoveSelectorFactory<Solution_, ?>
+            createForExhaustiveMethod(MoveSelectorConfig<?> moveSelectorConfig) {
+        if (moveSelectorConfig instanceof ListChangeMoveSelectorConfig listChangeMoveSelectorConfig) {
+            // Enable the factory creation for the exhaustive method
+            return new ListChangeMoveSelectorFactory<>(listChangeMoveSelectorConfig, true);
+        } else {
+            // Apply the default method to the remaining move selector configurations
+            return create(moveSelectorConfig);
         }
     }
 

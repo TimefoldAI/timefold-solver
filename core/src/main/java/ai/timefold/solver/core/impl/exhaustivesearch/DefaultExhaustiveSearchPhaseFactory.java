@@ -23,9 +23,8 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.exhaustivesearch.decider.AbstractExhaustiveSearchDecider;
-import ai.timefold.solver.core.impl.exhaustivesearch.decider.BasicVariableExhaustiveSearchDecider;
+import ai.timefold.solver.core.impl.exhaustivesearch.decider.ExhaustiveSearchDecider;
+import ai.timefold.solver.core.impl.exhaustivesearch.decider.ListVariableExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.TrendBasedScoreBounder;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -64,13 +63,21 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                 .withEntitySorterManner(entitySorterManner)
                 .withValueSorterManner(valueSorterManner)
                 .build();
+        if (phaseConfigPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()) {
+            throw new UnsupportedOperationException("Exhaustive Search does not support mixed models.");
+        }
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         var scoreBounderEnabled = exhaustiveSearchType.isScoreBounderEnabled();
         var nodeExplorationType = getNodeExplorationType(exhaustiveSearchType, phaseConfig);
-        var strategy =
-                buildExhaustiveSearchStrategy(phaseConfigPolicy, scoreBounderEnabled, bestSolutionRecaller, phaseTermination);
-        return new DefaultExhaustiveSearchPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(), phaseTermination,
-                nodeExplorationType.buildNodeComparator(scoreBounderEnabled), strategy)
+        var entitySelectorConfig = buildEntitySelectorConfig(phaseConfigPolicy);
+        var entitySelector =
+                EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
+                        .buildEntitySelector(phaseConfigPolicy, SelectionCacheType.PHASE, SelectionOrder.ORIGINAL);
+
+        return new DefaultExhaustiveSearchPhase.Builder<>(phaseIndex,
+                solverConfigPolicy.getLogIndentation(), phaseTermination,
+                nodeExplorationType.buildNodeComparator(scoreBounderEnabled), entitySelector, buildDecider(phaseConfigPolicy,
+                        entitySelector, bestSolutionRecaller, phaseTermination, scoreBounderEnabled))
                 .enableAssertions(phaseConfigPolicy.getEnvironmentMode())
                 .build();
     }
@@ -127,34 +134,44 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         return entityDescriptors.iterator().next();
     }
 
-    private ExhaustiveSearchStrategy<Solution_> buildExhaustiveSearchStrategy(
-            HeuristicConfigPolicy<Solution_> phaseConfigPolicy, boolean scoreBounderEnabled,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, PhaseTermination<Solution_> phaseTermination) {
-        if (phaseConfigPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()) {
-            throw new UnsupportedOperationException("Exhaustive Search does not support mixed models.");
-        }
-        var entitySelectorConfig = buildEntitySelectorConfig(phaseConfigPolicy);
-        var entitySelector =
-                EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
-                        .buildEntitySelector(phaseConfigPolicy, SelectionCacheType.PHASE, SelectionOrder.ORIGINAL);
-        var decider =
-                buildDecider(phaseConfigPolicy, entitySelector, bestSolutionRecaller, phaseTermination, scoreBounderEnabled);
-        if (entitySelector.getEntityDescriptor().hasAnyGenuineListVariables()) {
-            throw new UnsupportedOperationException();
-        } else {
-            return new BasicVariableExhaustiveSearchStrategy<>(entitySelector, decider);
-        }
-    }
-
-    private AbstractExhaustiveSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
+    private ExhaustiveSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             EntitySelector<Solution_> sourceEntitySelector, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             PhaseTermination<Solution_> termination, boolean scoreBounderEnabled) {
-        AbstractExhaustiveSearchDecider<Solution_> decider;
-        if (sourceEntitySelector.getEntityDescriptor().hasAnyGenuineListVariables()) {
-            throw new UnsupportedOperationException();
+        var manualEntityMimicRecorder = new ManualEntityMimicRecorder<>(sourceEntitySelector);
+        var mimicSelectorId = sourceEntitySelector.getEntityDescriptor().getEntityClass().getName(); // TODO mimicSelectorId must be a field
+        configPolicy.addEntityMimicRecorder(mimicSelectorId, manualEntityMimicRecorder);
+        var variableDescriptorList = getGenuineVariableDescriptorList(sourceEntitySelector);
+        // TODO Fail fast if it does not include all genuineVariableDescriptors as expected by DefaultExhaustiveSearchPhase.fillLayerList()
+        MoveSelectorConfig<?> moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
+        var listVariable = variableDescriptorList.stream()
+                .filter(GenuineVariableDescriptor::isListVariable)
+                .map(variableDescriptor -> (ListVariableDescriptor<Solution_>) variableDescriptor)
+                .findFirst()
+                .orElse(null);
+        if (moveSelectorConfig == null) {
+            if (listVariable != null) {
+                moveSelectorConfig =
+                        buildMoveSelectorConfigForListVariable(configPolicy, mimicSelectorId, listVariable);
+            } else {
+                moveSelectorConfig =
+                        buildMoveSelectorConfigForBasicVariable(configPolicy, mimicSelectorId, variableDescriptorList);
+            }
+        }
+        var moveSelector = MoveSelectorFactory.<Solution_> createForExhaustiveMethod(moveSelectorConfig)
+                .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, false);
+        var scoreBounder = scoreBounderEnabled
+                ? new TrendBasedScoreBounder<>(configPolicy.getScoreDefinition(), configPolicy.getInitializingScoreTrend())
+                : null;
+        ExhaustiveSearchDecider<Solution_> decider;
+        if (listVariable != null) {
+            decider = new ListVariableExhaustiveSearchDecider<>(configPolicy.getLogIndentation(), bestSolutionRecaller,
+                    termination, sourceEntitySelector, manualEntityMimicRecorder,
+                    new MoveSelectorBasedMoveRepository<>(moveSelector), scoreBounderEnabled, scoreBounder);
         } else {
-            decider = buildDeciderForBasicVariable(configPolicy, sourceEntitySelector, bestSolutionRecaller, termination,
-                    scoreBounderEnabled);
+            decider = new ExhaustiveSearchDecider<>(configPolicy.getLogIndentation(), bestSolutionRecaller,
+                    termination, sourceEntitySelector, manualEntityMimicRecorder,
+                    new MoveSelectorBasedMoveRepository<>(moveSelector), scoreBounderEnabled, scoreBounder);
+
         }
         EnvironmentMode environmentMode = configPolicy.getEnvironmentMode();
         if (environmentMode.isFullyAsserted()) {
@@ -164,42 +181,6 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
             decider.setAssertExpectedUndoMoveScore(true);
         }
         return decider;
-    }
-
-    private AbstractExhaustiveSearchDecider<Solution_> buildDeciderForBasicVariable(
-            HeuristicConfigPolicy<Solution_> configPolicy,
-            EntitySelector<Solution_> sourceEntitySelector, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            PhaseTermination<Solution_> termination, boolean scoreBounderEnabled) {
-        var manualEntityMimicRecorder = new ManualEntityMimicRecorder<>(sourceEntitySelector);
-        var mimicSelectorId = sourceEntitySelector.getEntityDescriptor().getEntityClass().getName(); // TODO mimicSelectorId must be a field
-        configPolicy.addEntityMimicRecorder(mimicSelectorId, manualEntityMimicRecorder);
-        var moveSelectorConfig = buildMoveSelectorConfig(configPolicy,
-                sourceEntitySelector, mimicSelectorId);
-        var moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig)
-                .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, false);
-        var scoreBounder = scoreBounderEnabled
-                ? new TrendBasedScoreBounder<>(configPolicy.getScoreDefinition(), configPolicy.getInitializingScoreTrend())
-                : null;
-        return new BasicVariableExhaustiveSearchDecider<>(configPolicy.getLogIndentation(),
-                bestSolutionRecaller, termination, manualEntityMimicRecorder,
-                new MoveSelectorBasedMoveRepository<>(moveSelector), scoreBounderEnabled, scoreBounder);
-    }
-
-    private MoveSelectorConfig<?> buildMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy,
-            EntitySelector<Solution_> entitySelector, String mimicSelectorId) {
-        if (phaseConfig.getMoveSelectorConfig() == null) {
-            var variableDescriptorList = getGenuineVariableDescriptorList(entitySelector);
-            var hasListVariable = variableDescriptorList.stream().anyMatch(VariableDescriptor::isListVariable);
-            if (hasListVariable) {
-                return buildMoveSelectorConfigForListVariable(configPolicy,
-                        (ListVariableDescriptor<Solution_>) variableDescriptorList.get(0));
-            } else {
-                return buildMoveSelectorConfigForBasicVariable(configPolicy, mimicSelectorId, variableDescriptorList);
-            }
-        } else {
-            return phaseConfig.getMoveSelectorConfig();
-            // TODO Fail fast if it does not include all genuineVariableDescriptors as expected by DefaultExhaustiveSearchPhase.fillLayerList()
-        }
     }
 
     private MoveSelectorConfig<?> buildMoveSelectorConfigForBasicVariable(HeuristicConfigPolicy<Solution_> configPolicy,
@@ -229,19 +210,20 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
     }
 
     private MoveSelectorConfig<?> buildMoveSelectorConfigForListVariable(HeuristicConfigPolicy<Solution_> configPolicy,
-            ListVariableDescriptor<Solution_> listVariableDescriptor) {
-        var changeMoveSelectorConfig = new ListChangeMoveSelectorConfig();
-        var changeValueSelectorConfig = new ValueSelectorConfig()
-                .withVariableName(listVariableDescriptor.getVariableName());
-        if (ValueSelectorConfig.hasSorter(configPolicy.getValueSorterManner(), listVariableDescriptor)) {
-            changeValueSelectorConfig = changeValueSelectorConfig
-                    .withCacheType(listVariableDescriptor.canExtractValueRangeFromSolution() ? SelectionCacheType.PHASE : STEP)
+            String mimicSelectorId, ListVariableDescriptor<Solution_> variableDescriptor) {
+        var listChangeMoveConfig = new ListChangeMoveSelectorConfig();
+        var valueSelectorConfig = new ValueSelectorConfig();
+        if (ValueSelectorConfig.hasSorter(configPolicy.getValueSorterManner(), variableDescriptor)) {
+            valueSelectorConfig = valueSelectorConfig
+                    .withCacheType(
+                            variableDescriptor.canExtractValueRangeFromSolution() ? SelectionCacheType.PHASE : STEP)
                     .withSelectionOrder(SelectionOrder.SORTED)
                     .withSorterManner(configPolicy.getValueSorterManner());
         }
-        changeMoveSelectorConfig.setValueSelectorConfig(changeValueSelectorConfig);
-        changeMoveSelectorConfig.withDestinationSelectorConfig(new DestinationSelectorConfig());
-        return changeMoveSelectorConfig;
+        listChangeMoveConfig.setValueSelectorConfig(valueSelectorConfig);
+        listChangeMoveConfig.setDestinationSelectorConfig(new DestinationSelectorConfig()
+                .withEntitySelectorConfig(EntitySelectorConfig.newMimicSelectorConfig(mimicSelectorId)));
+        return listChangeMoveConfig;
     }
 
     private static <Solution_> List<GenuineVariableDescriptor<Solution_>>

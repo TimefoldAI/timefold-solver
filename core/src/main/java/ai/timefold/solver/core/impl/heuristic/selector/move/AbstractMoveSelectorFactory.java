@@ -52,8 +52,8 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
             SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder, boolean skipNonDoableMoves) {
         MoveSelectorConfig<?> unfoldedMoveSelectorConfig = buildUnfoldedMoveSelectorConfig(configPolicy);
         if (unfoldedMoveSelectorConfig != null) {
-            return MoveSelectorFactory.<Solution_> create(unfoldedMoveSelectorConfig)
-                    .buildMoveSelector(configPolicy, minimumCacheType, inheritedSelectionOrder, skipNonDoableMoves);
+            return buildMoveSelector(configPolicy, unfoldedMoveSelectorConfig, minimumCacheType, inheritedSelectionOrder,
+                    skipNonDoableMoves);
         }
 
         SelectionCacheType resolvedCacheType = SelectionCacheType.resolve(config.getCacheType(), minimumCacheType);
@@ -77,6 +77,13 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
         moveSelector = applyCaching(resolvedCacheType, resolvedSelectionOrder, moveSelector);
         moveSelector = applySelectedLimit(moveSelector);
         return moveSelector;
+    }
+
+    protected MoveSelector<Solution_> buildMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
+            MoveSelectorConfig<?> moveSelectorConfig, SelectionCacheType minimumCacheType,
+            SelectionOrder inheritedSelectionOrder, boolean skipNonDoableMoves) {
+        return MoveSelectorFactory.<Solution_> create(moveSelectorConfig)
+                .buildMoveSelector(configPolicy, minimumCacheType, inheritedSelectionOrder, skipNonDoableMoves);
     }
 
     /**

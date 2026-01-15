@@ -31,11 +31,12 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
 
     public DestinationSelector<Solution_> buildDestinationSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        return buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, null);
+        return buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, null, false);
     }
 
     public DestinationSelector<Solution_> buildDestinationSelector(HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType, boolean randomSelection, String entityValueRangeRecorderId) {
+            SelectionCacheType minimumCacheType, boolean randomSelection, String entityValueRangeRecorderId,
+            boolean isExhaustiveSearch) {
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
         var entitySelectorConfig = Objects.requireNonNull(config.getEntitySelectorConfig()).copyConfig();
         var hasSortManner = configPolicy.getEntitySorterManner() != null
@@ -59,8 +60,8 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
                         new ValueRangeRecorderId(entityValueRangeRecorderId, false));
         var valueSelector = buildIterableValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
                 minimumCacheType, selectionOrder, entityValueRangeRecorderId);
-        var baseDestinationSelector =
-                new ElementDestinationSelector<>(entitySelector, valueSelector, selectionOrder.toRandomSelectionBoolean());
+        var baseDestinationSelector = new ElementDestinationSelector<>(entitySelector, valueSelector,
+                selectionOrder.toRandomSelectionBoolean(), isExhaustiveSearch);
         return applyNearbySelection(configPolicy, minimumCacheType, selectionOrder, baseDestinationSelector,
                 entityValueRangeRecorderId != null);
     }

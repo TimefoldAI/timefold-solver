@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.exhaustivesearch;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -18,6 +19,7 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListVarEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
@@ -121,15 +123,35 @@ class BruteForceTest {
     }
 
     @Test
-    void failWithListVariable() {
+    void listVariableIncludesNullsForVariableNotAllowedUnassigned() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataListSolution.class)
-                .withEntityClasses(TestdataListEntity.class)
+                .withEntityClasses(TestdataListEntity.class, TestdataListValue.class)
                 .withEasyScoreCalculatorClass(TestdataListVarEasyScoreCalculator.class)
                 .withPhases(new ExhaustiveSearchPhaseConfig()
                         .withExhaustiveSearchType(ExhaustiveSearchType.BRUTE_FORCE));
-        var solverFactory = SolverFactory.<TestdataListSolution> create(solverConfig);
-        assertThatCode(() -> solverFactory.buildSolver()).isInstanceOf(UnsupportedOperationException.class);
+        var solver = (DefaultSolver<TestdataListSolution>) SolverFactory.<TestdataListSolution> create(solverConfig)
+                .buildSolver();
+
+        var solution = TestdataListSolution.generateUninitializedSolution(3, 2);
+
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void stepStarted(AbstractStepScope<TestdataListSolution> stepScope) {
+                if (stepScope instanceof ExhaustiveSearchStepScope<TestdataListSolution> exhaustiveSearchStepScope) {
+                    if (exhaustiveSearchStepScope.getStepIndex() == 36) {
+                        fail("The exhaustive search phase was not ended after 36 steps.");
+                    }
+                } else {
+                    fail("Wrong phase was started: " + stepScope.getClass().getSimpleName());
+                }
+            }
+
+        });
+
+        var finalBestSolution = solver.solve(solution);
+        var unassignedValues = finalBestSolution.getValueList().stream().filter(value -> value.getEntity() == null).toList();
+        assertThat(unassignedValues).isEmpty();
     }
 
     @Test

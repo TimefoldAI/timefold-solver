@@ -7,9 +7,11 @@ import java.util.function.IntFunction;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.exhaustivesearch.decider.ExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.PhaseType;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -23,13 +25,21 @@ import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solution_>
         implements ExhaustiveSearchPhase<Solution_> {
 
-    private final Comparator<ExhaustiveSearchNode> nodeComparator;
-    private final ExhaustiveSearchStrategy<Solution_> strategy;
+    protected final Comparator<ExhaustiveSearchNode> nodeComparator;
+    protected final EntitySelector<Solution_> entitySelector;
+    protected final ExhaustiveSearchDecider<Solution_> decider;
+
+    protected final boolean assertWorkingSolutionScoreFromScratch;
+    protected final boolean assertExpectedWorkingSolutionScore;
 
     private DefaultExhaustiveSearchPhase(Builder<Solution_> builder) {
         super(builder);
         nodeComparator = builder.nodeComparator;
-        strategy = builder.strategy;
+        entitySelector = builder.entitySelector;
+        decider = builder.decider;
+
+        assertWorkingSolutionScoreFromScratch = builder.assertWorkingSolutionScoreFromScratch;
+        assertExpectedWorkingSolutionScore = builder.assertExpectedWorkingSolutionScore;
     }
 
     @Override
@@ -54,34 +64,47 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         phaseStarted(phaseScope);
 
         while (!expandableNodeQueue.isEmpty() && !phaseTermination.isPhaseTerminated(phaseScope)) {
-            var stepScope = strategy.prepareStep(phaseScope);
+            var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
+            var node = expandableNodeQueue.last();
+            expandableNodeQueue.remove(node);
+            stepScope.setExpandingNode(node);
             stepStarted(stepScope);
-            strategy.solveStep(stepScope);
+            decider.restoreWorkingSolution(stepScope, assertWorkingSolutionScoreFromScratch,
+                    assertExpectedWorkingSolutionScore);
+            decider.expandNode(stepScope);
             stepEnded(stepScope);
             phaseScope.setLastCompletedStepScope(stepScope);
         }
         phaseEnded(phaseScope);
     }
 
+    // ************************************************************************
+    // Lifecycle methods
+    // ************************************************************************
+
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        strategy.solvingStarted(solverScope);
+        entitySelector.solvingStarted(solverScope);
+        decider.solvingStarted(solverScope);
     }
 
     private void phaseStarted(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        strategy.phaseStarted(phaseScope);
+        entitySelector.phaseStarted(phaseScope);
+        decider.phaseStarted(phaseScope);
     }
 
     private void stepStarted(ExhaustiveSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
-        strategy.stepStarted(stepScope);
+        // Skip entitySelector.stepStarted(stepScope)
+        decider.stepStarted(stepScope);
     }
 
     private void stepEnded(ExhaustiveSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        strategy.stepEnded(stepScope);
+        // Skip entitySelector.stepEnded(stepScope)
+        decider.stepEnded(stepScope);
         if (logger.isDebugEnabled()) {
             var phaseScope = stepScope.getPhaseScope();
             logger.debug("{}    ES step ({}), time spent ({}), treeId ({}), {} best score ({}), selected move count ({}).",
@@ -97,7 +120,8 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
     private void phaseEnded(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        strategy.phaseEnded(phaseScope);
+        entitySelector.phaseEnded(phaseScope);
+        decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
         logger.info("{}Exhaustive Search phase ({}) ended: time spent ({}), best score ({}),"
                 + " move evaluation speed ({}/sec), step total ({}).",
@@ -112,25 +136,33 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
-        strategy.solvingEnded(solverScope);
+        entitySelector.solvingEnded(solverScope);
+        decider.solvingEnded(solverScope);
     }
 
     public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
 
         private final Comparator<ExhaustiveSearchNode> nodeComparator;
-        private final ExhaustiveSearchStrategy<Solution_> strategy;
+        private final EntitySelector<Solution_> entitySelector;
+        private final ExhaustiveSearchDecider<Solution_> decider;
+
+        private boolean assertWorkingSolutionScoreFromScratch = false;
+        private boolean assertExpectedWorkingSolutionScore = false;
 
         public Builder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination,
-                Comparator<ExhaustiveSearchNode> nodeComparator, ExhaustiveSearchStrategy<Solution_> strategy) {
+                Comparator<ExhaustiveSearchNode> nodeComparator, EntitySelector<Solution_> entitySelector,
+                ExhaustiveSearchDecider<Solution_> decider) {
             super(phaseIndex, logIndentation, phaseTermination);
             this.nodeComparator = nodeComparator;
-            this.strategy = strategy;
+            this.entitySelector = entitySelector;
+            this.decider = decider;
         }
 
         @Override
         public Builder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
             super.enableAssertions(environmentMode);
-            strategy.enableAssertions(environmentMode);
+            assertWorkingSolutionScoreFromScratch = environmentMode.isFullyAsserted();
+            assertExpectedWorkingSolutionScore = environmentMode.isIntrusivelyAsserted();
             return this;
         }
 
