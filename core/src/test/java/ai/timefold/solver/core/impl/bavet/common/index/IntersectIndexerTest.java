@@ -11,16 +11,10 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 import org.junit.jupiter.api.Test;
 
-class ContainAnyIndexerTest extends AbstractIndexerTest {
-
-    record TestWorker(String name, List<String> skills, String department) {
-    }
-
-    record TestJob(String department, List<String> skills) {
-    }
+class IntersectIndexerTest extends AbstractIndexerTest {
 
     private final DefaultBiJoiner<TestWorker, TestJob> joiner =
-            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.containAny(TestWorker::skills, TestJob::skills)
+            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.intersect(TestWorker::skills, TestJob::skills)
                     .and(Joiners.equal(TestWorker::department, TestJob::department));
 
     @Test
@@ -101,6 +95,12 @@ class ContainAnyIndexerTest extends AbstractIndexerTest {
 
         assertForEach(indexer, List.of(), "1").isEmpty();
         assertForEach(indexer, List.of(), "999").isEmpty();
+    }
+
+    record TestWorker(String name, List<String> skills, String department) {
+    }
+
+    record TestJob(String department, List<String> skills) {
     }
 
 }

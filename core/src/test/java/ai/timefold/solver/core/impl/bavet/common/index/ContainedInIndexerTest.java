@@ -14,12 +14,6 @@ import org.junit.jupiter.api.Test;
 
 class ContainedInIndexerTest extends AbstractIndexerTest {
 
-    record TestWorker(String name, List<String> skills, String department, String affinity) {
-    }
-
-    record TestJob(String department, String skill, List<String> affinities) {
-    }
-
     private final DefaultBiJoiner<TestJob, TestWorker> joiner =
             (DefaultBiJoiner<TestJob, TestWorker>) Joiners.containedIn(TestJob::skill, TestWorker::skills)
                     .and(Joiners.equal(TestJob::department, TestWorker::department));
@@ -110,6 +104,12 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
         assertForEach(indexer, List.of("X", "Y"), "2").containsExactlyInAnyOrder(annX12, bethY13, ednaX23);
 
         assertForEach(indexer, List.of(), "1").isEmpty();
+    }
+
+    record TestWorker(String name, List<String> skills, String department, String affinity) {
+    }
+
+    record TestJob(String department, String skill, List<String> affinities) {
     }
 
 }

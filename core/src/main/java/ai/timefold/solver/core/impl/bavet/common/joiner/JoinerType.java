@@ -12,9 +12,7 @@ public enum JoinerType {
     GREATER_THAN_OR_EQUAL((a, b) -> ((Comparable) a).compareTo(b) >= 0),
     CONTAIN((a, b) -> ((Collection) a).contains(b)),
     CONTAINED_IN((a, b) -> ((Collection) b).contains(a)),
-    CONTAIN_ANY((a, b) -> containAny((Collection) a, (Collection) b)),
-    CONTAIN_ALL((a, b) -> containAll((Collection) a, (Collection) b)),
-    CONTAIN_NONE((a, b) -> containNone((Collection) a, (Collection) b));
+    INTERSECT((a, b) -> containAny((Collection) a, (Collection) b));
 
     private final BiPredicate<Object, Object> matcher;
 
@@ -31,9 +29,7 @@ public enum JoinerType {
             case GREATER_THAN_OR_EQUAL -> LESS_THAN_OR_EQUAL;
             case CONTAIN -> CONTAINED_IN;
             case CONTAINED_IN -> CONTAIN;
-            case CONTAIN_ANY -> this;
-            case CONTAIN_ALL -> this;
-            case CONTAIN_NONE -> this;
+            case INTERSECT -> this;
         };
     }
 

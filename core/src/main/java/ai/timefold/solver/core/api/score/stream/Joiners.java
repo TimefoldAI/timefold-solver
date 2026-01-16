@@ -78,8 +78,9 @@ public final class Joiners {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
     }
 
-    // TODO Complete javadoc
     /**
+     * Joins every A and B where a value of property on B is contained in the collection of properties on A.
+     * <p>
      * For example:
      * <ul>
      * <li>{@code ["A", "B"]} contains {@code "A"} is {@code true}</li>
@@ -96,13 +97,14 @@ public final class Joiners {
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
      */
-    public static <A, B, Property_> @NonNull BiJoiner<A, B> contain(Function<A, Collection<Property_>> leftMapping,
-            Function<B, Property_> rightMapping) {
+    public static <A, B, Property_> @NonNull BiJoiner<A, B> contain(@NonNull Function<A, Collection<Property_>> leftMapping,
+            @NonNull Function<B, Property_> rightMapping) {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAIN, rightMapping);
     }
 
-    // TODO Complete javadoc
     /**
+     * Joins every A and B where a value of property on A is contained in the collection of properties on B.
+     * <p>
      * For example:
      * <ul>
      * <li>{@code "A"} contained in {@code ["A", "B"]} is {@code true}</li>
@@ -119,33 +121,34 @@ public final class Joiners {
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
      */
-    public static <A, B, Property_> @NonNull BiJoiner<A, B> containedIn(Function<A, Property_> leftMapping,
-            Function<B, Collection<Property_>> rightMapping) {
+    public static <A, B, Property_> @NonNull BiJoiner<A, B> containedIn(@NonNull Function<A, Property_> leftMapping,
+            @NonNull Function<B, Collection<Property_>> rightMapping) {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAINED_IN, rightMapping);
     }
 
     /**
-     * As defined by {@link #containAny(Function, Function)} with both arguments using the same mapping.
+     * As defined by {@link #intersect(Function, Function)} with both arguments using the same mapping.
      *
      * @param mapping mapping function to apply to both A and B
      * @param <A> the type of both objects
      * @param <Property_> the type of the property to compare
      */
-    public static <A, Property_> @NonNull BiJoiner<A, A> containAny(Function<A, Collection<Property_>> mapping) {
-        return containAny(mapping, mapping);
+    public static <A, Property_> @NonNull BiJoiner<A, A> intersect(@NonNull Function<A, Collection<Property_>> mapping) {
+        return intersect(mapping, mapping);
     }
 
-    // TODO Complete javadoc
     /**
+     * Joins every A and B where a collection of properties on A overlaps with a collection of properties on B.
+     * <p>
      * For example:
      * <ul>
-     * <li>{@code ["A", "B"]} contains any {@code ["A", "B"]} is {@code true}</li>
-     * <li>{@code ["A", "B"]} contains any {@code ["A"]} is {@code true}</li>
-     * <li>{@code ["A"]} contains any {@code ["A", "B"]} is {@code true}</li>
-     * <li>{@code ["A", "B"]} contains any {@code ["X", "Y"]} is {@code false}</li>
-     * <li>{@code ["A", "B"]} contains any {@code []} is {@code false}</li>
-     * <li>{@code []} contains any {@code ["A", "B"]} is {@code false}</li>
-     * <li>{@code []} contains any {@code []} is {@code false}</li>
+     * <li>{@code ["A", "B"]} intersect {@code ["A", "B"]} is {@code true}</li>
+     * <li>{@code ["A", "B"]} intersect {@code ["A"]} is {@code true}</li>
+     * <li>{@code ["A"]} intersect {@code ["A", "B"]} is {@code true}</li>
+     * <li>{@code ["A", "B"]} intersect {@code ["X", "Y"]} is {@code false}</li>
+     * <li>{@code ["A", "B"]} intersect {@code []} is {@code false}</li>
+     * <li>{@code []} intersect {@code ["A", "B"]} is {@code false}</li>
+     * <li>{@code []} intersect {@code []} is {@code false}</li>
      * </ul>
      * 
      * @param leftMapping mapping function to apply to A
@@ -154,9 +157,9 @@ public final class Joiners {
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
      */
-    public static <A, B, Property_> @NonNull BiJoiner<A, B> containAny(Function<A, Collection<Property_>> leftMapping,
-            Function<B, Collection<Property_>> rightMapping) {
-        return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAIN_ANY, rightMapping);
+    public static <A, B, Property_> @NonNull BiJoiner<A, B> intersect(@NonNull Function<A, Collection<Property_>> leftMapping,
+            @NonNull Function<B, Collection<Property_>> rightMapping) {
+        return new DefaultBiJoiner<>(leftMapping, JoinerType.INTERSECT, rightMapping);
     }
 
     /**
