@@ -670,7 +670,7 @@ class DefaultSolverTest {
      * If the CH is terminated before all moves have been processed,
      * the solution should use the result of the previous fully completed step.
      * 
-     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/1130">Github issue 1130</a>.
+     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/1130">GitHub issue 1130</a>.
      */
     @Test
     void solveWithCHAllowsUnassignedValuesListVariableAndTerminateInStep() {

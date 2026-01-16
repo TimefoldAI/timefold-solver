@@ -34,4 +34,4 @@ You can also find out
 how to build xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStart[Vehicle Routing with Quarkus].
 
 For other use cases,
-take a look at https://github.com/TimefoldAI/timefold-quickstarts[the `timefold-quickstarts` Github repository].
+take a look at https://github.com/TimefoldAI/timefold-quickstarts[the `timefold-quickstarts` GitHub repository].

@@ -27,7 +27,7 @@ jobs:
         include:
         - language: java-kotlin
           build-mode: autobuild
-        - language: javascript-typescript # Need to add this even though we don't want this; otherwise Github complains.
+        - language: javascript-typescript # Need to add this even though we don't want this; otherwise GitHub complains.
           build-mode: none
     steps:
     - name: Checkout repository

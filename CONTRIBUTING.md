@@ -4,7 +4,7 @@ This is an open source project, and you are more than welcome to contribute!
 
 - Found an issue? [Submit an issue](https://github.com/TimefoldAI/timefold-solver/issues).
 - Want to fix an issue or contribute an improvement? 
-Talk to us about your ideas [here on Github](https://github.com/TimefoldAI/timefold-solver/discussions), 
+Talk to us about your ideas [here on GitHub](https://github.com/TimefoldAI/timefold-solver/discussions), 
 [on Discord](https://discord.gg/976RcEVVHW)
 or just start coding:
 
@@ -90,6 +90,6 @@ PRs that worsen grades below B will fail CI and cannot be merged.
 
 ### Testing Requirements
 - All code must have tests before being merged
-- Use **JUnit Jupiter (JUnit 5)** for test execution
+- Use **JUnit** for test execution
 - Use **AssertJ** for all assertions (JUnit assertions are forbidden)
 - Mockito allowed for mocking; prefer real objects when practical

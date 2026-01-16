@@ -286,7 +286,7 @@ public class ScoreCalculator {
 
 All tests MUST use the following standardized frameworks:
 
-1. **JUnit Jupiter** (JUnit 6) - Required for all test execution
+1. **JUnit** - Required for all test execution
    - Use `@Test`, `@ParameterizedTest`, `@BeforeEach`, `@AfterEach`, etc.
    - Lifecycle annotations and test orchestration
 
