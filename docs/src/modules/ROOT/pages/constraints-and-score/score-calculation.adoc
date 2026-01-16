@@ -563,6 +563,9 @@ pairing a match from each side:
 the paired matches have a `Comparable` property following the prescribed ordering.
 - `overlapping()`: the paired matches have two properties (a _start_ and an _end_ property) of the same `Comparable` type
 that both represent an interval which overlap.
+- `contain()`: the match on the left is a collection containing the match on the right.
+- `containedIn()`: the match on the right is a collection containing the match on the left.
+- `intersect()`: the collections on both sides have at least one element in common.
 
 All `Joiners` methods have an overloaded method to use the same property of the same class on both stream sides.
 For example, calling `equal(Shift::getEmployee)` is the same as calling `equal(Shift::getEmployee, Shift::getEmployee)`.
