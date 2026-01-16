@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -101,16 +100,6 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
         return downstreamIndexerMap.isEmpty();
     }
 
-    @Override
-    public List<? extends ListEntry<T>> asList(Object compositeKey) {
-        Key_ indexKey = keyRetriever.apply(compositeKey);
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null) {
-            return Collections.emptyList();
-        }
-        return downstreamIndexer.asList(compositeKey);
-    }
-
     public Iterator<T> iterator(Object compositeKey) {
         Key_ indexKey = keyRetriever.apply(compositeKey);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
@@ -118,7 +107,7 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
             return Collections.emptyIterator();
         }
         return downstreamIndexer.iterator(compositeKey);
-        }
+    }
 
     public ListEntry<T> get(Object compositeKey, int index) {
         Key_ indexKey = keyRetriever.apply(compositeKey);

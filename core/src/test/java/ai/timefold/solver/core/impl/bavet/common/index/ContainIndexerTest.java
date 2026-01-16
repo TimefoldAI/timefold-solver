@@ -65,7 +65,7 @@ class ContainIndexerTest extends AbstractIndexerTest {
     @Test
     void removeTwice() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        var annEntry = indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "1"), new UniTuple<>("Ann", 0));
+        var annEntry = indexer.put(CompositeKey.ofMany(List.of("X", "Y"), "1"), UniTuple.of("Ann", 0));
 
         indexer.remove(CompositeKey.ofMany(List.of("X", "Y"), "1"), annEntry);
         assertThatThrownBy(() -> indexer.remove(CompositeKey.ofMany(List.of("X", "Y"), "1"), annEntry))
@@ -109,10 +109,6 @@ class ContainIndexerTest extends AbstractIndexerTest {
         assertForEach(indexer, "Y", List.of("1", "2")).containsExactlyInAnyOrder(annXY1, bethXY2, ednaYZ1);
 
         assertForEach(indexer, "X", List.of()).isEmpty();
-    }
-
-    private static UniTuple<String> newTuple(String factA) {
-        return new UniTuple<>(factA, 0);
     }
 
 }

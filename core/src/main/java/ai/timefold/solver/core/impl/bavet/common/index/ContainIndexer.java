@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -114,18 +115,29 @@ final class ContainIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> imp
     }
 
     @Override
-    public boolean isRemovable() {
-        return unremovedSize == 0;
-    }
-
-    @Override
-    public List<? extends ListEntry<T>> asList(Object queryCompositeKey) {
+    public Iterator<T> iterator(Object queryCompositeKey) {
         Key_ indexKey = queryKeyRetriever.apply(queryCompositeKey);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
-            return Collections.emptyList();
+            return Collections.emptyIterator();
         }
-        return downstreamIndexer.asList(queryCompositeKey);
+        return downstreamIndexer.iterator(queryCompositeKey);
+    }
+
+    @Override
+    public ListEntry<T> get(Object queryCompositeKey, int index) {
+        Key_ indexKey = queryKeyRetriever.apply(queryCompositeKey);
+        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        if (downstreamIndexer == null) {
+            throw new IndexOutOfBoundsException("Index: %d"
+                    .formatted(index));
+        }
+        return downstreamIndexer.get(queryCompositeKey, index);
+    }
+
+    @Override
+    public boolean isRemovable() {
+        return unremovedSize == 0;
     }
 
     @Override

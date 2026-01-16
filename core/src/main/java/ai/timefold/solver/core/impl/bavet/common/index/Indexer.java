@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.util.ListEntry;
+
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -85,17 +85,5 @@ public sealed interface Indexer<T>
      * @return true if empty and all put() calls had a remove() call
      */
     boolean isRemovable();
-
-    /**
-     * Returns all entries for the given composite key as a list.
-     * The index must not be modified while iterating over the returned list.
-     * If the index is modified, a new instance of this list must be retrieved;
-     * the previous instance is no longer valid and its behavior is undefined.
-     * 
-     * @param queryCompositeKey query composite key, never null
-     * @return all entries for a given composite key;
-     *         the caller must not modify the list
-     */
-    List<? extends ListEntry<T>> asList(Object queryCompositeKey);
 
 }

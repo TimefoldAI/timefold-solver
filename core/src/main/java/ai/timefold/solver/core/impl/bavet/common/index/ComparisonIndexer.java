@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NoSuchElementException;
@@ -176,11 +175,6 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public List<? extends ListEntry<T>> asList(Object queryCompositeKey) {
-        return List.of();
-    }
-
-    @Override
     public ListEntry<T> get(Object compositeKey, int index) {
         return switch (comparisonMap.size()) {
             case 0 -> throw new IndexOutOfBoundsException("Index: " + index);
@@ -214,24 +208,6 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
             }
         }
         throw new IndexOutOfBoundsException("Index: " + index);
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<? extends ListEntry<T>> asListManyIndexers(Object compositeKey) {
-        // The index backend's asList() may take a while to build.
-        // At the same time, the elements in these lists will be accessed randomly.
-        // Therefore we build this abstraction to avoid building unnecessary lists that would never get accessed.
-        var result = new ComposingList<ListEntry<T>>();
-        var indexKey = keyRetriever.apply(compositeKey);
-        for (var entry : comparisonMap.entrySet()) {
-            if (boundaryReached(entry.getKey(), indexKey)) {
-                return result;
-            } else { // Boundary condition not yet reached; include the indexer in the range.
-                var value = entry.getValue();
-                result.addSubList(() -> (List<ListEntry<T>>) value.asList(compositeKey), value.size(compositeKey));
-            }
-        }
-        return result;
     }
 
     @Override

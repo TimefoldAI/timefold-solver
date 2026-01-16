@@ -1,14 +1,15 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+
 import org.assertj.core.api.AbstractIntegerAssert;
 import org.assertj.core.api.ListAssert;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 abstract class AbstractIndexerTest {
 

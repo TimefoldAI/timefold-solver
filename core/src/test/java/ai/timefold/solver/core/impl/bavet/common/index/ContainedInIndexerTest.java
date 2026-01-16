@@ -65,7 +65,7 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
     @Test
     void removeTwice() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        var annEntry = indexer.put(CompositeKey.ofMany("X", "1"), new UniTuple<>("Ann", 0));
+        var annEntry = indexer.put(CompositeKey.ofMany("X", "1"), UniTuple.of("Ann", 0));
 
         indexer.remove(CompositeKey.ofMany("X", "1"), annEntry);
         assertThatThrownBy(() -> indexer.remove(CompositeKey.ofMany("X", "1"), annEntry))

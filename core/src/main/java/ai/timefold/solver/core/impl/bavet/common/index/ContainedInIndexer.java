@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -14,6 +14,7 @@ import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * As defined by {@link Joiners#containedIn(Function, Function)}
@@ -93,26 +94,86 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
     }
 
     @Override
+    public Iterator<T> iterator(Object queryCompositeKey) {
+        return new DefaultIterator(queryCompositeKey);
+    }
+
+    @Override
+    public ListEntry<T> get(Object queryCompositeKey, int index) {
+        KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
+        var seenCount = 0;
+        for (Key_ indexKey : indexKeyCollection) {
+            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+            if (downstreamIndexer == null) {
+                continue;
+            }
+            int downstreamSize = downstreamIndexer.size(queryCompositeKey);
+            if (index < seenCount + downstreamSize) {
+                return downstreamIndexer.get(queryCompositeKey, index - seenCount);
+            } else {
+                seenCount += downstreamSize;
+            }
+        }
+        throw new IndexOutOfBoundsException("Index: %d".formatted(index));
+    }
+
+    @Override
     public boolean isRemovable() {
         return downstreamIndexerMap.isEmpty();
     }
 
     @Override
-    public List<? extends ListEntry<T>> asList(Object queryCompositeKey) {
-        KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
-        List<ListEntry<T>> list = new ArrayList<>(downstreamIndexerMap.size() * 16);
-        for (Key_ indexKey : indexKeyCollection) {
-            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
-            if (downstreamIndexer != null) {
-                list.addAll(downstreamIndexer.asList(queryCompositeKey));
-            }
-        }
-        return list;
-    }
-
-    @Override
     public String toString() {
         return "size = " + downstreamIndexerMap.size();
+    }
+
+    private final class DefaultIterator implements Iterator<T> {
+
+        private final Object queryCompositeKey;
+        private final Iterator<Key_> indexerIterator;
+        private @Nullable Iterator<T> downstreamIterator = null;
+        private @Nullable T next = null;
+
+        public DefaultIterator(Object queryCompositeKey) {
+            this.queryCompositeKey = queryCompositeKey;
+            var keyCollection = queryKeyRetriever.apply(queryCompositeKey);
+            this.indexerIterator = keyCollection.iterator();
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (next != null) {
+                return true;
+            }
+            if (downstreamIterator != null && downstreamIterator.hasNext()) {
+                next = downstreamIterator.next();
+                return true;
+            }
+            while (indexerIterator.hasNext()) {
+                var indexKey = indexerIterator.next();
+                // Boundary condition not yet reached; include the indexer in the range.
+                Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+                if (downstreamIndexer == null) {
+                    continue;
+                }
+                downstreamIterator = downstreamIndexer.iterator(queryCompositeKey);
+                if (downstreamIterator.hasNext()) {
+                    next = downstreamIterator.next();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            var result = next;
+            next = null;
+            return result;
+        }
     }
 
 }
