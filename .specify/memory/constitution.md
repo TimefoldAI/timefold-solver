@@ -17,7 +17,7 @@ In summary:
 
 Every feature MUST demonstrate real-world value before delivery:
 
-- Every feature MUST be used in at least one example or quickstart
+- Every suitable feature MUST be used in at least one quickstart
 - Features are only considered complete when they are:
   - Fully tested (unit, integration, and where applicable, performance tests)
   - Fully documented (API docs, user guides, examples)
