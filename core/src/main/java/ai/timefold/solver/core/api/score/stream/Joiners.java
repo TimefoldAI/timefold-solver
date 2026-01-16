@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.api.score.stream;
 
+import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -35,7 +36,6 @@ import org.jspecify.annotations.NonNull;
 public final class Joiners {
 
     // TODO Support using non-natural comparators, such as lessThan(leftMapping, rightMapping, comparator).
-    // TODO Support collection-based joiners, such as containing(), intersecting() and disjoint().
 
     // ************************************************************************
     // BiJoiner
@@ -76,6 +76,87 @@ public final class Joiners {
     public static <A, B, Property_> @NonNull BiJoiner<A, B> equal(Function<A, Property_> leftMapping,
             Function<B, Property_> rightMapping) {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
+    }
+
+    // TODO Complete javadoc
+    /**
+     * For example:
+     * <ul>
+     * <li>{@code ["A", "B"]} contains {@code "A"} is {@code true}</li>
+     * <li>{@code ["A"]} contains {@code "A"} is {@code true}</li>
+     * <li>{@code ["X", "Y"]} contains {@code "A"} is {@code false}</li>
+     * <li>{@code []} contains {@code "A"} is {@code false}</li>
+     * <li>{@code ["A", "B"]} contains {@code null} is {@code false}</li>
+     * <li>{@code []} contains {@code null} is {@code false}</li>
+     * </ul>
+     * 
+     * @param leftMapping mapping function to apply to A
+     * @param rightMapping mapping function to apply to B
+     * @param <A> the type of object on the left
+     * @param <B> the type of object on the right
+     * @param <Property_> the type of the property to compare
+     */
+    public static <A, B, Property_> @NonNull BiJoiner<A, B> contain(Function<A, Collection<Property_>> leftMapping,
+            Function<B, Property_> rightMapping) {
+        return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAIN, rightMapping);
+    }
+
+    // TODO Complete javadoc
+    /**
+     * For example:
+     * <ul>
+     * <li>{@code "A"} contained in {@code ["A", "B"]} is {@code true}</li>
+     * <li>{@code "A"} contained in {@code ["A"]} is {@code true}</li>
+     * <li>{@code "A"} contained in {@code ["X", "Y"]} is {@code false}</li>
+     * <li>{@code "A"} contained in {@code []} is {@code false}</li>
+     * <li>{@code null} contained in {@code ["A", "B"]} is {@code false}</li>
+     * <li>{@code null} contained in {@code []} is {@code false}</li>
+     * </ul>
+     * 
+     * @param leftMapping mapping function to apply to A
+     * @param rightMapping mapping function to apply to B
+     * @param <A> the type of object on the left
+     * @param <B> the type of object on the right
+     * @param <Property_> the type of the property to compare
+     */
+    public static <A, B, Property_> @NonNull BiJoiner<A, B> containedIn(Function<A, Property_> leftMapping,
+            Function<B, Collection<Property_>> rightMapping) {
+        return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAINED_IN, rightMapping);
+    }
+
+    /**
+     * As defined by {@link #containAny(Function, Function)} with both arguments using the same mapping.
+     *
+     * @param mapping mapping function to apply to both A and B
+     * @param <A> the type of both objects
+     * @param <Property_> the type of the property to compare
+     */
+    public static <A, Property_> @NonNull BiJoiner<A, A> containAny(Function<A, Collection<Property_>> mapping) {
+        return containAny(mapping, mapping);
+    }
+
+    // TODO Complete javadoc
+    /**
+     * For example:
+     * <ul>
+     * <li>{@code ["A", "B"]} contains any {@code ["A", "B"]} is {@code true}</li>
+     * <li>{@code ["A", "B"]} contains any {@code ["A"]} is {@code true}</li>
+     * <li>{@code ["A"]} contains any {@code ["A", "B"]} is {@code true}</li>
+     * <li>{@code ["A", "B"]} contains any {@code ["X", "Y"]} is {@code false}</li>
+     * <li>{@code ["A", "B"]} contains any {@code []} is {@code false}</li>
+     * <li>{@code []} contains any {@code ["A", "B"]} is {@code false}</li>
+     * <li>{@code []} contains any {@code []} is {@code false}</li>
+     * </ul>
+     * 
+     * @param leftMapping mapping function to apply to A
+     * @param rightMapping mapping function to apply to B
+     * @param <A> the type of object on the left
+     * @param <B> the type of object on the right
+     * @param <Property_> the type of the property to compare
+     */
+    public static <A, B, Property_> @NonNull BiJoiner<A, B> containAny(Function<A, Collection<Property_>> leftMapping,
+            Function<B, Collection<Property_>> rightMapping) {
+        return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAIN_ANY, rightMapping);
     }
 
     /**

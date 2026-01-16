@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NoSuchElementException;
@@ -28,31 +29,13 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     private final NavigableMap<Key_, Indexer<T>> comparisonMap;
 
     /**
-     * Construct an {@link ComparisonIndexer} which immediately ends in the backend.
-     * This means {@code compositeKey} must be a single key.
-     *
      * @param comparisonJoinerType the type of comparison to use
+     * @param keyRetriever determines if it immediately goes to a {@link IndexerBackend} or if it uses a {@link CompositeKey}.
      * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
-    public ComparisonIndexer(JoinerType comparisonJoinerType, Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this(comparisonJoinerType, new SingleKeyRetriever<>(), downstreamIndexerSupplier);
-    }
-
-    /**
-     * Construct an {@link ComparisonIndexer} which does not immediately go to a {@link IndexerBackend}.
-     * This means {@code compositeKey} must be an instance of {@link CompositeKey}.
-     *
-     * @param comparisonJoinerType the type of comparison to use
-     * @param keyIndex the index of the key to use within {@link CompositeKey}.
-     * @param downstreamIndexerSupplier the supplier of the downstream indexer
-     */
-    public ComparisonIndexer(JoinerType comparisonJoinerType, int keyIndex, Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this(comparisonJoinerType, new CompositeKeyRetriever<>(keyIndex), downstreamIndexerSupplier);
-    }
-
-    private ComparisonIndexer(JoinerType comparisonJoinerType, KeyRetriever<Key_> keyRetriever,
+    public ComparisonIndexer(JoinerType comparisonJoinerType, KeyRetriever<?> keyRetriever,
             Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.keyRetriever = Objects.requireNonNull(keyRetriever);
+        this.keyRetriever = Objects.requireNonNull((KeyRetriever<Key_>) keyRetriever);
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
         // For GT/GTE, the iteration order is reversed.
         // This allows us to iterate over the entire map from the start, stopping when the threshold is reached.
@@ -81,7 +64,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         var indexKey = keyRetriever.apply(compositeKey);
         var downstreamIndexer = getDownstreamIndexer(compositeKey, indexKey, entry);
         downstreamIndexer.remove(compositeKey, entry);
-        if (downstreamIndexer.isEmpty()) {
+        if (downstreamIndexer.isRemovable()) {
             comparisonMap.remove(indexKey);
         }
     }
@@ -188,8 +171,13 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isRemovable() {
         return comparisonMap.isEmpty();
+    }
+
+    @Override
+    public List<? extends ListEntry<T>> asList(Object queryCompositeKey) {
+        return List.of();
     }
 
     @Override
@@ -226,6 +214,24 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
             }
         }
         throw new IndexOutOfBoundsException("Index: " + index);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<? extends ListEntry<T>> asListManyIndexers(Object compositeKey) {
+        // The index backend's asList() may take a while to build.
+        // At the same time, the elements in these lists will be accessed randomly.
+        // Therefore we build this abstraction to avoid building unnecessary lists that would never get accessed.
+        var result = new ComposingList<ListEntry<T>>();
+        var indexKey = keyRetriever.apply(compositeKey);
+        for (var entry : comparisonMap.entrySet()) {
+            if (boundaryReached(entry.getKey(), indexKey)) {
+                return result;
+            } else { // Boundary condition not yet reached; include the indexer in the range.
+                var value = entry.getValue();
+                result.addSubList(() -> (List<ListEntry<T>>) value.asList(compositeKey), value.size(compositeKey));
+            }
+        }
+        return result;
     }
 
     @Override

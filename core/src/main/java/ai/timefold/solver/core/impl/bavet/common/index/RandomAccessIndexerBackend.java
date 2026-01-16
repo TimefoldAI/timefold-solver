@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 import ai.timefold.solver.core.impl.util.ListEntry;
-
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -53,6 +53,16 @@ public final class RandomAccessIndexerBackend<T> implements IndexerBackend<T> {
     @Override
     public boolean isEmpty() {
         return tupleList.isEmpty();
+    }
+
+    @Override
+    public boolean isRemovable() {
+        return tupleList.isEmpty();
+    }
+
+    @Override
+    public List<? extends ListEntry<T>> asList(Object queryCompositeKey) {
+        return null;
     }
 
     @Override
