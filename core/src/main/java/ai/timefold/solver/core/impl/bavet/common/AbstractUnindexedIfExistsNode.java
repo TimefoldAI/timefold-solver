@@ -65,7 +65,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             insertLeft(leftTuple);
             return;
         }
-        var counter = counterEntry.getElement();
+        var counter = counterEntry.element();
         // The indexers contain counters in the DEAD state, to track the rightCount.
         if (!isFiltering) {
             updateUnchangedCounterLeft(counter);
@@ -90,7 +90,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        var counter = counterEntry.getElement();
+        var counter = counterEntry.element();
         counterEntry.remove();
         if (isFiltering) {
             ElementAwareLinkedList<FilteringTracker<LeftTuple_>> leftTrackerList =

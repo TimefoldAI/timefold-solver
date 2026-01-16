@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -22,26 +23,30 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
 
-    private final KeyRetriever<Key_> modifyKeyRetriever;
-    private final KeyRetriever<KeyCollection_> queryKeyRetriever;
+    private final KeyUnpacker<Key_> modifyKeyUnpacker;
+    private final KeyUnpacker<KeyCollection_> queryKeyUnpacker;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
-    private final Map<Key_, Indexer<T>> downstreamIndexerMap = new HashMap<>();
+    /**
+     * See {@link EqualIndexer} for explanation of the parameters.
+     */
+    private final Map<Key_, Indexer<T>> downstreamIndexerMap = new HashMap<>(16, 0.5f);
 
     /**
-     * @param keyRetriever determines if it immediately goes to a {@link IndexerBackend} or if it uses a {@link CompositeKey}.
+     * @param keyUnpacker determines if it immediately goes to a {@link IndexerBackend} or if it uses a {@link CompositeKey}.
      * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
-    public ContainedInIndexer(KeyRetriever<Key_> keyRetriever, Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.modifyKeyRetriever = Objects.requireNonNull(keyRetriever);
-        this.queryKeyRetriever = Objects.requireNonNull((KeyRetriever<KeyCollection_>) keyRetriever);
+    @SuppressWarnings("unchecked")
+    public ContainedInIndexer(KeyUnpacker<Key_> keyUnpacker, Supplier<Indexer<T>> downstreamIndexerSupplier) {
+        this.modifyKeyUnpacker = Objects.requireNonNull(keyUnpacker);
+        this.queryKeyUnpacker = Objects.requireNonNull((KeyUnpacker<KeyCollection_>) keyUnpacker);
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
     }
 
     @Override
     public ListEntry<T> put(Object modifyCompositeKey, T tuple) {
-        Key_ indexKey = modifyKeyRetriever.apply(modifyCompositeKey);
+        var indexKey = modifyKeyUnpacker.apply(modifyCompositeKey);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             downstreamIndexer = downstreamIndexerSupplier.get();
             downstreamIndexerMap.put(indexKey, downstreamIndexer);
@@ -51,8 +56,8 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
 
     @Override
     public void remove(Object modifyCompositeKey, ListEntry<T> entry) {
-        Key_ indexKey = modifyKeyRetriever.apply(modifyCompositeKey);
-        Indexer<T> downstreamIndexer = getDownstreamIndexer(modifyCompositeKey, indexKey, entry);
+        var indexKey = modifyKeyUnpacker.apply(modifyCompositeKey);
+        var downstreamIndexer = getDownstreamIndexer(modifyCompositeKey, indexKey, entry);
         downstreamIndexer.remove(modifyCompositeKey, entry);
         if (downstreamIndexer.isRemovable()) {
             downstreamIndexerMap.remove(indexKey);
@@ -60,7 +65,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
     }
 
     private Indexer<T> getDownstreamIndexer(Object compositeKey, Key_ indexerKey, ListEntry<T> entry) {
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexerKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException(
                     "Impossible state: the tuple (%s) with composite key (%s) doesn't exist in the indexer %s."
@@ -71,10 +76,13 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
 
     @Override
     public int size(Object queryCompositeKey) {
-        KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
-        int size = 0;
-        for (Key_ indexKey : indexKeyCollection) {
-            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        if (indexKeyCollection.isEmpty()) {
+            return 0;
+        }
+        var size = 0;
+        for (var indexKey : indexKeyCollection) {
+            var downstreamIndexer = downstreamIndexerMap.get(indexKey);
             if (downstreamIndexer != null) {
                 size += downstreamIndexer.size(queryCompositeKey);
             }
@@ -84,30 +92,38 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
 
     @Override
     public void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
-        KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
-        for (Key_ indexKey : indexKeyCollection) {
-            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
-            if (downstreamIndexer != null) {
-                downstreamIndexer.forEach(queryCompositeKey, tupleConsumer);
-            }
+        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        if (indexKeyCollection.isEmpty()) {
+            return;
+        }
+        var iterator = new DefaultIterator(queryCompositeKey, indexKeyCollection); // Avoid duplicating iteration logic
+        while (iterator.hasNext()) {
+            tupleConsumer.accept(iterator.next());
         }
     }
 
     @Override
     public Iterator<T> iterator(Object queryCompositeKey) {
-        return new DefaultIterator(queryCompositeKey);
+        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        if (indexKeyCollection.isEmpty()) {
+            return Collections.emptyIterator();
+        }
+        return new DefaultIterator(queryCompositeKey, indexKeyCollection);
     }
 
     @Override
     public ListEntry<T> get(Object queryCompositeKey, int index) {
-        KeyCollection_ indexKeyCollection = queryKeyRetriever.apply(queryCompositeKey);
+        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        if (indexKeyCollection.isEmpty()) {
+            throw new IndexOutOfBoundsException("Index: %d".formatted(index));
+        }
         var seenCount = 0;
-        for (Key_ indexKey : indexKeyCollection) {
-            Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        for (var indexKey : indexKeyCollection) {
+            var downstreamIndexer = downstreamIndexerMap.get(indexKey);
             if (downstreamIndexer == null) {
                 continue;
             }
-            int downstreamSize = downstreamIndexer.size(queryCompositeKey);
+            var downstreamSize = downstreamIndexer.size(queryCompositeKey);
             if (index < seenCount + downstreamSize) {
                 return downstreamIndexer.get(queryCompositeKey, index - seenCount);
             } else {
@@ -134,10 +150,9 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
         private @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
-        public DefaultIterator(Object queryCompositeKey) {
+        public DefaultIterator(Object queryCompositeKey, KeyCollection_ indexKeyCollection) {
             this.queryCompositeKey = queryCompositeKey;
-            var keyCollection = queryKeyRetriever.apply(queryCompositeKey);
-            this.indexerIterator = keyCollection.iterator();
+            this.indexerIterator = indexKeyCollection.iterator();
         }
 
         @Override
@@ -152,7 +167,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
             while (indexerIterator.hasNext()) {
                 var indexKey = indexerIterator.next();
                 // Boundary condition not yet reached; include the indexer in the range.
-                Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+                var downstreamIndexer = downstreamIndexerMap.get(indexKey);
                 if (downstreamIndexer == null) {
                     continue;
                 }

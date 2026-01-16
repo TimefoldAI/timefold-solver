@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         implements Indexer<T> {
 
-    private final KeyRetriever<Key_> keyRetriever;
+    private final KeyUnpacker<Key_> keyUnpacker;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     private final boolean reverseOrder;
     private final boolean hasOrEquals;
@@ -29,12 +29,12 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     /**
      * @param comparisonJoinerType the type of comparison to use
-     * @param keyRetriever determines if it immediately goes to a {@link IndexerBackend} or if it uses a {@link CompositeKey}.
+     * @param keyUnpacker determines if it immediately goes to a {@link IndexerBackend} or if it uses a {@link CompositeKey}.
      * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
-    public ComparisonIndexer(JoinerType comparisonJoinerType, KeyRetriever<?> keyRetriever,
+    public ComparisonIndexer(JoinerType comparisonJoinerType, KeyUnpacker<?> keyUnpacker,
             Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.keyRetriever = Objects.requireNonNull((KeyRetriever<Key_>) keyRetriever);
+        this.keyUnpacker = Objects.requireNonNull((KeyUnpacker<Key_>) keyUnpacker);
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
         // For GT/GTE, the iteration order is reversed.
         // This allows us to iterate over the entire map from the start, stopping when the threshold is reached.
@@ -48,7 +48,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     @Override
     public ListEntry<T> put(Object compositeKey, T tuple) {
-        var indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         var downstreamIndexer = comparisonMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -60,7 +60,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     @Override
     public void remove(Object compositeKey, ListEntry<T> entry) {
-        var indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
         var downstreamIndexer = getDownstreamIndexer(compositeKey, indexKey, entry);
         downstreamIndexer.remove(compositeKey, entry);
         if (downstreamIndexer.isRemovable()) {
@@ -88,7 +88,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     private int sizeSingleIndexer(Object compositeKey) {
-        var indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
         var entry = comparisonMap.firstEntry();
         return boundaryReached(entry.getKey(), indexKey) ? 0 : entry.getValue().size(compositeKey);
     }
@@ -107,7 +107,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     private int sizeManyIndexers(Object compositeKey) {
-        var indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
         var size = 0;
         for (var entry : comparisonMap.entrySet()) {
             if (boundaryReached(entry.getKey(), indexKey)) {
@@ -131,7 +131,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     private void forEachSingleIndexer(Object compositeKey, Consumer<T> tupleConsumer) {
-        var indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
         var entry = comparisonMap.firstEntry();
         if (!boundaryReached(entry.getKey(), indexKey)) {
             // Boundary condition not yet reached; include the indexer in the range.
@@ -140,7 +140,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     private void forEachManyIndexers(Object compositeKey, Consumer<T> tupleConsumer) {
-        var indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
         for (var entry : comparisonMap.entrySet()) {
             if (boundaryReached(entry.getKey(), indexKey)) {
                 return;
@@ -151,16 +151,16 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public Iterator<T> iterator(Object compositeKey) {
+    public Iterator<T> iterator(Object queryCompositeKey) {
         return switch (comparisonMap.size()) {
             case 0 -> Collections.emptyIterator();
-            case 1 -> iteratorSingleIndexer(compositeKey);
-            default -> new DefaultIterator(compositeKey);
+            case 1 -> iteratorSingleIndexer(queryCompositeKey);
+            default -> new DefaultIterator(queryCompositeKey);
         };
     }
 
     private Iterator<T> iteratorSingleIndexer(Object compositeKey) {
-        var indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
         var entry = comparisonMap.firstEntry();
         if (boundaryReached(entry.getKey(), indexKey)) {
             return Collections.emptyIterator();
@@ -175,16 +175,16 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public ListEntry<T> get(Object compositeKey, int index) {
+    public ListEntry<T> get(Object queryCompositeKey, int index) {
         return switch (comparisonMap.size()) {
             case 0 -> throw new IndexOutOfBoundsException("Index: " + index);
-            case 1 -> getSingleIndexer(compositeKey, index);
-            default -> getManyIndexers(compositeKey, index);
+            case 1 -> getSingleIndexer(queryCompositeKey, index);
+            default -> getManyIndexers(queryCompositeKey, index);
         };
     }
 
     private ListEntry<T> getSingleIndexer(Object compositeKey, int index) {
-        var indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
         var entry = comparisonMap.firstEntry();
         if (boundaryReached(entry.getKey(), indexKey)) {
             throw new IndexOutOfBoundsException("Index: " + index);
@@ -194,7 +194,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     private ListEntry<T> getManyIndexers(Object compositeKey, int index) {
         var seenCount = 0;
-        var indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
         for (var entry : comparisonMap.entrySet()) {
             if (boundaryReached(entry.getKey(), indexKey)) {
                 break;
@@ -225,7 +225,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
         public DefaultIterator(Object compositeKey) {
             this.compositeKey = compositeKey;
-            this.indexKey = keyRetriever.apply(compositeKey);
+            this.indexKey = keyUnpacker.apply(compositeKey);
         }
 
         @Override

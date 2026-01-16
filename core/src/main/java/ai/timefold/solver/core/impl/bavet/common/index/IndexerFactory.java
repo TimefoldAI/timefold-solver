@@ -499,8 +499,8 @@ public final class IndexerFactory<Right_> {
             return backendSupplier.get();
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
             var joinerType = joiner.getJoinerType(0);
-            KeyRetriever<?> keyRetriever = new SingleKeyRetriever<>();
-            return buildIndexerPart(isLeftBridge, joinerType, keyRetriever, backendSupplier);
+            KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
+            return buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
         }
         // The following code builds the children first, so it iterates over the joiners in reverse order.
         var descendingJoinerTypeMap = joinerTypeMap.descendingMap();
@@ -509,12 +509,12 @@ public final class IndexerFactory<Right_> {
         for (var entry : descendingJoinerTypeMap.entrySet()) {
             var joinerType = entry.getValue();
             if (downstreamIndexerSupplier == backendSupplier && indexPropertyId == 0) {
-                KeyRetriever<?> keyRetriever = new SingleKeyRetriever<>();
-                downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyRetriever, backendSupplier);
+                KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
+                downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
             } else {
-                KeyRetriever<?> keyRetriever = new CompositeKeyRetriever<>(indexPropertyId);
+                KeyUnpacker<?> keyUnpacker = new CompositeKeyUnpacker<>(indexPropertyId);
                 var actualDownstreamIndexerSupplier = downstreamIndexerSupplier;
-                downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyRetriever,
+                downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker,
                         actualDownstreamIndexerSupplier);
             }
             indexPropertyId--;
@@ -522,7 +522,7 @@ public final class IndexerFactory<Right_> {
         return downstreamIndexerSupplier.get();
     }
 
-    private <T> Indexer<T> buildIndexerPart(boolean isLeftBridge, JoinerType joinerType, KeyRetriever<?> keyRetriever,
+    private <T> Indexer<T> buildIndexerPart(boolean isLeftBridge, JoinerType joinerType, KeyUnpacker<?> keyUnpacker,
             Supplier<Indexer<T>> downstreamIndexerSupplier) {
         // Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
         // (<A, B> becomes <B, A>.)
@@ -537,19 +537,19 @@ public final class IndexerFactory<Right_> {
         }
         switch (joinerType) {
             case EQUAL -> {
-                return new EqualIndexer<>(keyRetriever, downstreamIndexerSupplier);
+                return new EqualIndexer<>(keyUnpacker, downstreamIndexerSupplier);
             }
             case LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL -> {
-                return new ComparisonIndexer<>(joinerType, keyRetriever, downstreamIndexerSupplier);
+                return new ComparisonIndexer<>(joinerType, keyUnpacker, downstreamIndexerSupplier);
             }
             case CONTAIN -> {
-                return new ContainIndexer<>(keyRetriever, downstreamIndexerSupplier);
+                return new ContainIndexer<>(keyUnpacker, downstreamIndexerSupplier);
             }
             case CONTAINED_IN -> {
-                return new ContainedInIndexer<>(keyRetriever, downstreamIndexerSupplier);
+                return new ContainedInIndexer<>(keyUnpacker, downstreamIndexerSupplier);
             }
             case CONTAIN_ANY -> {
-                return new ContainAnyIndexer<>(keyRetriever, downstreamIndexerSupplier);
+                return new ContainAnyIndexer<>(keyUnpacker, downstreamIndexerSupplier);
             }
             default -> throw new IllegalStateException(
                     "Impossible state: The joiner type (" + joinerType + ") is not implemented.");

@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-record CompositeKeyRetriever<Key_>(int id) implements KeyRetriever<Key_> {
+record CompositeKeyUnpacker<Key_>(int id) implements KeyUnpacker<Key_> {
 
     @Override
     public Key_ apply(Object compositeKey) {

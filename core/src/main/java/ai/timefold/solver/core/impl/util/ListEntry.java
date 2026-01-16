@@ -6,6 +6,6 @@ import org.jspecify.annotations.NullMarked;
 public sealed interface ListEntry<T>
         permits ElementAwareLinkedList.Entry, ElementAwareArrayList.Entry, CompositeListEntry {
 
-    T getElement();
+    T element();
 
 }

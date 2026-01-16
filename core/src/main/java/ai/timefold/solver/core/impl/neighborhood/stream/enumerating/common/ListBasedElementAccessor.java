@@ -8,7 +8,7 @@ public record ListBasedElementAccessor<T>(ElementAwareArrayList<T> list)
 
     @Override
     public T get(int index) {
-        return list.get(index).getElement();
+        return list.get(index).element();
     }
 
     @Override

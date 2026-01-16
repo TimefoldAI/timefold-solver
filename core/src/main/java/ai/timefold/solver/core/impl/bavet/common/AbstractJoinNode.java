@@ -192,7 +192,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         var item = sourceList.first();
         while (item != null) {
             // Creating list iterators here caused major GC pressure; therefore, we iterate over the entries directly.
-            var outTuple = item.getElement();
+            var outTuple = item.element();
             ElementAwareLinkedList.Entry<Tuple_> outEntry = outTuple.getStore(outputStoreIndexOutEntry);
             var outEntryList = outEntry.getList();
             if (referenceList == outEntryList) {

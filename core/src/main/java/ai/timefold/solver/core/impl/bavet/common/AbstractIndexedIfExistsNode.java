@@ -85,7 +85,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         }
         var newCompositeKey = keysExtractorLeft.apply(leftTuple);
         ListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
-        var counter = counterEntry.getElement();
+        var counter = counterEntry.element();
 
         if (oldCompositeKey.equals(newCompositeKey)) {
             // No need for re-indexing because the index keys didn't change
@@ -120,7 +120,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         }
         ListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
         updateIndexerLeft(compositeKey, counterEntry, leftTuple);
-        killCounterLeft(counterEntry.getElement());
+        killCounterLeft(counterEntry.element());
     }
 
     private void updateIndexerLeft(Object compositeKey, ListEntry<ExistsCounter<LeftTuple_>> counterEntry,

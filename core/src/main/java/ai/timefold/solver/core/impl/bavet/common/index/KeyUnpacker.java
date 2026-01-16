@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.function.Function;
 
-// TODO Naming confusion: KeyRetriever and KeyExtractor are too similar for separate concepts.
 /**
  * A function that retrieves keys of a composite key for an {@link Indexer}.
  * For example, {@code join(..., equals(), lessThan(), greaterThan())} has 3 keys.
@@ -10,7 +9,7 @@ import java.util.function.Function;
  * 
  * @param <Key_>
  */
-sealed interface KeyRetriever<Key_> extends Function<Object, Key_>
-        permits CompositeKeyRetriever, SingleKeyRetriever {
+sealed interface KeyUnpacker<Key_> extends Function<Object, Key_>
+        permits CompositeKeyUnpacker, SingleKeyUnpacker {
 
 }

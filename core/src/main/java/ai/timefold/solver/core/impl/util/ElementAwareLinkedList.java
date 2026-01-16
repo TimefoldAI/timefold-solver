@@ -146,7 +146,7 @@ public final class ElementAwareLinkedList<T> implements Iterable<T> {
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
             Entry<T> next = entry.next;
-            tupleConsumer.accept(entry.getElement());
+            tupleConsumer.accept(entry.element());
             entry = next;
         }
     }
@@ -192,10 +192,10 @@ public final class ElementAwareLinkedList<T> implements Iterable<T> {
     public Iterator<T> randomizedIterator(Random random) {
         return switch (size) {
             case 0 -> Collections.emptyIterator();
-            case 1 -> Collections.singleton(first.getElement()).iterator();
+            case 1 -> Collections.singleton(first.element()).iterator();
             case 2 -> {
-                var list = random.nextBoolean() ? List.of(first.getElement(), last.getElement())
-                        : List.of(last.getElement(), first.getElement());
+                var list = random.nextBoolean() ? List.of(first.element(), last.element())
+                        : List.of(last.element(), first.element());
                 yield list.iterator();
             }
             default -> {
@@ -217,7 +217,7 @@ public final class ElementAwareLinkedList<T> implements Iterable<T> {
                 return "[]";
             }
             case 1 -> {
-                return "[" + first.getElement() + "]";
+                return "[" + first.element() + "]";
             }
             default -> {
                 StringBuilder builder = new StringBuilder("[");
@@ -248,7 +248,7 @@ public final class ElementAwareLinkedList<T> implements Iterable<T> {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            T element = nextEntry.getElement();
+            T element = nextEntry.element();
             nextEntry = nextEntry.next;
             return element;
         }
@@ -329,7 +329,7 @@ public final class ElementAwareLinkedList<T> implements Iterable<T> {
             return list == null;
         }
 
-        public T getElement() {
+        public T element() {
             return element;
         }
 

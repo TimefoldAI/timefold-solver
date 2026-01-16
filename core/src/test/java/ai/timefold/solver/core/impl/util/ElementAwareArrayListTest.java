@@ -37,7 +37,7 @@ class ElementAwareArrayListTest {
 
             assertThat(list.isEmpty()).isFalse();
             assertThat(list.size()).isEqualTo(1);
-            assertThat(entry.getElement()).isEqualTo("first");
+            assertThat(entry.element()).isEqualTo("first");
             assertThat(entry.isRemoved()).isFalse();
         }
 
@@ -282,7 +282,7 @@ class ElementAwareArrayListTest {
             var list = new ElementAwareArrayList<String>();
             var entry = list.add("test");
 
-            assertThat(entry.getElement()).isEqualTo("test");
+            assertThat(entry.element()).isEqualTo("test");
         }
 
         @Test

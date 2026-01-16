@@ -32,18 +32,32 @@ public sealed interface Indexer<T>
         permits EqualIndexer, ComparisonIndexer, ContainIndexer, ContainedInIndexer, ContainAnyIndexer, IndexerBackend {
 
     /**
+     * Gets the entry at the given position for the given composite key.
+     *
+     * @param queryCompositeKey composite key uniquely identifying the backend or a set of backends
+     * @param index the requested position in the index
+     * @return the entry at the given index for the given composite key
+     * @throws IndexOutOfBoundsException if the position is out of bounds;
+     *         that is, if the index is negative or greater than or equal to {@link #size(Object)}
+     *         for the given composite key
+     */
+    ListEntry<T> get(Object queryCompositeKey, int index);
+
+    /**
      * Modify operation.
      *
-     * @param modifyCompositeKey modify composite key, never null
+     * @param modifyCompositeKey modify composite key
      * @param tuple never null
-     * @return the entry to allow remove it from the index directly, never null
+     * @return the entry to allow remove it from the index directly
      */
     ListEntry<T> put(Object modifyCompositeKey, T tuple);
 
     /**
      * Modify operation.
+     * Must not be called during {@link #forEach(Object, Consumer)}
+     * and invalidates any {@link #iterator(Object)} obtained before.
      *
-     * @param modifyCompositeKey modify composite key, never null
+     * @param modifyCompositeKey modify composite key
      * @param entry never null
      */
     void remove(Object modifyCompositeKey, ListEntry<T> entry);
@@ -51,7 +65,7 @@ public sealed interface Indexer<T>
     /**
      * Query operation.
      *
-     * @param queryCompositeKey query composite key, never null
+     * @param queryCompositeKey query composite key
      * @return at least 0
      */
     int size(Object queryCompositeKey);
@@ -59,24 +73,19 @@ public sealed interface Indexer<T>
     /**
      * Query operation.
      *
-     * @param queryCompositeKey query composite key, never null
+     * @param queryCompositeKey query composite key
      * @param tupleConsumer never null
      */
     void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer);
 
-    Iterator<T> iterator(Object compositeKey);
-
     /**
-     * Gets the entry at the given position for the given composite key.
+     * Gets an iterator for the given composite key.
+     * The returned iterator does not support {@link Iterator#remove()}.
      *
-     * @param compositeKey composite key uniquely identifying the backend or a set of backends
-     * @param index the requested position in the index
-     * @return the entry at the given index for the given composite key
-     * @throws IndexOutOfBoundsException if the position is out of bounds;
-     *         that is, if the index is negative or greater than or equal to {@link #size(Object)}
-     *         for the given composite key
+     * @param queryCompositeKey composite key uniquely identifying the backend or a set of backends
+     * @return possibly empty iterator for the given composite key
      */
-    ListEntry<T> get(Object compositeKey, int index);
+    Iterator<T> iterator(Object queryCompositeKey);
 
     /**
      * Some indexers can be empty (size 0 and an empty forEach for all keys)
