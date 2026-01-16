@@ -61,7 +61,8 @@ final class IntersectIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> i
                 downstreamIndexerMap.put(indexKey, downstreamIndexer);
             }
             // Even though this method puts a tuple in multiple downstreamIndexers, it does not break size() or forEach()
-            // because at most one of those downstreamIndexers matches for a particular compositeKey
+            // because even though those downstreamIndexers match for a particular compositeKey,
+            // the distinctingSet in those methods ensures that each tuple is only counted/consumed once.
             var childListEntry = downstreamIndexer.put(modifyCompositeKey, tuple);
             children.add(new Pair<>(indexKey, childListEntry));
         }

@@ -318,15 +318,11 @@ public final class ElementAwareLinkedList<T> implements Iterable<T> {
         }
 
         public void remove() {
-            if (isRemoved()) {
+            if (list == null) {
                 throw new IllegalStateException("The element (" + element + ") was already removed.");
             }
             list.remove(this);
             list = null;
-        }
-
-        public boolean isRemoved() {
-            return list == null;
         }
 
         public T element() {

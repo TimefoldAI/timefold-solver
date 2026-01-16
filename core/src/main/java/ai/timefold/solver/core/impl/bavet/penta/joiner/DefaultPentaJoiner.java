@@ -29,7 +29,6 @@ public final class DefaultPentaJoiner<A, B, C, D, E> extends AbstractJoiner<E> i
             Function<E, ?>[] rightMappings) {
         super(rightMappings, joinerTypes);
         this.leftMappings = (QuadFunction<A, B, C, D, Object>[]) Objects.requireNonNull(leftMappings);
-        ;
     }
 
     public static <A, B, C, D, E> DefaultPentaJoiner<A, B, C, D, E> merge(List<DefaultPentaJoiner<A, B, C, D, E>> joinerList) {
