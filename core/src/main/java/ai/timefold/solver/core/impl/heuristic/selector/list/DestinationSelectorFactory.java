@@ -56,6 +56,11 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
             entitySelectorConfig.setSorterManner(configPolicy.getEntitySorterManner());
         }
         var valueRangeRecorderId = new ValueRangeRecorderId(entityValueRangeRecorderId, false);
+        if (isExhaustiveSearch) {
+            // The exhaustive method must not set the entity class for the entity selection configuration,
+            // or the creation will fail.
+            entitySelectorConfig.setEntityClass(null);
+        }
         var entitySelector = EntitySelectorFactory.<Solution_> create(entitySelectorConfig).buildEntitySelector(configPolicy,
                 minimumCacheType, selectionOrder, valueRangeRecorderId);
         if (isExhaustiveSearch) {

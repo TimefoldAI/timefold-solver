@@ -36,15 +36,24 @@ public final class BasicExhaustiveSearchDecider<Solution_, Score_ extends Score<
         var expandingNode = stepScope.getExpandingNode();
         manualEntityMimicRecorder.setRecordedEntity(expandingNode.getEntity());
         var moveIndex = new MutableInt(0);
-        // Expand only the current selected node for basic variables
-        var moveLayer = stepScope.getPhaseScope().getLayerList().get(expandingNode.getDepth() + 1);
-        expandNode(stepScope, expandingNode, moveLayer, moveIndex);
-        stepScope.setSelectedMoveCount(moveIndex.longValue());
+        if (expandingNode.getLayer().isLastLayer()) {
+            // Mixed models will always return false when checking if the solution is complete
+            // because the list variable will be resolved later.
+            // Therefore, we need to ensure that processing the move occurs in the last layer
+            // when there are no more possible moves available
+            moveIndex.increment();
+            doMove(stepScope, expandingNode, true, true);
+            stepScope.getPhaseScope().addMoveEvaluationCount(expandingNode.getMove(), 1);
+        } else {
+            var moveLayer = stepScope.getPhaseScope().getLayerList().get(expandingNode.getDepth() + 1);
+            expandNode(stepScope, expandingNode, moveLayer, moveIndex);
+            stepScope.setSelectedMoveCount(moveIndex.longValue());
+        }
     }
 
     @Override
     public boolean isSolutionComplete(ExhaustiveSearchNode expandingNode) {
-        return expandingNode.getLayer().isLastLayer();
+        return !solutionAlwaysIncomplete && expandingNode.getLayer().isLastLayer();
     }
 
     @Override

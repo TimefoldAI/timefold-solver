@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.exhaustivesearch;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
@@ -25,6 +24,11 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondEntity;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
@@ -193,16 +197,78 @@ class BruteForceTest {
     }
 
     @Test
-    void failWithMixedModel() {
+    void solveWithMixedModel() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataMixedSolution.class)
                 .withEntityClasses(TestdataMixedEntity.class, TestdataMixedOtherValue.class, TestdataMixedValue.class)
-                .withEasyScoreCalculatorClass(TestdataListVarEasyScoreCalculator.class)
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class)
                 .withPhases(new ExhaustiveSearchPhaseConfig()
                         .withExhaustiveSearchType(ExhaustiveSearchType.BRUTE_FORCE));
 
-        assertThatCode(() -> SolverFactory.<TestdataListSolution> create(solverConfig).buildSolver())
-                .hasMessageContaining("Exhaustive Search does not support mixed models");
+        var solver = (DefaultSolver<TestdataMixedSolution>) SolverFactory.<TestdataMixedSolution> create(solverConfig)
+                .buildSolver();
+
+        var solution = TestdataMixedSolution.generateUninitializedSolution(2, 3, 3);
+
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void stepStarted(AbstractStepScope<TestdataMixedSolution> stepScope) {
+                if (stepScope instanceof ExhaustiveSearchStepScope<TestdataMixedSolution> exhaustiveSearchStepScope) {
+                    if (exhaustiveSearchStepScope.getStepIndex() == 1000) {
+                        fail("The exhaustive search phase was not ended after 25 steps.");
+                    }
+                } else {
+                    fail("Wrong phase was started: " + stepScope.getClass().getSimpleName());
+                }
+            }
+
+        });
+
+        var finalBestSolution = solver.solve(solution);
+        var unassignedValues = finalBestSolution.getValueList().stream().filter(value -> value.getEntity() == null).toList();
+        assertThat(unassignedValues).isEmpty();
+        var unassignedOtherValues = finalBestSolution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null).toList();
+        assertThat(unassignedOtherValues).isEmpty();
+
+    }
+
+    @Test
+    void solveWithMixedModelMultipleEntities() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataMixedMultiEntitySolution.class)
+                .withEntityClasses(TestdataMixedMultiEntityFirstEntity.class, TestdataMixedMultiEntitySecondEntity.class)
+                .withEasyScoreCalculatorClass(TestdataMixedEntityEasyScoreCalculator.class)
+                .withPhases(new ExhaustiveSearchPhaseConfig()
+                        .withExhaustiveSearchType(ExhaustiveSearchType.BRUTE_FORCE));
+
+        var solver = (DefaultSolver<TestdataMixedMultiEntitySolution>) SolverFactory
+                .<TestdataMixedMultiEntitySolution> create(solverConfig)
+                .buildSolver();
+
+        var solution = TestdataMixedMultiEntitySolution.generateUninitializedSolution(2, 3, 3);
+
+        solver.addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void stepStarted(AbstractStepScope<TestdataMixedMultiEntitySolution> stepScope) {
+                if (stepScope instanceof ExhaustiveSearchStepScope<TestdataMixedMultiEntitySolution> exhaustiveSearchStepScope) {
+                    if (exhaustiveSearchStepScope.getStepIndex() == 1000) {
+                        fail("The exhaustive search phase was not ended after 25 steps.");
+                    }
+                } else {
+                    fail("Wrong phase was started: " + stepScope.getClass().getSimpleName());
+                }
+            }
+
+        });
+
+        var finalBestSolution = solver.solve(solution);
+        var sizeAssignedValues = finalBestSolution.getEntityList().stream().mapToInt(e -> e.getValueList().size()).sum();
+        assertThat(sizeAssignedValues).isEqualTo(solution.getValueList().size());
+        var unassignedOtherValues = finalBestSolution.getOtherEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null).toList();
+        assertThat(unassignedOtherValues).isEmpty();
+
     }
 
 }

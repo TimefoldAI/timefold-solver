@@ -192,13 +192,6 @@ public class ListChangeMoveSelectorFactory<Solution_>
         var listChangeMoveSelectorConfig =
                 buildChildMoveSelectorConfig(variableDescriptorList.get(0), valueSelectorConfig, destinationSelectorConfig);
         listChangeMoveSelectorConfig.inheritFolded(config);
-        if (isExhaustiveSearch) {
-            // The exhaustive method must not set the entity class for the entity selection configuration,
-            // or the creation will fail.
-            var destinationConfig = Objects.requireNonNull(listChangeMoveSelectorConfig.getDestinationSelectorConfig());
-            var entityConfig = Objects.requireNonNull(destinationConfig.getEntitySelectorConfig());
-            entityConfig.setEntityClass(null);
-        }
         return listChangeMoveSelectorConfig;
     }
 

@@ -20,6 +20,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMove
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
@@ -27,6 +28,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.AbstractExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.BasicExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.ListVariableExhaustiveSearchDecider;
+import ai.timefold.solver.core.impl.exhaustivesearch.decider.MixedVariableExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.TrendBasedScoreBounder;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -65,24 +67,36 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                 .withEntitySorterManner(entitySorterManner)
                 .withValueSorterManner(valueSorterManner)
                 .build();
-        if (phaseConfigPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()) {
-            throw new UnsupportedOperationException("Exhaustive Search does not support mixed models.");
-        }
-        var isListVariable = solverConfigPolicy.getSolutionDescriptor().getListVariableDescriptor() != null;
+        var isMixedModel = phaseConfigPolicy.getSolutionDescriptor().hasBothBasicAndListVariables();
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         var scoreBounderEnabled = exhaustiveSearchType.isScoreBounderEnabled();
         var nodeExplorationType = getNodeExplorationType(exhaustiveSearchType, phaseConfig);
-        var entitySelectorConfig = buildEntitySelectorConfig(phaseConfigPolicy);
-        var entitySelector =
-                EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
-                        .buildEntitySelector(phaseConfigPolicy, SelectionCacheType.PHASE, SelectionOrder.ORIGINAL);
-
-        return new DefaultExhaustiveSearchPhase.Builder<>(phaseIndex,
-                solverConfigPolicy.getLogIndentation(), phaseTermination,
-                nodeExplorationType.buildNodeComparator(scoreBounderEnabled), entitySelector, buildDecider(phaseConfigPolicy,
-                        entitySelector, bestSolutionRecaller, phaseTermination, scoreBounderEnabled, isListVariable))
-                .enableAssertions(phaseConfigPolicy.getEnvironmentMode())
-                .build();
+        AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
+        if (isMixedModel) {
+            var basicVarEntitySelectorConfig = buildEntitySelectorConfig(phaseConfigPolicy, false);
+            var basicVarEntitySelector = EntitySelectorFactory.<Solution_> create(basicVarEntitySelectorConfig)
+                    .buildEntitySelector(phaseConfigPolicy, SelectionCacheType.PHASE, SelectionOrder.ORIGINAL);
+            var basicVarDecider =
+                    buildDecider(phaseConfigPolicy, basicVarEntitySelector, bestSolutionRecaller, phaseTermination,
+                            scoreBounderEnabled, false);
+            var listVarEntitySelectorConfig = buildEntitySelectorConfig(phaseConfigPolicy, true);
+            var listVarEntitySelector = EntitySelectorFactory.<Solution_> create(listVarEntitySelectorConfig)
+                    .buildEntitySelector(phaseConfigPolicy, SelectionCacheType.PHASE, SelectionOrder.ORIGINAL);
+            var listVarDecider = buildDecider(phaseConfigPolicy, listVarEntitySelector, bestSolutionRecaller, phaseTermination,
+                    scoreBounderEnabled, true);
+            decider = new MixedVariableExhaustiveSearchDecider<>(basicVarDecider, listVarDecider);
+        } else {
+            var isListVariable = solverConfigPolicy.getSolutionDescriptor().getListVariableDescriptor() != null;
+            var entitySelectorConfig = buildEntitySelectorConfig(phaseConfigPolicy, isListVariable);
+            var entitySelector =
+                    EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
+                            .buildEntitySelector(phaseConfigPolicy, SelectionCacheType.PHASE, SelectionOrder.ORIGINAL);
+            decider = buildDecider(phaseConfigPolicy, entitySelector, bestSolutionRecaller, phaseTermination,
+                    scoreBounderEnabled, isListVariable);
+        }
+        return new DefaultExhaustiveSearchPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(), phaseTermination,
+                nodeExplorationType.buildNodeComparator(scoreBounderEnabled), decider)
+                .enableAssertions(phaseConfigPolicy.getEnvironmentMode()).build();
     }
 
     private static NodeExplorationType getNodeExplorationType(ExhaustiveSearchType exhaustiveSearchType,
@@ -104,11 +118,12 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         return nodeExplorationType;
     }
 
-    private EntitySelectorConfig buildEntitySelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
+    private EntitySelectorConfig buildEntitySelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy,
+            boolean isListVariable) {
         var result = Objects.requireNonNullElseGet(
                 phaseConfig.getEntitySelectorConfig(),
                 () -> {
-                    var entityDescriptor = deduceEntityDescriptor(configPolicy.getSolutionDescriptor());
+                    var entityDescriptor = deduceEntityDescriptor(configPolicy.getSolutionDescriptor(), isListVariable);
                     var entitySelectorConfig = new EntitySelectorConfig()
                             .withEntityClass(entityDescriptor.getEntityClass());
                     if (EntitySelectorConfig.hasSorter(configPolicy.getEntitySorterManner(), entityDescriptor)) {
@@ -127,8 +142,13 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         return result;
     }
 
-    protected EntityDescriptor<Solution_> deduceEntityDescriptor(SolutionDescriptor<Solution_> solutionDescriptor) {
-        var entityDescriptors = solutionDescriptor.getGenuineEntityDescriptors();
+    protected EntityDescriptor<Solution_> deduceEntityDescriptor(SolutionDescriptor<Solution_> solutionDescriptor,
+            boolean isListVariable) {
+        if (isListVariable) {
+            return solutionDescriptor.getListVariableDescriptor().getEntityDescriptor();
+        }
+        var entityDescriptors = solutionDescriptor.getGenuineEntityDescriptors().stream()
+                .filter(EntityDescriptor::hasAnyGenuineBasicVariables).toList();
         if (entityDescriptors.size() != 1) {
             throw new IllegalArgumentException(
                     "The phaseConfig (%s) has no entitySelector configured and because there are multiple in the entityClassSet (%s), it cannot be deduced automatically."
@@ -142,9 +162,11 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
             BestSolutionRecaller<Solution_> bestSolutionRecaller, PhaseTermination<Solution_> termination,
             boolean scoreBounderEnabled, boolean isListVariable) {
         var manualEntityMimicRecorder = new ManualEntityMimicRecorder<>(sourceEntitySelector);
-        var mimicSelectorId = sourceEntitySelector.getEntityDescriptor().getEntityClass().getName(); // TODO mimicSelectorId must be a field
+        // TODO mimicSelectorId must be a field?
+        var mimicSelectorId = ConfigUtils.addRandomSuffix(sourceEntitySelector.getEntityDescriptor().getEntityClass().getName(),
+                configPolicy.getRandom());
         configPolicy.addEntityMimicRecorder(mimicSelectorId, manualEntityMimicRecorder);
-        var variableDescriptorList = getGenuineVariableDescriptorList(sourceEntitySelector);
+        var variableDescriptorList = getGenuineVariableDescriptorList(sourceEntitySelector, isListVariable);
         // TODO Fail fast if it does not include all genuineVariableDescriptors as expected by DefaultExhaustiveSearchPhase.fillLayerList()
         MoveSelectorConfig<?> moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
         if (moveSelectorConfig == null) {
@@ -209,27 +231,35 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
     }
 
     private MoveSelectorConfig<?> buildMoveSelectorConfigForListVariable(HeuristicConfigPolicy<Solution_> configPolicy,
-            String mimicSelectorId, ListVariableDescriptor<Solution_> variableDescriptor) {
+            String mimicSelectorId, ListVariableDescriptor<Solution_> listVariableDescriptor) {
         var listChangeMoveConfig = new ListChangeMoveSelectorConfig();
         var valueSelectorConfig = new ValueSelectorConfig();
-        if (ValueSelectorConfig.hasSorter(configPolicy.getValueSorterManner(), variableDescriptor)) {
+        if (ValueSelectorConfig.hasSorter(configPolicy.getValueSorterManner(), listVariableDescriptor)) {
             valueSelectorConfig = valueSelectorConfig
                     .withCacheType(
-                            variableDescriptor.canExtractValueRangeFromSolution() ? SelectionCacheType.PHASE : STEP)
+                            listVariableDescriptor.canExtractValueRangeFromSolution() ? SelectionCacheType.PHASE : STEP)
                     .withSelectionOrder(SelectionOrder.SORTED)
                     .withSorterManner(configPolicy.getValueSorterManner());
         }
+        var entityDescriptor = listVariableDescriptor.getEntityDescriptor();
         listChangeMoveConfig.setValueSelectorConfig(valueSelectorConfig);
         listChangeMoveConfig.setDestinationSelectorConfig(new DestinationSelectorConfig()
-                .withEntitySelectorConfig(EntitySelectorConfig.newMimicSelectorConfig(mimicSelectorId)));
+                .withEntitySelectorConfig(EntitySelectorConfig.newMimicSelectorConfig(mimicSelectorId)
+                        .withEntityClass(entityDescriptor.getEntityClass())));
         return listChangeMoveConfig;
     }
 
     private static <Solution_> List<GenuineVariableDescriptor<Solution_>>
-            getGenuineVariableDescriptorList(EntitySelector<Solution_> entitySelector) {
+            getGenuineVariableDescriptorList(EntitySelector<Solution_> entitySelector, boolean isListVariable) {
         var entityDescriptor = entitySelector.getEntityDescriptor();
         // Keep in sync with DefaultExhaustiveSearchPhase.fillLayerList()
         // which includes all genuineVariableDescriptors
-        return entityDescriptor.getGenuineVariableDescriptorList();
+        if (isListVariable) {
+            return List.of(entityDescriptor.getSolutionDescriptor().getListVariableDescriptor());
+        } else {
+            return entityDescriptor.getGenuineVariableDescriptorList().stream()
+                    .filter(variableDescriptor -> !variableDescriptor.isListVariable())
+                    .toList();
+        }
     }
 }

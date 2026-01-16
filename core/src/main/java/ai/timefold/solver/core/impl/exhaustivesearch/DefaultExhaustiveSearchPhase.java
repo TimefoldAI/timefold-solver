@@ -12,7 +12,6 @@ import ai.timefold.solver.core.impl.exhaustivesearch.decider.AbstractExhaustiveS
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.PhaseType;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -27,7 +26,6 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         implements ExhaustiveSearchPhase<Solution_> {
 
     protected final Comparator<ExhaustiveSearchNode> nodeComparator;
-    protected final EntitySelector<Solution_> entitySelector;
     protected final AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
 
     protected final boolean assertWorkingSolutionScoreFromScratch;
@@ -36,7 +34,6 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
     private DefaultExhaustiveSearchPhase(Builder<Solution_> builder) {
         super(builder);
         nodeComparator = builder.nodeComparator;
-        entitySelector = builder.entitySelector;
         decider = builder.decider;
 
         assertWorkingSolutionScoreFromScratch = builder.assertWorkingSolutionScoreFromScratch;
@@ -59,24 +56,25 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
-        var expandableNodeQueue = new TreeSet<>(nodeComparator);
-        var phaseScope = new ExhaustiveSearchPhaseScope<>(solverScope, phaseIndex);
-        phaseScope.setExpandableNodeQueue(expandableNodeQueue);
-        phaseStarted(phaseScope);
-
-        while (!expandableNodeQueue.isEmpty() && !phaseTermination.isPhaseTerminated(phaseScope)) {
-            var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
-            var node = expandableNodeQueue.last();
-            expandableNodeQueue.remove(node);
-            stepScope.setExpandingNode(node);
-            stepStarted(stepScope);
-            decider.restoreWorkingSolution(stepScope, assertWorkingSolutionScoreFromScratch,
-                    assertExpectedWorkingSolutionScore);
-            decider.expandNode(stepScope);
-            stepEnded(stepScope);
-            phaseScope.setLastCompletedStepScope(stepScope);
+        while (!decider.isFinished()) {
+            var expandableNodeQueue = new TreeSet<>(nodeComparator);
+            var phaseScope = new ExhaustiveSearchPhaseScope<>(solverScope, phaseIndex);
+            phaseScope.setExpandableNodeQueue(expandableNodeQueue);
+            phaseStarted(phaseScope);
+            while (!expandableNodeQueue.isEmpty() && !phaseTermination.isPhaseTerminated(phaseScope)) {
+                var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
+                var node = expandableNodeQueue.last();
+                expandableNodeQueue.remove(node);
+                stepScope.setExpandingNode(node);
+                stepStarted(stepScope);
+                decider.restoreWorkingSolution(stepScope, assertWorkingSolutionScoreFromScratch,
+                        assertExpectedWorkingSolutionScore);
+                decider.expandNode(stepScope);
+                stepEnded(stepScope);
+                phaseScope.setLastCompletedStepScope(stepScope);
+            }
+            phaseEnded(phaseScope);
         }
-        phaseEnded(phaseScope);
     }
 
     // ************************************************************************
@@ -86,14 +84,32 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        entitySelector.solvingStarted(solverScope);
         decider.solvingStarted(solverScope);
+    }
+
+    @Override
+    public void solvingEnded(SolverScope<Solution_> solverScope) {
+        super.solvingEnded(solverScope);
+        decider.solvingEnded(solverScope);
     }
 
     private void phaseStarted(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        entitySelector.phaseStarted(phaseScope);
         decider.phaseStarted(phaseScope);
+    }
+
+    private void phaseEnded(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
+        decider.phaseEnded(phaseScope);
+        phaseScope.endingNow();
+        logger.info("{}Exhaustive Search phase ({}) ended: time spent ({}), best score ({}),"
+                + " move evaluation speed ({}/sec), step total ({}).",
+                logIndentation,
+                phaseIndex,
+                phaseScope.calculateSolverTimeMillisSpentUpToNow(),
+                phaseScope.getBestScore().raw(),
+                phaseScope.getPhaseMoveEvaluationSpeed(),
+                phaseScope.getNextStepIndex());
     }
 
     private void stepStarted(ExhaustiveSearchStepScope<Solution_> stepScope) {
@@ -119,43 +135,19 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         }
     }
 
-    private void phaseEnded(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
-        super.phaseEnded(phaseScope);
-        entitySelector.phaseEnded(phaseScope);
-        decider.phaseEnded(phaseScope);
-        phaseScope.endingNow();
-        logger.info("{}Exhaustive Search phase ({}) ended: time spent ({}), best score ({}),"
-                + " move evaluation speed ({}/sec), step total ({}).",
-                logIndentation,
-                phaseIndex,
-                phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                phaseScope.getBestScore().raw(),
-                phaseScope.getPhaseMoveEvaluationSpeed(),
-                phaseScope.getNextStepIndex());
-    }
-
-    @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
-        entitySelector.solvingEnded(solverScope);
-        decider.solvingEnded(solverScope);
-    }
-
     public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
 
         private final Comparator<ExhaustiveSearchNode> nodeComparator;
-        private final EntitySelector<Solution_> entitySelector;
         private final AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
 
         private boolean assertWorkingSolutionScoreFromScratch = false;
         private boolean assertExpectedWorkingSolutionScore = false;
 
         public Builder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination,
-                Comparator<ExhaustiveSearchNode> nodeComparator, EntitySelector<Solution_> entitySelector,
+                Comparator<ExhaustiveSearchNode> nodeComparator,
                 AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider) {
             super(phaseIndex, logIndentation, phaseTermination);
             this.nodeComparator = nodeComparator;
-            this.entitySelector = entitySelector;
             this.decider = decider;
         }
 

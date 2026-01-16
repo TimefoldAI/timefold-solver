@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ extends Score<Score_>>
         implements ExhaustiveSearchPhaseLifecycleListener<Solution_>
-        permits ListVariableExhaustiveSearchDecider, BasicExhaustiveSearchDecider {
+        permits BasicExhaustiveSearchDecider, ListVariableExhaustiveSearchDecider, MixedVariableExhaustiveSearchDecider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractExhaustiveSearchDecider.class);
 
@@ -38,6 +38,10 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
     protected final boolean scoreBounderEnabled;
     private final ScoreBounder<?> scoreBounder;
 
+    boolean isFinished = false;
+
+    // Flag that allows to always return false when checking if the solution is complete
+    protected boolean solutionAlwaysIncomplete = false;
     private boolean assertMoveScoreFromScratch = false;
     private boolean assertExpectedUndoMoveScore = false;
 
@@ -66,6 +70,14 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
 
     public void setAssertExpectedUndoMoveScore(boolean assertExpectedUndoMoveScore) {
         this.assertExpectedUndoMoveScore = assertExpectedUndoMoveScore;
+    }
+
+    protected void makeSolutionAlwaysIncomplete() {
+        solutionAlwaysIncomplete = true;
+    }
+
+    public boolean isFinished() {
+        return isFinished;
     }
 
     // ************************************************************************
@@ -230,14 +242,29 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
+        sourceEntitySelector.solvingStarted(solverScope);
         moveRepository.solvingStarted(solverScope);
     }
 
     @Override
+    public void solvingEnded(SolverScope<Solution_> solverScope) {
+        sourceEntitySelector.solvingEnded(solverScope);
+        moveRepository.solvingEnded(solverScope);
+    }
+
+    @Override
     public void phaseStarted(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
+        sourceEntitySelector.phaseStarted(phaseScope);
         moveRepository.phaseStarted(phaseScope);
         fillLayerList(phaseScope);
         initStartNode(phaseScope, null);
+    }
+
+    @Override
+    public void phaseEnded(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
+        sourceEntitySelector.phaseEnded(phaseScope);
+        moveRepository.phaseEnded(phaseScope);
+        isFinished = true;
     }
 
     @Override
@@ -248,16 +275,6 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
     @Override
     public void stepEnded(ExhaustiveSearchStepScope<Solution_> stepScope) {
         moveRepository.stepEnded(stepScope);
-    }
-
-    @Override
-    public void phaseEnded(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
-        moveRepository.phaseEnded(phaseScope);
-    }
-
-    @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        moveRepository.solvingEnded(solverScope);
     }
 
 }

@@ -89,7 +89,7 @@ public final class ListVariableExhaustiveSearchDecider<Solution_, Score_ extends
     @Override
     public boolean isSolutionComplete(ExhaustiveSearchNode expandingNode) {
         // One value to be assigned and one move to be done
-        return listVariableState.getUnassignedCount() <= 1;
+        return !solutionAlwaysIncomplete && listVariableState.getUnassignedCount() <= 1;
     }
 
     @Override
