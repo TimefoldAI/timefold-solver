@@ -68,6 +68,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         if (phaseConfigPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()) {
             throw new UnsupportedOperationException("Exhaustive Search does not support mixed models.");
         }
+        var isListVariable = solverConfigPolicy.getSolutionDescriptor().getListVariableDescriptor() != null;
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         var scoreBounderEnabled = exhaustiveSearchType.isScoreBounderEnabled();
         var nodeExplorationType = getNodeExplorationType(exhaustiveSearchType, phaseConfig);
@@ -79,7 +80,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         return new DefaultExhaustiveSearchPhase.Builder<>(phaseIndex,
                 solverConfigPolicy.getLogIndentation(), phaseTermination,
                 nodeExplorationType.buildNodeComparator(scoreBounderEnabled), entitySelector, buildDecider(phaseConfigPolicy,
-                        entitySelector, bestSolutionRecaller, phaseTermination, scoreBounderEnabled))
+                        entitySelector, bestSolutionRecaller, phaseTermination, scoreBounderEnabled, isListVariable))
                 .enableAssertions(phaseConfigPolicy.getEnvironmentMode())
                 .build();
     }
@@ -137,24 +138,19 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
     }
 
     private AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> buildDecider(
-            HeuristicConfigPolicy<Solution_> configPolicy,
-            EntitySelector<Solution_> sourceEntitySelector, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            PhaseTermination<Solution_> termination, boolean scoreBounderEnabled) {
+            HeuristicConfigPolicy<Solution_> configPolicy, EntitySelector<Solution_> sourceEntitySelector,
+            BestSolutionRecaller<Solution_> bestSolutionRecaller, PhaseTermination<Solution_> termination,
+            boolean scoreBounderEnabled, boolean isListVariable) {
         var manualEntityMimicRecorder = new ManualEntityMimicRecorder<>(sourceEntitySelector);
         var mimicSelectorId = sourceEntitySelector.getEntityDescriptor().getEntityClass().getName(); // TODO mimicSelectorId must be a field
         configPolicy.addEntityMimicRecorder(mimicSelectorId, manualEntityMimicRecorder);
         var variableDescriptorList = getGenuineVariableDescriptorList(sourceEntitySelector);
         // TODO Fail fast if it does not include all genuineVariableDescriptors as expected by DefaultExhaustiveSearchPhase.fillLayerList()
         MoveSelectorConfig<?> moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
-        var listVariable = variableDescriptorList.stream()
-                .filter(GenuineVariableDescriptor::isListVariable)
-                .map(variableDescriptor -> (ListVariableDescriptor<Solution_>) variableDescriptor)
-                .findFirst()
-                .orElse(null);
         if (moveSelectorConfig == null) {
-            if (listVariable != null) {
-                moveSelectorConfig =
-                        buildMoveSelectorConfigForListVariable(configPolicy, mimicSelectorId, listVariable);
+            if (isListVariable) {
+                moveSelectorConfig = buildMoveSelectorConfigForListVariable(configPolicy, mimicSelectorId,
+                        configPolicy.getSolutionDescriptor().getListVariableDescriptor());
             } else {
                 moveSelectorConfig =
                         buildMoveSelectorConfigForBasicVariable(configPolicy, mimicSelectorId, variableDescriptorList);
@@ -166,7 +162,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                 ? new TrendBasedScoreBounder<>(configPolicy.getScoreDefinition(), configPolicy.getInitializingScoreTrend())
                 : null;
         AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
-        if (listVariable != null) {
+        if (isListVariable) {
             decider = new ListVariableExhaustiveSearchDecider<>(configPolicy.getLogIndentation(), bestSolutionRecaller,
                     termination, sourceEntitySelector, manualEntityMimicRecorder,
                     new MoveSelectorBasedMoveRepository<>(moveSelector), scoreBounderEnabled, scoreBounder);

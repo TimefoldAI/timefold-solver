@@ -162,11 +162,13 @@ class BruteForceTest {
     void solveListVariableAllowedUnassigned() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataAllowsUnassignedValuesListSolution.class)
-                .withEntityClasses(TestdataAllowsUnassignedValuesListEntity.class, TestdataAllowsUnassignedValuesListValue.class)
+                .withEntityClasses(TestdataAllowsUnassignedValuesListEntity.class,
+                        TestdataAllowsUnassignedValuesListValue.class)
                 .withEasyScoreCalculatorClass(TestdataAllowsUnassignedValuesListEasyScoreCalculator.class)
                 .withPhases(new ExhaustiveSearchPhaseConfig()
                         .withExhaustiveSearchType(ExhaustiveSearchType.BRUTE_FORCE));
-        var solver = (DefaultSolver<TestdataAllowsUnassignedValuesListSolution>) SolverFactory.<TestdataAllowsUnassignedValuesListSolution> create(solverConfig)
+        var solver = (DefaultSolver<TestdataAllowsUnassignedValuesListSolution>) SolverFactory
+                .<TestdataAllowsUnassignedValuesListSolution> create(solverConfig)
                 .buildSolver();
 
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(3, 2);

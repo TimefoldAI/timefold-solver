@@ -165,7 +165,7 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
             bestSolutionRecaller.processWorkingSolutionDuringMove(innerScore, stepScope);
         } else {
             var scoreDirector = phaseScope.<Score_> getScoreDirector();
-            var castScoreBounder = this.<Score_> getScoreBounder();
+            var castScoreBounder = this.getScoreBounder();
             var optimisticBound = castScoreBounder.calculateOptimisticBound(scoreDirector, innerScore);
             moveNode.setOptimisticBound(optimisticBound);
             var bestPessimisticBound = (InnerScore<Score_>) phaseScope.getBestPessimisticBound();

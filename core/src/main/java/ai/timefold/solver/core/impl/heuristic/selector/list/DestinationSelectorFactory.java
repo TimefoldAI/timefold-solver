@@ -43,7 +43,7 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
                 && configPolicy.getEntitySorterManner() != NONE;
         var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
         var hasSorter = entityDescriptor.getDescendingSorter() != null;
-        if (hasSortManner && hasSorter && entitySelectorConfig.getSorterManner() == null) {
+        if (!isExhaustiveSearch && hasSortManner && hasSorter && entitySelectorConfig.getSorterManner() == null) {
             if (entityValueRangeRecorderId == null) {
                 // Solution-range model
                 entitySelectorConfig.setCacheType(SelectionCacheType.PHASE);
