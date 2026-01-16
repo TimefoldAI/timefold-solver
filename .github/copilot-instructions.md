@@ -1,2 +1,2 @@
-You must read the project's constitution (#file:../.specify/memory/constitution.md) and use it to guide all your responses.
+You must read the project's [constitution](/.specify/memory/constitution.md) and use it to guide your code review.
 Pay special attention to typos and inconsistencies in the reviewed content, as those are often difficult for humans to spot.
