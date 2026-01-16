@@ -11,10 +11,10 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 import org.junit.jupiter.api.Test;
 
-class ContainIndexerTest extends AbstractIndexerTest {
+class ContainingIndexerTest extends AbstractIndexerTest {
 
     private final DefaultBiJoiner<TestWorker, TestJob> joiner =
-            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.contain(TestWorker::skills, TestJob::skill)
+            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.containing(TestWorker::skills, TestJob::skill)
                     .and(Joiners.equal(TestWorker::department, TestJob::department));
 
     @Test
@@ -87,7 +87,7 @@ class ContainIndexerTest extends AbstractIndexerTest {
     }
 
     private final DefaultBiJoiner<TestWorker, TestJob> containedInComboJoiner =
-            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.contain(TestWorker::skills, TestJob::skill)
+            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.containing(TestWorker::skills, TestJob::skill)
                     .and(Joiners.containedIn(TestWorker::affinity, TestJob::affinities));
 
     @Test

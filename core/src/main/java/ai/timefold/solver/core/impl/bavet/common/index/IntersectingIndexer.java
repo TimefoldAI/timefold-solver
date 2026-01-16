@@ -23,10 +23,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * As defined by {@link Joiners#intersect(Function, Function)}
+ * As defined by {@link Joiners#intersecting(Function, Function)}
  */
 @NullMarked
-final class IntersectIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
+final class IntersectingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
 
     private final KeyUnpacker<KeyCollection_> modifyKeyUnpacker;
     private final KeyUnpacker<KeyCollection_> queryKeyUnpacker;
@@ -42,7 +42,7 @@ final class IntersectIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> i
      * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
     @SuppressWarnings("unchecked")
-    public IntersectIndexer(KeyUnpacker<Key_> keyUnpacker, Supplier<Indexer<T>> downstreamIndexerSupplier) {
+    public IntersectingIndexer(KeyUnpacker<Key_> keyUnpacker, Supplier<Indexer<T>> downstreamIndexerSupplier) {
         this.modifyKeyUnpacker = Objects.requireNonNull((KeyUnpacker<KeyCollection_>) keyUnpacker);
         this.queryKeyUnpacker = Objects.requireNonNull((KeyUnpacker<KeyCollection_>) keyUnpacker);
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);

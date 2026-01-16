@@ -325,6 +325,7 @@ public final class ElementAwareLinkedList<T> implements Iterable<T> {
             list = null;
         }
 
+        @Override
         public T element() {
             return element;
         }

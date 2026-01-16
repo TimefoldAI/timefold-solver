@@ -542,14 +542,14 @@ public final class IndexerFactory<Right_> {
             case LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL -> {
                 return new ComparisonIndexer<>(joinerType, keyUnpacker, downstreamIndexerSupplier);
             }
-            case CONTAIN -> {
-                return new ContainIndexer<>(keyUnpacker, downstreamIndexerSupplier);
+            case CONTAINING -> {
+                return new ContainingIndexer<>(keyUnpacker, downstreamIndexerSupplier);
             }
             case CONTAINED_IN -> {
                 return new ContainedInIndexer<>(keyUnpacker, downstreamIndexerSupplier);
             }
-            case INTERSECT -> {
-                return new IntersectIndexer<>(keyUnpacker, downstreamIndexerSupplier);
+            case INTERSECTING -> {
+                return new IntersectingIndexer<>(keyUnpacker, downstreamIndexerSupplier);
             }
             default -> throw new IllegalStateException(
                     "Impossible state: The joiner type (" + joinerType + ") is not implemented.");

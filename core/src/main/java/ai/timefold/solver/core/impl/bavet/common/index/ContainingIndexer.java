@@ -19,10 +19,10 @@ import ai.timefold.solver.core.impl.util.Pair;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * As defined by {@link Joiners#contain(Function, Function)}
+ * As defined by {@link Joiners#containing(Function, Function)}
  */
 @NullMarked
-final class ContainIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
+final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
 
     private final KeyUnpacker<KeyCollection_> modifyKeyUnpacker;
     private final KeyUnpacker<Key_> queryKeyUnpacker;
@@ -38,7 +38,7 @@ final class ContainIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> imp
      * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
     @SuppressWarnings("unchecked")
-    public ContainIndexer(KeyUnpacker<Key_> keyUnpacker, Supplier<Indexer<T>> downstreamIndexerSupplier) {
+    public ContainingIndexer(KeyUnpacker<Key_> keyUnpacker, Supplier<Indexer<T>> downstreamIndexerSupplier) {
         this.modifyKeyUnpacker = Objects.requireNonNull((KeyUnpacker<KeyCollection_>) keyUnpacker);
         this.queryKeyUnpacker = Objects.requireNonNull(keyUnpacker);
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);

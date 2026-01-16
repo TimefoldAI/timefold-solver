@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.bavet.common.joiner;
 
-import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.CONTAIN;
 import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.CONTAINED_IN;
+import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.CONTAINING;
 import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.EQUAL;
 import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.GREATER_THAN;
 import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.GREATER_THAN_OR_EQUAL;
-import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.INTERSECT;
+import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.INTERSECTING;
 import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.LESS_THAN;
 import static ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType.LESS_THAN_OR_EQUAL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,8 +54,8 @@ class JoinerTypeTest {
 
     @Test
     void contain() {
-        assertThat(CONTAIN.matches(List.of(1, 3), 1)).isTrue();
-        assertThat(CONTAIN.matches(List.of(1, 3), 2)).isFalse();
+        assertThat(CONTAINING.matches(List.of(1, 3), 1)).isTrue();
+        assertThat(CONTAINING.matches(List.of(1, 3), 2)).isFalse();
     }
 
     @Test
@@ -66,14 +66,14 @@ class JoinerTypeTest {
 
     @Test
     void containAny() {
-        assertThat(INTERSECT.matches(List.of(1, 2, 3), List.of(2))).isTrue();
-        assertThat(INTERSECT.matches(List.of(1, 2, 3), List.of(6))).isFalse();
-        assertThat(INTERSECT.matches(List.of(1, 2, 3), List.of(3, 4, 5))).isTrue();
-        assertThat(INTERSECT.matches(List.of(3, 4, 5), List.of(1, 2, 3))).isTrue();
-        assertThat(INTERSECT.matches(List.of(1, 2, 3), List.of(4, 5, 6))).isFalse();
-        assertThat(INTERSECT.matches(List.of(1, 2, 3), List.of())).isFalse();
-        assertThat(INTERSECT.matches(List.of(), List.of(1))).isFalse();
-        assertThat(INTERSECT.matches(List.of(), List.of())).isFalse();
+        assertThat(INTERSECTING.matches(List.of(1, 2, 3), List.of(2))).isTrue();
+        assertThat(INTERSECTING.matches(List.of(1, 2, 3), List.of(6))).isFalse();
+        assertThat(INTERSECTING.matches(List.of(1, 2, 3), List.of(3, 4, 5))).isTrue();
+        assertThat(INTERSECTING.matches(List.of(3, 4, 5), List.of(1, 2, 3))).isTrue();
+        assertThat(INTERSECTING.matches(List.of(1, 2, 3), List.of(4, 5, 6))).isFalse();
+        assertThat(INTERSECTING.matches(List.of(1, 2, 3), List.of())).isFalse();
+        assertThat(INTERSECTING.matches(List.of(), List.of(1))).isFalse();
+        assertThat(INTERSECTING.matches(List.of(), List.of())).isFalse();
     }
 
 }

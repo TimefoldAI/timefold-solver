@@ -11,10 +11,10 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 import org.junit.jupiter.api.Test;
 
-class IntersectIndexerTest extends AbstractIndexerTest {
+class IntersectingIndexerTest extends AbstractIndexerTest {
 
     private final DefaultBiJoiner<TestWorker, TestJob> joiner =
-            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.intersect(TestWorker::skills, TestJob::skills)
+            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.intersecting(TestWorker::skills, TestJob::skills)
                     .and(Joiners.equal(TestWorker::department, TestJob::department));
 
     @Test

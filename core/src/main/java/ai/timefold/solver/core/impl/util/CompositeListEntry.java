@@ -8,7 +8,7 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Allows to store the same tuple in multiple downstream {@link ElementAwareLinkedList}s.
- * Needed by {@link JoinerType#CONTAIN}.
+ * Needed by {@link JoinerType#CONTAINING}, {@link JoinerType#INTERSECTING}, ...
  *
  * @param <T> the tuple type
  */

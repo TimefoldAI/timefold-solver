@@ -10,9 +10,9 @@ public enum JoinerType {
     LESS_THAN_OR_EQUAL((a, b) -> ((Comparable) a).compareTo(b) <= 0),
     GREATER_THAN((a, b) -> ((Comparable) a).compareTo(b) > 0),
     GREATER_THAN_OR_EQUAL((a, b) -> ((Comparable) a).compareTo(b) >= 0),
-    CONTAIN((a, b) -> ((Collection) a).contains(b)),
+    CONTAINING((a, b) -> ((Collection) a).contains(b)),
     CONTAINED_IN((a, b) -> ((Collection) b).contains(a)),
-    INTERSECT((a, b) -> containAny((Collection) a, (Collection) b));
+    INTERSECTING((a, b) -> containAny((Collection) a, (Collection) b));
 
     private final BiPredicate<Object, Object> matcher;
 
@@ -27,9 +27,9 @@ public enum JoinerType {
             case LESS_THAN_OR_EQUAL -> GREATER_THAN_OR_EQUAL;
             case GREATER_THAN -> LESS_THAN;
             case GREATER_THAN_OR_EQUAL -> LESS_THAN_OR_EQUAL;
-            case CONTAIN -> CONTAINED_IN;
-            case CONTAINED_IN -> CONTAIN;
-            case INTERSECT -> this;
+            case CONTAINING -> CONTAINED_IN;
+            case CONTAINED_IN -> CONTAINING;
+            case INTERSECTING -> this;
         };
     }
 
@@ -45,14 +45,6 @@ public enum JoinerType {
 
     private static boolean containAny(Collection<?> leftCollection, Collection<?> rightCollection) {
         return leftCollection.stream().anyMatch(rightCollection::contains);
-    }
-
-    private static boolean containAll(Collection<?> leftCollection, Collection<?> rightCollection) {
-        return leftCollection.containsAll(rightCollection);
-    }
-
-    private static boolean containNone(Collection<?> leftCollection, Collection<?> rightCollection) {
-        return leftCollection.stream().noneMatch(rightCollection::contains);
     }
 
 }
