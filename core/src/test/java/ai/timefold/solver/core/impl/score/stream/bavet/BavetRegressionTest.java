@@ -75,7 +75,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     }
 
     /**
-     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver Github Issue 186</a>
+     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver GitHub Issue 186</a>
      */
     @TestTemplate
     void filteringJoinNullConflict() {
@@ -131,7 +131,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     }
 
     /**
-     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver Github Issue 186</a>
+     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver GitHub Issue 186</a>
      */
     @TestTemplate
     void filteringIfExistsNullConflict() {
@@ -184,7 +184,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     }
 
     /**
-     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver Github Issue 186</a>
+     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver GitHub Issue 186</a>
      */
     @TestTemplate
     void filteringIfNotExistsNullConflict() {
@@ -451,7 +451,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     }
 
     /**
-     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/828">Timefold Solver Github Issue 828</a>
+     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/828">Timefold Solver GitHub Issue 828</a>
      */
     @TestTemplate
     void concatSameTupleDeadAndAlive() {

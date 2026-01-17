@@ -51,5 +51,5 @@ in the `ai.timefold.solver.core.preview.api.domain.solution.diff` package and in
 
 We encourage you to try these preview features and give us feedback on your experience with them.
 Please direct your feedback to
-https://github.com/TimefoldAI/timefold-solver/discussions[Timefold Solver Github]
+https://github.com/TimefoldAI/timefold-solver/discussions[Timefold Solver GitHub]
 or to https://discord.com/channels/1413420192213631086/1414521616955605003[Timefold Discord]

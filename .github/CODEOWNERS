@@ -1,5 +1,5 @@
 # The general intention behind this file:
-# Github branch rules have been configured to require a review from code owners before merge.
+# GitHub branch rules have been configured to require a review from code owners before merge.
 # Owners are requested to review changes to their owned files, give feedback where appropriate, and eventually approve.
 # @triceo is required to review all changes before merge, but may delegate deeper review to secondary owners.
 #

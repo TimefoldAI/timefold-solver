@@ -15,7 +15,7 @@ import org.jspecify.annotations.NullMarked;
  * We encourage you to try the API and give us feedback on your experience with it,
  * before we finalize the API.
  * Please direct your feedback to
- * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>
+ * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
  * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
  * 
  * @param <Solution_>

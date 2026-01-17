@@ -67,7 +67,7 @@ jobs:
       cancel-in-progress: true
     steps:
       # Clone timefold-solver
-      # No need to check for stale repo, as Github merges the main repo into the fork automatically.
+      # No need to check for stale repo, as GitHub merges the main repo into the fork automatically.
       - name: Checkout timefold-solver
         uses: actions/checkout@v6
         with:
@@ -152,7 +152,7 @@ jobs:
     timeout-minutes: 120
     steps:
       # Clone timefold-solver
-      # No need to check for stale repo, as Github merges the main repo into the fork automatically.
+      # No need to check for stale repo, as GitHub merges the main repo into the fork automatically.
       - name: Checkout timefold-solver
         uses: actions/checkout@v6
         with:
@@ -160,7 +160,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
 
       # Clone timefold-solver-enterprise
-      # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
+      # Need to check for stale repo, since GitHub is not aware of the build chain and therefore doesn't automate it.
       - name: Checkout timefold-solver-enterprise (PR) # Checkout the PR branch first, if it exists
         id: checkout-solver-enterprise
         uses: actions/checkout@v6

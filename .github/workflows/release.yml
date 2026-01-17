@@ -1,5 +1,5 @@
 # Axioms of the release pipeline:
-# - Each release starts from timefold-solver by running this Github Action.
+# - Each release starts from timefold-solver by running this GitHub Action.
 # - Each individual repository can only start its own release when its dependencies are fully released.
 #   timefold-solver-enterprise depends on timefold-solver
 #   timefold-quickstarts depends on timefold-solver
