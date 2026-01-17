@@ -535,25 +535,14 @@ public final class IndexerFactory<Right_> {
         if (!isLeftBridge && !requiresRandomAccess) {
             joinerType = joinerType.flip();
         }
-        switch (joinerType) {
-            case EQUAL -> {
-                return new EqualIndexer<>(keyUnpacker, downstreamIndexerSupplier);
-            }
-            case LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL -> {
-                return new ComparisonIndexer<>(joinerType, keyUnpacker, downstreamIndexerSupplier);
-            }
-            case CONTAINING -> {
-                return new ContainingIndexer<>(keyUnpacker, downstreamIndexerSupplier);
-            }
-            case CONTAINED_IN -> {
-                return new ContainedInIndexer<>(keyUnpacker, downstreamIndexerSupplier);
-            }
-            case INTERSECTING -> {
-                return new IntersectingIndexer<>(keyUnpacker, downstreamIndexerSupplier);
-            }
-            default -> throw new IllegalStateException(
-                    "Impossible state: The joiner type (" + joinerType + ") is not implemented.");
-        }
+        return switch (joinerType) {
+            case EQUAL -> new EqualIndexer<>(keyUnpacker, downstreamIndexerSupplier);
+            case LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL ->
+                new ComparisonIndexer<>(joinerType, keyUnpacker, downstreamIndexerSupplier);
+            case CONTAINING -> new ContainingIndexer<>(keyUnpacker, downstreamIndexerSupplier);
+            case CONTAINED_IN -> new ContainedInIndexer<>(keyUnpacker, downstreamIndexerSupplier);
+            case INTERSECTING -> new IntersectingIndexer<>(keyUnpacker, downstreamIndexerSupplier);
+        };
     }
 
     /**

@@ -194,27 +194,8 @@ final class IntersectingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>
     }
 
     private ListEntry<T> getManyKeys(Object queryCompositeKey, KeyCollection_ indexKeyCollection, int index) {
-        var distinctingSet = new HashSet<T>(indexKeyCollection.size() * 16);
-        var seenCount = 0;
-        for (var indexKey : indexKeyCollection) {
-            var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-            if (downstreamIndexer == null) {
-                continue;
-            }
-            var downstreamIndexerIterator = downstreamIndexer.iterator(queryCompositeKey);
-            while (downstreamIndexerIterator.hasNext()) { // To avoid capturing a lambda on the hot path.
-                var tuple = downstreamIndexerIterator.next();
-                if (distinctingSet.add(tuple)) {
-                    var size = downstreamIndexer.size(queryCompositeKey);
-                    if (index < seenCount + size) {
-                        return downstreamIndexer.get(queryCompositeKey, index - seenCount);
-                    } else {
-                        seenCount += size;
-                    }
-                }
-            }
-        }
-        throw new IndexOutOfBoundsException("Index: %d".formatted(index));
+        // TODO needs implementing; the original implementation did not support get either
+        throw new UnsupportedOperationException();
     }
 
     @Override
