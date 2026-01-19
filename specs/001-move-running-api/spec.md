@@ -98,6 +98,7 @@ A developer wants to test whether a Move produces the expected intermediate stat
 - **FR-009**: System MUST handle moves that affect multiple planning variables or entities
 - **FR-010**: System MUST maintain solution integrity during undo operations in normal flow (no exceptions) - no partial rollbacks, including automatic reversion of shadow variables
 - **FR-011**: System MUST support moves on solutions with both basic and list variables
+- **FR-011a**: System does NOT support chained planning variables; only basic variables and list variables are supported
 - **FR-012**: System MUST trigger shadow variable updates when moves modify source variables
 - **FR-012a**: System MUST NOT suppress or interfere with listeners, shadow variable updates, or other solver subsystems during move execution or undo operations
 - **FR-012b**: System MUST initialize uninitialized shadow variables in input solutions using the solver's underlying mechanisms when the working solution is set on the score director (during using() method call); this is handled automatically by the score director's setWorkingSolution() method
@@ -137,11 +138,19 @@ A developer wants to test whether a Move produces the expected intermediate stat
 - **SC-004**: Move execution workflow completes without requiring developers to understand internal undo mechanisms
 - **SC-005**: API supports all standard Move types used in the solver without type-specific handling
 - **SC-006**: User assertions can be executed during temporary scope before automatic undo
-- **SC-007**: API is used to test at least 2 different solver move types (dogfooding validates real-world usefulness)
+- **SC-007**: API is used to test real solver moves from the builtin package (dogfooding validates real-world usefulness):
+  - ChangeMove (basic variable)
+  - SwapMove (basic variable)  
+  - ListAssignMove (list variable)
+  - ListChangeMove (list variable)
+  - ListSwapMove (list variable)
+  - CompositeMove (composite)
+  - Each builtin move tested in its own test class using MoveRunner API
 
 ## Assumptions
 
 - Moves follow standard solver conventions (they modify solution state through planning variable assignments via execute(MutableSolutionView))
+- API supports moves on solutions with basic variables and list variables only; chained planning variables are NOT supported
 - Solutions are mutable and their state can be captured and restored
 - Input solutions may have uninitialized shadow variables; the solver's underlying architecture will initialize them when the working solution is set on the score director (during the using() method call via setWorkingSolution())
 - Developers have access to both Move implementations and sample solution instances for testing

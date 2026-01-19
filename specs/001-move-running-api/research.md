@@ -8,6 +8,8 @@
 
 This document captures research findings for implementing the Move Running API. The research focuses on understanding the solver's internal mechanisms for move execution, undo operations, and resource management.
 
+**Scope**: The API is designed to support moves on solutions with basic planning variables and list planning variables. Chained planning variables are NOT supported by this API.
+
 ## Research Topics
 
 ### 1. Solver's Move Execution and Undo Mechanisms

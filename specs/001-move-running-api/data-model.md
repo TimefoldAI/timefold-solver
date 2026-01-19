@@ -8,6 +8,8 @@
 
 This document defines the data model and entities for the Move Running API. Since this is a testing utility API rather than a domain model feature, the "entities" here refer to the API classes and their relationships.
 
+**Scope**: The API supports moves on solutions with basic planning variables and list planning variables only. Chained planning variables are NOT supported.
+
 ## Core API Classes
 
 ### 1. MoveRunner<Solution_>
@@ -58,11 +60,11 @@ This document defines the data model and entities for the Move Running API. Sinc
 
 **Purpose**: Binds a solution instance to a MoveRunner and provides methods for executing moves.
 
-**Type**: Interface (or final class implementing an interface)
+**Type**: Final class (holds concrete state: score director reference, solution instance, parent runner reference)
 
 **Lifecycle**: Created per `using()` call, lives until garbage collected (no explicit close needed at this level)
 
-**Fields** (if implemented as class):
+**Fields**:
 
 | Field Name | Type | Description | Nullability |
 |------------|------|-------------|-------------|
@@ -262,19 +264,36 @@ User must discard solution instance
 - Solution with complex object graph (for undo testing)
 
 **Test Moves**:
-- Simple swap move (exchanges two entities' values)
-- List move (modifies planning list variable)
-- Move that throws exception
-- Move that modifies multiple variables
+- Simple custom move for basic MoveRunner functionality testing (in MoveRunnerTest.java)
+- Real solver moves from builtin package for dogfooding:
+  - ChangeMove - via `Moves.change()` factory method
+  - SwapMove - via `Moves.swap()` factory method
+  - ListAssignMove - via `Moves.assign()` factory method
+  - ListChangeMove - via `Moves.change()` factory method (list variant)
+  - ListSwapMove - via `Moves.swap()` factory method (list variant)
+  - CompositeMove - via `Moves.compose()` factory method
 
-### Test Scenarios
+### Test Structure
 
-1. **Basic Execution**: Execute simple move, verify changes applied
+**MoveRunnerTest.java** - Unit tests for MoveRunner API:
+1. **Basic Execution**: Execute simple custom move, verify changes applied
 2. **Temporary Execution**: Execute move temporarily, verify undo completes
 3. **Exception Handling**: Execute move with handler, verify exception suppressed
 4. **Resource Management**: Verify close() releases resources, post-close usage throws
 5. **Validation**: Verify null checks, empty array checks, closed state checks
 6. **Reuse**: Create multiple execution contexts from same runner, verify independence
+
+**builtin/*Test.java** - Dogfooding tests (one per builtin move type):
+- **ChangeMoveTest.java**: Test ChangeMove using MoveRunner
+- **SwapMoveTest.java**: Test SwapMove using MoveRunner
+- **ListAssignMoveTest.java**: Test ListAssignMove using MoveRunner
+- **ListChangeMoveTest.java**: Test ListChangeMove using MoveRunner
+- **ListSwapMoveTest.java**: Test ListSwapMove using MoveRunner
+- **CompositeMoveTest.java**: Test CompositeMove using MoveRunner
+
+Each builtin move test demonstrates real-world usage and validates that MoveRunner works correctly with actual solver moves accessed via the `Moves` factory class.
+
+**No MoveRunnerIT.java needed** - All core functionality can be tested in unit tests without long-running or complex integration testing.
 
 ---
 

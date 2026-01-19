@@ -18,7 +18,7 @@ The Move Running API provides a testing utility for developers to execute Move i
 **Target Platform**: JVM (any platform supporting JDK 17+)  
 **Project Type**: Single library project (core solver module)  
 **Performance Goals**: Not performance-critical (testing API), but O(changes) for execution and undo operations  
-**Constraints**: Single-threaded use only, must not interfere with solver's existing mechanisms (listeners, shadow variables), undefined behavior on exceptions during temporary execution  
+**Constraints**: Single-threaded use only, must not interfere with solver's existing mechanisms (listeners, shadow variables), undefined behavior on exceptions during temporary execution, supports only basic variables and list variables (chained planning variables NOT supported)  
 **Scale/Scope**: API surface consists of 2-3 classes (MoveRunner, execution context, possibly exception handling), testing-focused utility
 
 ## Constitution Check
@@ -28,8 +28,16 @@ The Move Running API provides a testing utility for developers to execute Move i
 ### Core Principles Review
 
 ✅ **Real World Usefulness** (MUST)
-- API will be dogfooded in solver's own tests (SC-007: at least 2 move types)
-- Feature includes comprehensive testing requirements (unit, integration)
+- API will be dogfooded by testing real solver moves from `builtin` package accessed via `Moves` factory class
+- Specific dogfooding tests (satisfies SC-007 requirement of at least 2 move types):
+  - ChangeMove (basic variable) - `ChangeMoveTest.java`
+  - SwapMove (basic variable) - `SwapMoveTest.java`
+  - ListAssignMove (list variable) - `ListAssignMoveTest.java`
+  - ListChangeMove (list variable) - `ListChangeMoveTest.java`
+  - ListSwapMove (list variable) - `ListSwapMoveTest.java`
+  - CompositeMove (composite) - `CompositeMoveTest.java`
+- Each builtin move gets its own test class using MoveRunner API
+- MoveRunnerTest.java will include basic unit tests with a simple custom move
 - Documentation requirements addressed in Phase 1 (API docs, user guide)
 
 ✅ **Consistent Terminology** (MUST)
@@ -48,8 +56,10 @@ The Move Running API provides a testing utility for developers to execute Move i
 
 ✅ **Automated Testing** (MUST)
 - Unit tests for each API method and edge case
-- Integration tests for move execution and undo mechanisms
-- Test naming: `*Test.java` for unit tests, `*IT.java` for integration tests
+- MoveRunnerTest.java covers all core MoveRunner functionality
+- Each builtin move type tested with its own test class
+- MoveRunnerIT.java NOT needed - no long-running or complex integration testing required; all functionality testable in unit tests
+- Test naming: `*Test.java` for unit tests, `*IT.java` for integration tests (if needed)
 
 ✅ **Good Code Hygiene** (MUST)
 - Auto-formatted via Maven build
@@ -133,31 +143,51 @@ specs/001-move-running-api/
 
 ```text
 core/src/main/java/ai/timefold/solver/core/preview/api/move/
-├── MoveRunner.java           # Main entry point: build() factory, AutoCloseable
-├── MoveRunContext.java       # Execution context: using(solution) result
-└── package-info.java            # Package documentation
+├── MoveRunner.java           # NEW - Main entry point: build() factory, AutoCloseable
+├── MoveRunContext.java       # NEW - Execution context: using(solution) result
+├── package-info.java         # UPDATED - Package documentation with new classes
+└── builtin/
+    ├── Moves.java            # EXISTS - Factory for builtin moves (used in dogfooding)
+    ├── ChangeMove.java       # EXISTS - Basic variable change move
+    ├── SwapMove.java         # EXISTS - Basic variable swap move
+    ├── ListAssignMove.java   # EXISTS - List variable assign move
+    ├── ListChangeMove.java   # EXISTS - List variable change move
+    ├── ListSwapMove.java     # EXISTS - List variable swap move
+    └── CompositeMove.java    # EXISTS - Composite move
 
-core/src/main/java/ai/timefold/solver/core/impl/move/
-├── DefaultMoveRunner.java       # Implementation of MoveRunner
-└── DefaultMoveRunContext.java   # Implementation of execution context
+core/src/main/java/ai/timefold/solver/core/impl/score/director/
+└── InnerScoreDirector.java   # MODIFIED - Add executeTemporarily(move, consumer) variant
 
 core/src/test/java/ai/timefold/solver/core/preview/api/move/
-├── MoveRunnerTest.java       # Unit tests for MoveRunner API
-└── MoveRunnerIT.java         # Integration tests for end-to-end execution
+├── MoveRunnerTest.java       # NEW - Unit tests for MoveRunner API (basic functionality + simple custom move)
+└── builtin/
+    ├── ChangeMoveTest.java         # NEW - Test ChangeMove with MoveRunner
+    ├── SwapMoveTest.java           # NEW - Test SwapMove with MoveRunner
+    ├── ListAssignMoveTest.java     # NEW - Test ListAssignMove with MoveRunner
+    ├── ListChangeMoveTest.java     # NEW - Test ListChangeMove with MoveRunner
+    ├── ListSwapMoveTest.java       # NEW - Test ListSwapMove with MoveRunner
+    └── CompositeMoveTest.java      # NEW - Test CompositeMove with MoveRunner
 
 docs/src/modules/ROOT/pages/optimization-algorithms/
-└── neighborhoods.adoc        # relevant user guide to be updated with API documentation
+└── neighborhoods.adoc        # UPDATED - Add MoveRunner API documentation
 ```
 
 **Structure Decision**: Single project structure (Option 1) applies. This is a core solver library feature with:
-- Public API in `preview.api.move` package (preview status, subject to evolution)
-- Implementation in `impl.move` package (no backwards compatibility guarantees)
-- Tests colocated with production code in `core/src/test/java`
-- Documentation updates to existing user guide
+- **Public API** in `preview.api.move` package (preview status, subject to evolution)
+- **Implementation** leverages existing `impl.score.director.InnerScoreDirector` infrastructure
+- **Tests** colocated with production code in `core/src/test/java`
+- **Dogfooding** via tests for each builtin move type (accessed through `Moves` factory class)
+- **Documentation** updates to existing user guide
+
+**Testing Strategy**:
+1. **MoveRunnerTest.java**: Unit tests covering MoveRunner API surface with a simple custom move
+2. **builtin/*Test.java**: Each builtin move gets its own test class demonstrating MoveRunner usage
+3. **MoveRunnerIT.java**: Removed (all core functionality can be tested in unit tests; no long-running or complex integration needed)
+4. **Dogfooding requirement (SC-007)**: Satisfied by testing real solver moves from builtin package
 
 **Package Placement Rationale**:
 - `ai.timefold.solver.core.preview.api.move`: Signals preview API status while maintaining public API contract
-- `ai.timefold.solver.core.impl.move`: Follows solver's existing impl package structure for implementations (alongside existing move-related implementation classes)
+- Tests mirror the production structure with builtin moves tested in `preview.api.move.builtin` test package
 
 ## Phase 0 Completion
 

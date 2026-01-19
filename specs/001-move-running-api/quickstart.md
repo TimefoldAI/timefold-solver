@@ -8,10 +8,11 @@
 
 This quickstart guide demonstrates how to use the Move Running API to test custom move implementations. The API provides a simple, fluent interface for executing moves on planning solutions in both permanent and temporary (with automatic undo) modes.
 
+**Scope**: This API supports moves on solutions with **basic planning variables** and **list planning variables** only. Chained planning variables are NOT supported.
+
 ## Prerequisites
 
 - Java 17 or later
-- Timefold Solver 999-SNAPSHOT (or later)
 - A planning problem with defined solution and entity classes
 - JUnit 5 and AssertJ (for testing)
 
@@ -469,6 +470,131 @@ try {
                 sourceVariableName = "assignedEmployee")
 private int workload;
 ```
+
+## Using Builtin Moves
+
+Instead of implementing custom moves, you can use the solver's builtin moves accessed through the `Moves` factory class. This is particularly useful for testing standard move types.
+
+### Example: Testing ChangeMove
+
+```java
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
+
+@Test
+void testChangeMoveWithMoveRunner() {
+    // Arrange
+    var employee1 = new Employee("Alice");
+    var employee2 = new Employee("Bob");
+    
+    var task = new Task("Task 1");
+    task.setAssignedEmployee(employee1);
+    
+    var solution = new TaskAssignment();
+    solution.setTaskList(List.of(task));
+    solution.setEmployeeList(List.of(employee1, employee2));
+    
+    // Act - Use builtin ChangeMove via Moves factory
+    try (var runner = MoveRunner.build(TaskAssignment.class, Task.class)) {
+        var view = runner.using(solution);
+        var variableMetaModel = view.getVariableMetaModel(Task.class, "assignedEmployee");
+        var move = Moves.change(variableMetaModel, task, employee2);
+        
+        view.execute(move);
+    }
+    
+    // Assert
+    assertThat(task.getAssignedEmployee()).isEqualTo(employee2);
+}
+```
+
+### Example: Testing SwapMove
+
+```java
+@Test
+void testSwapMoveWithMoveRunner() {
+    // Arrange
+    var employee1 = new Employee("Alice");
+    var employee2 = new Employee("Bob");
+    
+    var task1 = new Task("Task 1");
+    task1.setAssignedEmployee(employee1);
+    
+    var task2 = new Task("Task 2");
+    task2.setAssignedEmployee(employee2);
+    
+    var solution = new TaskAssignment();
+    solution.setTaskList(List.of(task1, task2));
+    solution.setEmployeeList(List.of(employee1, employee2));
+    
+    // Act - Use builtin SwapMove via Moves factory
+    try (var runner = MoveRunner.build(TaskAssignment.class, Task.class)) {
+        var view = runner.using(solution);
+        var variableMetaModel = view.getVariableMetaModel(Task.class, "assignedEmployee");
+        var move = Moves.swap(variableMetaModel, task1, task2);
+        
+        view.execute(move);
+    }
+    
+    // Assert
+    assertThat(task1.getAssignedEmployee()).isEqualTo(employee2);
+    assertThat(task2.getAssignedEmployee()).isEqualTo(employee1);
+}
+```
+
+### Example: Testing List Variable Moves
+
+```java
+@Test
+void testListAssignMoveWithMoveRunner() {
+    // For planning problems with list variables
+    var solution = createVehicleRoutingSolution();
+    var customer = new Customer("Customer 1");
+    var vehicle = solution.getVehicleList().get(0);
+    
+    try (var runner = MoveRunner.build(VehicleRoutingSolution.class, Vehicle.class)) {
+        var view = runner.using(solution);
+        var listVariableMetaModel = view.getListVariableMetaModel(Vehicle.class, "customerList");
+        var move = Moves.assign(listVariableMetaModel, customer, vehicle, 0);
+        
+        view.execute(move);
+    }
+    
+    assertThat(vehicle.getCustomerList()).contains(customer);
+}
+```
+
+### Example: Testing CompositeMove
+
+```java
+@Test
+void testCompositeMoveWithMoveRunner() {
+    var solution = createTestSolution();
+    
+    try (var runner = MoveRunner.build(TaskAssignment.class, Task.class)) {
+        var view = runner.using(solution);
+        var variableMetaModel = view.getVariableMetaModel(Task.class, "assignedEmployee");
+        
+        // Create multiple moves
+        var move1 = Moves.change(variableMetaModel, task1, employee2);
+        var move2 = Moves.change(variableMetaModel, task2, employee1);
+        
+        // Compose them into a single move
+        var compositeMove = Moves.compose(move1, move2);
+        
+        view.execute(compositeMove);
+    }
+    
+    assertThat(task1.getAssignedEmployee()).isEqualTo(employee2);
+    assertThat(task2.getAssignedEmployee()).isEqualTo(employee1);
+}
+```
+
+**Available Builtin Moves**:
+- `Moves.change()` - Change a basic or list variable
+- `Moves.swap()` - Swap two entities' basic variables or list positions
+- `Moves.assign()` - Assign a value to a list variable position
+- `Moves.unassign()` - Remove a value from a list variable position
+- `Moves.compose()` - Combine multiple moves into one
 
 ## Next Steps
 
