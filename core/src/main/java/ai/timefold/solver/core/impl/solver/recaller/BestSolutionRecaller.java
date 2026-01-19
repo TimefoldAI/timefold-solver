@@ -97,28 +97,8 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         }
     }
 
-    /**
-     * Differs from {@link #processWorkingSolutionDuringMove(InnerScore, AbstractStepScope, boolean)}
-     * as it does not accept partially initialized solutions.
-     */
     public <Score_ extends Score<Score_>> void processWorkingSolutionDuringMove(InnerScore<Score_> moveScore,
             AbstractStepScope<Solution_> stepScope) {
-        processWorkingSolutionDuringMove(moveScore, stepScope, false);
-    }
-
-    /**
-     * The solution for mixed models can generate a partially solved solution,
-     * as the complete solution will only be achieved when all variable types are assigned.
-     * The method allows acceptance of partially initialized solutions
-     * if {@code acceptUnassigned} is set to true.
-     * 
-     * @param moveScore the move score
-     * @param stepScope the step scope
-     * @param acceptUnassigned flag to accept partially initialized solutions
-     * @param <Score_> the score type
-     */
-    public <Score_ extends Score<Score_>> void processWorkingSolutionDuringMove(InnerScore<Score_> moveScore,
-            AbstractStepScope<Solution_> stepScope, boolean acceptUnassigned) {
         var phaseScope = stepScope.getPhaseScope();
         var solverScope = phaseScope.getSolverScope();
         var bestScoreImproved = moveScore.compareTo(solverScope.getBestScore()) > 0;
@@ -131,6 +111,11 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
             var newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
             InnerScore<Score_> innerScore;
+            // The solution for mixed models can generate a partially solved solution,
+            // as the complete solution will only be achieved when all variable types are assigned.
+            // The flag allows acceptance of partially initialized solutions for mixed models.
+            var acceptUnassigned = stepScope.getScoreDirector().getWorkingInitScore() < 0
+                    && stepScope.getScoreDirector().getSolutionDescriptor().hasBothBasicAndListVariables();
             if (acceptUnassigned) {
                 innerScore =
                         InnerScore.withUnassignedCount(moveScore.raw(), -stepScope.getScoreDirector().getWorkingInitScore());

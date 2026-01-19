@@ -30,7 +30,7 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
      * @return never null
      */
     @SafeVarargs
-    public static <Solution_, Move_ extends Move<Solution_>> Move<Solution_> buildMove(Move_... moves) {
+    static <Solution_, Move_ extends Move<Solution_>> Move<Solution_> buildMove(Move_... moves) {
         return switch (moves.length) {
             case 0 -> throw new UnsupportedOperationException("The %s cannot be built from an empty move list."
                     .formatted(CompositeMove.class.getSimpleName()));

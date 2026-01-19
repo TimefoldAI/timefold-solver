@@ -47,7 +47,7 @@ public final class ListVariableExhaustiveSearchDecider<Solution_, Score_ extends
      * For example, the following search node has three values in the list {@code e0[v0, v1, v2]},
      * and its node tree is given as follows:
      * <p>
-     * 
+     *
      * <pre>{@code
      *  (layer 0, e0, [v0])
      *              |

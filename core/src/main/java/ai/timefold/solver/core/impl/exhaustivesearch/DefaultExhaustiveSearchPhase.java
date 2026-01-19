@@ -113,7 +113,6 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
     private void stepStarted(ExhaustiveSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
-        // Skip entitySelector.stepStarted(stepScope)
         decider.stepStarted(stepScope);
     }
 

@@ -32,7 +32,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * The decorator can only be applied to list variables.
  * <p>
  * 
- * <pre>{@code
+ * <pre>
  * e1 = entity_range[v1, v2, v3]
  * e2 = entity_range[v1, v4]
  *
@@ -43,7 +43,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * v3 = [e1]
  *
  * v4 = [e2]
- *  }</pre>
+ * </pre>
  * <p>
  * This node is currently used by the {@link QueuedValuePlacer} to build an initial solution.
  * To illustrate its usage, let’s assume how moves are generated.
@@ -159,8 +159,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
 
     /**
      * The exhaustive method uses a replaying entity selector to guarantee which search node will be explored.
-     * Thus,
-     * the {@code childEntitySelector} will be a replaying selector when {@code isExhaustiveMethod} is set to
+     * Thus, the {@code childEntitySelector} will be a replaying selector when {@code isExhaustiveMethod} is set to
      * {@code true}.
      */
     private Object selectReplayedEntity() {
@@ -253,7 +252,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
                 } else {
                     if (reachableValues.isEntityReachable(currentUpcomingValue, currentReplayedEntity)) {
                         // We will only return the replayed entity if it is included in the set of reachable entities
-                        entityIterator = List.of(currentReplayedEntity).iterator();
+                        entityIterator = Collections.singletonList(currentReplayedEntity).iterator();
                     } else {
                         entityIterator = Collections.emptyIterator();
                     }

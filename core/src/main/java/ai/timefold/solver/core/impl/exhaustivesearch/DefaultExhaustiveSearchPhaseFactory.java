@@ -162,9 +162,8 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
             BestSolutionRecaller<Solution_> bestSolutionRecaller, PhaseTermination<Solution_> termination,
             boolean scoreBounderEnabled, boolean isListVariable) {
         var manualEntityMimicRecorder = new ManualEntityMimicRecorder<>(sourceEntitySelector);
-        // TODO mimicSelectorId must be a field?
-        var mimicSelectorId = ConfigUtils.addRandomSuffix(sourceEntitySelector.getEntityDescriptor().getEntityClass().getName(),
-                configPolicy.getRandom());
+        var entityClassName = sourceEntitySelector.getEntityDescriptor().getEntityClass().getName();
+        var mimicSelectorId = ConfigUtils.addRandomSuffix(entityClassName, configPolicy.getRandom());
         configPolicy.addEntityMimicRecorder(mimicSelectorId, manualEntityMimicRecorder);
         var variableDescriptorList = getGenuineVariableDescriptorList(sourceEntitySelector, isListVariable);
         // TODO Fail fast if it does not include all genuineVariableDescriptors as expected by DefaultExhaustiveSearchPhase.fillLayerList()

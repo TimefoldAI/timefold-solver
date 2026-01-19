@@ -214,8 +214,8 @@ class BruteForceTest {
             @Override
             public void stepStarted(AbstractStepScope<TestdataMixedSolution> stepScope) {
                 if (stepScope instanceof ExhaustiveSearchStepScope<TestdataMixedSolution> exhaustiveSearchStepScope) {
-                    if (exhaustiveSearchStepScope.getStepIndex() == 1000) {
-                        fail("The exhaustive search phase was not ended after 25 steps.");
+                    if (exhaustiveSearchStepScope.getStepIndex() == 60) {
+                        fail("The exhaustive search phase was not ended after 60 steps.");
                     }
                 } else {
                     fail("Wrong phase was started: " + stepScope.getClass().getSimpleName());
@@ -252,8 +252,8 @@ class BruteForceTest {
             @Override
             public void stepStarted(AbstractStepScope<TestdataMixedMultiEntitySolution> stepScope) {
                 if (stepScope instanceof ExhaustiveSearchStepScope<TestdataMixedMultiEntitySolution> exhaustiveSearchStepScope) {
-                    if (exhaustiveSearchStepScope.getStepIndex() == 1000) {
-                        fail("The exhaustive search phase was not ended after 25 steps.");
+                    if (exhaustiveSearchStepScope.getStepIndex() == 60) {
+                        fail("The exhaustive search phase was not ended after 60 steps.");
                     }
                 } else {
                     fail("Wrong phase was started: " + stepScope.getClass().getSimpleName());

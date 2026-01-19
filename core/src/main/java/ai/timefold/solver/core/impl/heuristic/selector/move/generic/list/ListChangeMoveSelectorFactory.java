@@ -51,8 +51,8 @@ public class ListChangeMoveSelectorFactory<Solution_>
             return MoveSelectorFactory.<Solution_> createForExhaustiveMethod(moveSelectorConfig)
                     .buildMoveSelector(configPolicy, minimumCacheType, inheritedSelectionOrder, skipNonDoableMoves);
         } else {
-            return super.buildMoveSelector(configPolicy, moveSelectorConfig, minimumCacheType, inheritedSelectionOrder,
-                    skipNonDoableMoves);
+            return MoveSelectorFactory.<Solution_> create(moveSelectorConfig)
+                    .buildMoveSelector(configPolicy, minimumCacheType, inheritedSelectionOrder, skipNonDoableMoves);
         }
     }
 

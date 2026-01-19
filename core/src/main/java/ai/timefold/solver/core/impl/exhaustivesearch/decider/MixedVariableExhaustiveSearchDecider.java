@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepS
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
- * Deciders for mixed models depend on the basic and list variable deciders.
+ * Decider for mixed models depends on the basic and lists variable deciders.
  * The optimization process begins by solving the basic variables before moving on to the list variables.
  * The process optimizes each variable separately and stops when the list variable optimization is complete.
  *

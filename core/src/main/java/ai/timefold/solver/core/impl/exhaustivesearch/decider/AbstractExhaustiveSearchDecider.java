@@ -151,7 +151,7 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
             if (assertMoveScoreFromScratch) {
                 phaseScope.assertWorkingScoreFromScratch(score, moveNode.getMove());
             }
-            bestSolutionRecaller.processWorkingSolutionDuringMove(score, stepScope, acceptUninitializedSolutions);
+            bestSolutionRecaller.processWorkingSolutionDuringMove(score, stepScope);
         } else {
             phaseScope.addExpandableNode(moveNode);
         }
@@ -167,7 +167,7 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
         if (isSolutionComplete) {
             // There is no point in bounding a fully initialized score
             phaseScope.registerPessimisticBound(score);
-            bestSolutionRecaller.processWorkingSolutionDuringMove(score, stepScope, acceptUninitializedSolutions);
+            bestSolutionRecaller.processWorkingSolutionDuringMove(score, stepScope);
         } else {
             var scoreDirector = phaseScope.<Score_> getScoreDirector();
             var castScoreBounder = this.getScoreBounder();
