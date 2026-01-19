@@ -29,7 +29,7 @@ Documentation is a first-class requirement for all features:
 
 1. **Public API Documentation** (MUST):
    - All public classes, interfaces, and methods MUST have Javadoc
-   - Javadoc MUST include: purpose, parameters (with `@param`), return values (with `@return`), exceptions thrown (with `@throws`)
+   - Javadoc MUST include: purpose, parameters (with `@param`), return values (with `@return`), exceptions thrown (with `@throws`) except for `NullPointerException` for null parameters
    - Complex algorithms SHOULD include implementation comments explaining the approach
    - **Note**: `@since` tags are NOT required
 
@@ -125,6 +125,7 @@ Proper exception handling is essential for maintainable and debuggable code:
 3. **Never swallow exceptions** - Always handle exceptions meaningfully or at minimum log them before rethrowing
 4. **Preserve exception context** - When wrapping exceptions, include the original cause: `throw new CustomException("Additional context", originalException)`
 5. **Don't catch Exception or Throwable** - Catch specific exception types; catching Exception/Throwable masks errors like OutOfMemoryError
+6. **Use `NullPointerException` appropriately** - Throw NPE when a null parameter is passed to a method that does not accept null. You SHOULD use `Objects.requireNonNull(param, "param")` for clarity.
 
 **Rationale**: Developers spend significant time debugging. Clear error messages reduce support burden and accelerate problem resolution. Proper exception handling ensures errors are visible and debuggable rather than silently lost.
 
