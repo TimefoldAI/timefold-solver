@@ -7,9 +7,10 @@
 
 ## Summary
 
-Implement a testing utility API that enables developers to execute Move implementations on planning solutions in both permanent and temporary modes. The API provides a fluent builder pattern (`MoveRunner.using(solution).execute(move)`) for permanent execution and automatic undo support for temporary execution (`executeTemporarily(move, function)`). This is a **Preview API** designed for testing and development use cases, not production solving workflows.
+Implement a testing utility API that enables developers to execute Move implementations on planning solutions in both permanent and temporary modes. The API provides a fluent builder pattern (`MoveRunner.build(solutionClass, entityClasses).using(solution).execute(move)`) for permanent execution and automatic undo support for temporary execution (`executeTemporarily(move, function)`). This is a **Preview API** designed for testing and development use cases, not production solving workflows.
 
 **Key capabilities**:
+- Build MoveRunner with solution class and entity classes (with validation)
 - Execute moves permanently with optional exception handling
 - Execute moves temporarily with automatic state restoration via solver's existing undo mechanisms
 - Shadow variable initialization at MoveRunner construction time via solver architecture
@@ -61,10 +62,11 @@ Implement a testing utility API that enables developers to execute Move implemen
 ### ✅ Fail Fast (Principle III)
 - **Status**: PASS
 - **Evidence**:
-  - FR-001b: Null validation upfront (IllegalArgumentException for null Move or solution)
+  - FR-001b: Null validation upfront in build() method (IllegalArgumentException for null solution class or empty entity classes)
+  - FR-001d: Null validation in using() and execute() methods
   - Construction-time shadow variable initialization (FR-012b)
   - No deferred validation - all checks happen immediately
-- **Implementation**: Validate inputs in factory method `MoveRunner.using(solution)` and `execute()` methods
+- **Implementation**: Validate inputs in static factory method `MoveRunner.build(solutionClass, entityClasses...)`, instance method `using(solution)`, and `execute()` methods
 
 ### ✅ Understandable Error Messages (Principle IV)
 - **Status**: PASS (to be verified in implementation)

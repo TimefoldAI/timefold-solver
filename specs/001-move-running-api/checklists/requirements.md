@@ -62,4 +62,13 @@ All checklist items have passed validation. The specification has been updated t
 - **Updated Key Entities**: Added Planning Entity and Planning Facts
 - **Updated assumptions**: Entity mutability, entity-only execution capability, moves requiring solution-level data
 
+**Session 2026-01-19 (Latest Update)**:
+- **API Design Refinement**: Updated entry point to use `build(solutionClass, entityClasses...)` static factory method
+- **FR-001b**: Added validation requirements - solution class must not be null, entity classes must not be empty
+- **FR-001c**: Updated API pattern to `MoveRunner.build(solutionClass, entityClasses).using(solution).execute(move)`
+- **FR-001d**: New requirement for null validation on using() and execute() methods
+- **Key Entities**: Added "Move Execution Context" as intermediate object returned by using()
+- **Acceptance Scenarios**: Added validation scenarios for null checks on build() and using() methods
+- **Clarifications**: Added Q&A about the build() method entry point design
+
 The specification is complete, clear, and ready for the planning phase (`/speckit.plan`).
