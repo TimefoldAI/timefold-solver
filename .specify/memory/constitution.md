@@ -139,6 +139,26 @@ High-quality automated testing is REQUIRED across all levels:
 
 All code MUST have tests before being merged. The methodology used to develop the code (test-first, test-after, etc.) is left to the discretion of the contributor.
 
+**Test Naming Conventions**:
+
+Test classes MUST follow these naming conventions to be properly picked up by Maven Surefire and Failsafe plugins:
+
+1. **Unit tests** - MUST be named with the suffix `Test`:
+   - ✅ `ScoreCalculatorTest.java`
+   - ✅ `SolutionManagerTest.java`
+   - ❌ `ScoreCalculatorTests.java` (incorrect - plural)
+   - ❌ `TestScoreCalculator.java` (incorrect - prefix)
+   - **Executed by**: Maven Surefire plugin during the `test` phase
+
+2. **Integration tests** - MUST be named with the suffix `IT`:
+   - ✅ `DatabaseIntegrationIT.java`
+   - ✅ `SolverEndToEndIT.java`
+   - ❌ `DatabaseIntegrationTest.java` (incorrect - would run as unit test)
+   - ❌ `ITDatabaseIntegration.java` (incorrect - prefix)
+   - **Executed by**: Maven Failsafe plugin during the `integration-test` phase
+
+**Rationale**: Maven Surefire runs tests matching `**/*Test.java` during the `test` phase, while Maven Failsafe runs tests matching `**/*IT.java` during the `integration-test` phase. This separation ensures unit tests run quickly in every build, while integration tests (which may require external resources or longer execution time) run separately. Consistent naming is critical for proper test execution in CI/CD pipelines.
+
 **Note on performance and stress tests**: While performance regression tests and stress tests are part of feature delivery, they are maintained in other repositories and do not apply to this repository specifically.
 
 **Rationale**: Automated testing catches regressions early, enables confident refactoring, and serves as executable documentation of expected behavior. We mandate test coverage, not development methodology.
@@ -577,7 +597,7 @@ This constitution is a living document. As the project evolves, principles may b
 
 ---
 
-**Version**: 1.0.0
+**Version**: 1.1.0
 
 
 
