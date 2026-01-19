@@ -56,25 +56,24 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
-        while (!decider.isFinished()) {
-            var expandableNodeQueue = new TreeSet<>(nodeComparator);
-            var phaseScope = new ExhaustiveSearchPhaseScope<>(solverScope, phaseIndex);
-            phaseScope.setExpandableNodeQueue(expandableNodeQueue);
-            phaseStarted(phaseScope);
-            while (!expandableNodeQueue.isEmpty() && !phaseTermination.isPhaseTerminated(phaseScope)) {
-                var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
-                var node = expandableNodeQueue.last();
-                expandableNodeQueue.remove(node);
-                stepScope.setExpandingNode(node);
-                stepStarted(stepScope);
-                decider.restoreWorkingSolution(stepScope, assertWorkingSolutionScoreFromScratch,
-                        assertExpectedWorkingSolutionScore);
-                decider.expandNode(stepScope);
-                stepEnded(stepScope);
-                phaseScope.setLastCompletedStepScope(stepScope);
-            }
-            phaseEnded(phaseScope);
+        var expandableNodeQueue = new TreeSet<>(nodeComparator);
+        var phaseScope = new ExhaustiveSearchPhaseScope<>(solverScope, phaseIndex);
+        phaseScope.setExpandableNodeQueue(expandableNodeQueue);
+        phaseStarted(phaseScope);
+
+        while (!expandableNodeQueue.isEmpty() && !phaseTermination.isPhaseTerminated(phaseScope)) {
+            var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
+            var node = expandableNodeQueue.last();
+            expandableNodeQueue.remove(node);
+            stepScope.setExpandingNode(node);
+            stepStarted(stepScope);
+            decider.restoreWorkingSolution(stepScope, assertWorkingSolutionScoreFromScratch,
+                    assertExpectedWorkingSolutionScore);
+            decider.expandNode(stepScope);
+            stepEnded(stepScope);
+            phaseScope.setLastCompletedStepScope(stepScope);
         }
+        phaseEnded(phaseScope);
     }
 
     // ************************************************************************

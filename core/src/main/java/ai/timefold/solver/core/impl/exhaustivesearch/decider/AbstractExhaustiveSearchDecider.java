@@ -30,7 +30,7 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractExhaustiveSearchDecider.class);
 
     private final String logIndentation;
-    private final BestSolutionRecaller<Solution_> bestSolutionRecaller;
+    protected final BestSolutionRecaller<Solution_> bestSolutionRecaller;
     private final PhaseTermination<Solution_> termination;
     protected final EntitySelector<Solution_> sourceEntitySelector;
     protected final ManualEntityMimicRecorder<Solution_> manualEntityMimicRecorder;
@@ -38,10 +38,8 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
     protected final boolean scoreBounderEnabled;
     private final ScoreBounder<?> scoreBounder;
 
-    boolean isFinished = false;
-
-    // Flag that allows to always return false when checking if the solution is complete
-    protected boolean solutionAlwaysIncomplete = false;
+    // Flag that allows to accept partially initialized solutions
+    protected boolean acceptUninitializedSolutions = false;
     private boolean assertMoveScoreFromScratch = false;
     private boolean assertExpectedUndoMoveScore = false;
 
@@ -72,12 +70,8 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
         this.assertExpectedUndoMoveScore = assertExpectedUndoMoveScore;
     }
 
-    protected void makeSolutionAlwaysIncomplete() {
-        solutionAlwaysIncomplete = true;
-    }
-
-    public boolean isFinished() {
-        return isFinished;
+    protected void enableAcceptUninitializedSolutions() {
+        acceptUninitializedSolutions = true;
     }
 
     // ************************************************************************
@@ -143,54 +137,53 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
     private void processMove(ExhaustiveSearchStepScope<Solution_> stepScope,
             ExhaustiveSearchNode moveNode, boolean isSolutionComplete, InnerScore<Score_> score) {
         if (!scoreBounderEnabled) {
-            processMoverWithoutBounder(stepScope, moveNode, isSolutionComplete, score);
+            processMoverWithoutBounder(stepScope, moveNode, score, isSolutionComplete);
         } else {
-            processMoverWithBounder(stepScope, moveNode, isSolutionComplete);
+            processMoverWithBounder(stepScope, moveNode, score, isSolutionComplete);
         }
     }
 
     private void processMoverWithoutBounder(ExhaustiveSearchStepScope<Solution_> stepScope,
-            ExhaustiveSearchNode moveNode, boolean isSolutionComplete, InnerScore<Score_> score) {
+            ExhaustiveSearchNode moveNode, InnerScore<Score_> score, boolean isSolutionComplete) {
         var phaseScope = stepScope.getPhaseScope();
         if (isSolutionComplete) {
             moveNode.setScore(score);
             if (assertMoveScoreFromScratch) {
                 phaseScope.assertWorkingScoreFromScratch(score, moveNode.getMove());
             }
-            bestSolutionRecaller.processWorkingSolutionDuringMove(score, stepScope);
+            bestSolutionRecaller.processWorkingSolutionDuringMove(score, stepScope, acceptUninitializedSolutions);
         } else {
             phaseScope.addExpandableNode(moveNode);
         }
     }
 
     private void processMoverWithBounder(ExhaustiveSearchStepScope<Solution_> stepScope,
-            ExhaustiveSearchNode moveNode, boolean isSolutionComplete) {
+            ExhaustiveSearchNode moveNode, InnerScore<Score_> score, boolean isSolutionComplete) {
         var phaseScope = stepScope.getPhaseScope();
-        var innerScore = phaseScope.<Score_> calculateScore();
-        moveNode.setScore(innerScore);
+        moveNode.setScore(score);
         if (assertMoveScoreFromScratch) {
-            phaseScope.assertWorkingScoreFromScratch(innerScore, moveNode.getMove());
+            phaseScope.assertWorkingScoreFromScratch(score, moveNode.getMove());
         }
         if (isSolutionComplete) {
             // There is no point in bounding a fully initialized score
-            phaseScope.registerPessimisticBound(innerScore);
-            bestSolutionRecaller.processWorkingSolutionDuringMove(innerScore, stepScope);
+            phaseScope.registerPessimisticBound(score);
+            bestSolutionRecaller.processWorkingSolutionDuringMove(score, stepScope, acceptUninitializedSolutions);
         } else {
             var scoreDirector = phaseScope.<Score_> getScoreDirector();
             var castScoreBounder = this.getScoreBounder();
-            var optimisticBound = castScoreBounder.calculateOptimisticBound(scoreDirector, innerScore);
+            var optimisticBound = castScoreBounder.calculateOptimisticBound(scoreDirector, score);
             moveNode.setOptimisticBound(optimisticBound);
             var bestPessimisticBound = (InnerScore<Score_>) phaseScope.getBestPessimisticBound();
             if (optimisticBound.compareTo(bestPessimisticBound) > 0) {
                 // It's still worth investigating this node further (no need to prune it)
                 phaseScope.addExpandableNode(moveNode);
-                var pessimisticBound = castScoreBounder.calculatePessimisticBound(scoreDirector, innerScore);
+                var pessimisticBound = castScoreBounder.calculatePessimisticBound(scoreDirector, score);
                 phaseScope.registerPessimisticBound(pessimisticBound);
             }
         }
     }
 
-    private void fillLayerList(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
+    protected void fillLayerList(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
         var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
         sourceEntitySelector.stepStarted(stepScope);
         var entitySize = sourceEntitySelector.getSize();
@@ -264,7 +257,6 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
     public void phaseEnded(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
         sourceEntitySelector.phaseEnded(phaseScope);
         moveRepository.phaseEnded(phaseScope);
-        isFinished = true;
     }
 
     @Override

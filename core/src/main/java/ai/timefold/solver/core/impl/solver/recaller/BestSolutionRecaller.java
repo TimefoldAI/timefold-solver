@@ -97,8 +97,28 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         }
     }
 
+    /**
+     * Differs from {@link #processWorkingSolutionDuringMove(InnerScore, AbstractStepScope, boolean)}
+     * as it does not accept partially initialized solutions.
+     */
     public <Score_ extends Score<Score_>> void processWorkingSolutionDuringMove(InnerScore<Score_> moveScore,
             AbstractStepScope<Solution_> stepScope) {
+        processWorkingSolutionDuringMove(moveScore, stepScope, false);
+    }
+
+    /**
+     * The solution for mixed models can generate a partially solved solution,
+     * as the complete solution will only be achieved when all variable types are assigned.
+     * The method allows acceptance of partially initialized solutions
+     * if {@code acceptUnassigned} is set to true.
+     * 
+     * @param moveScore the move score
+     * @param stepScope the step scope
+     * @param acceptUnassigned flag to accept partially initialized solutions
+     * @param <Score_> the score type
+     */
+    public <Score_ extends Score<Score_>> void processWorkingSolutionDuringMove(InnerScore<Score_> moveScore,
+            AbstractStepScope<Solution_> stepScope, boolean acceptUnassigned) {
         var phaseScope = stepScope.getPhaseScope();
         var solverScope = phaseScope.getSolverScope();
         var bestScoreImproved = moveScore.compareTo(solverScope.getBestScore()) > 0;
@@ -110,7 +130,14 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         if (bestScoreImproved) {
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
             var newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
-            var innerScore = new InnerScore<>(moveScore.raw(), solverScope.getScoreDirector().getWorkingInitScore());
+            InnerScore<Score_> innerScore;
+            if (acceptUnassigned) {
+                innerScore =
+                        InnerScore.withUnassignedCount(moveScore.raw(), -stepScope.getScoreDirector().getWorkingInitScore());
+            } else {
+                innerScore = new InnerScore<>(moveScore.raw(), solverScope.getScoreDirector().getWorkingInitScore());
+            }
+
             updateBestSolutionAndFire(solverScope, phaseScope, innerScore, newBestSolution);
         } else if (assertBestScoreIsUnmodified) {
             solverScope.assertScoreFromScratch(solverScope.getBestSolution());
