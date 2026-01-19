@@ -186,7 +186,23 @@ Code style is based on **standard Java conventions** and is handled automaticall
    - Consistent ordering helps the brain recognize patterns
    - Forgotten field uses stick out when the order is always the same
    - This applies to both reading and writing field values
-4. **Manual review** - While formatting is automatic, developers should review for logical clarity
+4. **Prefer imports over fully qualified names** (MUST):
+   - Source code MUST use import statements rather than fully qualified class names
+   - ✅ Use `import java.util.List;` then `List<String>` in code
+   - ❌ Avoid `java.util.List<String>` in code
+   - **Exception**: Fully qualified names are REQUIRED only when necessary for compilation (e.g., disambiguating between two classes with the same simple name like `java.util.Date` vs `java.sql.Date`)
+   - **Rationale**: Import statements improve code readability by reducing visual clutter and making class names more concise. Fully qualified names should only be used when absolutely necessary to resolve naming conflicts.
+5. **Prefer diamond operator** (MUST):
+   - Use type inference to eliminate redundant type information
+   - **Priority order**: Prefer `var` over diamond operator, as `var` provides better type inference
+   - When using `var`, generic types MUST be explicit on the right side (diamond operator cannot be used with `var`)
+   - When not using `var`, the diamond operator MUST be used when types can be inferred
+   - ✅ **Best**: `var list = new ArrayList<String>();` (var requires explicit type)
+   - ✅ **Good**: `List<String> list = new ArrayList<>();` (diamond operator when not using var)
+   - ❌ **Incorrect**: `var list = new ArrayList<>();` (compiler error - cannot infer type)
+   - ❌ **Incorrect**: `List<String> list = new ArrayList<String>();` (redundant type argument when diamond available)
+   - **Rationale**: The `var` keyword provides the best type inference and reduces verbosity. When the left-hand type is explicit, the diamond operator eliminates redundant type information. Both reduce maintenance burden when types change and align with modern Java best practices.
+6. **Manual review** - While formatting is automatic, developers should review for logical clarity
 
 **Code Quality Gates**:
 
@@ -597,7 +613,5 @@ This constitution is a living document. As the project evolves, principles may b
 
 ---
 
-**Version**: 1.1.0
-
-
+**Version**: 1.2.0
 
