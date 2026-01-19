@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Move Verification API
+# Specification Quality Checklist: Move Testing API
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning  
 **Created**: January 15, 2026  

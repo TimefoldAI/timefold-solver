@@ -1,6 +1,6 @@
-# Feature Specification: Move Verification API
+# Feature Specification: Move Testing API
 
-**Feature Branch**: `001-move-verification-api`  
+**Feature Branch**: `001-move-testing-api`  
 **Created**: January 15, 2026  
 **Status**: Draft  
 **Input**: User description: "API to verify implementations of the Move interface. The tool should accept a move implementation from the user, as well as a planning solution instance to run the move on. It should perform the move, which will update the solution in the process. It should also allow to run the move temporarily - undoing the operation after the user did some checks that the operation resulted in the intended behavior."
