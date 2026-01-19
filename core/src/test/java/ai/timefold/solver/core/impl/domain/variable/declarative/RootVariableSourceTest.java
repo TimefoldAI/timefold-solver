@@ -28,6 +28,9 @@ import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarat
 import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarativeSolution;
 import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarativeValue;
 
+import ai.timefold.solver.core.testdomain.shadow.invalid.parameter.TestdataInvalidDeclarativeParameterEntity;
+import ai.timefold.solver.core.testdomain.shadow.invalid.parameter.TestdataInvalidDeclarativeParameterSolution;
+import ai.timefold.solver.core.testdomain.shadow.invalid.parameter.TestdataInvalidDeclarativeParameterValue;
 import org.junit.jupiter.api.Test;
 
 class RootVariableSourceTest {
@@ -622,6 +625,16 @@ class RootVariableSourceTest {
                         " starting from root entity (TestdataInvalidDeclarativeValue)" +
                         " referencing multiple facts (fact, fact)" +
                         " in a row.");
+    }
+
+    @Test
+    void invalidParameter() {
+        assertThatCode(() -> SolutionDescriptor.buildSolutionDescriptor(
+                TestdataInvalidDeclarativeParameterSolution.class, TestdataInvalidDeclarativeParameterEntity.class,
+                TestdataInvalidDeclarativeParameterValue.class)
+                .getMetaModel())
+                .hasMessageContaining(
+                        "Maybe you have included a unallowed parameter, which does not match the expected solution class");
     }
 
     @Test

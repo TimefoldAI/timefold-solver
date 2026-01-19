@@ -44,14 +44,20 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
             throw new IllegalStateException("DeclarativeShadowVariableDescriptor was created when method is empty.");
         }
 
+        var solutionClass = entityDescriptor.getSolutionDescriptor().getSolutionClass();
         var method = ReflectionHelper.getDeclaredMethod(variableMemberAccessor.getDeclaringClass(), methodName);
+        if (method == null) {
+            // Retry with the solution class
+            method = ReflectionHelper.getDeclaredMethod(variableMemberAccessor.getDeclaringClass(), methodName, solutionClass);
+        }
 
         if (method == null) {
             throw new IllegalArgumentException("""
                     @%s (%s) defines a supplierMethod (%s) that does not exist inside its declaring class (%s).
-                    Maybe you misspelled the supplierMethod name?"""
+                    Maybe you misspelled the supplierMethod name?
+                    Maybe you have included a unallowed parameter, which does not match the expected solution class: %s"""
                     .formatted(ShadowVariable.class.getSimpleName(), variableName, methodName,
-                            variableMemberAccessor.getDeclaringClass().getCanonicalName()));
+                            variableMemberAccessor.getDeclaringClass().getCanonicalName(), solutionClass.getName()));
         }
 
         var shadowVariableUpdater = method.getAnnotation(ShadowSources.class);
@@ -65,7 +71,7 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
         }
         this.calculator =
                 entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory().buildAndCacheMemberAccessor(method,
-                        MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD, ShadowSources.class,
+                        MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER, ShadowSources.class,
                         descriptorPolicy.getDomainAccessType());
 
         sourcePaths = shadowVariableUpdater.value();
