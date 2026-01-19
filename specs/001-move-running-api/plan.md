@@ -336,7 +336,7 @@ This plan document ends at Phase 1 (design). The next step is to run `/speckit.t
 - Resource cleanup via AutoCloseable
 - State validation (closed MoveRunner throws)
 
-**Integration Tests** (MoveRunnerIntegrationTest.java):
+**Integration Tests** (MoveRunnerIT.java):
 - Real Move implementations (SwapMove, ChangeMove, etc.)
 - Shadow variable updates
 - Complex undo scenarios
