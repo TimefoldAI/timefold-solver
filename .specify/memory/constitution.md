@@ -70,6 +70,32 @@ This convention makes the data structure immediately clear without needing to in
 
 **Rationale**: Consistent terminology reduces cognitive load, prevents misunderstandings, and creates a coherent mental model for users and contributors. Clear variable names that include their data structure type make code self-documenting and easier to understand at a glance.
 
+**Naming Conventions for Interfaces and Implementations**:
+
+When defining interfaces and their implementations, follow these naming rules:
+
+1. **Single Implementation Pattern** (MUST):
+   - When an interface has only one implementation, especially if the interface is part of the public API, the implementation class MUST be prefixed with "Default"
+   - ✅ `interface Solver` → `class DefaultSolver implements Solver`
+   - ✅ `interface ScoreCalculator` → `class DefaultScoreCalculator implements ScoreCalculator`
+   - ❌ `interface Solver` → `class SolverImpl implements Solver` (incorrect - do not use "Impl" suffix)
+   - This pattern clearly indicates that the class is the standard/default implementation of the interface
+
+2. **Multiple Implementation Pattern** (SHOULD):
+   - When an interface has multiple implementations, each implementation SHOULD have a descriptive name reflecting its specific behavior or strategy
+   - ✅ `interface Phase` → `class ConstructionHeuristicPhase implements Phase`, `class LocalSearchPhase implements Phase`
+   - ✅ `interface Selector` → `class RandomSelector implements Selector`, `class CachingSelector implements Selector`
+   - The "Default" prefix SHOULD be used for the most common or standard implementation if one exists
+
+3. **Abstract Classes** (MUST):
+   - Abstract classes MUST be prefixed with "Abstract"
+   - ✅ `abstract class AbstractPhase implements Phase`
+   - ✅ `abstract class AbstractSelector implements Selector`
+   - ❌ `abstract class BasePhase implements Phase` (incorrect - use "Abstract" not "Base")
+   - This makes the abstract nature of the class immediately visible without needing to inspect the class definition
+
+**Rationale**: Consistent naming conventions for interfaces and implementations improve code discoverability and maintainability. The "Default" prefix clearly identifies standard implementations, making it easier for developers to find the primary implementation of an interface. The "Abstract" prefix immediately signals that a class cannot be instantiated directly and serves as a base for concrete implementations. Avoiding the "Impl" suffix prevents generic, uninformative names that provide no semantic value. These conventions align with common Java patterns and reduce cognitive load when navigating the codebase.
+
 ### III. Fail Fast
 
 Invalid states MUST be checked as early as possible, in the following priority order:
@@ -227,6 +253,113 @@ Code quality is monitored by **SonarCloud** in CI with mandatory quality gates:
 
 **Rationale**: Code is read far more often than it is written. Readable code reduces maintenance burden, facilitates onboarding, and minimizes bugs. Automatic formatting ensures consistency without bike-shedding. Sparse use of newlines maintains code density while preserving readability. SonarCloud provides objective, automated quality metrics that prevent technical debt accumulation and ensure consistent code quality across the project.
 
+**Visibility and Immutability Principles**:
+
+Code MUST follow defensive design principles to minimize coupling and prevent unintended modifications:
+
+1. **Minimal Visibility by Default** (MUST):
+   - Fields and methods MUST be private unless there is a specific reason for broader visibility
+   - ✅ `private final ScoreDirector scoreDirector;` (default: private)
+   - ❌ `public ScoreDirector scoreDirector;` (incorrect - unnecessarily exposed)
+   - Only widen visibility (package-private, protected, public) when required by:
+     - Public API contracts (interface implementations, factory methods)
+     - Inheritance hierarchies (protected for subclass access)
+     - Package-level collaboration (package-private for internal cohesion)
+   - **Rationale**: Private-by-default encapsulation prevents accidental coupling, makes refactoring safer, and clearly signals the public contract of a class
+
+2. **Final by Default for Methods and Types** (MUST):
+   - Classes and methods MUST be `final` unless there is a specific reason for extension/overriding
+   - ✅ `public final class DefaultSolver implements Solver` (cannot be subclassed)
+   - ✅ `public final void solve() { ... }` (cannot be overridden in subclasses)
+   - ❌ `public class DefaultSolver` (incorrect - allows unintended inheritance)
+   - Only omit `final` when:
+     - The class/method is explicitly designed for extension (abstract classes, template methods)
+     - The type is part of an inheritance hierarchy where subclassing is intended
+   - **Note**: When implementing interface methods, marking them `final` prevents further overriding by subclasses but does not affect the interface contract
+   - **Rationale**: Final-by-default prevents fragile base class problems, makes behavior predictable, enables compiler optimizations, and documents design intent (this class/method is not meant to be extended/overridden)
+
+3. **Final by Default for Fields** (MUST):
+   - Fields MUST be `final` unless there is a specific reason for mutability
+   - ✅ `private final List<Move> moveList;` (immutable reference)
+   - ✅ `private final int maxValue;` (immutable primitive)
+   - ❌ `private List<Move> moveList;` (incorrect - allows reassignment)
+   - Only omit `final` when:
+     - The field's value must change during the object's lifetime (state machines, caches, lazy initialization)
+     - The field is computed/updated after construction (e.g., in lifecycle methods)
+   - **Rationale**: Immutable fields prevent accidental modification, make code easier to reason about, enable safe concurrent access, and document that the field's reference (for objects) or value (for primitives) never changes
+   - **Note**: `final` for fields means the reference/value is immutable, not the object's internal state. Use immutable collections and value objects where appropriate.
+
+4. **Prefer Immutable Objects** (SHOULD):
+   - Favor immutable objects (records, immutable collections) over mutable state
+   - ✅ Use `List.of()`, `Set.of()`, `Map.of()` for immutable collections when possible
+   - ✅ Use Java records for immutable data carriers: `record Score(int value) { }`
+   - Consider using defensive copies when exposing collections from public API
+   - **Rationale**: Immutability eliminates entire classes of bugs (race conditions, unexpected mutations), simplifies reasoning about code, and improves thread safety
+
+**Examples**:
+
+```java
+// ✅ CORRECT: Minimal visibility, final by default
+public final class DefaultSolver<Solution_> implements Solver<Solution_> {
+    private final SolverScope<Solution_> solverScope;
+    private final Termination<Solution_> termination;
+    
+    // Package-private constructor (not public - see API Design Principles)
+    DefaultSolver(SolverScope<Solution_> solverScope, Termination<Solution_> termination) {
+        this.solverScope = Objects.requireNonNull(solverScope);
+        this.termination = Objects.requireNonNull(termination);
+    }
+    
+    @Override
+    public final Solution_ solve(Solution_ problem) {
+        // Implementation
+        return solverScope.getBestSolution();
+    }
+    
+    // Private helper - not exposed
+    private void initializeSolverScope() {
+        // ...
+    }
+}
+
+// ❌ INCORRECT: Unnecessarily exposed, not final
+public class DefaultSolver<Solution_> implements Solver<Solution_> {
+    public SolverScope<Solution_> solverScope; // BAD: public field, not final
+    protected Termination<Solution_> termination; // BAD: protected without inheritance need
+    
+    public DefaultSolver(...) { } // BAD: public constructor in API
+    
+    public Solution_ solve(Solution_ problem) { // BAD: not final, can be overridden
+        // ...
+    }
+}
+
+// ✅ CORRECT: Abstract class intended for extension (omit final appropriately)
+public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
+    private final Termination<Solution_> termination; // Still final
+    
+    protected AbstractPhase(Termination<Solution_> termination) {
+        this.termination = Objects.requireNonNull(termination);
+    }
+    
+    // Template method pattern - designed for overriding
+    protected abstract void doStep();
+    
+    // Final method - not meant to be overridden
+    public final void step() {
+        doStep();
+        // Common post-step logic
+    }
+}
+```
+
+**Enforcement**:
+- Code reviews MUST check for unnecessary visibility (public/protected when private would suffice)
+- Code reviews MUST check for missing `final` modifiers on classes, methods, and fields
+- Code reviews SHOULD request justification when `final` is omitted
+- Consider adding Checkstyle or ArchUnit rules to enforce these conventions automatically
+- SonarCloud may flag some of these as code smells; address them proactively
+
 ## Technology Stack and Dependency Constraints
 
 Timefold Solver is a **fast and efficient constraint solver** built with Java. The following technology and dependency rules are MANDATORY to ensure performance, maintainability, and minimal overhead.
@@ -266,7 +399,7 @@ The codebase uses **JSpecify** for nullability annotations with the following co
 
 1. **@NullMarked by default** - Implementations are typically annotated with `@NullMarked`, making everything non-null by default
 2. **Null allowed within class implementations** - Internal use of null is permitted for implementation purposes
-3. **Null MUST NOT leave the class** - Null values should not escape class boundaries (public APIs, return values, parameters)
+3. **Null MUST NOT escape through public APIs** - Null values must not be returned from public methods, passed as parameters to external code, or exposed through public fields without explicit `@Nullable` annotation
 4. **Use @Nullable explicitly** - When a public API must accept or return null, mark it explicitly with `@Nullable`
 
 **Rationale**: Null is a useful implementation tool but a dangerous public API contract. By keeping null internal to class implementations and using `@NullMarked` with explicit `@Nullable` annotations, we prevent NullPointerExceptions at API boundaries while maintaining implementation flexibility. Once null leaves a class, it can no longer be controlled, making it a potential source of bugs.
@@ -296,12 +429,12 @@ public class ScoreCalculator {
 **Enforcement**: 
 - Build configuration MUST target JDK 17 for compilation
 - CI MUST verify compilation and tests pass on JDK 17
-- CI SHOULD test on all currently supported JDK LTS versions (as of January 2026, that is JDK 17, 21 and 25)
+- CI SHOULD test on all currently supported JDK LTS versions; as of January 2026, that is JDK 17, 21 and 25.
 - Code reviews MUST verify that null values do not escape class boundaries without explicit `@Nullable` annotations
 - Code reviews SHOULD encourage use of modern Java features where appropriate
 - Code reviews SHOULD reject use of `Optional`
 - Code reviews SHOULD discourage stream overuse
-- All packages/classes SHOULD use `@NullMarked` to make non-null the default contract
+- All packages/classes SHOULD use `@NullMarked` to make non-null the default contract (can be applied at package level in package-info.java or at class level)
 
 ### II. Production Code Dependencies
 
@@ -343,7 +476,7 @@ All tests MUST use the following standardized frameworks:
    - Test containers for integration tests
    - Any framework that improves test quality, readability, or coverage
 
-**Rationale**: Standardized test infrastructure ensures consistent test quality, readable test code, excellent error messages, and reduces the learning curve for contributors. JUnit 6 is the modern standard, and AssertJ provides the best assertion experience in the Java ecosystem.
+**Rationale**: Standardized test infrastructure ensures consistent test quality, readable test code, excellent error messages, and reduces the learning curve for contributors. JUnit is the modern standard, and AssertJ provides the best assertion experience in the Java ecosystem.
 
 **Enforcement**: Code reviews MUST reject tests using JUnit assertions instead of AssertJ. CI SHOULD fail on usage of deprecated assertion styles.
 
@@ -453,6 +586,91 @@ The codebase is structured into three conceptual parts with different stability 
 - Changes to Public API and Configuration packages SHOULD include tests verifying backward compatibility
 - Deprecated APIs MUST continue to function correctly until their removal
 - Major version upgrades SHOULD include verification that migration paths work as documented
+
+**API Design Principles**:
+
+The public API MUST follow these design principles to ensure stability, flexibility, and maintainability:
+
+1. **Prefer Interfaces over Implementations** (MUST):
+   - Public API packages MUST expose interfaces, not concrete implementations
+   - ✅ `public interface Solver { ... }` in `api` package
+   - ❌ `public class DefaultSolver { ... }` in `api` package (incorrect - exposes implementation)
+   - This allows internal implementation changes without breaking the public contract
+   - Users program against stable interfaces, not volatile implementations
+
+2. **Hide Implementation Constructors** (MUST):
+   - When implementations must be exposed in public API (rare cases only), their constructors MUST be hidden
+   - Use factory methods, builders, or dependency injection instead of public constructors
+   - ✅ `SolverFactory.create(...)` returns `Solver` interface
+   - ✅ Package-private constructor: `DefaultSolver(...) { }` (no visibility modifier)
+   - ❌ `public DefaultSolver(...)` in `api` package (incorrect - exposes construction)
+   - This controls instantiation and allows internal refactoring
+
+3. **Factory Pattern for Object Creation** (MUST):
+   - Object creation in public API MUST use factory methods, factory classes, or builders
+   - ✅ `SolverFactory.create(SolverConfig)` → returns `Solver` interface
+   - ✅ `ScoreManager.create(SolverFactory)` → returns `ScoreManager` interface
+   - ❌ `new DefaultSolver(config)` (incorrect - direct instantiation of implementation)
+   - Factories provide flexibility to change implementations, perform validation, and manage object lifecycle
+
+4. **Return Interfaces from Public Methods** (MUST):
+   - Public API methods MUST declare interface return types, not implementation types
+   - ✅ `public Solver createSolver()` (returns interface)
+   - ❌ `public DefaultSolver createSolver()` (incorrect - returns implementation)
+   - Exception: When returning immutable value objects or records with no expected polymorphism
+
+**Rationale**: Exposing interfaces rather than implementations is fundamental to maintainable API design. It provides several critical benefits:
+
+- **Flexibility**: Internal implementations can be changed, optimized, or replaced without breaking user code
+- **Stability**: The contract (interface) remains stable even as implementation details evolve
+- **Testability**: Users can mock interfaces for testing; mocking concrete classes is harder
+- **Evolution**: New implementations can be introduced without API changes (strategy pattern, polymorphism)
+- **Encapsulation**: Implementation details remain hidden, reducing coupling and maintenance burden
+
+Hiding constructors and using factories gives the project control over instantiation, enabling validation, dependency injection, caching, and future architectural changes (e.g., introducing proxies, lazy initialization) without breaking existing code.
+
+**Examples**:
+
+```java
+// ✅ CORRECT: Public API exposes interface
+package ai.timefold.solver.core.api.solver;
+public interface Solver<Solution_> {
+    Solution_ solve(Solution_ problem);
+}
+
+// ✅ CORRECT: Factory returns interface
+package ai.timefold.solver.core.api.solver;
+public interface SolverFactory<Solution_> {
+    static <Solution_> SolverFactory<Solution_> create(SolverConfig solverConfig) {
+        // Implementation detail - returns concrete class that implements interface
+        return new DefaultSolverFactory<>(solverConfig);
+    }
+    Solver<Solution_> buildSolver();
+}
+
+// ✅ CORRECT: Implementation is package-private or in impl package
+package ai.timefold.solver.core.impl.solver;
+public class DefaultSolver<Solution_> implements Solver<Solution_> {
+    // Package-private constructor (no visibility modifier) - not public
+    DefaultSolver(SolverScope<Solution_> solverScope) {
+        // ...
+    }
+    // ... implementation
+}
+
+// ❌ INCORRECT: Exposing implementation in API
+package ai.timefold.solver.core.api.solver;
+public class DefaultSolver<Solution_> implements Solver<Solution_> {
+    public DefaultSolver(SolverConfig config) { } // BAD: public constructor
+    // ...
+}
+```
+
+**Enforcement**:
+- Code reviews MUST reject PRs that expose implementations in public API packages
+- Code reviews MUST reject PRs that add public constructors to implementation classes in API packages
+- Architecture tests SHOULD verify that `api` packages only contain interfaces, enums, and immutable value types
+- All object creation in public API MUST use factory patterns
 
 ## Development Workflow
 
@@ -613,5 +831,4 @@ This constitution is a living document. As the project evolves, principles may b
 
 ---
 
-**Version**: 1.2.0
-
+**Version**: 1.1.0
