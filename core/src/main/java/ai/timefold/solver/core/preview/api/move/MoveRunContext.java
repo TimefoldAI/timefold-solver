@@ -20,16 +20,10 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class MoveRunContext<Solution_> {
 
-    private final MoveRunner<Solution_> moveRunner;
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
-    private final Solution_ solution;
 
-    MoveRunContext(MoveRunner<Solution_> moveRunner,
-            InnerScoreDirector<Solution_, ?> scoreDirector,
-            Solution_ solution) {
-        this.moveRunner = moveRunner;
-        this.scoreDirector = scoreDirector;
-        this.solution = solution;
+    MoveRunContext(InnerScoreDirector<Solution_, ?> scoreDirector) {
+        this.scoreDirector = Objects.requireNonNull(scoreDirector, "scoreDirector");
     }
 
     /**
@@ -46,8 +40,7 @@ public final class MoveRunContext<Solution_> {
      * @throws IllegalStateException if the parent MoveRunner has been closed
      */
     public void execute(Move<Solution_> move) {
-        Objects.requireNonNull(move, "move");
-        scoreDirector.executeMove(move);
+        scoreDirector.executeMove(Objects.requireNonNull(move, "move"));
     }
 
     /**
@@ -68,21 +61,12 @@ public final class MoveRunContext<Solution_> {
      * @throws Error if the move throws an Error (Errors are never suppressed)
      */
     public void execute(Move<Solution_> move, Consumer<Exception> exceptionHandler) {
-        Objects.requireNonNull(move, "move");
         Objects.requireNonNull(exceptionHandler, "exceptionHandler");
 
         try {
-            scoreDirector.executeMove(move);
-        } catch (Error e) {
-            // Errors always propagate
-            throw e;
+            scoreDirector.executeMove(Objects.requireNonNull(move, "move"));
         } catch (Exception e) {
-            // Exception: invoke handler and suppress propagation
             exceptionHandler.accept(e);
-            // If it's an InterruptedException, restore the interrupt status
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
         }
     }
 
@@ -111,8 +95,8 @@ public final class MoveRunContext<Solution_> {
      * @throws IllegalStateException if the parent MoveRunner has been closed
      */
     public void executeTemporarily(Move<Solution_> move, Consumer<SolutionView<Solution_>> assertions) {
-        Objects.requireNonNull(move, "move");
-        Objects.requireNonNull(assertions, "assertions");
-        scoreDirector.executeTemporarily(move, assertions);
+        scoreDirector.executeTemporarily(
+                Objects.requireNonNull(move, "move"),
+                Objects.requireNonNull(assertions, "assertions"));
     }
 }

@@ -123,7 +123,7 @@ public final class MoveRunner<Solution_> implements AutoCloseable {
         // Set the working solution, which triggers shadow variable initialization
         scoreDirector.setWorkingSolution(Objects.requireNonNull(solution, "solution"));
 
-        return new MoveRunContext<>(this, scoreDirector, solution);
+        return new MoveRunContext<>(scoreDirector);
     }
 
     /**
