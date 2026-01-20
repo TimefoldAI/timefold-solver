@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseScope<Solution_> {
 
     private List<ExhaustiveSearchLayer> layerList;
-    private SortedSet<ExhaustiveSearchNode> expandableNodeQueue;
+    private SortedSet<ExhaustiveSearchNode<Solution_>> expandableNodeQueue;
     private InnerScore<?> bestPessimisticBound;
 
     private ExhaustiveSearchStepScope<Solution_> lastCompletedStepScope;
@@ -35,11 +35,11 @@ public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseSc
         this.layerList = layerList;
     }
 
-    public SortedSet<ExhaustiveSearchNode> getExpandableNodeQueue() {
+    public SortedSet<ExhaustiveSearchNode<Solution_>> getExpandableNodeQueue() {
         return expandableNodeQueue;
     }
 
-    public void setExpandableNodeQueue(SortedSet<ExhaustiveSearchNode> expandableNodeQueue) {
+    public void setExpandableNodeQueue(SortedSet<ExhaustiveSearchNode<Solution_>> expandableNodeQueue) {
         this.expandableNodeQueue = expandableNodeQueue;
     }
 
@@ -82,7 +82,7 @@ public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseSc
         }
     }
 
-    public void addExpandableNode(ExhaustiveSearchNode moveNode) {
+    public void addExpandableNode(ExhaustiveSearchNode<Solution_> moveNode) {
         expandableNodeQueue.add(moveNode);
         moveNode.setExpandable(true);
     }

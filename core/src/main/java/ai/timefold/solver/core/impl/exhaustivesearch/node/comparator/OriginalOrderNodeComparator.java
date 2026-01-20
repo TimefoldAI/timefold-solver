@@ -7,10 +7,10 @@ import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 /**
  * Investigate deeper nodes first, in order.
  */
-public class OriginalOrderNodeComparator implements Comparator<ExhaustiveSearchNode> {
+public class OriginalOrderNodeComparator<Solution_> implements Comparator<ExhaustiveSearchNode<Solution_>> {
 
     @Override
-    public int compare(ExhaustiveSearchNode a, ExhaustiveSearchNode b) {
+    public int compare(ExhaustiveSearchNode<Solution_> a, ExhaustiveSearchNode<Solution_> b) {
         // Investigate deeper first
         int aDepth = a.getDepth();
         int bDepth = b.getDepth();

@@ -52,7 +52,7 @@ public final class BasicExhaustiveSearchDecider<Solution_, Score_ extends Score<
     }
 
     @Override
-    public boolean isSolutionComplete(ExhaustiveSearchNode expandingNode) {
+    public boolean isSolutionComplete(ExhaustiveSearchNode<Solution_> expandingNode) {
         return expandingNode.getLayer().isLastLayer();
     }
 

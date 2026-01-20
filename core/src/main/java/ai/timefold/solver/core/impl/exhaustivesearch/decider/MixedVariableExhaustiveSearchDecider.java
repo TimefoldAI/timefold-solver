@@ -48,7 +48,7 @@ public final class MixedVariableExhaustiveSearchDecider<Solution_, Score_ extend
     }
 
     @Override
-    public boolean isSolutionComplete(ExhaustiveSearchNode expandingNode) {
+    public boolean isSolutionComplete(ExhaustiveSearchNode<Solution_> expandingNode) {
         return currentDecider.isSolutionComplete(expandingNode);
     }
 

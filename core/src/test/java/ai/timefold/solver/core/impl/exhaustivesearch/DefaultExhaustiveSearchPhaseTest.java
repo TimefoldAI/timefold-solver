@@ -168,8 +168,9 @@ class DefaultExhaustiveSearchPhaseTest {
         verify(node4B.getUndoMove(), times(0)).execute(any(MutableSolutionView.class));
     }
 
-    ExhaustiveSearchNode createNode(ExhaustiveSearchLayer layer, ExhaustiveSearchNode parentNode, boolean addMoves) {
-        var node = new ExhaustiveSearchNode(layer, parentNode);
+    <Solution_> ExhaustiveSearchNode<Solution_> createNode(ExhaustiveSearchLayer layer,
+            ExhaustiveSearchNode<Solution_> parentNode, boolean addMoves) {
+        var node = new ExhaustiveSearchNode<>(layer, parentNode);
         if (addMoves) {
             node.setMove(mock(Move.class));
             node.setUndoMove(mock(Move.class));

@@ -18,7 +18,6 @@ import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.util.MutableInt;
-import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,27 +79,22 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
 
     public abstract void expandNode(ExhaustiveSearchStepScope<Solution_> stepScope);
 
-    public abstract boolean isSolutionComplete(ExhaustiveSearchNode expandingNode);
+    public abstract boolean isSolutionComplete(ExhaustiveSearchNode<Solution_> expandingNode);
 
     public abstract void restoreWorkingSolution(ExhaustiveSearchStepScope<Solution_> stepScope,
             boolean assertWorkingSolutionScoreFromScratch, boolean assertExpectedWorkingSolutionScore);
 
     public abstract boolean isEntityReinitializable(Object entity);
 
-    protected void expandNode(ExhaustiveSearchStepScope<Solution_> stepScope, ExhaustiveSearchNode expandingNode,
+    protected void expandNode(ExhaustiveSearchStepScope<Solution_> stepScope, ExhaustiveSearchNode<Solution_> expandingNode,
             ExhaustiveSearchLayer moveLayer, MutableInt moveIndex) {
         var phaseScope = stepScope.getPhaseScope();
         for (var move : moveRepository) {
-            var moveNode = new ExhaustiveSearchNode(moveLayer, expandingNode);
+            var moveNode = new ExhaustiveSearchNode<>(moveLayer, expandingNode);
             moveIndex.increment();
             moveNode.setMove(move);
-            // Do not filter out pointless moves, because the original value of the entity(s) is irrelevant.
-            // If the original value is null and the variable allows unassigned values,
-            // the move to null must be done too.
             doMove(stepScope, moveNode, isSolutionComplete(moveNode), false);
             phaseScope.addMoveEvaluationCount(move, 1);
-            // TODO in the lowest level (and only in that level) QuitEarly can be useful
-            // No QuitEarly because lower layers might be promising
             phaseScope.getSolverScope().checkYielding();
             if (termination.isPhaseTerminated(stepScope.getPhaseScope())) {
                 break;
@@ -108,10 +102,10 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
         }
     }
 
-    protected void doMove(ExhaustiveSearchStepScope<Solution_> stepScope,
-            ExhaustiveSearchNode moveNode, boolean isSolutionComplete, boolean skipMoveExecution) {
+    protected void doMove(ExhaustiveSearchStepScope<Solution_> stepScope, ExhaustiveSearchNode<Solution_> moveNode,
+            boolean isSolutionComplete, boolean skipMoveExecution) {
         var scoreDirector = stepScope.<Score_> getScoreDirector();
-        Move<Solution_> move = moveNode.getMove();
+        var move = moveNode.getMove();
         if (!skipMoveExecution) {
             var undoMove = scoreDirector.getMoveDirector().executeTemporary(move,
                     (score, undo) -> {
@@ -135,7 +129,7 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
     }
 
     private void processMove(ExhaustiveSearchStepScope<Solution_> stepScope,
-            ExhaustiveSearchNode moveNode, boolean isSolutionComplete, InnerScore<Score_> score) {
+            ExhaustiveSearchNode<Solution_> moveNode, boolean isSolutionComplete, InnerScore<Score_> score) {
         if (!scoreBounderEnabled) {
             processMoverWithoutBounder(stepScope, moveNode, score, isSolutionComplete);
         } else {
@@ -144,7 +138,7 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
     }
 
     private void processMoverWithoutBounder(ExhaustiveSearchStepScope<Solution_> stepScope,
-            ExhaustiveSearchNode moveNode, InnerScore<Score_> score, boolean isSolutionComplete) {
+            ExhaustiveSearchNode<Solution_> moveNode, InnerScore<Score_> score, boolean isSolutionComplete) {
         var phaseScope = stepScope.getPhaseScope();
         if (isSolutionComplete) {
             moveNode.setScore(score);
@@ -158,7 +152,7 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
     }
 
     private void processMoverWithBounder(ExhaustiveSearchStepScope<Solution_> stepScope,
-            ExhaustiveSearchNode moveNode, InnerScore<Score_> score, boolean isSolutionComplete) {
+            ExhaustiveSearchNode<Solution_> moveNode, InnerScore<Score_> score, boolean isSolutionComplete) {
         var phaseScope = stepScope.getPhaseScope();
         moveNode.setScore(score);
         if (assertMoveScoreFromScratch) {
@@ -211,7 +205,7 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
     protected void initStartNode(ExhaustiveSearchPhaseScope<Solution_> phaseScope,
             ExhaustiveSearchLayer layer) {
         var startLayer = layer == null ? phaseScope.getLayerList().get(0) : layer;
-        var startNode = new ExhaustiveSearchNode(startLayer, null);
+        var startNode = new ExhaustiveSearchNode<Solution_>(startLayer, null);
 
         if (scoreBounderEnabled) {
             var scoreDirector = phaseScope.<Score_> getScoreDirector();

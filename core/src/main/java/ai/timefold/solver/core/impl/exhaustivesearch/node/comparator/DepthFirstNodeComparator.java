@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 /**
  * Investigate deeper nodes first.
  */
-public class DepthFirstNodeComparator implements Comparator<ExhaustiveSearchNode> {
+public class DepthFirstNodeComparator<Solution_> implements Comparator<ExhaustiveSearchNode<Solution_>> {
 
     private final boolean scoreBounderEnabled;
 
@@ -18,7 +18,7 @@ public class DepthFirstNodeComparator implements Comparator<ExhaustiveSearchNode
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public int compare(ExhaustiveSearchNode a, ExhaustiveSearchNode b) {
+    public int compare(ExhaustiveSearchNode<Solution_> a, ExhaustiveSearchNode<Solution_> b) {
         // Investigate deeper first
         var aDepth = a.getDepth();
         var bDepth = b.getDepth();

@@ -25,7 +25,7 @@ import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solution_>
         implements ExhaustiveSearchPhase<Solution_> {
 
-    protected final Comparator<ExhaustiveSearchNode> nodeComparator;
+    protected final Comparator<ExhaustiveSearchNode<Solution_>> nodeComparator;
     protected final AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
 
     protected final boolean assertWorkingSolutionScoreFromScratch;
@@ -135,14 +135,14 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
     public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
 
-        private final Comparator<ExhaustiveSearchNode> nodeComparator;
+        private final Comparator<ExhaustiveSearchNode<Solution_>> nodeComparator;
         private final AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider;
 
         private boolean assertWorkingSolutionScoreFromScratch = false;
         private boolean assertExpectedWorkingSolutionScore = false;
 
         public Builder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination,
-                Comparator<ExhaustiveSearchNode> nodeComparator,
+                Comparator<ExhaustiveSearchNode<Solution_>> nodeComparator,
                 AbstractExhaustiveSearchDecider<Solution_, ? extends Score<?>> decider) {
             super(phaseIndex, logIndentation, phaseTermination);
             this.nodeComparator = nodeComparator;

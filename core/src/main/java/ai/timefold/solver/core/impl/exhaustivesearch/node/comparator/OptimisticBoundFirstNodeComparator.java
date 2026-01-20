@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 /**
  * Investigate the nodes with a better optimistic bound first, then deeper nodes.
  */
-public class OptimisticBoundFirstNodeComparator implements Comparator<ExhaustiveSearchNode> {
+public class OptimisticBoundFirstNodeComparator<Solution_> implements Comparator<ExhaustiveSearchNode<Solution_>> {
 
     public OptimisticBoundFirstNodeComparator(boolean scoreBounderEnabled) {
         if (!scoreBounderEnabled) {
@@ -19,7 +19,7 @@ public class OptimisticBoundFirstNodeComparator implements Comparator<Exhaustive
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public int compare(ExhaustiveSearchNode a, ExhaustiveSearchNode b) {
+    public int compare(ExhaustiveSearchNode<Solution_> a, ExhaustiveSearchNode<Solution_> b) {
         // Investigate better optimistic bound first (ignore initScore to avoid depth first ordering)
         var optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
         if (optimisticBoundComparison < 0) {
