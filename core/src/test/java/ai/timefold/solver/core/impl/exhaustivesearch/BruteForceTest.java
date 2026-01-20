@@ -1,13 +1,18 @@
 package ai.timefold.solver.core.impl.exhaustivesearch;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+
+import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchType;
+import ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
@@ -268,6 +273,35 @@ class BruteForceTest {
         var unassignedOtherValues = finalBestSolution.getOtherEntityList().stream()
                 .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null).toList();
         assertThat(unassignedOtherValues).isEmpty();
+
+    }
+
+    @Test
+    void failMissingBasicVariableConfiguration() {
+        // No cartesian prod when there are multiple variables
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataMixedSolution.class)
+                .withEntityClasses(TestdataMixedEntity.class, TestdataMixedOtherValue.class, TestdataMixedValue.class)
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class)
+                .withPhases(new ExhaustiveSearchPhaseConfig()
+                        .withExhaustiveSearchType(ExhaustiveSearchType.BRUTE_FORCE)
+                        .withMoveSelectorConfig(new ChangeMoveSelectorConfig()));
+
+        assertThatCode(() -> SolverFactory.<TestdataMixedSolution> create(solverConfig).buildSolver())
+                .hasMessageContaining("does not include all the expected planning variables");
+
+        // Cartesian prod with missing variables
+        var otherSolverConfig = new SolverConfig()
+                .withSolutionClass(TestdataMixedSolution.class)
+                .withEntityClasses(TestdataMixedEntity.class, TestdataMixedOtherValue.class, TestdataMixedValue.class)
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class)
+                .withPhases(new ExhaustiveSearchPhaseConfig()
+                        .withExhaustiveSearchType(ExhaustiveSearchType.BRUTE_FORCE)
+                        .withMoveSelectorConfig(
+                                new CartesianProductMoveSelectorConfig(List.of(new ChangeMoveSelectorConfig()))));
+
+        assertThatCode(() -> SolverFactory.<TestdataMixedSolution> create(otherSolverConfig).buildSolver())
+                .hasMessageContaining("does not include all the expected planning variables");
 
     }
 

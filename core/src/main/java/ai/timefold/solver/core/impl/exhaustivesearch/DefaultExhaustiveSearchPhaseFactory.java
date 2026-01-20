@@ -166,7 +166,6 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         var mimicSelectorId = ConfigUtils.addRandomSuffix(entityClassName, configPolicy.getRandom());
         configPolicy.addEntityMimicRecorder(mimicSelectorId, manualEntityMimicRecorder);
         var variableDescriptorList = getGenuineVariableDescriptorList(sourceEntitySelector, isListVariable);
-        // TODO Fail fast if it does not include all genuineVariableDescriptors as expected by DefaultExhaustiveSearchPhase.fillLayerList()
         MoveSelectorConfig<?> moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
         if (moveSelectorConfig == null) {
             if (isListVariable) {
@@ -176,8 +175,17 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                 moveSelectorConfig =
                         buildMoveSelectorConfigForBasicVariable(configPolicy, mimicSelectorId, variableDescriptorList);
             }
+        } else if (!isListVariable && variableDescriptorList.size() > 1
+                && (!(moveSelectorConfig instanceof CartesianProductMoveSelectorConfig cartesianProductMoveSelectorConfig)
+                        || (cartesianProductMoveSelectorConfig.getMoveSelectorList() != null
+                                && cartesianProductMoveSelectorConfig.getMoveSelectorList().size() != variableDescriptorList
+                                        .size()))) {
+            throw new IllegalArgumentException(
+                    "The move selector config %s does not include all the expected planning variables %s."
+                            .formatted(moveSelectorConfig, variableDescriptorList));
         }
-        var moveSelector = MoveSelectorFactory.<Solution_> createForExhaustiveMethod(moveSelectorConfig)
+
+        var moveSelector = MoveSelectorFactory.<Solution_> createForExhaustiveSearch(moveSelectorConfig)
                 .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, false);
         var scoreBounder = scoreBounderEnabled
                 ? new TrendBasedScoreBounder<>(configPolicy.getScoreDefinition(), configPolicy.getInitializingScoreTrend())

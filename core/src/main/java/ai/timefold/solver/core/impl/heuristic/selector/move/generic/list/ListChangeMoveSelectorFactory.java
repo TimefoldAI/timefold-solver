@@ -48,7 +48,7 @@ public class ListChangeMoveSelectorFactory<Solution_>
             MoveSelectorConfig<?> moveSelectorConfig, SelectionCacheType minimumCacheType,
             SelectionOrder inheritedSelectionOrder, boolean skipNonDoableMoves) {
         if (isExhaustiveSearch) {
-            return MoveSelectorFactory.<Solution_> createForExhaustiveMethod(moveSelectorConfig)
+            return MoveSelectorFactory.<Solution_> createForExhaustiveSearch(moveSelectorConfig)
                     .buildMoveSelector(configPolicy, minimumCacheType, inheritedSelectionOrder, skipNonDoableMoves);
         } else {
             return MoveSelectorFactory.<Solution_> create(moveSelectorConfig)

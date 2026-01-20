@@ -262,7 +262,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         }
     }
 
-    public static <Solution_> EntitySelector<Solution_> applyEntityValueRangeFilteringForExhaustiveMethod(
+    public static <Solution_> EntitySelector<Solution_> applyEntityValueRangeFilteringForExhaustiveSearch(
             HeuristicConfigPolicy<Solution_> configPolicy, EntitySelector<Solution_> entitySelector,
             ValueRangeRecorderId valueRangeRecorderId, SelectionCacheType minimumCacheType, SelectionOrder selectionOrder) {
         if (valueRangeRecorderId == null || valueRangeRecorderId.recorderId() == null || valueRangeRecorderId.basicVariable()) {

@@ -67,7 +67,7 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
             // By default, exhaustive search will use a replaying entity selector,
             // but we must filter out the entity
             // if the selected value does not fall within the entity's value range
-            entitySelector = EntitySelectorFactory.applyEntityValueRangeFilteringForExhaustiveMethod(configPolicy,
+            entitySelector = EntitySelectorFactory.applyEntityValueRangeFilteringForExhaustiveSearch(configPolicy,
                     entitySelector, valueRangeRecorderId, minimumCacheType, selectionOrder);
         }
         var valueSelector = buildIterableValueSelector(configPolicy, entitySelector.getEntityDescriptor(),

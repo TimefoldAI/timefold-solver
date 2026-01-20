@@ -67,7 +67,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     private final IterableValueSelector<Solution_> replayingValueSelector;
     private final EntitySelector<Solution_> childEntitySelector;
     private final boolean randomSelection;
-    private final boolean exhaustiveMethod;
+    private final boolean isExhaustiveSearch;
 
     private Object replayedValue;
     private Object replayedEntity;
@@ -75,11 +75,11 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     private long entitiesSize;
 
     public FilteringEntityByValueSelector(EntitySelector<Solution_> childEntitySelector,
-            IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection, boolean exhaustiveMethod) {
+            IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection, boolean isExhaustiveSearch) {
         this.replayingValueSelector = replayingValueSelector;
         this.childEntitySelector = childEntitySelector;
         this.randomSelection = randomSelection;
-        this.exhaustiveMethod = exhaustiveMethod;
+        this.isExhaustiveSearch = isExhaustiveSearch;
     }
 
     // ************************************************************************
@@ -159,12 +159,12 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
 
     /**
      * The exhaustive method uses a replaying entity selector to guarantee which search node will be explored.
-     * Thus, the {@code childEntitySelector} will be a replaying selector when {@code isExhaustiveMethod} is set to
+     * Thus, the {@code childEntitySelector} will be a replaying selector when {@code isExhaustiveSearch} is set to
      * {@code true}.
      */
     private Object selectReplayedEntity() {
-        if (!exhaustiveMethod) {
-            throw new IllegalStateException("Impossible state: exhaustiveMethod is set to false");
+        if (!isExhaustiveSearch) {
+            throw new IllegalStateException("Impossible state: exhaustiveSearch is set to false");
         }
         var iterator = childEntitySelector.iterator();
         if (iterator.hasNext()) {
@@ -181,12 +181,12 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
-            if (exhaustiveMethod) {
+            if (isExhaustiveSearch) {
                 throw new IllegalStateException("The random iterator is not supported for the exhaustive method.");
             }
             return new RandomFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues, workingRandom);
         } else {
-            if (exhaustiveMethod) {
+            if (isExhaustiveSearch) {
                 return new ExhaustiveOriginalFilteringValueRangeIterator<>(this::selectReplayedEntity,
                         this::selectReplayedValue, reachableValues);
             } else {
@@ -197,7 +197,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
 
     @Override
     public ListIterator<Object> listIterator() {
-        if (exhaustiveMethod) {
+        if (isExhaustiveSearch) {
             throw new IllegalStateException("The list iterator is not supported for the exhaustive method.");
         }
         return new OriginalFilteringValueRangeListIterator<>(this::selectReplayedValue, childEntitySelector.listIterator(),
@@ -206,7 +206,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
 
     @Override
     public ListIterator<Object> listIterator(int index) {
-        if (exhaustiveMethod) {
+        if (isExhaustiveSearch) {
             throw new IllegalStateException("The list iterator is not supported for the exhaustive method.");
         }
         return new OriginalFilteringValueRangeListIterator<>(this::selectReplayedValue, childEntitySelector.listIterator(index),
