@@ -62,6 +62,14 @@ public class IntegrationTestEntity {
         return solution.getValueList();
     }
 
+    public Integer getShadowVarWithParam() {
+        return shadowVarWithParam;
+    }
+
+    public Integer getShadowVarWithoutParam() {
+        return shadowVarWithoutParam;
+    }
+
     @ShadowSources("value")
     public int processShadowVarWithParam(IntegrationTestSolution solution) {
         if (solution == null) {

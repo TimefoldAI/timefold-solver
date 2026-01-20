@@ -426,7 +426,7 @@ class SolutionDescriptorTest {
                         "supplierName (calculateEndTime) that does not exist",
                         "inside its declaring class (ai.timefold.solver.core.testdomain.shadow.missing.TestdataDeclarativeMissingSupplierValue).",
                         "Maybe you misspelled the supplierName name?",
-                        "Maybe you have included a disallowed parameter, which does not match the expected solution class: ai.timefold.solver.core.testdomain.shadow.missing.");
+                        "Maybe you have included a disallowed parameter, which does not match the expected solution class: ai.timefold.solver.core.testdomain.shadow.missing.TestdataDeclarativeMissingSupplierSolution");
     }
 
     @Test

@@ -136,9 +136,11 @@ class ShadowVariableUpdateTest {
         SolutionManager.updateShadowVariables(solution);
         assertThat(value1.getEntityList()).containsExactly(entity1, entity3);
         assertThat(value2.getEntityList()).containsExactly(entity2);
-        assertThat(value1.getStartTime()).isEqualTo(TestdataBasicVarValue.DEFAULT_TIME.plusDays(value1.getEntityList().size()));
+        assertThat(value1.getStartTime())
+                .isEqualTo(TestdataBasicVarParameterValue.DEFAULT_TIME.plusDays(value1.getEntityList().size()));
         assertThat(value1.getEndTime()).isEqualTo(value1.getStartTime().plus(value1.getDuration()));
-        assertThat(value2.getStartTime()).isEqualTo(TestdataBasicVarValue.DEFAULT_TIME.plusDays(value2.getEntityList().size()));
+        assertThat(value2.getStartTime())
+                .isEqualTo(TestdataBasicVarParameterValue.DEFAULT_TIME.plusDays(value2.getEntityList().size()));
         assertThat(value2.getEndTime()).isEqualTo(value2.getStartTime().plus(value2.getDuration()));
     }
 
