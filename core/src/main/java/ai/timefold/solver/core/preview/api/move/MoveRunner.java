@@ -2,11 +2,10 @@ package ai.timefold.solver.core.preview.api.move;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.move.DummyConstraintProvider;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
@@ -74,21 +73,21 @@ public final class MoveRunner<Solution_> implements AutoCloseable {
     public static <Solution_> MoveRunner<Solution_> build(
             Class<Solution_> solutionClass,
             Class<?>... entityClasses) {
-        Objects.requireNonNull(solutionClass, "solutionClass");
-        Objects.requireNonNull(entityClasses, "entityClasses");
-        if (entityClasses.length == 0) {
+        if (Objects.requireNonNull(entityClasses, "entityClasses").length == 0) {
             throw new IllegalArgumentException("entityClasses must not be empty");
         }
 
         // Create solution descriptor
-        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(solutionClass, entityClasses);
+        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+                Objects.requireNonNull(solutionClass, "solutionClass"), entityClasses);
 
         // Create a Constraint Streams configuration with a dummy constraint provider
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(DummyConstraintProvider.class);
 
         // Build score director factory from the configuration
-        var scoreDirectorFactoryFactory = new ScoreDirectorFactoryFactory<Solution_, SimpleScore>(scoreDirectorFactoryConfig);
+        ScoreDirectorFactoryFactory<Solution_, ?> scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig);
         var scoreDirectorFactory = scoreDirectorFactoryFactory.buildScoreDirectorFactory(
                 EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
 
@@ -111,7 +110,6 @@ public final class MoveRunner<Solution_> implements AutoCloseable {
      * @throws IllegalStateException if this MoveRunner has been closed
      */
     public MoveRunContext<Solution_> using(Solution_ solution) {
-        Objects.requireNonNull(solution, "solution");
         if (closed) {
             throw new IllegalStateException("""
                     The MoveRunner has been closed and cannot be reused.
@@ -123,7 +121,7 @@ public final class MoveRunner<Solution_> implements AutoCloseable {
         var scoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirectorFactory.buildScoreDirector();
 
         // Set the working solution, which triggers shadow variable initialization
-        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.setWorkingSolution(Objects.requireNonNull(solution, "solution"));
 
         return new MoveRunContext<>(this, scoreDirector, solution);
     }
@@ -142,22 +140,6 @@ public final class MoveRunner<Solution_> implements AutoCloseable {
         if (!closed) {
             closed = true;
             // ScoreDirectorFactory doesn't have a close method, so we just set the flag
-        }
-    }
-
-    /**
-     * Dummy constraint provider that creates a single dummy constraint.
-     * This is needed to create a valid score director factory without actual constraint evaluation.
-     */
-    public static class DummyConstraintProvider implements ConstraintProvider {
-        @Override
-        public ai.timefold.solver.core.api.score.stream.Constraint[] defineConstraints(
-                ai.timefold.solver.core.api.score.stream.ConstraintFactory constraintFactory) {
-            return new ai.timefold.solver.core.api.score.stream.Constraint[] {
-                    constraintFactory.forEach(Object.class)
-                            .penalize(ai.timefold.solver.core.api.score.buildin.simple.SimpleScore.ONE)
-                            .asConstraint("Dummy constraint")
-            };
         }
     }
 }
