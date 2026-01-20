@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -38,6 +39,7 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.Nullable;
 
@@ -205,8 +207,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param move never null
      * @param consumer callback to run after move execution but before undo; never null
      */
-    void executeTemporarily(Move<Solution_> move,
-            java.util.function.Consumer<ai.timefold.solver.core.preview.api.move.SolutionView<Solution_>> consumer);
+    void executeTemporarily(Move<Solution_> move, Consumer<SolutionView<Solution_>> consumer);
 
     /**
      * @param expectedWorkingEntityListRevision an
