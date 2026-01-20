@@ -290,6 +290,140 @@ Over time, we expect to add all commonly used move types to this collection,
 reducing the need for custom move implementations in most scenarios.
 
 
+[#neighborhoodsTestingMoves]
+=== Testing moves with `MoveRunner`
+
+When developing custom moves, it is essential to verify that they correctly modify the solution
+and interact properly with the solver's infrastructure (such as shadow variables and variable listeners).
+The `MoveRunner` API provides a simple testing utility to execute moves in isolation,
+making it easy to write unit tests for your custom move implementations.
+
+IMPORTANT: The `MoveRunner` API is designed exclusively for testing purposes.
+It should not be used in production code or during normal solver operation.
+It is not thread-safe and not fine-tuned for performance.
+
+[#neighborhoodsMoveRunnerBasics]
+==== Basic usage
+
+The `MoveRunner` API follows a fluent builder pattern:
+
+[source,java,options="nowrap"]
+----
+try (var runner = MoveRunner.build(SolutionClass.class, EntityClass.class)) {
+    var context = runner.using(solution);
+    context.execute(move);
+}
+----
+
+The API requires:
+
+1. **Solution class**: The class annotated with `@PlanningSolution`
+2. **Entity classes**: One or more classes annotated with `@PlanningEntity`
+3. **Solution instance**: The working solution to execute the move on
+4. **Move instance**: The move to execute
+
+Because `MoveRunner` implements `AutoCloseable`, you must use it within a try-with-resources block
+to ensure proper cleanup of internal solver resources.
+
+[#neighborhoodsMoveRunnerPermanent]
+==== Permanent execution
+
+The `execute()` method applies a move permanently to the solution:
+
+[source,java,options="nowrap"]
+----
+@Test
+void testChangeMove() {
+    // Arrange
+    var solution = TestdataSolution.generateSolution(2, 2);
+    var entity = solution.getEntityList().get(0);
+    var newValue = solution.getValueList().get(1);
+
+    var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+    var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
+            .basicVariable("value", TestdataValue.class);
+
+    var move = Moves.change(variableMetaModel, entity, newValue);
+
+    // Act
+    try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
+        var context = runner.using(solution);
+        context.execute(move);
+    }
+
+    // Assert
+    assertThat(entity.getValue()).isEqualTo(newValue);
+}
+----
+
+After `execute()` returns, the solution is modified and all shadow variables are updated.
+
+[#neighborhoodsMoveRunnerTemporary]
+==== Temporary execution with automatic undo
+
+The `executeTemporarily()` method allows you to test a move's effects without permanently modifying the solution.
+This is useful when you want to verify intermediate state or test that the solver's undo mechanism works correctly:
+
+[source,java,options="nowrap"]
+----
+@Test
+void testMoveThenUndo() {
+    var solution = TestdataSolution.generateSolution(2, 2);
+    var entity = solution.getEntityList().get(0);
+    var originalValue = entity.getValue();
+    var newValue = solution.getValueList().get(1);
+
+    var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+    var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
+            .basicVariable("value", TestdataValue.class);
+
+    var move = Moves.change(variableMetaModel, entity, newValue);
+
+    try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
+        var context = runner.using(solution);
+
+        context.executeTemporarily(move, view -> {
+            // Verify changes were applied during temporary scope
+            assertThat(entity.getValue()).isEqualTo(newValue);
+        });
+
+        // Verify automatic undo restored original state
+        assertThat(entity.getValue()).isEqualTo(originalValue);
+    }
+}
+----
+
+The callback function receives a `MutableSolutionView` parameter,
+but you typically won't need to use it—you can directly inspect the solution's state
+within the callback to verify that the move was applied correctly.
+Once the callback completes, the solver automatically undoes all changes made by the move.
+
+[#neighborhoodsMoveRunnerExceptions]
+==== Exception handling
+
+If a move may throw exceptions during execution, you can provide an exception handler:
+
+[source,java,options="nowrap"]
+----
+@Test
+void testMoveWithExceptionHandler() {
+    var solution = createInvalidSolution(); // May cause exceptions
+    var move = Moves.change(variableMetaModel, entity, value);
+    var exceptions = new ArrayList<Exception>();
+
+    try (var runner = MoveRunner.build(SolutionClass.class, EntityClass.class)) {
+        var context = runner.using(solution);
+        context.execute(move, exceptions::add);
+    }
+
+    assertThat(exceptions).hasSize(1);
+}
+----
+
+Note that only `Exception` instances are caught and passed to the handler.
+`Error` instances (such as `OutOfMemoryError`) are not caught and will propagate normally.
+
+
 [#neighborhoodsMoveStreams]
 == Producing custom moves using Move Streams
 

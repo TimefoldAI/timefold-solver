@@ -24,6 +24,8 @@ This quickstart guide demonstrates how to use the Move Running API to test custo
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MoveRunner;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 ```
@@ -58,18 +60,21 @@ public class Task {
 
 ```java
 public class TaskSwapMove implements Move<TaskAssignment> {
+    private final PlanningVariableMetaModel<TaskAssignment, Task, Employee> variableMetaModel;
     private final Task leftTask;
     private final Task rightTask;
     
-    public TaskSwapMove(Task leftTask, Task rightTask) {
+    public TaskSwapMove(
+            PlanningVariableMetaModel<TaskAssignment, Task, Employee> variableMetaModel,
+            Task leftTask, 
+            Task rightTask) {
+        this.variableMetaModel = variableMetaModel;
         this.leftTask = leftTask;
         this.rightTask = rightTask;
     }
     
     @Override
     public void execute(MutableSolutionView<TaskAssignment> view) {
-        var variableMetaModel = view.getVariableMetaModel(Task.class, "assignedEmployee");
-        
         var leftEmployee = view.getValue(variableMetaModel, leftTask);
         var rightEmployee = view.getValue(variableMetaModel, rightTask);
         
@@ -77,6 +82,25 @@ public class TaskSwapMove implements Move<TaskAssignment> {
         view.changeVariable(variableMetaModel, rightTask, leftEmployee);
     }
 }
+```
+
+### 4. Obtain the Meta Model
+
+The meta model describes your planning problem's structure and is needed to create moves.
+You typically obtain it once and reuse it:
+
+```java
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+
+// Get the solution descriptor and meta model
+var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+    TaskAssignment.class, Task.class);
+var solutionMetaModel = solutionDescriptor.getMetaModel();
+
+// Get the variable meta model for the planning variable
+var variableMetaModel = solutionMetaModel
+    .entity(Task.class)
+    .basicVariable("assignedEmployee", Employee.class);
 ```
 
 ## Usage Examples
@@ -88,6 +112,14 @@ Execute a move and verify that the solution was modified:
 ```java
 @Test
 void testTaskSwapMove() {
+    // Arrange - Get meta model
+    var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+        TaskAssignment.class, Task.class);
+    var solutionMetaModel = solutionDescriptor.getMetaModel();
+    var variableMetaModel = solutionMetaModel
+        .entity(Task.class)
+        .basicVariable("assignedEmployee", Employee.class);
+    
     // Arrange - Create test data
     var employee1 = new Employee("Alice");
     var employee2 = new Employee("Bob");
@@ -102,7 +134,7 @@ void testTaskSwapMove() {
     solution.setTaskList(List.of(task1, task2));
     solution.setEmployeeList(List.of(employee1, employee2));
     
-    var move = new TaskSwapMove(task1, task2);
+    var move = new TaskSwapMove(variableMetaModel, task1, task2);
     
     // Act - Execute the move
     try (var runner = MoveRunner.build(TaskAssignment.class, Task.class)) {
@@ -123,7 +155,15 @@ Execute a move temporarily to verify its effects, then automatically restore the
 ```java
 @Test
 void testTaskSwapMoveThenUndo() {
-    // Arrange
+    // Arrange - Get meta model
+    var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+        TaskAssignment.class, Task.class);
+    var solutionMetaModel = solutionDescriptor.getMetaModel();
+    var variableMetaModel = solutionMetaModel
+        .entity(Task.class)
+        .basicVariable("assignedEmployee", Employee.class);
+    
+    // Arrange - Create test data
     var employee1 = new Employee("Alice");
     var employee2 = new Employee("Bob");
     
@@ -137,7 +177,7 @@ void testTaskSwapMoveThenUndo() {
     solution.setTaskList(List.of(task1, task2));
     solution.setEmployeeList(List.of(employee1, employee2));
     
-    var move = new TaskSwapMove(task1, task2);
+    var move = new TaskSwapMove(variableMetaModel, task1, task2);
     
     // Act & Assert - Execute temporarily
     try (var runner = MoveRunner.build(TaskAssignment.class, Task.class)) {
@@ -164,8 +204,15 @@ Handle exceptions that occur during move execution:
 @Test
 void testMoveWithExceptionHandler() {
     // Arrange
+    var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+        TaskAssignment.class, Task.class);
+    var solutionMetaModel = solutionDescriptor.getMetaModel();
+    var variableMetaModel = solutionMetaModel
+        .entity(Task.class)
+        .basicVariable("assignedEmployee", Employee.class);
+    
     var solution = createInvalidSolution(); // Solution that causes move to fail
-    var move = new TaskSwapMove(task1, task2);
+    var move = new TaskSwapMove(variableMetaModel, task1, task2);
     var exceptionList = new ArrayList<Exception>();
     
     // Act - Execute with exception handler
@@ -189,9 +236,17 @@ Reuse the MoveRunner to test multiple moves:
 ```java
 @Test
 void testMultipleMoves() {
+    // Arrange
+    var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+        TaskAssignment.class, Task.class);
+    var solutionMetaModel = solutionDescriptor.getMetaModel();
+    var variableMetaModel = solutionMetaModel
+        .entity(Task.class)
+        .basicVariable("assignedEmployee", Employee.class);
+    
     var solution = createTestSolution();
-    var move1 = new TaskSwapMove(task1, task2);
-    var move2 = new TaskSwapMove(task2, task3);
+    var move1 = new TaskSwapMove(variableMetaModel, task1, task2);
+    var move2 = new TaskSwapMove(variableMetaModel, task2, task3);
     
     try (var runner = MoveRunner.build(TaskAssignment.class, Task.class)) {
         // Execute first move
@@ -482,7 +537,15 @@ import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 
 @Test
 void testChangeMoveWithMoveRunner() {
-    // Arrange
+    // Arrange - Get meta model
+    var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+        TaskAssignment.class, Task.class);
+    var solutionMetaModel = solutionDescriptor.getMetaModel();
+    var variableMetaModel = solutionMetaModel
+        .entity(Task.class)
+        .basicVariable("assignedEmployee", Employee.class);
+    
+    // Arrange - Create test data
     var employee1 = new Employee("Alice");
     var employee2 = new Employee("Bob");
     
@@ -494,12 +557,11 @@ void testChangeMoveWithMoveRunner() {
     solution.setEmployeeList(List.of(employee1, employee2));
     
     // Act - Use builtin ChangeMove via Moves factory
+    var move = Moves.change(variableMetaModel, task, employee2);
+    
     try (var runner = MoveRunner.build(TaskAssignment.class, Task.class)) {
-        var view = runner.using(solution);
-        var variableMetaModel = view.getVariableMetaModel(Task.class, "assignedEmployee");
-        var move = Moves.change(variableMetaModel, task, employee2);
-        
-        view.execute(move);
+        var context = runner.using(solution);
+        context.execute(move);
     }
     
     // Assert
@@ -512,7 +574,15 @@ void testChangeMoveWithMoveRunner() {
 ```java
 @Test
 void testSwapMoveWithMoveRunner() {
-    // Arrange
+    // Arrange - Get meta model
+    var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+        TaskAssignment.class, Task.class);
+    var solutionMetaModel = solutionDescriptor.getMetaModel();
+    var variableMetaModel = solutionMetaModel
+        .entity(Task.class)
+        .basicVariable("assignedEmployee", Employee.class);
+    
+    // Arrange - Create test data
     var employee1 = new Employee("Alice");
     var employee2 = new Employee("Bob");
     
@@ -527,12 +597,11 @@ void testSwapMoveWithMoveRunner() {
     solution.setEmployeeList(List.of(employee1, employee2));
     
     // Act - Use builtin SwapMove via Moves factory
+    var move = Moves.swap(variableMetaModel, task1, task2);
+    
     try (var runner = MoveRunner.build(TaskAssignment.class, Task.class)) {
-        var view = runner.using(solution);
-        var variableMetaModel = view.getVariableMetaModel(Task.class, "assignedEmployee");
-        var move = Moves.swap(variableMetaModel, task1, task2);
-        
-        view.execute(move);
+        var context = runner.using(solution);
+        context.execute(move);
     }
     
     // Assert
@@ -547,16 +616,22 @@ void testSwapMoveWithMoveRunner() {
 @Test
 void testListAssignMoveWithMoveRunner() {
     // For planning problems with list variables
+    var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+        VehicleRoutingSolution.class, Vehicle.class);
+    var solutionMetaModel = solutionDescriptor.getMetaModel();
+    var listVariableMetaModel = solutionMetaModel
+        .entity(Vehicle.class)
+        .listVariable("customerList", Customer.class);
+    
     var solution = createVehicleRoutingSolution();
     var customer = new Customer("Customer 1");
     var vehicle = solution.getVehicleList().get(0);
     
+    var move = Moves.assign(listVariableMetaModel, customer, vehicle, 0);
+    
     try (var runner = MoveRunner.build(VehicleRoutingSolution.class, Vehicle.class)) {
-        var view = runner.using(solution);
-        var listVariableMetaModel = view.getListVariableMetaModel(Vehicle.class, "customerList");
-        var move = Moves.assign(listVariableMetaModel, customer, vehicle, 0);
-        
-        view.execute(move);
+        var context = runner.using(solution);
+        context.execute(move);
     }
     
     assertThat(vehicle.getCustomerList()).contains(customer);
@@ -568,20 +643,26 @@ void testListAssignMoveWithMoveRunner() {
 ```java
 @Test
 void testCompositeMoveWithMoveRunner() {
+    // Arrange
+    var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+        TaskAssignment.class, Task.class);
+    var solutionMetaModel = solutionDescriptor.getMetaModel();
+    var variableMetaModel = solutionMetaModel
+        .entity(Task.class)
+        .basicVariable("assignedEmployee", Employee.class);
+    
     var solution = createTestSolution();
     
+    // Create multiple moves
+    var move1 = Moves.change(variableMetaModel, task1, employee2);
+    var move2 = Moves.change(variableMetaModel, task2, employee1);
+    
+    // Compose them into a single move
+    var compositeMove = Moves.compose(move1, move2);
+    
     try (var runner = MoveRunner.build(TaskAssignment.class, Task.class)) {
-        var view = runner.using(solution);
-        var variableMetaModel = view.getVariableMetaModel(Task.class, "assignedEmployee");
-        
-        // Create multiple moves
-        var move1 = Moves.change(variableMetaModel, task1, employee2);
-        var move2 = Moves.change(variableMetaModel, task2, employee1);
-        
-        // Compose them into a single move
-        var compositeMove = Moves.compose(move1, move2);
-        
-        view.execute(compositeMove);
+        var context = runner.using(solution);
+        context.execute(compositeMove);
     }
     
     assertThat(task1.getAssignedEmployee()).isEqualTo(employee2);

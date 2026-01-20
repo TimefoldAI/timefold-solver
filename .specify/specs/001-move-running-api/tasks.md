@@ -73,12 +73,12 @@ description: "Task list for Move Running API implementation"
 - [X] T016 [P] [US1] Add unit tests for execute(move) with simple custom move to verify move execution to MoveRunnerTest.java (depends on T014)
 - [X] T017 [P] [US1] Add unit tests for closed MoveRunner IllegalStateException to MoveRunnerTest.java (depends on T014)
 - [X] T018 [P] [US1] Add unit tests for resource cleanup verification to MoveRunnerTest.java (depends on T014)
-- [ ] T019 [P] [US1] Create ChangeMoveTest for testing ChangeMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ChangeMoveTest.java`
-- [ ] T020 [P] [US1] Create SwapMoveTest for testing SwapMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/SwapMoveTest.java`
-- [ ] T021 [P] [US1] Create ListAssignMoveTest for testing ListAssignMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListAssignMoveTest.java`
-- [ ] T022 [P] [US1] Create ListChangeMoveTest for testing ListChangeMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListChangeMoveTest.java`
-- [ ] T023 [P] [US1] Create ListSwapMoveTest for testing ListSwapMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListSwapMoveTest.java`
-- [ ] T024 [P] [US1] Create CompositeMoveTest for testing CompositeMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/CompositeMoveTest.java`
+- [X] T019 [P] [US1] Create ChangeMoveTest for testing ChangeMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ChangeMoveTest.java`
+- [X] T020 [P] [US1] Create SwapMoveTest for testing SwapMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/SwapMoveTest.java`
+- [X] T021 [P] [US1] Create ListAssignMoveTest for testing ListAssignMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListAssignMoveTest.java`
+- [X] T022 [P] [US1] Create ListChangeMoveTest for testing ListChangeMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListChangeMoveTest.java`
+- [X] T023 [P] [US1] Create ListSwapMoveTest for testing ListSwapMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListSwapMoveTest.java`
+- [X] T024 [P] [US1] Create CompositeMoveTest for testing CompositeMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/CompositeMoveTest.java`
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. Developers can execute moves permanently and verify behavior using their own assertions.
 
@@ -121,12 +121,12 @@ description: "Task list for Move Running API implementation"
 
 - [X] T040 [P] Add comprehensive Javadoc to MoveRunner class covering all public methods, @param, @return, @throws in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunner.java`
 - [X] T041 [P] Add comprehensive Javadoc to MoveRunContext class covering all public methods, @param, @return, @throws in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunContext.java`
-- [ ] T042 [P] Update user guide with MoveRunner API documentation and usage examples in `docs/src/modules/ROOT/pages/optimization-algorithms/neighborhoods.adoc`
+- [X] T042 [P] Update user guide with MoveRunner API documentation and usage examples in `docs/src/modules/ROOT/pages/optimization-algorithms/neighborhoods.adoc`
 - [X] T043 [P] Add @NullMarked annotations to all classes with explicit @Nullable where needed
 - [X] T044 Code review for error message quality (include variable names and actionable advice)
 - [X] T045 Verify constitution compliance (automated testing, fail-fast, understandable errors, code hygiene)
 - [X] T046 Run Maven build to verify auto-formatting and compilation
-- [ ] T047 Validate quickstart.md examples against actual implementation
+- [X] T047 Validate quickstart.md examples against actual implementation
 
 ---
 
