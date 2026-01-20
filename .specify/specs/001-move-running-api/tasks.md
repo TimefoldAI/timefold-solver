@@ -4,7 +4,7 @@ description: "Task list for Move Running API implementation"
 
 # Tasks: Move Running API
 
-**Input**: Design documents from `/specs/001-move-running-api/`
+**Input**: Design documents from `../001-move-running-api/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
 **Tests**: Tests are included per constitution requirement for automated testing (all code must have automated tests).

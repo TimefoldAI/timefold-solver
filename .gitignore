@@ -4,6 +4,7 @@ local
 # Eclipse, Netbeans and IntelliJ files
 /.*
 !/.github
+!/.specify
 !/.ci
 !.gitignore
 !.gitattributes
