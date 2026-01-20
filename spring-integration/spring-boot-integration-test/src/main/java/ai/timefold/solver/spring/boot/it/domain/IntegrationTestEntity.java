@@ -6,6 +6,8 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
 @PlanningEntity
 public class IntegrationTestEntity {
@@ -16,6 +18,12 @@ public class IntegrationTestEntity {
     private IntegrationTestValue value;
 
     private List<IntegrationTestValue> valueList;
+
+    @ShadowVariable(supplierName = "processShadowVarWithParam")
+    private Integer shadowVarWithParam;
+
+    @ShadowVariable(supplierName = "processShadowVarWithoutParam")
+    private Integer shadowVarWithoutParam;
 
     public IntegrationTestEntity() {
     }
@@ -52,5 +60,18 @@ public class IntegrationTestEntity {
     @ValueRangeProvider(id = "valueRangeWithParameter")
     public List<IntegrationTestValue> getValueRangeWithParameter(IntegrationTestSolution solution) {
         return solution.getValueList();
+    }
+
+    @ShadowSources("value")
+    public int processShadowVarWithParam(IntegrationTestSolution solution) {
+        if (solution == null) {
+            throw new NullPointerException("solution is null");
+        }
+        return solution.getDummyShadowValue();
+    }
+
+    @ShadowSources("value")
+    public int processShadowVarWithoutParam() {
+        return -1;
     }
 }
