@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
-import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -33,15 +32,19 @@ public final class Moves {
         return new ChangeMove<>(variableMetaModel, entity, value);
     }
 
-    public static <Solution_, Entity_> Move<Solution_> swap(
-            PlanningVariableMetaModel<Solution_, Entity_, Object> variableMetaModel, Entity_ leftEntity, Entity_ rightEntity) {
-        return swap(Collections.singletonList(variableMetaModel), leftEntity, rightEntity);
+    @SuppressWarnings("unchecked")
+    public static <Solution_, Entity_, Value_> Move<Solution_> swap(
+            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ leftEntity, Entity_ rightEntity) {
+        return swap(List.of((PlanningVariableMetaModel<Solution_, Entity_, Object>) variableMetaModel), leftEntity,
+                rightEntity);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static <Solution_, Entity_> Move<Solution_> swap(
             List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList, Entity_ leftEntity,
             Entity_ rightEntity) {
-        return new SwapMove<>(variableMetaModelList, leftEntity, rightEntity);
+        var rawList = (List) variableMetaModelList;
+        return new SwapMove<>(rawList, leftEntity, rightEntity);
     }
 
     // ************************************************************************

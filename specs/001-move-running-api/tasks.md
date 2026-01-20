@@ -68,11 +68,11 @@ description: "Task list for Move Running API implementation"
 
 ### Tests for User Story 1
 
-- [ ] T014 [P] [US1] Create MoveRunnerTest with basic unit tests for build() validation (null solutionClass, empty entityClasses) in `core/src/test/java/ai/timefold/solver/core/preview/api/move/MoveRunnerTest.java`
-- [ ] T015 [P] [US1] Add unit tests for using() validation (null solution) to MoveRunnerTest.java (depends on T014)
-- [ ] T016 [P] [US1] Add unit tests for execute(move) with simple custom move to verify move execution to MoveRunnerTest.java (depends on T014)
-- [ ] T017 [P] [US1] Add unit tests for closed MoveRunner IllegalStateException to MoveRunnerTest.java (depends on T014)
-- [ ] T018 [P] [US1] Add unit tests for resource cleanup verification to MoveRunnerTest.java (depends on T014)
+- [X] T014 [P] [US1] Create MoveRunnerTest with basic unit tests for build() validation (null solutionClass, empty entityClasses) in `core/src/test/java/ai/timefold/solver/core/preview/api/move/MoveRunnerTest.java`
+- [X] T015 [P] [US1] Add unit tests for using() validation (null solution) to MoveRunnerTest.java (depends on T014)
+- [X] T016 [P] [US1] Add unit tests for execute(move) with simple custom move to verify move execution to MoveRunnerTest.java (depends on T014)
+- [X] T017 [P] [US1] Add unit tests for closed MoveRunner IllegalStateException to MoveRunnerTest.java (depends on T014)
+- [X] T018 [P] [US1] Add unit tests for resource cleanup verification to MoveRunnerTest.java (depends on T014)
 - [ ] T019 [P] [US1] Create ChangeMoveTest for testing ChangeMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ChangeMoveTest.java`
 - [ ] T020 [P] [US1] Create SwapMoveTest for testing SwapMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/SwapMoveTest.java`
 - [ ] T021 [P] [US1] Create ListAssignMoveTest for testing ListAssignMove with MoveRunner API in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListAssignMoveTest.java`
@@ -104,12 +104,12 @@ description: "Task list for Move Running API implementation"
 - [X] T031 [P] [US2] Add unit tests for executeTemporarily() with complex move affecting multiple entities to verify complete state restoration to MoveRunnerTest.java
 - [X] T032 [P] [US2] Add unit tests for execute(move, exceptionHandler) with Exception handling and suppression to MoveRunnerTest.java
 - [X] T033 [P] [US2] Add unit tests for execute(move, exceptionHandler) with Error propagation (not suppressed) to MoveRunnerTest.java
-- [ ] T034 [P] [US2] Add temporary execution tests to ChangeMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ChangeMoveTest.java`
-- [ ] T035 [P] [US2] Add temporary execution tests to SwapMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/SwapMoveTest.java`
-- [ ] T036 [P] [US2] Add temporary execution tests to ListAssignMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListAssignMoveTest.java`
-- [ ] T037 [P] [US2] Add temporary execution tests to ListChangeMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListChangeMoveTest.java`
-- [ ] T038 [P] [US2] Add temporary execution tests to ListSwapMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListSwapMoveTest.java`
-- [ ] T039 [P] [US2] Add temporary execution tests to CompositeMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/CompositeMoveTest.java`
+- [X] T034 [P] [US2] Add temporary execution tests to ChangeMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ChangeMoveTest.java`
+- [X] T035 [P] [US2] Add temporary execution tests to SwapMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/SwapMoveTest.java`
+- [X] T036 [P] [US2] Add temporary execution tests to ListAssignMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListAssignMoveTest.java`
+- [X] T037 [P] [US2] Add temporary execution tests to ListChangeMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListChangeMoveTest.java`
+- [X] T038 [P] [US2] Add temporary execution tests to ListSwapMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListSwapMoveTest.java`
+- [X] T039 [P] [US2] Add temporary execution tests to CompositeMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/CompositeMoveTest.java`
 
 **Checkpoint**: At this point, both User Stories 1 AND 2 should work independently. Developers can execute moves both permanently and temporarily with automatic undo.
 
@@ -119,13 +119,13 @@ description: "Task list for Move Running API implementation"
 
 **Purpose**: Documentation, code quality improvements, and final validation
 
-- [ ] T040 [P] Add comprehensive Javadoc to MoveRunner class covering all public methods, @param, @return, @throws in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunner.java`
-- [ ] T041 [P] Add comprehensive Javadoc to MoveRunContext class covering all public methods, @param, @return, @throws in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunContext.java`
+- [X] T040 [P] Add comprehensive Javadoc to MoveRunner class covering all public methods, @param, @return, @throws in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunner.java`
+- [X] T041 [P] Add comprehensive Javadoc to MoveRunContext class covering all public methods, @param, @return, @throws in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunContext.java`
 - [ ] T042 [P] Update user guide with MoveRunner API documentation and usage examples in `docs/src/modules/ROOT/pages/optimization-algorithms/neighborhoods.adoc`
-- [ ] T043 [P] Add @NullMarked annotations to all classes with explicit @Nullable where needed
-- [ ] T044 Code review for error message quality (include variable names and actionable advice)
-- [ ] T045 Verify constitution compliance (automated testing, fail-fast, understandable errors, code hygiene)
-- [ ] T046 Run Maven build to verify auto-formatting and compilation
+- [X] T043 [P] Add @NullMarked annotations to all classes with explicit @Nullable where needed
+- [X] T044 Code review for error message quality (include variable names and actionable advice)
+- [X] T045 Verify constitution compliance (automated testing, fail-fast, understandable errors, code hygiene)
+- [X] T046 Run Maven build to verify auto-formatting and compilation
 - [ ] T047 Validate quickstart.md examples against actual implementation
 
 ---
