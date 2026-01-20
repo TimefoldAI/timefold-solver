@@ -634,7 +634,7 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeParameterValue.class)
                 .getMetaModel())
                 .hasMessageContaining(
-                        "Maybe you have included a unallowed parameter, which does not match the expected solution class");
+                        "Maybe you have included a disallowed parameter, which does not match the expected solution class");
     }
 
     @Test

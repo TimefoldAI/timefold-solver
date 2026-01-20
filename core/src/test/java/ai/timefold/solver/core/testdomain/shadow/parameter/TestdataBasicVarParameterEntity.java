@@ -50,7 +50,7 @@ public class TestdataBasicVarParameterEntity {
 
     @Override
     public String toString() {
-        return "TestdataBasicVarEntity{" +
+        return "TestdataBasicVarParameterEntity{" +
                 "id=" + id +
                 ", value=" + value +
                 '}';

@@ -78,7 +78,7 @@ public class TestdataBasicVarParameterSolution {
 
     @Override
     public String toString() {
-        return "TestdataBasicVarSolution{" +
+        return "TestdataBasicVarParameterSolution{" +
                 "entities=" + entities +
                 ", values=" + values +
                 ", problemFacts=" + problemFacts +
