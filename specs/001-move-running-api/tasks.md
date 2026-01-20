@@ -30,9 +30,9 @@ description: "Task list for Move Running API implementation"
 
 **Purpose**: Project initialization and basic structure for the new API
 
-- [ ] T001 Create package directory structure at `core/src/main/java/ai/timefold/solver/core/preview/api/move/`
-- [ ] T002 Create test package directory structure at `core/src/test/java/ai/timefold/solver/core/preview/api/move/`
-- [ ] T003 [P] Create builtin test subdirectory at `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/`
+- [X] T001 Create package directory structure at `core/src/main/java/ai/timefold/solver/core/preview/api/move/`
+- [X] T002 Create test package directory structure at `core/src/test/java/ai/timefold/solver/core/preview/api/move/`
+- [X] T003 [P] Create builtin test subdirectory at `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/`
 
 ---
 
@@ -42,8 +42,8 @@ description: "Task list for Move Running API implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Modify InnerScoreDirector to add executeTemporarily(move, consumer) variant in `core/src/main/java/ai/timefold/solver/core/impl/score/director/InnerScoreDirector.java`
-- [ ] T005 Update package-info.java with API documentation at `core/src/main/java/ai/timefold/solver/core/preview/api/move/package-info.java`
+- [X] T004 Modify InnerScoreDirector to add executeTemporarily(move, consumer) variant in `core/src/main/java/ai/timefold/solver/core/impl/score/director/InnerScoreDirector.java`
+- [X] T005 Update package-info.java with API documentation at `core/src/main/java/ai/timefold/solver/core/preview/api/move/package-info.java`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -57,14 +57,14 @@ description: "Task list for Move Running API implementation"
 
 ### Implementation for User Story 1
 
-- [ ] T006 [P] [US1] Create MoveRunner class with build() factory method, AutoCloseable implementation, and resource management in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunner.java`
-- [ ] T007 [P] [US1] Create MoveRunContext class with execute(move) method for permanent execution in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunContext.java`
-- [ ] T008 [US1] Implement MoveRunner.build() to construct SolutionDescriptor and ScoreDirectorFactory with Constraint Streams dummy constraint (depends on T006)
-- [ ] T009 [US1] Implement MoveRunner.using() to create MoveRunContext with fresh InnerScoreDirector from cached factory (depends on T006, T007, T008)
-- [ ] T010 [US1] Implement MoveRunContext.execute(move) for permanent move execution via InnerScoreDirector (depends on T007, T009)
-- [ ] T011 [US1] Implement MoveRunner.close() for resource cleanup and add closed state tracking (depends on T006)
-- [ ] T012 [US1] Add null validation for all public methods (solutionClass, entityClasses, solution, move) with appropriate exceptions (depends on T006, T007)
-- [ ] T013 [US1] Add IllegalStateException checks for closed MoveRunner usage in using() and MoveRunContext methods (depends on T006, T007, T011)
+- [X] T006 [P] [US1] Create MoveRunner class with build() factory method, AutoCloseable implementation, and resource management in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunner.java`
+- [X] T007 [P] [US1] Create MoveRunContext class with execute(move) method for permanent execution in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunContext.java`
+- [X] T008 [US1] Implement MoveRunner.build() to construct SolutionDescriptor and ScoreDirectorFactory with Constraint Streams dummy constraint (depends on T006)
+- [X] T009 [US1] Implement MoveRunner.using() to create MoveRunContext with fresh InnerScoreDirector from cached factory (depends on T006, T007, T008)
+- [X] T010 [US1] Implement MoveRunContext.execute(move) for permanent move execution via InnerScoreDirector (depends on T007, T009)
+- [X] T011 [US1] Implement MoveRunner.close() for resource cleanup and add closed state tracking (depends on T006)
+- [X] T012 [US1] Add null validation for all public methods (solutionClass, entityClasses, solution, move) with appropriate exceptions (depends on T006, T007)
+- [X] T013 [US1] Add IllegalStateException checks for closed MoveRunner usage in using() and MoveRunContext methods (depends on T006, T007, T011)
 
 ### Tests for User Story 1
 
@@ -92,18 +92,18 @@ description: "Task list for Move Running API implementation"
 
 ### Implementation for User Story 2
 
-- [ ] T025 [US2] Implement MoveRunContext.executeTemporarily(move, assertions) using InnerScoreDirector.executeTemporarily() with consumer callback in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunContext.java`
-- [ ] T026 [US2] Implement MoveRunContext.execute(move, exceptionHandler) for permanent execution with exception handling (Consumer<Exception> signature, suppress Exception propagation, propagate Errors) in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunContext.java`
-- [ ] T027 [US2] Add fail-fast validation for null move and null callback parameters in executeTemporarily() before delegating to InnerScoreDirector (depends on T025)
-- [ ] T028 [US2] Add fail-fast validation for null exceptionHandler parameter in execute(move, exceptionHandler) before delegating to InnerScoreDirector (depends on T026)
+- [X] T025 [US2] Implement MoveRunContext.executeTemporarily(move, assertions) using InnerScoreDirector.executeTemporarily() with consumer callback in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunContext.java`
+- [X] T026 [US2] Implement MoveRunContext.execute(move, exceptionHandler) for permanent execution with exception handling (Consumer<Exception> signature, suppress Exception propagation, propagate Errors) in `core/src/main/java/ai/timefold/solver/core/preview/api/move/MoveRunContext.java`
+- [X] T027 [US2] Add fail-fast validation for null move and null callback parameters in executeTemporarily() before delegating to InnerScoreDirector (depends on T025)
+- [X] T028 [US2] Add fail-fast validation for null exceptionHandler parameter in execute(move, exceptionHandler) before delegating to InnerScoreDirector (depends on T026)
 
 ### Tests for User Story 2
 
-- [ ] T029 [P] [US2] Add unit tests for executeTemporarily() with move execution and undo verification to MoveRunnerTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/MoveRunnerTest.java`
-- [ ] T030 [P] [US2] Add unit tests for executeTemporarily() with null move and null callback validation to MoveRunnerTest.java
-- [ ] T031 [P] [US2] Add unit tests for executeTemporarily() with complex move affecting multiple entities to verify complete state restoration to MoveRunnerTest.java
-- [ ] T032 [P] [US2] Add unit tests for execute(move, exceptionHandler) with Exception handling and suppression to MoveRunnerTest.java
-- [ ] T033 [P] [US2] Add unit tests for execute(move, exceptionHandler) with Error propagation (not suppressed) to MoveRunnerTest.java
+- [X] T029 [P] [US2] Add unit tests for executeTemporarily() with move execution and undo verification to MoveRunnerTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/MoveRunnerTest.java`
+- [X] T030 [P] [US2] Add unit tests for executeTemporarily() with null move and null callback validation to MoveRunnerTest.java
+- [X] T031 [P] [US2] Add unit tests for executeTemporarily() with complex move affecting multiple entities to verify complete state restoration to MoveRunnerTest.java
+- [X] T032 [P] [US2] Add unit tests for execute(move, exceptionHandler) with Exception handling and suppression to MoveRunnerTest.java
+- [X] T033 [P] [US2] Add unit tests for execute(move, exceptionHandler) with Error propagation (not suppressed) to MoveRunnerTest.java
 - [ ] T034 [P] [US2] Add temporary execution tests to ChangeMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ChangeMoveTest.java`
 - [ ] T035 [P] [US2] Add temporary execution tests to SwapMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/SwapMoveTest.java`
 - [ ] T036 [P] [US2] Add temporary execution tests to ListAssignMoveTest.java in `core/src/test/java/ai/timefold/solver/core/preview/api/move/builtin/ListAssignMoveTest.java`

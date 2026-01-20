@@ -191,6 +191,24 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch);
 
     /**
+     * Executes a move temporarily, runs the provided callback function, and then immediately undoes the move.
+     * This variant allows user code to run between move execution and undo, enabling testing and validation
+     * without permanently modifying the solution state.
+     * <p>
+     * The callback receives a {@link ai.timefold.solver.core.preview.api.move.SolutionView} for read-only access
+     * to the modified solution state. The callback must not modify the solution state directly; doing so
+     * will result in undefined behavior when the move is undone.
+     * <p>
+     * If an exception occurs during move execution, callback invocation, or undo operation, the solution state
+     * is UNDEFINED and no restoration is attempted. The caller must discard the solution instance.
+     *
+     * @param move never null
+     * @param consumer callback to run after move execution but before undo; never null
+     */
+    void executeTemporarily(Move<Solution_> move,
+            java.util.function.Consumer<ai.timefold.solver.core.preview.api.move.SolutionView<Solution_>> consumer);
+
+    /**
      * @param expectedWorkingEntityListRevision an
      * @return true if the entityList might have a different set of instances now
      */

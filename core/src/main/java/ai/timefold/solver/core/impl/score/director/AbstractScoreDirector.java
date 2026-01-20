@@ -351,6 +351,17 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
+    public void executeTemporarily(Move<Solution_> move,
+            java.util.function.Consumer<ai.timefold.solver.core.preview.api.move.SolutionView<Solution_>> consumer) {
+        java.util.Objects.requireNonNull(move, "move");
+        java.util.Objects.requireNonNull(consumer, "consumer");
+        moveDirector.executeTemporary(move, (score, undoMove) -> {
+            consumer.accept(moveDirector);
+            return (Void) null;
+        });
+    }
+
+    @Override
     public boolean isWorkingEntityListDirty(long expectedWorkingEntityListRevision) {
         return workingEntityListRevision != expectedWorkingEntityListRevision;
     }
