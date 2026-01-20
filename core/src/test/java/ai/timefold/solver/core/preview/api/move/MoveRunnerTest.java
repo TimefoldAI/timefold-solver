@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 
 class MoveRunnerTest {
 
-    // T014: Basic unit tests for build() validation
     @Test
     void buildWithNullSolutionClass() {
         assertThatNullPointerException()
@@ -42,7 +41,6 @@ class MoveRunnerTest {
         }
     }
 
-    // T015: Unit tests for using() validation
     @Test
     void usingWithNullSolution() {
         try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
@@ -61,7 +59,6 @@ class MoveRunnerTest {
         }
     }
 
-    // T016: Unit tests for execute(move) with simple custom move
     @Test
     void executeSimpleMove() {
         var solution = TestdataSolution.generateSolution(2, 2);
@@ -75,15 +72,12 @@ class MoveRunnerTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
 
         // Create a simple swap move
-        Move<TestdataSolution> swapMove = new Move<>() {
-            @Override
-            public void execute(MutableSolutionView<TestdataSolution> view) {
-                var val1 = view.getValue(variableMetaModel, entity1);
-                var val2 = view.getValue(variableMetaModel, entity2);
+        Move<TestdataSolution> swapMove = view -> {
+            var val1 = view.getValue(variableMetaModel, entity1);
+            var val2 = view.getValue(variableMetaModel, entity2);
 
-                view.changeVariable(variableMetaModel, entity1, val2);
-                view.changeVariable(variableMetaModel, entity2, val1);
-            }
+            view.changeVariable(variableMetaModel, entity1, val2);
+            view.changeVariable(variableMetaModel, entity2, val1);
         };
 
         try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
@@ -107,7 +101,6 @@ class MoveRunnerTest {
         }
     }
 
-    // T017: Unit tests for closed MoveRunner IllegalStateException
     @Test
     void usingAfterClose() {
         var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
@@ -119,7 +112,6 @@ class MoveRunnerTest {
                 .hasMessageContaining("closed");
     }
 
-    // T018: Unit tests for resource cleanup verification
     @Test
     void closeIsIdempotent() {
         var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
@@ -145,7 +137,6 @@ class MoveRunnerTest {
                 .hasMessageContaining("closed");
     }
 
-    // T029: Unit tests for executeTemporarily() with move execution and undo verification
     @Test
     void executeTemporarilyWithUndo() {
         var solution = TestdataSolution.generateSolution(2, 2);
@@ -157,14 +148,11 @@ class MoveRunnerTest {
         var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
 
-        Move<TestdataSolution> swapMove = new Move<>() {
-            @Override
-            public void execute(MutableSolutionView<TestdataSolution> view) {
-                var val1 = view.getValue(variableMetaModel, entity1);
-                var val2 = view.getValue(variableMetaModel, entity2);
-                view.changeVariable(variableMetaModel, entity1, val2);
-                view.changeVariable(variableMetaModel, entity2, val1);
-            }
+        Move<TestdataSolution> swapMove = view -> {
+            var val1 = view.getValue(variableMetaModel, entity1);
+            var val2 = view.getValue(variableMetaModel, entity2);
+            view.changeVariable(variableMetaModel, entity1, val2);
+            view.changeVariable(variableMetaModel, entity2, val1);
         };
 
         try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
@@ -182,7 +170,6 @@ class MoveRunnerTest {
         assertThat(entity2.getValue()).isEqualTo(originalValue2);
     }
 
-    // T030: Unit tests for executeTemporarily() with null move and null callback validation
     @Test
     void executeTemporarilyWithNullMove() {
         var solution = TestdataSolution.generateSolution(2, 2);
@@ -209,7 +196,6 @@ class MoveRunnerTest {
         }
     }
 
-    // T031: Unit tests for executeTemporarily() with complex move affecting multiple entities
     @Test
     void executeTemporarilyWithComplexMove() {
         var solution = TestdataSolution.generateSolution(3, 3);
@@ -222,17 +208,14 @@ class MoveRunnerTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
 
         // Move that rotates values across all entities
-        Move<TestdataSolution> rotateMove = new Move<>() {
-            @Override
-            public void execute(MutableSolutionView<TestdataSolution> view) {
-                var values = entities.stream()
-                        .map(e -> view.getValue(variableMetaModel, e))
-                        .toList();
+        Move<TestdataSolution> rotateMove = view -> {
+            var values = entities.stream()
+                    .map(e -> view.getValue(variableMetaModel, e))
+                    .toList();
 
-                for (int i = 0; i < entities.size(); i++) {
-                    var nextValue = values.get((i + 1) % values.size());
-                    view.changeVariable(variableMetaModel, entities.get(i), nextValue);
-                }
+            for (int i = 0; i < entities.size(); i++) {
+                var nextValue = values.get((i + 1) % values.size());
+                view.changeVariable(variableMetaModel, entities.get(i), nextValue);
             }
         };
 
@@ -254,7 +237,6 @@ class MoveRunnerTest {
         }
     }
 
-    // T032: Unit tests for execute(move, exceptionHandler) with Exception handling and suppression
     @Test
     void executeWithExceptionHandler() {
         var solution = TestdataSolution.generateSolution(2, 2);
@@ -290,7 +272,6 @@ class MoveRunnerTest {
         }
     }
 
-    // T033: Unit tests for execute(move, exceptionHandler) with Error propagation
     @Test
     void executeWithErrorPropagation() {
         var solution = TestdataSolution.generateSolution(2, 2);

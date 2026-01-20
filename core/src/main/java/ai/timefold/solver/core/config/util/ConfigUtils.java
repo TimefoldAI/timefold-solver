@@ -84,7 +84,9 @@ public class ConfigUtils {
     public static <T> @NonNull T newInstance(@NonNull Supplier<String> ownerDescriptor, @NonNull String propertyName,
             @NonNull Class<T> clazz) {
         try {
-            return clazz.getDeclaredConstructor().newInstance();
+            var ctor = clazz.getDeclaredConstructor();
+            ctor.setAccessible(true); // For inner static non-public classes; public noarg ctors are effectively not.
+            return ctor.newInstance();
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             // Inner classes include local, anonymous and non-static member classes
             throw new IllegalArgumentException("The %s's %s (%s) does not have a public no-arg constructor%s"

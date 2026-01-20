@@ -2,10 +2,13 @@ package ai.timefold.solver.core.preview.api.move;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.move.DummyConstraintProvider;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
@@ -142,4 +145,24 @@ public final class MoveRunner<Solution_> implements AutoCloseable {
             // ScoreDirectorFactory doesn't have a close method, so we just set the flag
         }
     }
+
+    /**
+     * Dummy constraint provider that creates a single dummy constraint.
+     * This is needed to create a valid score director factory without actual constraint evaluation.
+     * <p>
+     * This class is an internal detail and must not be exposed to the user.
+     */
+    @NullMarked
+    static final class DummyConstraintProvider implements ConstraintProvider {
+
+        @Override
+        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+            return new Constraint[] {
+                    constraintFactory.forEach(Object.class)
+                            .penalize(SimpleScore.ONE)
+                            .asConstraint("Dummy constraint")
+            };
+        }
+    }
+
 }

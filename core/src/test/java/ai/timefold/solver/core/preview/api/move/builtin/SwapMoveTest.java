@@ -1,12 +1,13 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import ai.timefold.solver.core.preview.api.move.MoveRunner;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link SwapMove} using the {@link MoveRunner} API.
