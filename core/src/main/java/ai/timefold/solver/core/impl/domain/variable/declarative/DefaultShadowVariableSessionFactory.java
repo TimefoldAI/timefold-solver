@@ -399,7 +399,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         consistencyTracker.getDeclarativeEntityConsistencyState(
                                 declarativeShadowVariableDescriptor.getEntityDescriptor()),
                         declarativeShadowVariableDescriptor.getMemberAccessor(),
-                        declarativeShadowVariableDescriptor.getCalculator()::executeGetter);
+                        declarativeShadowVariableDescriptor.getCalculator());
                 if (declarativeShadowVariableDescriptor.getAlignmentKeyMap() != null) {
                     var alignmentKeyFunction = declarativeShadowVariableDescriptor.getAlignmentKeyMap();
                     var alignmentKeyToAlignedEntitiesMap = new HashMap<Object, List<Object>>();
@@ -492,7 +492,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                                 graphDescriptor.consistencyTracker().getDeclarativeEntityConsistencyState(
                                         declarativeShadowVariableDescriptor.getEntityDescriptor()),
                                 declarativeShadowVariableDescriptor.getMemberAccessor(),
-                                declarativeShadowVariableDescriptor.getCalculator()::executeGetter)));
+                                declarativeShadowVariableDescriptor.getCalculator())));
     }
 
     private static <Solution_> Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> createGraphNodes(

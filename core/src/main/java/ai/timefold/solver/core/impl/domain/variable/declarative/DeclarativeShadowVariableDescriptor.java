@@ -71,7 +71,8 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
         }
         this.calculator =
                 entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory().buildAndCacheMemberAccessor(method,
-                        MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER, ShadowSources.class,
+                        MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER,
+                        ShadowSources.class,
                         descriptorPolicy.getDomainAccessType());
 
         sourcePaths = shadowVariableUpdater.value();

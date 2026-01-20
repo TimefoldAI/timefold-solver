@@ -27,10 +27,10 @@ import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExt
 import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarativeEntity;
 import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarativeSolution;
 import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarativeValue;
-
 import ai.timefold.solver.core.testdomain.shadow.invalid.parameter.TestdataInvalidDeclarativeParameterEntity;
 import ai.timefold.solver.core.testdomain.shadow.invalid.parameter.TestdataInvalidDeclarativeParameterSolution;
 import ai.timefold.solver.core.testdomain.shadow.invalid.parameter.TestdataInvalidDeclarativeParameterValue;
+
 import org.junit.jupiter.api.Test;
 
 class RootVariableSourceTest {

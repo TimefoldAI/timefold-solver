@@ -18,6 +18,9 @@ import ai.timefold.solver.core.testdomain.shadow.chained.TestdataChainedVarValue
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullEntity;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullSolution;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullValue;
+import ai.timefold.solver.core.testdomain.shadow.parameter.TestdataBasicVarParameterEntity;
+import ai.timefold.solver.core.testdomain.shadow.parameter.TestdataBasicVarParameterSolution;
+import ai.timefold.solver.core.testdomain.shadow.parameter.TestdataBasicVarParameterValue;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -107,6 +110,26 @@ class ShadowVariableUpdateTest {
         var entity2 = new TestdataBasicVarEntity("e2", value2);
         var entity3 = new TestdataBasicVarEntity("e3", value1);
         var solution = new TestdataBasicVarSolution();
+        solution.setEntities(List.of(entity1, entity2, entity3));
+        solution.setValues(List.of(value1, value2));
+        solution.setProblemFacts(List.of(1, "Data", new Object()));
+        SolutionManager.updateShadowVariables(solution);
+        assertThat(value1.getEntityList()).containsExactly(entity1, entity3);
+        assertThat(value2.getEntityList()).containsExactly(entity2);
+        assertThat(value1.getStartTime()).isEqualTo(TestdataBasicVarValue.DEFAULT_TIME.plusDays(value1.getEntityList().size()));
+        assertThat(value1.getEndTime()).isEqualTo(value1.getStartTime().plus(value1.getDuration()));
+        assertThat(value2.getStartTime()).isEqualTo(TestdataBasicVarValue.DEFAULT_TIME.plusDays(value2.getEntityList().size()));
+        assertThat(value2.getEndTime()).isEqualTo(value2.getStartTime().plus(value2.getDuration()));
+    }
+
+    @Test
+    void solutionUpdateBasicShadowVariablesWithParameter() {
+        var value1 = new TestdataBasicVarParameterValue("v1", Duration.ofSeconds(10));
+        var value2 = new TestdataBasicVarParameterValue("v2", Duration.ofSeconds(20));
+        var entity1 = new TestdataBasicVarParameterEntity("e1", value1);
+        var entity2 = new TestdataBasicVarParameterEntity("e2", value2);
+        var entity3 = new TestdataBasicVarParameterEntity("e3", value1);
+        var solution = new TestdataBasicVarParameterSolution();
         solution.setEntities(List.of(entity1, entity2, entity3));
         solution.setValues(List.of(value1, value2));
         solution.setProblemFacts(List.of(1, "Data", new Object()));
