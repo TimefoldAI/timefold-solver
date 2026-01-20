@@ -51,6 +51,10 @@ public class TestdataStringLengthShadowSolution {
         this.constraintWeightOverrides = constraintWeightOverrides;
     }
 
+    public int getDummyShadowValue() {
+        return 10;
+    }
+
     public HardSoftScore getScore() {
         return score;
     }
