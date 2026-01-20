@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 
@@ -121,7 +120,7 @@ public final class MoveRunner<Solution_> implements AutoCloseable {
         }
 
         // Create a score director from the cached factory
-        var scoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirectorFactory.buildScoreDirector();
+        var scoreDirector = scoreDirectorFactory.buildScoreDirector();
 
         // Set the working solution, which triggers shadow variable initialization
         scoreDirector.setWorkingSolution(Objects.requireNonNull(solution, "solution"));

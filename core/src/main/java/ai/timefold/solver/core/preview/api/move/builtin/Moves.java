@@ -39,12 +39,10 @@ public final class Moves {
                 rightEntity);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static <Solution_, Entity_> Move<Solution_> swap(
             List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList, Entity_ leftEntity,
             Entity_ rightEntity) {
-        var rawList = (List) variableMetaModelList;
-        return new SwapMove<>(rawList, leftEntity, rightEntity);
+        return new SwapMove<>(variableMetaModelList, leftEntity, rightEntity);
     }
 
     // ************************************************************************

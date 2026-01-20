@@ -2,6 +2,7 @@ package ai.timefold.solver.core.preview.api.move;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -116,8 +117,7 @@ class MoveRunnerTest {
     void closeIsIdempotent() {
         var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
         runner.close();
-        // Second close should not throw
-        runner.close();
+        assertThatNoException().isThrownBy(runner::close);
     }
 
     @Test
