@@ -634,7 +634,7 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeParameterValue.class)
                 .getMetaModel())
                 .hasMessageContaining(
-                        "Maybe you have included a disallowed parameter, which does not match the expected solution class");
+                        "Maybe you included a parameter which is not a planning solution (ai.timefold.solver.core.testdomain.shadow.invalid.parameter.TestdataInvalidDeclarativeParameterSolution)?");
     }
 
     @Test

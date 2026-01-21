@@ -425,8 +425,8 @@ class SolutionDescriptorTest {
                 .hasMessageContainingAll("@ShadowVariable (endTime)",
                         "supplierName (calculateEndTime) that does not exist",
                         "inside its declaring class (ai.timefold.solver.core.testdomain.shadow.missing.TestdataDeclarativeMissingSupplierValue).",
-                        "Maybe you misspelled the supplierName name?",
-                        "Maybe you have included a disallowed parameter, which does not match the expected solution class: ai.timefold.solver.core.testdomain.shadow.missing.TestdataDeclarativeMissingSupplierSolution");
+                        "Maybe you included a parameter which is not a planning solution (ai.timefold.solver.core.testdomain.shadow.missing.TestdataDeclarativeMissingSupplierSolution)",
+                        "Maybe you misspelled the supplierName name?");
     }
 
     @Test

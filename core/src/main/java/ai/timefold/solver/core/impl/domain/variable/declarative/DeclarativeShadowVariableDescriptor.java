@@ -54,7 +54,7 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
         if (method == null) {
             throw new IllegalArgumentException("""
                     @%s (%s) defines a supplierName (%s) that does not exist inside its declaring class (%s).
-                    Maybe you have included a disallowed parameter, which does not match the expected solution class: %s
+                    Maybe you included a parameter which is not a planning solution (%s)?
                     Maybe you misspelled the supplierName name?"""
                     .formatted(ShadowVariable.class.getSimpleName(), variableName, methodName,
                             variableMemberAccessor.getDeclaringClass().getCanonicalName(), solutionClass.getName()));

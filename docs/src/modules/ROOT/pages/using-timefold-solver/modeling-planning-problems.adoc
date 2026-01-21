@@ -1972,7 +1972,7 @@ public class Job {
     }
 
     @ShadowSources("startDate")
-    public LocalDate endDateSupplier(PackagingSchedule schedule) {
+    public LocalDate endDateSupplier() {
         if (startDate == null) {
             return null;
         } else {
@@ -2004,11 +2004,36 @@ public class Job {
 |Accesses `endDate` of each element in the `dependencies` collection.
 |===
 
-[NOTE]
+The supplier method may include only one optional parameter, the solution class. Here’s an example to show this.
+
+[tabs]
 ====
-Note that the supplier method `endDateSupplier` has an optional parameter,
-which is the planning solution class `PackagingSchedule`.
-No other parameters are accepted except for the solution class.
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Job {
+
+    ...
+
+    private LocalDateTime startDate;
+
+    @ShadowVariable(supplierName="processStartDate")
+    private boolean startDateOnHoliday;
+
+    @ShadowSources("startDate")
+    public boolean processStartDate(PackagingSchedule schedule) {
+        if (startDate == null) {
+            return false;
+        } else {
+            return schedule.isHoliday(startDate);
+        }
+    }
+
+}
+----
+
 ====
 
 [#detectingInconsistencies]
