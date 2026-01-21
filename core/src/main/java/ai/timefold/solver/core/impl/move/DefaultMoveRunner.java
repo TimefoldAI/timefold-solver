@@ -16,7 +16,6 @@ import org.jspecify.annotations.NullMarked;
 public final class DefaultMoveRunner<Solution_> implements MoveRunner<Solution_> {
 
     private final AbstractScoreDirectorFactory<Solution_, ?, ?> scoreDirectorFactory;
-    private boolean closed = false;
 
     public DefaultMoveRunner(SolutionDescriptor<Solution_> solutionDescriptor) {
         this(new MoveRunnerScoreDirectorFactory<>(solutionDescriptor, null));
@@ -33,13 +32,6 @@ public final class DefaultMoveRunner<Solution_> implements MoveRunner<Solution_>
 
     @Override
     public MoveRunContext<Solution_> using(Solution_ solution) {
-        if (closed) {
-            throw new IllegalStateException("""
-                    The MoveRunner has been closed and cannot be reused.
-                    Maybe you forgot to create a new MoveRunner instance within the try-with-resources block?
-                    """);
-        }
-
         // Create a score director from the cached factory
         var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
                 .withLookUpEnabled(false)

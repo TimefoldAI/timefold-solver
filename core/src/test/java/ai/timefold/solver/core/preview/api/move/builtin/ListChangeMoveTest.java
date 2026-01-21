@@ -19,7 +19,7 @@ class ListChangeMoveTest {
         var value2 = entity.getValueList().get(1);
         var value3 = entity.getValueList().get(2);
 
-        var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
@@ -46,7 +46,7 @@ class ListChangeMoveTest {
         var initialEntity2Size = entity2.getValueList().size();
         var valueToMove = entity1.getValueList().get(0);
 
-        var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
@@ -69,7 +69,7 @@ class ListChangeMoveTest {
         var entity2 = solution.getEntityList().get(1);
         var entity3 = solution.getEntityList().get(2);
 
-        var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
@@ -93,7 +93,7 @@ class ListChangeMoveTest {
         var entity = solution.getEntityList().get(0);
         var originalList = entity.getValueList().stream().toList(); // Copy list
 
-        var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
@@ -121,7 +121,7 @@ class ListChangeMoveTest {
         var originalList1 = entity1.getValueList().stream().toList();
         var originalList2 = entity2.getValueList().stream().toList();
 
-        var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 

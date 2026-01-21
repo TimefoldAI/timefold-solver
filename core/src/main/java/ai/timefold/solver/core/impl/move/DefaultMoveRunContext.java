@@ -6,21 +6,10 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MoveRunContext;
-import ai.timefold.solver.core.preview.api.move.MoveRunner;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 
-/**
- * Provides methods for executing moves on a bound planning solution instance.
- * <p>
- * Created via {@link MoveRunner#using(Object)}, this context binds a specific solution
- * instance to the runner and exposes execution methods.
- * <p>
- * This class is NOT thread-safe.
- *
- * @param <Solution_> the planning solution type
- */
 @NullMarked
 public final class DefaultMoveRunContext<Solution_> implements MoveRunContext<Solution_> {
 

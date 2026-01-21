@@ -21,7 +21,7 @@ class CompositeMoveTest {
         var value2 = solution.getValueList().get(1);
         var value3 = solution.getValueList().get(2);
 
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -50,7 +50,7 @@ class CompositeMoveTest {
         var initialValue2 = entity2.getValue();
         var value3 = solution.getValueList().get(2);
 
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -74,7 +74,7 @@ class CompositeMoveTest {
         var entity = solution.getEntityList().get(0);
         var newValue = solution.getValueList().get(1);
 
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -101,7 +101,7 @@ class CompositeMoveTest {
         var value3 = solution.getValueList().get(2);
         var value4 = solution.getValueList().get(3);
 
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -139,7 +139,7 @@ class CompositeMoveTest {
         var value2 = solution.getValueList().get(1);
         var value3 = solution.getValueList().get(2);
 
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -179,7 +179,7 @@ class CompositeMoveTest {
         var value3 = solution.getValueList().get(2);
         var value4 = solution.getValueList().get(3);
 
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 

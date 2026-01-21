@@ -19,7 +19,7 @@ class SwapMoveTest {
         var value1 = entity1.getValue();
         var value2 = entity2.getValue();
 
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -44,7 +44,7 @@ class SwapMoveTest {
         entity1.setValue(value);
         entity2.setValue(value);
 
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -69,7 +69,7 @@ class SwapMoveTest {
         var initialValue2 = entity2.getValue();
         var initialValue3 = entity3.getValue();
 
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
 
         var swap1 = Moves.swap(variableMetaModel, entity1, entity2);
@@ -95,7 +95,7 @@ class SwapMoveTest {
         var originalValue1 = entity1.getValue();
         var originalValue2 = entity2.getValue();
 
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -124,7 +124,7 @@ class SwapMoveTest {
         var initialValue2 = entity2.getValue();
         var initialValue3 = entity3.getValue();
 
-        var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 

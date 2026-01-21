@@ -1,13 +1,12 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import ai.timefold.solver.core.preview.api.move.MoveRunner;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
-
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ListAssignMoveTest {
 
@@ -17,7 +16,7 @@ class ListAssignMoveTest {
         var entity = solution.getEntityList().get(0);
         var value = solution.getValueList().get(0);
 
-        var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel =
                 solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
 
@@ -38,7 +37,7 @@ class ListAssignMoveTest {
         var value2 = solution.getValueList().get(1);
         var value3 = solution.getValueList().get(2);
 
-        var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel =
                 solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
 
@@ -69,7 +68,7 @@ class ListAssignMoveTest {
         var value2 = solution.getValueList().get(1);
         var value3 = solution.getValueList().get(2);
 
-        var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel =
                 solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
 
@@ -94,7 +93,7 @@ class ListAssignMoveTest {
         var entity = solution.getEntityList().get(0);
         var value = solution.getValueList().get(0);
 
-        var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel =
                 solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
 
@@ -119,7 +118,7 @@ class ListAssignMoveTest {
         var value2 = solution.getValueList().get(1);
         var value3 = solution.getValueList().get(2);
 
-        var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel =
                 solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
 
