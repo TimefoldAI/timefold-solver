@@ -28,7 +28,7 @@ public final class DefaultMoveRunContext<Solution_> implements MoveRunContext<So
     public void executeTemporarily(Move<Solution_> move, Consumer<SolutionView<Solution_>> callback) {
         scoreDirector.executeTemporaryMove(
                 Objects.requireNonNull(move, "move"),
-                Objects.requireNonNull(callback, "assertions"),
+                Objects.requireNonNull(callback, "callback"),
                 false);
     }
 
