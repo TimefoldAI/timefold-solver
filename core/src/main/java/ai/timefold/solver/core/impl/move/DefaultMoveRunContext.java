@@ -25,20 +25,10 @@ public final class DefaultMoveRunContext<Solution_> implements MoveRunContext<So
     }
 
     @Override
-    public void execute(Move<Solution_> move, Consumer<Exception> exceptionHandler) {
-        Objects.requireNonNull(exceptionHandler, "exceptionHandler");
-        try {
-            scoreDirector.executeMove(Objects.requireNonNull(move, "move"));
-        } catch (Exception e) {
-            exceptionHandler.accept(e);
-        }
-    }
-
-    @Override
-    public void executeTemporarily(Move<Solution_> move, Consumer<SolutionView<Solution_>> assertions) {
+    public void executeTemporarily(Move<Solution_> move, Consumer<SolutionView<Solution_>> callback) {
         scoreDirector.executeTemporaryMove(
                 Objects.requireNonNull(move, "move"),
-                Objects.requireNonNull(assertions, "assertions"),
+                Objects.requireNonNull(callback, "assertions"),
                 false);
     }
 

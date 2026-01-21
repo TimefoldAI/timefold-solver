@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.move.DefaultMoveRunner;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -45,8 +44,7 @@ public interface MoveRunner<Solution_> {
     /**
      * Creates a new MoveRunner for the given solution and entity classes.
      * <p>
-     * This method validates inputs, constructs the internal solution descriptor,
-     * and creates a score director factory from Constraint Streams with a dummy constraint.
+     * This method validates inputs, and initializes many internal structures.
      * These are heavy operations performed once and cached for reuse.
      * <p>
      * Shadow variables are initialized later when a solution is bound via {@link #using(Object)}.
@@ -69,10 +67,7 @@ public interface MoveRunner<Solution_> {
      * As defined by {@link #build(Class, Class[])}, but using the meta-model to extract classes.
      */
     static <Solution_> MoveRunner<Solution_> build(PlanningSolutionMetaModel<Solution_> solutionMetaModel) {
-        return build(solutionMetaModel.type(),
-                solutionMetaModel.entities().stream()
-                        .map(PlanningEntityMetaModel::type)
-                        .toArray(Class<?>[]::new));
+        return new DefaultMoveRunner<>(solutionMetaModel, null);
     }
 
     /**

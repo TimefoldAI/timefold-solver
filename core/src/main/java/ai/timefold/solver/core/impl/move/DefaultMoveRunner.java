@@ -11,6 +11,7 @@ import ai.timefold.solver.core.preview.api.move.MoveRunContext;
 import ai.timefold.solver.core.preview.api.move.MoveRunner;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class DefaultMoveRunner<Solution_> implements MoveRunner<Solution_> {
@@ -21,10 +22,11 @@ public final class DefaultMoveRunner<Solution_> implements MoveRunner<Solution_>
         this(new MoveRunnerScoreDirectorFactory<>(Objects.requireNonNull(solutionDescriptor), null));
     }
 
-    public DefaultMoveRunner(PlanningSolutionMetaModel<Solution_> solutionMetaModel, MoveRepository<Solution_> moveRepository) {
+    public DefaultMoveRunner(PlanningSolutionMetaModel<Solution_> solutionMetaModel,
+            @Nullable MoveRepository<Solution_> moveRepository) {
         this(new MoveRunnerScoreDirectorFactory<>(
                 ((DefaultPlanningSolutionMetaModel<Solution_>) Objects.requireNonNull(solutionMetaModel)).solutionDescriptor(),
-                Objects.requireNonNull(moveRepository)));
+                moveRepository));
     }
 
     private DefaultMoveRunner(AbstractScoreDirectorFactory<Solution_, ?, ?> scoreDirectorFactory) {

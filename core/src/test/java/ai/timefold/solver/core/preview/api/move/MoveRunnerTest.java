@@ -3,7 +3,6 @@ package ai.timefold.solver.core.preview.api.move;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -173,50 +172,4 @@ class MoveRunnerTest {
         }
     }
 
-    @Test
-    void executeWithExceptionHandler() {
-        var solution = TestdataSolution.generateSolution(2, 2);
-        var exceptionList = new java.util.ArrayList<Exception>();
-
-        Move<TestdataSolution> failingMove = view -> {
-            throw new RuntimeException("Test exception");
-        };
-
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
-        runner.using(solution).execute(failingMove, exceptionList::add);
-
-        assertThat(exceptionList).hasSize(1);
-        assertThat(exceptionList.get(0)).isInstanceOf(RuntimeException.class).hasMessage("Test exception");
-    }
-
-    @Test
-    void executeWithNullExceptionHandler() {
-        var solution = TestdataSolution.generateSolution(2, 2);
-        Move<TestdataSolution> dummyMove = view -> {
-        };
-
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
-        var context = runner.using(solution);
-        assertThatNullPointerException().isThrownBy(() -> context.execute(dummyMove, null))
-                .withMessageContaining("exceptionHandler");
-    }
-
-    @Test
-    void executeWithErrorPropagation() {
-        var solution = TestdataSolution.generateSolution(2, 2);
-        var exceptionList = new java.util.ArrayList<Exception>();
-
-        Move<TestdataSolution> failingMove = view -> {
-            throw new OutOfMemoryError("Test error");
-        };
-
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
-        var context = runner.using(solution);
-        // Error should propagate, not be handled
-        assertThatThrownBy(() -> context.execute(failingMove, exceptionList::add)).isInstanceOf(OutOfMemoryError.class)
-                .hasMessage("Test error");
-
-        // Exception handler should not be called for Errors
-        assertThat(exceptionList).isEmpty();
-    }
 }

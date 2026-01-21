@@ -4,16 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.move.MoveRunner;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedSolution;
 import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedValue;
-import ai.timefold.solver.core.testutil.MoveAsserter;
 
 import org.junit.jupiter.api.Test;
 
 class MixedModelTest {
+
     @Test
     void changingVariableOfParentShouldChangeDependentVariableOfChildren() {
         var problem = new TestdataMixedSolution();
@@ -37,15 +38,16 @@ class MixedModelTest {
         value2.setEntity(entity);
         value2.setPreviousDelay(1);
 
-        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(TestdataMixedSolution.class,
+        var solutionMetaModel = PlanningSolutionMetaModel.of(TestdataMixedSolution.class,
                 TestdataMixedEntity.class, TestdataMixedValue.class);
-        var delayDescriptor =
-                solutionDescriptor.getEntityDescriptorStrict(TestdataMixedValue.class).getGenuineVariableDescriptor("delay");
-        var moveAsserter = MoveAsserter.create(solutionDescriptor);
-
-        moveAsserter.assertMoveAndUndo(problem, new ChangeMove<>(delayDescriptor, value1, 2), newSolution -> {
-            assertThat(value1.getDelay()).isEqualTo(2);
-            assertThat(value2.getPreviousDelay()).isEqualTo(2);
-        });
+        var variableMetaModel = solutionMetaModel.entity(TestdataMixedValue.class)
+                .basicVariable("delay", Integer.class);
+        MoveRunner.build(solutionMetaModel)
+                .using(problem)
+                .executeTemporarily(Moves.change(variableMetaModel, value1, 2),
+                        newSolution -> {
+                            assertThat(value1.getDelay()).isEqualTo(2);
+                            assertThat(value2.getPreviousDelay()).isEqualTo(2);
+                        });
     }
 }

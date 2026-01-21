@@ -365,6 +365,7 @@ This is useful when you want to verify intermediate state or test that the solve
 void testMoveThenUndo() {
     var timetable = new Timetable(...); // Create or load a solution instance.
     var lesson = timetable.getLessons().get(0);
+    var originalRoom = lesson.getRoom();
     var newRoom = timetable.getRooms().get(1);
 
     var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
@@ -387,40 +388,10 @@ void testMoveThenUndo() {
 }
 ----
 
-The callback function receives a `MutableSolutionView` parameter,
+The callback function receives a `SolutionView` parameter,
 but you typically won't need to use it as you can directly inspect the solution's state
 within the callback to verify that the move was applied correctly.
 Once the callback completes, the solver automatically undoes all changes made by the move.
-
-[#neighborhoodsMoveRunnerExceptions]
-==== Exception handling
-
-Should a move throw exceptions during execution, you can provide an exception handler:
-
-[source,java,options="nowrap"]
-----
-@Test
-void testMoveWithExceptionHandler() {
-    var timetable = new Timetable(...); // Create or load a solution instance.
-    var lesson = timetable.getLessons().get(0);
-    var newRoom = timetable.getRooms().get(1);
-
-    var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
-    var variableMetaModel = solutionMetaModel.entity(Lesson.class)
-            .basicVariable("room", Room.class);
-
-    var move = Moves.change(variableMetaModel, lesson, newRoom);
-
-    var runner = MoveRunner.build(solutionMetaModel);
-    var context = runner.using(timetable);
-
-    // All the code above is just domain setup.
-    context.execute(move, exception -> fail("Move threw unexpected exception", exception));
-}
-----
-
-Note that only `Exception` instances are caught and passed to the handler.
-`Error` instances (such as `OutOfMemoryError`) are not caught and will propagate normally.
 
 
 [#neighborhoodsMoveStreams]
