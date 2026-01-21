@@ -309,10 +309,12 @@ The `MoveRunner` API follows a fluent builder pattern:
 
 [source,java,options="nowrap"]
 ----
-try (var runner = MoveRunner.build(SolutionClass.class, EntityClass.class)) {
-    var context = runner.using(solution);
-    context.execute(move);
-}
+// Timetable is the solution class, Lesson is a planning entity class.
+var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
+var runner = MoveRunner.build(solutionMetaModel);
+var context = runner.using(solution);
+var move = ...; // Move you wish to test.
+context.execute(move);
 ----
 
 The API requires:
@@ -321,9 +323,6 @@ The API requires:
 2. **Entity classes**: One or more classes annotated with `@PlanningEntity`
 3. **Solution instance**: The working solution to execute the move on
 4. **Move instance**: The move to execute
-
-Because `MoveRunner` implements `AutoCloseable`, you must use it within a try-with-resources block
-to ensure proper cleanup of internal solver resources.
 
 [#neighborhoodsMoveRunnerPermanent]
 ==== Permanent execution
@@ -334,25 +333,21 @@ The `execute()` method applies a move permanently to the solution:
 ----
 @Test
 void testChangeMove() {
-    // Arrange
-    var solution = TestdataSolution.generateSolution(2, 2);
-    var entity = solution.getEntityList().get(0);
-    var newValue = solution.getValueList().get(1);
+    var timetable = new Timetable(...); // Create or load a solution instance.
+    var lesson = timetable.getLessons().get(0);
+    var newRoom = timetable.getRooms().get(1);
 
-    var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
-    var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
-            .basicVariable("value", TestdataValue.class);
+    var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
+    var variableMetaModel = solutionMetaModel.entity(Lesson.class)
+            .basicVariable("room", Room.class);
 
-    var move = Moves.change(variableMetaModel, entity, newValue);
+    var move = Moves.change(variableMetaModel, lesson, newRoom);
 
-    // Act
-    try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-        var context = runner.using(solution);
-        context.execute(move);
-    }
+    var runner = MoveRunner.build(solutionMetaModel);
+    var context = runner.using(solution);
+    context.execute(move);
 
-    // Assert
-    assertThat(entity.getValue()).isEqualTo(newValue);
+    assertThat(lesson.getRoom()).isEqualTo(newRoom); // Assertion from a test framework of choice.
 }
 ----
 
@@ -368,28 +363,15 @@ This is useful when you want to verify intermediate state or test that the solve
 ----
 @Test
 void testMoveThenUndo() {
-    var solution = TestdataSolution.generateSolution(2, 2);
-    var entity = solution.getEntityList().get(0);
-    var originalValue = entity.getValue();
-    var newValue = solution.getValueList().get(1);
+    ... // Setup code as in previous examples.
 
-    var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
-    var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
-            .basicVariable("value", TestdataValue.class);
+    context.executeTemporarily(move, view -> {
+        // Verify changes were applied during temporary scope
+        assertThat(lesson.getRoom()).isEqualTo(newRoom);
+    });
 
-    var move = Moves.change(variableMetaModel, entity, newValue);
-
-    try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-        var context = runner.using(solution);
-
-        context.executeTemporarily(move, view -> {
-            // Verify changes were applied during temporary scope
-            assertThat(entity.getValue()).isEqualTo(newValue);
-        });
-
-        // Verify automatic undo restored original state
-        assertThat(entity.getValue()).isEqualTo(originalValue);
-    }
+    // Verify automatic undo restored original state
+    assertThat(lesson.getRoom()).isEqualTo(originalRoom);
 }
 ----
 
@@ -401,22 +383,17 @@ Once the callback completes, the solver automatically undoes all changes made by
 [#neighborhoodsMoveRunnerExceptions]
 ==== Exception handling
 
-If a move may throw exceptions during execution, you can provide an exception handler:
+Should a move throw exceptions during execution, you can provide an exception handler:
 
 [source,java,options="nowrap"]
 ----
 @Test
 void testMoveWithExceptionHandler() {
-    var solution = createInvalidSolution(); // May cause exceptions
-    var move = Moves.change(variableMetaModel, entity, value);
-    var exceptions = new ArrayList<Exception>();
+    ... // Setup code as in previous examples.
 
-    try (var runner = MoveRunner.build(SolutionClass.class, EntityClass.class)) {
-        var context = runner.using(solution);
-        context.execute(move, exceptions::add);
-    }
-
-    assertThat(exceptions).hasSize(1);
+    context.execute(move, exception -> {
+        fail("Move threw unexpected exception", exception);
+    });
 }
 ----
 

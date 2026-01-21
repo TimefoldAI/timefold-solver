@@ -9,15 +9,10 @@ import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 
 import org.junit.jupiter.api.Test;
 
-/**
- * Tests for {@link ListSwapMove} using the {@link MoveRunner} API.
- * Validates permanent execution of ListSwapMove on list planning variables.
- */
 class ListSwapMoveTest {
 
     @Test
     void listSwapMoveWithinSameEntity() {
-        // Arrange - entity with 3 values
         var solution = TestdataListSolution.generateInitializedSolution(3, 1);
         var entity = solution.getEntityList().get(0);
         var value1 = entity.getValueList().get(0);
@@ -28,14 +23,11 @@ class ListSwapMoveTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
-        // Swap positions 0 and 2
         var swapMove = Moves.swap(variableMetaModel, entity, 0, entity, 2);
 
-        // Act
-        try (var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)) {
-            var context = runner.using(solution);
-            context.execute(swapMove);
-        }
+        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .using(solution)
+                .execute(swapMove);
 
         // Assert - order should be: value3, value2, value1
         assertThat(entity.getValueList()).hasSize(3);
@@ -46,7 +38,6 @@ class ListSwapMoveTest {
 
     @Test
     void listSwapMoveBetweenEntities() {
-        // Arrange - 2 entities with values
         var solution = TestdataListSolution.generateInitializedSolution(4, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -58,14 +49,11 @@ class ListSwapMoveTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
-        // Swap entity1[0] with entity2[0]
         var swapMove = Moves.swap(variableMetaModel, entity1, 0, entity2, 0);
 
-        // Act
-        try (var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)) {
-            var context = runner.using(solution);
-            context.execute(swapMove);
-        }
+        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .using(solution)
+                .execute(swapMove);
 
         // Assert - values should be swapped
         assertThat(entity1.getValueList().get(0)).isEqualTo(value2);
@@ -87,11 +75,9 @@ class ListSwapMoveTest {
         // Swap adjacent positions 1 and 2
         var swapMove = Moves.swap(variableMetaModel, entity, 1, entity, 2);
 
-        // Act
-        try (var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)) {
-            var context = runner.using(solution);
-            context.execute(swapMove);
-        }
+        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .using(solution)
+                .execute(swapMove);
 
         // Assert - positions 1 and 2 should be swapped
         assertThat(entity.getValueList().get(1)).isEqualTo(value2);
@@ -100,7 +86,6 @@ class ListSwapMoveTest {
 
     @Test
     void multipleListSwapMoves() {
-        // Arrange
         var solution = TestdataListSolution.generateInitializedSolution(6, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -117,12 +102,10 @@ class ListSwapMoveTest {
         var e2v0 = entity2.getValueList().get(0);
         var e2v1 = entity2.getValueList().get(1);
 
-        // Act
-        try (var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)) {
-            var context = runner.using(solution);
-            context.execute(move1);
-            context.execute(move2);
-        }
+        var context = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .using(solution);
+        context.execute(move1);
+        context.execute(move2);
 
         // Assert - both entities have their first two positions swapped
         assertThat(entity1.getValueList().get(0)).isEqualTo(e1v1);
@@ -131,13 +114,8 @@ class ListSwapMoveTest {
         assertThat(entity2.getValueList().get(1)).isEqualTo(e2v0);
     }
 
-    // ************************************************************************
-    // Temporary execution tests (T038)
-    // ************************************************************************
-
     @Test
     void listSwapMoveExecutesTemporarilyWithUndo() {
-        // Arrange
         var solution = TestdataListSolution.generateInitializedSolution(3, 1);
         var entity = solution.getEntityList().get(0);
         var originalList = entity.getValueList().stream().toList();
@@ -148,25 +126,21 @@ class ListSwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity, 0, entity, 2);
 
-        // Act & Assert
-        try (var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)) {
-            var context = runner.using(solution);
+        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .using(solution)
+                .executeTemporarily(swapMove, view -> {
+                    // During temporary execution, positions should be swapped
+                    assertThat(entity.getValueList().get(0)).isEqualTo(originalList.get(2));
+                    assertThat(entity.getValueList().get(1)).isEqualTo(originalList.get(1));
+                    assertThat(entity.getValueList().get(2)).isEqualTo(originalList.get(0));
+                });
 
-            context.executeTemporarily(swapMove, view -> {
-                // During temporary execution, positions should be swapped
-                assertThat(entity.getValueList().get(0)).isEqualTo(originalList.get(2));
-                assertThat(entity.getValueList().get(1)).isEqualTo(originalList.get(1));
-                assertThat(entity.getValueList().get(2)).isEqualTo(originalList.get(0));
-            });
-
-            // After undo, list should be restored
-            assertThat(entity.getValueList()).containsExactlyElementsOf(originalList);
-        }
+        // After undo, list should be restored
+        assertThat(entity.getValueList()).containsExactlyElementsOf(originalList);
     }
 
     @Test
     void listSwapMoveTemporaryBetweenEntities() {
-        // Arrange
         var solution = TestdataListSolution.generateInitializedSolution(4, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -179,19 +153,16 @@ class ListSwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, 0, entity2, 0);
 
-        // Act & Assert
-        try (var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)) {
-            var context = runner.using(solution);
+        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .using(solution)
+                .executeTemporarily(swapMove, view -> {
+                    // Values should be swapped
+                    assertThat(entity1.getValueList().get(0)).isEqualTo(originalList2.get(0));
+                    assertThat(entity2.getValueList().get(0)).isEqualTo(originalList1.get(0));
+                });
 
-            context.executeTemporarily(swapMove, view -> {
-                // Values should be swapped
-                assertThat(entity1.getValueList().get(0)).isEqualTo(originalList2.get(0));
-                assertThat(entity2.getValueList().get(0)).isEqualTo(originalList1.get(0));
-            });
-
-            // Both lists should be restored
-            assertThat(entity1.getValueList()).containsExactlyElementsOf(originalList1);
-            assertThat(entity2.getValueList()).containsExactlyElementsOf(originalList2);
-        }
+        // Both lists should be restored
+        assertThat(entity1.getValueList()).containsExactlyElementsOf(originalList1);
+        assertThat(entity2.getValueList()).containsExactlyElementsOf(originalList2);
     }
 }

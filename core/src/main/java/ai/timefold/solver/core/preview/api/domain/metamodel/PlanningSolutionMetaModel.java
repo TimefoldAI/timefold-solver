@@ -4,6 +4,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -27,6 +28,19 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public interface PlanningSolutionMetaModel<Solution_> {
+
+    /**
+     * Creates a {@link PlanningSolutionMetaModel} based on the given solution class and entity classes.
+     *
+     * @param solutionClass the solution class
+     * @param entityClasses all entities used in the solution, genuine and shadow
+     * @return the solution meta-model
+     * @param <Solution_> the type of the solution
+     */
+    static <Solution_> PlanningSolutionMetaModel<Solution_> of(Class<Solution_> solutionClass, Class<?>... entityClasses) {
+        return SolutionDescriptor.buildSolutionDescriptor(solutionClass, entityClasses)
+                .getMetaModel();
+    }
 
     /**
      * Returns the class of the solution.

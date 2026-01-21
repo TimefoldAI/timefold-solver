@@ -9,15 +9,10 @@ import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 
 import org.junit.jupiter.api.Test;
 
-/**
- * Tests for {@link ListChangeMove} using the {@link MoveRunner} API.
- * Validates permanent execution of ListChangeMove on list planning variables.
- */
 class ListChangeMoveTest {
 
     @Test
     void listChangeMoveWithinSameEntity() {
-        // Arrange - entity with 3 values
         var solution = TestdataListSolution.generateInitializedSolution(3, 1);
         var entity = solution.getEntityList().get(0);
         var value1 = entity.getValueList().get(0);
@@ -28,14 +23,11 @@ class ListChangeMoveTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
-        // Move value from index 0 to index 2
         var changeMove = Moves.change(variableMetaModel, entity, 0, entity, 2);
 
-        // Act
-        try (var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)) {
-            var context = runner.using(solution);
-            context.execute(changeMove);
-        }
+        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .using(solution)
+                .execute(changeMove);
 
         // Assert - order should be: value2, value3, value1
         assertThat(entity.getValueList()).hasSize(3);
@@ -46,7 +38,6 @@ class ListChangeMoveTest {
 
     @Test
     void listChangeMoveBetweenEntities() {
-        // Arrange - 2 entities with values
         var solution = TestdataListSolution.generateInitializedSolution(4, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -59,14 +50,11 @@ class ListChangeMoveTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
-        // Move value from entity1[0] to entity2[0]
         var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 0);
 
-        // Act
-        try (var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)) {
-            var context = runner.using(solution);
-            context.execute(changeMove);
-        }
+        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .using(solution)
+                .execute(changeMove);
 
         // Assert
         assertThat(entity1.getValueList()).hasSize(initialEntity1Size - 1);
@@ -76,7 +64,6 @@ class ListChangeMoveTest {
 
     @Test
     void multipleListChangeMoves() {
-        // Arrange
         var solution = TestdataListSolution.generateInitializedSolution(6, 3);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -91,24 +78,17 @@ class ListChangeMoveTest {
 
         var valueToMove = entity1.getValueList().get(0);
 
-        // Act - move from entity1 to entity2, then from entity2 to entity3
-        try (var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)) {
-            var context = runner.using(solution);
-            context.execute(move1);
-            context.execute(move2);
-        }
+        var context = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .using(solution);
+        context.execute(move1);
+        context.execute(move2);
 
         // Assert - value ends up in entity3
         assertThat(entity3.getValueList().get(0)).isEqualTo(valueToMove);
     }
 
-    // ************************************************************************
-    // Temporary execution tests (T037)
-    // ************************************************************************
-
     @Test
     void listChangeMoveExecutesTemporarilyWithUndo() {
-        // Arrange
         var solution = TestdataListSolution.generateInitializedSolution(3, 1);
         var entity = solution.getEntityList().get(0);
         var originalList = entity.getValueList().stream().toList(); // Copy list
@@ -117,29 +97,24 @@ class ListChangeMoveTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
-        // Move value from index 0 to index 2
         var changeMove = Moves.change(variableMetaModel, entity, 0, entity, 2);
 
-        // Act & Assert
-        try (var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)) {
-            var context = runner.using(solution);
+        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .using(solution)
+                .executeTemporarily(changeMove, view -> {
+                    // During temporary execution, order should be changed
+                    assertThat(entity.getValueList()).hasSize(3);
+                    assertThat(entity.getValueList().get(0)).isEqualTo(originalList.get(1));
+                    assertThat(entity.getValueList().get(1)).isEqualTo(originalList.get(2));
+                    assertThat(entity.getValueList().get(2)).isEqualTo(originalList.get(0));
+                });
 
-            context.executeTemporarily(changeMove, view -> {
-                // During temporary execution, order should be changed
-                assertThat(entity.getValueList()).hasSize(3);
-                assertThat(entity.getValueList().get(0)).isEqualTo(originalList.get(1));
-                assertThat(entity.getValueList().get(1)).isEqualTo(originalList.get(2));
-                assertThat(entity.getValueList().get(2)).isEqualTo(originalList.get(0));
-            });
-
-            // After undo, list should be restored
-            assertThat(entity.getValueList()).containsExactlyElementsOf(originalList);
-        }
+        // After undo, list should be restored
+        assertThat(entity.getValueList()).containsExactlyElementsOf(originalList);
     }
 
     @Test
     void listChangeMoveTemporaryBetweenEntities() {
-        // Arrange
         var solution = TestdataListSolution.generateInitializedSolution(4, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -152,20 +127,17 @@ class ListChangeMoveTest {
 
         var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 0);
 
-        // Act & Assert
-        try (var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)) {
-            var context = runner.using(solution);
+        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .using(solution)
+                .executeTemporarily(changeMove, view -> {
+                    // Value should be moved from entity1 to entity2
+                    assertThat(entity1.getValueList()).hasSize(originalList1.size() - 1);
+                    assertThat(entity2.getValueList()).hasSize(originalList2.size() + 1);
+                    assertThat(entity2.getValueList().get(0)).isEqualTo(originalList1.get(0));
+                });
 
-            context.executeTemporarily(changeMove, view -> {
-                // Value should be moved from entity1 to entity2
-                assertThat(entity1.getValueList()).hasSize(originalList1.size() - 1);
-                assertThat(entity2.getValueList()).hasSize(originalList2.size() + 1);
-                assertThat(entity2.getValueList().get(0)).isEqualTo(originalList1.get(0));
-            });
-
-            // Both lists should be restored
-            assertThat(entity1.getValueList()).containsExactlyElementsOf(originalList1);
-            assertThat(entity2.getValueList()).containsExactlyElementsOf(originalList2);
-        }
+        // Both lists should be restored
+        assertThat(entity1.getValueList()).containsExactlyElementsOf(originalList1);
+        assertThat(entity2.getValueList()).containsExactlyElementsOf(originalList2);
     }
 }

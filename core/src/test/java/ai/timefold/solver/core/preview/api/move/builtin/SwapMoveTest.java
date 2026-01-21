@@ -9,15 +9,10 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 
 import org.junit.jupiter.api.Test;
 
-/**
- * Tests for {@link SwapMove} using the {@link MoveRunner} API.
- * Validates permanent execution of SwapMove on basic planning variables.
- */
 class SwapMoveTest {
 
     @Test
     void swapMoveExecutesPermanently() {
-        // Arrange
         var solution = TestdataSolution.generateSolution(3, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -30,11 +25,9 @@ class SwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, entity2);
 
-        // Act
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-            context.execute(swapMove);
-        }
+        MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+                .using(solution)
+                .execute(swapMove);
 
         // Assert - values should be swapped
         assertThat(entity1.getValue()).isEqualTo(value2);
@@ -43,13 +36,11 @@ class SwapMoveTest {
 
     @Test
     void swapMoveWithSameValue() {
-        // Arrange
         var solution = TestdataSolution.generateSolution(2, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
         var value = solution.getValueList().get(0);
 
-        // Set both entities to the same value
         entity1.setValue(value);
         entity2.setValue(value);
 
@@ -59,11 +50,9 @@ class SwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, entity2);
 
-        // Act
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-            context.execute(swapMove);
-        }
+        MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+                .using(solution)
+                .execute(swapMove);
 
         // Assert - both should still have the same value
         assertThat(entity1.getValue()).isEqualTo(value);
@@ -72,7 +61,6 @@ class SwapMoveTest {
 
     @Test
     void multipleSwapMoves() {
-        // Arrange - 3 entities with different values
         var solution = TestdataSolution.generateSolution(3, 3);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -87,12 +75,10 @@ class SwapMoveTest {
         var swap1 = Moves.swap(variableMetaModel, entity1, entity2);
         var swap2 = Moves.swap(variableMetaModel, entity2, entity3);
 
-        // Act - swap 1-2, then swap 2-3
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-            context.execute(swap1);
-            context.execute(swap2);
-        }
+        var context = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+                .using(solution);
+        context.execute(swap1);
+        context.execute(swap2);
 
         // Assert - after swap1: e0=v1, e1=v0, e2=v2
         //          after swap2: e0=v1, e1=v2, e2=v0
@@ -101,13 +87,8 @@ class SwapMoveTest {
         assertThat(entity3.getValue()).isEqualTo(initialValue1);
     }
 
-    // ************************************************************************
-    // Temporary execution tests (T035)
-    // ************************************************************************
-
     @Test
     void swapMoveExecutesTemporarilyWithUndo() {
-        // Arrange
         var solution = TestdataSolution.generateSolution(2, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -120,25 +101,21 @@ class SwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, entity2);
 
-        // Act & Assert
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
+        MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+                .using(solution)
+                .executeTemporarily(swapMove, view -> {
+                    // During temporary execution, values should be swapped
+                    assertThat(entity1.getValue()).isEqualTo(originalValue2);
+                    assertThat(entity2.getValue()).isEqualTo(originalValue1);
+                });
 
-            context.executeTemporarily(swapMove, view -> {
-                // During temporary execution, values should be swapped
-                assertThat(entity1.getValue()).isEqualTo(originalValue2);
-                assertThat(entity2.getValue()).isEqualTo(originalValue1);
-            });
-
-            // After undo, values should be restored
-            assertThat(entity1.getValue()).isEqualTo(originalValue1);
-            assertThat(entity2.getValue()).isEqualTo(originalValue2);
-        }
+        // After undo, values should be restored
+        assertThat(entity1.getValue()).isEqualTo(originalValue1);
+        assertThat(entity2.getValue()).isEqualTo(originalValue2);
     }
 
     @Test
     void multipleSwapMovesTemporary() {
-        // Arrange - 3 entities with different values
         var solution = TestdataSolution.generateSolution(3, 3);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -154,34 +131,31 @@ class SwapMoveTest {
         var swap1 = Moves.swap(variableMetaModel, entity1, entity2);
         var swap2 = Moves.swap(variableMetaModel, entity2, entity3);
 
-        // Act & Assert - execute two swaps sequentially with temporary execution
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
+        var context = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+                .using(solution);
 
-            // Execute swap1 temporarily and verify
-            context.executeTemporarily(swap1, view -> {
-                assertThat(entity1.getValue()).isEqualTo(initialValue2);
-                assertThat(entity2.getValue()).isEqualTo(initialValue1);
-                assertThat(entity3.getValue()).isEqualTo(initialValue3);
-            });
-
-            // After swap1 undo, verify we're back to original state
-            assertThat(entity1.getValue()).isEqualTo(initialValue1);
-            assertThat(entity2.getValue()).isEqualTo(initialValue2);
+        // Execute swap1 temporarily and verify
+        context.executeTemporarily(swap1, view -> {
+            assertThat(entity1.getValue()).isEqualTo(initialValue2);
+            assertThat(entity2.getValue()).isEqualTo(initialValue1);
             assertThat(entity3.getValue()).isEqualTo(initialValue3);
+        });
 
-            // Execute swap2 temporarily and verify
-            context.executeTemporarily(swap2, view -> {
-                assertThat(entity1.getValue()).isEqualTo(initialValue1);
-                assertThat(entity2.getValue()).isEqualTo(initialValue3);
-                assertThat(entity3.getValue()).isEqualTo(initialValue2);
-            });
+        // After swap1 undo, verify we're back to original state
+        assertThat(entity1.getValue()).isEqualTo(initialValue1);
+        assertThat(entity2.getValue()).isEqualTo(initialValue2);
+        assertThat(entity3.getValue()).isEqualTo(initialValue3);
 
-            // After swap2 undo, verify we're back to original state again
+        // Execute swap2 temporarily and verify
+        context.executeTemporarily(swap2, view -> {
             assertThat(entity1.getValue()).isEqualTo(initialValue1);
-            assertThat(entity2.getValue()).isEqualTo(initialValue2);
-            assertThat(entity3.getValue()).isEqualTo(initialValue3);
-        }
+            assertThat(entity2.getValue()).isEqualTo(initialValue3);
+            assertThat(entity3.getValue()).isEqualTo(initialValue2);
+        });
+
+        // After swap2 undo, verify we're back to original state again
+        assertThat(entity1.getValue()).isEqualTo(initialValue1);
+        assertThat(entity2.getValue()).isEqualTo(initialValue2);
+        assertThat(entity3.getValue()).isEqualTo(initialValue3);
     }
-
 }

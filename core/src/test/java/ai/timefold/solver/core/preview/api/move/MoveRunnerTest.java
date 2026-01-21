@@ -2,7 +2,6 @@ package ai.timefold.solver.core.preview.api.move;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -16,48 +15,40 @@ class MoveRunnerTest {
 
     @Test
     void buildWithNullSolutionClass() {
-        assertThatNullPointerException()
-                .isThrownBy(() -> MoveRunner.build(null, TestdataEntity.class))
+        assertThatNullPointerException().isThrownBy(() -> MoveRunner.build(null, TestdataEntity.class))
                 .withMessageContaining("solutionClass");
     }
 
     @Test
     void buildWithEmptyEntityClasses() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> MoveRunner.build(TestdataSolution.class))
+        assertThatIllegalArgumentException().isThrownBy(() -> MoveRunner.build(TestdataSolution.class))
                 .withMessageContaining("entityClasses must not be empty");
     }
 
     @Test
     void buildWithNullEntityClasses() {
-        assertThatNullPointerException()
-                .isThrownBy(() -> MoveRunner.build(TestdataSolution.class, (Class<?>[]) null))
+        assertThatNullPointerException().isThrownBy(() -> MoveRunner.build(TestdataSolution.class, (Class<?>[]) null))
                 .withMessageContaining("entityClasses");
     }
 
     @Test
     void buildSucceeds() {
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            assertThat(runner).isNotNull();
-        }
+        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        assertThat(runner).isNotNull();
     }
 
     @Test
     void usingWithNullSolution() {
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            assertThatNullPointerException()
-                    .isThrownBy(() -> runner.using(null))
-                    .withMessageContaining("solution");
-        }
+        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        assertThatNullPointerException().isThrownBy(() -> runner.using(null)).withMessageContaining("solution");
     }
 
     @Test
     void usingSucceeds() {
         var solution = TestdataSolution.generateSolution(2, 3);
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-            assertThat(context).isNotNull();
-        }
+        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var context = runner.using(solution);
+        assertThat(context).isNotNull();
     }
 
     @Test
@@ -81,10 +72,8 @@ class MoveRunnerTest {
             view.changeVariable(variableMetaModel, entity2, val1);
         };
 
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-            context.execute(swapMove);
-        }
+        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        runner.using(solution).execute(swapMove);
 
         // Verify the swap occurred
         assertThat(entity1.getValue()).isEqualTo(value2);
@@ -94,47 +83,9 @@ class MoveRunnerTest {
     @Test
     void executeWithNullMove() {
         var solution = TestdataSolution.generateSolution(2, 2);
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-            assertThatNullPointerException()
-                    .isThrownBy(() -> context.execute(null))
-                    .withMessageContaining("move");
-        }
-    }
-
-    @Test
-    void usingAfterClose() {
         var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
-        runner.close();
-
-        var solution = TestdataSolution.generateSolution(2, 2);
-        assertThatThrownBy(() -> runner.using(solution))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("closed");
-    }
-
-    @Test
-    void closeIsIdempotent() {
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
-        runner.close();
-        assertThatNoException().isThrownBy(runner::close);
-    }
-
-    @Test
-    void tryWithResourcesAutoClose() {
-        var solution = TestdataSolution.generateSolution(2, 2);
-
-        MoveRunner<TestdataSolution> runner;
-        try (var r = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            runner = r;
-            var context = r.using(solution);
-            assertThat(context).isNotNull();
-        }
-
-        // After try-with-resources, runner should be closed
-        assertThatThrownBy(() -> runner.using(solution))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("closed");
+        var context = runner.using(solution);
+        assertThatNullPointerException().isThrownBy(() -> context.execute(null)).withMessageContaining("move");
     }
 
     @Test
@@ -155,15 +106,12 @@ class MoveRunnerTest {
             view.changeVariable(variableMetaModel, entity2, val1);
         };
 
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-
-            context.executeTemporarily(swapMove, view -> {
-                // During temporary execution, values should be swapped
-                assertThat(entity1.getValue()).isEqualTo(originalValue2);
-                assertThat(entity2.getValue()).isEqualTo(originalValue1);
-            });
-        }
+        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        runner.using(solution).executeTemporarily(swapMove, view -> {
+            // During temporary execution, values should be swapped
+            assertThat(entity1.getValue()).isEqualTo(originalValue2);
+            assertThat(entity2.getValue()).isEqualTo(originalValue1);
+        });
 
         // After executeTemporarily, values should be restored
         assertThat(entity1.getValue()).isEqualTo(originalValue1);
@@ -173,13 +121,10 @@ class MoveRunnerTest {
     @Test
     void executeTemporarilyWithNullMove() {
         var solution = TestdataSolution.generateSolution(2, 2);
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-            assertThatNullPointerException()
-                    .isThrownBy(() -> context.executeTemporarily(null, view -> {
-                    }))
-                    .withMessageContaining("move");
-        }
+        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var context = runner.using(solution);
+        assertThatNullPointerException().isThrownBy(() -> context.executeTemporarily(null, view -> {
+        })).withMessageContaining("move");
     }
 
     @Test
@@ -188,30 +133,24 @@ class MoveRunnerTest {
         Move<TestdataSolution> dummyMove = view -> {
         };
 
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-            assertThatNullPointerException()
-                    .isThrownBy(() -> context.executeTemporarily(dummyMove, null))
-                    .withMessageContaining("assertions");
-        }
+        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var context = runner.using(solution);
+        assertThatNullPointerException().isThrownBy(() -> context.executeTemporarily(dummyMove, null))
+                .withMessageContaining("assertions");
     }
 
     @Test
     void executeTemporarilyWithComplexMove() {
         var solution = TestdataSolution.generateSolution(3, 3);
         var entities = solution.getEntityList();
-        var originalValues = entities.stream()
-                .map(TestdataEntity::getValue)
-                .toList();
+        var originalValues = entities.stream().map(TestdataEntity::getValue).toList();
 
         var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
 
         // Move that rotates values across all entities
         Move<TestdataSolution> rotateMove = view -> {
-            var values = entities.stream()
-                    .map(e -> view.getValue(variableMetaModel, e))
-                    .toList();
+            var values = entities.stream().map(e -> view.getValue(variableMetaModel, e)).toList();
 
             for (int i = 0; i < entities.size(); i++) {
                 var nextValue = values.get((i + 1) % values.size());
@@ -219,17 +158,14 @@ class MoveRunnerTest {
             }
         };
 
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-
-            context.executeTemporarily(rotateMove, view -> {
-                // Verify rotation occurred
-                for (int i = 0; i < entities.size(); i++) {
-                    var expectedValue = originalValues.get((i + 1) % originalValues.size());
-                    assertThat(entities.get(i).getValue()).isEqualTo(expectedValue);
-                }
-            });
-        }
+        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        runner.using(solution).executeTemporarily(rotateMove, view -> {
+            // Verify rotation occurred
+            for (int i = 0; i < entities.size(); i++) {
+                var expectedValue = originalValues.get((i + 1) % originalValues.size());
+                assertThat(entities.get(i).getValue()).isEqualTo(expectedValue);
+            }
+        });
 
         // Verify complete restoration
         for (int i = 0; i < entities.size(); i++) {
@@ -246,16 +182,11 @@ class MoveRunnerTest {
             throw new RuntimeException("Test exception");
         };
 
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-            // Should not throw - exception is handled
-            context.execute(failingMove, exceptionList::add);
-        }
+        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        runner.using(solution).execute(failingMove, exceptionList::add);
 
         assertThat(exceptionList).hasSize(1);
-        assertThat(exceptionList.get(0))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Test exception");
+        assertThat(exceptionList.get(0)).isInstanceOf(RuntimeException.class).hasMessage("Test exception");
     }
 
     @Test
@@ -264,12 +195,10 @@ class MoveRunnerTest {
         Move<TestdataSolution> dummyMove = view -> {
         };
 
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-            assertThatNullPointerException()
-                    .isThrownBy(() -> context.execute(dummyMove, null))
-                    .withMessageContaining("exceptionHandler");
-        }
+        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var context = runner.using(solution);
+        assertThatNullPointerException().isThrownBy(() -> context.execute(dummyMove, null))
+                .withMessageContaining("exceptionHandler");
     }
 
     @Test
@@ -281,13 +210,11 @@ class MoveRunnerTest {
             throw new OutOfMemoryError("Test error");
         };
 
-        try (var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)) {
-            var context = runner.using(solution);
-            // Error should propagate, not be handled
-            assertThatThrownBy(() -> context.execute(failingMove, exceptionList::add))
-                    .isInstanceOf(OutOfMemoryError.class)
-                    .hasMessage("Test error");
-        }
+        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var context = runner.using(solution);
+        // Error should propagate, not be handled
+        assertThatThrownBy(() -> context.execute(failingMove, exceptionList::add)).isInstanceOf(OutOfMemoryError.class)
+                .hasMessage("Test error");
 
         // Exception handler should not be called for Errors
         assertThat(exceptionList).isEmpty();

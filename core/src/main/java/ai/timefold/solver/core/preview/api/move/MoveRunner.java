@@ -20,7 +20,7 @@ import org.jspecify.annotations.NullMarked;
  * Example usage:
  * 
  * <pre>{@code
- * try (var runner = MoveRunner.build(SolutionClass.class, EntityClass.class)) {
+ *     var runner = MoveRunner.build(SolutionClass.class, EntityClass.class);
  *     var context = runner.using(solution);
  *
  *     // Permanent execution
@@ -30,7 +30,6 @@ import org.jspecify.annotations.NullMarked;
  *     context.executeTemporarily(move, view -> {
  *         assertThat(view.getValue(...)).isEqualTo(expected);
  *     });
- * }
  * }</pre>
  * <p>
  * <strong>This type is part of the Preview API which is under development.</strong>
@@ -41,7 +40,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the planning solution type
  */
 @NullMarked
-public interface MoveRunner<Solution_> extends AutoCloseable {
+public interface MoveRunner<Solution_> {
 
     /**
      * Creates a new MoveRunner for the given solution and entity classes.
@@ -95,17 +94,5 @@ public interface MoveRunner<Solution_> extends AutoCloseable {
      * @throws IllegalStateException if this MoveRunner has been closed
      */
     MoveRunContext<Solution_> using(Solution_ solution);
-
-    /**
-     * Releases all resources held by this MoveRunner.
-     * <p>
-     * After calling this method, any attempt to use the MoveRunner will throw
-     * {@link IllegalStateException}.
-     * <p>
-     * Resources (score director factory, solver engine state) will leak if this method is not called.
-     * Always use try-with-resources to ensure proper cleanup.
-     */
-    @Override
-    void close();
 
 }

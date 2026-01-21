@@ -50,12 +50,4 @@ public final class DefaultMoveRunner<Solution_> implements MoveRunner<Solution_>
         return new DefaultMoveRunContext<>(scoreDirector);
     }
 
-    @Override
-    public void close() {
-        if (!closed) {
-            closed = true;
-            // ScoreDirectorFactory doesn't have a close method, so we just set the flag
-        }
-    }
-
 }
