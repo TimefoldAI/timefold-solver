@@ -8,18 +8,18 @@ import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 /**
  * Investigate the nodes with a better optimistic bound first, then deeper nodes.
  */
-public class ScoreFirstNodeComparator implements Comparator<ExhaustiveSearchNode> {
+public class ScoreFirstNodeComparator<Solution_> implements Comparator<ExhaustiveSearchNode<Solution_>> {
 
     public ScoreFirstNodeComparator(boolean scoreBounderEnabled) {
         if (!scoreBounderEnabled) {
-            throw new IllegalArgumentException("This " + getClass().getSimpleName()
-                    + " only works if scoreBounderEnabled (" + scoreBounderEnabled + ") is true.");
+            throw new IllegalArgumentException("This %s only works if scoreBounderEnabled (%s) is true."
+                    .formatted(getClass().getSimpleName(), scoreBounderEnabled));
         }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public int compare(ExhaustiveSearchNode a, ExhaustiveSearchNode b) {
+    public int compare(ExhaustiveSearchNode<Solution_> a, ExhaustiveSearchNode<Solution_> b) {
         // Investigate better score first (ignore initScore to avoid depth first ordering)
         Score aScore = a.getScore().raw();
         Score bScore = b.getScore().raw();

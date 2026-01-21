@@ -258,8 +258,22 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             var replayingValueSelector = (IterableValueSelector<Solution_>) ValueSelectorFactory
                     .<Solution_> create(valueSelectorConfig)
                     .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType, selectionOrder);
-            return new FilteringEntityByValueSelector<>(entitySelector, replayingValueSelector, randomSelection);
+            return new FilteringEntityByValueSelector<>(entitySelector, replayingValueSelector, randomSelection, false);
         }
+    }
+
+    public static <Solution_> EntitySelector<Solution_> applyEntityValueRangeFilteringForExhaustiveSearch(
+            HeuristicConfigPolicy<Solution_> configPolicy, EntitySelector<Solution_> entitySelector,
+            ValueRangeRecorderId valueRangeRecorderId, SelectionCacheType minimumCacheType, SelectionOrder selectionOrder) {
+        if (valueRangeRecorderId == null || valueRangeRecorderId.recorderId() == null || valueRangeRecorderId.basicVariable()) {
+            return entitySelector;
+        }
+        var valueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef(valueRangeRecorderId.recorderId());
+        var replayingValueSelector = (IterableValueSelector<Solution_>) ValueSelectorFactory
+                .<Solution_> create(valueSelectorConfig)
+                .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType, selectionOrder);
+        return new FilteringEntityByValueSelector<>(entitySelector, replayingValueSelector, false, true);
     }
 
     private EntitySelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,

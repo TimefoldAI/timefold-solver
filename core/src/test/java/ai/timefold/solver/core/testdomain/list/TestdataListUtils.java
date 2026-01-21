@@ -361,7 +361,7 @@ public final class TestdataListUtils {
         doReturn(solutionDescriptor).when(configPolicy).getSolutionDescriptor();
         doReturn(mimicRecordingValueSelector).when(configPolicy).getValueMimicRecorder(any());
         return DestinationSelectorFactory.<T> create(destinationSelectorConfig)
-                .buildDestinationSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, randomSelection, "any");
+                .buildDestinationSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, randomSelection, "any", false);
     }
 
     public static <S> DestinationSelector<S> getEntityValueRangeDestinationSelector(
@@ -379,7 +379,7 @@ public final class TestdataListUtils {
         doReturn(innerMimicRecordingValueSelector).when(configPolicy).getValueMimicRecorder(any());
         doReturn(ClassInstanceCache.create()).when(configPolicy).getClassInstanceCache();
         return DestinationSelectorFactory.<S> create(destinationSelectorConfig)
-                .buildDestinationSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, randomSelection, "any");
+                .buildDestinationSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, randomSelection, "any", false);
     }
 
     private static <T> Iterator<T> cyclicIterator(List<T> elements) {

@@ -13,7 +13,7 @@ public final class ExhaustiveSearchStepScope<Solution_> extends AbstractStepScop
 
     private final ExhaustiveSearchPhaseScope<Solution_> phaseScope;
 
-    private ExhaustiveSearchNode expandingNode;
+    private ExhaustiveSearchNode<Solution_> expandingNode;
     private Long selectedMoveCount = null;
 
     public ExhaustiveSearchStepScope(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
@@ -30,11 +30,11 @@ public final class ExhaustiveSearchStepScope<Solution_> extends AbstractStepScop
         return phaseScope;
     }
 
-    public ExhaustiveSearchNode getExpandingNode() {
+    public ExhaustiveSearchNode<Solution_> getExpandingNode() {
         return expandingNode;
     }
 
-    public void setExpandingNode(ExhaustiveSearchNode expandingNode) {
+    public void setExpandingNode(ExhaustiveSearchNode<Solution_> expandingNode) {
         this.expandingNode = expandingNode;
     }
 

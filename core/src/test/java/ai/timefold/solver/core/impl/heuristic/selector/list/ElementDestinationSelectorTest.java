@@ -164,42 +164,42 @@ class ElementDestinationSelectorTest {
 
         // V1 is only reachable by A
         var valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1);
-        var selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        var selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false, false);
         var solverScope = solvingStarted(selector, scoreDirector);
         phaseStarted(solverScope, selector);
         assertAllCodesOfIterator(selector.listIterator(), "A");
 
         // V2 is reachable by A and B
         valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v2);
-        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false, false);
         solverScope = solvingStarted(selector, scoreDirector);
         phaseStarted(solverScope, selector);
         assertAllCodesOfIterator(selector.listIterator(), "A", "B");
 
         // V3 is reachable by B and C
         valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3);
-        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false, false);
         solverScope = solvingStarted(selector, scoreDirector);
         phaseStarted(solverScope, selector);
         assertAllCodesOfIterator(selector.listIterator(), "B", "C");
 
         // V4 is only reachable by C
         valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v4);
-        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false, false);
         solverScope = solvingStarted(selector, scoreDirector);
         phaseStarted(solverScope, selector);
         assertAllCodesOfIterator(selector.listIterator(), "C");
 
         // V5 is only reachable by C
         valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v5);
-        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false, false);
         solverScope = solvingStarted(selector, scoreDirector);
         phaseStarted(solverScope, selector);
         assertAllCodesOfIterator(selector.listIterator(), "C");
 
         // Getting the previous element
         valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3);
-        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false, false);
         solverScope = solvingStarted(selector, scoreDirector);
         phaseStarted(solverScope, selector);
         var listIterator = selector.listIterator();
@@ -247,7 +247,7 @@ class ElementDestinationSelectorTest {
         var valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3);
         var filteringValueRangeSelector = mockIterableFromEntityPropertyValueSelector(valueSelector, true);
         var replayinValueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3);
-        checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
+        checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true, false),
                 new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, true, false),
                 scoreDirector, new TestRandom(1, 1, 1), "C[0]");
 
@@ -262,7 +262,7 @@ class ElementDestinationSelectorTest {
         replayinValueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1);
         // Cause the value iterator return no value at the second call
         doReturn(List.of(v1).iterator(), Collections.emptyIterator()).when(valueSelector).iterator();
-        checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
+        checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true, false),
                 new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, true, false),
                 scoreDirector, new TestRandom(3, 0, 0, 0), "A[2]");
 
@@ -276,7 +276,7 @@ class ElementDestinationSelectorTest {
         replayinValueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v2);
         // Cause the value iterator return no value at the second call
         doReturn(List.of(v2).iterator(), Collections.emptyIterator()).when(valueSelector).iterator();
-        checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
+        checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true, false),
                 new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, true, false),
                 scoreDirector, new TestRandom(3, 1, 1, 0), "B[1]");
 
@@ -289,7 +289,7 @@ class ElementDestinationSelectorTest {
         replayinValueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v5);
         // Cause the value iterator return no value at the second call
         doReturn(List.of(v5).iterator(), Collections.emptyIterator()).when(valueSelector).iterator();
-        checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
+        checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true, false),
                 new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, true, false),
                 scoreDirector, new TestRandom(3, 1, 0), "C[1]");
     }

@@ -15,7 +15,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
  * A typical {@link ScoreBounder}'s {@link ScoreBounder#calculateOptimisticBound(ScoreDirector, InnerScore)}
  * will be weak, which results in horrible performance scalability too.
  */
-public class BreadthFirstNodeComparator implements Comparator<ExhaustiveSearchNode> {
+public class BreadthFirstNodeComparator<Solution_> implements Comparator<ExhaustiveSearchNode<Solution_>> {
 
     private final boolean scoreBounderEnabled;
 
@@ -23,9 +23,9 @@ public class BreadthFirstNodeComparator implements Comparator<ExhaustiveSearchNo
         this.scoreBounderEnabled = scoreBounderEnabled;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     @Override
-    public int compare(ExhaustiveSearchNode a, ExhaustiveSearchNode b) {
+    public int compare(ExhaustiveSearchNode<Solution_> a, ExhaustiveSearchNode<Solution_> b) {
         // Investigate shallower nodes first
         var aDepth = a.getDepth();
         var bDepth = b.getDepth();

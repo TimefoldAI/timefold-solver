@@ -21,22 +21,14 @@ public enum NodeExplorationType {
     SCORE_FIRST,
     OPTIMISTIC_BOUND_FIRST;
 
-    public @NonNull Comparator<ExhaustiveSearchNode> buildNodeComparator(boolean scoreBounderEnabled) {
-        switch (this) {
-            case ORIGINAL_ORDER:
-                return new OriginalOrderNodeComparator();
-            case DEPTH_FIRST:
-                return new DepthFirstNodeComparator(scoreBounderEnabled);
-            case BREADTH_FIRST:
-                return new BreadthFirstNodeComparator(scoreBounderEnabled);
-            case SCORE_FIRST:
-                return new ScoreFirstNodeComparator(scoreBounderEnabled);
-            case OPTIMISTIC_BOUND_FIRST:
-                return new OptimisticBoundFirstNodeComparator(scoreBounderEnabled);
-            default:
-                throw new IllegalStateException("The nodeExplorationType ("
-                        + this + ") is not implemented.");
-        }
+    public <Solution_> @NonNull Comparator<ExhaustiveSearchNode<Solution_>> buildNodeComparator(boolean scoreBounderEnabled) {
+        return switch (this) {
+            case ORIGINAL_ORDER -> new OriginalOrderNodeComparator<>();
+            case DEPTH_FIRST -> new DepthFirstNodeComparator<>(scoreBounderEnabled);
+            case BREADTH_FIRST -> new BreadthFirstNodeComparator<>(scoreBounderEnabled);
+            case SCORE_FIRST -> new ScoreFirstNodeComparator<>(scoreBounderEnabled);
+            case OPTIMISTIC_BOUND_FIRST -> new OptimisticBoundFirstNodeComparator<>(scoreBounderEnabled);
+        };
     }
 
 }

@@ -31,18 +31,19 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
 
     public DestinationSelector<Solution_> buildDestinationSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        return buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, null);
+        return buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, null, false);
     }
 
     public DestinationSelector<Solution_> buildDestinationSelector(HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType, boolean randomSelection, String entityValueRangeRecorderId) {
+            SelectionCacheType minimumCacheType, boolean randomSelection, String entityValueRangeRecorderId,
+            boolean isExhaustiveSearch) {
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
         var entitySelectorConfig = Objects.requireNonNull(config.getEntitySelectorConfig()).copyConfig();
         var hasSortManner = configPolicy.getEntitySorterManner() != null
                 && configPolicy.getEntitySorterManner() != NONE;
         var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
         var hasSorter = entityDescriptor.getDescendingSorter() != null;
-        if (hasSortManner && hasSorter && entitySelectorConfig.getSorterManner() == null) {
+        if (!isExhaustiveSearch && hasSortManner && hasSorter && entitySelectorConfig.getSorterManner() == null) {
             if (entityValueRangeRecorderId == null) {
                 // Solution-range model
                 entitySelectorConfig.setCacheType(SelectionCacheType.PHASE);
@@ -54,13 +55,25 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
             entitySelectorConfig.setSelectionOrder(SelectionOrder.SORTED);
             entitySelectorConfig.setSorterManner(configPolicy.getEntitySorterManner());
         }
-        var entitySelector = EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
-                .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder,
-                        new ValueRangeRecorderId(entityValueRangeRecorderId, false));
+        var valueRangeRecorderId = new ValueRangeRecorderId(entityValueRangeRecorderId, false);
+        if (isExhaustiveSearch) {
+            // The exhaustive search must not set the entity class for the entity selection configuration,
+            // or the creation will fail.
+            entitySelectorConfig.setEntityClass(null);
+        }
+        var entitySelector = EntitySelectorFactory.<Solution_> create(entitySelectorConfig).buildEntitySelector(configPolicy,
+                minimumCacheType, selectionOrder, valueRangeRecorderId);
+        if (isExhaustiveSearch) {
+            // By default, exhaustive search will use a replaying entity selector,
+            // but we must filter out the entity
+            // if the selected value does not fall within the entity's value range
+            entitySelector = EntitySelectorFactory.applyEntityValueRangeFilteringForExhaustiveSearch(configPolicy,
+                    entitySelector, valueRangeRecorderId, minimumCacheType, selectionOrder);
+        }
         var valueSelector = buildIterableValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
                 minimumCacheType, selectionOrder, entityValueRangeRecorderId);
-        var baseDestinationSelector =
-                new ElementDestinationSelector<>(entitySelector, valueSelector, selectionOrder.toRandomSelectionBoolean());
+        var baseDestinationSelector = new ElementDestinationSelector<>(entitySelector, valueSelector,
+                selectionOrder.toRandomSelectionBoolean(), isExhaustiveSearch);
         return applyNearbySelection(configPolicy, minimumCacheType, selectionOrder, baseDestinationSelector,
                 entityValueRangeRecorderId != null);
     }
