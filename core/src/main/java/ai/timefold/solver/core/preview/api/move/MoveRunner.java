@@ -20,7 +20,7 @@ import org.jspecify.annotations.NullMarked;
  * Example usage:
  * 
  * <pre>{@code
- *     var runner = MoveRunner.build(SolutionClass.class, EntityClass.class);
+ *     var runner = MoveRunner.build(MySolution.class, MyEntity.class);
  *     var context = runner.using(solution);
  *
  *     // Permanent execution

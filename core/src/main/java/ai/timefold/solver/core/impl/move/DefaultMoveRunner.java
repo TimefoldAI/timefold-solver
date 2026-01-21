@@ -18,12 +18,13 @@ public final class DefaultMoveRunner<Solution_> implements MoveRunner<Solution_>
     private final AbstractScoreDirectorFactory<Solution_, ?, ?> scoreDirectorFactory;
 
     public DefaultMoveRunner(SolutionDescriptor<Solution_> solutionDescriptor) {
-        this(new MoveRunnerScoreDirectorFactory<>(solutionDescriptor, null));
+        this(new MoveRunnerScoreDirectorFactory<>(Objects.requireNonNull(solutionDescriptor), null));
     }
 
     public DefaultMoveRunner(PlanningSolutionMetaModel<Solution_> solutionMetaModel, MoveRepository<Solution_> moveRepository) {
         this(new MoveRunnerScoreDirectorFactory<>(
-                ((DefaultPlanningSolutionMetaModel<Solution_>) solutionMetaModel).solutionDescriptor(), moveRepository));
+                ((DefaultPlanningSolutionMetaModel<Solution_>) Objects.requireNonNull(solutionMetaModel)).solutionDescriptor(),
+                Objects.requireNonNull(moveRepository)));
     }
 
     private DefaultMoveRunner(AbstractScoreDirectorFactory<Solution_, ?, ?> scoreDirectorFactory) {

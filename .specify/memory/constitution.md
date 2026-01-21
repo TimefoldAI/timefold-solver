@@ -29,9 +29,11 @@ Documentation is a first-class requirement for all features:
 
 1. **Public API Documentation** (MUST):
    - All public classes, interfaces, and methods MUST have Javadoc
-   - Javadoc MUST include: purpose, parameters (with `@param`), return values (with `@return`), exceptions thrown (with `@throws`) except for `NullPointerException` for null parameters
+   - Javadoc SHOULD include: purpose, parameters (with `@param`), return values (with `@return`), exceptions thrown (with `@throws`) except for `NullPointerException` for null parameters;
+     these tags can be omitted if they are already present on another method overload
+     and that overload is referenced in this method's documentation
    - Complex algorithms SHOULD include implementation comments explaining the approach
-   - **Note**: `@since` tags are NOT required
+   - **Note**: `@since` tags are OPTIONAL
 
 2. **User-Facing Documentation** (MUST):
    - New features visible to users MUST have user guide updates

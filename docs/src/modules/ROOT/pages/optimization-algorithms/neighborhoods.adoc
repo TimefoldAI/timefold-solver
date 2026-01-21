@@ -344,7 +344,7 @@ void testChangeMove() {
     var move = Moves.change(variableMetaModel, lesson, newRoom);
 
     var runner = MoveRunner.build(solutionMetaModel);
-    var context = runner.using(solution);
+    var context = runner.using(timetable);
     context.execute(move);
 
     assertThat(lesson.getRoom()).isEqualTo(newRoom); // Assertion from a test framework of choice.
