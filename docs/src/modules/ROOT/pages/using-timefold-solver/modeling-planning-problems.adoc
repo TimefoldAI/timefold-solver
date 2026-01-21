@@ -1900,7 +1900,7 @@ Some key considerations:
 - _Type consistency_: The return type of the supplier method must match the type of the field it is assigned to.
 - _Explicit dependencies_: All planning variables used in the supplier logic must be explicitly listed in `@ShadowSources`.
 Undeclared dependencies will not trigger updates, leading to stale or incorrect shadow values.
-- The supplier method must not include any parameters, except for the solution class,
+- The supplier method may optionally accept a single parameter of the solution class type,
 which allows access to the solution state without the need of propagating it to the genuine or shadow entities.
 
 ==== `@ShadowSources` paths
@@ -2012,6 +2012,11 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
+@PlanningSolution
+public class PackagingSchedule {
+    ...
+}
+
 @PlanningEntity
 public class Job {
 
