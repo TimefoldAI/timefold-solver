@@ -57,7 +57,7 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         }
         var valueRangeRecorderId = new ValueRangeRecorderId(entityValueRangeRecorderId, false);
         if (isExhaustiveSearch) {
-            // The exhaustive method must not set the entity class for the entity selection configuration,
+            // The exhaustive search must not set the entity class for the entity selection configuration,
             // or the creation will fail.
             entitySelectorConfig.setEntityClass(null);
         }

@@ -158,7 +158,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     }
 
     /**
-     * The exhaustive method uses a replaying entity selector to guarantee which search node will be explored.
+     * The exhaustive search uses a replaying entity selector to guarantee which search node will be explored.
      * Thus, the {@code childEntitySelector} will be a replaying selector when {@code isExhaustiveSearch} is set to
      * {@code true}.
      */
@@ -182,7 +182,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     public Iterator<Object> iterator() {
         if (randomSelection) {
             if (isExhaustiveSearch) {
-                throw new IllegalStateException("The random iterator is not supported for the exhaustive method.");
+                throw new IllegalStateException("The random iterator is not supported for the exhaustive search.");
             }
             return new RandomFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues, workingRandom);
         } else {
@@ -198,7 +198,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     @Override
     public ListIterator<Object> listIterator() {
         if (isExhaustiveSearch) {
-            throw new IllegalStateException("The list iterator is not supported for the exhaustive method.");
+            throw new IllegalStateException("The list iterator is not supported for the exhaustive search.");
         }
         return new OriginalFilteringValueRangeListIterator<>(this::selectReplayedValue, childEntitySelector.listIterator(),
                 reachableValues);
@@ -207,7 +207,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     @Override
     public ListIterator<Object> listIterator(int index) {
         if (isExhaustiveSearch) {
-            throw new IllegalStateException("The list iterator is not supported for the exhaustive method.");
+            throw new IllegalStateException("The list iterator is not supported for the exhaustive search.");
         }
         return new OriginalFilteringValueRangeListIterator<>(this::selectReplayedValue, childEntitySelector.listIterator(index),
                 reachableValues);

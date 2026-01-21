@@ -105,7 +105,7 @@ public interface MoveSelectorFactory<Solution_> {
     static <Solution_> AbstractMoveSelectorFactory<Solution_, ?>
             createForExhaustiveSearch(MoveSelectorConfig<?> moveSelectorConfig) {
         if (moveSelectorConfig instanceof ListChangeMoveSelectorConfig listChangeMoveSelectorConfig) {
-            // Enable the factory creation for the exhaustive method
+            // Enable the factory creation for the exhaustive search
             return new ListChangeMoveSelectorFactory<>(listChangeMoveSelectorConfig, true);
         } else {
             // Apply the default method to the remaining move selector configurations
