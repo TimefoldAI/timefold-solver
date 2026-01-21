@@ -230,7 +230,8 @@ Code style is based on **standard Java conventions** and is handled automaticall
    - ❌ **Incorrect**: `var list = new ArrayList<>();` (compiler error - cannot infer type)
    - ❌ **Incorrect**: `List<String> list = new ArrayList<String>();` (redundant type argument when diamond available)
    - **Rationale**: The `var` keyword provides the best type inference and reduces verbosity. When the left-hand type is explicit, the diamond operator eliminates redundant type information. Both reduce maintenance burden when types change and align with modern Java best practices.
-6. **Manual review** - While formatting is automatic, developers should review for logical clarity
+6. Asterisk imports (e.g., `import java.util.*;`) MUST NOT be used.
+7. **Manual review** - While formatting is automatic, developers should review for logical clarity
 
 **Code Quality Gates**:
 

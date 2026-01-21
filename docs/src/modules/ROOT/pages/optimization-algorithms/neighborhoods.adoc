@@ -363,8 +363,20 @@ This is useful when you want to verify intermediate state or test that the solve
 ----
 @Test
 void testMoveThenUndo() {
-    ... // Setup code as in previous examples.
+    var timetable = new Timetable(...); // Create or load a solution instance.
+    var lesson = timetable.getLessons().get(0);
+    var newRoom = timetable.getRooms().get(1);
 
+    var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
+    var variableMetaModel = solutionMetaModel.entity(Lesson.class)
+            .basicVariable("room", Room.class);
+
+    var move = Moves.change(variableMetaModel, lesson, newRoom);
+
+    var runner = MoveRunner.build(solutionMetaModel);
+    var context = runner.using(timetable);
+
+    // All the code above is just domain setup.
     context.executeTemporarily(move, view -> {
         // Verify changes were applied during temporary scope
         assertThat(lesson.getRoom()).isEqualTo(newRoom);
@@ -376,7 +388,7 @@ void testMoveThenUndo() {
 ----
 
 The callback function receives a `MutableSolutionView` parameter,
-but you typically won't need to use it—you can directly inspect the solution's state
+but you typically won't need to use it as you can directly inspect the solution's state
 within the callback to verify that the move was applied correctly.
 Once the callback completes, the solver automatically undoes all changes made by the move.
 
@@ -389,11 +401,21 @@ Should a move throw exceptions during execution, you can provide an exception ha
 ----
 @Test
 void testMoveWithExceptionHandler() {
-    ... // Setup code as in previous examples.
+    var timetable = new Timetable(...); // Create or load a solution instance.
+    var lesson = timetable.getLessons().get(0);
+    var newRoom = timetable.getRooms().get(1);
 
-    context.execute(move, exception -> {
-        fail("Move threw unexpected exception", exception);
-    });
+    var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
+    var variableMetaModel = solutionMetaModel.entity(Lesson.class)
+            .basicVariable("room", Room.class);
+
+    var move = Moves.change(variableMetaModel, lesson, newRoom);
+
+    var runner = MoveRunner.build(solutionMetaModel);
+    var context = runner.using(timetable);
+
+    // All the code above is just domain setup.
+    context.execute(move, exception -> fail("Move threw unexpected exception", exception));
 }
 ----
 
