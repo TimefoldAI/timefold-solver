@@ -135,7 +135,7 @@ class MoveRunnerTest {
         var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
         var context = runner.using(solution);
         assertThatNullPointerException().isThrownBy(() -> context.executeTemporarily(dummyMove, null))
-                .withMessageContaining("assertions");
+                .withMessageContaining("callback");
     }
 
     @Test

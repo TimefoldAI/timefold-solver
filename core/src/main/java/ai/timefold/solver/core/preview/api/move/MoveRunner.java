@@ -60,7 +60,7 @@ public interface MoveRunner<Solution_> {
         }
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
                 Objects.requireNonNull(solutionClass, "solutionClass"), entityClasses);
-        return new DefaultMoveRunner<>(solutionDescriptor);
+        return new DefaultMoveRunner<>(solutionDescriptor.getMetaModel(), null);
     }
 
     /**

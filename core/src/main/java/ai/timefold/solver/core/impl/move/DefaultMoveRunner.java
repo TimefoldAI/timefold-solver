@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.move;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
@@ -17,10 +16,6 @@ import org.jspecify.annotations.Nullable;
 public final class DefaultMoveRunner<Solution_> implements MoveRunner<Solution_> {
 
     private final AbstractScoreDirectorFactory<Solution_, ?, ?> scoreDirectorFactory;
-
-    public DefaultMoveRunner(SolutionDescriptor<Solution_> solutionDescriptor) {
-        this(new MoveRunnerScoreDirectorFactory<>(Objects.requireNonNull(solutionDescriptor), null));
-    }
 
     public DefaultMoveRunner(PlanningSolutionMetaModel<Solution_> solutionMetaModel,
             @Nullable MoveRepository<Solution_> moveRepository) {
