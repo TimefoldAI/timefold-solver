@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.mixed;
+package ai.timefold.solver.core.impl.domain.variable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -6,11 +6,14 @@ import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
-import ai.timefold.solver.core.impl.solver.MoveAsserter;
+import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedEntity;
+import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedSolution;
+import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedValue;
+import ai.timefold.solver.core.testutil.MoveAsserter;
 
 import org.junit.jupiter.api.Test;
 
-class TestdataMixedTest {
+class MixedModelTest {
     @Test
     void changingVariableOfParentShouldChangeDependentVariableOfChildren() {
         var problem = new TestdataMixedSolution();

@@ -8,14 +8,20 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 
 @PlanningSolution
 public class TestdataDeclarativeSimpleListSolution {
+
     public static SolutionDescriptor<TestdataDeclarativeSimpleListSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(
                 TestdataDeclarativeSimpleListSolution.class,
                 TestdataDeclarativeSimpleListEntity.class,
                 TestdataDeclarativeSimpleListValue.class);
+    }
+
+    public static PlanningSolutionMetaModel<TestdataDeclarativeSimpleListSolution> buildSolutionMetaModel() {
+        return buildSolutionDescriptor().getMetaModel();
     }
 
     @PlanningEntityCollectionProperty

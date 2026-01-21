@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.concurrent;
+package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue.BASE_START_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,6 +12,11 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentAssertionEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.solver;
+package ai.timefold.solver.core.testutil;
 
 import java.util.function.Consumer;
 
@@ -7,12 +7,18 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.MoveRunner;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Prefer {@link MoveRunner}, unless you absolutely need score corruption checks.
+ * 
+ * @param <Solution_>
+ */
 @NullMarked
-public class MoveAsserter<Solution_> {
+public final class MoveAsserter<Solution_> {
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     @Nullable
     private final MoveRepository<Solution_> moveRepository;
@@ -79,17 +85,4 @@ public class MoveAsserter<Solution_> {
         }
     }
 
-    public void applyMove(Solution_ solution, Move<Solution_> move, Runnable beforeMove) {
-        var scoreDirectorFactory = new MoveAssertScoreDirectorFactory<>(solutionDescriptor, ignored -> {
-        },
-                moveRepository);
-        scoreDirectorFactory.setTrackingWorkingSolution(false);
-        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
-                .withLookUpEnabled(false)
-                .build()) {
-            scoreDirector.setWorkingSolution(solution);
-            beforeMove.run();
-            scoreDirector.executeMove(move);
-        }
-    }
 }

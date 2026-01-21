@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.follower;
+package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,10 +8,14 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.solver.MoveAsserter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerEntity;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerSolution;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataLeaderEntity;
+import ai.timefold.solver.core.testutil.MoveAsserter;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,9 +1,6 @@
 package ai.timefold.solver.core.preview.api.move;
 
-import java.util.Objects;
 import java.util.function.Consumer;
-
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -14,17 +11,16 @@ import org.jspecify.annotations.NullMarked;
  * instance to the runner and exposes execution methods.
  * <p>
  * This class is NOT thread-safe.
+ * <p>
+ * <strong>This type is part of the Preview API which is under development.</strong>
+ * There are no guarantees for backward compatibility; any class, method, or field may change
+ * or be removed without prior notice, although we will strive to avoid this as much as possible.
+ * Migration support will be provided via OpenRewrite recipes when breaking changes occur.
  *
  * @param <Solution_> the planning solution type
  */
 @NullMarked
-public final class MoveRunContext<Solution_> {
-
-    private final InnerScoreDirector<Solution_, ?> scoreDirector;
-
-    MoveRunContext(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        this.scoreDirector = Objects.requireNonNull(scoreDirector, "scoreDirector");
-    }
+public interface MoveRunContext<Solution_> {
 
     /**
      * Executes the given move permanently on the bound solution.
@@ -36,12 +32,9 @@ public final class MoveRunContext<Solution_> {
      * and the solution state may be partially modified.
      *
      * @param move the move to execute; must not be null
-     * @throws NullPointerException if move is null
      * @throws IllegalStateException if the parent MoveRunner has been closed
      */
-    public void execute(Move<Solution_> move) {
-        scoreDirector.executeMove(Objects.requireNonNull(move, "move"));
-    }
+    void execute(Move<Solution_> move);
 
     /**
      * Executes the given move permanently on the bound solution with exception handling.
@@ -56,19 +49,10 @@ public final class MoveRunContext<Solution_> {
      * @param move the move to execute; must not be null
      * @param exceptionHandler handles exceptions thrown during move execution; must not be null;
      *        invoked only for {@link Exception} subclasses, not {@link Error}s
-     * @throws NullPointerException if move or exceptionHandler is null
      * @throws IllegalStateException if the parent MoveRunner has been closed
      * @throws Error if the move throws an Error (Errors are never suppressed)
      */
-    public void execute(Move<Solution_> move, Consumer<Exception> exceptionHandler) {
-        Objects.requireNonNull(exceptionHandler, "exceptionHandler");
-
-        try {
-            scoreDirector.executeMove(Objects.requireNonNull(move, "move"));
-        } catch (Exception e) {
-            exceptionHandler.accept(e);
-        }
-    }
+    void execute(Move<Solution_> move, Consumer<Exception> exceptionHandler);
 
     /**
      * Executes the given move temporarily on the bound solution, runs assertions,
@@ -91,12 +75,8 @@ public final class MoveRunContext<Solution_> {
      * @param move the move to execute temporarily; must not be null
      * @param assertions callback to verify the modified solution state; receives a {@link SolutionView}
      *        for read-only access; must not be null
-     * @throws NullPointerException if move or assertions is null
      * @throws IllegalStateException if the parent MoveRunner has been closed
      */
-    public void executeTemporarily(Move<Solution_> move, Consumer<SolutionView<Solution_>> assertions) {
-        scoreDirector.executeTemporarily(
-                Objects.requireNonNull(move, "move"),
-                Objects.requireNonNull(assertions, "assertions"));
-    }
+    void executeTemporarily(Move<Solution_> move, Consumer<SolutionView<Solution_>> assertions);
+
 }

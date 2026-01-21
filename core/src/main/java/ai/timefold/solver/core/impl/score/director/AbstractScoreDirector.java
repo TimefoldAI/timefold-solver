@@ -352,8 +352,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void executeTemporarily(Move<Solution_> move, Consumer<SolutionView<Solution_>> consumer) {
+    public void executeTemporaryMove(Move<Solution_> move, Consumer<SolutionView<Solution_>> consumer) {
         Objects.requireNonNull(consumer, "consumer");
+        if (solutionTracker != null) {
+            solutionTracker.setBeforeMoveSolution(workingSolution);
+        }
         moveDirector.executeTemporary(Objects.requireNonNull(move), (score, undoMove) -> {
             consumer.accept(moveDirector);
             return null;

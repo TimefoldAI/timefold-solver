@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.simple_chained;
+package ai.timefold.solver.core.impl.domain.variable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,10 +9,14 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.testdomain.shadow.simple_chained.TestdataChainedSimpleVarConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.simple_chained.TestdataChainedSimpleVarEntity;
+import ai.timefold.solver.core.testdomain.shadow.simple_chained.TestdataChainedSimpleVarSolution;
+import ai.timefold.solver.core.testdomain.shadow.simple_chained.TestdataChainedSimpleVarValue;
 
 import org.junit.jupiter.api.Test;
 
-class SimpleChainedTest {
+class ChainedModelTest {
     @Test
     void simpleChained() {
         var solverConfig = new SolverConfig()

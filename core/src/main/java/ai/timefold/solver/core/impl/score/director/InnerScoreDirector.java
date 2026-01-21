@@ -197,7 +197,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * This variant allows user code to run between move execution and undo, enabling testing and validation
      * without permanently modifying the solution state.
      * <p>
-     * The callback receives a {@link ai.timefold.solver.core.preview.api.move.SolutionView} for read-only access
+     * The callback receives a {@link SolutionView} for read-only access
      * to the modified solution state. The callback must not modify the solution state directly; doing so
      * will result in undefined behavior when the move is undone.
      * <p>
@@ -207,7 +207,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param move never null
      * @param consumer callback to run after move execution but before undo; never null
      */
-    void executeTemporarily(Move<Solution_> move, Consumer<SolutionView<Solution_>> consumer);
+    void executeTemporaryMove(Move<Solution_> move, Consumer<SolutionView<Solution_>> consumer);
 
     /**
      * @param expectedWorkingEntityListRevision an

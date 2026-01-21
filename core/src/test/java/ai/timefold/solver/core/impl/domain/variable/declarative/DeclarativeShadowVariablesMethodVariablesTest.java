@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.method_variables;
+package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,6 +9,11 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.testdomain.shadow.method_variables.TestdataDeclarativeMethodVariablesBaseValue;
+import ai.timefold.solver.core.testdomain.shadow.method_variables.TestdataDeclarativeMethodVariablesConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.method_variables.TestdataDeclarativeMethodVariablesEntity;
+import ai.timefold.solver.core.testdomain.shadow.method_variables.TestdataDeclarativeMethodVariablesSolution;
+import ai.timefold.solver.core.testdomain.shadow.method_variables.TestdataDeclarativeMethodVariablesSubclassValue;
 
 import org.junit.jupiter.api.Test;
 

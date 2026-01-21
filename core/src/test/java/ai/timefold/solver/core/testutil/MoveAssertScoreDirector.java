@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.solver;
+package ai.timefold.solver.core.testutil;
 
 import java.util.Map;
 import java.util.Objects;
@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-public final class MoveAssertScoreDirector<Solution_, Score_ extends Score<Score_>>
+final class MoveAssertScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirector<Solution_, Score_, MoveAssertScoreDirectorFactory<Solution_, Score_>> {
 
     private final Consumer<Solution_> moveSolutionConsumer;
