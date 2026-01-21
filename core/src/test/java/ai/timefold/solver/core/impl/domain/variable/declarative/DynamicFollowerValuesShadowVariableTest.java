@@ -67,7 +67,7 @@ class DynamicFollowerValuesShadowVariableTest {
         moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderA, value1), newSolution -> {
             assertThat(follower1.getValue()).isEqualTo(value1);
             assertThat(follower2.getValue()).isEqualTo(value1);
-            assertThat(follower3.getValue()).isEqualTo(null);
+            assertThat(follower3.getValue()).isNull();
         });
 
         moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderB, value2), newSolution -> {
@@ -126,7 +126,7 @@ class DynamicFollowerValuesShadowVariableTest {
         });
 
         moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, follower1, null), newSolution -> {
-            assertThat(follower1.getValue()).isEqualTo(null);
+            assertThat(follower1.getValue()).isNull();
             assertThat(follower2.getValue()).isEqualTo(value1);
             assertThat(follower3.getValue()).isEqualTo(value1);
         });

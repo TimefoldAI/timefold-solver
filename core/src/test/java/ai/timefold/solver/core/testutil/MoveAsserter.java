@@ -39,7 +39,7 @@ public final class MoveAsserter<Solution_> {
     }
 
     public void assertMoveAndUndo(Solution_ solution, Move<Solution_> move) {
-        assertMoveAndUndo(solution, move, (ignored) -> {
+        assertMoveAndUndo(solution, move, ignored -> {
         });
     }
 
@@ -61,6 +61,7 @@ public final class MoveAsserter<Solution_> {
         assertMove(solution, move, moveSolutionConsumer, false);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void assertMove(Solution_ solution, Move<Solution_> move, Consumer<Solution_> moveSolutionConsumer,
             boolean applyMove) {
         var scoreDirectorFactory = new MoveAssertScoreDirectorFactory<>(solutionDescriptor, moveSolutionConsumer,

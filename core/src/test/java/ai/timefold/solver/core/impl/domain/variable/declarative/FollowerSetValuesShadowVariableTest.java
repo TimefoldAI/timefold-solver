@@ -68,7 +68,7 @@ class FollowerSetValuesShadowVariableTest {
         moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderA, value1), newSolution -> {
             assertThat(followerAB.getValue()).isEqualTo(value1);
             assertThat(followerAC.getValue()).isEqualTo(value1);
-            assertThat(followerBC.getValue()).isEqualTo(null);
+            assertThat(followerBC.getValue()).isNull();
         });
 
         moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderB, value2), newSolution -> {

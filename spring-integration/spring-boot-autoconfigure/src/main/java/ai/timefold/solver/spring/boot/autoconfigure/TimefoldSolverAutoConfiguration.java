@@ -1,5 +1,8 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
+import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertValidPlanningVariables;
+import static java.util.stream.Collectors.joining;
+
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
@@ -42,6 +45,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.config.DiminishedReturnsProp
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TerminationProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -65,9 +69,6 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.NativeDetector;
 import org.springframework.core.env.Environment;
-
-import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertValidPlanningVariables;
-import static java.util.stream.Collectors.joining;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({ SolverConfig.class, SolverFactory.class, ScoreManager.class, SolutionManager.class, SolverManager.class })
