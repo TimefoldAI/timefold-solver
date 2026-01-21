@@ -181,7 +181,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                                 && cartesianProductMoveSelectorConfig.getMoveSelectorList().size() != variableDescriptorList
                                         .size()))) {
             throw new IllegalArgumentException(
-                    "The move selector config %s does not include all the expected planning variables %s."
+                    "The move selector config (%s) does not include all the expected planning variables %s."
                             .formatted(moveSelectorConfig, variableDescriptorList));
         }
 
