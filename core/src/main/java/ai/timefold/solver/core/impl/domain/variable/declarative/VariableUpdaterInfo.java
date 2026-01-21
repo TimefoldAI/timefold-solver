@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
@@ -17,7 +17,7 @@ public record VariableUpdaterInfo<Solution_>(
         DeclarativeShadowVariableDescriptor<Solution_> variableDescriptor,
         EntityConsistencyState<Solution_, Object> entityConsistencyState,
         MemberAccessor memberAccessor,
-        Function<Object, Object> calculator,
+        BiFunction<@Nullable Solution_, Object, Object> calculator,
         @Nullable Object[] groupEntities) {
 
     public VariableUpdaterInfo(VariableMetaModel<Solution_, ?, ?> id,
@@ -25,8 +25,12 @@ public record VariableUpdaterInfo<Solution_>(
             DeclarativeShadowVariableDescriptor<Solution_> variableDescriptor,
             EntityConsistencyState<Solution_, Object> entityConsistencyState,
             MemberAccessor memberAccessor,
-            Function<Object, Object> calculator) {
-        this(id, groupId, variableDescriptor, entityConsistencyState, memberAccessor, calculator, null);
+            MemberAccessor calculatorAccessor) {
+        this(id, groupId, variableDescriptor, entityConsistencyState, memberAccessor,
+                calculatorAccessor.getGetterMethodParameterType() != null
+                        ? (solution, entity) -> calculatorAccessor.executeGetter(entity, solution)
+                        : (_ignore, entity) -> calculatorAccessor.executeGetter(entity),
+                null);
     }
 
     public VariableUpdaterInfo<Solution_> withGroupId(int groupId) {
@@ -40,7 +44,8 @@ public record VariableUpdaterInfo<Solution_>(
     }
 
     public boolean updateIfChanged(Object entity, ChangedVariableNotifier<Solution_> changedVariableNotifier) {
-        return updateIfChanged(entity, calculator.apply(entity), changedVariableNotifier);
+        return updateIfChanged(entity, calculator.apply(changedVariableNotifier.getWorkingSolution(), entity),
+                changedVariableNotifier);
     }
 
     public boolean updateIfChanged(Object entity, @Nullable Object newValue,

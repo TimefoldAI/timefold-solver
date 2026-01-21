@@ -1,0 +1,31 @@
+package ai.timefold.solver.core.testdomain.shadow.invalid.parameter;
+
+import java.util.List;
+
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
+import ai.timefold.solver.core.api.domain.solution.PlanningScore;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.testdomain.TestdataObject;
+
+@PlanningSolution
+public class TestdataInvalidDeclarativeParameterSolution extends TestdataObject {
+    @PlanningEntityCollectionProperty
+    List<TestdataInvalidDeclarativeParameterEntity> entities;
+
+    @PlanningEntityCollectionProperty
+    @ValueRangeProvider
+    List<TestdataInvalidDeclarativeParameterValue> values;
+
+    @PlanningScore
+    SimpleScore score;
+
+    public TestdataInvalidDeclarativeParameterSolution() {
+
+    }
+
+    public TestdataInvalidDeclarativeParameterSolution(String code) {
+        super(code);
+    }
+}

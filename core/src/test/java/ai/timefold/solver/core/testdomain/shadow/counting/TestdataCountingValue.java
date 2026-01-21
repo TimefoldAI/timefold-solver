@@ -52,7 +52,7 @@ public class TestdataCountingValue extends TestdataObject {
     }
 
     @ShadowSources({ "previous.count", "entity" })
-    public Integer countSupplier() {
+    public Integer countSupplier(TestdataCountingSolution solution) {
         if (calledCount != 0) {
             throw new IllegalStateException("Supplier for entity %s was already called."
                     .formatted(entity));

@@ -41,6 +41,10 @@ public class IntegrationTestSolution {
         this.valueList = valueList;
     }
 
+    public int getDummyShadowValue() {
+        return 10;
+    }
+
     public SimpleScore getScore() {
         return score;
     }

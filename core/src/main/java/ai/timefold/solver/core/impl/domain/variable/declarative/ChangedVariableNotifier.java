@@ -32,6 +32,10 @@ public record ChangedVariableNotifier<Solution_>(BiConsumer<VariableDescriptor<S
         }
     }
 
+    public @Nullable Solution_ getWorkingSolution() {
+        return innerScoreDirector != null ? innerScoreDirector.getWorkingSolution() : null;
+    }
+
     @SuppressWarnings("unchecked")
     public static <Solution_> ChangedVariableNotifier<Solution_> empty() {
         return (ChangedVariableNotifier<Solution_>) EMPTY;

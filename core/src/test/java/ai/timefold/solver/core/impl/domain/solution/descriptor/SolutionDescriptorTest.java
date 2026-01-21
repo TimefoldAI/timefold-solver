@@ -420,12 +420,13 @@ class SolutionDescriptorTest {
     }
 
     @Test
-    void missingDeclarativeSupplierMethod() {
+    void missingDeclarativeSupplierName() {
         assertThatCode(TestdataDeclarativeMissingSupplierSolution::buildSolutionDescriptor)
                 .hasMessageContainingAll("@ShadowVariable (endTime)",
-                        "supplierMethod (calculateEndTime) that does not exist",
+                        "supplierName (calculateEndTime) that does not exist",
                         "inside its declaring class (ai.timefold.solver.core.testdomain.shadow.missing.TestdataDeclarativeMissingSupplierValue).",
-                        "Maybe you misspelled the supplierMethod name?");
+                        "Maybe you included a parameter which is not a planning solution (ai.timefold.solver.core.testdomain.shadow.missing.TestdataDeclarativeMissingSupplierSolution)",
+                        "Maybe you misspelled the supplierName name?");
     }
 
     @Test

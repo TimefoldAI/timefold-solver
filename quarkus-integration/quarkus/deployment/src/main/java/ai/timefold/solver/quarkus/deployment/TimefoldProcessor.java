@@ -1012,7 +1012,8 @@ class TimefoldProcessor {
                                     ProblemFactCollectionProperty.class.getSimpleName()));
                 }
             });
-
+            var solutionClassInstance = planningSolutionAnnotationInstanceCollection.iterator().next();
+            var solutionClassInfo = solutionClassInstance.target().asClass();
             var visited = new HashSet<AnnotationTarget>();
             for (var annotatedMember : membersToGeneratedAccessorsForCollection) {
                 ClassInfo classInfo = null;
@@ -1054,19 +1055,24 @@ class TimefoldProcessor {
                             .asString();
                     var methodInfo = classInfo.method(targetMethodName);
                     if (methodInfo == null) {
-                        throw new IllegalArgumentException("""
-                                @%s (%s) defines a supplierMethod (%s) that does not exist inside its declaring class (%s).
-                                Maybe you misspelled the supplierMethod name?"""
-                                .formatted(ShadowVariable.class.getSimpleName(), memberName, targetMethodName,
-                                        classInfo.name().toString()));
+                        // Retry with the solution class
+                        var solutionType = Type.create(solutionClassInfo.name(), Type.Kind.CLASS);
+                        methodInfo = classInfo.method(targetMethodName, solutionType);
+                    }
+                    if (methodInfo == null) {
+                        throw new IllegalArgumentException(
+                                """
+                                        @%s (%s) defines a supplierName (%s) that does not exist inside its declaring class (%s).
+                                        Maybe you included a parameter which is not a planning solution (%s)?
+                                        Maybe you misspelled the supplierName name?"""
+                                        .formatted(ShadowVariable.class.getSimpleName(), memberName, targetMethodName,
+                                                classInfo.name().toString(), solutionClassInfo.name().toString()));
                     }
                     buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                            classInfo, methodInfo, AccessorInfo.withReturnValueAndNoArguments(), transformers);
+                            classInfo, methodInfo, AccessorInfo.of(true, !methodInfo.parameterTypes().isEmpty()), transformers);
                 }
             }
             // The ConstraintWeightOverrides field is not annotated, but it needs a member accessor
-            var solutionClassInstance = planningSolutionAnnotationInstanceCollection.iterator().next();
-            var solutionClassInfo = solutionClassInstance.target().asClass();
             var constraintFieldInfo = solutionClassInfo.fields().stream()
                     .filter(f -> f.type().name().equals(DotNames.CONSTRAINT_WEIGHT_OVERRIDES))
                     .findFirst()

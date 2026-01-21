@@ -252,9 +252,9 @@ class TimefoldSolverSingleSolverAutoConfigurationTest {
                         "timefold.solver.termination.best-score-limit=0")
                 .run(context -> context.getBean(SolverFactory.class)))
                 .hasMessageContainingAll("@ShadowVariable (value1AndValue2)",
-                        "supplierMethod (value1AndValue2Supplier) that does not exist",
+                        "supplierName (value1AndValue2Supplier) that does not exist",
                         "inside its declaring class (ai.timefold.solver.spring.boot.autoconfigure.missingsuppliervariable.domain.TestdataSpringMissingSupplierVariableEntity).",
-                        "Maybe you misspelled the supplierMethod name?");
+                        "Maybe you misspelled the supplierName name?");
     }
 
     @Test

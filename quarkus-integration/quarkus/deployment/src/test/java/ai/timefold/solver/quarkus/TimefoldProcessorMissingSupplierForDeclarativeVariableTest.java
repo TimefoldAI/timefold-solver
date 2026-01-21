@@ -30,9 +30,9 @@ class TimefoldProcessorMissingSupplierForDeclarativeVariableTest {
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContainingAll(
                             "@ShadowVariable (endTime)",
-                            "supplierMethod (calculateEndTime) that does not exist",
+                            "supplierName (calculateEndTime) that does not exist",
                             "inside its declaring class (ai.timefold.solver.quarkus.testdomain.declarative.missing.TestdataQuarkusDeclarativeMissingSupplierValue).",
-                            "Maybe you misspelled the supplierMethod name?"));
+                            "Maybe you misspelled the supplierName name?"));
 
     @Test
     void test() {
