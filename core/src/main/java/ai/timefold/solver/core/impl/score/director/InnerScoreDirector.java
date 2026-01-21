@@ -187,27 +187,19 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * if your use case does not require step-level mechanisms to be aware of the changes.
      *
      * @param move never null
+     * @param consumer callback to run after move execution but before undo
      * @param assertMoveScoreFromScratch true will hurt performance
      * @return never null
      */
-    InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch);
+    InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, @Nullable Consumer<SolutionView<Solution_>> consumer,
+            boolean assertMoveScoreFromScratch);
 
     /**
-     * Executes a move temporarily, runs the provided callback function, and then immediately undoes the move.
-     * This variant allows user code to run between move execution and undo, enabling testing and validation
-     * without permanently modifying the solution state.
-     * <p>
-     * The callback receives a {@link SolutionView} for read-only access
-     * to the modified solution state. The callback must not modify the solution state directly; doing so
-     * will result in undefined behavior when the move is undone.
-     * <p>
-     * If an exception occurs during move execution, callback invocation, or undo operation, the solution state
-     * is UNDEFINED and no restoration is attempted. The caller must discard the solution instance.
-     *
-     * @param move never null
-     * @param consumer callback to run after move execution but before undo; never null
+     * As defined by {@link #executeTemporaryMove(Move, Consumer, boolean)}, but with no consumer.
      */
-    void executeTemporaryMove(Move<Solution_> move, Consumer<SolutionView<Solution_>> consumer);
+    default InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
+        return executeTemporaryMove(move, null, assertMoveScoreFromScratch);
+    }
 
     /**
      * @param expectedWorkingEntityListRevision an

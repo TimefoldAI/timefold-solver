@@ -32,7 +32,6 @@ public interface MoveRunContext<Solution_> {
      * and the solution state may be partially modified.
      *
      * @param move the move to execute; must not be null
-     * @throws IllegalStateException if the parent MoveRunner has been closed
      */
     void execute(Move<Solution_> move);
 
@@ -49,7 +48,6 @@ public interface MoveRunContext<Solution_> {
      * @param move the move to execute; must not be null
      * @param exceptionHandler handles exceptions thrown during move execution; must not be null;
      *        invoked only for {@link Exception} subclasses, not {@link Error}s
-     * @throws IllegalStateException if the parent MoveRunner has been closed
      * @throws Error if the move throws an Error (Errors are never suppressed)
      */
     void execute(Move<Solution_> move, Consumer<Exception> exceptionHandler);
@@ -75,7 +73,6 @@ public interface MoveRunContext<Solution_> {
      * @param move the move to execute temporarily; must not be null
      * @param assertions callback to verify the modified solution state; receives a {@link SolutionView}
      *        for read-only access; must not be null
-     * @throws IllegalStateException if the parent MoveRunner has been closed
      */
     void executeTemporarily(Move<Solution_> move, Consumer<SolutionView<Solution_>> assertions);
 

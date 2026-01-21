@@ -50,14 +50,11 @@ public interface MoveRunner<Solution_> {
      * These are heavy operations performed once and cached for reuse.
      * <p>
      * Shadow variables are initialized later when a solution is bound via {@link #using(Object)}.
-     * <p>
-     * This method must be called within a try-with-resources block to ensure proper resource cleanup.
      *
      * @param solutionClass the planning solution class; must not be null
      * @param entityClasses the planning entity classes; must not be empty
      * @param <Solution_> the planning solution type
      * @return a new MoveRunner instance
-     * @throws IllegalArgumentException if solutionClass is null or entityClasses is empty
      */
     static <Solution_> MoveRunner<Solution_> build(Class<Solution_> solutionClass, Class<?>... entityClasses) {
         if (Objects.requireNonNull(entityClasses, "entityClasses").length == 0) {
@@ -90,8 +87,6 @@ public interface MoveRunner<Solution_> {
      *
      * @param solution the planning solution instance; must not be null
      * @return a new execution context bound to the given solution with initialized shadow variables
-     * @throws IllegalArgumentException if solution is null
-     * @throws IllegalStateException if this MoveRunner has been closed
      */
     MoveRunContext<Solution_> using(Solution_ solution);
 

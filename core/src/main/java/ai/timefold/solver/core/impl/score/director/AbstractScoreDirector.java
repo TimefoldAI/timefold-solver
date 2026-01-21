@@ -337,30 +337,24 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
+    public InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, @Nullable Consumer<SolutionView<Solution_>> consumer,
+            boolean assertMoveScoreFromScratch) {
         if (solutionTracker != null) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
-        return assertMoveScoreFromScratch ? moveDirector.executeTemporary(move,
+        return moveDirector.executeTemporary(move,
                 (score, undoMove) -> {
                     if (solutionTracker != null) {
                         solutionTracker.setAfterMoveSolution(workingSolution);
                     }
-                    assertWorkingScoreFromScratch(score, move);
+                    if (assertMoveScoreFromScratch) {
+                        assertWorkingScoreFromScratch(score, move);
+                    }
+                    if (consumer != null) {
+                        consumer.accept(moveDirector);
+                    }
                     return score;
-                }) : moveDirector.executeTemporary(move);
-    }
-
-    @Override
-    public void executeTemporaryMove(Move<Solution_> move, Consumer<SolutionView<Solution_>> consumer) {
-        Objects.requireNonNull(consumer, "consumer");
-        if (solutionTracker != null) {
-            solutionTracker.setBeforeMoveSolution(workingSolution);
-        }
-        moveDirector.executeTemporary(Objects.requireNonNull(move), (score, undoMove) -> {
-            consumer.accept(moveDirector);
-            return null;
-        });
+                });
     }
 
     @Override

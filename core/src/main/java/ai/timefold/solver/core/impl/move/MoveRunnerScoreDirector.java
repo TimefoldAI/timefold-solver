@@ -16,12 +16,8 @@ import org.jspecify.annotations.Nullable;
 final class MoveRunnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirector<Solution_, Score_, MoveRunnerScoreDirectorFactory<Solution_, Score_>> {
 
-    private boolean firstTrigger = true;
-    private final boolean isDerived;
-
-    private MoveRunnerScoreDirector(Builder<Solution_, Score_> builder, boolean isDerived) {
+    private MoveRunnerScoreDirector(Builder<Solution_, Score_> builder) {
         super(builder);
-        this.isDerived = isDerived;
         setMoveRepository(builder.moveRepository);
     }
 
@@ -32,15 +28,7 @@ final class MoveRunnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public boolean isDerived() {
-        return isDerived;
-    }
-
-    @Override
     public InnerScore<Score_> calculateScore() {
-        if (!isDerived && firstTrigger) {
-            firstTrigger = false;
-        }
         return InnerScore.fullyAssigned(scoreDirectorFactory.getScoreDefinition().getZeroScore());
     }
 
@@ -60,8 +48,7 @@ final class MoveRunnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @NullMarked
-    public static final class Builder<Solution_, Score_ extends Score<Score_>>
-            extends
+    static final class Builder<Solution_, Score_ extends Score<Score_>> extends
             AbstractScoreDirectorBuilder<Solution_, Score_, MoveRunnerScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
 
         @Nullable
@@ -78,12 +65,12 @@ final class MoveRunnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
         @Override
         public MoveRunnerScoreDirector<Solution_, Score_> build() {
-            return new MoveRunnerScoreDirector<>(this, false);
+            return new MoveRunnerScoreDirector<>(this);
         }
 
         @Override
         public MoveRunnerScoreDirector<Solution_, Score_> buildDerived() {
-            return new MoveRunnerScoreDirector<>(this, true);
+            throw new UnsupportedOperationException(); // This should never be derived, only used for testing.
         }
     }
 
