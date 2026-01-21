@@ -290,6 +290,110 @@ Over time, we expect to add all commonly used move types to this collection,
 reducing the need for custom move implementations in most scenarios.
 
 
+[#neighborhoodsTestingMoves]
+=== Testing moves with `MoveRunner`
+
+When developing custom moves, it is essential to verify that they correctly modify the solution
+and interact properly with the solver's infrastructure (such as shadow variables and variable listeners).
+The `MoveRunner` API provides a simple testing utility to execute moves in isolation,
+making it easy to write unit tests for your custom move implementations.
+
+IMPORTANT: The `MoveRunner` API is designed exclusively for testing purposes.
+It should not be used in production code or during normal solver operation.
+It is not thread-safe and not fine-tuned for performance.
+
+[#neighborhoodsMoveRunnerBasics]
+==== Basic usage
+
+The `MoveRunner` API follows a fluent builder pattern:
+
+[source,java,options="nowrap"]
+----
+// Timetable is the solution class, Lesson is a planning entity class.
+var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
+var runner = MoveRunner.build(solutionMetaModel);
+var context = runner.using(solution);
+var move = ...; // Move you wish to test.
+context.execute(move);
+----
+
+The API requires:
+
+1. **Solution class**: The class annotated with `@PlanningSolution`
+2. **Entity classes**: One or more classes annotated with `@PlanningEntity`
+3. **Solution instance**: The working solution to execute the move on
+4. **Move instance**: The move to execute
+
+[#neighborhoodsMoveRunnerPermanent]
+==== Permanent execution
+
+The `execute()` method applies a move permanently to the solution:
+
+[source,java,options="nowrap"]
+----
+@Test
+void testChangeMove() {
+    var timetable = new Timetable(...); // Create or load a solution instance.
+    var lesson = timetable.getLessons().get(0);
+    var newRoom = timetable.getRooms().get(1);
+
+    var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
+    var variableMetaModel = solutionMetaModel.entity(Lesson.class)
+            .basicVariable("room", Room.class);
+
+    var move = Moves.change(variableMetaModel, lesson, newRoom);
+
+    var runner = MoveRunner.build(solutionMetaModel);
+    var context = runner.using(timetable);
+    context.execute(move);
+
+    assertThat(lesson.getRoom()).isEqualTo(newRoom); // Assertion from a test framework of choice.
+}
+----
+
+After `execute()` returns, the solution is modified and all shadow variables are updated.
+
+[#neighborhoodsMoveRunnerTemporary]
+==== Temporary execution with automatic undo
+
+The `executeTemporarily()` method allows you to test a move's effects without permanently modifying the solution.
+This is useful when you want to verify intermediate state or test that the solver's undo mechanism works correctly:
+
+[source,java,options="nowrap"]
+----
+@Test
+void testMoveThenUndo() {
+    var timetable = new Timetable(...); // Create or load a solution instance.
+    var lesson = timetable.getLessons().get(0);
+    var originalRoom = lesson.getRoom();
+    var newRoom = timetable.getRooms().get(1);
+
+    var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
+    var variableMetaModel = solutionMetaModel.entity(Lesson.class)
+            .basicVariable("room", Room.class);
+
+    var move = Moves.change(variableMetaModel, lesson, newRoom);
+
+    var runner = MoveRunner.build(solutionMetaModel);
+    var context = runner.using(timetable);
+
+    // All the code above is just domain setup.
+    context.executeTemporarily(move, view -> {
+        // Verify changes were applied during temporary scope
+        assertThat(lesson.getRoom()).isEqualTo(newRoom);
+    });
+
+    // Verify automatic undo restored original state
+    assertThat(lesson.getRoom()).isEqualTo(originalRoom);
+}
+----
+
+The callback function receives a `SolutionView` parameter,
+but you typically won't need to use it as you can directly inspect the solution's state
+within the callback to verify that the move was applied correctly.
+Once the callback completes, the solver automatically undoes all changes made by the move.
+
+
 [#neighborhoodsMoveStreams]
 == Producing custom moves using Move Streams
 

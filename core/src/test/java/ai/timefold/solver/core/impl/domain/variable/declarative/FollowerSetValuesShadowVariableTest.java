@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.follower_set;
+package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,16 +8,17 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.solver.MoveAsserter;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.preview.api.move.MoveRunner;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerConstraintProvider;
 import ai.timefold.solver.core.testdomain.shadow.follower.TestdataLeaderEntity;
+import ai.timefold.solver.core.testdomain.shadow.follower_set.TestdataFollowerSetEntity;
+import ai.timefold.solver.core.testdomain.shadow.follower_set.TestdataFollowerSetSolution;
 
 import org.junit.jupiter.api.Test;
 
-class FollowerValuesShadowVariableTest {
+class FollowerSetValuesShadowVariableTest {
     @Test
     void testSolve() {
         var problem = TestdataFollowerSetSolution.generateSolution(3, 8, 2);
@@ -57,28 +58,25 @@ class FollowerValuesShadowVariableTest {
                 List.of(followerAB, followerAC, followerBC),
                 List.of(value1, value2));
 
-        var solutionDescriptor = TestdataFollowerSetSolution.getSolutionDescriptor();
+        var solutionMetamodel = TestdataFollowerSetSolution.buildSolutionMetaModel();
         var variableMetamodel =
-                (PlanningVariableMetaModel<TestdataFollowerSetSolution, ? super TestdataLeaderEntity, ? super TestdataValue>) solutionDescriptor
-                        .getMetaModel().entity(TestdataLeaderEntity.class).variable("value");
-        var moveAsserter = MoveAsserter.create(solutionDescriptor);
+                solutionMetamodel.entity(TestdataLeaderEntity.class).basicVariable("value", TestdataValue.class);
+        var context = MoveRunner.build(solutionMetamodel)
+                .using(solution);
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderA, value1), newSolution -> {
-            assertThat(followerAB.getValue()).isEqualTo(value1);
-            assertThat(followerAC.getValue()).isEqualTo(value1);
-            assertThat(followerBC.getValue()).isEqualTo(null);
-        });
+        context.execute(Moves.change(variableMetamodel, leaderA, value1));
+        assertThat(followerAB.getValue()).isEqualTo(value1);
+        assertThat(followerAC.getValue()).isEqualTo(value1);
+        assertThat(followerBC.getValue()).isNull();
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderB, value2), newSolution -> {
-            assertThat(followerAB.getValue()).isEqualTo(value1);
-            assertThat(followerAC.getValue()).isEqualTo(value1);
-            assertThat(followerBC.getValue()).isEqualTo(value2);
-        });
+        context.execute(Moves.change(variableMetamodel, leaderB, value2));
+        assertThat(followerAB.getValue()).isEqualTo(value1);
+        assertThat(followerAC.getValue()).isEqualTo(value1);
+        assertThat(followerBC.getValue()).isEqualTo(value2);
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderC, value1), newSolution -> {
-            assertThat(followerAB.getValue()).isEqualTo(value1);
-            assertThat(followerAC.getValue()).isEqualTo(value1);
-            assertThat(followerBC.getValue()).isEqualTo(value1);
-        });
+        context.execute(Moves.change(variableMetamodel, leaderC, value1));
+        assertThat(followerAB.getValue()).isEqualTo(value1);
+        assertThat(followerAC.getValue()).isEqualTo(value1);
+        assertThat(followerBC.getValue()).isEqualTo(value1);
     }
 }

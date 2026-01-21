@@ -1,6 +1,4 @@
-package ai.timefold.solver.core.impl.solver;
-
-import java.util.function.Consumer;
+package ai.timefold.solver.core.impl.move;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -12,24 +10,21 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public final class MoveAssertScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
-        extends AbstractScoreDirectorFactory<Solution_, Score_, MoveAssertScoreDirectorFactory<Solution_, Score_>> {
+final class MoveRunnerScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
+        extends AbstractScoreDirectorFactory<Solution_, Score_, MoveRunnerScoreDirectorFactory<Solution_, Score_>> {
 
-    private final Consumer<Solution_> moveSolutionConsumer;
     @Nullable
     private final MoveRepository<Solution_> moveRepository;
 
-    public MoveAssertScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            Consumer<Solution_> moveSolutionConsumer, @Nullable MoveRepository<Solution_> moveRepository) {
+    public MoveRunnerScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
+            @Nullable MoveRepository<Solution_> moveRepository) {
         super(solutionDescriptor);
-        this.moveSolutionConsumer = moveSolutionConsumer;
         this.moveRepository = moveRepository;
     }
 
     @Override
     public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?> createScoreDirectorBuilder() {
-        return new MoveAssertScoreDirector.Builder<>(this)
-                .withMoveSolutionConsumer(moveSolutionConsumer)
+        return new MoveRunnerScoreDirector.Builder<>(this)
                 .withMoveRepository(moveRepository);
     }
 

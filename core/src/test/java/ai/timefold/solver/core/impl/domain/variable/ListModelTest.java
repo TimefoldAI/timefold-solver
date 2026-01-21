@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.simple_list;
+package ai.timefold.solver.core.impl.domain.variable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,10 +9,14 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListEntity;
+import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListSolution;
+import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListValue;
 
 import org.junit.jupiter.api.Test;
 
-class SimpleListTest {
+class ListModelTest {
     @Test
     void simpleList() {
         var solverConfig = new SolverConfig()

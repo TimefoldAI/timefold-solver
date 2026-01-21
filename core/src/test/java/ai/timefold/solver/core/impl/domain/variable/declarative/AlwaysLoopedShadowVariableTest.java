@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.always_looped;
+package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -7,6 +7,9 @@ import java.util.List;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.testdomain.shadow.always_looped.TestdataAlwaysLoopedConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.always_looped.TestdataAlwaysLoopedEntity;
+import ai.timefold.solver.core.testdomain.shadow.always_looped.TestdataAlwaysLoopedSolution;
 
 import org.junit.jupiter.api.Test;
 

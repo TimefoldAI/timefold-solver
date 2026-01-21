@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.follower;
+package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -8,10 +8,13 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.solver.MoveAsserter;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.preview.api.move.MoveRunner;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerEntity;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataFollowerSolution;
+import ai.timefold.solver.core.testdomain.shadow.follower.TestdataLeaderEntity;
 
 import org.junit.jupiter.api.Test;
 
@@ -59,37 +62,32 @@ class FollowerValuesShadowVariableTest {
                         followerB1, followerB2),
                 List.of(value1, value2));
 
-        var solutionDescriptor = TestdataFollowerSolution.buildSolutionDescriptor();
+        var solutionMetamodel = TestdataFollowerSolution.buildSolutionMetaModel();
         var variableMetamodel =
-                (PlanningVariableMetaModel<TestdataFollowerSolution, ? super TestdataLeaderEntity, ? super TestdataValue>) solutionDescriptor
-                        .getMetaModel().entity(TestdataLeaderEntity.class).variable("value");
-        var moveAsserter = MoveAsserter.create(solutionDescriptor);
+                solutionMetamodel.entity(TestdataLeaderEntity.class).basicVariable("value", TestdataValue.class);
+        var context = MoveRunner.build(solutionMetamodel)
+                .using(solution);
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderA, value1), newSolution -> {
-            assertThat(followerA1.getValue()).isEqualTo(value1);
-            assertThat(followerA2.getValue()).isEqualTo(value1);
-            assertThat(followerA3.getValue()).isEqualTo(value1);
+        context.execute(Moves.change(variableMetamodel, leaderA, value1));
+        assertThat(followerA1.getValue()).isEqualTo(value1);
+        assertThat(followerA2.getValue()).isEqualTo(value1);
+        assertThat(followerA3.getValue()).isEqualTo(value1);
+        assertThat(followerB1.getValue()).isNull();
+        assertThat(followerB2.getValue()).isNull();
 
-            assertThat(followerB1.getValue()).isNull();
-            assertThat(followerB2.getValue()).isNull();
-        });
+        context.execute(Moves.change(variableMetamodel, leaderB, value2));
+        assertThat(followerA1.getValue()).isEqualTo(value1);
+        assertThat(followerA2.getValue()).isEqualTo(value1);
+        assertThat(followerA3.getValue()).isEqualTo(value1);
+        assertThat(followerB1.getValue()).isEqualTo(value2);
+        assertThat(followerB2.getValue()).isEqualTo(value2);
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderB, value2), newSolution -> {
-            assertThat(followerA1.getValue()).isEqualTo(value1);
-            assertThat(followerA2.getValue()).isEqualTo(value1);
-            assertThat(followerA3.getValue()).isEqualTo(value1);
-
-            assertThat(followerB1.getValue()).isEqualTo(value2);
-            assertThat(followerB2.getValue()).isEqualTo(value2);
-        });
-
-        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderC, value1), newSolution -> {
-            assertThat(followerA1.getValue()).isEqualTo(value1);
-            assertThat(followerA2.getValue()).isEqualTo(value1);
-            assertThat(followerA3.getValue()).isEqualTo(value1);
-
-            assertThat(followerB1.getValue()).isEqualTo(value2);
-            assertThat(followerB2.getValue()).isEqualTo(value2);
-        });
+        context.execute(Moves.change(variableMetamodel, leaderC, value1));
+        assertThat(followerA1.getValue()).isEqualTo(value1);
+        assertThat(followerA2.getValue()).isEqualTo(value1);
+        assertThat(followerA3.getValue()).isEqualTo(value1);
+        assertThat(followerB1.getValue()).isEqualTo(value2);
+        assertThat(followerB2.getValue()).isEqualTo(value2);
     }
+
 }

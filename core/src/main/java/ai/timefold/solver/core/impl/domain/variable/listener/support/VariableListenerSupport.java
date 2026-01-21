@@ -23,8 +23,6 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableBasicVariableListener;
-import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSession;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
@@ -256,19 +254,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                     shadowVariableGraphCreator);
             shadowVariableSession =
                     shadowVariableSessionFactory.forSolution(consistencyTracker, scoreDirector.getWorkingSolution());
-        }
-    }
-
-    public void resetWorkingSolutionWithoutUpdatingShadows() {
-        for (var notifiable : notifiableRegistry.getAll()) {
-            if (notifiable instanceof EntityNotifiable<?> entityNotifiable) {
-                if (!(entityNotifiable.getVariableListener() instanceof LegacyCustomShadowVariableBasicVariableListener
-                        || entityNotifiable.getVariableListener() instanceof LegacyCustomShadowVariableListVariableListener)) {
-                    notifiable.resetWorkingSolution();
-                }
-            } else {
-                notifiable.resetWorkingSolution();
-            }
         }
     }
 

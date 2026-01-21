@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -106,7 +107,16 @@ import io.quarkus.runtime.configuration.ConfigurationException;
 
 class TimefoldProcessor {
 
-    private static final Logger log = Logger.getLogger(TimefoldProcessor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TimefoldProcessor.class);
+    // We filter out abstract classes and anything we use internally.
+    private static final Predicate<ClassInfo> UNIQUENESS_PREDICATE = clazz -> {
+        if (clazz.isAbstract()) {
+            return false;
+        }
+        var pkg = clazz.name().packagePrefix();
+        // Only user classes should count, and classes from our own testdomain, which may legally be employed by tests.
+        return !pkg.startsWith("ai.timefold.solver.core") || pkg.contains(".test");
+    };
 
     TimefoldBuildTimeConfig timefoldBuildTimeConfig;
 
@@ -220,7 +230,7 @@ class TimefoldProcessor {
         // Only skip this extension if everything is missing. Otherwise, if some parts are missing, fail fast later.
         if (indexView.getAnnotations(DotNames.PLANNING_SOLUTION).isEmpty()
                 && indexView.getAnnotations(DotNames.PLANNING_ENTITY).isEmpty()) {
-            log.warn(
+            LOGGER.warn(
                     """
                             Skipping Timefold extension because there are no @%s or @%s annotated classes.
                             If your domain classes are located in a dependency of this project, maybe try generating the \
@@ -327,7 +337,7 @@ class TimefoldProcessor {
     }
 
     private void assertSolverConfigSolutionClasses(IndexView indexView, Map<String, SolverConfig> solverConfigMap) {
-        // Validate the solution class        
+        // Validate the solution class
         // No solution class
         assertEmptyInstances(indexView, DotNames.PLANNING_SOLUTION);
         // Multiple classes and single solver
@@ -392,17 +402,16 @@ class TimefoldProcessor {
     }
 
     private void assertSolverConfigConstraintClasses(IndexView indexView, Map<String, SolverConfig> solverConfigMap) {
-        // We filter out abstract classes
         var simpleScoreClassCollection = indexView.getAllKnownImplementations(DotNames.EASY_SCORE_CALCULATOR)
-                .stream().filter(clazz -> !clazz.isAbstract())
+                .stream().filter(UNIQUENESS_PREDICATE)
                 .toList();
         var constraintScoreClassCollection =
                 indexView.getAllKnownImplementations(DotNames.CONSTRAINT_PROVIDER)
-                        .stream().filter(clazz -> !clazz.isAbstract())
+                        .stream().filter(UNIQUENESS_PREDICATE)
                         .toList();
         var incrementalScoreClassCollection =
                 indexView.getAllKnownImplementations(DotNames.INCREMENTAL_SCORE_CALCULATOR)
-                        .stream().filter(clazz -> !clazz.isAbstract())
+                        .stream().filter(UNIQUENESS_PREDICATE)
                         .toList();
         // No score classes
         if (simpleScoreClassCollection.isEmpty() && constraintScoreClassCollection.isEmpty()
@@ -812,7 +821,7 @@ class TimefoldProcessor {
 
     private static List<AnnotationInstance> getAllConcreteSolutionClasses(IndexView indexView) {
         return indexView.getAnnotations(DotNames.PLANNING_SOLUTION).stream()
-                .filter(annotationInstance -> !annotationInstance.target().asClass().isAbstract())
+                .filter(annotationInstance -> UNIQUENESS_PREDICATE.test(annotationInstance.target().asClass()))
                 .toList();
     }
 
@@ -914,7 +923,7 @@ class TimefoldProcessor {
 
     private <T> Class<? extends T> findFirstImplementingConcreteClass(DotName targetDotName, IndexView indexView) {
         var classInfoCollection = indexView.getAllKnownImplementations(targetDotName).stream()
-                .filter(classInfo -> !classInfo.isAbstract())
+                .filter(UNIQUENESS_PREDICATE)
                 .toList();
         if (classInfoCollection.isEmpty()) {
             return null;

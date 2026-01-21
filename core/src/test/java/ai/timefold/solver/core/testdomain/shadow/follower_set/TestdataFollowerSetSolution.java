@@ -10,15 +10,21 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.shadow.follower.TestdataLeaderEntity;
 
 @PlanningSolution
 public class TestdataFollowerSetSolution extends TestdataObject {
+
     public static SolutionDescriptor<TestdataFollowerSetSolution> getSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(
                 TestdataFollowerSetSolution.class, TestdataLeaderEntity.class, TestdataFollowerSetEntity.class);
+    }
+
+    public static PlanningSolutionMetaModel<TestdataFollowerSetSolution> buildSolutionMetaModel() {
+        return getSolutionDescriptor().getMetaModel();
     }
 
     @PlanningEntityCollectionProperty

@@ -43,6 +43,7 @@ import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionExceptio
 import ai.timefold.solver.core.impl.solver.exception.VariableCorruptionException;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -336,18 +337,24 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
+    public InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, @Nullable Consumer<SolutionView<Solution_>> consumer,
+            boolean assertMoveScoreFromScratch) {
         if (solutionTracker != null) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
-        return assertMoveScoreFromScratch ? moveDirector.executeTemporary(move,
+        return moveDirector.executeTemporary(move,
                 (score, undoMove) -> {
                     if (solutionTracker != null) {
                         solutionTracker.setAfterMoveSolution(workingSolution);
                     }
-                    assertWorkingScoreFromScratch(score, move);
+                    if (assertMoveScoreFromScratch) {
+                        assertWorkingScoreFromScratch(score, move);
+                    }
+                    if (consumer != null) {
+                        consumer.accept(moveDirector);
+                    }
                     return score;
-                }) : moveDirector.executeTemporary(move);
+                });
     }
 
     @Override

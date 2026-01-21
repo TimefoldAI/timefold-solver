@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -38,6 +39,7 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.Nullable;
 
@@ -185,10 +187,19 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * if your use case does not require step-level mechanisms to be aware of the changes.
      *
      * @param move never null
+     * @param consumer callback to run after move execution but before undo
      * @param assertMoveScoreFromScratch true will hurt performance
      * @return never null
      */
-    InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch);
+    InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, @Nullable Consumer<SolutionView<Solution_>> consumer,
+            boolean assertMoveScoreFromScratch);
+
+    /**
+     * As defined by {@link #executeTemporaryMove(Move, Consumer, boolean)}, but with no consumer.
+     */
+    default InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
+        return executeTemporaryMove(move, null, assertMoveScoreFromScratch);
+    }
 
     /**
      * @param expectedWorkingEntityListRevision an

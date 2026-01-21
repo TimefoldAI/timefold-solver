@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
@@ -94,6 +95,16 @@ public class TimefoldSolverAutoConfiguration
             ShadowVariable.class,
             CascadingUpdateShadowVariable.class
     };
+    // We filter out abstract classes and anything we use internally.
+    static final Predicate<Class<?>> UNIQUENESS_PREDICATE = clazz -> {
+        if (Modifier.isAbstract(clazz.getModifiers())) {
+            return false;
+        }
+        var pkg = clazz.getPackageName();
+        // Only user classes should count, and classes from our own testdomain, which may legally be employed by tests.
+        return !pkg.startsWith("ai.timefold.solver.core") || pkg.contains(".test");
+    };
+
     private ApplicationContext context;
     private ClassLoader beanClassLoader;
     private TimefoldProperties timefoldProperties;
@@ -362,7 +373,7 @@ public class TimefoldSolverAutoConfiguration
         // Multiple classes and single solver
         try {
             var classes = entityScanner.scan(PlanningSolution.class).stream()
-                    .filter(c -> !Modifier.isAbstract(c.getModifiers()))
+                    .filter(UNIQUENESS_PREDICATE)
                     .toList();
             var firstConfig = solverConfigMap.values().stream().findFirst().orElse(null);
             if (classes.size() > 1 && solverConfigMap.size() == 1 && firstConfig != null
@@ -445,12 +456,18 @@ public class TimefoldSolverAutoConfiguration
 
     private static void assertSolverConfigConstraintClasses(
             IncludeAbstractClassesEntityScanner entityScanner, Map<String, SolverConfig> solverConfigMap) {
-        List<Class<? extends EasyScoreCalculator>> simpleScoreClassList =
-                entityScanner.findImplementingClassList(EasyScoreCalculator.class);
-        List<Class<? extends ConstraintProvider>> constraintScoreClassList =
-                entityScanner.findImplementingClassList(ConstraintProvider.class);
-        List<Class<? extends IncrementalScoreCalculator>> incrementalScoreClassList =
-                entityScanner.findImplementingClassList(IncrementalScoreCalculator.class);
+        var simpleScoreClassList = entityScanner.findImplementingClassList(EasyScoreCalculator.class)
+                .stream()
+                .filter(UNIQUENESS_PREDICATE)
+                .toList();
+        var constraintScoreClassList = entityScanner.findImplementingClassList(ConstraintProvider.class)
+                .stream()
+                .filter(UNIQUENESS_PREDICATE)
+                .toList();
+        var incrementalScoreClassList = entityScanner.findImplementingClassList(IncrementalScoreCalculator.class)
+                .stream()
+                .filter(UNIQUENESS_PREDICATE)
+                .toList();
         // No score calculators
         if (simpleScoreClassList.isEmpty() && constraintScoreClassList.isEmpty()
                 && incrementalScoreClassList.isEmpty()) {
