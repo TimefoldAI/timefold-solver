@@ -156,7 +156,7 @@ public class TestdataConcurrentValue {
     }
 
     @ShadowSources("serviceStartTime")
-    public LocalDateTime serviceFinishTimeUpdater(TestdataConcurrentSolution solution) {
+    public LocalDateTime serviceFinishTimeUpdater() {
         if (serviceStartTime == null) {
             return null;
         }
