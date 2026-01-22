@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
@@ -46,7 +47,7 @@ class ListChangeMoveProviderTest {
         var unassignedValue = solution.getValueList().get(0);
         var initiallyAssignedValue = solution.getValueList().get(1);
         e2.getValueList().add(initiallyAssignedValue);
-        solution.getEntityList().forEach(TestdataListEntity::setUpShadowVariables);
+        SolutionManager.updateShadowVariables(solution);
 
         var moveIterable = createMoveIterable(new ListChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         assertThat(moveIterable).hasSize(4);
@@ -118,7 +119,7 @@ class ListChangeMoveProviderTest {
         var e2 = solution.getEntityList().get(1);
         var initiallyAssignedValue = e2.getValueRange().get(0);
         e2.getValueList().add(initiallyAssignedValue);
-        solution.getEntityList().forEach(TestdataListEntityProvidingEntity::setUpShadowVariables);
+        SolutionManager.updateShadowVariables(solution);
 
         var moveIterable = createMoveIterable(new ListChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         assertThat(moveIterable).hasSize(4);
@@ -268,7 +269,7 @@ class ListChangeMoveProviderTest {
         var v1 = solution.getValueList().get(0);
         var v2 = solution.getValueList().get(1);
         e2.getValueList().add(v1);
-        solution.getEntityList().forEach(TestdataAllowsUnassignedValuesListEntity::setUpShadowVariables);
+        SolutionManager.updateShadowVariables(solution);
 
         var moveIterable = createMoveIterable(new ListChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         assertThat(moveIterable).hasSize(5);

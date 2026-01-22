@@ -75,7 +75,7 @@ class ListUnassignMoveTest {
     @Test
     void toStringTest() {
         var v1 = new TestdataListValue("1");
-        var e1 = TestdataListEntity.createWithValues("E1", v1);
+        var e1 = new TestdataListEntity("E1", v1);
 
         var variableDescriptor =
                 TestdataListEntity.buildVariableDescriptorForValueList();

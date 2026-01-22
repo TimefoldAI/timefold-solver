@@ -24,19 +24,6 @@ public class TestdataPinnedListEntity extends TestdataObject {
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataPinnedListEntity createWithValues(String code, TestdataPinnedListValue... values) {
-        // Set up shadow variables to preserve consistency.
-        return new TestdataPinnedListEntity(code, values).setUpShadowVariables();
-    }
-
-    TestdataPinnedListEntity setUpShadowVariables() {
-        valueList.forEach(testdataListValue -> {
-            testdataListValue.setEntity(this);
-            testdataListValue.setIndex(valueList.indexOf(testdataListValue));
-        });
-        return this;
-    }
-
     private List<TestdataPinnedListValue> valueList;
 
     @PlanningPin

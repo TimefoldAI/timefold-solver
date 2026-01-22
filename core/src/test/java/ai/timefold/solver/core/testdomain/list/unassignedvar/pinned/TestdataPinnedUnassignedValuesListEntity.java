@@ -25,27 +25,6 @@ public class TestdataPinnedUnassignedValuesListEntity extends TestdataObject {
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataPinnedUnassignedValuesListEntity createWithValues(String code,
-            TestdataPinnedUnassignedValuesListValue... values) {
-        // Set up shadow variables to preserve consistency.
-        return new TestdataPinnedUnassignedValuesListEntity(code, values).setUpShadowVariables();
-    }
-
-    TestdataPinnedUnassignedValuesListEntity setUpShadowVariables() {
-        for (int i = 0; i < valueList.size(); i++) {
-            var testdataListValue = valueList.get(i);
-            testdataListValue.setEntity(this);
-            testdataListValue.setIndex(valueList.indexOf(testdataListValue));
-            if (i != 0) {
-                testdataListValue.setPrevious(valueList.get(i - 1));
-            }
-            if (i != valueList.size() - 1) {
-                testdataListValue.setNext(valueList.get(i + 1));
-            }
-        }
-        return this;
-    }
-
     private List<TestdataPinnedUnassignedValuesListValue> valueList;
     @PlanningPinToIndex
     private int planningPinToIndex = 0;

@@ -119,28 +119,18 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                 termination);
     }
 
+    @SuppressWarnings("unchecked")
     private NeighborhoodsBasedMoveRepository<Solution_> buildNeighborhoodsBasedMoveRepository(
             HeuristicConfigPolicy<Solution_> configPolicy,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
-        var solutionDescriptor = configPolicy.getSolutionDescriptor();
-        var solutionMetaModel = solutionDescriptor.getMetaModel();
-        if (solutionMetaModel.genuineEntities().size() > 1) {
-            throw new UnsupportedOperationException(
-                    "Neighborhoods API currently only supports solutions with a single entity class, not multiple.");
-        }
-        var entityMetaModel = solutionMetaModel.genuineEntities().get(0);
-        if (entityMetaModel.genuineVariables().size() > 1) {
-            throw new UnsupportedOperationException(
-                    "Neighborhoods API currently only supports solutions with a single variable class, not multiple.");
-        }
-
         if (!NeighborhoodProvider.class.isAssignableFrom(neighborhoodProviderClass)) {
             throw new IllegalArgumentException("The neighborhoodProviderClass (%s) does not implement %s."
                     .formatted(neighborhoodProviderClass, NeighborhoodProvider.class.getSimpleName()));
         }
         var neighborhoodProvider = ConfigUtils.newInstance(LocalSearchPhaseConfig.class::getSimpleName,
                 "neighborhoodProviderClass", neighborhoodProviderClass);
-        var neighborhoodBuilder = new DefaultNeighborhoodBuilder<>(solutionMetaModel);
+        var solutionDescriptor = configPolicy.getSolutionDescriptor();
+        var neighborhoodBuilder = new DefaultNeighborhoodBuilder<>(solutionDescriptor.getMetaModel());
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
         return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
                 ((DefaultNeighborhood<Solution_>) neighborhoodProvider.defineNeighborhood(neighborhoodBuilder))

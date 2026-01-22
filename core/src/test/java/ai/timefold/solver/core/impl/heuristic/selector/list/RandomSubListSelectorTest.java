@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.util.List;
 
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListUtils;
@@ -41,11 +42,12 @@ class RandomSubListSelectorTest {
         var v2 = new TestdataListValue("2");
         var v3 = new TestdataListValue("3");
         var v4 = new TestdataListValue("4");
-        var a = TestdataListEntity.createWithValues("A", v1, v2, v3, v4);
-        var b = TestdataListEntity.createWithValues("B");
+        var a = new TestdataListEntity("A", v1, v2, v3, v4);
+        var b = new TestdataListEntity("B");
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a, b));
         solution.setValueList(List.of(v1, v2, v3, v4));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -82,9 +84,9 @@ class RandomSubListSelectorTest {
         var v2 = new TestdataPinnedWithIndexListValue("2");
         var v3 = new TestdataPinnedWithIndexListValue("3");
         var v4 = new TestdataPinnedWithIndexListValue("4");
-        var a = TestdataPinnedWithIndexListEntity.createWithValues("A", v1, v2, v3, v4);
+        var a = new TestdataPinnedWithIndexListEntity("A", v1, v2, v3, v4);
         a.setPlanningPinToIndex(1); // Ignore v1.
-        var b = TestdataPinnedWithIndexListEntity.createWithValues("B");
+        var b = new TestdataPinnedWithIndexListEntity("B");
         var solution = new TestdataPinnedWithIndexListSolution();
         solution.setEntityList(List.of(a, b));
         solution.setValueList(List.of(v1, v2, v3, v4));
@@ -124,11 +126,12 @@ class RandomSubListSelectorTest {
         var v2 = new TestdataAllowsUnassignedValuesListValue("2");
         var v3 = new TestdataAllowsUnassignedValuesListValue("3");
         var v4 = new TestdataAllowsUnassignedValuesListValue("4");
-        var a = TestdataAllowsUnassignedValuesListEntity.createWithValues("A", v1, v2, v3);
-        var b = TestdataAllowsUnassignedValuesListEntity.createWithValues("B");
+        var a = new TestdataAllowsUnassignedValuesListEntity("A", v1, v2, v3);
+        var b = new TestdataAllowsUnassignedValuesListEntity("B");
         var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(a, b));
         solution.setValueList(List.of(v1, v2, v3, v4));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -167,11 +170,12 @@ class RandomSubListSelectorTest {
         var v3 = new TestdataListValue("3");
         var v4 = new TestdataListValue("4");
         var v5 = new TestdataListValue("5");
-        var a = TestdataListEntity.createWithValues("A", v1, v2, v3, v4, v5);
-        var b = TestdataListEntity.createWithValues("B");
+        var a = new TestdataListEntity("A", v1, v2, v3, v4, v5);
+        var b = new TestdataListEntity("B");
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a, b));
         solution.setValueList(List.of(v1, v2, v3, v4, v5));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -202,7 +206,7 @@ class RandomSubListSelectorTest {
         var v1 = new TestdataListValue("1");
         var v2 = new TestdataListValue("2");
         var v3 = new TestdataListValue("3");
-        var a = TestdataListEntity.createWithValues("A", v1, v2, v3);
+        var a = new TestdataListEntity("A", v1, v2, v3);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
 

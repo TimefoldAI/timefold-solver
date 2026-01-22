@@ -14,6 +14,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicForagerConfig;
@@ -311,11 +312,12 @@ class DefaultConstructionHeuristicPhaseTest {
         var value2 = new TestdataAllowsUnassignedValuesListValue("v2");
         var value3 = new TestdataAllowsUnassignedValuesListValue("v3");
         var value4 = new TestdataAllowsUnassignedValuesListValue("v4");
-        var entity = TestdataAllowsUnassignedValuesListEntity.createWithValues("e1", value1, value2);
+        var entity = new TestdataAllowsUnassignedValuesListEntity("e1", value1, value2);
 
         var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(entity));
         solution.setValueList(Arrays.asList(value1, value2, value3, value4));
+        SolutionManager.updateShadowVariables(solution);
 
         var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertSoftly(softly -> {

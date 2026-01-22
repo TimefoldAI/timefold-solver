@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAssignMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMove;
@@ -38,6 +39,7 @@ class ListVariableListenerTest {
         var solution = new TestdataListSolutionWithShadowHistory();
         solution.setEntityList(Arrays.asList(entities));
         solution.setValueList(values);
+        SolutionManager.updateShadowVariables(solution);
         return solution;
     }
 
@@ -176,9 +178,10 @@ class ListVariableListenerTest {
         var b = new TestdataListValueWithShadowHistory("B");
         var c = new TestdataListValueWithShadowHistory("C");
         var x = new TestdataListValueWithShadowHistory("X");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
         var solution = buildSolution(ann);
         solution.getValueList().add(x);
+        SolutionManager.updateShadowVariables(solution);
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore()).isEqualTo(InnerScore.withUnassignedCount(SimpleScore.ZERO, 1));
@@ -240,7 +243,7 @@ class ListVariableListenerTest {
         var c = new TestdataListValueWithShadowHistory("C");
         var d = new TestdataListValueWithShadowHistory("D");
         var e = new TestdataListValueWithShadowHistory("E");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -281,7 +284,7 @@ class ListVariableListenerTest {
         var c = new TestdataListValueWithShadowHistory("C");
         var d = new TestdataListValueWithShadowHistory("D");
         var e = new TestdataListValueWithShadowHistory("E");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -322,8 +325,8 @@ class ListVariableListenerTest {
         var c = new TestdataListValueWithShadowHistory("C");
         var x = new TestdataListValueWithShadowHistory("X");
         var y = new TestdataListValueWithShadowHistory("Y");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
+        var bob = new TestdataListEntityWithShadowHistory("Bob", x, y);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -365,8 +368,8 @@ class ListVariableListenerTest {
         var c = new TestdataListValueWithShadowHistory("C");
         var x = new TestdataListValueWithShadowHistory("X");
         var y = new TestdataListValueWithShadowHistory("Y");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
+        var bob = new TestdataListEntityWithShadowHistory("Bob", x, y);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -406,7 +409,7 @@ class ListVariableListenerTest {
         var a = new TestdataListValueWithShadowHistory("A");
         var b = new TestdataListValueWithShadowHistory("B");
         var c = new TestdataListValueWithShadowHistory("C");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -437,7 +440,7 @@ class ListVariableListenerTest {
         var a = new TestdataListValueWithShadowHistory("A");
         var b = new TestdataListValueWithShadowHistory("B");
         var c = new TestdataListValueWithShadowHistory("C");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -470,7 +473,7 @@ class ListVariableListenerTest {
         var c = new TestdataListValueWithShadowHistory("C");
         var d = new TestdataListValueWithShadowHistory("D");
         var e = new TestdataListValueWithShadowHistory("E");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -511,8 +514,8 @@ class ListVariableListenerTest {
         var c = new TestdataListValueWithShadowHistory("C");
         var x = new TestdataListValueWithShadowHistory("X");
         var y = new TestdataListValueWithShadowHistory("Y");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
+        var bob = new TestdataListEntityWithShadowHistory("Bob", x, y);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -554,8 +557,8 @@ class ListVariableListenerTest {
         var c = new TestdataListValueWithShadowHistory("C");
         var x = new TestdataListValueWithShadowHistory("X");
         var y = new TestdataListValueWithShadowHistory("Y");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
+        var bob = new TestdataListEntityWithShadowHistory("Bob", x, y);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -601,7 +604,7 @@ class ListVariableListenerTest {
         var b = new TestdataListValueWithShadowHistory("B");
         var c = new TestdataListValueWithShadowHistory("C");
         var d = new TestdataListValueWithShadowHistory("D");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c, d);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -638,7 +641,7 @@ class ListVariableListenerTest {
         var c = new TestdataListValueWithShadowHistory("C");
         var d = new TestdataListValueWithShadowHistory("D");
         var e = new TestdataListValueWithShadowHistory("E");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -679,7 +682,7 @@ class ListVariableListenerTest {
         var c = new TestdataListValueWithShadowHistory("C");
         var d = new TestdataListValueWithShadowHistory("D");
         var e = new TestdataListValueWithShadowHistory("E");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -723,8 +726,8 @@ class ListVariableListenerTest {
         var x = new TestdataListValueWithShadowHistory("X");
         var y = new TestdataListValueWithShadowHistory("Y");
         var z = new TestdataListValueWithShadowHistory("Z");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
-        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y, z);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c, d, e);
+        var bob = new TestdataListEntityWithShadowHistory("Bob", x, y, z);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -777,8 +780,8 @@ class ListVariableListenerTest {
         var b = new TestdataListValueWithShadowHistory("B");
         var c = new TestdataListValueWithShadowHistory("C");
         var x = new TestdataListValueWithShadowHistory("X");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
+        var bob = new TestdataListEntityWithShadowHistory("Bob", x);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -812,8 +815,8 @@ class ListVariableListenerTest {
         var a = new TestdataListValueWithShadowHistory("A");
         var b = new TestdataListValueWithShadowHistory("B");
         var c = new TestdataListValueWithShadowHistory("C");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob");
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
+        var bob = new TestdataListEntityWithShadowHistory("Bob");
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -851,7 +854,7 @@ class ListVariableListenerTest {
         var g = new TestdataListValueWithShadowHistory("G");
         var h = new TestdataListValueWithShadowHistory("H");
         var ann =
-                TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e, f, g, h);
+                new TestdataListEntityWithShadowHistory("Ann", a, b, c, d, e, f, g, h);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -908,7 +911,7 @@ class ListVariableListenerTest {
         var g = new TestdataListValueWithShadowHistory("G");
         var h = new TestdataListValueWithShadowHistory("H");
         var ann =
-                TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e, f, g, h);
+                new TestdataListEntityWithShadowHistory("Ann", a, b, c, d, e, f, g, h);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -961,7 +964,7 @@ class ListVariableListenerTest {
         var c = new TestdataListValueWithShadowHistory("C");
         var d = new TestdataListValueWithShadowHistory("D");
         var e = new TestdataListValueWithShadowHistory("E");
-        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 

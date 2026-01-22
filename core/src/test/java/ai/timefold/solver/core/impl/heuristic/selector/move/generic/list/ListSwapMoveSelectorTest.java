@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -48,12 +49,13 @@ class ListSwapMoveSelectorTest {
         var v1 = new TestdataListValue("v1");
         var v2 = new TestdataListValue("v2");
         var v3 = new TestdataListValue("v3");
-        var e1 = TestdataListEntity.createWithValues("A", v2, v1);
-        var e2 = TestdataListEntity.createWithValues("B");
-        var e3 = TestdataListEntity.createWithValues("C", v3);
+        var e1 = new TestdataListEntity("A", v2, v1);
+        var e2 = new TestdataListEntity("B");
+        var e3 = new TestdataListEntity("C", v3);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1, e2, e3));
         solution.setValueList(List.of(v1, v2, v3));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -123,14 +125,15 @@ class ListSwapMoveSelectorTest {
         var v1 = new TestdataPinnedWithIndexListValue("v1");
         var v2 = new TestdataPinnedWithIndexListValue("v2");
         var v3 = new TestdataPinnedWithIndexListValue("v3");
-        var a = TestdataPinnedWithIndexListEntity.createWithValues("A", v2, v1);
+        var a = new TestdataPinnedWithIndexListEntity("A", v2, v1);
         a.setPlanningPinToIndex(1); // Ignore v2
-        var b = TestdataPinnedWithIndexListEntity.createWithValues("B");
+        var b = new TestdataPinnedWithIndexListEntity("B");
         b.setPinned(true); // Ignore entirely.
-        var c = TestdataPinnedWithIndexListEntity.createWithValues("C", v3);
+        var c = new TestdataPinnedWithIndexListEntity("C", v3);
         var solution = new TestdataPinnedWithIndexListSolution();
         solution.setEntityList(List.of(a, b, c));
         solution.setValueList(List.of(v1, v2, v3));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -200,11 +203,12 @@ class ListSwapMoveSelectorTest {
         var v2 = new TestdataAllowsUnassignedValuesListValue("v2");
         var v3 = new TestdataAllowsUnassignedValuesListValue("v3");
         var v4 = new TestdataAllowsUnassignedValuesListValue("v4");
-        var a = TestdataAllowsUnassignedValuesListEntity.createWithValues("A", v2, v1);
-        var b = TestdataAllowsUnassignedValuesListEntity.createWithValues("B", v3);
+        var a = new TestdataAllowsUnassignedValuesListEntity("A", v2, v1);
+        var b = new TestdataAllowsUnassignedValuesListEntity("B", v3);
         var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(a, b));
         solution.setValueList(List.of(v1, v2, v3, v4));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -274,12 +278,13 @@ class ListSwapMoveSelectorTest {
         var v1 = new TestdataListValue("1");
         var v2 = new TestdataListValue("2");
         var v3 = new TestdataListValue("3");
-        var e1 = TestdataListEntity.createWithValues("A", v1, v2);
-        var e2 = TestdataListEntity.createWithValues("B");
-        var e3 = TestdataListEntity.createWithValues("C", v3);
+        var e1 = new TestdataListEntity("A", v1, v2);
+        var e2 = new TestdataListEntity("B");
+        var e3 = new TestdataListEntity("C", v3);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1, e2, e3));
         solution.setValueList(List.of(v1, v2, v3));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -404,14 +409,15 @@ class ListSwapMoveSelectorTest {
         var v1 = new TestdataPinnedWithIndexListValue("1");
         var v2 = new TestdataPinnedWithIndexListValue("2");
         var v3 = new TestdataPinnedWithIndexListValue("3");
-        var a = TestdataPinnedWithIndexListEntity.createWithValues("A", v1, v2);
+        var a = new TestdataPinnedWithIndexListEntity("A", v1, v2);
         a.setPlanningPinToIndex(1); // Ignore v1
-        var b = TestdataPinnedWithIndexListEntity.createWithValues("B");
+        var b = new TestdataPinnedWithIndexListEntity("B");
         b.setPinned(true); // Ignore entirely.
-        var c = TestdataPinnedWithIndexListEntity.createWithValues("C", v3);
+        var c = new TestdataPinnedWithIndexListEntity("C", v3);
         var solution = new TestdataPinnedWithIndexListSolution();
         solution.setEntityList(List.of(a, b, c));
         solution.setValueList(List.of(v1, v2, v3));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -477,11 +483,12 @@ class ListSwapMoveSelectorTest {
         var v2 = new TestdataAllowsUnassignedValuesListValue("2");
         var v3 = new TestdataAllowsUnassignedValuesListValue("3");
         var v4 = new TestdataAllowsUnassignedValuesListValue("4");
-        var e1 = TestdataAllowsUnassignedValuesListEntity.createWithValues("A", v2, v1);
-        var e2 = TestdataAllowsUnassignedValuesListEntity.createWithValues("B", v3);
+        var e1 = new TestdataAllowsUnassignedValuesListEntity("A", v2, v1);
+        var e2 = new TestdataAllowsUnassignedValuesListEntity("B", v3);
         var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(e1, e2));
         solution.setValueList(List.of(v1, v2, v3, v4));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);

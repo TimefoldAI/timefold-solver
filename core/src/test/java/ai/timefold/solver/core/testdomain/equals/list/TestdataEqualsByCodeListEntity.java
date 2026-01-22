@@ -23,19 +23,6 @@ public class TestdataEqualsByCodeListEntity extends TestdataEqualsByCodeListObje
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataEqualsByCodeListEntity createWithValues(String code, TestdataEqualsByCodeListValue... values) {
-        // Set up shadow variables to preserve consistency.
-        return new TestdataEqualsByCodeListEntity(code, values).setUpShadowVariables();
-    }
-
-    TestdataEqualsByCodeListEntity setUpShadowVariables() {
-        valueList.forEach(testdataEqualsByCodeListValue -> {
-            testdataEqualsByCodeListValue.setEntity(this);
-            testdataEqualsByCodeListValue.setIndex(valueList.indexOf(testdataEqualsByCodeListValue));
-        });
-        return this;
-    }
-
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
     private List<TestdataEqualsByCodeListValue> valueList;
 

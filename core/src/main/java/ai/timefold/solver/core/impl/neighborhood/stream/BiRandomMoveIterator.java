@@ -98,7 +98,11 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
 
         while (!leftTupleSequence.isEmpty()) {
             var leftElement = leftTupleSequence.pick(workingRandom);
-            pickNextMove(leftElement);
+            var rightEmpty = pickNextMove(leftElement);
+            if (rightEmpty) {
+                leftTupleSequence.remove(leftElement.index());
+                leftElement.value().setStore(rightSequenceStoreIndex, null);
+            }
             if (nextMove != null) {
                 if (nextMove instanceof ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) {
                     throw new UnsupportedOperationException("""
@@ -112,16 +116,15 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
         return false;
     }
 
-    private void pickNextMove(UniqueRandomSequence.SequenceElement<UniTuple<A>> leftElement) {
+    private boolean pickNextMove(UniqueRandomSequence.SequenceElement<UniTuple<A>> leftElement) {
         var leftTuple = leftElement.value();
         var rightTupleSequence = (UniqueRandomSequence<UniTuple<B>>) leftTuple.getStore(rightSequenceStoreIndex);
         if (rightTupleSequence == null) {
             rightTupleSequence = computeRightSequence(leftTuple);
             leftTuple.setStore(rightSequenceStoreIndex, rightTupleSequence);
         }
-        var remove = false;
         if (rightTupleSequence.isEmpty()) {
-            remove = true;
+            return true;
         } else {
             try {
                 var bTuple = rightTupleSequence.remove(workingRandom);
@@ -133,13 +136,10 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
                 // Therefore we can run into a situation where there are no more elements passing the filter,
                 // even though the sequence is not technically empty.
                 // We only find this out at runtime.
-                remove = true;
+                return true;
             }
         }
-        if (remove) {
-            leftTupleSequence.remove(leftElement.index());
-            leftTuple.setStore(rightSequenceStoreIndex, null);
-        }
+        return false;
     }
 
     @Override

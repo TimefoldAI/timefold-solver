@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSession;
@@ -387,7 +388,7 @@ class UniEnumeratingStreamTest {
         unpinnedEntity.setPlanningPinToIndex(0);
         unpinnedEntity.setValueList(List.of(value4));
         // Properly set shadow variables based on the changes above.
-        solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
+        SolutionManager.updateShadowVariables(solution);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
         var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
@@ -429,7 +430,7 @@ class UniEnumeratingStreamTest {
         unpinnedEntity.setPlanningPinToIndex(0);
         unpinnedEntity.setValueList(List.of(value4));
         // Properly set shadow variables based on the changes above.
-        solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
+        SolutionManager.updateShadowVariables(solution);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
         var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
@@ -473,7 +474,7 @@ class UniEnumeratingStreamTest {
         var entityAddedLater = new TestdataPinnedWithIndexListEntity("entity4", value4);
         entityAddedLater.setPinned(true);
         // Properly set shadow variables based on the changes above.
-        solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
+        SolutionManager.updateShadowVariables(solution);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
         var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
@@ -517,7 +518,7 @@ class UniEnumeratingStreamTest {
         var entityAddedLater = new TestdataPinnedWithIndexListEntity("entity4", value4);
         entityAddedLater.setPinned(true);
         // Properly set shadow variables based on the changes above.
-        solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
+        SolutionManager.updateShadowVariables(solution);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
         var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);

@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -33,10 +34,11 @@ class UnassignedListValueSelectorTest {
         var v4 = new TestdataListValue("4");
         var v5 = new TestdataListValue("5");
         // 1 and 3 are assigned, the rest (2, 4, 5) are unassigned.
-        var entity = TestdataListEntity.createWithValues("A", v1, v3);
+        var entity = new TestdataListEntity("A", v1, v3);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(entity));
         solution.setValueList(List.of(v1, v2, v3, v4, v5));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);

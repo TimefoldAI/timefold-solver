@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -80,10 +81,11 @@ class KOptListMoveTest {
 
     @Test
     void test3Opt() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4, v5, v6);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
@@ -104,10 +106,11 @@ class KOptListMoveTest {
 
     @Test
     void test3OptPinned() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6, v7);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4, v5, v6, v7);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var variableDescriptorSpy = spy(variableDescriptor);
@@ -137,12 +140,13 @@ class KOptListMoveTest {
 
     @Test
     void test3OptRebase() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6);
-        var destinationE1 = TestdataListEntity.createWithValues("e1", destinationV1, destinationV2,
-                destinationV3, destinationV4, destinationV5, destinationV6);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4, v5, v6);
+        var destinationE1 = new TestdataListEntity("e1", destinationV1, destinationV2, destinationV3, destinationV4,
+                destinationV5, destinationV6);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
@@ -182,16 +186,17 @@ class KOptListMoveTest {
 
     @Test
     void testMultiEntity3OptRebase() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v6);
-        var e2 = TestdataListEntity.createWithValues("e2", v4, v5);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v6);
+        var e2 = new TestdataListEntity("e2", v4, v5);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1, e2));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var destinationE1 =
-                TestdataListEntity.createWithValues("e1", destinationV1, destinationV2, destinationV3, destinationV6);
-        var destinationE2 = TestdataListEntity.createWithValues("e2", destinationV4, destinationV5);
+                new TestdataListEntity("e1", destinationV1, destinationV2, destinationV3, destinationV6);
+        var destinationE2 = new TestdataListEntity("e2", destinationV4, destinationV5);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
                 variableDescriptor,
@@ -235,11 +240,12 @@ class KOptListMoveTest {
 
     @Test
     void testMultiEntity2Opt() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4);
-        var e2 = TestdataListEntity.createWithValues("e2", v5, v6, v7, v8);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4);
+        var e2 = new TestdataListEntity("e2", v5, v6, v7, v8);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1, e2));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7, v8));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
@@ -261,11 +267,12 @@ class KOptListMoveTest {
 
     @Test
     void testMultiEntity3Opt() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v6);
-        var e2 = TestdataListEntity.createWithValues("e2", v4, v5);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v6);
+        var e2 = new TestdataListEntity("e2", v4, v5);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1, e2));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
@@ -289,11 +296,12 @@ class KOptListMoveTest {
 
     @Test
     void testMultiEntity3OptPinned() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v6, v7);
-        var e2 = TestdataListEntity.createWithValues("e2", v4, v5);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v6, v7);
+        var e2 = new TestdataListEntity("e2", v4, v5);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1, e2));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var variableDescriptorSpy = spy(variableDescriptor);
@@ -327,12 +335,13 @@ class KOptListMoveTest {
 
     @Test
     void testMultiEntity4Opt() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4);
-        var e2 = TestdataListEntity.createWithValues("e2", v5, v6, v7, v8);
-        var e3 = TestdataListEntity.createWithValues("e3", v9, v10, v11, v12);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4);
+        var e2 = new TestdataListEntity("e2", v5, v6, v7, v8);
+        var e3 = new TestdataListEntity("e3", v9, v10, v11, v12);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1, e2, e3));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
@@ -361,10 +370,11 @@ class KOptListMoveTest {
 
     @Test
     void test3OptLong() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
@@ -385,10 +395,11 @@ class KOptListMoveTest {
 
     @Test
     void test4Opt() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6, v7, v8);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4, v5, v6, v7, v8);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7, v8));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
@@ -414,10 +425,11 @@ class KOptListMoveTest {
 
     @Test
     void test4OptLong() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
@@ -442,10 +454,11 @@ class KOptListMoveTest {
 
     @Test
     void testInverted4OptLong() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         // Note: using only endpoints work (removing v4, v7, v8, v11) from the above list works
@@ -472,10 +485,11 @@ class KOptListMoveTest {
 
     @Test
     void testDoubleBridge4Opt() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6, v7, v8);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4, v5, v6, v7, v8);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7, v8));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
@@ -500,10 +514,11 @@ class KOptListMoveTest {
 
     @Test
     void testDoubleBridge4OptLong() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
@@ -529,10 +544,11 @@ class KOptListMoveTest {
 
     @Test
     void testIsFeasible() {
-        var e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v5, v6, v7, v8);
+        var e1 = new TestdataListEntity("e1", v1, v2, v3, v4, v5, v6, v7, v8);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7, v8));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var kOptListMove = fromRemovedAndAddedEdges(scoreDirector,
