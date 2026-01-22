@@ -22,7 +22,7 @@ class CompositeMoveTest {
         var value3 = solution.getValueList().get(2);
 
         var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
         var move1 = Moves.change(variableMetaModel, entity1, value3);
@@ -51,7 +51,7 @@ class CompositeMoveTest {
         var value3 = solution.getValueList().get(2);
 
         var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
         var swapMove = Moves.swap(variableMetaModel, entity1, entity2);
@@ -75,7 +75,7 @@ class CompositeMoveTest {
         var newValue = solution.getValueList().get(1);
 
         var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
         var changeMove = Moves.change(variableMetaModel, entity, newValue);
@@ -102,7 +102,7 @@ class CompositeMoveTest {
         var value4 = solution.getValueList().get(3);
 
         var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
         var move1 = Moves.change(variableMetaModel, entity1, value4);
@@ -140,7 +140,7 @@ class CompositeMoveTest {
         var value3 = solution.getValueList().get(2);
 
         var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
         var move1 = Moves.change(variableMetaModel, entity1, value3);
@@ -180,7 +180,7 @@ class CompositeMoveTest {
         var value4 = solution.getValueList().get(3);
 
         var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
         var move1 = Moves.change(variableMetaModel, entity1, value4);

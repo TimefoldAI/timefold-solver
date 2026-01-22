@@ -34,7 +34,7 @@ class ListSwapMoveProviderTest {
     void fromSolution() {
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataListEntity.class)
+                .genuineEntity(TestdataListEntity.class)
                 .listVariable();
 
         var solution = TestdataListSolution.generateUninitializedSolution(4, 2);
@@ -114,7 +114,7 @@ class ListSwapMoveProviderTest {
     void fromEntity() {
         var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataListEntityProvidingEntity.class)
+                .genuineEntity(TestdataListEntityProvidingEntity.class)
                 .listVariable();
 
         var solution = TestdataListEntityProvidingSolution.generateSolution();

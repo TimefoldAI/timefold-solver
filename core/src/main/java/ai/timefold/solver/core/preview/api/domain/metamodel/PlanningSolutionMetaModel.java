@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.preview.api.domain.metamodel;
 
+import static java.util.function.Predicate.not;
+
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -61,9 +63,24 @@ public interface PlanningSolutionMetaModel<Solution_> {
      *
      * @return Entities declared by the solution, which declare some genuine variables.
      */
-    default List<PlanningEntityMetaModel<Solution_, ?>> genuineEntities() {
-        return entities().stream()
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    default List<GenuineEntityMetaModel<Solution_, ?>> genuineEntities() {
+        return (List) entities().stream()
                 .filter(PlanningEntityMetaModel::isGenuine)
+                .map(entityMetaModel -> (GenuineEntityMetaModel<Solution_, ?>) entityMetaModel)
+                .toList();
+    }
+
+    /**
+     * Returns the meta-models of shadow @{@link PlanningEntity planning entities} known to the solution.
+     *
+     * @return Entities declared by the solution, which do not declare any genuine variables.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    default List<ShadowEntityMetaModel<Solution_, ?>> shadowEntities() {
+        return (List) entities().stream()
+                .filter(not(PlanningEntityMetaModel::isGenuine))
+                .map(entityMetaModel -> (ShadowEntityMetaModel<Solution_, ?>) entityMetaModel)
                 .toList();
     }
 
@@ -83,6 +100,45 @@ public interface PlanningSolutionMetaModel<Solution_> {
         }
         throw new IllegalArgumentException(
                 "The type (%s) is not among known entities (%s).".formatted(entityClass, entities()));
+    }
+
+    /**
+     * Returns the meta-model of the @{@link PlanningEntity genuine planning entity} with the given class.
+     *
+     * @param entityClass Expected class of the entity.
+     * @return An entity declared by the solution.
+     * @throws IllegalArgumentException where {@link #hasEntity(Class)} would have returned false,
+     *         or where the entity is a shadow entity.
+     */
+    @SuppressWarnings("unchecked")
+    default <Entity_> GenuineEntityMetaModel<Solution_, Entity_> genuineEntity(Class<Entity_> entityClass) {
+        var genuineEntities = genuineEntities();
+        for (var entityMetaModel : genuineEntities) {
+            if (entityMetaModel.type().equals(entityClass)) {
+                return (GenuineEntityMetaModel<Solution_, Entity_>) entityMetaModel;
+            }
+        }
+        throw new IllegalArgumentException(
+                "The type (%s) is not among known genuine entities (%s).".formatted(entityClass, genuineEntities));
+    }
+
+    /**
+     * Returns the meta-model of the @{@link PlanningEntity shadow planning entity} with the given class.
+     *
+     * @param entityClass Expected class of the entity.
+     * @return An entity declared by the solution.
+     * @throws IllegalArgumentException where {@link #hasEntity(Class)} would have returned false,
+     *         or where the entity is a genuine entity.
+     */
+    @SuppressWarnings("unchecked")
+    default <Entity_> ShadowEntityMetaModel<Solution_, Entity_> shadowEntity(Class<Entity_> entityClass) {
+        for (var entityMetaModel : shadowEntities()) {
+            if (entityMetaModel.type().equals(entityClass)) {
+                return (ShadowEntityMetaModel<Solution_, Entity_>) entityMetaModel;
+            }
+        }
+        throw new IllegalArgumentException(
+                "The type (%s) is not among known genuine entities (%s).".formatted(entityClass, entities()));
     }
 
     /**

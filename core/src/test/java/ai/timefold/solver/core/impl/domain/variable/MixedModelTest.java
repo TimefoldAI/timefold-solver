@@ -40,7 +40,7 @@ class MixedModelTest {
 
         var solutionMetaModel = PlanningSolutionMetaModel.of(TestdataMixedSolution.class,
                 TestdataMixedEntity.class, TestdataMixedValue.class);
-        var variableMetaModel = solutionMetaModel.entity(TestdataMixedValue.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataMixedValue.class)
                 .basicVariable("delay", Integer.class);
         MoveRunner.build(solutionMetaModel)
                 .using(problem)

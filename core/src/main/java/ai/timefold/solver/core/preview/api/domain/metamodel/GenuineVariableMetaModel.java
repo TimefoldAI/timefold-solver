@@ -29,4 +29,14 @@ public sealed interface GenuineVariableMetaModel<Solution_, Entity_, Value_>
         extends VariableMetaModel<Solution_, Entity_, Value_>
         permits PlanningVariableMetaModel, PlanningListVariableMetaModel {
 
+    /**
+     * Returns true if this variable is a list variable.
+     * Effectively checks if this variable is an instance of {@link PlanningListVariableMetaModel}.
+     *
+     * @return True if this variable is a list variable, false if it is a basic variable.
+     */
+    default boolean isListVariable() {
+        return this instanceof PlanningListVariableMetaModel;
+    }
+
 }

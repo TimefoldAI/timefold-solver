@@ -18,8 +18,8 @@ class ListAssignMoveTest {
         var value = solution.getValueList().get(0);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
 
         var assignMove = Moves.assign(variableMetaModel, value, entity, 0);
 
@@ -39,8 +39,8 @@ class ListAssignMoveTest {
         var value3 = solution.getValueList().get(2);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
 
         var move1 = Moves.assign(variableMetaModel, value1, entity, 0);
         var move2 = Moves.assign(variableMetaModel, value2, entity, 1);
@@ -70,8 +70,8 @@ class ListAssignMoveTest {
         var value3 = solution.getValueList().get(2);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
 
         var move1 = Moves.assign(variableMetaModel, value1, entity1, 0);
         var move2 = Moves.assign(variableMetaModel, value2, entity2, 0);
@@ -95,8 +95,8 @@ class ListAssignMoveTest {
         var value = solution.getValueList().get(0);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
 
         var assignMove = Moves.assign(variableMetaModel, value, entity, 0);
 
@@ -120,8 +120,8 @@ class ListAssignMoveTest {
         var value3 = solution.getValueList().get(2);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
 
         var move1 = Moves.assign(variableMetaModel, value1, entity, 0);
         var move2 = Moves.assign(variableMetaModel, value2, entity, 1);

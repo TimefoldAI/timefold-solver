@@ -20,7 +20,7 @@ class ListChangeMoveTest {
         var value3 = entity.getValueList().get(2);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
         var changeMove = Moves.change(variableMetaModel, entity, 0, entity, 2);
@@ -47,7 +47,7 @@ class ListChangeMoveTest {
         var valueToMove = entity1.getValueList().get(0);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
         var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 0);
@@ -70,7 +70,7 @@ class ListChangeMoveTest {
         var entity3 = solution.getEntityList().get(2);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
         var move1 = Moves.change(variableMetaModel, entity1, 0, entity2, 0);
@@ -94,7 +94,7 @@ class ListChangeMoveTest {
         var originalList = entity.getValueList().stream().toList(); // Copy list
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
         var changeMove = Moves.change(variableMetaModel, entity, 0, entity, 2);
@@ -122,7 +122,7 @@ class ListChangeMoveTest {
         var originalList2 = entity2.getValueList().stream().toList();
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
         var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 0);

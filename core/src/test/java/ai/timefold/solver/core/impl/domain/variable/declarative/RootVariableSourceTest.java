@@ -16,8 +16,8 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
@@ -43,14 +43,14 @@ class RootVariableSourceTest {
                     TestdataInvalidDeclarativeSolution.class, TestdataInvalidDeclarativeEntity.class,
                     TestdataInvalidDeclarativeValue.class)
                     .getMetaModel();
-    private final PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue> shadowEntityMetaModel =
-            planningSolutionMetaModel.entity(TestdataInvalidDeclarativeValue.class);
+    private final ShadowEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue> shadowEntityMetaModel =
+            planningSolutionMetaModel.shadowEntity(TestdataInvalidDeclarativeValue.class);
     private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> previousElementMetaModel =
-            shadowEntityMetaModel.shadowVariable("previous", TestdataInvalidDeclarativeValue.class);
+            shadowEntityMetaModel.variable("previous", TestdataInvalidDeclarativeValue.class);
     private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> shadowVariableMetaModel =
-            shadowEntityMetaModel.shadowVariable("shadow", TestdataInvalidDeclarativeValue.class);
+            shadowEntityMetaModel.variable("shadow", TestdataInvalidDeclarativeValue.class);
     private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> dependencyMetaModel =
-            shadowEntityMetaModel.shadowVariable("dependency", TestdataInvalidDeclarativeValue.class);
+            shadowEntityMetaModel.variable("dependency", TestdataInvalidDeclarativeValue.class);
 
     private void assertChainToVariableEntity(VariableSourceReference variableSourceReference, String... expectedNames) {
         var chain = variableSourceReference.chainFromRootEntityToVariableEntity();

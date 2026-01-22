@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ class DeclarativeShadowVariableDescriptorTest {
         }
 
         var solutionMetamodel = Mockito.mock(PlanningSolutionMetaModel.class);
-        var exampleMetamodel = Mockito.mock(PlanningEntityMetaModel.class);
+        var exampleMetamodel = Mockito.mock(GenuineEntityMetaModel.class);
         var calculator = Mockito.mock(MemberAccessor.class);
 
         when(solutionMetamodel.entity(Example.class))
@@ -52,7 +52,7 @@ class DeclarativeShadowVariableDescriptorTest {
     @SuppressWarnings({ "rawtype", "unchecked" })
     void groupKeyMemberForEntityPropertyForVariable() {
         var solutionMetamodel = Mockito.mock(PlanningSolutionMetaModel.class);
-        var exampleMetamodel = Mockito.mock(PlanningEntityMetaModel.class);
+        var exampleMetamodel = Mockito.mock(GenuineEntityMetaModel.class);
         var calculator = Mockito.mock(MemberAccessor.class);
 
         when(solutionMetamodel.entity(BadExample.class))

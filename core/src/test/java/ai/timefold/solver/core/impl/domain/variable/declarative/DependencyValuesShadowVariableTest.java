@@ -92,8 +92,8 @@ class DependencyValuesShadowVariableTest {
 
         var solutionMetamodel = PlanningSolutionMetaModel.of(TestdataDependencySolution.class, TestdataDependencyEntity.class,
                 TestdataDependencyValue.class);
-        var variableMetamodel =
-                solutionMetamodel.entity(TestdataDependencyEntity.class).listVariable("values", TestdataDependencyValue.class);
+        var variableMetamodel = solutionMetamodel.genuineEntity(TestdataDependencyEntity.class)
+                .listVariable("values", TestdataDependencyValue.class);
         // Tests the move [A, B] -> [C, A, B].
         // Since C depends on A and B, this is an invalid solution,
         // and C.startTime/C.endTime remains null and C.isInconsistent is true.

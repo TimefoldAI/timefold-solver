@@ -18,7 +18,8 @@ class ChangeMoveTest {
         var newValue = solution.getValueList().get(2); // Different value
 
         var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
 
         var changeMove = Moves.change(variableMetaModel, entity, newValue);
 
@@ -33,7 +34,8 @@ class ChangeMoveTest {
         var entity = solution.getEntityList().get(0);
 
         var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
 
         var changeMove = Moves.change(variableMetaModel, entity, null);
 
@@ -52,7 +54,8 @@ class ChangeMoveTest {
         var value2 = solution.getValueList().get(1);
 
         var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
 
         var move1 = Moves.change(variableMetaModel, entity1, value2);
         var move2 = Moves.change(variableMetaModel, entity2, value1);
@@ -76,7 +79,8 @@ class ChangeMoveTest {
         var newValue = solution.getValueList().get(2);
 
         var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
 
         var changeMove = Moves.change(variableMetaModel, entity, newValue);
 
@@ -104,7 +108,8 @@ class ChangeMoveTest {
         var value2 = solution.getValueList().get(1);
 
         var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
 
         var move1 = Moves.change(variableMetaModel, entity1, value2);
         var move2 = Moves.change(variableMetaModel, entity2, value1);
