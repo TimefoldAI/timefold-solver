@@ -8,6 +8,7 @@ import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirecto
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -23,12 +24,13 @@ class RandomListSwapIteratorTest {
         TestdataListValue v1 = new TestdataListValue("1");
         TestdataListValue v2 = new TestdataListValue("2");
         TestdataListValue v3 = new TestdataListValue("3");
-        var e1 = TestdataListEntity.createWithValues("A", v1, v2);
-        var e2 = TestdataListEntity.createWithValues("B");
-        var e3 = TestdataListEntity.createWithValues("C", v3);
+        var e1 = new TestdataListEntity("A", v1, v2);
+        var e2 = new TestdataListEntity("B");
+        var e3 = new TestdataListEntity("C", v3);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1, e2, e3));
         solution.setValueList(List.of(v1, v2, v3));
+        SolutionManager.updateShadowVariables(solution);
 
         InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector =
                 mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());

@@ -23,27 +23,6 @@ public class TestdataAllowsUnassignedValuesListEntity extends TestdataObject {
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataAllowsUnassignedValuesListEntity createWithValues(String code,
-            TestdataAllowsUnassignedValuesListValue... values) {
-        // Set up shadow variables to preserve consistency.
-        return new TestdataAllowsUnassignedValuesListEntity(code, values).setUpShadowVariables();
-    }
-
-    public TestdataAllowsUnassignedValuesListEntity setUpShadowVariables() {
-        for (int i = 0; i < valueList.size(); i++) {
-            var testdataListValue = valueList.get(i);
-            testdataListValue.setEntity(this);
-            testdataListValue.setIndex(valueList.indexOf(testdataListValue));
-            if (i != 0) {
-                testdataListValue.setPrevious(valueList.get(i - 1));
-            }
-            if (i != valueList.size() - 1) {
-                testdataListValue.setNext(valueList.get(i + 1));
-            }
-        }
-        return this;
-    }
-
     private List<TestdataAllowsUnassignedValuesListValue> valueList;
 
     public TestdataAllowsUnassignedValuesListEntity() {

@@ -74,8 +74,6 @@ import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.util.Pair;
-import ai.timefold.solver.core.preview.api.move.builtin.ChangeMoveProvider;
-import ai.timefold.solver.core.preview.api.move.builtin.ListChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
@@ -184,11 +182,9 @@ class DefaultSolverTest {
                 .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
-                .withEasyScoreCalculatorClass(TestingEasyScoreCalculator.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
                 .withTerminationConfig(new TerminationConfig()
-                        .withBestScoreLimit("0")) // Should get there quickly.
-                .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveProviderClass(TestingNeighborhoodProvider.class));
+                        .withBestScoreLimit("0")); // Should get there quickly.
 
         var solution = TestdataSolution.generateSolution(3, 2);
 
@@ -199,16 +195,14 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveWithNeighborhoodsListVar() {
+    void solveWithDefaultNeighborhoodProviderListVar() {
         var solverConfig = new SolverConfig()
                 .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
                 .withSolutionClass(TestdataListSolution.class)
                 .withEntityClasses(TestdataListEntity.class, TestdataListValue.class)
                 .withEasyScoreCalculatorClass(TestingListEasyScoreCalculator.class)
                 .withTerminationConfig(new TerminationConfig()
-                        .withBestScoreLimit("0")) // Should get there quickly.
-                .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveProviderClass(TestingListNeighborhoodProvider.class));
+                        .withBestScoreLimit("0")); // Should get there quickly.
 
         // Both values are on the same entity; the goal of the solver is to move one of them to the other entity.
         var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
@@ -217,7 +211,33 @@ class DefaultSolverTest {
         var e1 = solution.getEntityList().get(0);
         e1.addValue(v1);
         e1.addValue(v2);
-        solution.getEntityList().forEach(TestdataListEntity::setUpShadowVariables);
+        SolutionManager.updateShadowVariables(solution);
+
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
+        assertThat(solution).isNotNull();
+    }
+
+    @Test
+    void solveWithDefaultNeighborhoodProviderMixedModel() {
+        var solverConfig = new SolverConfig()
+                .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
+                .withSolutionClass(TestdataMixedSolution.class)
+                .withEntityClasses(TestdataMixedEntity.class, TestdataMixedValue.class, TestdataMixedOtherValue.class)
+                .withEasyScoreCalculatorClass(TestingMixedEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0")); // Should get there quickly.
+
+        var solution = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
+        // Values are assigned in reverse; the solver needs to swap them.
+        var e1 = solution.getEntityList().get(0);
+        var e2 = solution.getEntityList().get(1);
+        e1.setBasicValue(solution.getOtherValueList().get(1));
+        e2.setBasicValue(solution.getOtherValueList().get(0));
+        // Both values are on the same entity; the goal of the solver is to move one of them to the other entity.
+        var v1 = solution.getValueList().get(0);
+        var v2 = solution.getValueList().get(1);
+        e1.setValueList(new ArrayList<>(List.of(v1, v2)));
+        SolutionManager.updateShadowVariables(solution);
 
         solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
@@ -228,7 +248,7 @@ class DefaultSolverTest {
         var solverConfig = new SolverConfig() // Preview feature not enabled.
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
-                .withEasyScoreCalculatorClass(TestingEasyScoreCalculator.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")) // Should get there quickly.
                 .withPhases(new LocalSearchPhaseConfig()
@@ -246,13 +266,12 @@ class DefaultSolverTest {
                 .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
-                .withEasyScoreCalculatorClass(TestingEasyScoreCalculator.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")) // Should get there quickly.
-                // Swaps are coming from move selectors, changes are coming from Neighborhoods.
+                // Swaps are coming from move selectors, other moves are coming from default Neighborhood provider.
                 .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveSelectorConfig(new SwapMoveSelectorConfig())
-                        .withMoveProviderClass(TestingNeighborhoodProvider.class));
+                        .withMoveSelectorConfig(new SwapMoveSelectorConfig()));
 
         var solution = TestdataSolution.generateSolution(3, 2);
         var result = PlannerTestUtils.solve(solverConfig, solution);
@@ -265,11 +284,46 @@ class DefaultSolverTest {
                 .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
-                .withEasyScoreCalculatorClass(TestingEasyScoreCalculator.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")); // Should get there quickly.
 
         var solution = TestdataSolution.generateSolution(3, 2);
+        var result = PlannerTestUtils.solve(solverConfig, solution);
+        Assertions.assertThat(result).isNotNull();
+    }
+
+    @Test
+    void solveWithDefaultNeighborhoodProviderMultiVar() {
+        var solverConfig = new SolverConfig()
+                .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
+                .withSolutionClass(TestdataMultiVarSolution.class)
+                .withEntityClasses(TestdataMultiVarEntity.class)
+                .withEasyScoreCalculatorClass(DummyMultiVarEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0")); // Should get there quickly.
+
+        var solution = TestdataMultiVarSolution.generateSolution(2, 3, 3);
+        var result = PlannerTestUtils.solve(solverConfig, solution);
+        Assertions.assertThat(result).isNotNull();
+    }
+
+    @Test
+    void solveWithDefaultNeighborhoodProviderMultiEntity() {
+        var solverConfig = new SolverConfig()
+                .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
+                .withSolutionClass(TestdataMultiEntitySolution.class)
+                .withEntityClasses(TestdataLeadEntity.class, TestdataHerdEntity.class)
+                .withEasyScoreCalculatorClass(DummyMultiEntityEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0")); // Should get there quickly.
+
+        // Set each value to be the same, so that the solver has to split them.
+        var solution = TestdataMultiEntitySolution.generateUninitializedSolution(2, 2);
+        solution.getLeadEntityList().forEach(e -> e.setValue(solution.getValueList().get(0)));
+        solution.getHerdEntityList().forEach(e -> e.setLeadEntity(solution.getLeadEntityList().get(0)));
+
+        // Zero result means each value has different value.
         var result = PlannerTestUtils.solve(solverConfig, solution);
         Assertions.assertThat(result).isNotNull();
     }
@@ -619,11 +673,12 @@ class DefaultSolverTest {
         var value2 = new TestdataAllowsUnassignedValuesListValue("v2");
         var value3 = new TestdataAllowsUnassignedValuesListValue("v3");
         var value4 = new TestdataAllowsUnassignedValuesListValue("v4");
-        var entity = TestdataAllowsUnassignedValuesListEntity.createWithValues("e1", value1, value2);
+        var entity = new TestdataAllowsUnassignedValuesListEntity("e1", value1, value2);
 
         var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(entity));
         solution.setValueList(Arrays.asList(value1, value2, value3, value4));
+        SolutionManager.updateShadowVariables(solution);
 
         var bestSolution = PlannerTestUtils.solve(solverConfig, solution);
         assertSoftly(softly -> {
@@ -648,11 +703,12 @@ class DefaultSolverTest {
         var value2 = new TestdataAllowsUnassignedValuesListValue("v2");
         var value3 = new TestdataAllowsUnassignedValuesListValue("v3");
         var value4 = new TestdataAllowsUnassignedValuesListValue("v4");
-        var entity = TestdataAllowsUnassignedValuesListEntity.createWithValues("e1", value1, value2);
+        var entity = new TestdataAllowsUnassignedValuesListEntity("e1", value1, value2);
 
         var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(entity));
         solution.setValueList(Arrays.asList(value1, value2, value3, value4));
+        SolutionManager.updateShadowVariables(solution);
 
         var bestSolution = PlannerTestUtils.solve(solverConfig, solution);
         assertSoftly(softly -> {
@@ -690,11 +746,12 @@ class DefaultSolverTest {
                 .withPhases(constructionHeuristicConfig);
 
         var value1 = new TestdataAllowsUnassignedValuesListValue("v1");
-        var entity = TestdataAllowsUnassignedValuesListEntity.createWithValues("e1");
+        var entity = new TestdataAllowsUnassignedValuesListEntity("e1");
 
         var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(entity));
         solution.setValueList(List.of(value1));
+        SolutionManager.updateShadowVariables(solution);
 
         var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(1));
@@ -2035,27 +2092,20 @@ class DefaultSolverTest {
 
         @Override
         public Neighborhood defineNeighborhood(NeighborhoodBuilder<TestdataSolution> builder) {
-            var variableMetamodel = builder.getSolutionMetaModel()
-                    .entity(TestdataEntity.class)
-                    .<TestdataValue> basicVariable();
-            return builder.add(new ChangeMoveProvider<>(variableMetamodel))
-                    .build();
+            throw new UnsupportedOperationException(); // The test will not get here.
         }
 
     }
 
-    /**
-     * Penalizes the number of values which are not the first value.
-     */
-    public static final class TestingEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
+    public static final class DummyEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
 
         @Override
-        public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution testdataSolution) {
-            var valueList = testdataSolution.getValueList();
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution solution) {
+            var valueList = solution.getValueList();
             var firstValue = valueList.get(0);
             var valueSet = new HashSet<TestdataValue>(valueList.size());
-            testdataSolution.getEntityList().forEach(e -> {
-                if (e.getValue() != firstValue) {
+            solution.getEntityList().forEach(e -> {
+                if (e.getValue() == firstValue) {
                     valueSet.add(e.getValue());
                 }
             });
@@ -2064,16 +2114,50 @@ class DefaultSolverTest {
 
     }
 
-    @NullMarked
-    public static final class TestingListNeighborhoodProvider implements NeighborhoodProvider<TestdataListSolution> {
+    public static final class DummyMultiVarEasyScoreCalculator
+            implements EasyScoreCalculator<TestdataMultiVarSolution, SimpleScore> {
 
         @Override
-        public Neighborhood defineNeighborhood(NeighborhoodBuilder<TestdataListSolution> builder) {
-            var variableMetamodel = builder.getSolutionMetaModel()
-                    .entity(TestdataListEntity.class)
-                    .listVariable();
-            return builder.add(new ListChangeMoveProvider<>(variableMetamodel))
-                    .build();
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataMultiVarSolution solution) {
+            var primaryValue = solution.getValueList().get(0);
+            var secondaryValue = solution.getValueList().get(1);
+            var otherValue = solution.getOtherValueList().get(0);
+            var valueSet = new HashSet<Pair<Object, Integer>>();
+            solution.getMultiVarEntityList().forEach(e -> {
+                if (e.getPrimaryValue() == primaryValue) {
+                    valueSet.add(new Pair<>(e.getPrimaryValue(), 1));
+                }
+                if (e.getSecondaryValue() == secondaryValue) {
+                    valueSet.add(new Pair<>(e.getSecondaryValue(), 2));
+                }
+                if (e.getTertiaryValueAllowedUnassigned() == otherValue) {
+                    valueSet.add(new Pair<>(e.getTertiaryValueAllowedUnassigned(), 2));
+                }
+            });
+            return SimpleScore.of(-valueSet.size());
+        }
+
+    }
+
+    public static final class DummyMultiEntityEasyScoreCalculator
+            implements EasyScoreCalculator<TestdataMultiEntitySolution, SimpleScore> {
+
+        @Override
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataMultiEntitySolution solution) {
+            var primaryValue = solution.getValueList().get(0);
+            var secondaryValue = solution.getLeadEntityList().get(0);
+            var valueSet = new HashSet<>();
+            solution.getLeadEntityList().forEach(e -> {
+                if (e.getValue() == primaryValue) {
+                    valueSet.add(e.getValue());
+                }
+            });
+            solution.getHerdEntityList().forEach(e -> {
+                if (e.getLeadEntity() == secondaryValue) {
+                    valueSet.add(e.getLeadEntity());
+                }
+            });
+            return SimpleScore.of(-valueSet.size());
         }
 
     }
@@ -2092,6 +2176,32 @@ class DefaultSolverTest {
                 if (size > 1) {
                     var penalty = Math.pow(size - 1, 2);
                     sum.add((long) penalty);
+                }
+            });
+            return SimpleScore.of(-sum.intValue());
+        }
+
+    }
+
+    public static final class TestingMixedEasyScoreCalculator
+            implements EasyScoreCalculator<TestdataMixedSolution, SimpleScore> {
+
+        @Override
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataMixedSolution testdataSolution) {
+            var firstValue = testdataSolution.getOtherValueList().get(0);
+            var secondValue = testdataSolution.getOtherValueList().get(1);
+            var sum = new LongAdder();
+            testdataSolution.getEntityList().forEach(e -> {
+                var size = e.getValueList().size();
+                if (size > 1) {
+                    var penalty = Math.pow(size - 1, 2);
+                    sum.add((long) penalty);
+                }
+                if (e.getBasicValue() == firstValue) {
+                    sum.add(1L);
+                }
+                if (e.getSecondBasicValue() == secondValue) {
+                    sum.add(1L);
                 }
             });
             return SimpleScore.of(-sum.intValue());

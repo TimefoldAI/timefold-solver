@@ -16,6 +16,7 @@ import java.util.Set;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
@@ -108,7 +109,7 @@ class MoveDirectorTest {
         var expectedValue1 = new TestdataListValue("value1");
         var expectedValue2 = new TestdataListValue("value2");
 
-        var entity = TestdataListEntity.createWithValues("A", expectedValue1, expectedValue2);
+        var entity = new TestdataListEntity("A", expectedValue1, expectedValue2);
         var actualValue1 = moveDirector.getValueAtIndex(variableMetaModel, entity, 0);
         assertThat(actualValue1).isEqualTo(expectedValue1);
 
@@ -132,7 +133,7 @@ class MoveDirectorTest {
         var expectedValue1 = new TestdataListValue("value1");
         var expectedValue2 = new TestdataListValue("value2");
         var expectedValue3 = new TestdataListValue("value3");
-        var entity = TestdataListEntity.createWithValues("A", expectedValue1, expectedValue2, expectedValue3);
+        var entity = new TestdataListEntity("A", expectedValue1, expectedValue2, expectedValue3);
 
         // Move value from last to first position.
         var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
@@ -177,11 +178,11 @@ class MoveDirectorTest {
         var expectedValueA1 = new TestdataListValue("valueA1");
         var expectedValueA2 = new TestdataListValue("valueA2");
         var expectedValueA3 = new TestdataListValue("valueA3");
-        var entityA = TestdataListEntity.createWithValues("A", expectedValueA1, expectedValueA2, expectedValueA3);
+        var entityA = new TestdataListEntity("A", expectedValueA1, expectedValueA2, expectedValueA3);
         var expectedValueB1 = new TestdataListValue("valueB1");
         var expectedValueB2 = new TestdataListValue("valueB2");
         var expectedValueB3 = new TestdataListValue("valueB3");
-        var entityB = TestdataListEntity.createWithValues("B", expectedValueB1, expectedValueB2, expectedValueB3);
+        var entityB = new TestdataListEntity("B", expectedValueB1, expectedValueB2, expectedValueB3);
 
         // Move between second and last position.
         var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
@@ -217,7 +218,7 @@ class MoveDirectorTest {
         var expectedValue1 = new TestdataListValue("value1");
         var expectedValue2 = new TestdataListValue("value2");
         var expectedValue3 = new TestdataListValue("value3");
-        var entity = TestdataListEntity.createWithValues("A", expectedValue1, expectedValue2, expectedValue3);
+        var entity = new TestdataListEntity("A", expectedValue1, expectedValue2, expectedValue3);
 
         // Swap between first and last position.
         var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
@@ -261,11 +262,11 @@ class MoveDirectorTest {
         var expectedValueA1 = new TestdataListValue("valueA1");
         var expectedValueA2 = new TestdataListValue("valueA2");
         var expectedValueA3 = new TestdataListValue("valueA3");
-        var entityA = TestdataListEntity.createWithValues("A", expectedValueA1, expectedValueA2, expectedValueA3);
+        var entityA = new TestdataListEntity("A", expectedValueA1, expectedValueA2, expectedValueA3);
         var expectedValueB1 = new TestdataListValue("valueB1");
         var expectedValueB2 = new TestdataListValue("valueB2");
         var expectedValueB3 = new TestdataListValue("valueB3");
-        var entityB = TestdataListEntity.createWithValues("B", expectedValueB1, expectedValueB2, expectedValueB3);
+        var entityB = new TestdataListEntity("B", expectedValueB1, expectedValueB2, expectedValueB3);
 
         // Swap between second and last position.
         var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
@@ -501,10 +502,11 @@ class MoveDirectorTest {
         var expectedValueA1 = new TestdataListValue("valueA1");
         var expectedValueA2 = new TestdataListValue("valueA2");
         var expectedValueA3 = new TestdataListValue("valueA3");
-        var entityA = TestdataListEntity.createWithValues("A", expectedValueA1, expectedValueA2, expectedValueA3);
+        var entityA = new TestdataListEntity("A", expectedValueA1, expectedValueA2, expectedValueA3);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(entityA));
         solution.setValueList(List.of(expectedValueA1, expectedValueA2, expectedValueA3));
+        SolutionManager.updateShadowVariables(solution);
 
         var f = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
                 constraintFactory -> new Constraint[] { constraintFactory.forEach(TestdataListEntity.class)

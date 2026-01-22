@@ -9,6 +9,7 @@ import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirecto
 
 import java.util.List;
 
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementDestinationSelector;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
@@ -24,12 +25,13 @@ class RandomListChangeIteratorTest {
         var v1 = new TestdataListValue("1");
         var v2 = new TestdataListValue("2");
         var v3 = new TestdataListValue("3");
-        var a = TestdataListEntity.createWithValues("A", v1, v2);
-        var b = TestdataListEntity.createWithValues("B");
-        var c = TestdataListEntity.createWithValues("C", v3);
+        var a = new TestdataListEntity("A", v1, v2);
+        var b = new TestdataListEntity("B");
+        var c = new TestdataListEntity("C", v3);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a, b, c));
         solution.setValueList(List.of(v1, v2, v3));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);

@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
@@ -50,7 +51,7 @@ public class TestdataEqualsByCodeListSolution extends TestdataEqualsByCodeListOb
         for (int i = 0; i < valueList.size(); i++) {
             entityList.get(i % entityList.size()).getValueList().add(valueList.get(i));
         }
-        entityList.forEach(TestdataEqualsByCodeListEntity::setUpShadowVariables);
+        SolutionManager.updateShadowVariables(this);
         return this;
     }
 

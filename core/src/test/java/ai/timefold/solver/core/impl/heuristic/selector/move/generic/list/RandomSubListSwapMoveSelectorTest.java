@@ -15,6 +15,7 @@ import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirecto
 
 import java.util.List;
 
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.heuristic.selector.list.RandomSubListSelector;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
@@ -35,10 +36,11 @@ class RandomSubListSwapMoveSelectorTest {
         var v2 = new TestdataListValue("2");
         var v3 = new TestdataListValue("3");
         var v4 = new TestdataListValue("4");
-        var a = TestdataListEntity.createWithValues("A", v1, v2, v3, v4);
+        var a = new TestdataListEntity("A", v1, v2, v3, v4);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a));
         solution.setValueList(List.of(v1, v2, v3, v4));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -120,11 +122,12 @@ class RandomSubListSwapMoveSelectorTest {
         var v3 = new TestdataListValue("3");
         var v5 = new TestdataListValue("5");
         var v6 = new TestdataListValue("6");
-        var a = TestdataListEntity.createWithValues("A", v1, v2, v3);
-        var b = TestdataListEntity.createWithValues("B", v5, v6);
+        var a = new TestdataListEntity("A", v1, v2, v3);
+        var b = new TestdataListEntity("B", v5, v6);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a, b));
         solution.setValueList(List.of(v1, v2, v3, v5, v6));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -176,10 +179,11 @@ class RandomSubListSwapMoveSelectorTest {
         var v2 = new TestdataListValue("2");
         var v3 = new TestdataListValue("3");
         var v4 = new TestdataListValue("4");
-        var a = TestdataListEntity.createWithValues("A", v1, v2, v3, v4);
+        var a = new TestdataListEntity("A", v1, v2, v3, v4);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a));
         solution.setValueList(List.of(v1, v2, v3, v4));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -239,7 +243,7 @@ class RandomSubListSwapMoveSelectorTest {
         var v1 = new TestdataListValue("1");
         var v2 = new TestdataListValue("2");
         var v3 = new TestdataListValue("3");
-        var a = TestdataListEntity.createWithValues("A", v1, v2, v3);
+        var a = new TestdataListEntity("A", v1, v2, v3);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
 
@@ -273,12 +277,13 @@ class RandomSubListSwapMoveSelectorTest {
         var v2 = new TestdataListValue("2");
         var v3 = new TestdataListValue("3");
         var v4 = new TestdataListValue("4");
-        var a = TestdataListEntity.createWithValues("A", v1, v2, v3);
-        var b = TestdataListEntity.createWithValues("B");
-        var c = TestdataListEntity.createWithValues("C", v4);
+        var a = new TestdataListEntity("A", v1, v2, v3);
+        var b = new TestdataListEntity("B");
+        var c = new TestdataListEntity("C", v4);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a, b, c));
         solution.setValueList(List.of(v1, v2, v3, v4));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -330,11 +335,12 @@ class RandomSubListSwapMoveSelectorTest {
         var v2 = new TestdataAllowsUnassignedValuesListValue("2");
         var v3 = new TestdataAllowsUnassignedValuesListValue("3");
         var v4 = new TestdataAllowsUnassignedValuesListValue("4");
-        var a = TestdataAllowsUnassignedValuesListEntity.createWithValues("A", v1, v2);
-        var b = TestdataAllowsUnassignedValuesListEntity.createWithValues("B", v3);
+        var a = new TestdataAllowsUnassignedValuesListEntity("A", v1, v2);
+        var b = new TestdataAllowsUnassignedValuesListEntity("B", v3);
         var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(a, b));
         solution.setValueList(List.of(v1, v2, v3, v4));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -396,12 +402,13 @@ class RandomSubListSwapMoveSelectorTest {
         var v2 = new TestdataListValue("2");
         var v3 = new TestdataListValue("3");
         var v4 = new TestdataListValue("4");
-        var a = TestdataListEntity.createWithValues("A", v1, v2, v3);
-        var b = TestdataListEntity.createWithValues("B");
-        var c = TestdataListEntity.createWithValues("C", v4);
+        var a = new TestdataListEntity("A", v1, v2, v3);
+        var b = new TestdataListEntity("B");
+        var c = new TestdataListEntity("C", v4);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a, b, c));
         solution.setValueList(List.of(v1, v2, v3, v4));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -450,13 +457,14 @@ class RandomSubListSwapMoveSelectorTest {
         var v22 = new TestdataListValue("22");
         var v23 = new TestdataListValue("23");
         var v24 = new TestdataListValue("24");
-        var a = TestdataListEntity.createWithValues("A", v1, v2, v3, v4, v5, v6, v7);
-        var b = TestdataListEntity.createWithValues("B");
-        var c = TestdataListEntity.createWithValues("C", v11, v12, v13);
-        var d = TestdataListEntity.createWithValues("D", v21, v22, v23, v24);
+        var a = new TestdataListEntity("A", v1, v2, v3, v4, v5, v6, v7);
+        var b = new TestdataListEntity("B");
+        var c = new TestdataListEntity("C", v11, v12, v13);
+        var d = new TestdataListEntity("D", v21, v22, v23, v24);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a, b, c, d));
         solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, v7, v11, v12, v13, v21, v22, v23, v24));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);

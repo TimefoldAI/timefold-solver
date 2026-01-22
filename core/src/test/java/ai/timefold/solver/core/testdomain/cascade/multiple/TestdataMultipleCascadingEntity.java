@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.testdomain.cascade.multiple;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,32 +20,6 @@ public class TestdataMultipleCascadingEntity extends TestdataObject {
     public static ListVariableDescriptor<TestdataMultipleCascadingSolution> buildVariableDescriptorForValueList() {
         return (ListVariableDescriptor<TestdataMultipleCascadingSolution>) buildEntityDescriptor()
                 .getGenuineVariableDescriptor("valueList");
-    }
-
-    public static TestdataMultipleCascadingEntity createWithValues(String code, TestdataMultipleCascadingValue... values) {
-        // Set up shadow variables to preserve consistency.
-        return new TestdataMultipleCascadingEntity(code, new ArrayList<>(Arrays.asList(values))).setUpShadowVariables();
-    }
-
-    TestdataMultipleCascadingEntity setUpShadowVariables() {
-        if (valueList != null && !valueList.isEmpty()) {
-            int i = 0;
-            var previous = valueList.get(i);
-            var current = valueList.get(i);
-            while (current != null) {
-                current.setEntity(this);
-                current.setPrevious(previous);
-                if (previous != null) {
-                    previous.setNext(current);
-                }
-                previous = current;
-                current = ++i < valueList.size() ? valueList.get(i) : null;
-            }
-            for (var v : valueList) {
-                v.updateCascadeValue();
-            }
-        }
-        return this;
     }
 
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")

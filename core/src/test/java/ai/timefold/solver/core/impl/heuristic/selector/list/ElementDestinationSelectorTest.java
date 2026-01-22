@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.FromSolutionEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByValueSelector;
@@ -60,12 +61,13 @@ class ElementDestinationSelectorTest {
         var v1 = new TestdataListValue("1");
         var v2 = new TestdataListValue("2");
         var v3 = new TestdataListValue("3");
-        var a = TestdataListEntity.createWithValues("A", v2, v1);
-        var b = TestdataListEntity.createWithValues("B");
-        var c = TestdataListEntity.createWithValues("C", v3);
+        var a = new TestdataListEntity("A", v2, v1);
+        var b = new TestdataListEntity("B");
+        var c = new TestdataListEntity("C", v3);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a, b, c));
         solution.setValueList(List.of(v1, v2, v3));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -99,12 +101,13 @@ class ElementDestinationSelectorTest {
         var v1 = new TestdataListValue("1");
         var v2 = new TestdataListValue("2");
         var v3 = new TestdataListValue("3");
-        var a = TestdataListEntity.createWithValues("A", v1, v2);
-        var b = TestdataListEntity.createWithValues("B");
-        var c = TestdataListEntity.createWithValues("C", v3);
+        var a = new TestdataListEntity("A", v1, v2);
+        var b = new TestdataListEntity("B");
+        var c = new TestdataListEntity("C", v3);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a, b, c));
         solution.setValueList(List.of(v1, v2, v3));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -312,10 +315,10 @@ class ElementDestinationSelectorTest {
         var v5 = new TestdataPinnedUnassignedValuesListValue("5");
         var v6 = new TestdataPinnedUnassignedValuesListValue("5");
         var unassignedValue = new TestdataPinnedUnassignedValuesListValue("7");
-        var a = TestdataPinnedUnassignedValuesListEntity.createWithValues("A", v1, v2);
-        var b = TestdataPinnedUnassignedValuesListEntity.createWithValues("B");
-        var c = TestdataPinnedUnassignedValuesListEntity.createWithValues("C", v3);
-        var d = TestdataPinnedUnassignedValuesListEntity.createWithValues("D", v4, v5, v6);
+        var a = new TestdataPinnedUnassignedValuesListEntity("A", v1, v2);
+        var b = new TestdataPinnedUnassignedValuesListEntity("B");
+        var c = new TestdataPinnedUnassignedValuesListEntity("C", v3);
+        var d = new TestdataPinnedUnassignedValuesListEntity("D", v4, v5, v6);
         a.setPlanningPinToIndex(1);
         c.setPlanningPinToIndex(1);
         d.setPlanningPinToIndex(2);
@@ -323,6 +326,7 @@ class ElementDestinationSelectorTest {
         var solution = new TestdataPinnedUnassignedValuesListSolution();
         solution.setEntityList(List.of(a, b, c, d));
         solution.setValueList(List.of(v1, v2, v3, v3, v4, v5, unassignedValue));
+        SolutionManager.updateShadowVariables(solution);
 
         var random = new TestRandom(
                 0, // Unassigned element goes first.
@@ -379,11 +383,12 @@ class ElementDestinationSelectorTest {
     @Test
     void randomUnassignedSingleEntity() {
         var unassignedValue = new TestdataAllowsUnassignedValuesListValue("3");
-        var a = TestdataAllowsUnassignedValuesListEntity.createWithValues("A");
+        var a = new TestdataAllowsUnassignedValuesListEntity("A");
 
         var solution = new TestdataAllowsUnassignedValuesListSolution();
         solution.setEntityList(List.of(a));
         solution.setValueList(List.of(unassignedValue));
+        SolutionManager.updateShadowVariables(solution);
 
         var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
         var scoreDirector = mockScoreDirector(solutionDescriptor);
@@ -417,15 +422,16 @@ class ElementDestinationSelectorTest {
         var v1 = new TestdataPinnedWithIndexListValue("1");
         var v2 = new TestdataPinnedWithIndexListValue("2");
         var v3 = new TestdataPinnedWithIndexListValue("3");
-        var a = TestdataPinnedWithIndexListEntity.createWithValues("A", v1, v2);
-        var b = TestdataPinnedWithIndexListEntity.createWithValues("B");
-        var c = TestdataPinnedWithIndexListEntity.createWithValues("C", v3);
+        var a = new TestdataPinnedWithIndexListEntity("A", v1, v2);
+        var b = new TestdataPinnedWithIndexListEntity("B");
+        var c = new TestdataPinnedWithIndexListEntity("C", v3);
         a.setPlanningPinToIndex(2);
         c.setPinned(true);
 
         var solution = new TestdataPinnedWithIndexListSolution();
         solution.setEntityList(List.of(a, b, c));
         solution.setValueList(List.of(v1, v2, v3));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -486,12 +492,13 @@ class ElementDestinationSelectorTest {
 
     @Test
     void notEmptyIfThereAreEntities() {
-        var a = TestdataListEntity.createWithValues("A");
-        var b = TestdataListEntity.createWithValues("B");
+        var a = new TestdataListEntity("A");
+        var b = new TestdataListEntity("B");
         var v1 = new TestdataListValue("1");
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(a, b));
         solution.setValueList(List.of(v1));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
@@ -512,13 +519,14 @@ class ElementDestinationSelectorTest {
 
     @Test
     void notEmptyIfThereAreEntitiesWithPinning() {
-        var a = TestdataPinnedWithIndexListEntity.createWithValues("A");
-        var b = TestdataPinnedWithIndexListEntity.createWithValues("B",
-                new TestdataPinnedWithIndexListValue("B0"), new TestdataPinnedWithIndexListValue("B1"));
+        var a = new TestdataPinnedWithIndexListEntity("A");
+        var b = new TestdataPinnedWithIndexListEntity("B", new TestdataPinnedWithIndexListValue("B0"),
+                new TestdataPinnedWithIndexListValue("B1"));
         b.setPlanningPinToIndex(1); // B0 will be ignored.
         var solution = new TestdataPinnedWithIndexListSolution();
         solution.setEntityList(List.of(a, b));
         solution.setValueList(List.of(b.getValueList().get(0), b.getValueList().get(1)));
+        SolutionManager.updateShadowVariables(solution);
 
         var scoreDirector = mockScoreDirector(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);

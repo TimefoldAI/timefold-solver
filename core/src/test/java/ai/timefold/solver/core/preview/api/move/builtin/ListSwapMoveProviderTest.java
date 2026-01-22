@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
@@ -45,7 +46,7 @@ class ListSwapMoveProviderTest {
         e1.getValueList().add(assignedValue1);
         e2.getValueList().add(assignedValue2);
         e2.getValueList().add(assignedValue3);
-        solution.getEntityList().forEach(TestdataListEntity::setUpShadowVariables);
+        SolutionManager.updateShadowVariables(solution);
 
         var moveIterable = createMoveIterable(new ListSwapMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
@@ -122,7 +123,7 @@ class ListSwapMoveProviderTest {
         e1.getValueList().clear();
         var initiallyAssignedValue = e2.getValueRange().get(0);
         e2.getValueList().add(initiallyAssignedValue);
-        solution.getEntityList().forEach(TestdataListEntityProvidingEntity::setUpShadowVariables);
+        SolutionManager.updateShadowVariables(solution);
 
         var moveIterable = createMoveIterable(new ListSwapMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)

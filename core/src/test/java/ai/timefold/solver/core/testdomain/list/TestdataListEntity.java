@@ -22,19 +22,6 @@ public class TestdataListEntity extends TestdataObject {
         return (ListVariableDescriptor<TestdataListSolution>) buildEntityDescriptor().getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataListEntity createWithValues(String code, TestdataListValue... values) {
-        // Set up shadow variables to preserve consistency.
-        return new TestdataListEntity(code, values).setUpShadowVariables();
-    }
-
-    public TestdataListEntity setUpShadowVariables() {
-        valueList.forEach(testdataListValue -> {
-            testdataListValue.setEntity(this);
-            testdataListValue.setIndex(valueList.indexOf(testdataListValue));
-        });
-        return this;
-    }
-
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
     private List<TestdataListValue> valueList;
 

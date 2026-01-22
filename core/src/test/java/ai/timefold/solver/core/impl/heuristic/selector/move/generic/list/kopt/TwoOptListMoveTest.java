@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
@@ -53,10 +54,11 @@ class TwoOptListMoveTest {
         TestdataListValue v6 = new TestdataListValue("6");
         TestdataListValue v7 = new TestdataListValue("7");
         TestdataListValue v8 = new TestdataListValue("8");
-        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v5, v4, v3, v6, v7, v8);
+        TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2, v5, v4, v3, v6, v7, v8);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         // 2-Opt((v2, v5), (v3, v6))
@@ -80,7 +82,7 @@ class TwoOptListMoveTest {
         TestdataListValue v6 = new TestdataListValue("6");
         TestdataListValue v7 = new TestdataListValue("7");
         TestdataListValue v8 = new TestdataListValue("8");
-        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v5, v4, v3, v6, v7, v8);
+        TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2, v5, v4, v3, v6, v7, v8);
 
         // 2-Opt((v2, v5), (v3, v6))
         TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptor,
@@ -144,8 +146,8 @@ class TwoOptListMoveTest {
         TestdataListValue v7 = new TestdataListValue("7");
         TestdataListValue v8 = new TestdataListValue("8");
         TestdataListValue v9 = new TestdataListValue("9");
-        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4);
-        TestdataListEntity e2 = TestdataListEntity.createWithValues("e2", v5, v6, v7, v8, v9);
+        TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2, v3, v4);
+        TestdataListEntity e2 = new TestdataListEntity("e2", v5, v6, v7, v8, v9);
 
         // 2-Opt((v2, v3), (v6, v7))
         TwoOptListMove<TestdataListSolution> move = new TwoOptListMove<>(variableDescriptor,
@@ -172,11 +174,12 @@ class TwoOptListMoveTest {
         TestdataListValue v7 = new TestdataListValue("7");
         TestdataListValue v8 = new TestdataListValue("8");
         TestdataListValue v9 = new TestdataListValue("9");
-        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4);
-        TestdataListEntity e2 = TestdataListEntity.createWithValues("e2", v5, v6, v7, v8, v9);
+        TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2, v3, v4);
+        TestdataListEntity e2 = new TestdataListEntity("e2", v5, v6, v7, v8, v9);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1, e2));
         solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8, v9));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         // 2-Opt((v2, v3), (v6, v7))
@@ -203,10 +206,11 @@ class TwoOptListMoveTest {
         TestdataListValue v6 = new TestdataListValue("6");
         TestdataListValue v7 = new TestdataListValue("7");
         TestdataListValue v8 = new TestdataListValue("8");
-        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v8, v7, v3, v4, v5, v6, v2, v1);
+        TestdataListEntity e1 = new TestdataListEntity("e1", v8, v7, v3, v4, v5, v6, v2, v1);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         // 2-Opt((v6, v2), (v7, v3))
@@ -229,10 +233,11 @@ class TwoOptListMoveTest {
         TestdataListValue v5 = new TestdataListValue("5");
         TestdataListValue v6 = new TestdataListValue("6");
         TestdataListValue v7 = new TestdataListValue("7");
-        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v5, v2, v3, v4, v1, v7, v6);
+        TestdataListEntity e1 = new TestdataListEntity("e1", v5, v2, v3, v4, v1, v7, v6);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         // 2-Opt((v4, v1), (v5, v2))
@@ -255,10 +260,11 @@ class TwoOptListMoveTest {
         TestdataListValue v5 = new TestdataListValue("5");
         TestdataListValue v6 = new TestdataListValue("6");
         TestdataListValue v7 = new TestdataListValue("7");
-        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v2, v1, v7, v4, v5, v6, v3);
+        TestdataListEntity e1 = new TestdataListEntity("e1", v2, v1, v7, v4, v5, v6, v3);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         // 2-Opt((v4, v1), (v5, v2))
@@ -282,10 +288,11 @@ class TwoOptListMoveTest {
         TestdataListValue v6 = new TestdataListValue("6");
         TestdataListValue v7 = new TestdataListValue("7");
         TestdataListValue v8 = new TestdataListValue("8");
-        TestdataListEntity e1 = TestdataListEntity.createWithValues("e1", v8, v7, v3, v4, v5, v6, v2, v1);
+        TestdataListEntity e1 = new TestdataListEntity("e1", v8, v7, v3, v4, v5, v6, v2, v1);
         var solution = new TestdataListSolution();
         solution.setEntityList(List.of(e1));
         solution.setValueList(List.of(v1, v2, v5, v4, v3, v6, v7, v8));
+        SolutionManager.updateShadowVariables(solution);
         scoreDirector.setWorkingSolution(solution);
 
         var variableDescriptorSpy = Mockito.spy(variableDescriptor);
