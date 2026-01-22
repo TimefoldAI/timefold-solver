@@ -458,6 +458,9 @@
           <xs:element minOccurs="0" name="constraintStreamAutomaticNodeSharing" type="xs:boolean"/>
                               
           
+          <xs:element minOccurs="0" name="constraintStreamProfilingEnabled" type="xs:boolean"/>
+                              
+          
           <xs:element minOccurs="0" name="incrementalScoreCalculatorClass" type="xs:string"/>
                               
           

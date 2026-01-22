@@ -805,6 +805,11 @@ class TimefoldProcessor {
                 .ifPresent(solverConfig::setEnablePreviewFeatureSet);
 
         timefoldBuildTimeConfig.getSolverConfig(solverName)
+                .flatMap(SolverBuildTimeConfig::constraintStreamProfilingEnabled)
+                .ifPresent(profilingEnabled -> solverConfig.getScoreDirectorFactoryConfig()
+                        .withConstraintStreamProfilingEnabled(profilingEnabled));
+
+        timefoldBuildTimeConfig.getSolverConfig(solverName)
                 .flatMap(SolverBuildTimeConfig::nearbyDistanceMeterClass)
                 .ifPresent(clazz -> {
                     // We need to check the data type, as the Smallrye converter does not enforce it
@@ -815,7 +820,6 @@ class TimefoldProcessor {
                     }
                     solverConfig.withNearbyDistanceMeterClass((Class<? extends NearbyDistanceMeter<?, ?>>) clazz);
                 });
-
         // Termination properties are set at runtime
     }
 

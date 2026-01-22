@@ -27,6 +27,11 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
     }
 
     @Override
+    public StreamKind getStreamKind() {
+        return StreamKind.FLATTEN;
+    }
+
+    @Override
     public final void insert(InTuple_ tuple) {
         if (tuple.getStore(flattenStoreIndex) != null) {
             throw new IllegalStateException(

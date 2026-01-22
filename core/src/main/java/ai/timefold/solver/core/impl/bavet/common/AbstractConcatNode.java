@@ -42,6 +42,11 @@ public abstract class AbstractConcatNode<LeftTuple_ extends Tuple, RightTuple_ e
         this.outputStoreSize = outputStoreSize;
     }
 
+    @Override
+    public StreamKind getStreamKind() {
+        return StreamKind.CONCAT;
+    }
+
     protected abstract OutTuple_ getOutTupleFromLeft(LeftTuple_ leftTuple);
 
     protected abstract OutTuple_ getOutTupleFromRight(RightTuple_ rightTuple);

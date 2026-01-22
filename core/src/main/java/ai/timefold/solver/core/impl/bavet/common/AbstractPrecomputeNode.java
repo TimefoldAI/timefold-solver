@@ -25,6 +25,11 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple> extends Abstr
     }
 
     @Override
+    public StreamKind getStreamKind() {
+        return StreamKind.PRECOMPUTE;
+    }
+
+    @Override
     public final Propagator getPropagator() {
         return recordAndReplayPropagator;
     }

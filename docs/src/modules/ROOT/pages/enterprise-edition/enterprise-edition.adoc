@@ -855,6 +855,7 @@ To use automatic node sharing outside Quarkus, your `ConstraintProvider` class m
 Debugging breakpoints put inside your constraints will not be respected, because the `ConstraintProvider` class will be transformed when this feature is enabled.
 ====
 
+[#nodeSharing]
 ==== What is node sharing?
 
 When using xref:constraints-and-score/score-calculation.adoc#constraintStreams[constraint streams], each xref:constraints-and-score/score-calculation.adoc#constraintStreamsBuildingBlocks[building block] forms a node in the score calculation network.
@@ -993,6 +994,130 @@ This transformation means that debugging breakpoints placed inside the original 
 
 From the above, you can see how this feature allows building blocks to share functionally equivalent parents, without needing the `ConstraintProvider` to be written in an awkward way.
 
+[#constraintProfiling]
+== Constraint Profiling
+
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+====
+
+xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint streams] have builtin support for profiling constraints.
+Profiling constraints allows you to identify which constraints are taking the majority of the time spent in score calculation and thus are worth optimizing.
+
+NOTE: Traditional profiling tools such as Java Mission Control will report the internal classes used to calculate constraints instead of the constraints themselves.
+
+=== Configuration
+
+[tabs]
+====
+Plain Java::
+
+* Add `<constraintStreamProfilingEnabled>true</constraintStreamProfilingEnabled>` in your `solverConfig.xml`:
++
+[source,xml,options="nowrap"]
+----
+  <scoreDirectorFactory>
+    <constraintProviderClass>...ConstraintProvider</constraintProviderClass>
+    <constraintStreamProfilingEnabled>true</constraintStreamProfilingEnabled>
+  </scoreDirectorFactory>
+----
+
+Spring Boot::
+
+Set the property `timefold.solver.constraint-stream-profiling-enabled` to `true` in `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+timefold.solver.constraint-stream-profiling-enabled=true
+----
+
+Quarkus::
+
+Set the property `quarkus.timefold.solver.constraint-stream-profiling-enabled` to `true` in `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+quarkus.timefold.solver.constraint-stream-profiling-enabled=true
+----
+====
+
+IMPORTANT: Constraint profiling is only supported for xref:constraints-and-score/score-calculation.adoc#constraintStreams[constraint stream score calculation].
+
+When constraint stream profiling is enabled, a breakdown of time spent in each constraint is logged by the `ai.timefold.solver.enterprise.core.profiler.DefaultConstraintProfiler` class at the end of solving.
+
+[source,text]
+----
+INFO: Constraint Profiling Summary
+INFO: "Teacher time efficiency" (27.98%, 7.05 seconds)
+INFO: "Teacher room stability" (13.99%, 3.07 seconds)
+...
+DEBUG: Constraint Profiling Breakdown
+DEBUG: "Teacher time efficiency"
+DEBUG:     FILTER (47.80%, 3.06 seconds)
+TRACE:      By Operation
+TRACE:        UPDATE (50.81%, 1.08 seconds)
+TRACE:        RETRACT (31.00%, 1.01 seconds)
+TRACE:        INSERT (18.19%, 0.07 seconds)
+DEBUG:       By Node
+DEBUG:         FILTER Node 5 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:79 (100.00%, 3.06 seconds)
+...
+----
+
+IMPORTANT: xref:using-timefold-solver/running-the-solver.adoc#logging[Info logging must be configured and enabled] for the profiling report to be generated.
+
+The following is reported:
+
+* Info level: How much time spent in score calculation is spent by each constraint (relative percentage and total seconds) in descending order.
++
+[source,text]
+----
+"Teacher time efficiency" (27.98%, 7.05 seconds)
+----
+
+* Debug level: A breakdown for each constraint (in descending order of time spent):
+
+** Debug level: Time spent by each constraint stream building block (e.g., join, filter), shown as % and total seconds.
++
+[source,text]
+----
+"Teacher time efficiency"
+    FILTER (47.80%, 3.06 seconds)
+----
+
+** Each constraint stream building block is further broken down to:
+
+*** Debug level: Time spent by each constraint stream building block, shown as % and total seconds of each each defined node and the location(s) the nodes were defined at.
++
+[source,text]
+----
+    FILTER (47.80%, 3.06 seconds)
+      ...
+      By Node
+        FILTER Node 5 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:79 (100.00%, 3.06 seconds)
+----
+
+*** Trace level: Time spent by each constraint stream building block, shown as % and total seconds of each propagation operation.
++
+NOTE: This info is only relevant to the Timefold Solver team and can be safely ignored.
++
+[source,text]
+----
+    FILTER (47.80%, 3.06 seconds)
+      By Operation
+        UPDATE (50.81%, 1.08 seconds)
+        RETRACT (31.00%, 1.01 seconds)
+        INSERT (18.19%, 0.07 seconds)
+----
+
+
+xref:enterprise-edition/enterprise-edition.adoc#nodeSharing[When node sharing] is used, the time spent will be reported with "Work shared by":
+
+[source,text]
+----
+Work shared by "Room conflict", "Student group conflict", ... (11.10%, 2.10 seconds)
+----
 
 [#throttlingBestSolutionEvents]
 === Throttling best solution events in `SolverManager`

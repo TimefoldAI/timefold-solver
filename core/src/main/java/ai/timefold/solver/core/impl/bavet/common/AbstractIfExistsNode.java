@@ -38,6 +38,11 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         this.propagationQueue = new DynamicPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
+    @Override
+    public StreamKind getStreamKind() {
+        return StreamKind.IF_EXISTS;
+    }
+
     protected abstract boolean testFiltering(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
 
     protected void initCounterLeft(ExistsCounter<LeftTuple_> counter) {

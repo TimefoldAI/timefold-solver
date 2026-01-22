@@ -12,10 +12,12 @@ import java.util.stream.Collectors;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
+import ai.timefold.solver.core.impl.bavet.common.ConstraintProfiler;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.visual.NodeGraph;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -25,6 +27,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuil
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -36,11 +39,16 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final ConstraintMetaModel constraintMetaModel;
+    private final @Nullable ConstraintProfiler constraintProfiler;
 
     public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            ConstraintMetaModel constraintMetaModel) {
+            ConstraintMetaModel constraintMetaModel, boolean profilingEnabled) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
         this.constraintMetaModel = Objects.requireNonNull(constraintMetaModel);
+        this.constraintProfiler = profilingEnabled
+                ? TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.CONSTRAINT_PROFILING)
+                        .buildConstraintProfiler()
+                : null;
     }
 
     // ************************************************************************
@@ -117,14 +125,17 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         }
         return new BavetConstraintSession<>(scoreInliner,
                 buildNodeNetwork(workingSolution, consistencyTracker, constraintStreamSet, scoreInliner,
+                        constraintProfiler,
                         nodeNetworkVisualizationConsumer));
     }
 
     private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(Solution_ workingSolution,
             ConsistencyTracker<Solution_> consistencyTracker, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
             AbstractScoreInliner<Score_> scoreInliner,
+            ConstraintProfiler profiler,
             Consumer<String> nodeNetworkVisualizationConsumer) {
-        var buildHelper = new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner);
+        var buildHelper =
+                new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner, profiler);
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<BavetRootNode<?>>>();
         var nodeList = buildHelper.buildNodeList(constraintStreamSet, buildHelper,
                 BavetAbstractConstraintStream::buildNode,
@@ -161,7 +172,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                     .buildGraphvizDOT();
             nodeNetworkVisualizationConsumer.accept(visualisation);
         }
-        return AbstractNodeBuildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap);
+        return AbstractNodeBuildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap, buildHelper);
     }
 
 }

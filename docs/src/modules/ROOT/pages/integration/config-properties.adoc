@@ -28,6 +28,9 @@ The random seed to be used in the solving process.
 Enable xref:using-timefold-solver/running-the-solver.adoc#environmentMode[runtime assertions] to detect common bugs in your
 implementation during development.
 
+{property_prefix}timefold.solver.{solver_name_prefix}constraint-stream-profiling-enabled::
+Enable xref:constraints-and-score/performance.adoc#constraintProfiling[constraint profiling] to identify the constraints taking the most time in score calculation and thus might be worth optimizing.
+
 {property_prefix}timefold.solver.{solver_name_prefix}daemon::
 Enable xref:responding-to-change/responding-to-change.adoc#daemon[daemon mode].
 In daemon mode, non-early termination pauses the solver instead of stopping it, until the next problem fact change arrives.

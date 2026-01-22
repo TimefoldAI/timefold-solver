@@ -21,7 +21,7 @@ public final class DataNodeBuildHelper<Solution_> extends AbstractNodeBuildHelpe
 
     public DataNodeBuildHelper(SessionContext<Solution_> sessionContext,
             Set<AbstractEnumeratingStream<Solution_>> activeStreamSet) {
-        super(activeStreamSet);
+        super(activeStreamSet, null);
         this.sessionContext = Objects.requireNonNull(sessionContext);
     }
 

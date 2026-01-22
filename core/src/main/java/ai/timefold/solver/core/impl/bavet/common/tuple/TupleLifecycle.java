@@ -7,6 +7,12 @@ import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
+import ai.timefold.solver.core.impl.bavet.common.BavetStream;
+import ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId;
+import ai.timefold.solver.core.impl.bavet.common.ConstraintProfiler;
+import ai.timefold.solver.core.impl.bavet.common.StreamKind;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.Scorer;
 
 public interface TupleLifecycle<Tuple_ extends Tuple> {
 
@@ -54,6 +60,39 @@ public interface TupleLifecycle<Tuple_ extends Tuple> {
 
     static <Tuple_ extends Tuple> TupleLifecycle<Tuple_> recording() {
         return new RecordingTupleLifecycle<>();
+    }
+
+    static <Stream_ extends BavetStream, Tuple_ extends Tuple> TupleLifecycle<Tuple_> profiling(
+            ConstraintProfiler constraintProfiler, long lifecycleId, Stream_ stream,
+            TupleLifecycle<Tuple_> delegate) {
+        if (delegate instanceof AggregatedTupleLifecycle) {
+            // Do not profile aggregated tuple lifecycles; that will double
+            // count the lifecycles being aggregated.
+            return delegate;
+        }
+
+        var streamKind = StreamKind.FILTER;
+
+        if (delegate instanceof AbstractNode node) {
+            streamKind = node.getStreamKind();
+        } else if (delegate instanceof LeftTupleLifecycleImpl<?> leftTupleLifecycle &&
+                leftTupleLifecycle.leftTupleLifecycle() instanceof AbstractNode node) {
+            streamKind = node.getStreamKind();
+        } else if (delegate instanceof RightTupleLifecycleImpl<?> rightTupleLifecycle &&
+                rightTupleLifecycle.rightTupleLifecycle() instanceof AbstractNode node) {
+            streamKind = node.getStreamKind();
+        } else if (delegate instanceof RecordingTupleLifecycle<Tuple_>) {
+            streamKind = StreamKind.PRECOMPUTE;
+        } else if (delegate instanceof Scorer<Tuple_>) {
+            streamKind = StreamKind.SCORING;
+        } else if (!(delegate instanceof ConditionalTupleLifecycle<Tuple_>)) {
+            throw new IllegalStateException(
+                    "Impossible state: encounter tuple lifecycle (%s) which is not a node and is not a known lifecycle implementation."
+                            .formatted(delegate.getClass()));
+        }
+        return new ProfilingTupleLifecycle<>(constraintProfiler,
+                new ConstraintNodeProfileId(lifecycleId, streamKind, stream.getLocationSet()),
+                delegate);
     }
 
     void insert(Tuple_ tuple);

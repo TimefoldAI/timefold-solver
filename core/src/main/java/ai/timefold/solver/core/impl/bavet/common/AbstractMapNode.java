@@ -19,6 +19,11 @@ public abstract class AbstractMapNode<InTuple_ extends Tuple, OutTuple_ extends 
     }
 
     @Override
+    public StreamKind getStreamKind() {
+        return StreamKind.MAP;
+    }
+
+    @Override
     public final void insert(InTuple_ tuple) {
         if (tuple.getStore(inputStoreIndex) != null) {
             throw new IllegalStateException("Impossible state: the input for the tuple (" + tuple

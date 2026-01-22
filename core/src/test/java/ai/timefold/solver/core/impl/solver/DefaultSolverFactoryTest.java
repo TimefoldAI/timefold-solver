@@ -6,10 +6,13 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
+import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
+import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.invalid.noentity.TestdataNoEntitySolution;
 
@@ -138,6 +141,19 @@ class DefaultSolverFactoryTest {
                 .hasMessageContaining("The moveThreadCount")
                 .hasMessageContaining("resulted in a resolvedMoveThreadCount")
                 .hasMessageContaining("that is lower than 1.");
+    }
+
+    @Test
+    void testInvalidConstraintProfilingWithoutEnterprise() {
+        SolverConfig solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withConstraintProviderClass(TestdataConstraintProvider.class)
+                        .withConstraintStreamProfilingEnabled(true));
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride<>()))
+                .hasMessageContainingAll("Constraint profiling",
+                        "remove constraintStreamProfilingEnabled from the solver configuration");
     }
 
 }

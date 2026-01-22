@@ -59,6 +59,11 @@ public interface SolverBuildTimeConfig {
     Optional<ConstraintStreamImplType> constraintStreamImplType();
 
     /**
+     * If constraint profiling is enabled. Defaults to false.
+     */
+    Optional<Boolean> constraintStreamProfilingEnabled();
+
+    /**
      * Note: this setting is only available
      * for <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Timefold Solver
      * Enterprise Edition</a>.
