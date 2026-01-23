@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
 import ai.timefold.solver.core.impl.util.CompositeListEntry;
 import ai.timefold.solver.core.impl.util.ListEntry;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -23,10 +23,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * As defined by {@link Joiners#intersecting(Function, Function)}
+ * As defined by {@link UnfinishedJoiners#containingAnyOf(Function, Function)}
  */
 @NullMarked
-final class IntersectingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
+final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
 
     private final KeyUnpacker<KeyCollection_> modifyKeyUnpacker;
     private final KeyUnpacker<KeyCollection_> queryKeyUnpacker;
@@ -42,7 +42,7 @@ final class IntersectingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>
      * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
     @SuppressWarnings("unchecked")
-    public IntersectingIndexer(KeyUnpacker<Key_> keyUnpacker, Supplier<Indexer<T>> downstreamIndexerSupplier) {
+    public ContainingAnyOfIndexer(KeyUnpacker<Key_> keyUnpacker, Supplier<Indexer<T>> downstreamIndexerSupplier) {
         this.modifyKeyUnpacker = Objects.requireNonNull((KeyUnpacker<KeyCollection_>) keyUnpacker);
         this.queryKeyUnpacker = Objects.requireNonNull((KeyUnpacker<KeyCollection_>) keyUnpacker);
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
@@ -176,25 +176,6 @@ final class IntersectingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>
 
     @Override
     public ListEntry<T> get(Object queryCompositeKey, int index) {
-        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
-        return switch (indexKeyCollection.size()) {
-            case 0 -> throw new IndexOutOfBoundsException("Index: %d".formatted(index));
-            case 1 -> getSingleKey(queryCompositeKey, indexKeyCollection, index);
-            default -> getManyKeys(queryCompositeKey, indexKeyCollection, index);
-        };
-    }
-
-    private ListEntry<T> getSingleKey(Object queryCompositeKey, KeyCollection_ indexKeyCollection, int index) {
-        var indexKey = indexKeyCollection.iterator().next();
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null) {
-            throw new IndexOutOfBoundsException("Index: %d".formatted(index));
-        }
-        return downstreamIndexer.get(queryCompositeKey, index);
-    }
-
-    private ListEntry<T> getManyKeys(Object queryCompositeKey, KeyCollection_ indexKeyCollection, int index) {
-        // TODO needs implementing; the original implementation did not support get either
         throw new UnsupportedOperationException();
     }
 

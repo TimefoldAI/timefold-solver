@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.api.score.stream;
 
-import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -76,91 +75,6 @@ public final class Joiners {
     public static <A, B, Property_> @NonNull BiJoiner<A, B> equal(Function<A, Property_> leftMapping,
             Function<B, Property_> rightMapping) {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
-    }
-
-    /**
-     * Joins every A and B where a value of property on B is contained in the collection of properties on A.
-     * <p>
-     * For example:
-     * <ul>
-     * <li>{@code ["A", "B"]} containing {@code "A"} is {@code true}</li>
-     * <li>{@code ["A"]} containing {@code "A"} is {@code true}</li>
-     * <li>{@code ["X", "Y"]} containing {@code "A"} is {@code false}</li>
-     * <li>{@code []} containing {@code "A"} is {@code false}</li>
-     * <li>{@code ["A", "B"]} containing {@code null} is {@code false}</li>
-     * <li>{@code []} containing {@code null} is {@code false}</li>
-     * </ul>
-     * 
-     * @param leftMapping mapping function to apply to A
-     * @param rightMapping mapping function to apply to B
-     * @param <A> the type of object on the left
-     * @param <B> the type of object on the right
-     * @param <Property_> the type of the property to compare
-     */
-    public static <A, B, Property_> @NonNull BiJoiner<A, B> containing(@NonNull Function<A, Collection<Property_>> leftMapping,
-            @NonNull Function<B, Property_> rightMapping) {
-        return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAINING, rightMapping);
-    }
-
-    /**
-     * Joins every A and B where a value of property on A is contained in the collection of properties on B.
-     * <p>
-     * For example:
-     * <ul>
-     * <li>{@code "A"} contained in {@code ["A", "B"]} is {@code true}</li>
-     * <li>{@code "A"} contained in {@code ["A"]} is {@code true}</li>
-     * <li>{@code "A"} contained in {@code ["X", "Y"]} is {@code false}</li>
-     * <li>{@code "A"} contained in {@code []} is {@code false}</li>
-     * <li>{@code null} contained in {@code ["A", "B"]} is {@code false}</li>
-     * <li>{@code null} contained in {@code []} is {@code false}</li>
-     * </ul>
-     * 
-     * @param leftMapping mapping function to apply to A
-     * @param rightMapping mapping function to apply to B
-     * @param <A> the type of object on the left
-     * @param <B> the type of object on the right
-     * @param <Property_> the type of the property to compare
-     */
-    public static <A, B, Property_> @NonNull BiJoiner<A, B> containedIn(@NonNull Function<A, Property_> leftMapping,
-            @NonNull Function<B, Collection<Property_>> rightMapping) {
-        return new DefaultBiJoiner<>(leftMapping, JoinerType.CONTAINED_IN, rightMapping);
-    }
-
-    /**
-     * As defined by {@link #intersecting(Function, Function)} with both arguments using the same mapping.
-     *
-     * @param mapping mapping function to apply to both A and B
-     * @param <A> the type of both objects
-     * @param <Property_> the type of the property to compare
-     */
-    public static <A, Property_> @NonNull BiJoiner<A, A> intersecting(@NonNull Function<A, Collection<Property_>> mapping) {
-        return intersecting(mapping, mapping);
-    }
-
-    /**
-     * Joins every A and B where a collection of properties on A overlaps with a collection of properties on B.
-     * <p>
-     * For example:
-     * <ul>
-     * <li>{@code ["A", "B"]} intersecting {@code ["A", "B"]} is {@code true}</li>
-     * <li>{@code ["A", "B"]} intersecting {@code ["A"]} is {@code true}</li>
-     * <li>{@code ["A"]} intersecting {@code ["A", "B"]} is {@code true}</li>
-     * <li>{@code ["A", "B"]} intersecting {@code ["X", "Y"]} is {@code false}</li>
-     * <li>{@code ["A", "B"]} intersecting {@code []} is {@code false}</li>
-     * <li>{@code []} intersecting {@code ["A", "B"]} is {@code false}</li>
-     * <li>{@code []} intersecting {@code []} is {@code false}</li>
-     * </ul>
-     * 
-     * @param leftMapping mapping function to apply to A
-     * @param rightMapping mapping function to apply to B
-     * @param <A> the type of object on the left
-     * @param <B> the type of object on the right
-     * @param <Property_> the type of the property to compare
-     */
-    public static <A, B, Property_> @NonNull BiJoiner<A, B> intersecting(
-            @NonNull Function<A, Collection<Property_>> leftMapping,
-            @NonNull Function<B, Collection<Property_>> rightMapping) {
-        return new DefaultBiJoiner<>(leftMapping, JoinerType.INTERSECTING, rightMapping);
     }
 
     /**
@@ -362,53 +276,6 @@ public final class Joiners {
     }
 
     /**
-     * As defined by {@link #containing(Function, Function)}.
-     *
-     * @param <A> the type of the first object on the left
-     * @param <B> the type of the second object on the left
-     * @param <C> the type of the object on the right
-     * @param <Property_> the type of the collection elements
-     * @param leftMapping mapping function to apply to (A,B)
-     * @param rightMapping mapping function to apply to C
-     */
-    public static <A, B, C, Property_> @NonNull TriJoiner<A, B, C> containing(
-            @NonNull BiFunction<A, B, Collection<Property_>> leftMapping,
-            @NonNull Function<C, Property_> rightMapping) {
-        return new DefaultTriJoiner<>(leftMapping, JoinerType.CONTAINING, rightMapping);
-    }
-
-    /**
-     * As defined by {@link #containedIn(Function, Function)}.
-     *
-     * @param <A> the type of the first object on the left
-     * @param <B> the type of the second object on the left
-     * @param <C> the type of the object on the right
-     * @param <Property_> the type of the collection elements
-     * @param leftMapping mapping function to apply to (A,B)
-     * @param rightMapping mapping function to apply to C
-     */
-    public static <A, B, C, Property_> @NonNull TriJoiner<A, B, C> containedIn(@NonNull BiFunction<A, B, Property_> leftMapping,
-            @NonNull Function<C, Collection<Property_>> rightMapping) {
-        return new DefaultTriJoiner<>(leftMapping, JoinerType.CONTAINED_IN, rightMapping);
-    }
-
-    /**
-     * As defined by {@link #intersecting(Function, Function)}.
-     *
-     * @param <A> the type of the first object on the left
-     * @param <B> the type of the second object on the left
-     * @param <C> the type of the object on the right
-     * @param <Property_> the type of the collection elements
-     * @param leftMapping mapping function to apply to (A,B)
-     * @param rightMapping mapping function to apply to C
-     */
-    public static <A, B, C, Property_> @NonNull TriJoiner<A, B, C> intersecting(
-            @NonNull BiFunction<A, B, Collection<Property_>> leftMapping,
-            @NonNull Function<C, Collection<Property_>> rightMapping) {
-        return new DefaultTriJoiner<>(leftMapping, JoinerType.INTERSECTING, rightMapping);
-    }
-
-    /**
      * As defined by {@link #lessThan(Function, Function)}.
      *
      * @param leftMapping mapping function to apply to (A,B)
@@ -517,57 +384,6 @@ public final class Joiners {
     public static <A, B, C, D, Property_> @NonNull QuadJoiner<A, B, C, D> equal(
             TriFunction<A, B, C, Property_> leftMapping, Function<D, Property_> rightMapping) {
         return new DefaultQuadJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
-    }
-
-    /**
-     * As defined by {@link #containing(Function, Function)}.
-     *
-     * @param <A> the type of the first object on the left
-     * @param <B> the type of the second object on the left
-     * @param <C> the type of the third object on the left
-     * @param <D> the type of the object on the right
-     * @param <Property_> the type of the collection elements
-     * @param leftMapping mapping function to apply to (A,B,C)
-     * @param rightMapping mapping function to apply to D
-     */
-    public static <A, B, C, D, Property_> @NonNull QuadJoiner<A, B, C, D> containing(
-            @NonNull TriFunction<A, B, C, Collection<Property_>> leftMapping,
-            @NonNull Function<D, Property_> rightMapping) {
-        return new DefaultQuadJoiner<>(leftMapping, JoinerType.CONTAINING, rightMapping);
-    }
-
-    /**
-     * As defined by {@link #containedIn(Function, Function)}.
-     *
-     * @param <A> the type of the first object on the left
-     * @param <B> the type of the second object on the left
-     * @param <C> the type of the third object on the left
-     * @param <D> the type of the object on the right
-     * @param <Property_> the type of the collection elements
-     * @param leftMapping mapping function to apply to (A,B,C)
-     * @param rightMapping mapping function to apply to D
-     */
-    public static <A, B, C, D, Property_> @NonNull QuadJoiner<A, B, C, D> containedIn(
-            @NonNull TriFunction<A, B, C, Property_> leftMapping,
-            @NonNull Function<D, Collection<Property_>> rightMapping) {
-        return new DefaultQuadJoiner<>(leftMapping, JoinerType.CONTAINED_IN, rightMapping);
-    }
-
-    /**
-     * As defined by {@link #intersecting(Function, Function)}.
-     *
-     * @param <A> the type of the first object on the left
-     * @param <B> the type of the second object on the left
-     * @param <C> the type of the third object on the left
-     * @param <D> the type of the object on the right
-     * @param <Property_> the type of the collection elements
-     * @param leftMapping mapping function to apply to (A,B,C)
-     * @param rightMapping mapping function to apply to D
-     */
-    public static <A, B, C, D, Property_> @NonNull QuadJoiner<A, B, C, D> intersecting(
-            @NonNull TriFunction<A, B, C, Collection<Property_>> leftMapping,
-            @NonNull Function<D, Collection<Property_>> rightMapping) {
-        return new DefaultQuadJoiner<>(leftMapping, JoinerType.INTERSECTING, rightMapping);
     }
 
     /**
@@ -686,60 +502,6 @@ public final class Joiners {
     public static <A, B, C, D, E, Property_> @NonNull PentaJoiner<A, B, C, D, E> equal(
             QuadFunction<A, B, C, D, Property_> leftMapping, Function<E, Property_> rightMapping) {
         return new DefaultPentaJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
-    }
-
-    /**
-     * As defined by {@link #containing(Function, Function)}.
-     *
-     * @param <A> the type of the first object on the left
-     * @param <B> the type of the second object on the left
-     * @param <C> the type of the third object on the left
-     * @param <D> the type of the fourth object on the left
-     * @param <E> the type of the object on the right
-     * @param <Property_> the type of the collection elements
-     * @param leftMapping mapping function to apply to (A,B,C,D)
-     * @param rightMapping mapping function to apply to E
-     */
-    public static <A, B, C, D, E, Property_> @NonNull PentaJoiner<A, B, C, D, E> containing(
-            @NonNull QuadFunction<A, B, C, D, Collection<Property_>> leftMapping,
-            @NonNull Function<E, Property_> rightMapping) {
-        return new DefaultPentaJoiner<>(leftMapping, JoinerType.CONTAINING, rightMapping);
-    }
-
-    /**
-     * As defined by {@link #containedIn(Function, Function)}.
-     *
-     * @param <A> the type of the first object on the left
-     * @param <B> the type of the second object on the left
-     * @param <C> the type of the third object on the left
-     * @param <D> the type of the fourth object on the left
-     * @param <E> the type of the object on the right
-     * @param <Property_> the type of the collection elements
-     * @param leftMapping mapping function to apply to (A,B,C,D)
-     * @param rightMapping mapping function to apply to E
-     */
-    public static <A, B, C, D, E, Property_> @NonNull PentaJoiner<A, B, C, D, E> containedIn(
-            @NonNull QuadFunction<A, B, C, D, Property_> leftMapping,
-            @NonNull Function<E, Collection<Property_>> rightMapping) {
-        return new DefaultPentaJoiner<>(leftMapping, JoinerType.CONTAINED_IN, rightMapping);
-    }
-
-    /**
-     * As defined by {@link #intersecting(Function, Function)}.
-     *
-     * @param <A> the type of the first object on the left
-     * @param <B> the type of the second object on the left
-     * @param <C> the type of the third object on the left
-     * @param <D> the type of the fourth object on the left
-     * @param <E> the type of the object on the right
-     * @param <Property_> the type of the collection elements
-     * @param leftMapping mapping function to apply to (A,B,C,D)
-     * @param rightMapping mapping function to apply to E
-     */
-    public static <A, B, C, D, E, Property_> @NonNull PentaJoiner<A, B, C, D, E> intersecting(
-            @NonNull QuadFunction<A, B, C, D, Collection<Property_>> leftMapping,
-            @NonNull Function<E, Collection<Property_>> rightMapping) {
-        return new DefaultPentaJoiner<>(leftMapping, JoinerType.INTERSECTING, rightMapping);
     }
 
     /**

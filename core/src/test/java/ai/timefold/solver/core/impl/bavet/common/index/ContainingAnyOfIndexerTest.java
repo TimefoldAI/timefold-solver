@@ -8,13 +8,14 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
 
 import org.junit.jupiter.api.Test;
 
-class IntersectingIndexerTest extends AbstractIndexerTest {
+class ContainingAnyOfIndexerTest extends AbstractIndexerTest {
 
     private final DefaultBiJoiner<TestWorker, TestJob> joiner =
-            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.intersecting(TestWorker::skills, TestJob::skills)
+            (DefaultBiJoiner<TestWorker, TestJob>) UnfinishedJoiners.containingAnyOf(TestWorker::skills, TestJob::skills)
                     .and(Joiners.equal(TestWorker::department, TestJob::department));
 
     @Test

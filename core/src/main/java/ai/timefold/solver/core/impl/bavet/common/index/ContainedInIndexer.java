@@ -11,14 +11,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * As defined by {@link Joiners#containedIn(Function, Function)}
+ * As defined by {@link UnfinishedJoiners#containedIn(Function, Function)}
  */
 @NullMarked
 final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
@@ -113,24 +113,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
 
     @Override
     public ListEntry<T> get(Object queryCompositeKey, int index) {
-        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
-        if (indexKeyCollection.isEmpty()) {
-            throw new IndexOutOfBoundsException("Index: %d".formatted(index));
-        }
-        var seenCount = 0;
-        for (var indexKey : indexKeyCollection) {
-            var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-            if (downstreamIndexer == null) {
-                continue;
-            }
-            var downstreamSize = downstreamIndexer.size(queryCompositeKey);
-            if (index < seenCount + downstreamSize) {
-                return downstreamIndexer.get(queryCompositeKey, index - seenCount);
-            } else {
-                seenCount += downstreamSize;
-            }
-        }
-        throw new IndexOutOfBoundsException("Index: %d".formatted(index));
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -9,13 +9,14 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
 
 import org.junit.jupiter.api.Test;
 
 class ContainedInIndexerTest extends AbstractIndexerTest {
 
     private final DefaultBiJoiner<TestJob, TestWorker> joiner =
-            (DefaultBiJoiner<TestJob, TestWorker>) Joiners.containedIn(TestJob::skill, TestWorker::skills)
+            (DefaultBiJoiner<TestJob, TestWorker>) UnfinishedJoiners.containedIn(TestJob::skill, TestWorker::skills)
                     .and(Joiners.equal(TestJob::department, TestWorker::department));
 
     @Test
@@ -88,8 +89,8 @@ class ContainedInIndexerTest extends AbstractIndexerTest {
     }
 
     private final DefaultBiJoiner<TestJob, TestWorker> containComboJoiner =
-            (DefaultBiJoiner<TestJob, TestWorker>) Joiners.containedIn(TestJob::skill, TestWorker::skills)
-                    .and(Joiners.containing(TestJob::affinities, TestWorker::affinity));
+            (DefaultBiJoiner<TestJob, TestWorker>) UnfinishedJoiners.containedIn(TestJob::skill, TestWorker::skills)
+                    .and(UnfinishedJoiners.containing(TestJob::affinities, TestWorker::affinity));
 
     @Test
     void forEach_containCombo() {

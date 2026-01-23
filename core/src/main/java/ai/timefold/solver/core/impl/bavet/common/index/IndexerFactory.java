@@ -541,7 +541,7 @@ public final class IndexerFactory<Right_> {
                 new ComparisonIndexer<>(joinerType, keyUnpacker, downstreamIndexerSupplier);
             case CONTAINING -> new ContainingIndexer<>(keyUnpacker, downstreamIndexerSupplier);
             case CONTAINED_IN -> new ContainedInIndexer<>(keyUnpacker, downstreamIndexerSupplier);
-            case INTERSECTING -> new IntersectingIndexer<>(keyUnpacker, downstreamIndexerSupplier);
+            case CONTAINING_ANY_OF -> new ContainingAnyOfIndexer<>(keyUnpacker, downstreamIndexerSupplier);
         };
     }
 

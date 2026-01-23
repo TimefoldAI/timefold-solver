@@ -29,7 +29,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public sealed interface Indexer<T>
-        permits EqualIndexer, ComparisonIndexer, ContainingIndexer, ContainedInIndexer, IntersectingIndexer, IndexerBackend {
+        permits EqualIndexer, ComparisonIndexer, ContainingIndexer, ContainedInIndexer, ContainingAnyOfIndexer, IndexerBackend {
 
     /**
      * Gets the entry at the given position for the given composite key.
