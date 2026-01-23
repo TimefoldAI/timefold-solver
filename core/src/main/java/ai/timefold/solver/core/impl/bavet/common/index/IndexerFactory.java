@@ -35,7 +35,7 @@ import ai.timefold.solver.core.impl.util.Triple;
  * Parent indexers delegate to their children,
  * until they reach the ultimate {@link IndexerBackend}.
  * <p>
- * Example 1: EQUAL+LESS_THAN joiner will become EqualsIndexer -> ComparisonIndexer -> NoneIndexer.
+ * Example 1: EQUAL+LESS_THAN joiner will become EqualIndexer -> ComparisonIndexer -> NoneIndexer.
  * <p>
  * Indexers have an id, which is the position of the indexer in the chain.
  * Top-most indexer has id 0, and the id increases as we go down the hierarchy.
@@ -497,7 +497,7 @@ public final class IndexerFactory<Right_> {
                 requiresRandomAccess ? RandomAccessIndexerBackend::new : LinkedListIndexerBackend::new;
         if (!hasJoiners()) { // NoneJoiner results in NoneIndexer.
             return backendSupplier.get();
-        } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
+        } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualIndexer or ComparisonIndexer.
             var joinerType = joiner.getJoinerType(0);
             KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
             return buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);

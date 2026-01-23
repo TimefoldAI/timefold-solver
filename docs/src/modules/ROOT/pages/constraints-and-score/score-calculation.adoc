@@ -563,9 +563,9 @@ pairing a match from each side:
 the paired matches have a `Comparable` property following the prescribed ordering.
 - `overlapping()`: the paired matches have two properties (a _start_ and an _end_ property) of the same `Comparable` type
 that both represent an interval which overlap.
-- `containing()`: the match on the left is a collection containing the match on the right.
-- `containedIn()`: the match on the right is a collection containing the match on the left.
-- `intersecting()`: the collections on both sides have at least one element in common.
+//- `containing()`: the match on the left is a collection containing the match on the right.
+//- `containedIn()`: the match on the right is a collection containing the match on the left.
+//- `containingAnyOf()`: the collections on both sides have at least one element in common.
 
 All `Joiners` methods have an overloaded method to use the same property of the same class on both stream sides.
 For example, calling `equal(Shift::getEmployee)` is the same as calling `equal(Shift::getEmployee, Shift::getEmployee)`.
@@ -649,8 +649,7 @@ and if the joiner does not significantly reduce the number of matches,
 this overhead will outweigh the benefits.
 
 For small datasets, filters are often faster than joiners.
-Some of the more advanced joiners, such as `containing()`,  `containedIn()` or `intersecting()`,
-may require very large datasets to outperform filters.
+Some of the more advanced joiners may require very large datasets to outperform filters.
 
 When it comes to performance, we recommend you follow these guidelines:
 

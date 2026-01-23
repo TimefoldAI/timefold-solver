@@ -5,7 +5,7 @@ import java.util.function.Function;
 /**
  * A function that retrieves keys of a composite key for an {@link Indexer}.
  * For example, {@code join(..., equals(), lessThan(), greaterThan())} has 3 keys.
- * Given {@code ("a", 7, 9)} the key retriever for {@code lessThan()} retrieves {@code 7}.
+ * Given {@code ("a", 7, 9)} the key unpacker for {@code lessThan()} retrieves {@code 7}.
  * 
  * @param <Key_>
  */
