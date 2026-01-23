@@ -21,7 +21,7 @@ class ElementAwareLinkedListTest {
         assertThat(list.last()).isNull();
 
         var entryA = list.add("A");
-        assertThat(entryA.getElement()).isEqualTo("A");
+        assertThat(entryA.element()).isEqualTo("A");
         assertThat(list.size()).isEqualTo(1);
         assertThat(list.first()).isEqualTo(entryA);
         assertThat(entryA.previous).isNull();
@@ -29,7 +29,7 @@ class ElementAwareLinkedListTest {
         assertThat(list.last()).isEqualTo(entryA);
 
         var entryB = list.add("B");
-        assertThat(entryB.getElement()).isEqualTo("B");
+        assertThat(entryB.element()).isEqualTo("B");
         assertThat(list.size()).isEqualTo(2);
         assertThat(list.first()).isEqualTo(entryA);
         assertThat(entryA.previous).isNull();

@@ -13,9 +13,9 @@ import ai.timefold.solver.core.impl.util.ListEntry;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class EqualsIndexer<T, Key_> implements Indexer<T> {
+final class EqualIndexer<T, Key_> implements Indexer<T> {
 
-    private final KeyRetriever<Key_> keyRetriever;
+    private final KeyUnpacker<Key_> keyUnpacker;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     /**
      * The number 16 is chosen as that is the default initial capacity of a HashMap
@@ -35,31 +35,19 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     private final Map<Key_, Indexer<T>> downstreamIndexerMap = new HashMap<>(16, 0.5f);
 
     /**
-     * Construct an {@link EqualsIndexer} which immediately ends in the backend.
-     * This means {@code compositeKey} must be a single key.
-     */
-    public EqualsIndexer(Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.keyRetriever = new SingleKeyRetriever<>();
-        this.downstreamIndexerSupplier = downstreamIndexerSupplier;
-    }
-
-    /**
-     * Construct an {@link EqualsIndexer} which does not immediately go to a {@link IndexerBackend}.
-     * This means {@code compositeKey} must be an instance of {@link CompositeKey}.
-     * 
-     * @param keyIndex the index of the key to use within {@link CompositeKey}.
+     * @param keyUnpacker determines if it immediately goes to a {@link IndexerBackend} or if it uses a {@link CompositeKey}.
      * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
-    public EqualsIndexer(int keyIndex, Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.keyRetriever = new CompositeKeyRetriever<>(keyIndex);
+    public EqualIndexer(KeyUnpacker<Key_> keyUnpacker, Supplier<Indexer<T>> downstreamIndexerSupplier) {
+        this.keyUnpacker = Objects.requireNonNull(keyUnpacker);
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
     }
 
     @Override
     public ListEntry<T> put(Object compositeKey, T tuple) {
-        Key_ indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             downstreamIndexer = downstreamIndexerSupplier.get();
             downstreamIndexerMap.put(indexKey, downstreamIndexer);
@@ -69,16 +57,16 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void remove(Object compositeKey, ListEntry<T> entry) {
-        Key_ indexKey = keyRetriever.apply(compositeKey);
-        Indexer<T> downstreamIndexer = getDownstreamIndexer(compositeKey, indexKey, entry);
+        var indexKey = keyUnpacker.apply(compositeKey);
+        var downstreamIndexer = getDownstreamIndexer(compositeKey, indexKey, entry);
         downstreamIndexer.remove(compositeKey, entry);
-        if (downstreamIndexer.isEmpty()) {
+        if (downstreamIndexer.isRemovable()) {
             downstreamIndexerMap.remove(indexKey);
         }
     }
 
     private Indexer<T> getDownstreamIndexer(Object compositeKey, Key_ indexerKey, ListEntry<T> entry) {
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexerKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException(
                     "Impossible state: the tuple (%s) with composite key (%s) doesn't exist in the indexer %s."
@@ -89,8 +77,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public int size(Object compositeKey) {
-        Key_ indexKey = keyRetriever.apply(compositeKey);
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return 0;
         }
@@ -99,8 +87,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void forEach(Object compositeKey, Consumer<T> tupleConsumer) {
-        Key_ indexKey = keyRetriever.apply(compositeKey);
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        var indexKey = keyUnpacker.apply(compositeKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return;
         }
@@ -108,28 +96,26 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public Iterator<T> iterator(Object compositeKey) {
-        Key_ indexKey = keyRetriever.apply(compositeKey);
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+    public boolean isRemovable() {
+        return downstreamIndexerMap.isEmpty();
+    }
+
+    public Iterator<T> iterator(Object queryCompositeKey) {
+        var indexKey = keyUnpacker.apply(queryCompositeKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return Collections.emptyIterator();
         }
-        return downstreamIndexer.iterator(compositeKey);
+        return downstreamIndexer.iterator(queryCompositeKey);
     }
 
-    @Override
-    public ListEntry<T> get(Object compositeKey, int index) {
-        Key_ indexKey = keyRetriever.apply(compositeKey);
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+    public ListEntry<T> get(Object queryCompositeKey, int index) {
+        var indexKey = keyUnpacker.apply(queryCompositeKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             throw new IndexOutOfBoundsException("Index: " + index);
         }
-        return downstreamIndexer.get(compositeKey, index);
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return downstreamIndexerMap.isEmpty();
+        return downstreamIndexer.get(queryCompositeKey, index);
     }
 
     @Override

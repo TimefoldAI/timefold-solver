@@ -39,17 +39,17 @@ public final class LinkedListIndexerBackend<T> implements IndexerBackend<T> {
     }
 
     @Override
-    public Iterator<T> iterator(Object compositeKey) {
+    public Iterator<T> iterator(Object queryCompositeKey) {
         return tupleList.iterator();
     }
 
     @Override
-    public ListEntry<T> get(Object compositeKey, int index) {
+    public ListEntry<T> get(Object queryCompositeKey, int index) {
         throw new UnsupportedOperationException(); // Random access uses a different backend.
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isRemovable() {
         return tupleList.size() == 0;
     }
 

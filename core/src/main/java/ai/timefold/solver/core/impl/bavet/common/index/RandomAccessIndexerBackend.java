@@ -41,17 +41,17 @@ public final class RandomAccessIndexerBackend<T> implements IndexerBackend<T> {
     }
 
     @Override
-    public Iterator<T> iterator(Object compositeKey) {
+    public Iterator<T> iterator(Object queryCompositeKey) {
         return tupleList.iterator();
     }
 
     @Override
-    public ListEntry<T> get(Object compositeKey, int index) {
+    public ListEntry<T> get(Object queryCompositeKey, int index) {
         return tupleList.get(index);
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isRemovable() {
         return tupleList.isEmpty();
     }
 

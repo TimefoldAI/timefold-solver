@@ -35,7 +35,7 @@ import ai.timefold.solver.core.impl.util.Triple;
  * Parent indexers delegate to their children,
  * until they reach the ultimate {@link IndexerBackend}.
  * <p>
- * Example 1: EQUAL+LESS_THAN joiner will become EqualsIndexer -> ComparisonIndexer -> NoneIndexer.
+ * Example 1: EQUAL+LESS_THAN joiner will become EqualIndexer -> ComparisonIndexer -> NoneIndexer.
  * <p>
  * Indexers have an id, which is the position of the indexer in the chain.
  * Top-most indexer has id 0, and the id increases as we go down the hierarchy.
@@ -79,6 +79,8 @@ public final class IndexerFactory<Right_> {
 
     public IndexerFactory(AbstractJoiner<Right_> joiner) {
         this.joiner = joiner;
+        // TODO Code encapsulation: remove the field requiresRandomAccess and call joiner.requireRandomAccess() instead?
+        // TODO It also impacts the flip(). Is requiresRandomAccess a good name?
         this.requiresRandomAccess = joiner instanceof DefaultBiNeighborhoodsJoiner<?, Right_>;
         var joinerCount = joiner.getJoinerCount();
         if (joinerCount < 2) {
@@ -495,48 +497,52 @@ public final class IndexerFactory<Right_> {
                 requiresRandomAccess ? RandomAccessIndexerBackend::new : LinkedListIndexerBackend::new;
         if (!hasJoiners()) { // NoneJoiner results in NoneIndexer.
             return backendSupplier.get();
-        } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
+        } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualIndexer or ComparisonIndexer.
             var joinerType = joiner.getJoinerType(0);
-            if (joinerType == JoinerType.EQUAL) {
-                return new EqualsIndexer<>(backendSupplier);
-            } else {
-                // Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
-                // (<A, B> becomes <B, A>.)
-                // This does not apply if random access is required,
-                // because in that case we create a right bridge only,
-                // and we query it from the left.
-                var actualJoinerType = isLeftBridge || requiresRandomAccess ? joinerType : joinerType.flip();
-                return new ComparisonIndexer<>(actualJoinerType, backendSupplier);
-            }
+            KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
+            return buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
         }
-        // The following code builds the children first, so it needs to iterate over the joiners in reverse order.
+        // The following code builds the children first, so it iterates over the joiners in reverse order.
         var descendingJoinerTypeMap = joinerTypeMap.descendingMap();
         Supplier<Indexer<T>> downstreamIndexerSupplier = backendSupplier;
         var indexPropertyId = descendingJoinerTypeMap.size() - 1;
         for (var entry : descendingJoinerTypeMap.entrySet()) {
             var joinerType = entry.getValue();
             if (downstreamIndexerSupplier == backendSupplier && indexPropertyId == 0) {
-                if (joinerType == JoinerType.EQUAL) {
-                    downstreamIndexerSupplier = () -> new EqualsIndexer<>(backendSupplier);
-                } else {
-                    var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
-                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType, backendSupplier);
-                }
+                KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
+                downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
             } else {
+                KeyUnpacker<?> keyUnpacker = new CompositeKeyUnpacker<>(indexPropertyId);
                 var actualDownstreamIndexerSupplier = downstreamIndexerSupplier;
-                var effectivelyFinalIndexPropertyId = indexPropertyId;
-                if (joinerType == JoinerType.EQUAL) {
-                    downstreamIndexerSupplier =
-                            () -> new EqualsIndexer<>(effectivelyFinalIndexPropertyId, actualDownstreamIndexerSupplier);
-                } else {
-                    var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
-                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType, effectivelyFinalIndexPropertyId,
-                            actualDownstreamIndexerSupplier);
-                }
+                downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker,
+                        actualDownstreamIndexerSupplier);
             }
             indexPropertyId--;
         }
         return downstreamIndexerSupplier.get();
+    }
+
+    private <T> Indexer<T> buildIndexerPart(boolean isLeftBridge, JoinerType joinerType, KeyUnpacker<?> keyUnpacker,
+            Supplier<Indexer<T>> downstreamIndexerSupplier) {
+        // Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
+        // (<A, B> becomes <B, A>.)
+        // TODO Does the requiresRandomAccess check make sense?
+        //      Shouldn't a right bridge always flip, even if there is no left bridge?
+        // TODO For neighborhoods, why create a left bridge index and keep it up to date at all?
+        // This does not apply if random access is required,
+        // because in that case we create a right bridge only,
+        // and we query it from the left.
+        if (!isLeftBridge && !requiresRandomAccess) {
+            joinerType = joinerType.flip();
+        }
+        return switch (joinerType) {
+            case EQUAL -> new EqualIndexer<>(keyUnpacker, downstreamIndexerSupplier);
+            case LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL ->
+                new ComparisonIndexer<>(joinerType, keyUnpacker, downstreamIndexerSupplier);
+            case CONTAINING -> new ContainingIndexer<>(keyUnpacker, downstreamIndexerSupplier);
+            case CONTAINED_IN -> new ContainedInIndexer<>(keyUnpacker, downstreamIndexerSupplier);
+            case CONTAINING_ANY_OF -> new ContainingAnyOfIndexer<>(keyUnpacker, downstreamIndexerSupplier);
+        };
     }
 
     /**

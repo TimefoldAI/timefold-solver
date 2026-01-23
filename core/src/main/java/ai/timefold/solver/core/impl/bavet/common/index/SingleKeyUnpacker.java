@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-record SingleKeyRetriever<Key_>() implements KeyRetriever<Key_> {
+record SingleKeyUnpacker<Key_>() implements KeyUnpacker<Key_> {
 
     @SuppressWarnings("unchecked")
     @Override

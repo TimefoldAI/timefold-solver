@@ -110,7 +110,7 @@ public final class ElementAwareArrayList<T> {
 
     private void forEachWithoutGaps(Consumer<T> elementConsumer) {
         for (var i = 0; i <= lastElementPosition; i++) {
-            elementConsumer.accept(elementList.get(i).getElement());
+            elementConsumer.accept(elementList.get(i).element());
         }
     }
 
@@ -129,7 +129,7 @@ public final class ElementAwareArrayList<T> {
                     indexesToRemove[encounteredGaps++] = i;
                 }
             } else {
-                elementConsumer.accept(element.getElement());
+                elementConsumer.accept(element.element());
                 if (encounteredGaps > 0) {
                     element.position = i - encounteredGaps;
                 }
@@ -231,13 +231,12 @@ public final class ElementAwareArrayList<T> {
             this.position = position;
         }
 
-        @Override
         public boolean isRemoved() {
             return position < 0;
         }
 
         @Override
-        public T getElement() {
+        public T element() {
             return element;
         }
 
@@ -267,7 +266,7 @@ public final class ElementAwareArrayList<T> {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            return list.get(index++).getElement();
+            return list.get(index++).element();
         }
 
     }

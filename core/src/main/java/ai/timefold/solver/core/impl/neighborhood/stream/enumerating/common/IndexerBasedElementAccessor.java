@@ -8,7 +8,7 @@ public record IndexerBasedElementAccessor<T>(Indexer<T> indexer, Object composit
 
     @Override
     public T get(int index) {
-        return indexer.get(compositeKey, index).getElement();
+        return indexer.get(compositeKey, index).element();
     }
 
     @Override

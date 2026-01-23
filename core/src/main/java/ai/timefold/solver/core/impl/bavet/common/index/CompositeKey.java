@@ -20,7 +20,7 @@ package ai.timefold.solver.core.impl.bavet.common.index;
  * TriCompositeKey and higher are rare enough for {@link MegaCompositeKey} to suffice.
  */
 public sealed interface CompositeKey
-        permits MegaCompositeKey, BiCompositeKey {
+        permits BiCompositeKey, MegaCompositeKey {
 
     static CompositeKey none() {
         return MegaCompositeKey.EMPTY;
@@ -53,7 +53,7 @@ public sealed interface CompositeKey
      * @param id Maps to a single {@link Indexer} instance in the indexer chain.
      * @return May be null if the key is null.
      * @param <Key_> {@link ComparisonIndexer} will expect this to implement {@link Comparable}.
-     *        {@link EqualsIndexer} will treat items as the same if they are equal.
+     *        {@link EqualIndexer} will treat items as the same if they are equal.
      */
     <Key_> Key_ get(int id);
 

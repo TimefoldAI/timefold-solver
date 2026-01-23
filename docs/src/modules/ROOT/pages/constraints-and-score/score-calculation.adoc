@@ -563,6 +563,9 @@ pairing a match from each side:
 the paired matches have a `Comparable` property following the prescribed ordering.
 - `overlapping()`: the paired matches have two properties (a _start_ and an _end_ property) of the same `Comparable` type
 that both represent an interval which overlap.
+//- `containing()`: the match on the left is a collection containing the match on the right.
+//- `containedIn()`: the match on the right is a collection containing the match on the left.
+//- `containingAnyOf()`: the collections on both sides have at least one element in common.
 
 All `Joiners` methods have an overloaded method to use the same property of the same class on both stream sides.
 For example, calling `equal(Shift::getEmployee)` is the same as calling `equal(Shift::getEmployee, Shift::getEmployee)`.
@@ -636,6 +639,26 @@ Java::
         ))
 ----
 ====
+
+==== Performance considerations
+
+It is tempting to replace filters with joiners where applicable, expecting better performance.
+However, that is not always the case.
+Joiners bring overhead of maintaining indexes,
+and if the joiner does not significantly reduce the number of matches,
+this overhead will outweigh the benefits.
+
+For small datasets, filters are often faster than joiners.
+Some of the more advanced joiners may require very large datasets to outperform filters.
+
+When it comes to performance, we recommend you follow these guidelines:
+
+- Do not optimize prematurely. First, implement the constraint in the most readable way.
+- Measure performance. If any particular constraint is shown to be the bottleneck,
+try alternative implementations.
+- Do not make assumptions about performance.
+Performance characteristics of any API may not be what you expect,
+and they may change between Timefold Solver versions as we constantly improve our technology.
 
 [#constraintStreamsGroupingAndCollectors]
 === Grouping and collectors

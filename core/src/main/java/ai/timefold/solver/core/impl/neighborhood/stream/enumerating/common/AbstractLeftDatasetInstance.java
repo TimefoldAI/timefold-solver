@@ -65,7 +65,7 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
 
         @Override
         public T next() {
-            return parentIterator.next().getElement();
+            return parentIterator.next().element();
         }
 
     }

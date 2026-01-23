@@ -35,7 +35,6 @@ import org.jspecify.annotations.NonNull;
 public final class Joiners {
 
     // TODO Support using non-natural comparators, such as lessThan(leftMapping, rightMapping, comparator).
-    // TODO Support collection-based joiners, such as containing(), intersecting() and disjoint().
 
     // ************************************************************************
     // BiJoiner
