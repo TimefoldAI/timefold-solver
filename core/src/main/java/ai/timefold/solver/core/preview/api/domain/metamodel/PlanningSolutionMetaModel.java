@@ -52,14 +52,14 @@ public interface PlanningSolutionMetaModel<Solution_> {
     Class<Solution_> type();
 
     /**
-     * Returns the meta-models of @{@link PlanningEntity planning entities} known to the solution, genuine or shadow.
+     * Returns the meta-models of {@link PlanningEntity planning entities} known to the solution, genuine or shadow.
      * 
      * @return Entities declared by the solution.
      */
     List<PlanningEntityMetaModel<Solution_, ?>> entities();
 
     /**
-     * Returns the meta-models of genuine @{@link PlanningEntity planning entities} known to the solution.
+     * Returns the meta-models of genuine {@link PlanningEntity planning entities} known to the solution.
      *
      * @return Entities declared by the solution, which declare some genuine variables.
      */
@@ -72,7 +72,7 @@ public interface PlanningSolutionMetaModel<Solution_> {
     }
 
     /**
-     * Returns the meta-models of shadow @{@link PlanningEntity planning entities} known to the solution.
+     * Returns the meta-models of shadow {@link PlanningEntity planning entities} known to the solution.
      *
      * @return Entities declared by the solution, which do not declare any genuine variables.
      */
@@ -85,7 +85,7 @@ public interface PlanningSolutionMetaModel<Solution_> {
     }
 
     /**
-     * Returns the meta-model of the @{@link PlanningEntity planning entity} with the given class.
+     * Returns the meta-model of the {@link PlanningEntity planning entity} with the given class.
      *
      * @param entityClass Expected class of the entity.
      * @return An entity declared by the solution.
@@ -103,7 +103,7 @@ public interface PlanningSolutionMetaModel<Solution_> {
     }
 
     /**
-     * Returns the meta-model of the @{@link PlanningEntity genuine planning entity} with the given class.
+     * Returns the meta-model of the {@link PlanningEntity genuine planning entity} with the given class.
      *
      * @param entityClass Expected class of the entity.
      * @return An entity declared by the solution.
@@ -123,7 +123,7 @@ public interface PlanningSolutionMetaModel<Solution_> {
     }
 
     /**
-     * Returns the meta-model of the @{@link PlanningEntity shadow planning entity} with the given class.
+     * Returns the meta-model of the {@link PlanningEntity shadow planning entity} with the given class.
      *
      * @param entityClass Expected class of the entity.
      * @return An entity declared by the solution.
@@ -138,7 +138,7 @@ public interface PlanningSolutionMetaModel<Solution_> {
             }
         }
         throw new IllegalArgumentException(
-                "The type (%s) is not among known genuine entities (%s).".formatted(entityClass, entities()));
+                "The type (%s) is not among known shadow entities (%s).".formatted(entityClass, shadowEntities()));
     }
 
     /**

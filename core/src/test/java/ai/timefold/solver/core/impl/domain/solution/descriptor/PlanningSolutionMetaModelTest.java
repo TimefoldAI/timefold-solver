@@ -260,20 +260,20 @@ class PlanningSolutionMetaModelTest {
 
             @Nested
             @DisplayName("with a shadow variable")
-            class PlanningListVariableMetaModelTest {
+            class ShadowVariableMetaModelTest {
 
-                private final ShadowVariableMetaModel<TestdataListSolution, TestdataListValue, TestdataListEntity> variableMetaModel =
+                private final ShadowVariableMetaModel<TestdataListSolution, TestdataListValue, TestdataListEntity> inverseVariableMetaModel =
                         planningEntityMetaModel.<TestdataListEntity> variable("entity");
 
                 @Test
                 void hasProperParent() {
-                    assertThat(variableMetaModel.entity())
+                    assertThat(inverseVariableMetaModel.entity())
                             .isSameAs(planningEntityMetaModel);
                 }
 
                 @Test
                 void hasProperType() {
-                    assertThat(variableMetaModel.type())
+                    assertThat(inverseVariableMetaModel.type())
                             .isEqualTo(TestdataListEntity.class);
                 }
 

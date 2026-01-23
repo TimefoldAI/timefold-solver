@@ -67,12 +67,12 @@ public final class DefaultGenuineEntityMetaModel<Solution_, Entity_>
 
     @Override
     public <Value_> GenuineVariableMetaModel<Solution_, Entity_, Value_> genuineVariable(String variableName) {
-        return castOrFail(variable(variableName), variableName);
+        return castOrFailGenuine(variable(variableName), variableName);
     }
 
     @SuppressWarnings("unchecked")
     private <Value_> GenuineVariableMetaModel<Solution_, Entity_, Value_>
-            castOrFail(VariableMetaModel<Solution_, Entity_, ?> variable, String variableName) {
+            castOrFailGenuine(VariableMetaModel<Solution_, Entity_, ?> variable, String variableName) {
         if (!(variable instanceof GenuineVariableMetaModel<Solution_, Entity_, ?> genuineVariable)) {
             throw new IllegalArgumentException(
                     "The variableName (%s) exists among variables (%s) but is not genuine.".formatted(variableName,
@@ -84,7 +84,7 @@ public final class DefaultGenuineEntityMetaModel<Solution_, Entity_>
     @Override
     public <Value_> GenuineVariableMetaModel<Solution_, Entity_, Value_> genuineVariable(String variableName,
             Class<Value_> variableClass) {
-        return castOrFail(variable(variableName, variableClass), variableName);
+        return castOrFailGenuine(variable(variableName, variableClass), variableName);
     }
 
     @SuppressWarnings("unchecked")
@@ -99,12 +99,12 @@ public final class DefaultGenuineEntityMetaModel<Solution_, Entity_>
 
     @Override
     public <Value_> PlanningVariableMetaModel<Solution_, Entity_, Value_> basicVariable(String variableName) {
-        return castOrFailBasicVariable(genuineVariable(variableName), variableName);
+        return castOrFailBasic(genuineVariable(variableName), variableName);
     }
 
     @SuppressWarnings("unchecked")
     private <Value_> PlanningVariableMetaModel<Solution_, Entity_, Value_>
-            castOrFailBasicVariable(GenuineVariableMetaModel<Solution_, Entity_, ?> variable, String variableName) {
+            castOrFailBasic(GenuineVariableMetaModel<Solution_, Entity_, ?> variable, String variableName) {
         if (!(variable instanceof PlanningVariableMetaModel<Solution_, Entity_, ?> genuineVariable)) {
             throw new IllegalArgumentException(
                     "The variableName (%s) exists among variables (%s) but is a list variable, not a basic variable."
@@ -116,7 +116,7 @@ public final class DefaultGenuineEntityMetaModel<Solution_, Entity_>
     @Override
     public <Value_> PlanningVariableMetaModel<Solution_, Entity_, Value_> basicVariable(String variableName,
             Class<Value_> variableClass) {
-        return castOrFailBasicVariable(genuineVariable(variableName, variableClass), variableName);
+        return castOrFailBasic(genuineVariable(variableName, variableClass), variableName);
     }
 
     @SuppressWarnings("unchecked")
@@ -131,12 +131,12 @@ public final class DefaultGenuineEntityMetaModel<Solution_, Entity_>
 
     @Override
     public <Value_> PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariable(String variableName) {
-        return castOrFailListVariable(genuineVariable(variableName), variableName);
+        return castOrFailList(genuineVariable(variableName), variableName);
     }
 
     @SuppressWarnings("unchecked")
     private <Value_> PlanningListVariableMetaModel<Solution_, Entity_, Value_>
-            castOrFailListVariable(GenuineVariableMetaModel<Solution_, Entity_, ?> variable, String variableName) {
+            castOrFailList(GenuineVariableMetaModel<Solution_, Entity_, ?> variable, String variableName) {
         if (!(variable instanceof PlanningListVariableMetaModel<Solution_, Entity_, ?> genuineVariable)) {
             throw new IllegalArgumentException(
                     "The variableName (%s) exists among variables (%s) but is a basic variable, not a list variable."
@@ -148,17 +148,17 @@ public final class DefaultGenuineEntityMetaModel<Solution_, Entity_>
     @Override
     public <Value_> PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariable(String variableName,
             Class<Value_> variableClass) {
-        return castOrFailListVariable(genuineVariable(variableName, variableClass), variableName);
+        return castOrFailList(genuineVariable(variableName, variableClass), variableName);
     }
 
     @Override
     public <Value_> ShadowVariableMetaModel<Solution_, Entity_, Value_> shadowVariable(String variableName) {
-        return castOrFailListShadow(variable(variableName), variableName);
+        return castOrFailShadow(variable(variableName), variableName);
     }
 
     @SuppressWarnings("unchecked")
     private <Value_> ShadowVariableMetaModel<Solution_, Entity_, Value_>
-            castOrFailListShadow(VariableMetaModel<Solution_, Entity_, ?> variable, String variableName) {
+            castOrFailShadow(VariableMetaModel<Solution_, Entity_, ?> variable, String variableName) {
         if (!(variable instanceof ShadowVariableMetaModel<Solution_, Entity_, ?> shadowVariableMetaModel)) {
             throw new IllegalArgumentException(
                     "The variableName (%s) exists among variables (%s) but it is a genuine variable, not a shadow."
@@ -170,7 +170,7 @@ public final class DefaultGenuineEntityMetaModel<Solution_, Entity_>
     @Override
     public <Value_> ShadowVariableMetaModel<Solution_, Entity_, Value_> shadowVariable(String variableName,
             Class<Value_> variableClass) {
-        return castOrFailListShadow(variable(variableName, variableClass), variableName);
+        return castOrFailShadow(variable(variableName, variableClass), variableName);
     }
 
     @Override

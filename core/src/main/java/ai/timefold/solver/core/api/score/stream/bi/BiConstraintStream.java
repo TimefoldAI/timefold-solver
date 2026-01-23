@@ -705,7 +705,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
     // ************************************************************************
 
     /**
-     * Runs all tuples of the stream through a given @{@link BiConstraintCollector} and converts them into a new
+     * Runs all tuples of the stream through a given {@link BiConstraintCollector} and converts them into a new
      * {@link UniConstraintStream} which only has a single tuple, the result of applying {@link BiConstraintCollector}.
      *
      * @param collector the collector to perform the grouping operation with

@@ -70,7 +70,7 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
             Entity_ entity, int index);
 
     /**
-     * Reads the value of a @{@link PlanningVariable basic planning variable} of a given entity.
+     * Reads the value of a {@link PlanningVariable basic planning variable} of a given entity.
      * 
      * @param variableMetaModel Describes the variable to be changed.
      * @param entity The entity whose variable value is to be changed.
