@@ -85,14 +85,8 @@ public sealed interface Indexer<T>
      */
     boolean isRemovable();
 
-    default Iterator<T> randomIterator(Object compositeKey, Random workingRandom) {
-        throw new UnsupportedOperationException("Indexer of type (%s) does not support building a random sequence."
-                .formatted(this.getClass().getSimpleName()));
-    }
+    Iterator<T> randomIterator(Object compositeKey, Random workingRandom);
 
-    default Iterator<T> randomIterator(Object compositeKey, Random workingRandom, Predicate<T> filter) {
-        throw new UnsupportedOperationException("Indexer of type (%s) does not support building a filtered random sequence."
-                .formatted(this.getClass().getSimpleName()));
-    }
+    Iterator<T> randomIterator(Object compositeKey, Random workingRandom, Predicate<T> filter);
 
 }

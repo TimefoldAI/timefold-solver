@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Iterator;
+import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 import ai.timefold.solver.core.impl.util.ListEntry;
@@ -43,6 +45,16 @@ public final class RandomAccessIndexerBackend<T> implements IndexerBackend<T> {
     @Override
     public Iterator<T> iterator(Object queryCompositeKey) {
         return tupleList.iterator();
+    }
+
+    @Override
+    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom) {
+        return new DefaultUniqueRandomSequence<>(tupleList, workingRandom);
+    }
+
+    @Override
+    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom, Predicate<T> filter) {
+        return new FilteredUniqueRandomSequence<>(tupleList, workingRandom, filter);
     }
 
     @Override

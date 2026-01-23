@@ -7,8 +7,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 
+import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomSequence;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DefaultUniqueRandomSequence;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
@@ -38,7 +38,7 @@ import org.jspecify.annotations.Nullable;
  * <ul>
  * <li>Both left and right datasets are kept in the {@link ArrayList} in which they came.
  * This list will never be copied, nor will it be mutated.</li>
- * <li>When an item needs to be selected from either list, it is wrapped in {@link DefaultUniqueRandomSequence},
+ * <li>When an item needs to be selected from either list, it is wrapped in {@link UniqueRandomSequence},
  * which allows to pick random elements and remembers which elements were already picked,
  * never to pick them again.</li>
  * <li>This type is only created when needed.

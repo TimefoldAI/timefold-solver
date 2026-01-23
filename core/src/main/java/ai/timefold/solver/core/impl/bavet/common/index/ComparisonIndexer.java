@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Random;
 import java.util.TreeMap;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
@@ -167,6 +169,16 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         }
         // Boundary condition not yet reached; include the indexer in the range.
         return entry.getValue().iterator(compositeKey);
+    }
+
+    @Override
+    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom, Predicate<T> filter) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

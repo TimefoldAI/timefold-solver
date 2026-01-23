@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.util.ListEntry;
@@ -107,6 +109,16 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
             return Collections.emptyIterator();
         }
         return downstreamIndexer.iterator(queryCompositeKey);
+    }
+
+    @Override
+    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom, Predicate<T> filter) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
