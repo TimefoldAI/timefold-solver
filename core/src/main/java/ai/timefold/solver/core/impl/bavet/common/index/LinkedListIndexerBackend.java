@@ -44,11 +44,6 @@ public final class LinkedListIndexerBackend<T> implements IndexerBackend<T> {
     }
 
     @Override
-    public ListEntry<T> get(Object queryCompositeKey, int index) {
-        throw new UnsupportedOperationException(); // Random access uses a different backend.
-    }
-
-    @Override
     public boolean isRemovable() {
         return tupleList.size() == 0;
     }

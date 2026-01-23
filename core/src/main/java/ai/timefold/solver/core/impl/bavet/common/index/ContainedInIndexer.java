@@ -112,11 +112,6 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
     }
 
     @Override
-    public ListEntry<T> get(Object queryCompositeKey, int index) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean isRemovable() {
         return downstreamIndexerMap.isEmpty();
     }

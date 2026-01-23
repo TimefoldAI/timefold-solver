@@ -76,7 +76,18 @@ final class SelectionProbabilityTest {
         for (var element : elements) {
             list.add(element);
         }
-        return new ListBasedElementAccessor<>(list);
+        return new ElementAccessor<>() {
+
+            @Override
+            public T get(int index) {
+                return list.get(index).element();
+            }
+
+            @Override
+            public int size() {
+                return list.size();
+            }
+        };
     }
 
 }

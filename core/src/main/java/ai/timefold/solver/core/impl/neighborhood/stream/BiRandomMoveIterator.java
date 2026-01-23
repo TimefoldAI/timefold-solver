@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood.stream;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -8,7 +9,6 @@ import java.util.Random;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DefaultUniqueRandomSequence;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.UniqueRandomSequence;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
@@ -62,7 +62,7 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
     private final Random workingRandom;
 
     // Fields required for iteration.
-    private final DefaultUniqueRandomSequence<UniTuple<A>> leftTupleSequence;
+    private final Iterator<UniTuple<A>> leftTupleIterator;
     private final int rightSequenceStoreIndex;
     private @Nullable Move<Solution_> nextMove;
 
@@ -71,22 +71,22 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
         this.workingRandom = Objects.requireNonNull(workingRandom);
         var leftDatasetInstance = context.getLeftDatasetInstance();
         this.rightSequenceStoreIndex = leftDatasetInstance.getRightSequenceStoreIndex();
-        this.leftTupleSequence = leftDatasetInstance.buildRandomSequence();
+        this.leftTupleIterator = leftDatasetInstance.randomIterator(workingRandom);
     }
 
-    private UniqueRandomSequence<UniTuple<B>> computeRightSequence(UniTuple<A> leftTuple) {
+    private Iterator<UniTuple<B>> computeRightSequence(UniTuple<A> leftTuple) {
         var rightDatasetInstance = context.getRightDatasetInstance();
         var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
         var rightTupleCount = rightDatasetInstance.size(compositeKey);
         if (rightTupleCount == 0) {
-            return DefaultUniqueRandomSequence.empty();
+            return Collections.emptyIterator();
         }
         var filter = rightDatasetInstance.getFilter();
         if (filter == null) { // Shortcut: no filter means we can take the entire right dataset as-is.
-            return rightDatasetInstance.buildRandomSequence(compositeKey);
+            return rightDatasetInstance.randomIterator(compositeKey, workingRandom);
         }
         var solutionView = context.neighborhoodSession().getSolutionView();
-        return rightDatasetInstance.buildRandomSequence(compositeKey,
+        return rightDatasetInstance.randomIterator(compositeKey, workingRandom,
                 rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()));
     }
 
@@ -96,12 +96,12 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
             return true;
         }
 
-        while (!leftTupleSequence.isEmpty()) {
-            var leftElement = leftTupleSequence.pick(workingRandom);
-            var rightEmpty = pickNextMove(leftElement);
+        while (!leftTupleIterator.hasNext()) {
+            var leftTuple = leftTupleIterator.next();
+            var rightEmpty = pickNextMove(leftTuple);
             if (rightEmpty) {
-                leftTupleSequence.remove(leftElement.index());
-                leftElement.value().setStore(rightSequenceStoreIndex, null);
+                leftTupleIterator.remove();
+                leftTuple.setStore(rightSequenceStoreIndex, null);
             }
             if (nextMove != null) {
                 if (nextMove instanceof ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) {
@@ -116,18 +116,18 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
         return false;
     }
 
-    private boolean pickNextMove(UniqueRandomSequence.SequenceElement<UniTuple<A>> leftElement) {
-        var leftTuple = leftElement.value();
-        var rightTupleSequence = (UniqueRandomSequence<UniTuple<B>>) leftTuple.getStore(rightSequenceStoreIndex);
-        if (rightTupleSequence == null) {
-            rightTupleSequence = computeRightSequence(leftTuple);
-            leftTuple.setStore(rightSequenceStoreIndex, rightTupleSequence);
+    private boolean pickNextMove(UniTuple<A> leftTuple) {
+        var rightTupleIterator = (Iterator<UniTuple<B>>) leftTuple.getStore(rightSequenceStoreIndex);
+        if (rightTupleIterator == null) {
+            rightTupleIterator = computeRightSequence(leftTuple);
+            leftTuple.setStore(rightSequenceStoreIndex, rightTupleIterator);
         }
-        if (rightTupleSequence.isEmpty()) {
+        if (!rightTupleIterator.hasNext()) {
             return true;
         } else {
             try {
-                var bTuple = rightTupleSequence.remove(workingRandom);
+                var bTuple = rightTupleIterator.next();
+                rightTupleIterator.remove();
                 var leftFact = leftTuple.getA();
                 var rightFact = bTuple.getA();
                 nextMove = context.buildMove(leftFact, rightFact);

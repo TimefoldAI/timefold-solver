@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Iterator;
+import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.util.ListEntry;
@@ -30,18 +32,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public sealed interface Indexer<T>
         permits EqualIndexer, ComparisonIndexer, ContainingIndexer, ContainedInIndexer, ContainingAnyOfIndexer, IndexerBackend {
-
-    /**
-     * Gets the entry at the given position for the given composite key.
-     *
-     * @param queryCompositeKey composite key uniquely identifying the backend or a set of backends
-     * @param index the requested position in the index
-     * @return the entry at the given index for the given composite key
-     * @throws IndexOutOfBoundsException if the position is out of bounds;
-     *         that is, if the index is negative or greater than or equal to {@link #size(Object)}
-     *         for the given composite key
-     */
-    ListEntry<T> get(Object queryCompositeKey, int index);
 
     /**
      * Modify operation.
@@ -94,5 +84,15 @@ public sealed interface Indexer<T>
      * @return true if empty and all put() calls had a remove() call
      */
     boolean isRemovable();
+
+    default Iterator<T> randomIterator(Object compositeKey, Random workingRandom) {
+        throw new UnsupportedOperationException("Indexer of type (%s) does not support building a random sequence."
+                .formatted(this.getClass().getSimpleName()));
+    }
+
+    default Iterator<T> randomIterator(Object compositeKey, Random workingRandom, Predicate<T> filter) {
+        throw new UnsupportedOperationException("Indexer of type (%s) does not support building a filtered random sequence."
+                .formatted(this.getClass().getSimpleName()));
+    }
 
 }

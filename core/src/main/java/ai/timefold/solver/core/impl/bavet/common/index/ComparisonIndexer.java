@@ -175,42 +175,6 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public ListEntry<T> get(Object queryCompositeKey, int index) {
-        return switch (comparisonMap.size()) {
-            case 0 -> throw new IndexOutOfBoundsException("Index: " + index);
-            case 1 -> getSingleIndexer(queryCompositeKey, index);
-            default -> getManyIndexers(queryCompositeKey, index);
-        };
-    }
-
-    private ListEntry<T> getSingleIndexer(Object compositeKey, int index) {
-        var indexKey = keyUnpacker.apply(compositeKey);
-        var entry = comparisonMap.firstEntry();
-        if (boundaryReached(entry.getKey(), indexKey)) {
-            throw new IndexOutOfBoundsException("Index: " + index);
-        }
-        return entry.getValue().get(compositeKey, index);
-    }
-
-    private ListEntry<T> getManyIndexers(Object compositeKey, int index) {
-        var seenCount = 0;
-        var indexKey = keyUnpacker.apply(compositeKey);
-        for (var entry : comparisonMap.entrySet()) {
-            if (boundaryReached(entry.getKey(), indexKey)) {
-                break;
-            } else { // Boundary condition not yet reached; include the indexer in the range.
-                var value = entry.getValue();
-                var size = value.size(compositeKey);
-                if (seenCount + size > index) {
-                    return value.get(compositeKey, index - seenCount);
-                }
-                seenCount += size;
-            }
-        }
-        throw new IndexOutOfBoundsException("Index: " + index);
-    }
-
-    @Override
     public String toString() {
         return "size = " + comparisonMap.size();
     }

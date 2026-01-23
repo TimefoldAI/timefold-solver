@@ -109,15 +109,6 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
         return downstreamIndexer.iterator(queryCompositeKey);
     }
 
-    public ListEntry<T> get(Object queryCompositeKey, int index) {
-        var indexKey = keyUnpacker.apply(queryCompositeKey);
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null) {
-            throw new IndexOutOfBoundsException("Index: " + index);
-        }
-        return downstreamIndexer.get(queryCompositeKey, index);
-    }
-
     @Override
     public String toString() {
         return "size = " + downstreamIndexerMap.size();

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.bavet.common.index.Indexer;
@@ -54,13 +55,13 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
         return indexer.iterator(compositeKey);
     }
 
-    public DefaultUniqueRandomSequence<UniTuple<Right_>> buildRandomSequence(Object compositeKey) {
-        return new DefaultUniqueRandomSequence<>(new IndexerBasedElementAccessor<>(indexer, compositeKey));
+    public Iterator<UniTuple<Right_>> randomIterator(Object compositeKey, Random workingRandom) {
+        return indexer.randomIterator(compositeKey, workingRandom);
     }
 
-    public FilteredUniqueRandomSequence<UniTuple<Right_>> buildRandomSequence(Object compositeKey,
+    public Iterator<UniTuple<Right_>> randomIterator(Object compositeKey, Random workingRandom,
             Predicate<UniTuple<Right_>> predicate) {
-        return new FilteredUniqueRandomSequence<>(new IndexerBasedElementAccessor<>(indexer, compositeKey), predicate);
+        return indexer.randomIterator(compositeKey, workingRandom, predicate);
     }
 
     public int size(Object compositeKey) {

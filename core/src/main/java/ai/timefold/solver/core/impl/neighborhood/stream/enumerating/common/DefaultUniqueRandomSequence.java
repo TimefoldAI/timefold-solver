@@ -4,8 +4,6 @@ import java.util.BitSet;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
-
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -18,8 +16,17 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequence<T> {
 
-    private static final DefaultUniqueRandomSequence<?> EMPTY =
-            new DefaultUniqueRandomSequence<>(new ListBasedElementAccessor<>(new ElementAwareArrayList<>()));
+    private static final DefaultUniqueRandomSequence<?> EMPTY = new DefaultUniqueRandomSequence<>(new ElementAccessor<>() {
+        @Override
+        public Object get(int index) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+    });
 
     @SuppressWarnings("unchecked")
     public static <T> DefaultUniqueRandomSequence<T> empty() {

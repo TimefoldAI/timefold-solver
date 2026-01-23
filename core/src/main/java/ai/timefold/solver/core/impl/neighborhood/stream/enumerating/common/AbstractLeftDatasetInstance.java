@@ -1,9 +1,11 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 
 import java.util.Iterator;
+import java.util.Random;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
+
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -44,8 +46,8 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
         return tupleList.iterator();
     }
 
-    public DefaultUniqueRandomSequence<Tuple_> buildRandomSequence() {
-        return new DefaultUniqueRandomSequence<>(new ListBasedElementAccessor<>(tupleList));
+    public Iterator<Tuple_> randomIterator(Random workingRandom) {
+        throw new UnsupportedOperationException();
     }
 
     public int size() {
