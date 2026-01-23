@@ -4,8 +4,6 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
-import ai.timefold.solver.core.impl.util.ListEntry;
-
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -52,22 +50,6 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
 
     public int size() {
         return tupleList.size();
-    }
-
-    record UnwrappingIterator<T>(Iterator<? extends ListEntry<T>> parentIterator)
-            implements
-                Iterator<T> {
-
-        @Override
-        public boolean hasNext() {
-            return parentIterator.hasNext();
-        }
-
-        @Override
-        public T next() {
-            return parentIterator.next().element();
-        }
-
     }
 
 }
