@@ -177,12 +177,12 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
     }
 
     @Override
-    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom) {
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom, Predicate<T> filter) {
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
         throw new UnsupportedOperationException();
     }
 

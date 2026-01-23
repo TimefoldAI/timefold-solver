@@ -96,7 +96,7 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
             return true;
         }
 
-        while (!leftTupleIterator.hasNext()) {
+        while (leftTupleIterator.hasNext()) {
             var leftTuple = leftTupleIterator.next();
             var rightEmpty = pickNextMove(leftTuple);
             if (rightEmpty) {

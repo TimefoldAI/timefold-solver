@@ -85,8 +85,8 @@ public sealed interface Indexer<T>
      */
     boolean isRemovable();
 
-    Iterator<T> randomIterator(Object compositeKey, Random workingRandom);
+    Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom);
 
-    Iterator<T> randomIterator(Object compositeKey, Random workingRandom, Predicate<T> filter);
+    Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter);
 
 }

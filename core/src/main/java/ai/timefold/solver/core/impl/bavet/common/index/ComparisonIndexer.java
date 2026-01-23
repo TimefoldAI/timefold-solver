@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -157,7 +158,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         return switch (comparisonMap.size()) {
             case 0 -> Collections.emptyIterator();
             case 1 -> iteratorSingleIndexer(queryCompositeKey);
-            default -> new DefaultIterator(queryCompositeKey);
+            default -> new DefaultIterator(queryCompositeKey, indexer -> indexer.iterator(queryCompositeKey));
         };
     }
 
@@ -172,13 +173,43 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom) {
-        throw new UnsupportedOperationException();
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        return switch (comparisonMap.size()) {
+            case 0 -> Collections.emptyIterator();
+            case 1 -> randomIteratorSingleIndexer(queryCompositeKey, workingRandom);
+            default ->
+                new DefaultIterator(queryCompositeKey, indexer -> indexer.randomIterator(queryCompositeKey, workingRandom));
+        };
+    }
+
+    private Iterator<T> randomIteratorSingleIndexer(Object compositeKey, Random workingRandom) {
+        var indexKey = keyUnpacker.apply(compositeKey);
+        var entry = comparisonMap.firstEntry();
+        if (boundaryReached(entry.getKey(), indexKey)) {
+            return Collections.emptyIterator();
+        }
+        // Boundary condition not yet reached; include the indexer in the range.
+        return entry.getValue().randomIterator(compositeKey, workingRandom);
     }
 
     @Override
-    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom, Predicate<T> filter) {
-        throw new UnsupportedOperationException();
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+        return switch (comparisonMap.size()) {
+            case 0 -> Collections.emptyIterator();
+            case 1 -> randomIteratorSingleIndexer(queryCompositeKey, workingRandom, filter);
+            default -> new DefaultIterator(queryCompositeKey,
+                    indexer -> indexer.randomIterator(queryCompositeKey, workingRandom, filter));
+        };
+    }
+
+    private Iterator<T> randomIteratorSingleIndexer(Object compositeKey, Random workingRandom, Predicate<T> filter) {
+        var indexKey = keyUnpacker.apply(compositeKey);
+        var entry = comparisonMap.firstEntry();
+        if (boundaryReached(entry.getKey(), indexKey)) {
+            return Collections.emptyIterator();
+        }
+        // Boundary condition not yet reached; include the indexer in the range.
+        return entry.getValue().randomIterator(compositeKey, workingRandom, filter);
     }
 
     @Override
@@ -193,15 +224,15 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     private final class DefaultIterator implements Iterator<T> {
 
-        private final Object compositeKey;
         private final Key_ indexKey;
+        private final Function<Indexer<T>, Iterator<T>> iteratorFunction;
         private final Iterator<Map.Entry<Key_, Indexer<T>>> indexerIterator = comparisonMap.entrySet().iterator();
         private @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
-        public DefaultIterator(Object compositeKey) {
-            this.compositeKey = compositeKey;
+        public DefaultIterator(Object compositeKey, Function<Indexer<T>, Iterator<T>> iteratorFunction) {
             this.indexKey = keyUnpacker.apply(compositeKey);
+            this.iteratorFunction = iteratorFunction;
         }
 
         @Override
@@ -219,7 +250,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
                     return false;
                 }
                 // Boundary condition not yet reached; include the indexer in the range.
-                downstreamIterator = entry.getValue().iterator(compositeKey);
+                downstreamIterator = iteratorFunction.apply(entry.getValue());
                 if (downstreamIterator.hasNext()) {
                     next = downstreamIterator.next();
                     return true;

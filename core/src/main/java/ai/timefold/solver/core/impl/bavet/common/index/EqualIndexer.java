@@ -112,13 +112,23 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom) {
-        throw new UnsupportedOperationException();
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        var indexKey = keyUnpacker.apply(queryCompositeKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        if (downstreamIndexer == null) {
+            return Collections.emptyIterator();
+        }
+        return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
     }
 
     @Override
-    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom, Predicate<T> filter) {
-        throw new UnsupportedOperationException();
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+        var indexKey = keyUnpacker.apply(queryCompositeKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        if (downstreamIndexer == null) {
+            return Collections.emptyIterator();
+        }
+        return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter);
     }
 
     @Override

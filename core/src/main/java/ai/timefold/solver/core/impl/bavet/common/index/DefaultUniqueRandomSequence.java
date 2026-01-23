@@ -56,6 +56,9 @@ final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequence<T> {
         // This algorithm ensures that we do not pick the same index twice.
         var randomIndex = workingRandom.nextInt(leftmostIndex, rightmostIndex + 1);
         nextIndex = pickIndex(workingRandom, randomIndex);
+        if (nextIndex == -1) {
+            return false;
+        }
         next = source.get(nextIndex).element();
         indexToOptionallyRemove = -1;
         return true;
@@ -66,7 +69,7 @@ final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequence<T> {
             // use the closest index to avoid skewing the probability
             index = determineActiveIndex(workingRandom, index);
             if (index < 0 || index >= length) {
-                throw new NoSuchElementException();
+                return -1;
             }
         }
         return index;

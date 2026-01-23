@@ -1,6 +1,9 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Iterator;
+import java.util.Random;
+
+import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -19,6 +22,10 @@ import org.jspecify.annotations.NullMarked;
 public sealed interface UniqueRandomSequence<T>
         extends Iterator<T>
         permits DefaultUniqueRandomSequence, FilteredUniqueRandomSequence {
+
+    static <T> Iterator<T> of(ElementAwareArrayList<T> list, Random random) {
+        return new DefaultUniqueRandomSequence<>(list, random);
+    }
 
     /**
      * Returns whether there are no more elements to pick from.

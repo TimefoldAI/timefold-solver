@@ -46,12 +46,12 @@ public final class LinkedListIndexerBackend<T> implements IndexerBackend<T> {
     }
 
     @Override
-    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom) { // Neighborhoods will not get here.
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) { // Neighborhoods will not get here.
         throw new UnsupportedOperationException("Impossible state: This backend does not support random access.");
     }
 
     @Override
-    public Iterator<T> randomIterator(Object compositeKey, Random workingRandom, Predicate<T> filter) { // Neighborhoods will not get here.
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) { // Neighborhoods will not get here.
         throw new UnsupportedOperationException("Impossible state: This backend does not support random access.");
     }
 

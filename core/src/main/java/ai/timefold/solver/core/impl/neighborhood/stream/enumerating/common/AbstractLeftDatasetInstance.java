@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 import java.util.Iterator;
 import java.util.Random;
 
+import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomSequence;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
@@ -37,8 +38,7 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
 
     @Override
     public void retract(Tuple_ tuple) {
-        ElementAwareArrayList.Entry<Tuple_> entry = tuple.removeStore(entryStoreIndex);
-        tupleList.remove(entry);
+        tupleList.remove(tuple.removeStore(entryStoreIndex));
     }
 
     @Override
@@ -47,7 +47,7 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
     }
 
     public Iterator<Tuple_> randomIterator(Random workingRandom) {
-        throw new UnsupportedOperationException();
+        return UniqueRandomSequence.of(tupleList, workingRandom);
     }
 
     public int size() {

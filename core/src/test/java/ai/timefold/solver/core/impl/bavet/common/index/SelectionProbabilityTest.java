@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.SortedMap;
@@ -43,8 +42,8 @@ final class SelectionProbabilityTest {
         for (var trial = 0; trial < TRIAL_COUNT; trial++) { // Independent trials; each gets its own random seed.
             Integer element = null;
             var splitRandom = new Random(random.nextLong());
-            var iterator = (Iterator<Integer>) new DefaultUniqueRandomSequence<>(sampleList, splitRandom); // This is the code that we test.
-            while (iterator.hasNext()) {
+            var iterator = UniqueRandomSequence.of(sampleList, splitRandom); // This is the code that we test.
+            for (var i = 0; i < n; i++) {
                 element = iterator.next();
             }
             // Record the last picked element (nth element).
