@@ -315,7 +315,6 @@ Whatever you do, benchmark on a large and diverse set of inputs.
 
 JVM performance may differ by as much as 20% between runs. To decide whether your changes helped or made things worse, make sure to always average the move evaluation speed from multiple runs on the same machine with the same solver configuration. We provide a xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to help you with that.
 
-[#constraintProfiling]
 == Constraint Profiling
 
 [NOTE]
