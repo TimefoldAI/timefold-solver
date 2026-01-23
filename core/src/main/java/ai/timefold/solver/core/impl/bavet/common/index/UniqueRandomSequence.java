@@ -45,8 +45,6 @@ public sealed interface UniqueRandomSequence<T>
      * Once this method returns, no subsequent {@link #next()} will return this element ever again.
      */
     @Override
-    default void remove() {
-        Iterator.super.remove();
-    }
+    void remove();
 
 }
