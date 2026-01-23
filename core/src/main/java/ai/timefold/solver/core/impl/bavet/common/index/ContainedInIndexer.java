@@ -78,6 +78,9 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
 
     @Override
     public int size(Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return 0;
+        }
         var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
         if (indexKeyCollection.isEmpty()) {
             return 0;

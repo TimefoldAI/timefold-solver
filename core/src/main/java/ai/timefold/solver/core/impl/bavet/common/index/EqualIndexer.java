@@ -79,6 +79,9 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public int size(Object compositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return 0;
+        }
         var indexKey = keyUnpacker.apply(compositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -89,6 +92,9 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void forEach(Object compositeKey, Consumer<T> tupleConsumer) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return;
+        }
         var indexKey = keyUnpacker.apply(compositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -103,6 +109,9 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
     }
 
     public Iterator<T> iterator(Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return Collections.emptyIterator();
+        }
         var indexKey = keyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -113,6 +122,9 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return Collections.emptyIterator();
+        }
         var indexKey = keyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -123,6 +135,9 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return Collections.emptyIterator();
+        }
         var indexKey = keyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {

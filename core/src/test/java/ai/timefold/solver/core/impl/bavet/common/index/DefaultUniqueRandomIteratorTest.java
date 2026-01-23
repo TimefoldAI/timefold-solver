@@ -68,7 +68,7 @@ class DefaultUniqueRandomIteratorTest {
         var element3 = set.next();
 
         assertThat(set.hasNext()).isTrue();
-        // Elements may be the same since pick doesn't clear
+        // Elements may be the same since we never called remove().
         assertThat(element1).isIn(list);
         assertThat(element2).isIn(list);
         assertThat(element3).isIn(list);

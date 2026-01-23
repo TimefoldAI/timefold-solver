@@ -102,6 +102,9 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
 
     @Override
     public int size(Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return 0;
+        }
         var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -112,6 +115,9 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
 
     @Override
     public void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return;
+        }
         var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -122,6 +128,9 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
 
     @Override
     public Iterator<T> iterator(Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return Collections.emptyIterator();
+        }
         var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -132,6 +141,9 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return Collections.emptyIterator();
+        }
         var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -142,6 +154,9 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return Collections.emptyIterator();
+        }
         var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
