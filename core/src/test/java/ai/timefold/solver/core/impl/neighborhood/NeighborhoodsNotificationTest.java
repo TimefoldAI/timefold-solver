@@ -36,7 +36,7 @@ class NeighborhoodsNotificationTest {
 
         var neighborhoodMoveRepository = mock(NeighborhoodsBasedMoveRepository.class);
         var solutionMetamodel = TestdataDeclarativeSimpleListSolution.buildSolutionMetaModel();
-        var variableMetamodel = solutionMetamodel.entity(TestdataDeclarativeSimpleListEntity.class)
+        var variableMetamodel = solutionMetamodel.genuineEntity(TestdataDeclarativeSimpleListEntity.class)
                 .listVariable("values", TestdataDeclarativeSimpleListValue.class);
         new DefaultMoveRunner<TestdataDeclarativeSimpleListSolution>(solutionMetamodel, neighborhoodMoveRepository)
                 .using(solution)

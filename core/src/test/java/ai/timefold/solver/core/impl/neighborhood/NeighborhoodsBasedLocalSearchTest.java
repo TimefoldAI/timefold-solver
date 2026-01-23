@@ -94,7 +94,7 @@ class NeighborhoodsBasedLocalSearchTest {
     private static NeighborhoodsBasedMoveRepository<TestdataSolution>
             getMoveRepository(SolutionDescriptor<TestdataSolution> solutionDescriptor) {
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataEntity.class)
+                .genuineEntity(TestdataEntity.class)
                 .basicVariable();
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         // Random selection otherwise LS gets stuck in an endless loop.

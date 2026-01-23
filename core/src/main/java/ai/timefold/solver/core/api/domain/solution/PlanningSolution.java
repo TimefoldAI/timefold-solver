@@ -74,7 +74,7 @@ public @interface PlanningSolution {
     }
 
     /**
-     * @deprecated When multi-threaded solving, ensure your domain classes use @{@link PlanningId} instead.
+     * @deprecated When multi-threaded solving, ensure your domain classes use {@link PlanningId} instead.
      */
     @Deprecated(forRemoval = true, since = "1.10.0")
     @NonNull

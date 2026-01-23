@@ -35,7 +35,7 @@ import org.jspecify.annotations.Nullable;
 public interface SolutionView<Solution_> {
 
     /**
-     * Reads the value of a @{@link PlanningVariable basic planning variable} of a given entity.
+     * Reads the value of a {@link PlanningVariable basic planning variable} of a given entity.
      * 
      * @param variableMetaModel Describes the variable whose value is to be read.
      * @param entity The entity whose variable is to be read.
@@ -57,7 +57,7 @@ public interface SolutionView<Solution_> {
             Entity_ entity);
 
     /**
-     * Reads the value of a @{@link PlanningListVariable list planning variable} of a given entity at a specific index.
+     * Reads the value of a {@link PlanningListVariable list planning variable} of a given entity at a specific index.
      *
      * @param variableMetaModel Describes the variable whose value is to be read.
      * @param entity The entity whose variable is to be read.
@@ -70,7 +70,7 @@ public interface SolutionView<Solution_> {
             Entity_ entity, int index);
 
     /**
-     * Locates a given value in any @{@link PlanningListVariable list planning variable}.
+     * Locates a given value in any {@link PlanningListVariable list planning variable}.
      *
      * @param variableMetaModel Describes the variable whose value is to be read.
      * @param value The value to locate.

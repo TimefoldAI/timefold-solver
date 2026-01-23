@@ -62,7 +62,8 @@ class MoveDirectorTest {
     @Test
     void readBasicVariable() {
         var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
 
         var mockScoreDirector = mock(InnerScoreDirector.class);
         var moveDirector = new MoveDirector<TestdataSolution, SimpleScore>(mockScoreDirector);
@@ -74,7 +75,8 @@ class MoveDirectorTest {
     @Test
     void changeVariable() {
         var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
         var variableDescriptor =
                 ((DefaultPlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue>) variableMetaModel)
                         .variableDescriptor();
@@ -101,8 +103,8 @@ class MoveDirectorTest {
     @Test
     void readListVariable() {
         var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
 
         var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
         var moveDirector = new MoveDirector<>(mockScoreDirector);
@@ -124,8 +126,8 @@ class MoveDirectorTest {
     @Test
     void moveValueInList() {
         var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
         var variableDescriptor =
                 ((DefaultPlanningListVariableMetaModel<TestdataListSolution, TestdataListEntity, TestdataListValue>) variableMetaModel)
                         .variableDescriptor();
@@ -169,8 +171,8 @@ class MoveDirectorTest {
     @Test
     void moveValueBetweenLists() {
         var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
         var variableDescriptor =
                 ((DefaultPlanningListVariableMetaModel<TestdataListSolution, TestdataListEntity, TestdataListValue>) variableMetaModel)
                         .variableDescriptor();
@@ -209,8 +211,8 @@ class MoveDirectorTest {
     @Test
     void swapValuesInList() {
         var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
         var variableDescriptor =
                 ((DefaultPlanningListVariableMetaModel<TestdataListSolution, TestdataListEntity, TestdataListValue>) variableMetaModel)
                         .variableDescriptor();
@@ -253,8 +255,8 @@ class MoveDirectorTest {
     @Test
     void swapValuesBetweenLists() {
         var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
         var variableDescriptor =
                 ((DefaultPlanningListVariableMetaModel<TestdataListSolution, TestdataListEntity, TestdataListValue>) variableMetaModel)
                         .variableDescriptor();
@@ -496,8 +498,8 @@ class MoveDirectorTest {
     void twoUnassignsInARow() {
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         var solutionMetaModel = solutionDescriptor.getMetaModel();
-        var variableMetaModel =
-                solutionMetaModel.entity(TestdataListEntity.class).listVariable("valueList", TestdataListValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
+                .listVariable("valueList", TestdataListValue.class);
 
         var expectedValueA1 = new TestdataListValue("valueA1");
         var expectedValueA2 = new TestdataListValue("valueA2");
@@ -530,10 +532,10 @@ class MoveDirectorTest {
     void twoChangesInARow() {
         var solutionDescriptor = TestdataMixedSolution.buildSolutionDescriptor();
         var solutionMetaModel = solutionDescriptor.getMetaModel();
-        var firstVariableMetaModel =
-                solutionMetaModel.entity(TestdataMixedEntity.class).basicVariable("basicValue", TestdataMixedOtherValue.class);
-        var secondVariableMetaModel = solutionMetaModel.entity(TestdataMixedEntity.class).basicVariable("secondBasicValue",
-                TestdataMixedOtherValue.class);
+        var firstVariableMetaModel = solutionMetaModel.genuineEntity(TestdataMixedEntity.class)
+                .basicVariable("basicValue", TestdataMixedOtherValue.class);
+        var secondVariableMetaModel = solutionMetaModel.genuineEntity(TestdataMixedEntity.class)
+                .basicVariable("secondBasicValue", TestdataMixedOtherValue.class);
 
         var expectedValueA1 = new TestdataMixedOtherValue("valueA1", 0);
         var expectedValueA2 = new TestdataMixedOtherValue("valueA2", 0);

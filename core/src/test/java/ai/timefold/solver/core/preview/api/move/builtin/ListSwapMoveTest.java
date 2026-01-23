@@ -20,7 +20,7 @@ class ListSwapMoveTest {
         var value3 = entity.getValueList().get(2);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
         var swapMove = Moves.swap(variableMetaModel, entity, 0, entity, 2);
@@ -46,7 +46,7 @@ class ListSwapMoveTest {
         var value2 = entity2.getValueList().get(0);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
         var swapMove = Moves.swap(variableMetaModel, entity1, 0, entity2, 0);
@@ -69,7 +69,7 @@ class ListSwapMoveTest {
         var value2 = entity.getValueList().get(2);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
         // Swap adjacent positions 1 and 2
@@ -91,7 +91,7 @@ class ListSwapMoveTest {
         var entity2 = solution.getEntityList().get(1);
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
         var move1 = Moves.swap(variableMetaModel, entity1, 0, entity1, 1);
@@ -121,7 +121,7 @@ class ListSwapMoveTest {
         var originalList = entity.getValueList().stream().toList();
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
         var swapMove = Moves.swap(variableMetaModel, entity, 0, entity, 2);
@@ -148,7 +148,7 @@ class ListSwapMoveTest {
         var originalList2 = entity2.getValueList().stream().toList();
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable("valueList", TestdataListValue.class);
 
         var swapMove = Moves.swap(variableMetaModel, entity1, 0, entity2, 0);

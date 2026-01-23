@@ -40,7 +40,7 @@ class ChangeMoveProviderTest {
     void fromSolution() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataEntity.class)
+                .genuineEntity(TestdataEntity.class)
                 .basicVariable();
 
         var solution = TestdataSolution.generateSolution(2, 2);
@@ -96,7 +96,7 @@ class ChangeMoveProviderTest {
     void fromSolutionIncompleteValueRange() {
         var solutionDescriptor = TestdataIncompleteValueRangeSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataIncompleteValueRangeEntity.class)
+                .genuineEntity(TestdataIncompleteValueRangeEntity.class)
                 .basicVariable();
 
         // The point of this test is to ensure that the move provider skips values that are not in the value range.
@@ -156,7 +156,7 @@ class ChangeMoveProviderTest {
     void fromEntity() {
         var solutionDescriptor = TestdataEntityProvidingSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataEntityProvidingEntity.class)
+                .genuineEntity(TestdataEntityProvidingEntity.class)
                 .basicVariable();
 
         var solution = TestdataEntityProvidingSolution.generateSolution(2, 2);
@@ -190,7 +190,7 @@ class ChangeMoveProviderTest {
     void fromEntityAllowsUnassigned() {
         var solutionDescriptor = TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataAllowsUnassignedEntityProvidingEntity.class)
+                .genuineEntity(TestdataAllowsUnassignedEntityProvidingEntity.class)
                 .basicVariable();
 
         var solution = TestdataAllowsUnassignedEntityProvidingSolution.generateSolution(2, 2);
@@ -244,7 +244,7 @@ class ChangeMoveProviderTest {
     void fromSolutionAllowsUnassigned() {
         var solutionDescriptor = TestdataAllowsUnassignedSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataAllowsUnassignedEntity.class)
+                .genuineEntity(TestdataAllowsUnassignedEntity.class)
                 .basicVariable();
 
         var solution = TestdataAllowsUnassignedSolution.generateSolution(2, 2);

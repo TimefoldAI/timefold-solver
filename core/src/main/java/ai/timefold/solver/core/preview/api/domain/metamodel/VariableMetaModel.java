@@ -47,4 +47,14 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      */
     String name();
 
+    /**
+     * Returns true if this variable is a genuine (i.e. not shadow) variable.
+     * Effectively checks if this variable is an instance of {@link GenuineVariableMetaModel}.
+     *
+     * @return true if this variable is genuine
+     */
+    default boolean isGenuine() {
+        return this instanceof GenuineVariableMetaModel;
+    }
+
 }

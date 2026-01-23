@@ -880,7 +880,9 @@ public final class SolutionDescriptor<Solution_> {
         if (planningSolutionMetaModel == null) {
             var metaModel = new DefaultPlanningSolutionMetaModel<>(this);
             for (var entityDescriptor : getEntityDescriptors()) {
-                var entityMetaModel = new DefaultPlanningEntityMetaModel<>(metaModel, entityDescriptor);
+                var entityMetaModel =
+                        entityDescriptor.isGenuine() ? new DefaultGenuineEntityMetaModel<>(metaModel, entityDescriptor)
+                                : new DefaultShadowEntityMetaModel<>(metaModel, entityDescriptor);
                 for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
                     if (variableDescriptor.isListVariable()) {
                         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;

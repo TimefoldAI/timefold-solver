@@ -60,7 +60,8 @@ class MoveRunnerTest {
 
         // Get the meta model for the planning variable
         var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
 
         // Create a simple swap move
         Move<TestdataSolution> swapMove = view -> {
@@ -96,7 +97,8 @@ class MoveRunnerTest {
         var originalValue2 = entity2.getValue();
 
         var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
 
         Move<TestdataSolution> swapMove = view -> {
             var val1 = view.getValue(variableMetaModel, entity1);
@@ -145,7 +147,8 @@ class MoveRunnerTest {
         var originalValues = entities.stream().map(TestdataEntity::getValue).toList();
 
         var solutionMetaModel = TestdataSolution.buildSolutionDescriptor().getMetaModel();
-        var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class).basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
+                .basicVariable("value", TestdataValue.class);
 
         // Move that rotates values across all entities
         Move<TestdataSolution> rotateMove = view -> {

@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * a {@link ProblemFactCollectionProperty problem fact} or a {@link PlanningEntity planning entity}
  * from an external copy to the internal one.
  * 
- * @deprecated When multi-threaded solving, ensure your domain classes use @{@link PlanningId} instead.
+ * @deprecated When multi-threaded solving, ensure your domain classes use {@link PlanningId} instead.
  */
 @Deprecated(forRemoval = true, since = "1.10.0")
 public enum LookUpStrategyType {

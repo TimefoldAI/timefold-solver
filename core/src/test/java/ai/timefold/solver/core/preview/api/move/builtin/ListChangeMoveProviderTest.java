@@ -38,7 +38,7 @@ class ListChangeMoveProviderTest {
     void fromSolution() {
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataListEntity.class)
+                .genuineEntity(TestdataListEntity.class)
                 .listVariable();
 
         var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
@@ -107,7 +107,7 @@ class ListChangeMoveProviderTest {
     void fromEntity() {
         var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataListEntityProvidingEntity.class)
+                .genuineEntity(TestdataListEntityProvidingEntity.class)
                 .listVariable();
 
         var solution = TestdataListEntityProvidingSolution.generateSolution();
@@ -180,7 +180,7 @@ class ListChangeMoveProviderTest {
     void fromEntityAllowsUnassigned() {
         var solutionDescriptor = TestdataListUnassignedEntityProvidingSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataListUnassignedEntityProvidingEntity.class)
+                .genuineEntity(TestdataListUnassignedEntityProvidingEntity.class)
                 .listVariable();
 
         var solution = TestdataListUnassignedEntityProvidingSolution.generateSolution();
@@ -261,7 +261,7 @@ class ListChangeMoveProviderTest {
     void fromSolutionAllowsUnassigned() {
         var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
-                .entity(TestdataAllowsUnassignedValuesListEntity.class)
+                .genuineEntity(TestdataAllowsUnassignedValuesListEntity.class)
                 .listVariable();
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 2);
         var e1 = solution.getEntityList().get(0);

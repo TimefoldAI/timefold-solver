@@ -5,7 +5,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A {@link VariableMetaModel} that represents a @{@link PlanningVariable basic planning variable}.
+ * A {@link VariableMetaModel} that represents a {@link PlanningVariable basic planning variable}.
  *
  * <p>
  * <strong>This package and all of its contents are part of the Neighborhoods API,
@@ -28,5 +28,15 @@ import org.jspecify.annotations.NullMarked;
 public sealed interface GenuineVariableMetaModel<Solution_, Entity_, Value_>
         extends VariableMetaModel<Solution_, Entity_, Value_>
         permits PlanningVariableMetaModel, PlanningListVariableMetaModel {
+
+    /**
+     * Returns true if this variable is a list variable.
+     * Effectively checks if this variable is an instance of {@link PlanningListVariableMetaModel}.
+     *
+     * @return True if this variable is a list variable, false if it is a basic variable.
+     */
+    default boolean isListVariable() {
+        return this instanceof PlanningListVariableMetaModel;
+    }
 
 }

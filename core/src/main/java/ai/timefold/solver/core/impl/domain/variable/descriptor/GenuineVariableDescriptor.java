@@ -216,7 +216,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
 
     /**
      * A basic planning variable {@link PlanningVariable#allowsUnassigned() allowing unassigned}
-     * and @{@link PlanningListVariable} are always considered initialized.
+     * and {@link PlanningListVariable} are always considered initialized.
      *
      * @param entity never null
      * @return true if the variable on that entity is initialized

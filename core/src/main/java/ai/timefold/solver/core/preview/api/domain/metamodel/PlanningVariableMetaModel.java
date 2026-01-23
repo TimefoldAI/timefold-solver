@@ -5,7 +5,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A {@link VariableMetaModel} that represents a @{@link PlanningVariable basic planning variable}.
+ * A {@link VariableMetaModel} that represents a {@link PlanningVariable basic planning variable}.
  *
  * <p>
  * <strong>This package and all of its contents are part of the Neighborhoods API,
