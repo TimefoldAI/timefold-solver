@@ -64,8 +64,4 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
         return indexer.randomIterator(compositeKey, workingRandom, predicate);
     }
 
-    public int size(Object compositeKey) {
-        return indexer.size(compositeKey);
-    }
-
 }

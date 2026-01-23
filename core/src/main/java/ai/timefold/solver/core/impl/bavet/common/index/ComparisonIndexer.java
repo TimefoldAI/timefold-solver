@@ -225,14 +225,14 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     private final class DefaultIterator implements Iterator<T> {
 
         private final Key_ indexKey;
-        private final Function<Indexer<T>, Iterator<T>> iteratorFunction;
+        private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
         private final Iterator<Map.Entry<Key_, Indexer<T>>> indexerIterator = comparisonMap.entrySet().iterator();
         private @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
-        public DefaultIterator(Object compositeKey, Function<Indexer<T>, Iterator<T>> iteratorFunction) {
+        public DefaultIterator(Object compositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
             this.indexKey = keyUnpacker.apply(compositeKey);
-            this.iteratorFunction = iteratorFunction;
+            this.downstreamIteratorFunction = downstreamIteratorFunction;
         }
 
         @Override
@@ -250,7 +250,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
                     return false;
                 }
                 // Boundary condition not yet reached; include the indexer in the range.
-                downstreamIterator = iteratorFunction.apply(entry.getValue());
+                downstreamIterator = downstreamIteratorFunction.apply(entry.getValue());
                 if (downstreamIterator.hasNext()) {
                     next = downstreamIterator.next();
                     return true;

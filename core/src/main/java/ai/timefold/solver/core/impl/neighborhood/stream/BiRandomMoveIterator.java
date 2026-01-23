@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood.stream;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -74,22 +73,6 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
         this.leftTupleIterator = leftDatasetInstance.randomIterator(workingRandom);
     }
 
-    private Iterator<UniTuple<B>> createRightTupleIterator(UniTuple<A> leftTuple) {
-        var rightDatasetInstance = context.getRightDatasetInstance();
-        var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
-        var rightTupleCount = rightDatasetInstance.size(compositeKey);
-        if (rightTupleCount == 0) {
-            return Collections.emptyIterator();
-        }
-        var filter = rightDatasetInstance.getFilter();
-        if (filter == null) { // Shortcut: no filter means we can take the entire right dataset as-is.
-            return rightDatasetInstance.randomIterator(compositeKey, workingRandom);
-        }
-        var solutionView = context.neighborhoodSession().getSolutionView();
-        return rightDatasetInstance.randomIterator(compositeKey, workingRandom,
-                rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()));
-    }
-
     @Override
     public boolean hasNext() {
         if (nextMove != null) {
@@ -124,14 +107,22 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
         }
         if (!rightTupleIterator.hasNext()) {
             return true;
-        } else {
-            var bTuple = rightTupleIterator.next();
-            rightTupleIterator.remove();
-            var leftFact = leftTuple.getA();
-            var rightFact = bTuple.getA();
-            nextMove = context.buildMove(leftFact, rightFact);
-            return false;
         }
+        nextMove = context.buildMove(leftTuple.getA(), rightTupleIterator.next().getA());
+        rightTupleIterator.remove();
+        return false;
+    }
+
+    private Iterator<UniTuple<B>> createRightTupleIterator(UniTuple<A> leftTuple) {
+        var rightDatasetInstance = context.getRightDatasetInstance();
+        var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
+        var filter = rightDatasetInstance.getFilter();
+        if (filter == null) { // Shortcut: no filter means we can take the entire right dataset as-is.
+            return rightDatasetInstance.randomIterator(compositeKey, workingRandom);
+        }
+        var solutionView = context.neighborhoodSession().getSolutionView();
+        return rightDatasetInstance.randomIterator(compositeKey, workingRandom,
+                rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()));
     }
 
     @Override

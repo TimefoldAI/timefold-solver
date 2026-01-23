@@ -132,12 +132,22 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
-        throw new UnsupportedOperationException();
+        var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        if (downstreamIndexer == null) {
+            return Collections.emptyIterator();
+        }
+        return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
     }
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
-        throw new UnsupportedOperationException();
+        var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        if (downstreamIndexer == null) {
+            return Collections.emptyIterator();
+        }
+        return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter);
     }
 
     @Override

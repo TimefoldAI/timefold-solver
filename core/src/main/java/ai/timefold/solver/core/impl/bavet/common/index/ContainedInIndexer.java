@@ -94,11 +94,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
 
     @Override
     public void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
-        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
-        if (indexKeyCollection.isEmpty()) {
-            return;
-        }
-        var iterator = new DefaultIterator(queryCompositeKey, indexKeyCollection); // Avoid duplicating iteration logic
+        var iterator = iterator(queryCompositeKey);
         while (iterator.hasNext()) {
             tupleConsumer.accept(iterator.next());
         }
@@ -110,17 +106,28 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
         if (indexKeyCollection.isEmpty()) {
             return Collections.emptyIterator();
         }
-        return new DefaultIterator(queryCompositeKey, indexKeyCollection);
+        return new DefaultIterator(indexKeyCollection,
+                downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
     }
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
-        throw new UnsupportedOperationException();
+        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        if (indexKeyCollection.isEmpty()) {
+            return Collections.emptyIterator();
+        }
+        return new DefaultIterator(indexKeyCollection,
+                downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom));
     }
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
-        throw new UnsupportedOperationException();
+        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        if (indexKeyCollection.isEmpty()) {
+            return Collections.emptyIterator();
+        }
+        return new DefaultIterator(indexKeyCollection,
+                downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter));
     }
 
     @Override
@@ -135,14 +142,15 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
 
     private final class DefaultIterator implements Iterator<T> {
 
-        private final Object queryCompositeKey;
         private final Iterator<Key_> indexerIterator;
+        private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
         private @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
-        public DefaultIterator(Object queryCompositeKey, KeyCollection_ indexKeyCollection) {
-            this.queryCompositeKey = queryCompositeKey;
+        public DefaultIterator(KeyCollection_ indexKeyCollection,
+                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
             this.indexerIterator = indexKeyCollection.iterator();
+            this.downstreamIteratorFunction = downstreamIteratorFunction;
         }
 
         @Override
@@ -161,7 +169,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
                 if (downstreamIndexer == null) {
                     continue;
                 }
-                downstreamIterator = downstreamIndexer.iterator(queryCompositeKey);
+                downstreamIterator = downstreamIteratorFunction.apply(downstreamIndexer);
                 if (downstreamIterator.hasNext()) {
                     next = downstreamIterator.next();
                     return true;
