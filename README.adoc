@@ -90,3 +90,6 @@ Timefold Solver is a derivative work of OptaPlanner and OptaPy,
 which includes copyrights of the original creator, Red Hat Inc., affiliates, and contributors,
 that were all entirely licensed under the Apache-2.0 license.
 Every source file has been modified.
+
+== Documentation icon libraries
+- [tabler icons](https://tabler.io/icons) under [MIT license](https://docs.tabler.io/ui/getting-started/license)
