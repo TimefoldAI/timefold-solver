@@ -2,10 +2,13 @@ package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.SortedSet;
 
-public record ConstraintNodeProfileId(long key,
-        StreamKind streamKind,
-        SortedSet<ConstraintNodeLocation> locationSet,
-        boolean isPropagator) implements Comparable<ConstraintNodeProfileId> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+public record ConstraintNodeProfileId(long key, StreamKind streamKind, SortedSet<ConstraintNodeLocation> locationSet,
+        boolean isPropagator)
+        implements
+            Comparable<ConstraintNodeProfileId> {
 
     public ConstraintNodeProfileId(long key, StreamKind streamKind, SortedSet<ConstraintNodeLocation> locationSet) {
         this(key, streamKind, locationSet, false);
@@ -31,10 +34,22 @@ public record ConstraintNodeProfileId(long key,
     @Override
     public String toString() {
         var profileKind = isPropagator ? "Propagator" : "Node";
+        return "%s %s %d".formatted(streamKind, profileKind, key);
+    }
+
+    /**
+     * Unlike {@link #toString()}, includes location information.
+     * This is more verbose and intended for explanatory messages.
+     *
+     * @return a verbose string representation of this profile ID
+     */
+    public String toVerboseString() {
+        var profileKind = isPropagator ? "Propagator" : "Node";
         if (locationSet.size() == 1) {
             var location = locationSet.iterator().next();
             return "%s %s %d defined at location %s".formatted(streamKind, profileKind, key, location);
         }
         return "%s %s %d shared at locations %s".formatted(streamKind, profileKind, key, locationSet);
     }
+
 }

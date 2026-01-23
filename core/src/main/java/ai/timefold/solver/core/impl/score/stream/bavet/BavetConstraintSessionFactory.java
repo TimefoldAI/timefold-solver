@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
-import ai.timefold.solver.core.impl.bavet.common.ConstraintProfiler;
+import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.visual.NodeGraph;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -39,7 +39,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final ConstraintMetaModel constraintMetaModel;
-    private final @Nullable ConstraintProfiler constraintProfiler;
+    private final @Nullable InnerConstraintProfiler constraintProfiler;
 
     public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor,
             ConstraintMetaModel constraintMetaModel, boolean profilingEnabled) {
@@ -132,7 +132,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(Solution_ workingSolution,
             ConsistencyTracker<Solution_> consistencyTracker, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
             AbstractScoreInliner<Score_> scoreInliner,
-            ConstraintProfiler profiler,
+            InnerConstraintProfiler profiler,
             Consumer<String> nodeNetworkVisualizationConsumer) {
         var buildHelper =
                 new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner, profiler);

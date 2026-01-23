@@ -10,7 +10,7 @@ import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetStream;
 import ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId;
-import ai.timefold.solver.core.impl.bavet.common.ConstraintProfiler;
+import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.bavet.common.StreamKind;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.Scorer;
 
@@ -63,7 +63,7 @@ public interface TupleLifecycle<Tuple_ extends Tuple> {
     }
 
     static <Stream_ extends BavetStream, Tuple_ extends Tuple> TupleLifecycle<Tuple_> profiling(
-            ConstraintProfiler constraintProfiler, long lifecycleId, Stream_ stream,
+            InnerConstraintProfiler constraintProfiler, long lifecycleId, Stream_ stream,
             TupleLifecycle<Tuple_> delegate) {
         if (delegate instanceof AggregatedTupleLifecycle) {
             // Do not profile aggregated tuple lifecycles; that will double

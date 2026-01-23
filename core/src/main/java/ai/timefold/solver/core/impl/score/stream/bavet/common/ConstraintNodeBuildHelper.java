@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.ConstraintProfiler;
+import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.stream.common.ForEachFilteringCriteria;
@@ -26,7 +26,7 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
     public ConstraintNodeBuildHelper(ConsistencyTracker<Solution_> consistencyTracker,
             Set<BavetAbstractConstraintStream<Solution_>> activeStreamSet,
             AbstractScoreInliner<Score_> scoreInliner,
-            @Nullable ConstraintProfiler profiler) {
+            @Nullable InnerConstraintProfiler profiler) {
         super(activeStreamSet, profiler);
         this.consistencyTracker = consistencyTracker;
         this.scoreInliner = scoreInliner;

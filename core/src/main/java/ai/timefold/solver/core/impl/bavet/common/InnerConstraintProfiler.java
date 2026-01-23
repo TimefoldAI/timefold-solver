@@ -4,7 +4,10 @@ import java.util.Set;
 
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 
-public interface ConstraintProfiler {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+public interface InnerConstraintProfiler {
 
     void register(ConstraintNodeProfileId profileId);
 

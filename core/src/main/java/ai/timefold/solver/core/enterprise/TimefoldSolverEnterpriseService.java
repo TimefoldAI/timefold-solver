@@ -19,7 +19,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListM
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.bavet.common.ConstraintProfiler;
+import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -153,7 +153,7 @@ public interface TimefoldSolverEnterpriseService {
             buildListMultistageMoveSelectorFactory(
                     ListMultistageMoveSelectorConfig moveSelectorConfig);
 
-    ConstraintProfiler buildConstraintProfiler();
+    InnerConstraintProfiler buildConstraintProfiler();
 
     enum Feature {
         MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),

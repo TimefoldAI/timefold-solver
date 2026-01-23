@@ -36,14 +36,14 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     private final Map<Stream_, Integer> storeIndexMap;
 
     @Nullable
-    private final ConstraintProfiler constraintProfiler;
+    private final InnerConstraintProfiler constraintProfiler;
 
     @Nullable
     private List<AbstractNode> reversedNodeList;
     private long nextLifecycleProfilingId = 0;
 
     protected AbstractNodeBuildHelper(Set<Stream_> activeStreamSet,
-            @Nullable ConstraintProfiler constraintProfiler) {
+            @Nullable InnerConstraintProfiler constraintProfiler) {
         this.activeStreamSet = activeStreamSet;
         int activeStreamSetSize = activeStreamSet.size();
         this.nodeCreatorMap = new HashMap<>(Math.max(16, activeStreamSetSize));

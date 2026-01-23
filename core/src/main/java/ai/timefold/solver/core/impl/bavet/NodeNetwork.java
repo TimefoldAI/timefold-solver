@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
-import ai.timefold.solver.core.impl.bavet.common.ConstraintProfiler;
+import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 
 import org.jspecify.annotations.NullMarked;
@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public record NodeNetwork(Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap,
-        Propagator[][] layeredNodes, @Nullable ConstraintProfiler constraintProfiler) {
+        Propagator[][] layeredNodes, @Nullable InnerConstraintProfiler constraintProfiler) {
 
     public static final NodeNetwork EMPTY = new NodeNetwork(Map.of(), new Propagator[0][0], null);
 
