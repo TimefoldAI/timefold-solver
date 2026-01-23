@@ -10,14 +10,14 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Keeps an exact track of which items were already removed from the sequence,
+ * Keeps an exact track of which items were already removed,
  * so that no item is ever returned twice.
  * It accepts a list of unique items on input, and does not copy or modify it.
  *
  * @param <T>
  */
 @NullMarked
-final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequence<T> {
+final class DefaultUniqueRandomIterator<T> implements UniqueRandomIterator<T> {
 
     private final ElementAwareArrayList<T> source;
     private final int length;
@@ -32,7 +32,7 @@ final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequence<T> {
     private @Nullable T next = null;
     private int indexToOptionallyRemove = -1;
 
-    DefaultUniqueRandomSequence(ElementAwareArrayList<T> source, Random workingRandom) {
+    DefaultUniqueRandomIterator(ElementAwareArrayList<T> source, Random workingRandom) {
         this.source = source;
         this.length = source.size();
         this.removed = new BitSet(); // Do not size upfront, we may only remove a few elements.

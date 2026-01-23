@@ -7,7 +7,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomSequence;
+import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -38,7 +38,7 @@ import org.jspecify.annotations.Nullable;
  * <ul>
  * <li>Both left and right datasets are kept in the {@link ArrayList} in which they came.
  * This list will never be copied, nor will it be mutated.</li>
- * <li>When an item needs to be selected from either list, it is wrapped in {@link UniqueRandomSequence},
+ * <li>When an item needs to be selected from either list, it is wrapped in {@link UniqueRandomIterator},
  * which allows to pick random elements and remembers which elements were already picked,
  * never to pick them again.</li>
  * <li>This type is only created when needed.
@@ -63,18 +63,18 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
 
     // Fields required for iteration.
     private final Iterator<UniTuple<A>> leftTupleIterator;
-    private final int rightSequenceStoreIndex;
+    private final int rightIteratorStoreIndex;
     private @Nullable Move<Solution_> nextMove;
 
     public BiRandomMoveIterator(BiMoveStreamContext<Solution_, A, B> context, Random workingRandom) {
         this.context = Objects.requireNonNull(context);
         this.workingRandom = Objects.requireNonNull(workingRandom);
         var leftDatasetInstance = context.getLeftDatasetInstance();
-        this.rightSequenceStoreIndex = leftDatasetInstance.getRightSequenceStoreIndex();
+        this.rightIteratorStoreIndex = leftDatasetInstance.getRightIteratorStoreIndex();
         this.leftTupleIterator = leftDatasetInstance.randomIterator(workingRandom);
     }
 
-    private Iterator<UniTuple<B>> computeRightSequence(UniTuple<A> leftTuple) {
+    private Iterator<UniTuple<B>> createRightTupleIterator(UniTuple<A> leftTuple) {
         var rightDatasetInstance = context.getRightDatasetInstance();
         var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
         var rightTupleCount = rightDatasetInstance.size(compositeKey);
@@ -101,7 +101,7 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
             var rightEmpty = pickNextMove(leftTuple);
             if (rightEmpty) {
                 leftTupleIterator.remove();
-                leftTuple.setStore(rightSequenceStoreIndex, null);
+                leftTuple.setStore(rightIteratorStoreIndex, null);
             }
             if (nextMove != null) {
                 if (nextMove instanceof ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) {
@@ -117,29 +117,21 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
     }
 
     private boolean pickNextMove(UniTuple<A> leftTuple) {
-        var rightTupleIterator = (Iterator<UniTuple<B>>) leftTuple.getStore(rightSequenceStoreIndex);
+        var rightTupleIterator = (Iterator<UniTuple<B>>) leftTuple.getStore(rightIteratorStoreIndex);
         if (rightTupleIterator == null) {
-            rightTupleIterator = computeRightSequence(leftTuple);
-            leftTuple.setStore(rightSequenceStoreIndex, rightTupleIterator);
+            rightTupleIterator = createRightTupleIterator(leftTuple);
+            leftTuple.setStore(rightIteratorStoreIndex, rightTupleIterator);
         }
         if (!rightTupleIterator.hasNext()) {
             return true;
         } else {
-            try {
-                var bTuple = rightTupleIterator.next();
-                rightTupleIterator.remove();
-                var leftFact = leftTuple.getA();
-                var rightFact = bTuple.getA();
-                nextMove = context.buildMove(leftFact, rightFact);
-            } catch (NoSuchElementException e) {
-                // We cannot guarantee that the right sequence is empty, because we do not check filtering eagerly.
-                // Therefore we can run into a situation where there are no more elements passing the filter,
-                // even though the sequence is not technically empty.
-                // We only find this out at runtime.
-                return true;
-            }
+            var bTuple = rightTupleIterator.next();
+            rightTupleIterator.remove();
+            var leftFact = leftTuple.getA();
+            var rightFact = bTuple.getA();
+            nextMove = context.buildMove(leftFact, rightFact);
+            return false;
         }
-        return false;
     }
 
     @Override

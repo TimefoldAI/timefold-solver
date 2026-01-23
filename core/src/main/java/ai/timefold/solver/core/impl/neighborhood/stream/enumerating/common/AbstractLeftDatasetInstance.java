@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 import java.util.Iterator;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomSequence;
+import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
@@ -15,15 +15,15 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
         implements Iterable<Tuple_> {
 
     private final ElementAwareArrayList<Tuple_> tupleList = new ElementAwareArrayList<>();
-    private final int rightSequenceStoreIndex;
+    private final int rightIteratorStoreIndex;
 
-    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_> parent, int rightSequenceStoreIndex, int entryStoreIndex) {
+    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_> parent, int rightIteratorStoreIndex, int entryStoreIndex) {
         super(parent, entryStoreIndex);
-        this.rightSequenceStoreIndex = rightSequenceStoreIndex;
+        this.rightIteratorStoreIndex = rightIteratorStoreIndex;
     }
 
-    public int getRightSequenceStoreIndex() {
-        return rightSequenceStoreIndex;
+    public int getRightIteratorStoreIndex() {
+        return rightIteratorStoreIndex;
     }
 
     @Override
@@ -47,7 +47,7 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
     }
 
     public Iterator<Tuple_> randomIterator(Random workingRandom) {
-        return UniqueRandomSequence.of(tupleList, workingRandom);
+        return UniqueRandomIterator.of(tupleList, workingRandom);
     }
 
     public int size() {

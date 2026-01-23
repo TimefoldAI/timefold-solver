@@ -14,11 +14,11 @@ import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
-class DefaultUniqueRandomSequenceTest {
+class DefaultUniqueRandomIteratorTest {
 
     @Test
     void emptySet() {
-        var emptySet = new DefaultUniqueRandomSequence<>(new ElementAwareArrayList<>(), new Random(0));
+        var emptySet = new DefaultUniqueRandomIterator<>(new ElementAwareArrayList<>(), new Random(0));
 
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(emptySet.hasNext())
@@ -33,7 +33,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void singleElementSetPickAndRemove() {
         var list = List.of("A");
-        var set = new DefaultUniqueRandomSequence<>(toEntries(list), new Random(0));
+        var set = new DefaultUniqueRandomIterator<>(toEntries(list), new Random(0));
 
         assertThat(set.hasNext()).isTrue();
 
@@ -50,7 +50,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void multipleElementSet() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(toEntries(list), new Random(0));
+        var set = new DefaultUniqueRandomIterator<>(toEntries(list), new Random(0));
 
         assertThat(set.hasNext()).isTrue();
 
@@ -61,7 +61,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void pickDoesNotModifySet() {
         var list = List.of("A", "B", "C");
-        var set = new DefaultUniqueRandomSequence<>(toEntries(list), new Random(0));
+        var set = new DefaultUniqueRandomIterator<>(toEntries(list), new Random(0));
 
         var element1 = set.next();
         var element2 = set.next();
@@ -77,7 +77,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeAllElements() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(toEntries(list), new Random(0));
+        var set = new DefaultUniqueRandomIterator<>(toEntries(list), new Random(0));
 
         var clearedElements = new HashSet<String>();
         for (int i = 0; i < 5; i++) {

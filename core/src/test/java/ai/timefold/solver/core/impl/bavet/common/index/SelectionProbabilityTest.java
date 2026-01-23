@@ -42,7 +42,7 @@ final class SelectionProbabilityTest {
         for (var trial = 0; trial < TRIAL_COUNT; trial++) { // Independent trials; each gets its own random seed.
             Integer element = null;
             var splitRandom = new Random(random.nextLong());
-            var iterator = UniqueRandomSequence.of(sampleList, splitRandom); // This is the code that we test.
+            var iterator = UniqueRandomIterator.of(sampleList, splitRandom); // This is the code that we test.
             for (var i = 0; i < n; i++) {
                 element = iterator.next();
             }

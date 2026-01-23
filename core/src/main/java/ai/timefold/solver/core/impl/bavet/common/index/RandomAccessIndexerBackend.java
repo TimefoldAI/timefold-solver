@@ -49,12 +49,12 @@ public final class RandomAccessIndexerBackend<T> implements IndexerBackend<T> {
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
-        return new DefaultUniqueRandomSequence<>(tupleList, workingRandom);
+        return new DefaultUniqueRandomIterator<>(tupleList, workingRandom);
     }
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
-        return new FilteredUniqueRandomSequence<>(tupleList, workingRandom, filter);
+        return new FilteredUniqueRandomIterator<>(tupleList, workingRandom, filter);
     }
 
     @Override

@@ -11,7 +11,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Unlike {@link DefaultUniqueRandomSequence}, this class only returns elements that match the given filter.
+ * Unlike {@link DefaultUniqueRandomIterator}, this class only returns elements that match the given filter.
  * Because we can't predict how many elements will be filtered out,
  * and because we don't want to pre-filter the entire list,
  * this class may need to try multiple times to find a matching element.
@@ -19,17 +19,17 @@ import org.jspecify.annotations.Nullable;
  * @param <T>
  */
 @NullMarked
-public final class FilteredUniqueRandomSequence<T> implements UniqueRandomSequence<T> {
+public final class FilteredUniqueRandomIterator<T> implements UniqueRandomIterator<T> {
 
     private final Predicate<T> filter;
-    private final DefaultUniqueRandomSequence<T> delegate;
+    private final DefaultUniqueRandomIterator<T> delegate;
 
     private boolean hasNext = false;
     private @Nullable T next = null;
 
-    FilteredUniqueRandomSequence(ElementAwareArrayList<T> source, Random workingRandom, Predicate<T> filter) {
+    FilteredUniqueRandomIterator(ElementAwareArrayList<T> source, Random workingRandom, Predicate<T> filter) {
         this.filter = Objects.requireNonNull(filter);
-        this.delegate = new DefaultUniqueRandomSequence<>(source, workingRandom);
+        this.delegate = new DefaultUniqueRandomIterator<>(source, workingRandom);
     }
 
     @Override

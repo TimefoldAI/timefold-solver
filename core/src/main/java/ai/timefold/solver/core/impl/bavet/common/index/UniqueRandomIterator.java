@@ -19,17 +19,17 @@ import org.jspecify.annotations.NullMarked;
  * @param <T>
  */
 @NullMarked
-public sealed interface UniqueRandomSequence<T>
+public sealed interface UniqueRandomIterator<T>
         extends Iterator<T>
-        permits DefaultUniqueRandomSequence, FilteredUniqueRandomSequence {
+        permits DefaultUniqueRandomIterator, FilteredUniqueRandomIterator {
 
     static <T> Iterator<T> of(ElementAwareArrayList<T> list, Random random) {
-        return new DefaultUniqueRandomSequence<>(list, random);
+        return new DefaultUniqueRandomIterator<>(list, random);
     }
 
     /**
      * Returns whether there are no more elements to pick from.
-     * In case of {@link FilteredUniqueRandomSequence}, this method may return false positives,
+     * In case of {@link FilteredUniqueRandomIterator}, this method may return false positives,
      * as it cannot predict how many elements will be filtered out.
      *
      * @return true if there are no more elements to pick from, false otherwise
