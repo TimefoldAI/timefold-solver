@@ -13,9 +13,12 @@ import org.jspecify.annotations.NullMarked;
  * Instead, it keeps metadata on which indexes of the list were removed already, never to return them again.
  * Does not allow null values.
  * <p>
+ * The iterator only behaves as unique if the client calls {@link #remove()} after each {@link #next()}.
+ * If the client only calls {@link #next()}, it is possible to receive the same element again.
+ * <p>
  * It is imperative for the overall fairness of the solver that the picking is random and fair,
  * meaning each unpicked value has the same probability of being picked next.
- * 
+ *
  * @param <T>
  */
 @NullMarked

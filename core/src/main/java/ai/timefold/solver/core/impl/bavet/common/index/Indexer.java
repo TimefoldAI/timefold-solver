@@ -66,7 +66,12 @@ public sealed interface Indexer<T>
      * @param queryCompositeKey query composite key
      * @param tupleConsumer never null
      */
-    void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer);
+    default void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
+        var iterator = iterator(queryCompositeKey);
+        while (iterator.hasNext()) {
+            tupleConsumer.accept(iterator.next());
+        }
+    }
 
     /**
      * Gets an iterator for the given composite key.
@@ -85,8 +90,25 @@ public sealed interface Indexer<T>
      */
     boolean isRemovable();
 
+    /**
+     * Iterator which picks elements randomly.
+     * Selection probability is uniform over all elements for the given composite key.
+     * By calling {@link Iterator#remove()},
+     * the element is removed never to be returned again by this iterator.
+     * However, it is not removed from the index itself;
+     * the only way to remove from the index is to call {@link #remove(Object, ListEntry)},
+     * which will make any existing iterators invalid.
+     *
+     * @param queryCompositeKey composite key uniquely identifying the backend or a set of backends
+     * @param workingRandom used to pick random elements
+     * @return iterator for the given composite key, possibly empty
+     */
     Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom);
 
+    /**
+     * As defined by {@link #randomIterator(Object, Random)},
+     * but only returning elements matching the given filter.
+     */
     Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter);
 
 }

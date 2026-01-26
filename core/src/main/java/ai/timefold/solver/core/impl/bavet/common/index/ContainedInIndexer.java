@@ -8,14 +8,12 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
 import ai.timefold.solver.core.impl.util.ListEntry;
-
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -93,14 +91,6 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
             }
         }
         return size;
-    }
-
-    @Override
-    public void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
-        var iterator = iterator(queryCompositeKey);
-        while (iterator.hasNext()) {
-            tupleConsumer.accept(iterator.next());
-        }
     }
 
     @Override
@@ -190,6 +180,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
             next = null;
             return result;
         }
+
     }
 
 }
