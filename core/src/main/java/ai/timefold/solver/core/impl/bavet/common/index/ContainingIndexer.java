@@ -7,8 +7,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
@@ -17,6 +19,7 @@ import ai.timefold.solver.core.impl.util.ListEntry;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * As defined by {@link UnfinishedJoiners#containing(Function, Function)}
@@ -100,6 +103,9 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
 
     @Override
     public int size(Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return 0;
+        }
         var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -110,6 +116,9 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
 
     @Override
     public void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return;
+        }
         var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -120,6 +129,9 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
 
     @Override
     public Iterator<T> iterator(Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return Collections.emptyIterator();
+        }
         var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -129,8 +141,31 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
     }
 
     @Override
-    public ListEntry<T> get(Object queryCompositeKey, int index) {
-        throw new UnsupportedOperationException();
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        return createRandomIterator(queryCompositeKey, workingRandom, null);
+    }
+
+    private Iterator<T> createRandomIterator(Object queryCompositeKey, Random workingRandom, @Nullable Predicate<T> filter) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return Collections.emptyIterator();
+        }
+
+        var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        if (downstreamIndexer == null) {
+            return Collections.emptyIterator();
+        }
+
+        if (filter == null) {
+            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
+        } else {
+            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter);
+        }
+    }
+
+    @Override
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+        return createRandomIterator(queryCompositeKey, workingRandom, filter);
     }
 
     @Override

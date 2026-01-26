@@ -9,9 +9,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
@@ -104,6 +106,9 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
 
     @Override
     public int size(Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return 0;
+        }
         var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
         return switch (indexKeyCollection.size()) {
             case 0 -> 0;
@@ -129,6 +134,9 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
 
     @Override
     public void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return;
+        }
         var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
         switch (indexKeyCollection.size()) {
             case 0 -> {
@@ -157,6 +165,9 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
 
     @Override
     public Iterator<T> iterator(Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return Collections.emptyIterator();
+        }
         var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
         return switch (indexKeyCollection.size()) {
             case 0 -> Collections.emptyIterator();
@@ -175,8 +186,13 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
     }
 
     @Override
-    public ListEntry<T> get(Object queryCompositeKey, int index) {
-        throw new UnsupportedOperationException();
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        throw new UnsupportedOperationException("Not yet implemented.");
+    }
+
+    @Override
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+        throw new UnsupportedOperationException("Not yet implemented.");
     }
 
     @Override

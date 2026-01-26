@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
+package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.BitSet;
 import java.util.NoSuchElementException;
@@ -7,67 +7,69 @@ import java.util.Random;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
- * Keeps an exact track of which items were already removed from the sequence,
+ * Keeps an exact track of which items were already removed,
  * so that no item is ever returned twice.
  * It accepts a list of unique items on input, and does not copy or modify it.
  *
  * @param <T>
  */
 @NullMarked
-public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequence<T> {
+final class DefaultUniqueRandomIterator<T> implements UniqueRandomIterator<T> {
 
-    private static final DefaultUniqueRandomSequence<?> EMPTY =
-            new DefaultUniqueRandomSequence<>(new ListBasedElementAccessor<>(new ElementAwareArrayList<>()));
-
-    @SuppressWarnings("unchecked")
-    public static <T> DefaultUniqueRandomSequence<T> empty() {
-        return (DefaultUniqueRandomSequence<T>) EMPTY;
-    }
-
-    private final ElementAccessor<T> accessor;
+    private final ElementAwareArrayList<T> source;
     private final int length;
+    private final Random workingRandom;
     private final BitSet removed;
 
     private int removedCount;
     private int leftmostIndex;
     private int rightmostIndex;
 
-    DefaultUniqueRandomSequence(ElementAccessor<T> accessor) {
-        this.accessor = accessor;
-        this.length = accessor.size();
+    private int nextIndex = -1;
+    private @Nullable T next = null;
+    private int indexToOptionallyRemove = -1;
+
+    DefaultUniqueRandomIterator(ElementAwareArrayList<T> source, Random workingRandom) {
+        this.source = source;
+        this.length = source.size();
         this.removed = new BitSet(); // Do not size upfront, we may only remove a few elements.
+        this.workingRandom = workingRandom;
         this.removedCount = 0;
         this.leftmostIndex = 0;
         this.rightmostIndex = length - 1;
     }
 
     @Override
-    public SequenceElement<T> pick(Random workingRandom) {
-        var randomIndex = pickIndex(workingRandom);
-        return new SequenceElement<>(accessor.get(randomIndex), randomIndex);
-    }
-
-    private int pickIndex(Random workingRandom) {
-        if (isEmpty()) {
-            throw new NoSuchElementException();
+    public boolean hasNext() {
+        if (source.isEmpty() || removedCount >= length) {
+            return false;
         }
-
+        if (nextIndex != -1) {
+            return true;
+        }
         // Pick a random index from the underlying list.
         // If the index has already been removed, find the next closest active one.
         // If no such index is found, pick the previous closest active one.
         // This algorithm ensures that we do not pick the same index twice.
         var randomIndex = workingRandom.nextInt(leftmostIndex, rightmostIndex + 1);
-        return pickIndex(workingRandom, randomIndex);
+        nextIndex = pickIndex(workingRandom, randomIndex);
+        if (nextIndex == -1) {
+            return false;
+        }
+        next = source.get(nextIndex).element();
+        indexToOptionallyRemove = -1;
+        return true;
     }
 
-    int pickIndex(Random workingRandom, int index) {
+    private int pickIndex(Random workingRandom, int index) {
         if (removed.get(index)) {
             // use the closest index to avoid skewing the probability
             index = determineActiveIndex(workingRandom, index);
             if (index < 0 || index >= length) {
-                throw new NoSuchElementException();
+                return -1;
             }
         }
         return index;
@@ -89,42 +91,32 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
     }
 
     @Override
-    public T remove(Random workingRandom) {
-        return remove(pickIndex(workingRandom));
-    }
-
-    /**
-     * Removes the element at the given index in the underlying list.
-     * Once this method returns, no subsequent {@link #pick(Random)} will return this element ever again.
-     *
-     * @param index the index of the element to remove
-     * @return The element which exists in the original list at the given index.
-     * @throws NoSuchElementException if the index has already been removed
-     */
-    public T remove(int index) {
-        removeWithoutReturn(index);
-        return accessor.get(index);
-    }
-
-    void removeWithoutReturn(int index) {
-        if (removed.get(index)) {
-            throw new IllegalArgumentException("The index (%s) has already been removed.".formatted(index));
+    public T next() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
         }
-        removed.set(index);
-        removedCount++;
-
-        // update the leftmost and rightmost zero index to keep probability distribution even
-        if (index == leftmostIndex) {
-            leftmostIndex = removed.nextClearBit(leftmostIndex);
-        }
-        if (index == rightmostIndex) {
-            rightmostIndex = removed.previousClearBit(rightmostIndex);
-        }
+        indexToOptionallyRemove = nextIndex;
+        var returnValue = next;
+        nextIndex = -1;
+        next = null;
+        return returnValue;
     }
 
     @Override
-    public boolean isEmpty() {
-        return removedCount >= length;
+    public void remove() {
+        if (indexToOptionallyRemove == -1) {
+            throw new IllegalStateException(
+                    "The next() method has not been called yet, or the remove() method was already called after the last next() call.");
+        }
+        removedCount++;
+        removed.set(indexToOptionallyRemove);
+        // Update the leftmost and rightmost zero index to keep probability distribution even.
+        if (indexToOptionallyRemove == leftmostIndex) {
+            leftmostIndex = removed.nextClearBit(leftmostIndex);
+        }
+        if (indexToOptionallyRemove == rightmostIndex) {
+            rightmostIndex = removed.previousClearBit(rightmostIndex);
+        }
+        indexToOptionallyRemove = -1;
     }
-
 }

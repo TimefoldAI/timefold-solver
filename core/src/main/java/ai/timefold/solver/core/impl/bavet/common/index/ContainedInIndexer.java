@@ -7,8 +7,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.Random;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
@@ -76,6 +77,9 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
 
     @Override
     public int size(Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return 0;
+        }
         var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
         if (indexKeyCollection.isEmpty()) {
             return 0;
@@ -91,18 +95,6 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
     }
 
     @Override
-    public void forEach(Object queryCompositeKey, Consumer<T> tupleConsumer) {
-        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
-        if (indexKeyCollection.isEmpty()) {
-            return;
-        }
-        var iterator = new DefaultIterator(queryCompositeKey, indexKeyCollection); // Avoid duplicating iteration logic
-        while (iterator.hasNext()) {
-            tupleConsumer.accept(iterator.next());
-        }
-    }
-
-    @Override
     public Iterator<T> iterator(Object queryCompositeKey) {
         var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
         if (indexKeyCollection.isEmpty()) {
@@ -112,8 +104,28 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
     }
 
     @Override
-    public ListEntry<T> get(Object queryCompositeKey, int index) {
-        throw new UnsupportedOperationException();
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        return createRandomIterator(queryCompositeKey, workingRandom, null);
+    }
+
+    private Iterator<T> createRandomIterator(Object queryCompositeKey, Random workingRandom, @Nullable Predicate<T> filter) {
+        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        if (indexKeyCollection.isEmpty()) {
+            return Collections.emptyIterator();
+        }
+
+        if (filter == null) {
+            return new RandomIterator(indexKeyCollection,
+                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom));
+        } else {
+            return new RandomIterator(indexKeyCollection,
+                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter));
+        }
+    }
+
+    @Override
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+        return createRandomIterator(queryCompositeKey, workingRandom, filter);
     }
 
     @Override
@@ -126,16 +138,22 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
         return "size = " + downstreamIndexerMap.size();
     }
 
-    private final class DefaultIterator implements Iterator<T> {
+    private class DefaultIterator implements Iterator<T> {
 
-        private final Object queryCompositeKey;
         private final Iterator<Key_> indexerIterator;
-        private @Nullable Iterator<T> downstreamIterator = null;
+        private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
+        protected @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
         public DefaultIterator(Object queryCompositeKey, KeyCollection_ indexKeyCollection) {
-            this.queryCompositeKey = queryCompositeKey;
+            this(indexKeyCollection,
+                    downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
+        }
+
+        protected DefaultIterator(KeyCollection_ indexKeyCollection,
+                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
             this.indexerIterator = indexKeyCollection.iterator();
+            this.downstreamIteratorFunction = downstreamIteratorFunction;
         }
 
         @Override
@@ -154,7 +172,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
                 if (downstreamIndexer == null) {
                     continue;
                 }
-                downstreamIterator = downstreamIndexer.iterator(queryCompositeKey);
+                downstreamIterator = downstreamIteratorFunction.apply(downstreamIndexer);
                 if (downstreamIterator.hasNext()) {
                     next = downstreamIterator.next();
                     return true;
@@ -172,6 +190,23 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
             next = null;
             return result;
         }
+
+    }
+
+    private final class RandomIterator extends DefaultIterator {
+
+        public RandomIterator(KeyCollection_ indexKeyCollection, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+            super(indexKeyCollection, downstreamIteratorFunction);
+        }
+
+        @Override
+        public void remove() {
+            if (downstreamIterator == null) {
+                throw new IllegalStateException("next() must be called before remove().");
+            }
+            downstreamIterator.remove();
+        }
+
     }
 
 }

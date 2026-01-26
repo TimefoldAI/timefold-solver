@@ -1,6 +1,6 @@
-package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
+package ai.timefold.solver.core.impl.bavet.common.index;
 
-import static ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.SelectionProbabilityTest.toEntries;
+import static ai.timefold.solver.core.impl.bavet.common.index.SelectionProbabilityTest.toEntries;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
@@ -29,7 +29,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @MethodSource("randomSeeds")
 @ParameterizedClass
 @Execution(ExecutionMode.CONCURRENT)
-class FilteredUniqueRandomSequenceTest {
+class FilteredUniqueRandomIteratorTest {
 
     private static final List<String> ELEMENTS = List.of("A", "B", "C", "D");
 
@@ -61,8 +61,8 @@ class FilteredUniqueRandomSequenceTest {
         Predicate<String> filter = Predicate.not(list::contains);
 
         // Everything is filtered out, but the sequence has no way of knowing that.
-        var sequence = new FilteredUniqueRandomSequence<>(toEntries(list), filter);
-        assertThatThrownBy(() -> sequence.pick(random))
+        var sequence = new FilteredUniqueRandomIterator<>(toEntries(list), random, filter);
+        assertThatThrownBy(sequence::next)
                 .isInstanceOf(NoSuchElementException.class);
     }
 

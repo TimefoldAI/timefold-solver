@@ -5,12 +5,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class EqualIndexer<T, Key_> implements Indexer<T> {
@@ -77,6 +80,9 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public int size(Object compositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return 0;
+        }
         var indexKey = keyUnpacker.apply(compositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -87,6 +93,9 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void forEach(Object compositeKey, Consumer<T> tupleConsumer) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return;
+        }
         var indexKey = keyUnpacker.apply(compositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -101,6 +110,9 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
     }
 
     public Iterator<T> iterator(Object queryCompositeKey) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return Collections.emptyIterator();
+        }
         var indexKey = keyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -109,13 +121,32 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
         return downstreamIndexer.iterator(queryCompositeKey);
     }
 
-    public ListEntry<T> get(Object queryCompositeKey, int index) {
+    @Override
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        return createRandomIterator(queryCompositeKey, workingRandom, null);
+    }
+
+    private Iterator<T> createRandomIterator(Object queryCompositeKey, Random workingRandom, @Nullable Predicate<T> filter) {
+        if (downstreamIndexerMap.isEmpty()) {
+            return Collections.emptyIterator();
+        }
+
         var indexKey = keyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
-            throw new IndexOutOfBoundsException("Index: " + index);
+            return Collections.emptyIterator();
         }
-        return downstreamIndexer.get(queryCompositeKey, index);
+
+        if (filter == null) {
+            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
+        } else {
+            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter);
+        }
+    }
+
+    @Override
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+        return createRandomIterator(queryCompositeKey, workingRandom, filter);
     }
 
     @Override

@@ -7,8 +7,11 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Random;
 import java.util.TreeMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
@@ -170,44 +173,46 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public boolean isRemovable() {
-        return comparisonMap.isEmpty();
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        return createRandomIterator(queryCompositeKey, workingRandom, null);
     }
 
-    @Override
-    public ListEntry<T> get(Object queryCompositeKey, int index) {
+    private Iterator<T> createRandomIterator(Object queryCompositeKey, Random workingRandom, @Nullable Predicate<T> filter) {
         return switch (comparisonMap.size()) {
-            case 0 -> throw new IndexOutOfBoundsException("Index: " + index);
-            case 1 -> getSingleIndexer(queryCompositeKey, index);
-            default -> getManyIndexers(queryCompositeKey, index);
+            case 0 -> Collections.emptyIterator();
+            case 1 -> {
+                var indexKey = keyUnpacker.apply(queryCompositeKey);
+                var entry = comparisonMap.firstEntry();
+                if (boundaryReached(entry.getKey(), indexKey)) {
+                    yield Collections.emptyIterator();
+                } else { // Boundary condition not yet reached; include the indexer in the range.
+                    if (filter == null) {
+                        yield entry.getValue().randomIterator(queryCompositeKey, workingRandom);
+                    } else {
+                        yield entry.getValue().randomIterator(queryCompositeKey, workingRandom, filter);
+                    }
+                }
+            }
+            default -> {
+                if (filter == null) {
+                    yield new RandomIterator(queryCompositeKey,
+                            indexer -> indexer.randomIterator(queryCompositeKey, workingRandom));
+                } else {
+                    yield new RandomIterator(queryCompositeKey,
+                            indexer -> indexer.randomIterator(queryCompositeKey, workingRandom, filter));
+                }
+            }
         };
     }
 
-    private ListEntry<T> getSingleIndexer(Object compositeKey, int index) {
-        var indexKey = keyUnpacker.apply(compositeKey);
-        var entry = comparisonMap.firstEntry();
-        if (boundaryReached(entry.getKey(), indexKey)) {
-            throw new IndexOutOfBoundsException("Index: " + index);
-        }
-        return entry.getValue().get(compositeKey, index);
+    @Override
+    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+        return createRandomIterator(queryCompositeKey, workingRandom, filter);
     }
 
-    private ListEntry<T> getManyIndexers(Object compositeKey, int index) {
-        var seenCount = 0;
-        var indexKey = keyUnpacker.apply(compositeKey);
-        for (var entry : comparisonMap.entrySet()) {
-            if (boundaryReached(entry.getKey(), indexKey)) {
-                break;
-            } else { // Boundary condition not yet reached; include the indexer in the range.
-                var value = entry.getValue();
-                var size = value.size(compositeKey);
-                if (seenCount + size > index) {
-                    return value.get(compositeKey, index - seenCount);
-                }
-                seenCount += size;
-            }
-        }
-        throw new IndexOutOfBoundsException("Index: " + index);
+    @Override
+    public boolean isRemovable() {
+        return comparisonMap.isEmpty();
     }
 
     @Override
@@ -215,17 +220,22 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         return "size = " + comparisonMap.size();
     }
 
-    private final class DefaultIterator implements Iterator<T> {
+    private class DefaultIterator implements Iterator<T> {
 
-        private final Object compositeKey;
         private final Key_ indexKey;
+        private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
         private final Iterator<Map.Entry<Key_, Indexer<T>>> indexerIterator = comparisonMap.entrySet().iterator();
-        private @Nullable Iterator<T> downstreamIterator = null;
+        protected @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
-        public DefaultIterator(Object compositeKey) {
-            this.compositeKey = compositeKey;
-            this.indexKey = keyUnpacker.apply(compositeKey);
+        public DefaultIterator(Object queryCompositeKey) {
+            this(queryCompositeKey,
+                    downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
+        }
+
+        protected DefaultIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+            this.indexKey = keyUnpacker.apply(queryCompositeKey);
+            this.downstreamIteratorFunction = downstreamIteratorFunction;
         }
 
         @Override
@@ -243,7 +253,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
                     return false;
                 }
                 // Boundary condition not yet reached; include the indexer in the range.
-                downstreamIterator = entry.getValue().iterator(compositeKey);
+                downstreamIterator = downstreamIteratorFunction.apply(entry.getValue());
                 if (downstreamIterator.hasNext()) {
                     next = downstreamIterator.next();
                     return true;
@@ -261,6 +271,22 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
             next = null;
             return result;
         }
+    }
+
+    private final class RandomIterator extends DefaultIterator {
+
+        public RandomIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+            super(queryCompositeKey, downstreamIteratorFunction);
+        }
+
+        @Override
+        public void remove() {
+            if (downstreamIterator == null) {
+                throw new IllegalStateException("next() must be called before remove().");
+            }
+            downstreamIterator.remove();
+        }
+
     }
 
 }

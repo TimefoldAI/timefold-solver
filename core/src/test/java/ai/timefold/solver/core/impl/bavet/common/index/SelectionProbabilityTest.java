@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
+package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -40,14 +40,14 @@ final class SelectionProbabilityTest {
         var sampleList = toEntries(SAMPLES);
         var random = new Random(0);
         for (var trial = 0; trial < TRIAL_COUNT; trial++) { // Independent trials; each gets its own random seed.
-            UniqueRandomSequence.SequenceElement<Integer> element = null;
-            var sequence = new DefaultUniqueRandomSequence<>(sampleList); // This is the code that we test.
+            Integer element = null;
             var splitRandom = new Random(random.nextLong());
-            for (var i = 0; i < n; i++) { // Pick N random elements.
-                element = sequence.pick(splitRandom);
+            var iterator = UniqueRandomIterator.of(sampleList, splitRandom); // This is the code that we test.
+            for (var i = 0; i < n; i++) {
+                element = iterator.next();
             }
             // Record the last picked element (nth element).
-            counts.compute(element.value(), (k, v) -> v == null ? 1 : v + 1);
+            counts.compute(element, (k, v) -> v == null ? 1 : v + 1);
         }
 
         // Guarantee that all numbers have been selected.
@@ -71,12 +71,12 @@ final class SelectionProbabilityTest {
                 .isLessThanOrEqualTo(threshold);
     }
 
-    static <T> ElementAccessor<T> toEntries(List<T> elements) {
+    static <T> ElementAwareArrayList<T> toEntries(List<T> elements) {
         var list = new ElementAwareArrayList<T>();
         for (var element : elements) {
             list.add(element);
         }
-        return new ListBasedElementAccessor<>(list);
+        return list;
     }
 
 }

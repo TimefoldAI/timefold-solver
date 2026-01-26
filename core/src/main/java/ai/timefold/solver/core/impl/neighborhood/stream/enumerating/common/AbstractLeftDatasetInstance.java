@@ -1,10 +1,11 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 
 import java.util.Iterator;
+import java.util.Random;
 
+import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
-import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -14,15 +15,15 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
         implements Iterable<Tuple_> {
 
     private final ElementAwareArrayList<Tuple_> tupleList = new ElementAwareArrayList<>();
-    private final int rightSequenceStoreIndex;
+    private final int rightIteratorStoreIndex;
 
-    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_> parent, int rightSequenceStoreIndex, int entryStoreIndex) {
+    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_> parent, int rightIteratorStoreIndex, int entryStoreIndex) {
         super(parent, entryStoreIndex);
-        this.rightSequenceStoreIndex = rightSequenceStoreIndex;
+        this.rightIteratorStoreIndex = rightIteratorStoreIndex;
     }
 
-    public int getRightSequenceStoreIndex() {
-        return rightSequenceStoreIndex;
+    public int getRightIteratorStoreIndex() {
+        return rightIteratorStoreIndex;
     }
 
     @Override
@@ -37,8 +38,7 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
 
     @Override
     public void retract(Tuple_ tuple) {
-        ElementAwareArrayList.Entry<Tuple_> entry = tuple.removeStore(entryStoreIndex);
-        tupleList.remove(entry);
+        tupleList.remove(tuple.removeStore(entryStoreIndex));
     }
 
     @Override
@@ -46,28 +46,12 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
         return tupleList.iterator();
     }
 
-    public DefaultUniqueRandomSequence<Tuple_> buildRandomSequence() {
-        return new DefaultUniqueRandomSequence<>(new ListBasedElementAccessor<>(tupleList));
+    public Iterator<Tuple_> randomIterator(Random workingRandom) {
+        return UniqueRandomIterator.of(tupleList, workingRandom);
     }
 
     public int size() {
         return tupleList.size();
-    }
-
-    record UnwrappingIterator<T>(Iterator<? extends ListEntry<T>> parentIterator)
-            implements
-                Iterator<T> {
-
-        @Override
-        public boolean hasNext() {
-            return parentIterator.hasNext();
-        }
-
-        @Override
-        public T next() {
-            return parentIterator.next().element();
-        }
-
     }
 
 }

@@ -14,8 +14,8 @@ public final class UniLeftDataset<Solution_, A> extends AbstractLeftDataset<Solu
     }
 
     @Override
-    public UniLeftDatasetInstance<Solution_, A> instantiate(int rightSequenceStoreIndex, int entryStoreIndex) {
-        return new UniLeftDatasetInstance<>(this, rightSequenceStoreIndex, entryStoreIndex);
+    public UniLeftDatasetInstance<Solution_, A> instantiate(int rightIteratorStoreIndex, int entryStoreIndex) {
+        return new UniLeftDatasetInstance<>(this, rightIteratorStoreIndex, entryStoreIndex);
     }
 
     @Override

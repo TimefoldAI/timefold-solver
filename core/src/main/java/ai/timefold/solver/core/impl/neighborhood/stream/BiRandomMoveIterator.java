@@ -6,9 +6,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 
+import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DefaultUniqueRandomSequence;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.UniqueRandomSequence;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
@@ -38,7 +37,7 @@ import org.jspecify.annotations.Nullable;
  * <ul>
  * <li>Both left and right datasets are kept in the {@link ArrayList} in which they came.
  * This list will never be copied, nor will it be mutated.</li>
- * <li>When an item needs to be selected from either list, it is wrapped in {@link DefaultUniqueRandomSequence},
+ * <li>When an item needs to be selected from either list, it is wrapped in {@link UniqueRandomIterator},
  * which allows to pick random elements and remembers which elements were already picked,
  * never to pick them again.</li>
  * <li>This type is only created when needed.
@@ -62,32 +61,16 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
     private final Random workingRandom;
 
     // Fields required for iteration.
-    private final DefaultUniqueRandomSequence<UniTuple<A>> leftTupleSequence;
-    private final int rightSequenceStoreIndex;
+    private final Iterator<UniTuple<A>> leftTupleIterator;
+    private final int rightIteratorStoreIndex;
     private @Nullable Move<Solution_> nextMove;
 
     public BiRandomMoveIterator(BiMoveStreamContext<Solution_, A, B> context, Random workingRandom) {
         this.context = Objects.requireNonNull(context);
         this.workingRandom = Objects.requireNonNull(workingRandom);
         var leftDatasetInstance = context.getLeftDatasetInstance();
-        this.rightSequenceStoreIndex = leftDatasetInstance.getRightSequenceStoreIndex();
-        this.leftTupleSequence = leftDatasetInstance.buildRandomSequence();
-    }
-
-    private UniqueRandomSequence<UniTuple<B>> computeRightSequence(UniTuple<A> leftTuple) {
-        var rightDatasetInstance = context.getRightDatasetInstance();
-        var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
-        var rightTupleCount = rightDatasetInstance.size(compositeKey);
-        if (rightTupleCount == 0) {
-            return DefaultUniqueRandomSequence.empty();
-        }
-        var filter = rightDatasetInstance.getFilter();
-        if (filter == null) { // Shortcut: no filter means we can take the entire right dataset as-is.
-            return rightDatasetInstance.buildRandomSequence(compositeKey);
-        }
-        var solutionView = context.neighborhoodSession().getSolutionView();
-        return rightDatasetInstance.buildRandomSequence(compositeKey,
-                rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()));
+        this.rightIteratorStoreIndex = leftDatasetInstance.getRightIteratorStoreIndex();
+        this.leftTupleIterator = leftDatasetInstance.randomIterator(workingRandom);
     }
 
     @Override
@@ -96,12 +79,12 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
             return true;
         }
 
-        while (!leftTupleSequence.isEmpty()) {
-            var leftElement = leftTupleSequence.pick(workingRandom);
-            var rightEmpty = pickNextMove(leftElement);
+        while (leftTupleIterator.hasNext()) {
+            var leftTuple = leftTupleIterator.next();
+            var rightEmpty = pickNextMove(leftTuple);
             if (rightEmpty) {
-                leftTupleSequence.remove(leftElement.index());
-                leftElement.value().setStore(rightSequenceStoreIndex, null);
+                leftTupleIterator.remove();
+                leftTuple.setStore(rightIteratorStoreIndex, null);
             }
             if (nextMove != null) {
                 if (nextMove instanceof ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) {
@@ -116,30 +99,30 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
         return false;
     }
 
-    private boolean pickNextMove(UniqueRandomSequence.SequenceElement<UniTuple<A>> leftElement) {
-        var leftTuple = leftElement.value();
-        var rightTupleSequence = (UniqueRandomSequence<UniTuple<B>>) leftTuple.getStore(rightSequenceStoreIndex);
-        if (rightTupleSequence == null) {
-            rightTupleSequence = computeRightSequence(leftTuple);
-            leftTuple.setStore(rightSequenceStoreIndex, rightTupleSequence);
+    private boolean pickNextMove(UniTuple<A> leftTuple) {
+        var rightTupleIterator = (Iterator<UniTuple<B>>) leftTuple.getStore(rightIteratorStoreIndex);
+        if (rightTupleIterator == null) {
+            rightTupleIterator = createRightTupleIterator(leftTuple);
+            leftTuple.setStore(rightIteratorStoreIndex, rightTupleIterator);
         }
-        if (rightTupleSequence.isEmpty()) {
+        if (!rightTupleIterator.hasNext()) {
             return true;
-        } else {
-            try {
-                var bTuple = rightTupleSequence.remove(workingRandom);
-                var leftFact = leftTuple.getA();
-                var rightFact = bTuple.getA();
-                nextMove = context.buildMove(leftFact, rightFact);
-            } catch (NoSuchElementException e) {
-                // We cannot guarantee that the right sequence is empty, because we do not check filtering eagerly.
-                // Therefore we can run into a situation where there are no more elements passing the filter,
-                // even though the sequence is not technically empty.
-                // We only find this out at runtime.
-                return true;
-            }
         }
+        nextMove = context.buildMove(leftTuple.getA(), rightTupleIterator.next().getA());
+        rightTupleIterator.remove();
         return false;
+    }
+
+    private Iterator<UniTuple<B>> createRightTupleIterator(UniTuple<A> leftTuple) {
+        var rightDatasetInstance = context.getRightDatasetInstance();
+        var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
+        var filter = rightDatasetInstance.getFilter();
+        if (filter == null) { // Shortcut: no filter means we can take the entire right dataset as-is.
+            return rightDatasetInstance.randomIterator(compositeKey, workingRandom);
+        }
+        var solutionView = context.neighborhoodSession().getSolutionView();
+        return rightDatasetInstance.randomIterator(compositeKey, workingRandom,
+                rightTuple -> filter.test(solutionView, leftTuple.getA(), rightTuple.getA()));
     }
 
     @Override
