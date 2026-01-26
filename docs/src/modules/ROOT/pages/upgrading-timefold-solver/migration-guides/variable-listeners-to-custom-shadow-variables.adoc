@@ -93,9 +93,11 @@ It is no longer needed.
 ----
 @PlanningEntity
 public class Job {
+    private int durationInDays;
     @PlanningVariable
     private LocalDate startDate;
-    @ShadowVariable(variableListenerClass = EndDateUpdatingVariableListener.class, sourceVariableName = "startDate")
+    @ShadowVariable(variableListenerClass = EndDateUpdatingVariableListener.class,
+                    sourceVariableName = "startDate")
     private LocalDate endDate;
 
     // ...
@@ -146,8 +148,7 @@ public class EndDateUpdatingVariableListener implements VariableListener<Mainten
         if (startDate == null) {
             return null;
         } else {
-            int weekendPadding = 2 * ((durationInDays + (startDate.getDayOfWeek().getValue() - 1)) / 5);
-            return startDate.plusDays(durationInDays + weekendPadding);
+            return startDate.plusDays(durationInDays);
         }
     }
 }
@@ -159,6 +160,7 @@ public class EndDateUpdatingVariableListener implements VariableListener<Mainten
 ----
 @PlanningEntity
 public class Job {
+    private int durationInDays;
     @PlanningVariable
     private LocalDate startDate;
     @ShadowVariable(supplierName = "endDateSupplier")
@@ -173,8 +175,7 @@ public class Job {
         if (startDate == null) {
             return null;
         } else {
-            int weekendPadding = 2 * ((durationInDays + (startDate.getDayOfWeek().getValue() - 1)) / 5);
-            return startDate.plusDays(durationInDays + weekendPadding);
+            return startDate.plusDays(durationInDays);
         }
     }
     // ...
