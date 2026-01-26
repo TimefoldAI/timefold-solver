@@ -1053,32 +1053,41 @@ When constraint stream profiling is enabled, a breakdown of time spent in each c
 
 [source,text]
 ----
-INFO: # Constraint Profiling Summary
+INFO:  # Constraint Profiling Summary
 |                                                    | Time Spent | Of Total |
 | :------------------------------------------------- | ---------: | -------: |
-| 2: Teacher time efficiency                         |     7.22 s |  26.80 % |
-| 6: Room conflict                                   |     3.68 s |  13.66 % |
-| 4: Student group conflict                          |     3.51 s |  13.02 % |
-| 3: Teacher room stability                          |     3.42 s |  12.68 % |
-| 1: Student group subject variety                   |     3.30 s |  12.25 % |
-| 5: Teacher conflict                                |     3.21 s |  11.90 % |
-| Work shared by 1, 2, 3, 4, 5, 6                    |     2.61 s |   9.68 % |
+| 2: Teacher time efficiency                         |     7.08 s |  26.12 % |
+| 4: Student group conflict                          |     3.77 s |  13.91 % |
+| 6: Room conflict                                   |     3.63 s |  13.40 % |
+| 5: Teacher conflict                                |     3.40 s |  12.56 % |
+| 3: Teacher room stability                          |     3.35 s |  12.38 % |
+| 1: Student group subject variety                   |     3.28 s |  12.09 % |
+| Work shared by 1, 2, 3, 4, 5, 6                    |     2.58 s |   9.53 % |
 
 DEBUG: ## Constraint Profiling Node Breakdown
 | 2: Teacher time efficiency                         | Time Spent | Of Total |
 | :------------------------------------------------- | ---------: | -------: |
-| JOIN Node 7                                        |     1.33 s |  31.09 % |
-| JOIN Node 6                                        |     1.28 s |  30.00 % |
-...
+| JOIN Node 26                                       |     1.73 s |  40.10 % |
+| JOIN Right Input 7                                 |     1.30 s |  30.19 % |
+| JOIN Left Input 6                                  |     1.28 s |  29.71 % |
+| FILTER 5                                           |     2.21 s | 100.00 % |
+| SCORING 4                                          |     0.56 s | 100.00 % |
 
- - JOIN Node 7 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
- - JOIN Node 6 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - JOIN Node 26 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - JOIN Right Input 7 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - JOIN Left Input 6 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - FILTER 5 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:79
+ - SCORING 4 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:84
+
 ...
 
 TRACE: ## Constraint Profiling Lifecycle Breakdown
 | 2: Teacher time efficiency               |  INSERT  |  UPDATE  |  RETRACT  |
 | :--------------------------------------- | -------: | -------: | --------: |
-| JOIN                                     |  11.17 % |  79.50 % |    9.33 % |
+| JOIN                                     |  10.91 % |  77.96 % |   11.13 % |
+| FILTER                                   |  26.48 % |  48.56 % |   24.96 % |
+| SCORING                                  |  12.21 % |  17.74 % |   70.05 % |
+
 ...
 ----
 
@@ -1108,8 +1117,11 @@ In the example below, work was shared by constraints 1 to 6:
 ----
 | 2: Teacher time efficiency                         | Time Spent | Of Total |
 | :------------------------------------------------- | ---------: | -------: |
-| JOIN Node 7                                        |     1.33 s |  31.09 % |
-| JOIN Node 6                                        |     1.28 s |  30.00 % |
+| JOIN Node 26                                       |     1.73 s |  40.10 % |
+| JOIN Right Input 7                                 |     1.30 s |  30.19 % |
+| JOIN Left Input 6                                  |     1.28 s |  29.71 % |
+| FILTER 5                                           |     2.21 s | 100.00 % |
+| SCORING 4                                          |     0.56 s | 100.00 % |
 ----
 +
 To make it easier to map the building blocks to your `ConstraintProvider` code,
@@ -1117,8 +1129,7 @@ the location(s) where each building block was defined is also reported:
 +
 [source,text]
 ----
- - JOIN Node 7 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
- - JOIN Node 6 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - JOIN Node 26 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
 ----
 
 `TRACE`:: A breakdown for each constraint of time spent by each building block,
@@ -1128,11 +1139,29 @@ shown as percentage of time spent in each of the lifecycle phases.
 ----
 | 2: Teacher time efficiency               |  INSERT  |  UPDATE  |  RETRACT  |
 | :--------------------------------------- | -------: | -------: | --------: |
-| JOIN                                     |  11.17 % |  79.50 % |    9.33 % |
+| JOIN                                     |  10.91 % |  77.96 % |   11.13 % |
+| FILTER                                   |  26.48 % |  48.56 % |   24.96 % |
+| SCORING                                  |  12.21 % |  17.74 % |   70.05 % |
 ----
 +
 NOTE: This is only relevant to people intimately familiar with the underlying implementation of Constraint Streams
 and can be safely ignored by everyday users.
+
+==== Interpreting the results
+
+Constraint profiling measures wall clock time, not CPU time,
+and as such includes any garbage collection pauses that may occur during score calculation.
+These numbers should be used as a guide to identify which constraints are the most expensive,
+not as an exact measurement.
+
+Due to the nature of the JVM, the results may vary between runs.
+The solver needs to run for a sufficient amount of time
+to allow the JVM to warm up and stabilize.
+We recommend running the solver for minutes rather than seconds,
+but more than that is unlikely to bring any additional benefit.
+For increased confidence in the results,
+you can run the solver multiple times in different JVM processes
+and average the results.
 
 
 [#throttlingBestSolutionEvents]
