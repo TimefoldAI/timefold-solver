@@ -14,6 +14,8 @@ import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.bavet.common.StreamKind;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.Scorer;
 
+import static ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId.Qualifier;
+
 public interface TupleLifecycle<Tuple_ extends Tuple> {
 
     static <Tuple_ extends Tuple> TupleLifecycle<Tuple_> ofLeft(LeftTupleLifecycle<Tuple_> leftTupleLifecycle) {
@@ -72,17 +74,22 @@ public interface TupleLifecycle<Tuple_ extends Tuple> {
         }
 
         var streamKind = StreamKind.FILTER;
+        var qualifier = Qualifier.NONE;
 
         if (delegate instanceof AbstractNode node) {
             streamKind = node.getStreamKind();
+            qualifier = Qualifier.NODE;
         } else if (delegate instanceof LeftTupleLifecycleImpl<?> leftTupleLifecycle &&
                 leftTupleLifecycle.leftTupleLifecycle() instanceof AbstractNode node) {
             streamKind = node.getStreamKind();
+            qualifier = Qualifier.LEFT_INPUT;
         } else if (delegate instanceof RightTupleLifecycleImpl<?> rightTupleLifecycle &&
                 rightTupleLifecycle.rightTupleLifecycle() instanceof AbstractNode node) {
             streamKind = node.getStreamKind();
+            qualifier = Qualifier.RIGHT_INPUT;
         } else if (delegate instanceof RecordingTupleLifecycle<Tuple_>) {
             streamKind = StreamKind.PRECOMPUTE;
+            qualifier = Qualifier.NODE;
         } else if (delegate instanceof Scorer<Tuple_>) {
             streamKind = StreamKind.SCORING;
         } else if (!(delegate instanceof ConditionalTupleLifecycle<Tuple_>)) {
@@ -90,9 +97,8 @@ public interface TupleLifecycle<Tuple_ extends Tuple> {
                     "Impossible state: encounter tuple lifecycle (%s) which is not a node and is not a known lifecycle implementation."
                             .formatted(delegate.getClass()));
         }
-        return new ProfilingTupleLifecycle<>(constraintProfiler,
-                new ConstraintNodeProfileId(lifecycleId, streamKind, stream.getLocationSet()),
-                delegate);
+        var profileId = new ConstraintNodeProfileId(lifecycleId, streamKind, qualifier, stream.getLocationSet());
+        return new ProfilingTupleLifecycle<>(constraintProfiler, profileId, delegate);
     }
 
     void insert(Tuple_ tuple);
