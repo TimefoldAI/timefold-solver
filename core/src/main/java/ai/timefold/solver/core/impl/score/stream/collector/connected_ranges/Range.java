@@ -12,6 +12,10 @@ public final class Range<Range_, Point_ extends Comparable<Point_>> {
         this.value = value;
         var start = startMapping.apply(value);
         var end = endMapping.apply(value);
+        if (start.compareTo(end) > 0) {
+            throw new IllegalArgumentException("The value (%s) starts at (%s), which is after when it ends (%s)."
+                    .formatted(value, start, end));
+        }
         this.startSplitPoint = new RangeSplitPoint<>(start);
         this.endSplitPoint = (start == end) ? this.startSplitPoint : new RangeSplitPoint<>(end);
     }
