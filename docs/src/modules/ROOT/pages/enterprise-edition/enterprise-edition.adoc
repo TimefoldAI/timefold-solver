@@ -1056,26 +1056,26 @@ When constraint stream profiling is enabled, a breakdown of time spent in each c
 INFO:  # Constraint Profiling Summary
 |                                                    | Time Spent | Of Total |
 | :------------------------------------------------- | ---------: | -------: |
-| 2: Teacher time efficiency                         |     7.08 s |  26.12 % |
-| 4: Student group conflict                          |     3.77 s |  13.91 % |
-| 6: Room conflict                                   |     3.63 s |  13.40 % |
-| 5: Teacher conflict                                |     3.40 s |  12.56 % |
-| 3: Teacher room stability                          |     3.35 s |  12.38 % |
-| 1: Student group subject variety                   |     3.28 s |  12.09 % |
-| Work shared by 1, 2, 3, 4, 5, 6                    |     2.58 s |   9.53 % |
+| 2: Teacher time efficiency                         |     6.19 s |  23.15 % |
+| 6: Room conflict                                   |     4.17 s |  15.61 % |
+| 4: Student group conflict                          |     3.76 s |  14.07 % |
+| 5: Teacher conflict                                |     3.41 s |  12.76 % |
+| 1: Student group subject variety                   |     3.25 s |  12.14 % |
+| 3: Teacher room stability                          |     3.25 s |  12.14 % |
+| Work shared by 1, 2, 3, 4, 5, 6                    |     2.71 s |  10.12 % |
 
 DEBUG: ## Constraint Profiling Node Breakdown
 | 2: Teacher time efficiency                         | Time Spent | Of Total |
 | :------------------------------------------------- | ---------: | -------: |
-| JOIN Node 26                                       |     1.73 s |  40.10 % |
-| JOIN Right Input 7                                 |     1.30 s |  30.19 % |
-| JOIN Left Input 6                                  |     1.28 s |  29.71 % |
-| FILTER 5                                           |     2.21 s | 100.00 % |
-| SCORING 4                                          |     0.56 s | 100.00 % |
+| JOIN Node 26                                       |     1.56 s |  25.20 % |
+| JOIN Left Input 6                                  |     1.28 s |  20.69 % |
+| JOIN Right Input 7                                 |     1.09 s |  17.55 % |
+| FILTER 5                                           |     1.83 s |  29.49 % |
+| SCORING 4                                          |     0.44 s |   7.06 % |
 
  - JOIN Node 26 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
- - JOIN Right Input 7 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
  - JOIN Left Input 6 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - JOIN Right Input 7 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
  - FILTER 5 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:79
  - SCORING 4 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:84
 
@@ -1084,9 +1084,9 @@ DEBUG: ## Constraint Profiling Node Breakdown
 TRACE: ## Constraint Profiling Lifecycle Breakdown
 | 2: Teacher time efficiency               |  INSERT  |  UPDATE  |  RETRACT  |
 | :--------------------------------------- | -------: | -------: | --------: |
-| JOIN                                     |  10.91 % |  77.96 % |   11.13 % |
-| FILTER                                   |  26.48 % |  48.56 % |   24.96 % |
-| SCORING                                  |  12.21 % |  17.74 % |   70.05 % |
+| JOIN                                     |  13.12 % |  75.64 % |   11.23 % |
+| FILTER                                   |  23.69 % |  50.45 % |   25.86 % |
+| SCORING                                  |  13.10 % |  16.12 % |   70.78 % |
 
 ...
 ----
