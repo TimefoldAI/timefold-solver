@@ -158,7 +158,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         return switch (comparisonMap.size()) {
             case 0 -> Collections.emptyIterator();
             case 1 -> iteratorSingleIndexer(queryCompositeKey);
-            default -> new DefaultIterator(queryCompositeKey, indexer -> indexer.iterator(queryCompositeKey));
+            default -> new DefaultIterator(queryCompositeKey);
         };
     }
 
@@ -178,7 +178,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
             case 0 -> Collections.emptyIterator();
             case 1 -> randomIteratorSingleIndexer(queryCompositeKey, workingRandom);
             default ->
-                new DefaultIterator(queryCompositeKey, indexer -> indexer.randomIterator(queryCompositeKey, workingRandom));
+                new RandomIterator(queryCompositeKey, indexer -> indexer.randomIterator(queryCompositeKey, workingRandom));
         };
     }
 
@@ -197,19 +197,19 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         return switch (comparisonMap.size()) {
             case 0 -> Collections.emptyIterator();
             case 1 -> randomIteratorSingleIndexer(queryCompositeKey, workingRandom, filter);
-            default -> new DefaultIterator(queryCompositeKey,
+            default -> new RandomIterator(queryCompositeKey,
                     indexer -> indexer.randomIterator(queryCompositeKey, workingRandom, filter));
         };
     }
 
-    private Iterator<T> randomIteratorSingleIndexer(Object compositeKey, Random workingRandom, Predicate<T> filter) {
-        var indexKey = keyUnpacker.apply(compositeKey);
+    private Iterator<T> randomIteratorSingleIndexer(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+        var indexKey = keyUnpacker.apply(queryCompositeKey);
         var entry = comparisonMap.firstEntry();
         if (boundaryReached(entry.getKey(), indexKey)) {
             return Collections.emptyIterator();
         }
         // Boundary condition not yet reached; include the indexer in the range.
-        return entry.getValue().randomIterator(compositeKey, workingRandom, filter);
+        return entry.getValue().randomIterator(queryCompositeKey, workingRandom, filter);
     }
 
     @Override
@@ -222,16 +222,21 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         return "size = " + comparisonMap.size();
     }
 
-    private final class DefaultIterator implements Iterator<T> {
+    private class DefaultIterator implements Iterator<T> {
 
         private final Key_ indexKey;
         private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
         private final Iterator<Map.Entry<Key_, Indexer<T>>> indexerIterator = comparisonMap.entrySet().iterator();
-        private @Nullable Iterator<T> downstreamIterator = null;
+        protected @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
-        public DefaultIterator(Object compositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
-            this.indexKey = keyUnpacker.apply(compositeKey);
+        public DefaultIterator(Object queryCompositeKey) {
+            this(queryCompositeKey,
+                    downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
+        }
+
+        protected DefaultIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+            this.indexKey = keyUnpacker.apply(queryCompositeKey);
             this.downstreamIteratorFunction = downstreamIteratorFunction;
         }
 
@@ -268,6 +273,22 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
             next = null;
             return result;
         }
+    }
+
+    private final class RandomIterator extends DefaultIterator {
+
+        public RandomIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+            super(queryCompositeKey, downstreamIteratorFunction);
+        }
+
+        @Override
+        public void remove() {
+            if (downstreamIterator == null) {
+                throw new IllegalStateException("next() must be called before remove().");
+            }
+            downstreamIterator.remove();
+        }
+
     }
 
 }

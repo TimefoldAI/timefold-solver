@@ -99,8 +99,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
         if (indexKeyCollection.isEmpty()) {
             return Collections.emptyIterator();
         }
-        return new DefaultIterator(indexKeyCollection,
-                downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
+        return new DefaultIterator(queryCompositeKey, indexKeyCollection);
     }
 
     @Override
@@ -109,7 +108,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
         if (indexKeyCollection.isEmpty()) {
             return Collections.emptyIterator();
         }
-        return new DefaultIterator(indexKeyCollection,
+        return new RandomIterator(indexKeyCollection,
                 downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom));
     }
 
@@ -119,7 +118,7 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
         if (indexKeyCollection.isEmpty()) {
             return Collections.emptyIterator();
         }
-        return new DefaultIterator(indexKeyCollection,
+        return new RandomIterator(indexKeyCollection,
                 downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter));
     }
 
@@ -133,15 +132,19 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
         return "size = " + downstreamIndexerMap.size();
     }
 
-    private final class DefaultIterator implements Iterator<T> {
+    private class DefaultIterator implements Iterator<T> {
 
         private final Iterator<Key_> indexerIterator;
         private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
-        private @Nullable Iterator<T> downstreamIterator = null;
+        protected @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
-        public DefaultIterator(KeyCollection_ indexKeyCollection,
-                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+        public DefaultIterator(Object queryCompositeKey, KeyCollection_ indexKeyCollection) {
+            this(indexKeyCollection,
+                    downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
+        }
+
+        protected DefaultIterator(KeyCollection_ indexKeyCollection, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
             this.indexerIterator = indexKeyCollection.iterator();
             this.downstreamIteratorFunction = downstreamIteratorFunction;
         }
@@ -179,6 +182,22 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
             var result = next;
             next = null;
             return result;
+        }
+
+    }
+
+    private final class RandomIterator extends DefaultIterator {
+
+        public RandomIterator(KeyCollection_ indexKeyCollection, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+            super(indexKeyCollection, downstreamIteratorFunction);
+        }
+
+        @Override
+        public void remove() {
+            if (downstreamIterator == null) {
+                throw new IllegalStateException("next() must be called before remove().");
+            }
+            downstreamIterator.remove();
         }
 
     }
