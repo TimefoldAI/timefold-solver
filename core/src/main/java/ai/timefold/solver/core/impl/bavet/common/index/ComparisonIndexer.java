@@ -185,11 +185,11 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
                 var entry = comparisonMap.firstEntry();
                 if (boundaryReached(entry.getKey(), indexKey)) {
                     yield Collections.emptyIterator();
-                } else {// Boundary condition not yet reached; include the indexer in the range.
+                } else { // Boundary condition not yet reached; include the indexer in the range.
                     if (filter == null) {
                         yield entry.getValue().randomIterator(queryCompositeKey, workingRandom);
                     } else {
-                        yield entry.getValue().randomIterator(queryCompositeKey, workingRandom);
+                        yield entry.getValue().randomIterator(queryCompositeKey, workingRandom, filter);
                     }
                 }
             }
