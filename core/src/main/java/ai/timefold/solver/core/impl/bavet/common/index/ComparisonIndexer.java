@@ -174,42 +174,40 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
-        return switch (comparisonMap.size()) {
-            case 0 -> Collections.emptyIterator();
-            case 1 -> randomIteratorSingleIndexer(queryCompositeKey, workingRandom);
-            default ->
-                new RandomIterator(queryCompositeKey, indexer -> indexer.randomIterator(queryCompositeKey, workingRandom));
-        };
+        return createRandomIterator(queryCompositeKey, workingRandom, null);
     }
 
-    private Iterator<T> randomIteratorSingleIndexer(Object compositeKey, Random workingRandom) {
-        var indexKey = keyUnpacker.apply(compositeKey);
-        var entry = comparisonMap.firstEntry();
-        if (boundaryReached(entry.getKey(), indexKey)) {
-            return Collections.emptyIterator();
-        }
-        // Boundary condition not yet reached; include the indexer in the range.
-        return entry.getValue().randomIterator(compositeKey, workingRandom);
+    private Iterator<T> createRandomIterator(Object queryCompositeKey, Random workingRandom, @Nullable Predicate<T> filter) {
+        return switch (comparisonMap.size()) {
+            case 0 -> Collections.emptyIterator();
+            case 1 -> {
+                var indexKey = keyUnpacker.apply(queryCompositeKey);
+                var entry = comparisonMap.firstEntry();
+                if (boundaryReached(entry.getKey(), indexKey)) {
+                    yield Collections.emptyIterator();
+                } else {// Boundary condition not yet reached; include the indexer in the range.
+                    if (filter == null) {
+                        yield entry.getValue().randomIterator(queryCompositeKey, workingRandom);
+                    } else {
+                        yield entry.getValue().randomIterator(queryCompositeKey, workingRandom);
+                    }
+                }
+            }
+            default -> {
+                if (filter == null) {
+                    yield new RandomIterator(queryCompositeKey,
+                            indexer -> indexer.randomIterator(queryCompositeKey, workingRandom));
+                } else {
+                    yield new RandomIterator(queryCompositeKey,
+                            indexer -> indexer.randomIterator(queryCompositeKey, workingRandom, filter));
+                }
+            }
+        };
     }
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
-        return switch (comparisonMap.size()) {
-            case 0 -> Collections.emptyIterator();
-            case 1 -> randomIteratorSingleIndexer(queryCompositeKey, workingRandom, filter);
-            default -> new RandomIterator(queryCompositeKey,
-                    indexer -> indexer.randomIterator(queryCompositeKey, workingRandom, filter));
-        };
-    }
-
-    private Iterator<T> randomIteratorSingleIndexer(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
-        var indexKey = keyUnpacker.apply(queryCompositeKey);
-        var entry = comparisonMap.firstEntry();
-        if (boundaryReached(entry.getKey(), indexKey)) {
-            return Collections.emptyIterator();
-        }
-        // Boundary condition not yet reached; include the indexer in the range.
-        return entry.getValue().randomIterator(queryCompositeKey, workingRandom, filter);
+        return createRandomIterator(queryCompositeKey, workingRandom, filter);
     }
 
     @Override

@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class EqualIndexer<T, Key_> implements Indexer<T> {
@@ -122,28 +123,30 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        return createRandomIterator(queryCompositeKey, workingRandom, null);
+    }
+
+    private Iterator<T> createRandomIterator(Object queryCompositeKey, Random workingRandom, @Nullable Predicate<T> filter) {
         if (downstreamIndexerMap.isEmpty()) {
             return Collections.emptyIterator();
         }
+
         var indexKey = keyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return Collections.emptyIterator();
         }
-        return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
+
+        if (filter == null) {
+            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
+        } else {
+            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter);
+        }
     }
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return Collections.emptyIterator();
-        }
-        var indexKey = keyUnpacker.apply(queryCompositeKey);
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null) {
-            return Collections.emptyIterator();
-        }
-        return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter);
+        return createRandomIterator(queryCompositeKey, workingRandom, filter);
     }
 
     @Override

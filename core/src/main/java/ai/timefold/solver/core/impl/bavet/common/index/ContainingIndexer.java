@@ -19,6 +19,7 @@ import ai.timefold.solver.core.impl.util.ListEntry;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * As defined by {@link UnfinishedJoiners#containing(Function, Function)}
@@ -141,28 +142,30 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> 
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        return createRandomIterator(queryCompositeKey, workingRandom, null);
+    }
+
+    private Iterator<T> createRandomIterator(Object queryCompositeKey, Random workingRandom, @Nullable Predicate<T> filter) {
         if (downstreamIndexerMap.isEmpty()) {
             return Collections.emptyIterator();
         }
+
         var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
         var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return Collections.emptyIterator();
         }
-        return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
+
+        if (filter == null) {
+            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom);
+        } else {
+            return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter);
+        }
     }
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
-        if (downstreamIndexerMap.isEmpty()) {
-            return Collections.emptyIterator();
-        }
-        var indexKey = queryKeyUnpacker.apply(queryCompositeKey);
-        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
-        if (downstreamIndexer == null) {
-            return Collections.emptyIterator();
-        }
-        return downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter);
+        return createRandomIterator(queryCompositeKey, workingRandom, filter);
     }
 
     @Override

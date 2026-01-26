@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
 import ai.timefold.solver.core.impl.util.ListEntry;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -104,22 +105,27 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+        return createRandomIterator(queryCompositeKey, workingRandom, null);
+    }
+
+    private Iterator<T> createRandomIterator(Object queryCompositeKey, Random workingRandom, @Nullable Predicate<T> filter) {
         var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
         if (indexKeyCollection.isEmpty()) {
             return Collections.emptyIterator();
         }
-        return new RandomIterator(indexKeyCollection,
-                downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom));
+
+        if (filter == null) {
+            return new RandomIterator(indexKeyCollection,
+                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom));
+        } else {
+            return new RandomIterator(indexKeyCollection,
+                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter));
+        }
     }
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
-        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
-        if (indexKeyCollection.isEmpty()) {
-            return Collections.emptyIterator();
-        }
-        return new RandomIterator(indexKeyCollection,
-                downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter));
+        return createRandomIterator(queryCompositeKey, workingRandom, filter);
     }
 
     @Override
@@ -144,7 +150,8 @@ final class ContainedInIndexer<T, Key_, KeyCollection_ extends Collection<Key_>>
                     downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
         }
 
-        protected DefaultIterator(KeyCollection_ indexKeyCollection, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+        protected DefaultIterator(KeyCollection_ indexKeyCollection,
+                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
             this.indexerIterator = indexKeyCollection.iterator();
             this.downstreamIteratorFunction = downstreamIteratorFunction;
         }
