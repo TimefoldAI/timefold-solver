@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
+import static ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId.*;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,8 +27,6 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.Scorer;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import static ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId.*;
 
 @NullMarked
 public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
@@ -231,7 +231,8 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
             if (profiler != null) {
                 var profileKey = nodeBuildHelper.nextLifecycleProfilingId;
                 nodeBuildHelper.nextLifecycleProfilingId++;
-                var profileId = new ConstraintNodeProfileId(profileKey, node.getStreamKind(), Qualifier.NODE, node.getLocationSet());
+                var profileId =
+                        new ConstraintNodeProfileId(profileKey, node.getStreamKind(), Qualifier.NODE, node.getLocationSet());
                 nodeBuildHelper.constraintProfiler.register(profileId);
                 propagator = new ProfilingPropagator(profiler, profileId, propagator);
                 var stream = nodeBuildHelper.nodeCreatorMap.get(node);

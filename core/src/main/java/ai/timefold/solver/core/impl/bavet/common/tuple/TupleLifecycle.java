@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple;
 
+import static ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId.Qualifier;
+
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.BiPredicate;
@@ -13,8 +15,6 @@ import ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId;
 import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.bavet.common.StreamKind;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.Scorer;
-
-import static ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId.Qualifier;
 
 public interface TupleLifecycle<Tuple_ extends Tuple> {
 
