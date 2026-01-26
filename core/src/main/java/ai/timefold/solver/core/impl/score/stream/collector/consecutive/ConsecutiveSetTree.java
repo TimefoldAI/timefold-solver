@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -35,7 +35,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     final BiFunction<Point_, Point_, Difference_> sequenceLengthFunction;
     private final Difference_ maxDifference;
     private final Difference_ zeroDifference;
-    private final Map<Value_, ValueCount<ComparableValue<Value_, Point_>>> valueCountMap = new HashMap<>();
+    private final Map<Value_, ValueCount<ComparableValue<Value_, Point_>>> valueCountMap = new IdentityHashMap<>();
     private final NavigableMap<ComparableValue<Value_, Point_>, Value_> itemMap = new TreeMap<>();
     private final NavigableMap<ComparableValue<Value_, Point_>, SequenceImpl<Value_, Point_, Difference_>> startItemToSequence =
             new TreeMap<>();
