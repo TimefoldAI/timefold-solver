@@ -10,11 +10,23 @@ updates:
       prefix: "deps: "
     labels: ["dependencies"] # Don't use any other labels.
     groups:
-      patch-updates: # Patch updates are grouped together.
+      # We want to control these upgrades separately.
+      # They've introduced changes in the past which required manual intervention.
+      quarkus:
+        patterns:
+          - "io.quarkus:*"
+      spring:
+        patterns:
+          - "org.springframework.boot:*"
+      openrewrite:
+        patterns:
+          - "org.openrewrite.maven:*"
+          - "org.openrewrite.recipe:*"
+      # Everything else can be grouped together to minimize the number of PRs.
+      # If any dependency ever breaks our code, it will be upgrouped.
+      regular:
         patterns:
           - "*"
-        update-types:
-          - "patch"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -25,8 +37,8 @@ updates:
       prefix: "deps: "
     labels: ["dependencies"] # Don't use any other labels.
     groups:
-      patch-updates: # Patch updates are grouped together.
+      # Everything can be grouped together to minimize the number of PRs.
+      # If any dependency ever breaks our code, it will be upgrouped.
+      regular:
         patterns:
           - "*"
-        update-types:
-          - "patch"
