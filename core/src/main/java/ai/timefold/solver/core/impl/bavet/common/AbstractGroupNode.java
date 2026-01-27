@@ -93,6 +93,11 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     }
 
     @Override
+    public StreamKind getStreamKind() {
+        return StreamKind.GROUP_BY;
+    }
+
+    @Override
     public final void insert(InTuple_ tuple) {
         if (tuple.getStore(groupStoreIndex) != null) {
             throw new IllegalStateException("Impossible state: the input for the tuple (" + tuple

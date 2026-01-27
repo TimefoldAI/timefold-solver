@@ -277,6 +277,10 @@ public class TimefoldSolverAutoConfiguration
             Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
                     .setConstraintStreamAutomaticNodeSharing(true);
         }
+        if (solverProperties.getConstraintStreamProfilingEnabled() != null) {
+            Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
+                    .setConstraintStreamProfilingEnabled(solverProperties.getConstraintStreamProfilingEnabled());
+        }
         if (solverProperties.getEnvironmentMode() != null) {
             solverConfig.setEnvironmentMode(solverProperties.getEnvironmentMode());
         }

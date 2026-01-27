@@ -19,6 +19,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListM
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -152,6 +153,8 @@ public interface TimefoldSolverEnterpriseService {
             buildListMultistageMoveSelectorFactory(
                     ListMultistageMoveSelectorConfig moveSelectorConfig);
 
+    InnerConstraintProfiler buildConstraintProfiler();
+
     enum Feature {
         MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),
         PARTITIONED_SEARCH("Partitioned search", "remove partitioned search phase from solver configuration"),
@@ -159,7 +162,8 @@ public interface TimefoldSolverEnterpriseService {
         AUTOMATIC_NODE_SHARING("Automatic node sharing",
                 "remove automatic node sharing from solver configuration"),
         MULTISTAGE_MOVE("Multistage move selector",
-                "remove multistageMoveSelector and/or listMultistageMoveSelector from the solver configuration");
+                "remove multistageMoveSelector and/or listMultistageMoveSelector from the solver configuration"),
+        CONSTRAINT_PROFILING("Constraint profiling", "remove constraintStreamProfilingEnabled from the solver configuration");
 
         private final String name;
         private final String workaround;

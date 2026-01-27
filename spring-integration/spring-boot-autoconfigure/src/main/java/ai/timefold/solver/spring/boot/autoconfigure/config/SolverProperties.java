@@ -66,6 +66,8 @@ public class SolverProperties {
     @Deprecated(forRemoval = true, since = "1.4.0")
     private ConstraintStreamImplType constraintStreamImplType;
 
+    private Boolean constraintStreamProfilingEnabled;
+
     /**
      * Note: this setting is only available
      * for <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Timefold Solver
@@ -160,6 +162,14 @@ public class SolverProperties {
     @Deprecated(forRemoval = true, since = "1.4.0")
     public void setConstraintStreamImplType(ConstraintStreamImplType constraintStreamImplType) {
         this.constraintStreamImplType = constraintStreamImplType;
+    }
+
+    public Boolean getConstraintStreamProfilingEnabled() {
+        return constraintStreamProfilingEnabled;
+    }
+
+    public void setConstraintStreamProfilingEnabled(Boolean constraintStreamProfilingEnabled) {
+        this.constraintStreamProfilingEnabled = constraintStreamProfilingEnabled;
     }
 
     public Boolean getConstraintStreamAutomaticNodeSharing() {

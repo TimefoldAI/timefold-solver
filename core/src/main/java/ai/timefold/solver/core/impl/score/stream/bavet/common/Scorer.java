@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.ScoreImpact;
@@ -61,6 +62,11 @@ public final class Scorer<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_
         if (undoScoreImpacter != null) {
             undoScoreImpacter.undo();
         }
+    }
+
+    public ConstraintRef getConstraintRef() {
+        var context = weightedScoreImpacter.getContext();
+        return context.getConstraint().getConstraintRef();
     }
 
     @Override

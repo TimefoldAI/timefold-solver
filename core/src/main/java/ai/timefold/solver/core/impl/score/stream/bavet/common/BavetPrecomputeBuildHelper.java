@@ -63,7 +63,8 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
 
         var buildHelper = new ConstraintNodeBuildHelper<>(new ConsistencyTracker<>(), streamSet,
                 AbstractScoreInliner.buildScoreInliner(new SimpleScoreDefinition(), Collections.emptyMap(),
-                        ConstraintMatchPolicy.DISABLED));
+                        ConstraintMatchPolicy.DISABLED),
+                null);
 
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<BavetRootNode<?>>>();
         var nodeList = buildHelper.buildNodeList(streamSet, buildHelper,
@@ -79,7 +80,7 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
                     }
                 });
 
-        this.nodeNetwork = AbstractNodeBuildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap);
+        this.nodeNetwork = AbstractNodeBuildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap, buildHelper);
         this.recordingTupleLifecycle =
                 (RecordingTupleLifecycle<Tuple_>) buildHelper
                         .getAggregatedTupleLifecycle(List.of(recordingPrecomputeConstraintStream));

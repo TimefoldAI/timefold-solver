@@ -855,6 +855,7 @@ To use automatic node sharing outside Quarkus, your `ConstraintProvider` class m
 Debugging breakpoints put inside your constraints will not be respected, because the `ConstraintProvider` class will be transformed when this feature is enabled.
 ====
 
+[#nodeSharing]
 ==== What is node sharing?
 
 When using xref:constraints-and-score/score-calculation.adoc#constraintStreams[constraint streams], each xref:constraints-and-score/score-calculation.adoc#constraintStreamsBuildingBlocks[building block] forms a node in the score calculation network.
@@ -992,6 +993,175 @@ public class MyConstraintProvider implements ConstraintProvider {
 This transformation means that debugging breakpoints placed inside the original `ConstraintProvider` will not be honored in the transformed `ConstraintProvider`.
 
 From the above, you can see how this feature allows building blocks to share functionally equivalent parents, without needing the `ConstraintProvider` to be written in an awkward way.
+
+[#constraintProfiling]
+=== Constraint Profiling
+
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+====
+
+Profiling allows you to identify which constraints are taking the majority of time spent in score calculation and thus are worth optimizing.
+Unfortunately, traditional profiling tools only report the internal classes used to calculate constraints instead of the constraints themselves. xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint streams] have builtin support for profiling constraints directly.
+
+==== Configuration
+
+[tabs]
+====
+Plain Java::
+
+* Add `<constraintStreamProfilingEnabled>true</constraintStreamProfilingEnabled>` in your `solverConfig.xml`:
++
+[source,xml,options="nowrap"]
+----
+  <scoreDirectorFactory>
+    <constraintProviderClass>...ConstraintProvider</constraintProviderClass>
+    <constraintStreamProfilingEnabled>true</constraintStreamProfilingEnabled>
+  </scoreDirectorFactory>
+----
+
+Spring Boot::
+
+Set the property `timefold.solver.constraint-stream-profiling-enabled` to `true` in `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+timefold.solver.constraint-stream-profiling-enabled=true
+----
+
+Quarkus::
+
+Set the property `quarkus.timefold.solver.constraint-stream-profiling-enabled` to `true` in `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+quarkus.timefold.solver.constraint-stream-profiling-enabled=true
+----
+====
+
+Constraint profiling will log its results to the `ai.timefold.solver.enterprise.core.api.ConstraintProfiler` class at the end of solving.
+For the report to be generated, xref:using-timefold-solver/running-the-solver.adoc#logging[the particular logging levels must be configured and enabled].
+
+IMPORTANT: Constraint profiling is only supported for xref:constraints-and-score/score-calculation.adoc#constraintStreams[constraint stream score calculation]
+when <<multithreadedSolving,multi-threaded solving>> is disabled.
+
+==== Understanding the report
+
+When constraint stream profiling is enabled, a breakdown of time spent in each constraint is logged at the end of solving.
+
+[source,text]
+----
+INFO:  # Constraint Profiling Summary
+|                                                    | Time Spent | Of Total |
+| :------------------------------------------------- | ---------: | -------: |
+| 2: Teacher time efficiency                         |     6.19 s |  23.15 % |
+| 6: Room conflict                                   |     4.17 s |  15.61 % |
+| 4: Student group conflict                          |     3.76 s |  14.07 % |
+| 5: Teacher conflict                                |     3.41 s |  12.76 % |
+| 1: Student group subject variety                   |     3.25 s |  12.14 % |
+| 3: Teacher room stability                          |     3.25 s |  12.14 % |
+| Work shared by 1, 2, 3, 4, 5, 6                    |     2.71 s |  10.12 % |
+
+DEBUG: ## Constraint Profiling Node Breakdown
+| 2: Teacher time efficiency                         | Time Spent | Of Total |
+| :------------------------------------------------- | ---------: | -------: |
+| JOIN Node 26                                       |     1.56 s |  25.20 % |
+| JOIN Left Input 6                                  |     1.28 s |  20.69 % |
+| JOIN Right Input 7                                 |     1.09 s |  17.55 % |
+| FILTER 5                                           |     1.83 s |  29.49 % |
+| SCORING 4                                          |     0.44 s |   7.06 % |
+
+ - JOIN Node 26 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - JOIN Left Input 6 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - JOIN Right Input 7 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+ - FILTER 5 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:79
+ - SCORING 4 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:84
+
+...
+
+TRACE: ## Constraint Profiling Lifecycle Breakdown
+| 2: Teacher time efficiency               |  INSERT  |  UPDATE  |  RETRACT  |
+| :--------------------------------------- | -------: | -------: | --------: |
+| JOIN                                     |  13.12 % |  75.64 % |   11.23 % |
+| FILTER                                   |  23.69 % |  50.45 % |   25.86 % |
+| SCORING                                  |  13.10 % |  16.12 % |   70.78 % |
+
+...
+----
+
+NOTE: The data is printed as a https://www.markdownguide.org/extended-syntax/#tables[Markdown table].
+Any Markdown-enabled text editor will show a well-formatted table.
+
+Add different logging levels, different information is reported:
+
+INFO:: How much time spent in score calculation is spent by each constraint (total and relative percentage) in descending order.
++
+[source,text]
+----
+| 2: Teacher time efficiency                         |     6.19 s |  23.15 % |
+----
++
+xref:enterprise-edition/enterprise-edition.adoc#nodeSharing[When node sharing] is used, the time spent will be reported with "Work shared by", with the numbers identifying constraints that shared the work.
+In the example below, work was shared by constraints 1 to 6:
++
+[source,text]
+----
+| Work shared by 1, 2, 3, 4, 5, 6                    |     2.71 s |  10.12 % |
+----
+
+`DEBUG`:: A breakdown for each constraint of time spent (total and relative percentage) by each constraint stream building block (e.g., join, filter).
++
+[source,text]
+----
+| 2: Teacher time efficiency                         | Time Spent | Of Total |
+| :------------------------------------------------- | ---------: | -------: |
+| JOIN Node 26                                       |     1.56 s |  25.20 % |
+| JOIN Left Input 6                                  |     1.28 s |  20.69 % |
+| JOIN Right Input 7                                 |     1.09 s |  17.55 % |
+| FILTER 5                                           |     1.83 s |  29.49 % |
+| SCORING 4                                          |     0.44 s |   7.06 % |
+----
++
+To make it easier to map the building blocks to your `ConstraintProvider` code,
+the location(s) where each building block was defined is also reported:
++
+[source,text]
+----
+ - JOIN Node 26 defined at location org.acme.schooltimetabling.solver.TimetableConstraintProvider#teacherTimeEfficiency:77
+----
+
+`TRACE`:: A breakdown for each constraint of time spent by each building block,
+shown as percentage of time spent in each of the lifecycle phases.
++
+[source,text]
+----
+| 2: Teacher time efficiency               |  INSERT  |  UPDATE  |  RETRACT  |
+| :--------------------------------------- | -------: | -------: | --------: |
+| JOIN                                     |  13.12 % |  75.64 % |   11.23 % |
+| FILTER                                   |  23.69 % |  50.45 % |   25.86 % |
+| SCORING                                  |  13.10 % |  16.12 % |   70.78 % |
+----
++
+NOTE: This is only relevant to people intimately familiar with the underlying implementation of Constraint Streams
+and can be safely ignored by everyday users.
+
+==== Interpreting the results
+
+Constraint profiling measures wall clock time, not CPU time,
+and as such includes any garbage collection pauses that may occur during score calculation.
+These numbers should be used as a guide to identify which constraints are the most expensive,
+not as an exact measurement.
+
+Due to the nature of the JVM, the results may vary between runs.
+The solver needs to run for a sufficient amount of time
+to allow the JVM to warm up and stabilize.
+We recommend running the solver for minutes rather than seconds,
+but more than that is unlikely to bring any additional benefit.
+For increased confidence in the results,
+you can run the solver multiple times in different JVM processes
+and average the results.
 
 
 [#throttlingBestSolutionEvents]

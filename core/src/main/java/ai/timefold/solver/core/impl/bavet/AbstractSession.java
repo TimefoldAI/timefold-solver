@@ -63,4 +63,8 @@ public abstract class AbstractSession {
         nodeNetwork.settle();
     }
 
+    public final void summarizeProfileIfPresent() {
+        nodeNetwork.summarizeProfileIfPresent();
+    }
+
 }

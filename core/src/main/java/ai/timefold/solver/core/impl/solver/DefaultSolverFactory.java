@@ -128,6 +128,16 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var randomFactory = buildRandomFactory(environmentMode);
         var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
 
+        var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
+        if (scoreDirectorFactoryConfig != null) {
+            var profilingEnabled = scoreDirectorFactoryConfig.getConstraintStreamProfilingEnabled();
+            if (moveThreadCount != null && profilingEnabled != null && profilingEnabled) {
+                throw new UnsupportedOperationException(
+                        "Multithreaded solving is not supported together with constraintStreamProfilingEnabled (%s)."
+                                .formatted(profilingEnabled));
+            }
+        }
+
         var configPolicy = new HeuristicConfigPolicy.Builder<Solution_>()
                 .withPreviewFeatureSet(previewFeaturesEnabled)
                 .withEnvironmentMode(environmentMode)

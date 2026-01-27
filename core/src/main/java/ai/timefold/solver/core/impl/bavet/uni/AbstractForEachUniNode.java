@@ -7,6 +7,7 @@ import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.StaticPropagationQueue;
+import ai.timefold.solver.core.impl.bavet.common.StreamKind;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -38,6 +39,11 @@ public abstract sealed class AbstractForEachUniNode<A>
         this.forEachClass = forEachClass;
         this.outputStoreSize = outputStoreSize;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
+    }
+
+    @Override
+    public StreamKind getStreamKind() {
+        return StreamKind.FOR_EACH;
     }
 
     @Override

@@ -477,6 +477,17 @@
           "new": "class ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent<Solution_>",
           "interface": "java.io.Serializable",
           "justification": "BestSolutionChangedEvent no longer extends java.util.EventObject"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
+          "new": "class ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamImplType\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"scoreDrlList\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
+          "newValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamImplType\", \"constraintStreamAutomaticNodeSharing\", \"constraintStreamProfilingEnabled\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"scoreDrlList\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
+          "justification": "Add constraint profiling to config"
         }
       ]
     }

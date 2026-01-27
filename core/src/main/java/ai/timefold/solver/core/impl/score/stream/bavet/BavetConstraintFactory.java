@@ -105,10 +105,12 @@ public final class BavetConstraintFactory<Solution_>
      */
     public <Stream_ extends BavetAbstractConstraintStream<Solution_>> Stream_ share(Stream_ stream,
             Consumer<Stream_> consumer) {
-        return (Stream_) sharingStreamMap.computeIfAbsent(stream, k -> {
+        var out = (Stream_) sharingStreamMap.computeIfAbsent(stream, k -> {
             consumer.accept(stream);
             return stream;
         });
+        out.addLocationSet(stream.getLocationSet());
+        return out;
     }
 
     // ************************************************************************
