@@ -1100,7 +1100,7 @@ INFO:: How much time spent in score calculation is spent by each constraint (tot
 +
 [source,text]
 ----
-| 2: Teacher time efficiency                         |     7.22 s |  26.80 % |
+| 2: Teacher time efficiency                         |     6.19 s |  23.15 % |
 ----
 +
 xref:enterprise-edition/enterprise-edition.adoc#nodeSharing[When node sharing] is used, the time spent will be reported with "Work shared by", with the numbers identifying constraints that shared the work.
@@ -1108,7 +1108,7 @@ In the example below, work was shared by constraints 1 to 6:
 +
 [source,text]
 ----
-| Work shared by 1, 2, 3, 4, 5, 6                    |     2.61 s |   9.68 % |
+| Work shared by 1, 2, 3, 4, 5, 6                    |     2.71 s |  10.12 % |
 ----
 
 `DEBUG`:: A breakdown for each constraint of time spent (total and relative percentage) by each constraint stream building block (e.g., join, filter).
@@ -1117,11 +1117,11 @@ In the example below, work was shared by constraints 1 to 6:
 ----
 | 2: Teacher time efficiency                         | Time Spent | Of Total |
 | :------------------------------------------------- | ---------: | -------: |
-| JOIN Node 26                                       |     1.73 s |  40.10 % |
-| JOIN Right Input 7                                 |     1.30 s |  30.19 % |
-| JOIN Left Input 6                                  |     1.28 s |  29.71 % |
-| FILTER 5                                           |     2.21 s | 100.00 % |
-| SCORING 4                                          |     0.56 s | 100.00 % |
+| JOIN Node 26                                       |     1.56 s |  25.20 % |
+| JOIN Left Input 6                                  |     1.28 s |  20.69 % |
+| JOIN Right Input 7                                 |     1.09 s |  17.55 % |
+| FILTER 5                                           |     1.83 s |  29.49 % |
+| SCORING 4                                          |     0.44 s |   7.06 % |
 ----
 +
 To make it easier to map the building blocks to your `ConstraintProvider` code,
@@ -1139,9 +1139,9 @@ shown as percentage of time spent in each of the lifecycle phases.
 ----
 | 2: Teacher time efficiency               |  INSERT  |  UPDATE  |  RETRACT  |
 | :--------------------------------------- | -------: | -------: | --------: |
-| JOIN                                     |  10.91 % |  77.96 % |   11.13 % |
-| FILTER                                   |  26.48 % |  48.56 % |   24.96 % |
-| SCORING                                  |  12.21 % |  17.74 % |   70.05 % |
+| JOIN                                     |  13.12 % |  75.64 % |   11.23 % |
+| FILTER                                   |  23.69 % |  50.45 % |   25.86 % |
+| SCORING                                  |  13.10 % |  16.12 % |   70.78 % |
 ----
 +
 NOTE: This is only relevant to people intimately familiar with the underlying implementation of Constraint Streams
