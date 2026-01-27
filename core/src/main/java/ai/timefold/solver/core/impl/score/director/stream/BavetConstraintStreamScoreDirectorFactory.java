@@ -37,12 +37,12 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
         }
         var constraintProviderClass = getConstraintProviderClass(config, providedConstraintProviderClass);
         var constraintProvider = ConfigUtils.newInstance(config, "constraintProviderClass", constraintProviderClass);
-        Boolean profilingMode =
+        var profilingEnabled =
                 Objects.requireNonNullElse(config.getConstraintStreamProfilingEnabled(), false);
         ConfigUtils.applyCustomProperties(constraintProvider, "constraintProviderClass",
                 config.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
         return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, environmentMode,
-                profilingMode);
+                profilingEnabled);
     }
 
     private static Class<? extends ConstraintProvider> getConstraintProviderClass(ScoreDirectorFactoryConfig config,
