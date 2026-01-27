@@ -52,9 +52,9 @@ Annotate the method with `@ShadowSources` and list all planning variables the co
 
 [source,java]
 ----
-@ShadowSources("someGenuineVariable")
+@ShadowSources("someVariable")
 public SomeType computeMyShadow() {
-    if (someGenuineVariable == null) {
+    if (someVariable == null) {
         return null;
     }
     // Compute shadow value based on source variable(s).
