@@ -185,7 +185,7 @@ class ConsecutiveSetTreeTest {
         assertThat(breakList).isEmpty();
 
         tree.remove(c);
-        assertThat(sequenceList).hasSize(0);
+        assertThat(sequenceList).isEmpty();
         assertThat(tree.getBreaks()).isEmpty();
     }
 
