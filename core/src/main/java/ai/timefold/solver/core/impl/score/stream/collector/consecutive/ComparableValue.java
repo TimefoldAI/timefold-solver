@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -54,11 +53,11 @@ record ComparableValue<Value_, Point_ extends Comparable<Point_>>(Value_ value, 
         if (!(object instanceof ComparableValue<?, ?> that)) {
             return false;
         }
-        return value == that.value && Objects.equals(index, that.index);
+        return value == that.value && index.equals(that.index);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(System.identityHashCode(value), index);
+        return 31 * System.identityHashCode(value) + index.hashCode();
     }
 }
