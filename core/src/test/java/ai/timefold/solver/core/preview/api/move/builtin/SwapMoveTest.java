@@ -25,7 +25,7 @@ class SwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, entity2);
 
-        MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+        MoveRunner.build(solutionMetaModel)
                 .using(solution)
                 .execute(swapMove);
 
@@ -50,7 +50,7 @@ class SwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, entity2);
 
-        MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+        MoveRunner.build(solutionMetaModel)
                 .using(solution)
                 .execute(swapMove);
 
@@ -76,7 +76,7 @@ class SwapMoveTest {
         var swap1 = Moves.swap(variableMetaModel, entity1, entity2);
         var swap2 = Moves.swap(variableMetaModel, entity2, entity3);
 
-        var context = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+        var context = MoveRunner.build(solutionMetaModel)
                 .using(solution);
         context.execute(swap1);
         context.execute(swap2);
@@ -102,7 +102,7 @@ class SwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, entity2);
 
-        MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+        MoveRunner.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(swapMove, view -> {
                     // During temporary execution, values should be swapped
@@ -132,7 +132,7 @@ class SwapMoveTest {
         var swap1 = Moves.swap(variableMetaModel, entity1, entity2);
         var swap2 = Moves.swap(variableMetaModel, entity2, entity3);
 
-        var context = MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+        var context = MoveRunner.build(solutionMetaModel)
                 .using(solution);
 
         // Execute swap1 temporarily and verify
