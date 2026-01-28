@@ -30,12 +30,11 @@ record ComparableValue<Value_, Point_ extends Comparable<Point_>>(Value_ value, 
         if (this == other) {
             return 0;
         }
-        var point1 = index;
-        var point2 = other.index;
-        if (point1 == point2) {
+        var out = index.compareTo(other.index);
+        if (out == 0) {
             return compareWithIdentityHashCode(value, other.value);
         }
-        return point1.compareTo(point2);
+        return out;
     }
 
     private int compareWithIdentityHashCode(Value_ o1, Value_ o2) {
@@ -49,4 +48,16 @@ record ComparableValue<Value_, Point_ extends Comparable<Point_>>(Value_ value, 
         return Integer.compare(identityHashCode1, identityHashCode2);
     }
 
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof ComparableValue<?, ?> that)) {
+            return false;
+        }
+        return value == that.value && index.equals(that.index);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * System.identityHashCode(value) + index.hashCode();
+    }
 }
