@@ -1,0 +1,7 @@
+[#migrationGuides]
+= Migration Guides
+:doctype: book
+:sectnums:
+:icons: font
+
+include::variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]

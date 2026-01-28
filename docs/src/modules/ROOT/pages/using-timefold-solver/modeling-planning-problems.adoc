@@ -1903,6 +1903,7 @@ Undeclared dependencies will not trigger updates, leading to stale or incorrect 
 - The supplier method may optionally accept a single parameter of the solution class type,
 which allows access to the solution state without the need of propagating it to the genuine or shadow entities.
 
+[#shadowSourcesPaths]
 ==== `@ShadowSources` paths
 
 When using `@ShadowSources`, you must specify the paths to the variables that the supplier method depends on to compute its value.

@@ -1,0 +1,396 @@
+[#migrateVariableListenersToCustomShadowVariables]
+= Variable Listeners to Custom Shadow Variables
+:doctype: book
+:icons: font
+
+This section explains how to update your planning model to use the new declarative xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[custom shadow variable]
+approach instead of the xref:using-timefold-solver/modeling-planning-problems.adoc#customVariableListener[custom `VariableListener`] pattern.
+
+Custom shadow variables replace imperative update logic with declarative, side-effect-free supplier methods.
+Timefold Solver automatically recalculates shadow values when their source variables change.
+
+[#why_migrate]
+== Why migrate
+
+In earlier versions of Timefold Solver, shadow variables were updated using a `VariableListener`.
+This required:
+
+* Writing and maintaining listener classes.
+* Manually calling `ScoreDirector.beforeVariableChanged()` and `afterVariableChanged()`.
+* Handling entity lifecycle events explicitly.
+
+This approach has now been deprecated and will be removed in a future version.
+
+For example:
+[source,java]
+----
+@ShadowVariable(
+        variableListenerClass = MyVariableListener.class,
+        sourceVariableName = "someGenuineVariable"
+)
+private SomeType myShadow;
+----
+
+With custom shadow variables, you declare:
+
+* A shadow field annotated with `@ShadowVariable`.
+* A supplier method annotated with `@ShadowSources` that computes the value.
+
+This approach:
+
+* Removes the need for listener classes.
+* Eliminates manual `ScoreDirector` calls.
+* Makes dependencies explicit and easier to reason about.
+
+[#_migration_steps]
+== Migration steps
+
+=== 1. Add the supplier method
+
+Add a method to the planning entity that computes the shadow value.
+Annotate the method with `@ShadowSources` and list all planning variables the computation depends on.
+
+[source,java]
+----
+@ShadowSources("someVariable")
+public SomeType computeMyShadow() {
+    if (someVariable == null) {
+        return null;
+    }
+    // Compute shadow value based on source variable(s).
+    return ...;
+}
+----
+
+* The return type must match the type of the shadow field.
+* The method must be pure and deterministic.
+* Do not modify any fields inside the supplier method.
+* List every source variable that affects the result.
+
+=== 2. Update the shadow variable annotation
+
+Replace the `variableListenerClass` reference with a `supplierName` that points to the new method.
+
+[source,java]
+----
+@ShadowVariable(supplierName = "computeMyShadow")
+private SomeType myShadow;
+----
+
+Timefold Solver invokes the supplier automatically whenever one of the source variables changes and assigns the returned value to the shadow field.
+
+=== 3. Remove the `VariableListener` class
+
+Delete the custom `VariableListener` implementation.
+It is no longer needed.
+
+[#example_before_after]
+== Example: before and after
+
+=== Before: using `VariableListener`
+
+[source,java]
+----
+@PlanningEntity
+public class Job {
+    private int durationInDays;
+    @PlanningVariable
+    private LocalDate startDate;
+    @ShadowVariable(variableListenerClass = EndDateUpdatingVariableListener.class,
+                    sourceVariableName = "startDate")
+    private LocalDate endDate;
+
+    // ...
+}
+----
+
+[source,java]
+----
+public class EndDateUpdatingVariableListener implements VariableListener<MaintenanceSchedule, Job> {
+
+    @Override
+    public void beforeEntityAdded(ScoreDirector<MaintenanceSchedule> scoreDirector, Job job) {
+        // Do nothing
+    }
+
+    @Override
+    public void afterEntityAdded(ScoreDirector<MaintenanceSchedule> scoreDirector, Job job) {
+        updateEndDate(scoreDirector, job);
+    }
+
+    @Override
+    public void beforeVariableChanged(ScoreDirector<MaintenanceSchedule> scoreDirector, Job job) {
+        // Do nothing
+    }
+
+    @Override
+    public void afterVariableChanged(ScoreDirector<MaintenanceSchedule> scoreDirector, Job job) {
+        updateEndDate(scoreDirector, job);
+    }
+
+    @Override
+    public void beforeEntityRemoved(ScoreDirector<MaintenanceSchedule> scoreDirector, Job job) {
+        // Do nothing
+    }
+
+    @Override
+    public void afterEntityRemoved(ScoreDirector<MaintenanceSchedule> scoreDirector, Job job) {
+        // Do nothing
+    }
+
+    protected void updateEndDate(ScoreDirector<MaintenanceSchedule> scoreDirector, Job job) {
+        scoreDirector.beforeVariableChanged(job, "endDate");
+        job.setEndDate(calculateEndDate(job.getStartDate(), job.getDurationInDays()));
+        scoreDirector.afterVariableChanged(job, "endDate");
+    }
+
+    public static LocalDate calculateEndDate(LocalDate startDate, int durationInDays) {
+        if (startDate == null) {
+            return null;
+        } else {
+            return startDate.plusDays(durationInDays);
+        }
+    }
+}
+----
+
+=== After: declarative custom shadow variable
+
+[source,java]
+----
+@PlanningEntity
+public class Job {
+    private int durationInDays;
+    @PlanningVariable
+    private LocalDate startDate;
+    @ShadowVariable(supplierName = "endDateSupplier")
+    private LocalDate endDate;
+
+    @ShadowSources("startDate")
+    public LocalDate endDateSupplier() {
+        return calculateEndDate(startDate, durationInDays);
+    }
+
+    public static LocalDate calculateEndDate(LocalDate startDate, int durationInDays) {
+        if (startDate == null) {
+            return null;
+        } else {
+            return startDate.plusDays(durationInDays);
+        }
+    }
+    // ...
+}
+----
+
+In this version:
+
+* The supplier method computes the shadow value.
+* Timefold Solver updates `endDate` automatically when `startDate` changes.
+
+[#advanced]
+== Advanced migration scenarios
+=== Shadow variables with multiple dependencies
+
+If the shadow value depends on multiple planning or shadow variables, list all dependencies in `@ShadowSources`.
+
+Before in `Visit.java`:
+
+[source,java]
+----
+public class Visit {
+    @InverseRelationShadowVariable(sourceVariableName = "visits")
+    private Vehicle vehicle;
+
+    @PreviousElementShadowVariable(sourceVariableName = "visits")
+    private Visit previous;
+
+    @ShadowVariable(
+            variableListenerClass = ArrivalTimeUpdatingVariableListener.class,
+            sourceVariableName = "vehicle")
+    @ShadowVariable(
+            variableListenerClass = ArrivalTimeUpdatingVariableListener.class,
+            sourceVariableName = "previous")
+    private LocalDateTime arrivalTime;
+
+    // ...
+}
+----
+
+After in `Visit.java`:
+
+[source,java]
+----
+public class Visit {
+    @InverseRelationShadowVariable(sourceVariableName = "visits")
+    private Vehicle vehicle;
+
+    @PreviousElementShadowVariable(sourceVariableName = "visits")
+    private Visit previous;
+
+    @ShadowVariable(supplierName = "computeArrivalTime")
+    private LocalDateTime arrivalTime;
+
+    @ShadowSources({"vehicle", "previous.arrivalTime"})
+    public LocalDateTime computeArrivalTime() { … }
+
+    // ...
+}
+----
+
+Timefold Solver triggers the supplier whenever either `vehicle` or `previous` changes.
+
+Read the xref:using-timefold-solver/modeling-planning-problems.adoc#shadowSourcesPaths[full @ShadowSources reference here].
+
+=== Variable listeners that updated multiple fields
+
+A custom shadow variable updates exactly one field.
+If your listener updated multiple fields, split the logic into multiple shadow variables.
+
+Before in `Visit.java`:
+
+[source,java]
+----
+public class Visit {
+    @PreviousElementShadowVariable(sourceVariableName = "visits")
+    private Visit previous;
+
+    @ShadowVariable(
+            variableListenerClass = ArrivalTimeUpdatingVariableListener.class,
+            sourceVariableName = "previous")
+    private int totalFuelConsumptionSinceStart;
+
+    @PiggybackShadowVariable(shadowVariableName = "totalFuelConsumptionSinceStart")
+    private Duration totalTravelTimeSinceStart;
+
+    // ...
+}
+----
+
+After in `Visit.java`:
+
+[source,java]
+----
+public class Visit {
+    @PreviousElementShadowVariable(sourceVariableName = "visits")
+    private Visit previous;
+
+    @ShadowVariable(supplierName = "computeTotalFuelConsumption")
+    private int totalFuelConsumptionSinceStart;
+
+    @ShadowVariable(supplierName = "computeTotalTravelTime")
+    private Duration totalTravelTimeSinceStart;
+
+    @ShadowSources({"previous.totalFuelConsumptionSinceStart"})
+    public int computeTotalFuelConsumption() { … }
+
+    @ShadowSources({"previous.totalTravelTimeSinceStart"})
+    public Duration computeTotalTravelTime() { … }
+
+    // ...
+}
+----
+
+=== Accessing the planning solution
+
+In rare cases, a shadow computation needs access to data stored on the `@PlanningSolution`.
+You can add the solution as a parameter to the supplier method.
+
+In the following example, the travel time matrix is stored on the planning solution.
+
+Before in `Visit.java` and `ArrivalTimeUpdatingVariableListener.java`
+
+[source,java]
+----
+public class Visit {
+    private Location location;
+
+    @PreviousElementShadowVariable(sourceVariableName = "visits")
+    private Visit previous;
+
+    @ShadowVariable(
+            variableListenerClass = ArrivalTimeUpdatingVariableListener.class,
+            sourceVariableName = "previous")
+    private LocalDateTime arrivalTime;
+
+    // ...
+}
+
+public class ArrivalTimeUpdatingVariableListener
+        implements VariableListener<RoutingSolution, Visit> {
+
+    @Override
+    public void afterVariableChanged(
+            ScoreDirector<RoutingSolution> scoreDirector, Visit visit) {
+        updateArrivalTime(scoreDirector, visit);
+    }
+
+    @Override
+    public void afterEntityAdded(
+            ScoreDirector<RoutingSolution> scoreDirector, Visit visit) {
+        updateArrivalTime(scoreDirector, visit);
+    }
+
+    protected void updateArrivalTime(
+            ScoreDirector<RoutingSolution> scoreDirector, Visit visit) {
+        RoutingSolution solution = scoreDirector.getWorkingSolution();
+
+        Visit previous = visit.getPreviousStandstill();
+        Long arrivalTime = null;
+
+        if (previous != null) {
+            // Global travel time matrix stored on the solution
+            long travelTime = solution.getTravelTime(
+                previous.getLocation(), visit.getLocation());
+
+            Long previousDeparture = previous.getDepartureTime();
+            if (previousDeparture != null) {
+                arrivalTime = previousDeparture + travelTime;
+            }
+        }
+
+        scoreDirector.beforeVariableChanged(visit, "arrivalTime");
+        visit.setArrivalTime(arrivalTime);
+        scoreDirector.afterVariableChanged(visit, "arrivalTime");
+    }
+}
+----
+
+After in `Visit.java`.  `ArrivalTimeUpdatingVariableListener.java` is removed.
+
+[source,java]
+----
+// This example keeps the "travel time matrix" on the solution
+public class Visit {
+    private Location location;
+
+    @PreviousElementShadowVariable(sourceVariableName = "visits")
+    private Visit previous;
+
+    @ShadowVariable(supplierName = "computeArrivalTime")
+    private LocalDateTime arrivalTime;
+
+    @ShadowSources({"vehicle", "previous.arrivalTime"})
+    public LocalDateTime computeArrivalTime(RoutingSolution planningSolution) {
+        if (previous == null) {
+            return null;
+        }
+        // Global travel time matrix stored on the solution
+        long travelTime = solution.getTravelTime(
+            previous.getLocation(), visit.getLocation());
+
+        Long previousDeparture = previous.arrivalTime + solution.getDefaultDuration();
+        return previousDeparture + travelTime;
+    }
+
+    // ...
+}
+----
+
+Use this sparingly.
+In many cases, storing derived data directly on the planning entity leads to simpler and more testable models.
+
+[#_next]
+== Next
+
+* xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[Custom shadow variables]
+* xref:using-timefold-solver/modeling-planning-problems.adoc#shadowSourcesPaths[@ShadowSources paths]
