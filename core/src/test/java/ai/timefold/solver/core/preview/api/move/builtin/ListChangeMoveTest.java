@@ -25,7 +25,7 @@ class ListChangeMoveTest {
 
         var changeMove = Moves.change(variableMetaModel, entity, 0, entity, 2);
 
-        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+        MoveRunner.build(solutionMetaModel)
                 .using(solution)
                 .execute(changeMove);
 
@@ -52,7 +52,7 @@ class ListChangeMoveTest {
 
         var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 0);
 
-        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+        MoveRunner.build(solutionMetaModel)
                 .using(solution)
                 .execute(changeMove);
 
@@ -78,7 +78,7 @@ class ListChangeMoveTest {
 
         var valueToMove = entity1.getValueList().get(0);
 
-        var context = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+        var context = MoveRunner.build(solutionMetaModel)
                 .using(solution);
         context.execute(move1);
         context.execute(move2);
@@ -99,7 +99,7 @@ class ListChangeMoveTest {
 
         var changeMove = Moves.change(variableMetaModel, entity, 0, entity, 2);
 
-        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+        MoveRunner.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(changeMove, view -> {
                     // During temporary execution, order should be changed
@@ -127,7 +127,7 @@ class ListChangeMoveTest {
 
         var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 0);
 
-        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+        MoveRunner.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(changeMove, view -> {
                     // Value should be moved from entity1 to entity2

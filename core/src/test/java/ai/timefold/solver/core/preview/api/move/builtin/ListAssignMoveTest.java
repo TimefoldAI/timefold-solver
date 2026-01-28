@@ -23,7 +23,7 @@ class ListAssignMoveTest {
 
         var assignMove = Moves.assign(variableMetaModel, value, entity, 0);
 
-        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class).using(solution)
+        MoveRunner.build(solutionMetaModel).using(solution)
                 .execute(assignMove);
 
         assertThat(entity.getValueList()).hasSize(1);
@@ -46,8 +46,8 @@ class ListAssignMoveTest {
         var move2 = Moves.assign(variableMetaModel, value2, entity, 1);
         var move3 = Moves.assign(variableMetaModel, value3, entity, 1); // Insert at position 1
 
-        var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class);
-        var context = runner.using(solution);
+        var context = MoveRunner.build(solutionMetaModel)
+                .using(solution);
         context.execute(move1);
         context.execute(move2);
         context.execute(move3);
@@ -77,8 +77,8 @@ class ListAssignMoveTest {
         var move2 = Moves.assign(variableMetaModel, value2, entity2, 0);
         var move3 = Moves.assign(variableMetaModel, value3, entity3, 0);
 
-        var runner = MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class);
-        var context = runner.using(solution);
+        var context = MoveRunner.build(solutionMetaModel)
+                .using(solution);
         context.execute(move1);
         context.execute(move2);
         context.execute(move3);
@@ -100,7 +100,8 @@ class ListAssignMoveTest {
 
         var assignMove = Moves.assign(variableMetaModel, value, entity, 0);
 
-        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class).using(solution)
+        MoveRunner.build(solutionMetaModel)
+                .using(solution)
                 .executeTemporarily(assignMove, view -> {
                     // During temporary execution, value should be assigned
                     assertThat(entity.getValueList()).hasSize(1);
@@ -128,7 +129,8 @@ class ListAssignMoveTest {
         var move3 = Moves.assign(variableMetaModel, value3, entity, 1);
         var compositeMove = Moves.compose(move1, move2, move3);
 
-        MoveRunner.build(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class).using(solution)
+        MoveRunner.build(solutionMetaModel)
+                .using(solution)
                 .executeTemporarily(compositeMove, view -> {
                     // All assignments should be applied
                     assertThat(entity.getValueList()).hasSize(3);

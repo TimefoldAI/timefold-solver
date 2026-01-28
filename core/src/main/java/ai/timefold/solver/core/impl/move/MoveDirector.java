@@ -18,6 +18,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
 
@@ -26,8 +27,7 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
-        implements InnerMutableSolutionView<Solution_>, Rebaser
-        permits EphemeralMoveDirector {
+        implements InnerMutableSolutionView<Solution_>, Rebaser permits EphemeralMoveDirector {
 
     protected final VariableDescriptorAwareScoreDirector<Solution_> externalScoreDirector;
     private final InnerScoreDirector<Solution_, Score_> backingScoreDirector;
@@ -48,8 +48,12 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public final <Entity_, Value_> void assignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Value_ planningValue, Entity_ destinationEntity, int destinationIndex) {
+    public final <Entity_, Value_> void assignValueAndInsert(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ planningValue,
+            Entity_ destinationEntity, int destinationIndex) {
+        if (!(getPositionOf(variableMetaModel, planningValue) instanceof UnassignedElement)) {
+            throw new IllegalStateException("Cannot assign an already assigned value (%s).".formatted(planningValue));
+        }
         var variableDescriptor =
                 ((DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
         externalScoreDirector.beforeListVariableElementAssigned(variableDescriptor, planningValue);
@@ -63,13 +67,46 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
+    public final <Entity_, Value_> void assignValueAndSet(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ planningValue,
+            Entity_ destinationEntity, int destinationIndex) {
+        if (destinationIndex == countValues(variableMetaModel, destinationEntity)) {
+            // Faster code path, no need to unassign anything.
+            assignValueAndInsert(variableMetaModel, planningValue, destinationEntity, destinationIndex);
+            return;
+        }
+
+        if (!(getPositionOf(variableMetaModel, planningValue) instanceof UnassignedElement)) {
+            throw new IllegalStateException("Cannot assign an already assigned value (%s).".formatted(planningValue));
+        }
+
+        var oldValue = getValueAtIndex(variableMetaModel, destinationEntity, destinationIndex);
+        var variableDescriptor =
+                ((DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
+        externalScoreDirector.beforeListVariableElementAssigned(variableDescriptor, planningValue);
+        externalScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, oldValue);
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex + 1);
+        var actualOldValue = variableDescriptor.setElement(destinationEntity, destinationIndex, planningValue);
+        if (oldValue != actualOldValue) {
+            throw new IllegalStateException(
+                    "Impossible state: The value (%s) at index (%d) of entity (%s) is not as expected (%s)."
+                            .formatted(actualOldValue, destinationIndex, destinationEntity, oldValue));
+        }
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex + 1);
+        externalScoreDirector.afterListVariableElementUnassigned(variableDescriptor, oldValue);
+        externalScoreDirector.afterListVariableElementAssigned(variableDescriptor, planningValue);
+
+        externalScoreDirector.triggerVariableListeners();
+    }
+
+    @Override
     public <Entity_, Value_> void unassignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value) {
-        var locationInList = getPositionOf(variableMetaModel, value)
-                .ensureAssigned(() -> """
-                        The value (%s) is not assigned to a list variable.
-                        This may indicate score corruption or a problem with the move's implementation."""
-                        .formatted(value));
+        var locationInList = getPositionOf(variableMetaModel, value).ensureAssigned(() -> """
+                The value (%s) is not assigned to a list variable.
+                This may indicate score corruption or a problem with the move's implementation.""".formatted(value));
         unassignValue(variableMetaModel, value, locationInList.entity(), locationInList.index());
     }
 
@@ -81,9 +118,8 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         return value;
     }
 
-    private <Entity_, Value_> void unassignValue(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ movedValue, Entity_ entity,
-            int index) {
+    private <Entity_, Value_> void unassignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Value_ movedValue, Entity_ entity, int index) {
         var variableDescriptor =
                 ((DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
         externalScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, movedValue);
@@ -94,6 +130,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         externalScoreDirector.triggerVariableListeners();
     }
 
+    @Override
     public final <Entity_, Value_> void changeVariable(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity, @Nullable Value_ newValue) {
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
@@ -104,22 +141,27 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @SuppressWarnings("unchecked")
-    public final <Entity_, Value_> @Nullable Value_ moveValueBetweenLists(
+    @Override
+    public final <Entity_, Value_> Value_ moveValueBetweenLists(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity, int sourceIndex,
             Entity_ destinationEntity, int destinationIndex) {
         if (sourceEntity == destinationEntity) {
-            return moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
+            // Moving within the same list is not supported by this method.
+            // This avoids confusion about the shifting of indices when removing and adding within the same list.
+            throw new IllegalArgumentException(
+                    "Source entity (%s) and destination entity (%s) must be different when moving values between lists."
+                            .formatted(sourceEntity, destinationEntity));
         }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
         var element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
 
-        externalScoreDirector.beforeListVariableChanged(variableDescriptor,
-                destinationEntity, destinationIndex, destinationIndex);
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex);
         variableDescriptor.addElement(destinationEntity, destinationIndex, element);
-        externalScoreDirector.afterListVariableChanged(variableDescriptor,
-                destinationEntity, destinationIndex, destinationIndex + 1);
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex + 1);
 
         externalScoreDirector.triggerVariableListeners();
         return element;
@@ -127,23 +169,24 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <Entity_, Value_> @Nullable Value_ moveValueInList(
+    public final <Entity_, Value_> Value_ moveValueInList(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity, int sourceIndex,
             int destinationIndex) {
         if (sourceIndex == destinationIndex) {
-            return null;
+            throw new IllegalArgumentException(
+                    "When moving values in the same list, sourceIndex (%d) and destinationIndex (%d) must be different."
+                            .formatted(sourceIndex, destinationIndex));
         }
 
-        var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         var fromIndex = Math.min(sourceIndex, destinationIndex);
         var toIndex = Math.max(sourceIndex, destinationIndex) + 1;
 
+        var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
         var element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
         variableDescriptor.addElement(sourceEntity, destinationIndex, element);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
         externalScoreDirector.triggerVariableListeners();
-
         return element;
     }
 
@@ -172,7 +215,9 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     public <Entity_, Value_> void swapValuesInList(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity, int leftIndex, int rightIndex) {
         if (leftIndex == rightIndex) {
-            return;
+            throw new IllegalArgumentException(
+                    "When swapping values in the same list, leftIndex (%d) and rightIndex (%d) must be different."
+                            .formatted(leftIndex, rightIndex));
         }
 
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
@@ -192,16 +237,12 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     public <Entity_, Value_> boolean isValueInRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @Nullable Entity_ entity, @Nullable Value_ value) {
         var innerGenuineVariableMetaModel = (InnerGenuineVariableMetaModel<Solution_>) variableMetaModel;
-        var valueRangeDescriptor = innerGenuineVariableMetaModel.variableDescriptor()
-                .getValueRangeDescriptor();
+        var valueRangeDescriptor = innerGenuineVariableMetaModel.variableDescriptor().getValueRangeDescriptor();
         if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
-            return backingScoreDirector.getValueRangeManager()
-                    .getFromSolution(valueRangeDescriptor)
-                    .contains(value);
+            return backingScoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor).contains(value);
         } else {
             return backingScoreDirector.getValueRangeManager()
-                    .getFromEntity(valueRangeDescriptor, Objects.requireNonNull(entity))
-                    .contains(value);
+                    .getFromEntity(valueRangeDescriptor, Objects.requireNonNull(entity)).contains(value);
         }
     }
 
@@ -269,8 +310,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         return !entityDescriptor.isMovable(backingScoreDirector.getWorkingSolution(), entity);
     }
 
-    protected static <Solution_, Entity_, Value_> ElementPosition getPositionOf(
-            InnerScoreDirector<Solution_, ?> scoreDirector,
+    protected static <Solution_, Entity_, Value_> ElementPosition getPositionOf(InnerScoreDirector<Solution_, ?> scoreDirector,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableDescriptor, Value_ value) {
         return scoreDirector.getListVariableStateSupply(extractVariableDescriptor(listVariableDescriptor))
                 .getElementPosition(value);

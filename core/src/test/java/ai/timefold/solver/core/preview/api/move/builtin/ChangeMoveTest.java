@@ -23,7 +23,9 @@ class ChangeMoveTest {
 
         var changeMove = Moves.change(variableMetaModel, entity, newValue);
 
-        MoveRunner.build(TestdataSolution.class, TestdataEntity.class).using(solution).execute(changeMove);
+        MoveRunner.build(solutionMetaModel)
+                .using(solution)
+                .execute(changeMove);
 
         assertThat(entity.getValue()).isEqualTo(newValue);
     }
@@ -39,7 +41,9 @@ class ChangeMoveTest {
 
         var changeMove = Moves.change(variableMetaModel, entity, null);
 
-        MoveRunner.build(TestdataSolution.class, TestdataEntity.class).using(solution).execute(changeMove);
+        MoveRunner.build(solutionMetaModel)
+                .using(solution)
+                .execute(changeMove);
 
         assertThat(entity.getValue()).isNull();
     }
@@ -61,7 +65,8 @@ class ChangeMoveTest {
         var move2 = Moves.change(variableMetaModel, entity2, value1);
         var move3 = Moves.change(variableMetaModel, entity3, value2);
 
-        var context = MoveRunner.build(TestdataSolution.class, TestdataEntity.class).using(solution);
+        var context = MoveRunner.build(solutionMetaModel)
+                .using(solution);
         context.execute(move1);
         context.execute(move2);
         context.execute(move3);
@@ -84,7 +89,7 @@ class ChangeMoveTest {
 
         var changeMove = Moves.change(variableMetaModel, entity, newValue);
 
-        MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+        MoveRunner.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(changeMove, view -> {
                     // During temporary execution, value should be changed
@@ -116,7 +121,7 @@ class ChangeMoveTest {
         var move3 = Moves.change(variableMetaModel, entity3, value2);
         var compositeMove = Moves.compose(move1, move2, move3);
 
-        MoveRunner.build(TestdataSolution.class, TestdataEntity.class)
+        MoveRunner.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(compositeMove, view -> {
                     // All changes should be applied
