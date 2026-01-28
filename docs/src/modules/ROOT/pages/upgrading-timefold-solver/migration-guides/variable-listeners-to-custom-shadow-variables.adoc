@@ -193,11 +193,32 @@ In this version:
 
 If the shadow value depends on multiple planning or shadow variables, list all dependencies in `@ShadowSources`.
 
-[tabs]
-====
-Shadow Variable::
-+
-[source,java,options="nowrap"]
+Before in `Visit.java`:
+
+[source,java]
+----
+public class Visit {
+    @InverseRelationShadowVariable(sourceVariableName = "visits")
+    private Vehicle vehicle;
+
+    @PreviousElementShadowVariable(sourceVariableName = "visits")
+    private Visit previous;
+
+    @ShadowVariable(
+            variableListenerClass = ArrivalTimeUpdatingVariableListener.class,
+            sourceVariableName = "vehicle")
+    @ShadowVariable(
+            variableListenerClass = ArrivalTimeUpdatingVariableListener.class,
+            sourceVariableName = "previous")
+    private LocalDateTime arrivalTime;
+
+    // ...
+}
+----
+
+After in `Visit.java`:
+
+[source,java]
 ----
 public class Visit {
     @InverseRelationShadowVariable(sourceVariableName = "visits")
@@ -216,30 +237,6 @@ public class Visit {
 }
 ----
 
-(Old) VariableListener::
-+
-[source,java,options="nowrap"]
-----
-public class Visit {
-    @InverseRelationShadowVariable(sourceVariableName = "visits")
-    private Vehicle vehicle;
-
-    @PreviousElementShadowVariable(sourceVariableName = "visits")
-    private Visit previous;
-
-    @ShadowVariable(
-            variableListenerClass = MyVariableListener.class,
-            sourceVariableName = "vehicle")
-    @ShadowVariable(
-            variableListenerClass = MyVariableListener.class,
-            sourceVariableName = "previous")
-    private LocalDateTime arrivalTime;
-
-    // ...
-}
-----
-====
-
 Timefold Solver triggers the supplier whenever either `vehicle` or `previous` changes.
 
 Read the xref:using-timefold-solver/modeling-planning-problems.adoc#shadowSourcesPaths[full @ShadowSources reference here].
@@ -249,11 +246,29 @@ Read the xref:using-timefold-solver/modeling-planning-problems.adoc#shadowSource
 A custom shadow variable updates exactly one field.
 If your listener updated multiple fields, split the logic into multiple shadow variables.
 
-[tabs]
-====
-Shadow Variable::
-+
-[source,java,options="nowrap"]
+Before in `Visit.java`:
+
+[source,java]
+----
+public class Visit {
+    @PreviousElementShadowVariable(sourceVariableName = "visits")
+    private Visit previous;
+
+    @ShadowVariable(
+            variableListenerClass = ArrivalTimeUpdatingVariableListener.class,
+            sourceVariableName = "previous")
+    private int totalFuelConsumptionSinceStart;
+
+    @PiggybackShadowVariable(shadowVariableName = "totalFuelConsumptionSinceStart")
+    private Duration totalTravelTimeSinceStart;
+
+    // ...
+}
+----
+
+After in `Visit.java`:
+
+[source,java]
 ----
 public class Visit {
     @PreviousElementShadowVariable(sourceVariableName = "visits")
@@ -275,27 +290,6 @@ public class Visit {
 }
 ----
 
-(Old) VariableListener::
-+
-[source,java,options="nowrap"]
-----
-public class Visit {
-    @PreviousElementShadowVariable(sourceVariableName = "visits")
-    private Visit previous;
-
-    @ShadowVariable(
-            variableListenerClass = MyVariableListener.class,
-            sourceVariableName = "previous")
-    private int totalFuelConsumptionSinceStart;
-
-    @PiggybackShadowVariable(shadowVariableName = "totalFuelConsumptionSinceStart")
-    private Duration totalTravelTimeSinceStart;
-
-    // ...
-}
-----
-====
-
 === Accessing the planning solution
 
 In rare cases, a shadow computation needs access to data stored on the `@PlanningSolution`.
@@ -303,41 +297,9 @@ You can add the solution as a parameter to the supplier method.
 
 In the following example, the travel time matrix is stored on the planning solution.
 
-[tabs]
-====
-Shadow Variable::
-+
-[source,java,options="nowrap"]
-----
-// This example keeps the "travel time matrix" on the solution
-public class Visit {
-    private Location location;
+Before in `Visit.java` and `ArrivalTimeUpdatingVariableListener.java`
 
-    @PreviousElementShadowVariable(sourceVariableName = "visits")
-    private Visit previous;
-
-    @ShadowVariable(supplierName = "computeArrivalTime")
-    private LocalDateTime arrivalTime;
-
-    @ShadowSources({"vehicle", "previous.arrivalTime"})
-    public LocalDateTime computeArrivalTime(RoutingSolution planningSolution) {
-        if (previous == null) {
-            return null;
-        }
-        // Global travel time matrix stored on the solution
-        long travelTime = solution.getTravelTime(
-            previous.getLocation(), visit.getLocation());
-
-        Long previousDeparture = previous.arrivalTime + solution.getDefaultDuration();
-        return previousDeparture + travelTime;
-    }
-
-    // ...
-}
-----
-(Old) VariableListener::
-+
-[source,java,options="nowrap"]
+[source,java]
 ----
 public class Visit {
     private Location location;
@@ -346,7 +308,7 @@ public class Visit {
     private Visit previous;
 
     @ShadowVariable(
-            variableListenerClass = MyVariableListener.class,
+            variableListenerClass = ArrivalTimeUpdatingVariableListener.class,
             sourceVariableName = "previous")
     private LocalDateTime arrivalTime;
 
@@ -392,7 +354,37 @@ public class ArrivalTimeUpdatingVariableListener
     }
 }
 ----
-====
+
+After in `Visit.java`.  `ArrivalTimeUpdatingVariableListener.java` is removed.
+
+[source,java]
+----
+// This example keeps the "travel time matrix" on the solution
+public class Visit {
+    private Location location;
+
+    @PreviousElementShadowVariable(sourceVariableName = "visits")
+    private Visit previous;
+
+    @ShadowVariable(supplierName = "computeArrivalTime")
+    private LocalDateTime arrivalTime;
+
+    @ShadowSources({"vehicle", "previous.arrivalTime"})
+    public LocalDateTime computeArrivalTime(RoutingSolution planningSolution) {
+        if (previous == null) {
+            return null;
+        }
+        // Global travel time matrix stored on the solution
+        long travelTime = solution.getTravelTime(
+            previous.getLocation(), visit.getLocation());
+
+        Long previousDeparture = previous.arrivalTime + solution.getDefaultDuration();
+        return previousDeparture + travelTime;
+    }
+
+    // ...
+}
+----
 
 Use this sparingly.
 In many cases, storing derived data directly on the planning entity leads to simpler and more testable models.
