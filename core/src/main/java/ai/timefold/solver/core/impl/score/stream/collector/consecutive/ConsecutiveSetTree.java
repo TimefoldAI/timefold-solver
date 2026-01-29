@@ -392,6 +392,13 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
             count = 1;
         }
 
+        @Override
+        public String toString() {
+            return "ValueCount{" +
+                    "value=" + value +
+                    ", count=" + count +
+                    '}';
+        }
     }
 
 }
