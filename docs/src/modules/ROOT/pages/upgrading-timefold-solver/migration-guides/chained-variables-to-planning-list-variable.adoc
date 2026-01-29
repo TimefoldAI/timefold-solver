@@ -176,7 +176,7 @@ public class Customer {
 In this version:
 
 ** Each Vehicle directly owns a list of `Customer` values. The solver ensures that a customer is in at most one vehicle’s list at a time.
-** Customer no longer implements `Standstill` (the shared interface), and it has no genuine planning variable.
+** `Customer` no longer implements `Standstill` (the shared interface), and it has no genuine planning variable.
 ** Anchor and neighbors are easy to access through shadow variables if needed.
 ** The chain integrity (no loops, one sequence per vehicle) is naturally enforced by the list structure.
 
