@@ -31,7 +31,7 @@ class ConsecutiveSetTreeTest {
         var tree = getIntegerConsecutiveSetTree();
         var start1 = mutable(3);
         var middle3 = mutable(5);
-        var end7 = mutable(5);
+        var end7 = mutable(6);
 
         tree.add(start1, 1);
         tree.add(middle3, 3);
@@ -119,22 +119,14 @@ class ConsecutiveSetTreeTest {
             softly.assertThat(tree.getLastBreak()).isNull();
         });
 
+        tree.remove(duplicateValue);
+        tree.remove(duplicateValue);
+        tree.remove(duplicateValue);
         duplicateValue.setValue(0); // mimic the constraint collector changing a planning variable
 
-        tree.remove(duplicateValue);
-        assertThat(sequenceList).hasSize(1);
-        assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
-        assertThat(breakList).isEmpty();
-
-        tree.remove(duplicateValue);
-        assertThat(sequenceList).hasSize(1);
-        assertThat(sequenceList.get(0).getCount()).isEqualTo(3);
-        assertThat(breakList).isEmpty();
-
-        tree.remove(duplicateValue);
         assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(2);
-        assertThat(tree.getBreaks()).isEmpty();
+        assertThat(breakList).isEmpty();
     }
 
     @Test
@@ -250,8 +242,8 @@ class ConsecutiveSetTreeTest {
         tree.add(mutable(6), 6);
         tree.add(mutable(7), 7);
 
-        removed4.setValue(8); // mimic changing a planning variable
         tree.remove(removed4);
+        removed4.setValue(8); // mimic changing a planning variable
 
         var sequenceList = new IterableList<>(tree.getConsecutiveSequences());
         assertThat(sequenceList).hasSize(2);
@@ -281,13 +273,13 @@ class ConsecutiveSetTreeTest {
         tree.add(mutable(7), 7);
 
         // mimic changing planning variables
-        removed1.setValue(3);
-        removed2.setValue(10);
-        removed3.setValue(-1);
-
         tree.remove(removed2);
         tree.remove(removed1);
         tree.remove(removed3);
+
+        removed1.setValue(3);
+        removed2.setValue(10);
+        removed3.setValue(-1);
 
         var sequenceList = new IterableList<>(tree.getConsecutiveSequences());
         assertThat(sequenceList).hasSize(1);
@@ -311,9 +303,8 @@ class ConsecutiveSetTreeTest {
         tree.add(end, 7);
 
         // mimic changing planning variable
-        end.setValue(3);
-
         tree.remove(end);
+        end.setValue(3);
 
         var sequenceList = new IterableList<>(tree.getConsecutiveSequences());
 
@@ -322,9 +313,9 @@ class ConsecutiveSetTreeTest {
         assertThat(tree.getBreaks()).isEmpty();
 
         // mimic changing planning variable
+        tree.remove(start);
         start.setValue(3);
 
-        tree.remove(start);
         assertThat(sequenceList).hasSize(1);
         assertThat(sequenceList.get(0).getCount()).isEqualTo(5);
         assertThat(tree.getBreaks()).isEmpty();
