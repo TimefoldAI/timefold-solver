@@ -21,7 +21,7 @@ This required a more complex domain design:
 ** One value range provider that holds the anchors (for example, `vehicles`).
 ** One value range provider that holds the initialized planning entities (for example, `customers`).
 
-This approach has been deprecated and will be removed in a future version.
+This approach has been deprecated and will be removed in Timefold Solver 2.0.
 
 [#migration_steps]
 == Migration steps
