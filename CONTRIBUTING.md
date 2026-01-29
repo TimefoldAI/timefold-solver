@@ -1,14 +1,65 @@
 # Contributing to Timefold Solver
 
-This is an open source project, and you are more than welcome to contribute!
+First off, thanks for showing willingness to contribute to this repository by looking at this file.
+We are happy to have you here!
 
-- Found an issue? [Submit an issue](https://github.com/TimefoldAI/timefold-solver/issues).
-- Want to fix an issue or contribute an improvement? 
-Talk to us about your ideas [here on GitHub](https://github.com/TimefoldAI/timefold-solver/discussions), 
-[on Discord](https://discord.gg/976RcEVVHW)
-or just start coding:
+All types of contributions are encouraged and valued. In this file, we list different ways you can help the project and details about how this project handles them.
 
-1. [Fork it](https://github.com/TimefoldAI/timefold-solver/fork).
+## Q&A 
+
+### "I have a question"
+
+Before you ask a question, it is best to search through our extensive [documentation](https://docs.timefold.ai/timefold-solver/latest/introduction) and for existing [issues](/issues).  
+It is also advisable to check the internet and/or ask your favorite LLM.
+
+If you can't find a satisfying answer, post a message on our [GitHub discussions](https://github.com/TimefoldAI/timefold-solver/discussions) or on
+[our Discord server](https://discord.gg/976RcEVVHW).
+
+### "I have (found) an issue"
+
+First check if we already have a ticket for your problem by looking at our existing [Issues](/issues).
+
+- In case you have found a suitable issue and still need clarification, you can write your question in this issue.
+- If the issue does not exist yet, please create a new one using the appropriate template (Bug report, feature request, ...).
+
+### "I have an idea to improve Timefold"
+
+We'd love to hear your ideas!
+Talk to us about them [here on GitHub](https://github.com/TimefoldAI/timefold-solver/discussions) or on
+[our Discord server](https://discord.gg/976RcEVVHW)
+
+### "I want to help out!"
+
+Excellent! We have issues labeled specifically for first time contributors. 
+You can find them either on: 
+
+- [Our quickstart repository](https://github.com/TimefoldAI/timefold-quickstarts/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22good%20first%20issue%22)
+- [The Timefold Solver repository](https://github.com/TimefoldAI/timefold-solver/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22good%20first%20issue%22)
+
+If you are starting out, we recommend working on the quickstarts first, as those usually require no knowledge of the internal architecture of the solver.
+
+> [!NOTE]
+> The quickstart repository has a separate [CONTRIBUTING](https://github.com/TimefoldAI/timefold-quickstarts?tab=contributing-ov-file#contributing-to-timefold-quickstarts) file which is slightly different from the one you are reading now.
+
+## Development
+
+> [!IMPORTANT]
+> **All contributions must comply with the [Timefold Solver Constitution](.specify/memory/constitution.md).**
+> The constitution defines our core principles, technology stack, code quality standards, and development practices. Key areas include:
+> - **Core Principles**: Fail Fast, Understandable Error Messages, Consistent Terminology, Real World Usefulness, Automated Testing, Good Code Hygiene
+> - **Technology Stack**: JDK 17 compatibility, nullability policy, dependency constraints, test infrastructure, security requirements
+> - **Code Quality**: SonarCloud quality gates (Reliability ≥ B, Maintainability ≥ B), code coverage requirements, automated formatting
+> - **Package Structure**: Public API (`api` packages) and Configuration (`config` packages) are 100% backwards compatible; Implementation can change freely
+> 
+> Please review the constitution before contributing to understand the project's standards and requirements.
+
+---
+
+### From idea to Pull Request
+
+Once you have selected an issue you want to work on:
+
+1. [Fork Timefold Solver](https://github.com/TimefoldAI/timefold-solver/fork).
 2. Create a feature branch: `git checkout -b feature`
 3. Commit your changes with a comment: `git commit -m "feat: add shiny new feature"`  
    (See [Commit Messages](#commit-messages) for details.)
@@ -20,22 +71,7 @@ If the CI identifies a potential problem, our friendly PR maintainers will help 
 
 ---
 
-## Development Philosophy and Standards
-
-**All contributions must comply with the [Timefold Solver Constitution](.specify/memory/constitution.md).**
-
-The constitution defines our core principles, technology stack, code quality standards, and development practices. Key areas include:
-
-- **Core Principles**: Fail Fast, Understandable Error Messages, Consistent Terminology, Real World Usefulness, Automated Testing, Good Code Hygiene
-- **Technology Stack**: JDK 17 compatibility, nullability policy, dependency constraints, test infrastructure, security requirements
-- **Code Quality**: SonarCloud quality gates (Reliability ≥ B, Maintainability ≥ B), code coverage requirements, automated formatting
-- **Package Structure**: Public API (`api` packages) and Configuration (`config` packages) are 100% backwards compatible; Implementation can change freely
-
-Please review the constitution before contributing to understand the project's standards and requirements.
-
----
-
-## Build the Timefold Solver Project
+### Build the Timefold Solver Project
 
 Use one of the following ways to build this project:
 
@@ -46,9 +82,10 @@ Use one of the following ways to build this project:
 
 ---
 
-## Code Style
+### Code Style
 
-Your code is automatically formatted according to the project conventions during every Maven build. CI checks enforce those conventions too, so be sure to build your project with Maven before creating your PR:
+Your code is automatically formatted according to the project conventions during every Maven build. 
+CI checks enforce those conventions too, so be sure to build your project with Maven before creating your PR:
 
 ```bash
 ./mvnw clean install
@@ -64,7 +101,7 @@ For information about how to set up code style checks in your IDE, see [IDE Setu
 
 ---
 
-## Commit Messages
+### Commit Messages
 
 We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for PR titles and commit messages.
 
@@ -72,23 +109,23 @@ This convention is enforced by CI checks on pull requests.
 
 ---
 
-## Quality Gates
+### Quality Gates
 
 All PRs must pass the following automated checks:
 
-### SonarCloud Quality Gates
+#### SonarCloud Quality Gates
 - **Reliability**: Grade must be B or better (strive for A)
 - **Maintainability**: Grade must be B or better (strive for A)
 - **Code Coverage**: Must not fall below the configured threshold
 
 PRs that worsen grades below B will fail CI and cannot be merged.
 
-### Security Scanning
+#### Security Scanning
 - **Aikido**: Performs automated security checks
 - **Dependabot**: Provides weekly dependency upgrade PRs
 - Code must not contain hardcoded credentials, secrets, or sensitive data
 
-### Testing Requirements
+#### Testing Requirements
 - All code must have tests before being merged
 - Use **JUnit** for test execution
 - Use **AssertJ** for all assertions (JUnit assertions are forbidden)
