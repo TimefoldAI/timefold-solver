@@ -1,12 +1,7 @@
 package ai.timefold.solver.core.preview.api.move;
 
-import java.util.Objects;
-
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.move.DefaultMoveRunner;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -55,28 +50,11 @@ public interface MoveRunner<Solution_> {
      * These are heavy operations performed once and cached for reuse.
      * <p>
      * Shadow variables are initialized later when a solution is bound via {@link #using(Object)}.
-     * <p>
-     * Using this method will create a new {@link PlanningSolutionMetaModel} internally,
-     * which can be accessed later via {@link #getSolutionMetaModel()}
-     * and should be used to construct moves for this runner.
      *
-     * @param solutionClass the planning solution class; must not be null
-     * @param entityClasses the planning entity classes; must not be empty
+     * @param solutionMetaModel the planning solution class;
+     *        use {@link PlanningSolutionMetaModel#of(Class, Class[])} to build one.
      * @param <Solution_> the planning solution type
      * @return a new MoveRunner instance
-     */
-    static <Solution_> MoveRunner<Solution_> build(Class<Solution_> solutionClass, Class<?>... entityClasses) {
-        if (Objects.requireNonNull(entityClasses, "entityClasses").length == 0) {
-            throw new IllegalArgumentException("entityClasses must not be empty");
-        }
-        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
-                Objects.requireNonNull(solutionClass, "solutionClass"), entityClasses);
-        return new DefaultMoveRunner<>(solutionDescriptor.getMetaModel());
-    }
-
-    /**
-     * As defined by {@link #build(Class, Class[])}, but using the given meta-model to extract classes.
-     * This meta-model instance can be accessed later via {@link #getSolutionMetaModel()}
      */
     static <Solution_> MoveRunner<Solution_> build(PlanningSolutionMetaModel<Solution_> solutionMetaModel) {
         return new DefaultMoveRunner<>(solutionMetaModel);
@@ -92,18 +70,9 @@ public interface MoveRunner<Solution_> {
      * allowing sequential move execution with different solutions or the same solution
      * at different points in time.
      *
-     * @param solution the planning solution instance; must not be null
+     * @param solution the planning solution instance
      * @return a new execution context bound to the given solution with initialized shadow variables
      */
     MoveRunContext<Solution_> using(Solution_ solution);
-
-    /**
-     * Gets the planning solution meta-model associated with this {@link MoveRunner}.
-     * All moves executed by this runner must use
-     * the {@link PlanningEntityMetaModel} and {@link PlanningVariableMetaModel} instances provided by this model.
-     *
-     * @return the planning solution meta-model
-     */
-    PlanningSolutionMetaModel<Solution_> getSolutionMetaModel();
 
 }

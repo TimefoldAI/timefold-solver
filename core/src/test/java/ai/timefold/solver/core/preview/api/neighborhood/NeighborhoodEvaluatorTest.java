@@ -11,6 +11,8 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 
 import org.junit.jupiter.api.Test;
 
+// Much of the test coverage for NeighborhoodEvaluator is in tests for the specific MoveProviders.
+// There is no better coverage than real-world use cases. (Eating our own dog food.)
 class NeighborhoodEvaluatorTest {
 
     @Test

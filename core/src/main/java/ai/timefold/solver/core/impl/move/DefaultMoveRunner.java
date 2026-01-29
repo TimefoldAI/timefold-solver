@@ -37,9 +37,4 @@ public final class DefaultMoveRunner<Solution_> implements MoveRunner<Solution_>
         return new DefaultMoveRunContext<>(scoreDirector);
     }
 
-    @Override
-    public PlanningSolutionMetaModel<Solution_> getSolutionMetaModel() {
-        return scoreDirectorFactory.getSolutionDescriptor().getMetaModel();
-    }
-
 }

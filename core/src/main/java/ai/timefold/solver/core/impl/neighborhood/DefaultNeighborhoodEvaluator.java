@@ -48,9 +48,4 @@ public final class DefaultNeighborhoodEvaluator<Solution_>
         return new DefaultEvaluatedNeighborhood<>(repository, moveRunContext, phaseScope);
     }
 
-    @Override
-    public PlanningSolutionMetaModel<Solution_> getSolutionMetaModel() {
-        return solutionMetaModel;
-    }
-
 }
