@@ -48,7 +48,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public final <Entity_, Value_> void assignValueAndInsert(
+    public final <Entity_, Value_> void assignValueAndAdd(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ planningValue,
             Entity_ destinationEntity, int destinationIndex) {
         if (!(getPositionOf(variableMetaModel, planningValue) instanceof UnassignedElement)) {
@@ -72,7 +72,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             Entity_ destinationEntity, int destinationIndex) {
         if (destinationIndex == countValues(variableMetaModel, destinationEntity)) {
             // Faster code path, no need to unassign anything.
-            assignValueAndInsert(variableMetaModel, planningValue, destinationEntity, destinationIndex);
+            assignValueAndAdd(variableMetaModel, planningValue, destinationEntity, destinationIndex);
             return;
         }
 

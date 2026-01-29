@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.preview.api.move;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -31,20 +33,20 @@ import org.jspecify.annotations.Nullable;
 public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> {
 
     /**
-     * As defined by {@link #assignValueAndInsert(PlanningListVariableMetaModel, Object, Object, int)}.
+     * As defined by {@link #assignValueAndAdd(PlanningListVariableMetaModel, Object, Object, int)}.
      * Will be removed right before this API is moved out of preview.
      *
-     * @deprecated Use {@link #assignValueAndInsert(PlanningListVariableMetaModel, Object, Object, int)} instead.
+     * @deprecated Use {@link #assignValueAndAdd(PlanningListVariableMetaModel, Object, Object, int)} instead.
      */
     @Deprecated(forRemoval = true)
     default <Entity_, Value_> void assignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value, Entity_ destinationEntity, int destinationIndex) {
-        assignValueAndInsert(variableMetaModel, value, destinationEntity, destinationIndex);
+        assignValueAndAdd(variableMetaModel, value, destinationEntity, destinationIndex);
     }
 
     /**
      * Puts a given value at a particular index in a given entity's {@link PlanningListVariable planning list variable}.
-     * Moves all values at or after the index to the right.
+     * Moves all values at or after the index to the right, much like {@link List#add(int, Object)}.
      *
      * @param variableMetaModel Describes the variable to be changed.
      * @param value The value to be assigned to a list variable.
@@ -53,11 +55,12 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      *        moving the pre-existing value at that index and all subsequent values to the right.
      * @throws IllegalStateException if the value is already assigned to a list variable
      */
-    <Entity_, Value_> void assignValueAndInsert(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    <Entity_, Value_> void assignValueAndAdd(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value, Entity_ destinationEntity, int destinationIndex);
 
     /**
      * Puts a given value at a particular index in a given entity's {@link PlanningListVariable planning list variable}.
+     * much like {@link List#set(int, Object)}.
      * The original value at that index becomes unassigned.
      * If the destination index is equal to the list size,
      * the value is appended to the end of the list without unassigning any value.
@@ -74,7 +77,7 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
 
     /**
      * Removes a given value from the {@link PlanningListVariable planning list variable} that it's part of.
-     * Shifts any later values to the left.
+     * Shifts any subsequent values to the left.
      *
      * @param variableMetaModel Describes the variable to be changed.
      * @param value The value to be removed from a list variable.
@@ -85,7 +88,7 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
 
     /**
      * Removes a value from a given entity's {@link PlanningListVariable planning list variable} at a given index.
-     * Shifts any later values to the left.
+     * Shifts any subsequent values to the left.
      *
      * @param variableMetaModel Describes the variable to be changed.
      * @param entity The entity whose element is to be removed from a list variable.
