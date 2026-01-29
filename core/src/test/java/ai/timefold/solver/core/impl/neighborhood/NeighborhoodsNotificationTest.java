@@ -6,7 +6,10 @@ import static org.mockito.Mockito.verify;
 
 import java.util.List;
 
-import ai.timefold.solver.core.impl.move.DefaultMoveRunner;
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListEntity;
@@ -35,14 +38,25 @@ class NeighborhoodsNotificationTest {
         solution.setValueList(List.of(value1, value2, value3));
 
         var neighborhoodMoveRepository = mock(NeighborhoodsBasedMoveRepository.class);
-        var solutionMetamodel = TestdataDeclarativeSimpleListSolution.buildSolutionMetaModel();
+        var solutionDescriptor = TestdataDeclarativeSimpleListSolution.buildSolutionDescriptor();
+        var solutionMetamodel = solutionDescriptor.getMetaModel();
         var variableMetamodel = solutionMetamodel.genuineEntity(TestdataDeclarativeSimpleListEntity.class)
                 .listVariable("values", TestdataDeclarativeSimpleListValue.class);
-        new DefaultMoveRunner<TestdataDeclarativeSimpleListSolution>(solutionMetamodel, neighborhoodMoveRepository)
-                .using(solution)
-                .execute(Moves.change(variableMetamodel,
-                        ElementPosition.of(entity1, 0),
-                        ElementPosition.of(entity2, 0)));
+        try (var scoreDirector = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
+                constraintFactory -> new Constraint[] {
+                        constraintFactory.forEach(Object.class)
+                                .penalize(SimpleScore.ONE)
+                                .asConstraint("dummy constraint")
+                }, EnvironmentMode.FULL_ASSERT)
+                .buildScoreDirector()) {
+            scoreDirector.setMoveRepository(neighborhoodMoveRepository);
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.calculateScore();
+
+            var move = Moves.change(variableMetamodel, ElementPosition.of(entity1, 0), ElementPosition.of(entity2, 0));
+            scoreDirector.executeMove(move);
+            scoreDirector.calculateScore();
+        }
 
         verify(neighborhoodMoveRepository, atLeastOnce()).update(value1);
         verify(neighborhoodMoveRepository, atLeastOnce()).update(value2);

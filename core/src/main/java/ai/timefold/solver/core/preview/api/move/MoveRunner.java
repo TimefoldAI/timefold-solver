@@ -71,7 +71,7 @@ public interface MoveRunner<Solution_> {
         }
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
                 Objects.requireNonNull(solutionClass, "solutionClass"), entityClasses);
-        return new DefaultMoveRunner<>(solutionDescriptor.getMetaModel(), null);
+        return new DefaultMoveRunner<>(solutionDescriptor.getMetaModel());
     }
 
     /**
@@ -79,7 +79,7 @@ public interface MoveRunner<Solution_> {
      * This meta-model instance can be accessed later via {@link #getSolutionMetaModel()}
      */
     static <Solution_> MoveRunner<Solution_> build(PlanningSolutionMetaModel<Solution_> solutionMetaModel) {
-        return new DefaultMoveRunner<>(solutionMetaModel, null);
+        return new DefaultMoveRunner<>(solutionMetaModel);
     }
 
     /**
