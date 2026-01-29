@@ -59,7 +59,7 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
             Value_ value, Entity_ destinationEntity, int destinationIndex);
 
     /**
-     * Puts a given value at a particular index in a given entity's {@link PlanningListVariable planning list variable}.
+     * Puts a given value at a particular index in a given entity's {@link PlanningListVariable planning list variable},
      * much like {@link List#set(int, Object)}.
      * The original value at that index becomes unassigned.
      * If the destination index is equal to the list size,
