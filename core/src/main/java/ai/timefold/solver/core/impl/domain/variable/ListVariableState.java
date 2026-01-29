@@ -379,6 +379,11 @@ final class ListVariableState<Solution_> {
             return position;
         }
 
+        @Override
+        public String toString() { // Mimics PositionInList's toString().
+            return entity + "[" + index + "]";
+        }
+
     }
 
 }

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.neighborhood;
 
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
@@ -27,12 +28,11 @@ final class DefaultEvaluatedNeighborhood<Solution_>
         this.phaseScope = Objects.requireNonNull(phaseScope, "phaseScope");
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <Move_ extends Move<Solution_>> Iterator<Move_> getMoveIterator(Class<Move_> moveClass) {
+    public <Move_ extends Move<Solution_>> Iterator<Move_> getMoveIterator(Function<Move<Solution_>, Move_> moveCaster) {
         var stepScope = new LocalSearchStepScope<>(phaseScope);
         moveRepository.stepStarted(stepScope);
-        var iterator = (Iterator<Move_>) moveRepository.iterator();
+        var iterator = new CastingIterator<>(moveRepository.iterator(), moveCaster);
         moveRepository.stepEnded(stepScope);
         return iterator;
     }
@@ -40,6 +40,23 @@ final class DefaultEvaluatedNeighborhood<Solution_>
     @Override
     public MoveRunContext<Solution_> getMoveRunContext() {
         return moveRunContext;
+    }
+
+    private record CastingIterator<Solution_, Move_ extends Move<Solution_>>(Iterator<Move<Solution_>> childIterator,
+            Function<Move<Solution_>, Move_> moveCaster)
+            implements
+                Iterator<Move_> {
+
+        @Override
+        public boolean hasNext() {
+            return childIterator.hasNext();
+        }
+
+        @Override
+        public Move_ next() {
+            return moveCaster.apply(childIterator.next());
+        }
+
     }
 
 }

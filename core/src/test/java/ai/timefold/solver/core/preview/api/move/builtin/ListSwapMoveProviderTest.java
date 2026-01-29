@@ -3,21 +3,8 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-import java.util.stream.StreamSupport;
-
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
-import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolutionManager;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.SessionContext;
-import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
-import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluator;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -32,9 +19,8 @@ class ListSwapMoveProviderTest {
 
     @Test
     void fromSolution() {
-        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
-        var variableMetaModel = solutionDescriptor.getMetaModel()
-                .genuineEntity(TestdataListEntity.class)
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable();
 
         var solution = TestdataListSolution.generateUninitializedSolution(4, 2);
@@ -48,9 +34,9 @@ class ListSwapMoveProviderTest {
         e2.getValueList().add(assignedValue3);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveIterable = createMoveIterable(new ListSwapMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
-        var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
-                .toList();
+        var moveList = NeighborhoodEvaluator.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .evaluate(solution)
+                .getMoves();
         assertThat(moveList).hasSize(6);
 
         // We have 4 values.
@@ -112,9 +98,8 @@ class ListSwapMoveProviderTest {
 
     @Test
     void fromEntity() {
-        var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
-        var variableMetaModel = solutionDescriptor.getMetaModel()
-                .genuineEntity(TestdataListEntityProvidingEntity.class)
+        var solutionMetaModel = TestdataListEntityProvidingSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntityProvidingEntity.class)
                 .listVariable();
 
         var solution = TestdataListEntityProvidingSolution.generateSolution();
@@ -125,52 +110,13 @@ class ListSwapMoveProviderTest {
         e2.getValueList().add(initiallyAssignedValue);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveIterable = createMoveIterable(new ListSwapMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
-        var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
-                .toList();
+        var moveList = NeighborhoodEvaluator.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .evaluate(solution)
+                .getMoves();
 
         // There is only one overlapping value between the ranges of e1 and e2: v1.
         // Therefore there are no possible swap moves.
         assertThat(moveList).isEmpty();
-    }
-
-    private <Solution_> Iterable<Move<Solution_>> createMoveIterable(MoveProvider<Solution_> moveProvider,
-            SolutionDescriptor<Solution_> solutionDescriptor, Solution_ solution) {
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.TRACKED_FULL_ASSERT);
-        var moveStream = moveProvider.build(moveStreamFactory);
-        var scoreDirector = createScoreDirector(solutionDescriptor, solution);
-        var neighborhoodSession = moveStreamFactory.createSession(new SessionContext<>(scoreDirector));
-        solutionDescriptor.visitAll(scoreDirector.getWorkingSolution(), neighborhoodSession::insert);
-        neighborhoodSession.settle();
-        return moveStream.getMoveIterable(neighborhoodSession);
-    }
-
-    private <Solution_> InnerScoreDirector<Solution_, ?> createScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor,
-            Solution_ solution) {
-        var firstEntityClass = solutionDescriptor.getMetaModel().genuineEntities().get(0).type();
-        var constraintProvider = new TestingConstraintProvider(firstEntityClass);
-        var scoreDirectorFactory = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider,
-                EnvironmentMode.TRACKED_FULL_ASSERT);
-        var scoreDirector = scoreDirectorFactory.buildScoreDirector();
-        scoreDirector.setWorkingSolution(solution);
-        return scoreDirector;
-    }
-
-    // The specifics of the constraint provider are not important for this test,
-    // as the score will never be calculated.
-    private record TestingConstraintProvider(Class<?> entityClass) implements ConstraintProvider {
-
-        @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
-            return new Constraint[] { alwaysPenalizingConstraint(constraintFactory) };
-        }
-
-        private Constraint alwaysPenalizingConstraint(ConstraintFactory constraintFactory) {
-            return constraintFactory.forEach(entityClass)
-                    .penalize(SimpleScore.ONE)
-                    .asConstraint("Always penalize");
-        }
-
     }
 
 }

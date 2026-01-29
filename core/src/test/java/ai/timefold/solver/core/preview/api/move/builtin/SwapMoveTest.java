@@ -19,7 +19,7 @@ class SwapMoveTest {
         var value1 = entity1.getValue();
         var value2 = entity2.getValue();
 
-        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -44,7 +44,7 @@ class SwapMoveTest {
         entity1.setValue(value);
         entity2.setValue(value);
 
-        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -69,7 +69,7 @@ class SwapMoveTest {
         var initialValue2 = entity2.getValue();
         var initialValue3 = entity3.getValue();
 
-        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -96,7 +96,7 @@ class SwapMoveTest {
         var originalValue1 = entity1.getValue();
         var originalValue2 = entity2.getValue();
 
-        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -125,7 +125,7 @@ class SwapMoveTest {
         var initialValue2 = entity2.getValue();
         var initialValue3 = entity3.getValue();
 
-        var solutionMetaModel = TestdataSolution.buildSolutionMetaModel();
+        var solutionMetaModel = TestdataSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
