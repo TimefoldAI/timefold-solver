@@ -11,8 +11,8 @@ import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.move.MoveRunner;
-import ai.timefold.solver.core.preview.api.neighborhood.EvaluatedNeighborhood;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluationContext;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluator;
 
 import org.jspecify.annotations.NullMarked;
@@ -36,7 +36,7 @@ public final class DefaultNeighborhoodEvaluator<Solution_>
     }
 
     @Override
-    public EvaluatedNeighborhood<Solution_> evaluate(Solution_ solution) {
+    public NeighborhoodEvaluationContext<Solution_> using(Solution_ solution) {
         var repository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, List.of(moveProvider), false);
         var moveRunContext = (DefaultMoveRunContext<Solution_>) moveRunner.using(solution);
         var scoreDirector = moveRunContext.getScoreDirector();
@@ -45,7 +45,7 @@ public final class DefaultNeighborhoodEvaluator<Solution_>
         repository.solvingStarted(solverScope);
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         repository.phaseStarted(phaseScope);
-        return new DefaultEvaluatedNeighborhood<>(repository, moveRunContext, phaseScope);
+        return new DefaultNeighborhoodEvaluationContext<>(repository, moveRunContext, phaseScope);
     }
 
 }

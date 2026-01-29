@@ -38,8 +38,8 @@ class ListChangeMoveProviderTest {
         SolutionManager.updateShadowVariables(solution);
 
         var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .evaluate(solution)
-                .getMoves();
+                .using(solution)
+                .getMovesAsList();
         assertThat(moveList).hasSize(4);
 
         // Unassign moves are not generated, because the solution does not allow unassigned values.
@@ -107,8 +107,8 @@ class ListChangeMoveProviderTest {
         SolutionManager.updateShadowVariables(solution);
 
         var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .evaluate(solution)
-                .getMoves();
+                .using(solution)
+                .getMovesAsList();
         assertThat(moveList).hasSize(4);
 
         // v1 can be moved from e2 to e1, because it's in the range for both.
@@ -174,8 +174,8 @@ class ListChangeMoveProviderTest {
         e2.getValueList().add(v1);
 
         var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .evaluate(solution)
-                .getMoves();
+                .using(solution)
+                .getMovesAsList();
         assertThat(moveList).hasSize(5);
 
         // v1 is assigned to e2, so it can be unassigned.
@@ -251,8 +251,8 @@ class ListChangeMoveProviderTest {
         SolutionManager.updateShadowVariables(solution);
 
         var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .evaluate(solution)
-                .getMoves();
+                .using(solution)
+                .getMovesAsList();
         assertThat(moveList).hasSize(5);
 
         // v1 is assigned to e2, so it can be unassigned.

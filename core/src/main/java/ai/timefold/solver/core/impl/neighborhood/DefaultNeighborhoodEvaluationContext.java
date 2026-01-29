@@ -8,19 +8,19 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MoveRunContext;
-import ai.timefold.solver.core.preview.api.neighborhood.EvaluatedNeighborhood;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluationContext;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class DefaultEvaluatedNeighborhood<Solution_>
-        implements EvaluatedNeighborhood<Solution_> {
+final class DefaultNeighborhoodEvaluationContext<Solution_>
+        implements NeighborhoodEvaluationContext<Solution_> {
 
     private final NeighborhoodsBasedMoveRepository<Solution_> moveRepository;
     private final MoveRunContext<Solution_> moveRunContext;
     private final LocalSearchPhaseScope<Solution_> phaseScope;
 
-    DefaultEvaluatedNeighborhood(NeighborhoodsBasedMoveRepository<Solution_> moveRepository,
+    DefaultNeighborhoodEvaluationContext(NeighborhoodsBasedMoveRepository<Solution_> moveRepository,
             MoveRunContext<Solution_> moveRunContext,
             LocalSearchPhaseScope<Solution_> phaseScope) {
         this.moveRepository = Objects.requireNonNull(moveRepository, "moveRepository");
@@ -29,7 +29,7 @@ final class DefaultEvaluatedNeighborhood<Solution_>
     }
 
     @Override
-    public <Move_ extends Move<Solution_>> Iterator<Move_> getMoveIterator(Function<Move<Solution_>, Move_> moveCaster) {
+    public <Move_ extends Move<Solution_>> Iterator<Move_> getMovesAsIterator(Function<Move<Solution_>, Move_> moveCaster) {
         var stepScope = new LocalSearchStepScope<>(phaseScope);
         moveRepository.stepStarted(stepScope);
         var iterator = new CastingIterator<>(moveRepository.iterator(), moveCaster);

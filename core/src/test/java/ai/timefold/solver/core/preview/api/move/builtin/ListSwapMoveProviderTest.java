@@ -35,8 +35,8 @@ class ListSwapMoveProviderTest {
         SolutionManager.updateShadowVariables(solution);
 
         var moveList = NeighborhoodEvaluator.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .evaluate(solution)
-                .getMoves();
+                .using(solution)
+                .getMovesAsList();
         assertThat(moveList).hasSize(6);
 
         // We have 4 values.
@@ -111,8 +111,8 @@ class ListSwapMoveProviderTest {
         SolutionManager.updateShadowVariables(solution);
 
         var moveList = NeighborhoodEvaluator.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
-                .evaluate(solution)
-                .getMoves();
+                .using(solution)
+                .getMovesAsList();
 
         // There is only one overlapping value between the ranges of e1 and e2: v1.
         // Therefore there are no possible swap moves.

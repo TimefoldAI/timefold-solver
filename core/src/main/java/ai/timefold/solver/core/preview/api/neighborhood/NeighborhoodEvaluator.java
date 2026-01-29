@@ -7,7 +7,7 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Entry point for evaluating {@link MoveProvider}s on a given solution.
- * Given a planning solution, it produces an {@link EvaluatedNeighborhood}
+ * Given a planning solution, it produces an {@link NeighborhoodEvaluationContext}
  * which contains all moves that can be generated from that solution
  * using the provided {@link MoveProvider}.
  * <p>
@@ -42,7 +42,7 @@ public interface NeighborhoodEvaluator<Solution_> {
      * This method validates inputs, and initializes many internal structures.
      * These are heavy operations performed once and cached for reuse.
      * <p>
-     * Shadow variables are initialized later when a solution is bound via {@link #evaluate(Object)}.
+     * Shadow variables are initialized later when a solution is bound via {@link #using(Object)}.
      *
      * @param moveProvider the move provider to generate moves
      * @param solutionMetaModel the planning solution meta-model;
@@ -55,6 +55,17 @@ public interface NeighborhoodEvaluator<Solution_> {
         return new DefaultNeighborhoodEvaluator<>(moveProvider, solutionMetaModel);
     }
 
-    EvaluatedNeighborhood<Solution_> evaluate(Solution_ solution);
+    /**
+     * Creates an evaluation context for the given solution instance.
+     * Once you have the context,
+     * you can retrieve the moves via methods such as {@link NeighborhoodEvaluationContext#getMovesAsStream()}.
+     * <p>
+     * Different evaluation contexts can be created, each bound to a different solution instance.
+     * They will operate independently of each other.
+     *
+     * @param solution the planning solution instance
+     * @return a new execution context bound to the given solution
+     */
+    NeighborhoodEvaluationContext<Solution_> using(Solution_ solution);
 
 }

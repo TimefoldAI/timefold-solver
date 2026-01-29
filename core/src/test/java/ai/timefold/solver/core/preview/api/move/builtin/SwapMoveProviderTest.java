@@ -32,8 +32,8 @@ class SwapMoveProviderTest {
         // But we only have 2 values, guaranteeing that two entities will share a value.
         // Therefore there will only be 4 swap moves (including duplicates).
         var moveList = NeighborhoodEvaluator.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
-                .evaluate(solution)
-                .getMoves(move -> (SwapMove<TestdataSolution, TestdataEntity>) move);
+                .using(solution)
+                .getMovesAsList(move -> (SwapMove<TestdataSolution, TestdataEntity>) move);
         assertThat(moveList).hasSize(4);
 
         var move1 = moveList.get(0);
@@ -88,8 +88,8 @@ class SwapMoveProviderTest {
         // But we only have 2 unique combinations of values, guaranteeing that two entities will share values.
         // Therefore there will only be 4 swap moves (including duplicates).
         var moveList = NeighborhoodEvaluator.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
-                .evaluate(solution)
-                .getMoves(move -> (SwapMove<TestdataMultiVarSolution, TestdataMultiVarEntity>) move);
+                .using(solution)
+                .getMovesAsList(move -> (SwapMove<TestdataMultiVarSolution, TestdataMultiVarEntity>) move);
         assertThat(moveList).hasSize(4);
 
         var move1 = moveList.get(0);
@@ -139,8 +139,8 @@ class SwapMoveProviderTest {
         // We only have 1 value for primary and secondary variables,
         // therefore with the tertiary variable excluded, there will be no swap moves.
         var moveList = NeighborhoodEvaluator.build(new SwapMoveProvider<>(allowedVariableMetaModels), solutionMetaModel)
-                .evaluate(solution)
-                .getMoves(move -> (SwapMove<TestdataMultiVarSolution, TestdataMultiVarEntity>) move);
+                .using(solution)
+                .getMovesAsList(move -> (SwapMove<TestdataMultiVarSolution, TestdataMultiVarEntity>) move);
         assertThat(moveList).isEmpty();
     }
 
