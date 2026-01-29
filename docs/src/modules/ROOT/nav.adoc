@@ -37,4 +37,5 @@
 ** xref:upgrading-timefold-solver/backwards-compatibility.adoc[leveloffset=+1]
 ** Migration Guides
 *** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
+*** xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
 * xref:enterprise-edition/enterprise-edition.adoc[leveloffset=+1]

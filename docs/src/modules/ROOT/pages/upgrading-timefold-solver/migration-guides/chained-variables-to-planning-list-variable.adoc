@@ -1,0 +1,211 @@
+[#migrateChainedToPlanningListVariable]
+= Chained planning variable to planning list variable
+:doctype: book
+:icons: font
+
+This section explains how to update your planning model to use
+the new declarative xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable] approach
+instead of the older and now deprecated xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[@PlanningVariable(graphType = CHAINED)] pattern.
+
+Chained planning variables allowed planning entities to point to each other and form chains,
+which was used for sequence-based problems like TSP and vehicle routing.
+The planning list variable provides a modern,
+more intuitive way to model sequences as lists of values on a parent entity.
+
+If you modeled vehicle routing, TSP, or any ‘ordered route’ problem using chained planning variables,
+migrate to planning list variables to simplify your domain model and remove deprecated APIs.
+
+[#why_migrate]
+== Why migrate
+
+In earlier versions of Timefold Solver, sequence ordering was often modeled with a chained planning variable.
+This required a more complex domain design:
+
+* Defining an anchor (for example, a `Vehicle` or `Depot`) and a shared interface so that
+each planning entity (for example, a `Customer`) could point to either an anchor or another entity as its predecessor.
+* Creating two separate value range providers:
+** One value range provider that holds the anchors (for example, `vehicles`).
+** One value range provider that holds the initialized planning entities (for example, `customers`).
+
+This approach has been deprecated and will be removed in Timefold Solver 2.0.
+
+[#migration_steps]
+== Migration steps
+
+=== 1. Define the list variable on the parent entity
+
+Identify the parent or anchor entity in your chain (for example, the Vehicle or route entity that started each chain).
+Add a new field of type List<X> to this class, where X is the type of the child element that was previously chained.
+Annotate this field with @PlanningListVariable.
+
+For example:
+
+[source,java]
+----
+@PlanningEntity
+public class Vehicle {
+
+    @PlanningListVariable
+    private List<Customer> customers = new ArrayList<>();
+
+    // ... other properties (capacity, etc.)
+}
+----
+
+=== 2. Convert the chained entity to use shadow variables
+
+On the child element class (e.g. Customer), we need to replace some of the existing annotations with
+xref:using-timefold-solver/modeling-planning-problems.adoc#listVariableShadowVariables[planning list shadow variables] to
+mirror the relationships now implied by the list assignment:
+
+* Parent reference: Replace the existing `@AnchorShadowVariable`
+with `@InverseRelationShadowVariable(sourceVariableName = "…")`, where the source is the name of the list variable on the parent.
+* Previous element: Replace the existing
+xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[`@PlanningVariable(graphType = CHAINED)`] annotation
+with `@PreviousElementShadowVariable(sourceVariableName = "…")`.
+For the first customer in a vehicle’s list, `previousCustomer` will be null.
+* Next element: If present, replace the existing `@InverseRelationShadowVariable(sourceVariableName = PREVIOUS_ELEMENT)`
+which pointed to the next element with `@NextElementShadowVariable(sourceVariableName = "…")`.
+For the last customer in a vehicle’s list `nextCustomer` will be null.
+* Index (optional): If you need the index of an element in the list (e.g. position in route),
+you can add an `@IndexShadowVariable(sourceVariableName = "…")` on an Integer property to get its 0-based index in the parent’s list.
+
+[source,java]
+----
+@PlanningEntity
+public class Customer {
+
+    @InverseRelationShadowVariable(sourceVariableName = "customers")
+    private Vehicle vehicle;
+
+    @PreviousElementShadowVariable(sourceVariableName = "customers")
+    private Customer previousCustomer;
+
+    @NextElementShadowVariable(sourceVariableName = "customers")
+    private Customer nextCustomer;
+
+    // ... other properties (demand, etc.)
+}
+----
+
+=== 3. Update the planning solution
+
+By moving to xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variables],
+we no longer need two `@ValueRangeProviders`.
+
+[source,java]
+----
+@PlanningSolution
+public class VehicleRoutingPlan {
+
+    @PlanningEntityCollectionProperty
+    private List<Vehicle> vehicles;
+
+    @ValueRangeProvider
+    @PlanningEntityCollectionProperty
+    private List<Customer> customers;
+
+    // ...
+}
+----
+
+=== 4. Clean up chain-specific constructs
+
+Remove any remaining artifacts of the chained model that are no longer needed:
+
+* Utility fields/methods: Remove the Standstill interface (and any related methods)
+if it was used only for the chained variable relationship.
+* Constraint adjustments: Review your score constraints to use the new model.
+** Constraints that iterated over chain links or accessed previousStandstill will need to be updated.
+** If you wrote a constraint to ensure all elements in a chain share the same anchor, that can be removed.
+It is inherently satisfied now since each customer’s vehicle is set by the list assignment.
+
+After these changes, your planning entities will use the list variable approach.
+Each parent entity has an ordered list of child elements,
+and Timefold Solver will automatically manage the insertion/removal of those elements in lists during moves,
+as well as update all the above shadow variables when the solution changes.
+
+[#example_before_after]
+== Example: before and after
+
+=== Before: using a chained planning variable
+
+Consider a vehicle routing domain with vehicles and customers.
+In the chained model, each Customer points to a Standstill (either a Vehicle or another Customer) as its previous stop,
+forming a chain. A Vehicle acts as the anchor (start of the chain) but isn’t a planning entity. For example:
+
+[source,java]
+----
+public class Vehicle implements Standstill {
+
+    private Location depot;
+    private int capacity;
+
+    // ...
+}
+
+@PlanningEntity
+public class Customer implements Standstill {
+
+    private Location location;
+    private int demand;
+
+    @PlanningVariable(graphType = PlanningVariableGraphType.CHAINED, valueRangeProviderRefs = "standstillRange")
+    private Standstill previousStandstill;
+
+    // ...
+}
+----
+
+In this model, each Customer’s `previousStandstill` could be
+a Vehicle (if it’s the first customer in that vehicle’s route) or another Customer.
+
+=== After: using a planning list variable
+
+Using a planning list variable, the vehicle becomes a planning entity that directly contains an ordered list of customers.
+The Customer no longer has a chain pointer:
+
+[source,java]
+----
+@PlanningEntity
+public class Vehicle {
+    private Location depot;
+    private int capacity;
+
+    @PlanningListVariable
+    private List<Customer> customers = new ArrayList<>();
+
+    // ...
+}
+
+@PlanningEntity
+public class Customer {
+    private Location location;
+    private int demand;
+
+    @InverseRelationShadowVariable(sourceVariableName = "customers")
+    private Vehicle vehicle;
+
+    @PreviousElementShadowVariable(sourceVariableName = "customers")
+    private Customer previousCustomer;
+
+    @NextElementShadowVariable(sourceVariableName = "customers")
+    private Customer nextCustomer;
+
+    // ...
+}
+----
+
+In this version:
+
+** Each Vehicle directly owns a list of `Customer` values.
+The solver ensures that a customer is in at most one vehicle’s list at a time.
+** `Customer` no longer implements `Standstill` (the shared interface), and it has no genuine planning variable.
+** Anchor and neighbors are easy to access through shadow variables if needed.
+** The chain integrity (no loops, one sequence per vehicle) is naturally enforced by the list structure.
+
+[#next]
+== Next
+
+* xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[Planning list variable reference]
+* xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[Chained planning variable (deprecated) reference]
