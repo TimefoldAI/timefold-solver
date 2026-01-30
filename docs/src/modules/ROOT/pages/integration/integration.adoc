@@ -635,7 +635,7 @@ and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQ
 
 [NOTE]
 ====
-Timefold Solver Spring Boot Starter only supports Spring Boot version 3.2.x and up.
+Timefold Solver Spring Boot Starter only supports Spring Boot version 4.0.x and up.
 ====
 
 [#integrationWithSpringBootProperties]
@@ -646,6 +646,15 @@ These properties are supported in Spring's `application.properties`:
 :property_prefix:
 :solver_name_prefix:
 include::config-properties.adoc[]
+
+
+[NOTE]
+====
+Timefold uses Jackson 2 for serialization,
+and the xref:https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Migration-Guide#jackson-2-compatibility[Spring integration] also relies on that version of Jackson.
+Ensure your application includes the preferred mapper in the configuration:
+`spring.http.converters.preferred-json-mapper=jackson2`.
+====
 
 [#integrationWithSpringBootManagedResources]
 === Injecting managed resources
