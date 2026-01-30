@@ -1,14 +1,15 @@
 package ai.timefold.solver.core.preview.api.neighborhood;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
+
 import ai.timefold.solver.core.preview.api.move.builtin.ChangeMove;
 import ai.timefold.solver.core.preview.api.move.builtin.ChangeMoveProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import org.junit.jupiter.api.Test;
 
 // Much of the test coverage for NeighborhoodEvaluator is in tests for the specific MoveProviders.
 // There is no better coverage than real-world use cases. (Eating our own dog food.)
