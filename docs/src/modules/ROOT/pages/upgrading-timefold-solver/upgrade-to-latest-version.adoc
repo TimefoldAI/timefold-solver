@@ -280,9 +280,9 @@ factory.forEach(Shift.class)
 .icon:exclamation-triangle[role=red] Variable listeners deprecated for removal
 [%collapsible%open]
 ====
-With the introduction of custom shadow variables,
-we have deprecated the variable listener mechanism
-and we will be removing support for it entirely in Timefold Solver 2.0.
+With the introduction of xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[custom shadow variables],
+we have deprecated the variable listener API
+and will be removing the mechanism entirely in Timefold Solver 2.0.
 
 The migration to the new mechanism requires some effort and it cannot be automated.
 We invite you to read the xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[variable listeners to custom shadow variables migration guide],
