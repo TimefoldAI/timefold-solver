@@ -685,7 +685,7 @@ and an initialized `MoveRunContext` can be obtained directly from the `Neighborh
 ----
 var evaluator = NeighborhoodEvaluator.build(new SwapMoveProvider(), solutionMetaModel);
 var evaluatorContext = evaluator.using(solution);
-var moveRunContext = context.getMoveRunContext();
+var moveRunContext = evaluatorContext.getMoveRunContext();
 ----
 
 Temporary execution with automatic undo is particularly useful for testing move correctness,
@@ -693,13 +693,15 @@ and can be combined with using `getMovesAsIterator()` to avoid loading all moves
 
 [source,java,options="nowrap"]
 ----
-var moveIterator = evaluatedNeighborhood.getMovesAsIterator();
+var evaluator = NeighborhoodEvaluator.build(new SwapMoveProvider(), solutionMetaModel);
+var evaluatorContext = evaluator.using(solution);
+var moveIterator = evaluatorContext.getMovesAsIterator();
 
 assertThat(moveIterator).hasNext();
-
 var firstMove = moveIterator.next();
-evaluatedNeighborhood.getMoveRunContext()
-        .executeTemporarily(firstMove, solutionView -> assertThat(firstEntity.getValue())
+
+var moveRunContext = evaluatorContext.getMoveRunContext();
+moveRunContext.executeTemporarily(firstMove, solutionView -> assertThat(firstEntity.getValue())
                 .isEqualTo(firstValue)); // Check that the move did what was expected.
 assertThat(firstEntity.getValue()).isNull(); // Check that the move's effect was correctly undone.
 ----

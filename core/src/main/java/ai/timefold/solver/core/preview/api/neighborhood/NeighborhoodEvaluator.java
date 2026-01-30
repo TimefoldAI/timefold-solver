@@ -15,9 +15,9 @@ import org.jspecify.annotations.NullMarked;
  *
  * <pre>{@code
  *     var mySolution = ...;
- *     var neighborhood = NeighborhoodEvaluator.build(new MyMoveProvider(), MySolution.class, MyEntity.class)
- *          .evaluate(solution);
- *     var moveIterator = neighborhood.getMoveIterator();
+ *     var context = NeighborhoodEvaluator.build(new MyMoveProvider(), MySolution.class, MyEntity.class)
+ *          .using(solution);
+ *     var moveIterator = context.getMovesAsIterator();
  *
  *     while (moveIterator.hasNext()) {
  *         var move = moveIterator.next();
