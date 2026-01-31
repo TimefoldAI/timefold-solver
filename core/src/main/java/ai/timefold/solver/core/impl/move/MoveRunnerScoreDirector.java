@@ -6,19 +6,16 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
-import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 final class MoveRunnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirector<Solution_, Score_, MoveRunnerScoreDirectorFactory<Solution_, Score_>> {
 
     private MoveRunnerScoreDirector(Builder<Solution_, Score_> builder) {
         super(builder);
-        setMoveRepository(builder.moveRepository);
     }
 
     @Override
@@ -51,16 +48,8 @@ final class MoveRunnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     static final class Builder<Solution_, Score_ extends Score<Score_>> extends
             AbstractScoreDirectorBuilder<Solution_, Score_, MoveRunnerScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
 
-        @Nullable
-        private MoveRepository<Solution_> moveRepository;
-
         public Builder(MoveRunnerScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
             super(scoreDirectorFactory);
-        }
-
-        public Builder<Solution_, Score_> withMoveRepository(@Nullable MoveRepository<Solution_> moveRepository) {
-            this.moveRepository = moveRepository;
-            return this;
         }
 
         @Override

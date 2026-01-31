@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.preview.api.move;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -12,40 +12,25 @@ import org.junit.jupiter.api.Test;
 
 class MoveRunnerTest {
 
-    @Test
-    void buildWithNullSolutionClass() {
-        assertThatNullPointerException().isThrownBy(() -> MoveRunner.build(null, TestdataEntity.class))
-                .withMessageContaining("solutionClass");
-    }
-
-    @Test
-    void buildWithEmptyEntityClasses() {
-        assertThatIllegalArgumentException().isThrownBy(() -> MoveRunner.build(TestdataSolution.class))
-                .withMessageContaining("entityClasses must not be empty");
-    }
-
-    @Test
-    void buildWithNullEntityClasses() {
-        assertThatNullPointerException().isThrownBy(() -> MoveRunner.build(TestdataSolution.class, (Class<?>[]) null))
-                .withMessageContaining("entityClasses");
-    }
+    private static final PlanningSolutionMetaModel<TestdataSolution> SOLUTION_META_MODEL =
+            TestdataSolution.buildMetaModel();
 
     @Test
     void buildSucceeds() {
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var runner = MoveRunner.build(SOLUTION_META_MODEL);
         assertThat(runner).isNotNull();
     }
 
     @Test
     void usingWithNullSolution() {
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var runner = MoveRunner.build(SOLUTION_META_MODEL);
         assertThatNullPointerException().isThrownBy(() -> runner.using(null)).withMessageContaining("solution");
     }
 
     @Test
     void usingSucceeds() {
         var solution = TestdataSolution.generateSolution(2, 3);
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var runner = MoveRunner.build(SOLUTION_META_MODEL);
         var context = runner.using(solution);
         assertThat(context).isNotNull();
     }
@@ -72,7 +57,7 @@ class MoveRunnerTest {
             view.changeVariable(variableMetaModel, entity2, val1);
         };
 
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var runner = MoveRunner.build(SOLUTION_META_MODEL);
         runner.using(solution).execute(swapMove);
 
         // Verify the swap occurred
@@ -83,7 +68,7 @@ class MoveRunnerTest {
     @Test
     void executeWithNullMove() {
         var solution = TestdataSolution.generateSolution(2, 2);
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var runner = MoveRunner.build(SOLUTION_META_MODEL);
         var context = runner.using(solution);
         assertThatNullPointerException().isThrownBy(() -> context.execute(null)).withMessageContaining("move");
     }
@@ -107,7 +92,7 @@ class MoveRunnerTest {
             view.changeVariable(variableMetaModel, entity2, val1);
         };
 
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var runner = MoveRunner.build(SOLUTION_META_MODEL);
         runner.using(solution).executeTemporarily(swapMove, view -> {
             // During temporary execution, values should be swapped
             assertThat(entity1.getValue()).isEqualTo(originalValue2);
@@ -122,7 +107,7 @@ class MoveRunnerTest {
     @Test
     void executeTemporarilyWithNullMove() {
         var solution = TestdataSolution.generateSolution(2, 2);
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var runner = MoveRunner.build(SOLUTION_META_MODEL);
         var context = runner.using(solution);
         assertThatNullPointerException().isThrownBy(() -> context.executeTemporarily(null, view -> {
         })).withMessageContaining("move");
@@ -134,7 +119,7 @@ class MoveRunnerTest {
         Move<TestdataSolution> dummyMove = view -> {
         };
 
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var runner = MoveRunner.build(SOLUTION_META_MODEL);
         var context = runner.using(solution);
         assertThatNullPointerException().isThrownBy(() -> context.executeTemporarily(dummyMove, null))
                 .withMessageContaining("callback");
@@ -160,7 +145,7 @@ class MoveRunnerTest {
             }
         };
 
-        var runner = MoveRunner.build(TestdataSolution.class, TestdataEntity.class);
+        var runner = MoveRunner.build(SOLUTION_META_MODEL);
         runner.using(solution).executeTemporarily(rotateMove, view -> {
             // Verify rotation occurred
             for (int i = 0; i < entities.size(); i++) {

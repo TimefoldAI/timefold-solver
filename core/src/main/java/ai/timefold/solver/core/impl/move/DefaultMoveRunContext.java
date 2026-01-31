@@ -32,4 +32,8 @@ public final class DefaultMoveRunContext<Solution_> implements MoveRunContext<So
                 false);
     }
 
+    public AbstractScoreDirector<Solution_, ?, ?> getScoreDirector() {
+        return scoreDirector;
+    }
+
 }

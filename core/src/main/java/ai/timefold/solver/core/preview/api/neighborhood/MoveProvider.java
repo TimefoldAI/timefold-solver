@@ -10,6 +10,7 @@ import org.jspecify.annotations.NullMarked;
  * Implement this to provide a definition for one move type.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @see NeighborhoodEvaluator How to test {@link MoveProvider}s.
  */
 @NullMarked
 public interface MoveProvider<Solution_> {

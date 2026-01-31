@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 
 @PlanningSolution
 public class TestdataAllowsUnassignedValuesListSolution {
@@ -18,6 +19,10 @@ public class TestdataAllowsUnassignedValuesListSolution {
                 TestdataAllowsUnassignedValuesListSolution.class,
                 TestdataAllowsUnassignedValuesListEntity.class,
                 TestdataAllowsUnassignedValuesListValue.class);
+    }
+
+    public static PlanningSolutionMetaModel<TestdataAllowsUnassignedValuesListSolution> buildMetaModel() {
+        return buildSolutionDescriptor().getMetaModel();
     }
 
     public static TestdataAllowsUnassignedValuesListSolution generateUninitializedSolution(int valueCount, int entityCount) {

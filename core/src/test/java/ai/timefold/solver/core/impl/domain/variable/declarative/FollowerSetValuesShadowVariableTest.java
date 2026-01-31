@@ -58,7 +58,7 @@ class FollowerSetValuesShadowVariableTest {
                 List.of(followerAB, followerAC, followerBC),
                 List.of(value1, value2));
 
-        var solutionMetamodel = TestdataFollowerSetSolution.buildSolutionMetaModel();
+        var solutionMetamodel = TestdataFollowerSetSolution.buildMetaModel();
         var variableMetamodel = solutionMetamodel.genuineEntity(TestdataLeaderEntity.class)
                 .basicVariable("value", TestdataValue.class);
         var context = MoveRunner.build(solutionMetamodel)
