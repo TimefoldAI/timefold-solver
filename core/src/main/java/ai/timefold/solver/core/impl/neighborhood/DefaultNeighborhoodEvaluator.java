@@ -22,14 +22,12 @@ public final class DefaultNeighborhoodEvaluator<Solution_>
         implements NeighborhoodEvaluator<Solution_> {
 
     private final MoveProvider<Solution_> moveProvider;
-    private final PlanningSolutionMetaModel<Solution_> solutionMetaModel;
     private final DefaultMoveStreamFactory<Solution_> moveStreamFactory;
     private final MoveRunner<Solution_> moveRunner;
 
     public DefaultNeighborhoodEvaluator(MoveProvider<Solution_> moveProvider,
             PlanningSolutionMetaModel<Solution_> solutionMetaModel) {
         this.moveProvider = Objects.requireNonNull(moveProvider, "moveProvider");
-        this.solutionMetaModel = Objects.requireNonNull(solutionMetaModel, "solutionMetaModel");
         this.moveRunner = MoveRunner.build(solutionMetaModel);
         var solutionDescriptor = ((DefaultPlanningSolutionMetaModel<Solution_>) solutionMetaModel).solutionDescriptor();
         this.moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.FULL_ASSERT);
