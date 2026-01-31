@@ -29,9 +29,9 @@ record BiCompositeKey<A, B>(A propertyA, B propertyB) implements CompositeKey {
         // Often used in hash-based collections; the JDK-generated default is too slow.
         // We do not use Objects.hash(...) because it creates an array each time.
         // We do not use Objects.hashCode() due to https://bugs.openjdk.org/browse/JDK-8015417.
-        var keyHash = (propertyA == null) ? 0 : propertyA.hashCode();
-        var valueHash = (propertyB == null) ? 0 : propertyB.hashCode();
-        return keyHash ^ valueHash; // Treat the hashCodes as fairly distributed random numbers.
+        var hash = 1;
+        hash = 31 * hash + (propertyA == null ? 0 : propertyA.hashCode());
+        return 31 * hash + (propertyB == null ? 0 : propertyB.hashCode());
     }
 
     @Override

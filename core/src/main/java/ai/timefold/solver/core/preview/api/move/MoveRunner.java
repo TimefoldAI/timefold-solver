@@ -16,9 +16,9 @@ import org.jspecify.annotations.NullMarked;
  * Example usage:
  * 
  * <pre>{@code
- *     var runner = MoveRunner.build(MySolution.class, MyEntity.class);
- *     var basicVariable = runner.getSolutionMetaModel()
- *          .genuineEntity(MyEntity.class)
+ *     var solutionMetaModel = PlanningSolutionMetaModel.of(MySolution.class, MyEntity.class);
+ *     var runner = MoveRunner.build(solutionMetaModel);
+ *     var basicVariable = solutionMetaModel.genuineEntity(MyEntity.class)
  *          .basicVariable();
  *
  *     var move = Moves.change(basicVariable, ..., ...);

@@ -14,15 +14,15 @@ import org.jspecify.annotations.NullMarked;
  * Example usage:
  *
  * <pre>{@code
- *     var mySolution = ...;
- *     var context = NeighborhoodEvaluator.build(new MyMoveProvider(), MySolution.class, MyEntity.class)
- *          .using(solution);
- *     var moveIterator = context.getMovesAsIterator();
+ * var solutionMetaModel = PlanningSolutionMetaModel.of(MySolution.class, MyEntity.class);
+ * var context = NeighborhoodEvaluator.build(new MyMoveProvider(), solutionMetaModel)
+ *         .using(solution);
+ * var moveIterator = context.getMovesAsIterator();
  *
- *     while (moveIterator.hasNext()) {
- *         var move = moveIterator.next();
- *         // Run assertions on the move here.
- *     }
+ * while (moveIterator.hasNext()) {
+ *     var move = moveIterator.next();
+ *     // Run assertions on the move here.
+ * }
  * }</pre>
  * <p>
  * <strong>This type is part of the Preview API which is under development.</strong>

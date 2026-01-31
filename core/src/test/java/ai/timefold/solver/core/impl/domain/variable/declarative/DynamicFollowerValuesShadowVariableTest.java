@@ -57,7 +57,7 @@ class DynamicFollowerValuesShadowVariableTest {
                 List.of(follower1, follower2, follower3),
                 List.of(value1, value2));
 
-        var solutionMetamodel = TestdataDynamicFollowerSolution.buildSolutionMetaModel();
+        var solutionMetamodel = TestdataDynamicFollowerSolution.buildMetaModel();
         var variableMetamodel = solutionMetamodel.genuineEntity(TestdataDynamicLeaderEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
@@ -103,7 +103,7 @@ class DynamicFollowerValuesShadowVariableTest {
                 List.of(follower1, follower2, follower3),
                 List.of(value1, value2));
 
-        var solutionMetamodel = TestdataDynamicFollowerSolution.buildSolutionMetaModel();
+        var solutionMetamodel = TestdataDynamicFollowerSolution.buildMetaModel();
         var variableMetamodel = solutionMetamodel.genuineEntity(TestdataDynamicFollowerEntity.class)
                 .basicVariable("leader", TestdataDynamicLeaderEntity.class);
 
