@@ -32,7 +32,7 @@ final class DefaultNeighborhoodEvaluationContext<Solution_>
     public <Move_ extends Move<Solution_>> Iterator<Move_> getMovesAsIterator(Function<Move<Solution_>, Move_> moveCaster) {
         var stepScope = new LocalSearchStepScope<>(phaseScope);
         moveRepository.stepStarted(stepScope);
-        var iterator = new CastingIterator<>(moveRepository.iterator(), moveCaster);
+        var iterator = new CastingIterator<>(moveRepository.iterator(), Objects.requireNonNull(moveCaster, "moveCaster"));
         moveRepository.stepEnded(stepScope);
         return iterator;
     }

@@ -28,7 +28,7 @@ public final class DefaultNeighborhoodEvaluator<Solution_>
     public DefaultNeighborhoodEvaluator(MoveProvider<Solution_> moveProvider,
             PlanningSolutionMetaModel<Solution_> solutionMetaModel) {
         this.moveProvider = Objects.requireNonNull(moveProvider, "moveProvider");
-        this.moveRunner = MoveRunner.build(solutionMetaModel);
+        this.moveRunner = MoveRunner.build(Objects.requireNonNull(solutionMetaModel, "solutionMetaModel"));
         var solutionDescriptor = ((DefaultPlanningSolutionMetaModel<Solution_>) solutionMetaModel).solutionDescriptor();
         this.moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.FULL_ASSERT);
     }
