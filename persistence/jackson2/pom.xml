@@ -11,13 +11,13 @@
 
   <artifactId>timefold-solver-jackson</artifactId>
 
-  <name>Timefold Solver Jackson</name>
+  <name>Timefold Solver Jackson 2</name>
   <description>
     Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
-    This module contains the Jackson integration.
+    This module contains the Jackson 2 integration.
   </description>
   <url>https://solver.timefold.ai</url>
 
