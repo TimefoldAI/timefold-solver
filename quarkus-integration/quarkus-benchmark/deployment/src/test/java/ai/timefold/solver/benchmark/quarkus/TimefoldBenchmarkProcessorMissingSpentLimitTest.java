@@ -27,7 +27,7 @@ class TimefoldBenchmarkProcessorMissingSpentLimitTest {
 
     @Test
     void benchmark() throws ExecutionException, InterruptedException {
-        assertThatCode(() -> new TimefoldBenchmarkRecorder().benchmarkConfigSupplier(new PlannerBenchmarkConfig(), null).get())
+        assertThatCode(() -> new TimefoldBenchmarkRecorder(null).benchmarkConfigSupplier(new PlannerBenchmarkConfig()).get())
                 .hasMessageContaining(
                         "At least one of the properties quarkus.timefold.benchmark.solver.termination.spent-limit, quarkus.timefold.benchmark.solver.termination.best-score-limit, quarkus.timefold.benchmark.solver.termination.unimproved-spent-limit is required if termination is not configured in the inherited solver benchmark config and solverBenchmarkBluePrint is used.");
     }
