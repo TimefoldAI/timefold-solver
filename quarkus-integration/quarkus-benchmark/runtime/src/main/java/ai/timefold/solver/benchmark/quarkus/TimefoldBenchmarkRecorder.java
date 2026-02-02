@@ -16,26 +16,29 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 
 import io.quarkus.arc.Arc;
 import io.quarkus.runtime.RuntimeValue;
+import io.quarkus.runtime.annotations.RecordableConstructor;
 import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class TimefoldBenchmarkRecorder {
 
-    private final RuntimeValue<TimefoldBenchmarkRuntimeConfig> runtimeConfig;
+    private final RuntimeValue<TimefoldBenchmarkRuntimeConfig> timefoldRuntimeConfig;
 
-    public TimefoldBenchmarkRecorder(RuntimeValue<TimefoldBenchmarkRuntimeConfig> runtimeConfig) {
-        this.runtimeConfig = runtimeConfig;
+    @RecordableConstructor
+    public TimefoldBenchmarkRecorder(final RuntimeValue<TimefoldBenchmarkRuntimeConfig> timefoldRuntimeConfig) {
+        this.timefoldRuntimeConfig = timefoldRuntimeConfig;
     }
 
     public Supplier<PlannerBenchmarkConfig> benchmarkConfigSupplier(PlannerBenchmarkConfig benchmarkConfig) {
         return () -> {
             var solverConfig =
                     Arc.container().instance(SolverConfig.class).get();
-            var timefoldRuntimeConfig = runtimeConfig != null ? runtimeConfig.getValue() : null;
+
+            var benchmarkRuntimeConfig = timefoldRuntimeConfig != null ? timefoldRuntimeConfig.getValue() : null;
             // If the termination configuration is set and the created benchmark configuration has no configuration item,
             // we need to add at least one configuration; otherwise, we will fail to recognize the runtime termination setting.
             if (benchmarkConfig != null && benchmarkConfig.getSolverBenchmarkConfigList() == null &&
-                    timefoldRuntimeConfig != null && timefoldRuntimeConfig.termination() != null) {
+                    benchmarkRuntimeConfig != null && benchmarkRuntimeConfig.termination() != null) {
                 benchmarkConfig.setSolverBenchmarkConfigList(Collections.singletonList(new SolverBenchmarkConfig()));
             }
             return updateBenchmarkConfigWithRuntimeProperties(benchmarkConfig, solverConfig);
@@ -49,7 +52,7 @@ public class TimefoldBenchmarkRecorder {
             plannerBenchmarkConfig = PlannerBenchmarkConfig.createFromSolverConfig(solverConfig);
         }
 
-        var benchmarkRuntimeConfig = runtimeConfig != null ? runtimeConfig.getValue() : null;
+        var benchmarkRuntimeConfig = timefoldRuntimeConfig != null ? timefoldRuntimeConfig.getValue() : null;
         if (benchmarkRuntimeConfig != null && benchmarkRuntimeConfig.resultDirectory() != null) {
             plannerBenchmarkConfig.setBenchmarkDirectory(new File(benchmarkRuntimeConfig.resultDirectory()));
         }
