@@ -95,6 +95,12 @@
       </dependency>
       <dependency>
         <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-jackson3</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
         <artifactId>timefold-solver-jackson</artifactId>
         <type>test-jar</type>
         <version>${version.ai.timefold.solver}</version>

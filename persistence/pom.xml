@@ -26,7 +26,8 @@
   <modules>
     <module>common</module>
     <module>jaxb</module>
-    <module>jackson</module>
+    <module>jackson2</module>
+    <module>jackson3</module>
     <module>jpa</module>
     <module>jsonb</module>
   </modules>
