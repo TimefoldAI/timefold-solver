@@ -22,11 +22,11 @@ import io.quarkus.runtime.annotations.Recorder;
 @Recorder
 public class TimefoldBenchmarkRecorder {
 
-    private final RuntimeValue<TimefoldBenchmarkRuntimeConfig> timefoldRuntimeConfig;
+    private final RuntimeValue<TimefoldBenchmarkRuntimeConfig> benchmarkRuntimeConfigRuntimeValue;
 
     @RecordableConstructor
-    public TimefoldBenchmarkRecorder(final RuntimeValue<TimefoldBenchmarkRuntimeConfig> timefoldRuntimeConfig) {
-        this.timefoldRuntimeConfig = timefoldRuntimeConfig;
+    public TimefoldBenchmarkRecorder(final RuntimeValue<TimefoldBenchmarkRuntimeConfig> benchmarkRuntimeConfigRuntimeValue) {
+        this.benchmarkRuntimeConfigRuntimeValue = benchmarkRuntimeConfigRuntimeValue;
     }
 
     public Supplier<PlannerBenchmarkConfig> benchmarkConfigSupplier(PlannerBenchmarkConfig benchmarkConfig) {
@@ -34,7 +34,8 @@ public class TimefoldBenchmarkRecorder {
             var solverConfig =
                     Arc.container().instance(SolverConfig.class).get();
 
-            var benchmarkRuntimeConfig = timefoldRuntimeConfig != null ? timefoldRuntimeConfig.getValue() : null;
+            var benchmarkRuntimeConfig =
+                    benchmarkRuntimeConfigRuntimeValue != null ? benchmarkRuntimeConfigRuntimeValue.getValue() : null;
             // If the termination configuration is set and the created benchmark configuration has no configuration item,
             // we need to add at least one configuration; otherwise, we will fail to recognize the runtime termination setting.
             if (benchmarkConfig != null && benchmarkConfig.getSolverBenchmarkConfigList() == null &&
@@ -52,7 +53,8 @@ public class TimefoldBenchmarkRecorder {
             plannerBenchmarkConfig = PlannerBenchmarkConfig.createFromSolverConfig(solverConfig);
         }
 
-        var benchmarkRuntimeConfig = timefoldRuntimeConfig != null ? timefoldRuntimeConfig.getValue() : null;
+        var benchmarkRuntimeConfig =
+                benchmarkRuntimeConfigRuntimeValue != null ? benchmarkRuntimeConfigRuntimeValue.getValue() : null;
         if (benchmarkRuntimeConfig != null && benchmarkRuntimeConfig.resultDirectory() != null) {
             plannerBenchmarkConfig.setBenchmarkDirectory(new File(benchmarkRuntimeConfig.resultDirectory()));
         }
