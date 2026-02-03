@@ -2398,7 +2398,7 @@ class DefaultSolverTest {
         }
     }
 
-    public static class InvalidMove extends AbstractMove<TestdataListSolution> {
+    public static final class InvalidMove extends AbstractMove<TestdataListSolution> {
 
         @Override
         protected void doMoveOnGenuineVariables(ScoreDirector<TestdataListSolution> scoreDirector) {
