@@ -190,6 +190,7 @@
           <groupId>io.quarkus</groupId>
           <artifactId>quarkus-maven-plugin</artifactId>
           <version>${version.io.quarkus}</version>
+          <extensions>true</extensions>
         </plugin>
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
