@@ -27,7 +27,7 @@ class TimefoldBenchmarkProcessorMissingSpentLimitWithXmlTest {
 
     @Test
     void benchmark() throws InterruptedException {
-        assertThatCode(() -> new TimefoldBenchmarkRecorder().benchmarkConfigSupplier(new PlannerBenchmarkConfig(), null).get())
+        assertThatCode(() -> new TimefoldBenchmarkRecorder(null).benchmarkConfigSupplier(new PlannerBenchmarkConfig()).get())
                 .hasMessageContainingAll("At least one of the properties",
                         "quarkus.timefold.benchmark.solver.termination.spent-limit",
                         "quarkus.timefold.benchmark.solver.termination.best-score-limit",

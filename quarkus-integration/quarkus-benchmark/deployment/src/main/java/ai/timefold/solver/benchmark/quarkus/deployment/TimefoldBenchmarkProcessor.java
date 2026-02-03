@@ -81,13 +81,12 @@ class TimefoldBenchmarkProcessor {
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
     void registerRuntimeBeans(TimefoldBenchmarkRecorder recorder, BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
-            SolverConfigBuildItem solverConfigBuildItem, BenchmarkConfigBuildItem benchmarkConfigBuildItem,
-            TimefoldBenchmarkRuntimeConfig runtimeConfig) {
+            SolverConfigBuildItem solverConfigBuildItem, BenchmarkConfigBuildItem benchmarkConfigBuildItem) {
         if (solverConfigBuildItem.getGeneratedGizmoClasses() == null) {
             return;
         }
         syntheticBeans.produce(SyntheticBeanBuildItem.configure(PlannerBenchmarkConfig.class)
-                .supplier(recorder.benchmarkConfigSupplier(benchmarkConfigBuildItem.getBenchmarkConfig(), runtimeConfig))
+                .supplier(recorder.benchmarkConfigSupplier(benchmarkConfigBuildItem.getBenchmarkConfig()))
                 .setRuntimeInit()
                 .done());
     }
