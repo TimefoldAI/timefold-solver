@@ -352,6 +352,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                         solutionTracker.setAfterMoveSolution(workingSolution);
                     }
                     if (assertMoveScoreFromScratch) {
+                        assertValueRangeForSolution(workingSolution);
                         assertWorkingScoreFromScratch(score, move);
                     }
                     if (consumer != null) {
@@ -829,13 +830,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
             var allEntities = entityDescriptor.extractEntities(workingSolution);
             for (var entity : allEntities) {
-                assertBasicVariables(this, basicVariableDescriptorList, entity);
-                assertListVariable(this, listVariableDescriptor, entity);
+                assertValueRangeForBasicVariables(this, basicVariableDescriptorList, entity);
+                assertValueRangeForListVariable(this, listVariableDescriptor, entity);
             }
         }
     }
 
-    private static <Solution_> void assertBasicVariables(InnerScoreDirector<Solution_, ?> scoreDirector,
+    private static <Solution_> void assertValueRangeForBasicVariables(InnerScoreDirector<Solution_, ?> scoreDirector,
             List<GenuineVariableDescriptor<Solution_>> basicVariableDescriptorList, Object entity) {
         if (basicVariableDescriptorList == null || basicVariableDescriptorList.isEmpty()) {
             return;
@@ -858,7 +859,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     }
 
-    private static <Solution_> void assertListVariable(InnerScoreDirector<Solution_, ?> scoreDirector,
+    private static <Solution_> void assertValueRangeForListVariable(InnerScoreDirector<Solution_, ?> scoreDirector,
             ListVariableDescriptor<Solution_> variableDescriptor, Object entity) {
         if (variableDescriptor == null) {
             return;

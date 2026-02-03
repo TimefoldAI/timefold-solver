@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -70,6 +71,8 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
@@ -2083,6 +2086,37 @@ class DefaultSolverTest {
                         "The value (1) from the planning variable (valueList) has been assigned to the entity (e1), but it is outside of the related value range [2, 3]");
     }
 
+    @Test
+    void failLocalSearchValueRangeAssertion() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var localSearchPhaseConfig = new LocalSearchPhaseConfig();
+        localSearchPhaseConfig.setMoveSelectorConfig(
+                new MoveIteratorFactoryConfig().withMoveIteratorFactoryClass(InvalidMoveListFactory.class));
+        solverConfig.setPhaseConfigList(List.of(new ConstructionHeuristicPhaseConfig(), localSearchPhaseConfig));
+
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining(
+                        "The value (bad value) from the planning variable (valueList) has been assigned to the entity (Generated Entity 0), but it is outside of the related value range [Generated Value 0, Generated Value 1]");
+    }
+
+    @Test
+    void failCustomPhaseValueRangeAssertion() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var customPhaseConfig = new CustomPhaseConfig()
+                .withCustomPhaseCommands(new InvalidCustomPhaseCommand());
+        solverConfig.setPhaseConfigList(List.of(new ConstructionHeuristicPhaseConfig(), customPhaseConfig));
+
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining(
+                        "The value (bad value) from the planning variable (valueList) has been assigned to the entity (Generated Entity 0), but it is outside of the related value range [Generated Value 0, Generated Value 1]");
+    }
+
     public static final class MinimizeUnusedEntitiesEasyScoreCalculator
             implements EasyScoreCalculator<Object, SimpleScore> {
 
@@ -2332,4 +2366,51 @@ class DefaultSolverTest {
 
     }
 
+
+    public static final class InvalidCustomPhaseCommand implements PhaseCommand<TestdataListSolution> {
+
+        @Override
+        public void changeWorkingSolution(ScoreDirector<TestdataListSolution> scoreDirector, BooleanSupplier isPhaseTerminated) {
+            var entity = scoreDirector.getWorkingSolution().getEntityList().get(0);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().add(new TestdataListValue("bad value"));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, entity.getValueList().size());
+        }
+    }
+
+    public static final class InvalidMoveListFactory implements MoveIteratorFactory<TestdataListSolution, InvalidMove> {
+        @Override
+        public long getSize(ScoreDirector<TestdataListSolution> scoreDirector) {
+            return 1;
+        }
+
+        @Override
+        public Iterator<InvalidMove>
+                createOriginalMoveIterator(ScoreDirector<TestdataListSolution> scoreDirector) {
+            return List.of(new InvalidMove()).iterator();
+        }
+
+        @Override
+        public Iterator<InvalidMove> createRandomMoveIterator(
+                ScoreDirector<TestdataListSolution> scoreDirector,
+                Random workingRandom) {
+            return createOriginalMoveIterator(scoreDirector);
+        }
+    }
+
+    public static class InvalidMove extends AbstractMove<TestdataListSolution> {
+
+        @Override
+        protected void doMoveOnGenuineVariables(ScoreDirector<TestdataListSolution> scoreDirector) {
+            var entity = scoreDirector.getWorkingSolution().getEntityList().get(0);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().add(new TestdataListValue("bad value"));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, entity.getValueList().size());
+        }
+
+        @Override
+        public boolean isMoveDoable(ScoreDirector<TestdataListSolution> scoreDirector) {
+            return true;
+        }
+    }
 }
