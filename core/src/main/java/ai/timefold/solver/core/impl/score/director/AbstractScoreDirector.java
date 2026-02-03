@@ -8,10 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.function.Consumer;
-import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
@@ -29,7 +26,7 @@ import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
@@ -839,68 +836,62 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             // It may be called for a shadow entity
             return;
         }
-        var basicVariableDescriptorList = entityDescriptor.getGenuineBasicVariableDescriptorList();
+        var basicVariableDescriptorList = entityDescriptor.getGenuineBasicVariableDescriptorList().stream()
+                .map(v -> (BasicVariableDescriptor<Solution_>) v).toList();
         var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
-        assertValueRangeForBasicVariables(this, lookUpManager, basicVariableDescriptorList, entity);
-        assertValueRangeForListVariable(this, lookUpManager, listVariableDescriptor, entity);
+        assertValueRangeForBasicVariables(this, basicVariableDescriptorList, entity);
+        assertValueRangeForListVariable(this, listVariableDescriptor, entity);
     }
 
     private static <Solution_> void assertValueRangeForBasicVariables(InnerScoreDirector<Solution_, ?> scoreDirector,
-            LookUpManager lookUpManager, List<GenuineVariableDescriptor<Solution_>> basicVariableDescriptorList,
+            List<BasicVariableDescriptor<Solution_>> basicVariableDescriptorList,
             Object entity) {
-        if (basicVariableDescriptorList == null || basicVariableDescriptorList.isEmpty() || lookUpManager == null) {
+        if (basicVariableDescriptorList == null || basicVariableDescriptorList.isEmpty()) {
             return;
         }
         for (var variableDescriptor : basicVariableDescriptorList) {
             var value = variableDescriptor.getValue(entity);
-            if (value == null || !lookUpManager.isLookUpEnabled(value)) {
+            if (value == null) {
+                // Chained is not supported
                 continue;
             }
             var valueRange = scoreDirector.getValueRangeManager()
                     .getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
-            // We use the lookup search instead of rebasing in order to control the expected error message
-            var rebasedValue = scoreDirector.lookUpWorkingObjectOrReturnNull(value);
-            if (rebasedValue == null) {
-                rebasedValue = value;
-            }
-            if (!valueRange.contains(rebasedValue)) {
+            if (!valueRange.contains(value)) {
+                if (variableDescriptor.isChained()) {
+                    // We also check the entity list
+                    var allEntities =
+                            variableDescriptor.getEntityDescriptor().extractEntities(scoreDirector.getWorkingSolution());
+                    if (allEntities.contains(value)) {
+                        return;
+                    }
+                }
                 throw new IllegalStateException(
                         "The value (%s) from the planning variable (%s) has been assigned to the entity (%s), but it is outside of the related value range %s."
-                                .formatted(value, variableDescriptor.getVariableName(), entity,
-                                        StreamSupport.stream(Spliterators.spliterator(valueRange.createOriginalIterator(),
-                                                valueRange.getSize(), Spliterator.SIZED), false)
-                                                .toList()));
+                                .formatted(value, variableDescriptor.getVariableName(), entity, valueRange));
             }
         }
     }
 
     private static <Solution_> void assertValueRangeForListVariable(InnerScoreDirector<Solution_, ?> scoreDirector,
-            LookUpManager lookUpManager, ListVariableDescriptor<Solution_> variableDescriptor, Object entity) {
+            ListVariableDescriptor<Solution_> variableDescriptor, Object entity) {
         if (variableDescriptor == null) {
             return;
         }
         var valueList = variableDescriptor.getValue(entity);
-        if (valueList.isEmpty() || lookUpManager == null) {
+        if (valueList.isEmpty()) {
             return;
         }
         var valueRange = scoreDirector.getValueRangeManager()
                 .getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
         for (var value : valueList) {
-            if (value == null || !lookUpManager.isLookUpEnabled(value)) {
+            if (value == null) {
                 continue;
             }
-            // We use the lookup search instead of rebasing in order to control the expected error message
-            var rebasedValue = scoreDirector.lookUpWorkingObjectOrReturnNull(value);
-            if (rebasedValue == null) {
-                rebasedValue = value;
-            }
-            if (!valueRange.contains(rebasedValue)) {
+            if (!valueRange.contains(value)) {
                 throw new IllegalStateException(
                         "The value (%s) from the planning variable (%s) has been assigned to the entity (%s), but it is outside of the related value range %s."
-                                .formatted(value, variableDescriptor.getVariableName(), entity,
-                                        StreamSupport.stream(Spliterators.spliterator(valueRange.createOriginalIterator(),
-                                                valueRange.getSize(), Spliterator.SIZED), false)
-                                                .toList()));
+                                .formatted(value, variableDescriptor.getVariableName(), entity, valueRange));
             }
         }
     }
