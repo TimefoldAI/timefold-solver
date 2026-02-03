@@ -39,6 +39,8 @@ public interface MoveStreamFactory<Solution_> {
      * This stream returns shadow entities regardless of whether they are assigned to any genuine entity.
      * They can easily be {@link UniEnumeratingStream#filter(UniNeighborhoodsPredicate) filtered out}.
      *
+     * @param sourceClass the class of the instances to enumerate
+     * @param includeNull if true, the stream will include a single null element
      * @return A stream containing a tuple for each of the entities as described above.
      * @see PlanningPin An annotation to mark the entire entity as pinned.
      * @see PlanningPinToIndex An annotation to specify only a portion of {@link PlanningListVariable} is pinned.
