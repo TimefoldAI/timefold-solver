@@ -13,4 +13,7 @@ public sealed interface LookUpStrategy
 
     <E> E lookUpWorkingObjectIfExists(Map<Object, Object> idToWorkingObjectMap, E externalObject);
 
+    default boolean isLookUpEnabled() {
+        return true;
+    }
 }

@@ -70,4 +70,9 @@ public class LookUpManager {
         return lookUpStrategy.lookUpWorkingObjectIfExists(idToWorkingObjectMap, externalObject);
     }
 
+    public <E> boolean isLookUpEnabled(E externalObject) {
+        LookUpStrategy lookUpStrategy = lookUpStrategyResolver.determineLookUpStrategy(externalObject);
+        return lookUpStrategy.isLookUpEnabled();
+    }
+
 }

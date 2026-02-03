@@ -38,4 +38,8 @@ public final class NoneLookUpStrategy implements LookUpStrategy {
                 + LookUpStrategyType.class.getSimpleName() + " (not recommended).");
     }
 
+    @Override
+    public boolean isLookUpEnabled() {
+        return false;
+    }
 }

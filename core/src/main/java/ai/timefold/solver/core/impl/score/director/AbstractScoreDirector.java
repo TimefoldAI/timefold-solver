@@ -841,24 +841,25 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         var basicVariableDescriptorList = entityDescriptor.getGenuineBasicVariableDescriptorList();
         var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
-        assertValueRangeForBasicVariables(this, basicVariableDescriptorList, entity, lookUpEnabled);
-        assertValueRangeForListVariable(this, listVariableDescriptor, entity, lookUpEnabled);
+        assertValueRangeForBasicVariables(this, lookUpManager, basicVariableDescriptorList, entity);
+        assertValueRangeForListVariable(this, lookUpManager, listVariableDescriptor, entity);
     }
 
     private static <Solution_> void assertValueRangeForBasicVariables(InnerScoreDirector<Solution_, ?> scoreDirector,
-            List<GenuineVariableDescriptor<Solution_>> basicVariableDescriptorList, Object entity, boolean lookUpEnabled) {
-        if (basicVariableDescriptorList == null || basicVariableDescriptorList.isEmpty()) {
+            LookUpManager lookUpManager, List<GenuineVariableDescriptor<Solution_>> basicVariableDescriptorList,
+            Object entity) {
+        if (basicVariableDescriptorList == null || basicVariableDescriptorList.isEmpty() || lookUpManager == null) {
             return;
         }
         for (var variableDescriptor : basicVariableDescriptorList) {
             var value = variableDescriptor.getValue(entity);
-            if (value == null) {
-                return;
+            if (value == null || !lookUpManager.isLookUpEnabled(value)) {
+                continue;
             }
             var valueRange = scoreDirector.getValueRangeManager()
                     .getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
-            // We use the lookup search instead of rebasing in order to return the expected error message
-            var rebasedValue = lookUpEnabled ? scoreDirector.lookUpWorkingObjectOrReturnNull(value) : value;
+            // We use the lookup search instead of rebasing in order to control the expected error message
+            var rebasedValue = scoreDirector.lookUpWorkingObjectOrReturnNull(value);
             if (rebasedValue == null) {
                 rebasedValue = value;
             }
@@ -874,22 +875,22 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     private static <Solution_> void assertValueRangeForListVariable(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ListVariableDescriptor<Solution_> variableDescriptor, Object entity, boolean lookUpEnabled) {
+            LookUpManager lookUpManager, ListVariableDescriptor<Solution_> variableDescriptor, Object entity) {
         if (variableDescriptor == null) {
             return;
         }
         var valueList = variableDescriptor.getValue(entity);
-        if (valueList.isEmpty()) {
+        if (valueList.isEmpty() || lookUpManager == null) {
             return;
         }
         var valueRange = scoreDirector.getValueRangeManager()
                 .getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
         for (var value : valueList) {
-            if (value == null) {
+            if (value == null || !lookUpManager.isLookUpEnabled(value)) {
                 continue;
             }
-            // We use the lookup search instead of rebasing in order to return the expected error message
-            var rebasedValue = lookUpEnabled ? scoreDirector.lookUpWorkingObjectOrReturnNull(value) : value;
+            // We use the lookup search instead of rebasing in order to control the expected error message
+            var rebasedValue = scoreDirector.lookUpWorkingObjectOrReturnNull(value);
             if (rebasedValue == null) {
                 rebasedValue = value;
             }
