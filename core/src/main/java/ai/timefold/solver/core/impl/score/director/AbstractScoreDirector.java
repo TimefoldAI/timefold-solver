@@ -872,7 +872,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         for (var variableDescriptor : basicVariableDescriptorList) {
             var value = variableDescriptor.getValue(entity);
             if (value == null) {
-                // Chained is not supported
                 continue;
             }
             var valueRange = scoreDirector.getValueRangeManager()
