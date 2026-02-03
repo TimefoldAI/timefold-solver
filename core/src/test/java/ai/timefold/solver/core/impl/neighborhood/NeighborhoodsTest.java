@@ -1,5 +1,12 @@
 package ai.timefold.solver.core.impl.neighborhood;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -43,15 +50,9 @@ import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarative
 import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
+
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 class NeighborhoodsTest {
 
@@ -75,10 +76,10 @@ class NeighborhoodsTest {
                 List.of(new ChangeMoveProvider<>(variableMetaModel)), true);
 
         var acceptor = AcceptorFactory.<TestdataSolution> create(new LocalSearchAcceptorConfig()
-                        .withLateAcceptanceSize(400))
+                .withLateAcceptanceSize(400))
                 .buildAcceptor(heuristicConfigPolicy);
         var forager = LocalSearchForagerFactory.<TestdataSolution> create(new LocalSearchForagerConfig()
-                        .withAcceptedCountLimit(1))
+                .withAcceptedCountLimit(1))
                 .buildForager();
         var localSearchDecider = new LocalSearchDecider<>("", termination, moveRepository, acceptor, forager);
         var localSearchPhase = new DefaultLocalSearchPhase.Builder<>(0, "", termination, localSearchDecider)
@@ -158,16 +159,18 @@ class NeighborhoodsTest {
 
         private PlanningVariableMetaModel<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue> variable;
 
-        public SwapValuesWithNullAllowed(PlanningVariableMetaModel<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue> variable) {
+        public SwapValuesWithNullAllowed(
+                PlanningVariableMetaModel<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue> variable) {
             this.variable = variable;
         }
 
         @Override
-        public MoveStream<TestdataAllowsUnassignedSolution> build(MoveStreamFactory<TestdataAllowsUnassignedSolution> moveStreamFactory) {
+        public MoveStream<TestdataAllowsUnassignedSolution>
+                build(MoveStreamFactory<TestdataAllowsUnassignedSolution> moveStreamFactory) {
             var assignedEntity = moveStreamFactory.forEach(TestdataAllowsUnassignedEntity.class, false)
-                            .filter((solutionView, entity) -> entity != null && entity.getValue() != null);
+                    .filter((solutionView, entity) -> entity != null && entity.getValue() != null);
             var unassignedEntity = moveStreamFactory.forEach(TestdataAllowsUnassignedEntity.class, true)
-                            .filter((solutionView, entity) -> entity != null && entity.getValue() == null);
+                    .filter((solutionView, entity) -> entity != null && entity.getValue() == null);
 
             return moveStreamFactory.pick(assignedEntity)
                     .pick(unassignedEntity, NeighborhoodsJoiners.equal(TestdataAllowsUnassignedEntity::getValue))
