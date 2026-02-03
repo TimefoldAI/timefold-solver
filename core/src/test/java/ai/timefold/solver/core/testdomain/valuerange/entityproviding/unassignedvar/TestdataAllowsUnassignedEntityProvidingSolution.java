@@ -72,7 +72,11 @@ public class TestdataAllowsUnassignedEntityProvidingSolution extends TestdataObj
                 }
             }
             var entity = new TestdataAllowsUnassignedEntityProvidingEntity("Generated Entity " + i, valueRange);
-            entity.setValue(initialized ? valueList.get(i % valueListSize) : null);
+            var value = initialized ? valueList.get(i % valueListSize) : null;
+            entity.setValue(value);
+            if (value != null && !entity.getValueRange().contains(value)) {
+                entity.getValueRange().add(value);
+            }
             entityList.add(entity);
         }
         solution.setEntityList(entityList);
