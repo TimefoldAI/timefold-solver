@@ -836,7 +836,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private void assertValueRangeForEntity(Object entity) {
         var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(entity.getClass());
         if (entityDescriptor == null) {
-            // It may be called for a shadow entity 
+            // It may be called for a shadow entity
             return;
         }
         var basicVariableDescriptorList = entityDescriptor.getGenuineBasicVariableDescriptorList();
