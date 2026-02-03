@@ -23,6 +23,8 @@ jobs:
   java:
     name: "Java Quickstarts"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     concurrency:
       group: downstream-quickstarts-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
