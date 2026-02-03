@@ -513,7 +513,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         variableListenerSupport.afterVariableChanged(variableDescriptor, entity);
         neighborhoodsElementUpdateNotifier.accept(entity);
         if (isStepAssertOrMore) {
-            assertValueRangeForEntity(entity);
+            assertValueRangeForBasicVariables(entity);
         }
     }
 
@@ -566,7 +566,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         variableListenerSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         neighborhoodsElementUpdateNotifier.accept(entity);
         if (isStepAssertOrMore) {
-            assertValueRangeForEntity(entity);
+            var valueList = variableDescriptor.getValue(entity).subList(fromIndex, toIndex);
+            assertValueRangeForListVariable(entity, valueList);
         }
     }
 
@@ -831,6 +832,18 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     private void assertValueRangeForEntity(Object entity) {
+        assertValueRangeForBasicVariables(entity);
+        var listVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
+        if (listVariableDescriptor != null) {
+            if (!listVariableDescriptor.getEntityDescriptor().matchesEntity(entity)) {
+                return;
+            }
+            var valueList = listVariableDescriptor.getValue(entity);
+            assertValueRangeForListVariable(entity, valueList);
+        }
+    }
+
+    private void assertValueRangeForBasicVariables(Object entity) {
         var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(entity.getClass());
         if (entityDescriptor == null) {
             // It may be called for a shadow entity
@@ -838,14 +851,21 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         var basicVariableDescriptorList = entityDescriptor.getGenuineBasicVariableDescriptorList().stream()
                 .map(v -> (BasicVariableDescriptor<Solution_>) v).toList();
-        var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
         assertValueRangeForBasicVariables(this, basicVariableDescriptorList, entity);
-        assertValueRangeForListVariable(this, listVariableDescriptor, entity);
+    }
+
+    private void assertValueRangeForListVariable(Object entity, List<Object> valueList) {
+        var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(entity.getClass());
+        if (entityDescriptor == null) {
+            // It may be called for a shadow entity
+            return;
+        }
+        var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+        assertValueRangeForListVariable(this, listVariableDescriptor, entity, valueList);
     }
 
     private static <Solution_> void assertValueRangeForBasicVariables(InnerScoreDirector<Solution_, ?> scoreDirector,
-            List<BasicVariableDescriptor<Solution_>> basicVariableDescriptorList,
-            Object entity) {
+            List<BasicVariableDescriptor<Solution_>> basicVariableDescriptorList, Object entity) {
         if (basicVariableDescriptorList == null || basicVariableDescriptorList.isEmpty()) {
             return;
         }
@@ -874,11 +894,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     private static <Solution_> void assertValueRangeForListVariable(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ListVariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        if (variableDescriptor == null) {
-            return;
-        }
-        var valueList = variableDescriptor.getValue(entity);
+            ListVariableDescriptor<Solution_> variableDescriptor, Object entity, List<Object> valueList) {
         if (valueList.isEmpty()) {
             return;
         }
