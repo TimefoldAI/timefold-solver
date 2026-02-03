@@ -9,6 +9,8 @@ jobs:
     env:
       RELEASE_BRANCH_NAME: "__timefold_release_branch__"
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # IMPORTANT: required for action to delete release branch
     timeout-minutes: 120
     steps:
       - name: Checkout timefold-solver

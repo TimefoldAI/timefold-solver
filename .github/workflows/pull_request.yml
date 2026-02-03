@@ -22,6 +22,8 @@ jobs:
       group: pull_request-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.java-version }}
       cancel-in-progress: true
     runs-on: ${{matrix.os}}
+    permissions:
+      contents: read
     strategy:
       matrix:
         os: [ ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest ]
@@ -79,6 +81,8 @@ jobs:
       group: pull_request_native-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.spring-version }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         spring-version: ["3.3", "3.4"]
@@ -134,6 +138,8 @@ jobs:
       group: pull_request_native-${{ github.event_name }}-${{ github.head_ref }}-${{matrix.os}}-${{ matrix.module }}-${{ matrix.java-version }}
       cancel-in-progress: true
     runs-on: ${{matrix.os}}
+    permissions:
+      contents: read
     strategy:
       matrix:
         os: [ ubuntu-latest, ubuntu-24.04-arm ] # Windows doesn't work, Mac is not a deploy OS.
