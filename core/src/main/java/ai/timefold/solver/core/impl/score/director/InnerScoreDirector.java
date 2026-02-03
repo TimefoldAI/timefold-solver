@@ -371,6 +371,13 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
             SolverLifecyclePoint executionPoint);
 
     /**
+     * Asserts if any assigned planning values are included in the solution range or any entity value range.
+     *
+     * @param workingSolution the solution to be evaluated
+     */
+    void assertValueRangeForSolution(Solution_ workingSolution);
+
+    /**
      * Needs to be called after use because some implementations need to clean up their resources.
      */
     @Override

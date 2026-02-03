@@ -8,7 +8,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
@@ -26,6 +29,7 @@ import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
@@ -813,6 +817,69 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     solutionTracker.getAfterMoveSolution(), solutionTracker.getAfterUndoSolution());
         } else {
             throw new ScoreCorruptionException(corruptionMessage);
+        }
+    }
+
+    @Override
+    public void assertValueRangeForSolution(Solution_ workingSolution) {
+        var solutionDescriptor = getSolutionDescriptor();
+        var allEntityDescriptorList = solutionDescriptor.getEntityDescriptors();
+        for (var entityDescriptor : allEntityDescriptorList) {
+            var basicVariableDescriptorList = entityDescriptor.getGenuineBasicVariableDescriptorList();
+            var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+            var allEntities = entityDescriptor.extractEntities(workingSolution);
+            for (var entity : allEntities) {
+                assertBasicVariables(this, basicVariableDescriptorList, entity);
+                assertListVariable(this, listVariableDescriptor, entity);
+            }
+        }
+    }
+
+    private static <Solution_> void assertBasicVariables(InnerScoreDirector<Solution_, ?> scoreDirector,
+            List<GenuineVariableDescriptor<Solution_>> basicVariableDescriptorList, Object entity) {
+        if (basicVariableDescriptorList == null || basicVariableDescriptorList.isEmpty()) {
+            return;
+        }
+        for (var variableDescriptor : basicVariableDescriptorList) {
+            var value = variableDescriptor.getValue(entity);
+            var valueRange = scoreDirector.getValueRangeManager()
+                    .getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
+            // We use the lookup search instead of rebasing in order to return the expected error message
+            if (value != null && !valueRange
+                    .contains(Objects.requireNonNullElse(scoreDirector.lookUpWorkingObjectOrReturnNull(value), value))) {
+                throw new IllegalStateException(
+                        "The value (%s) from the planning variable (%s) has been assigned to the entity (%s), but it is outside of the related value range %s."
+                                .formatted(value, variableDescriptor.getVariableName(), entity,
+                                        StreamSupport.stream(Spliterators.spliterator(valueRange.createOriginalIterator(),
+                                                valueRange.getSize(), Spliterator.SIZED), false)
+                                                .toList()));
+            }
+        }
+
+    }
+
+    private static <Solution_> void assertListVariable(InnerScoreDirector<Solution_, ?> scoreDirector,
+            ListVariableDescriptor<Solution_> variableDescriptor, Object entity) {
+        if (variableDescriptor == null) {
+            return;
+        }
+        var valueList = variableDescriptor.getValue(entity);
+        if (valueList.isEmpty()) {
+            return;
+        }
+        var valueRange = scoreDirector.getValueRangeManager()
+                .getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
+        for (var value : valueList) {
+            // We use the lookup search instead of rebasing in order to return the expected error message
+            if (value != null && !valueRange
+                    .contains(Objects.requireNonNullElse(scoreDirector.lookUpWorkingObjectOrReturnNull(value), value))) {
+                throw new IllegalStateException(
+                        "The value (%s) from the planning variable (%s) has been assigned to the entity (%s), but it is outside of the related value range %s."
+                                .formatted(value, variableDescriptor.getVariableName(), entity,
+                                        StreamSupport.stream(Spliterators.spliterator(valueRange.createOriginalIterator(),
+                                                valueRange.getSize(), Spliterator.SIZED), false)
+                                                .toList()));
+            }
         }
     }
 

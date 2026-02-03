@@ -343,6 +343,10 @@ public class SolverScope<Solution_> {
 
         // Set the best solution to the solution with shadow variable updated.
         setBestSolution(scoreDirector.cloneSolution(scoreDirector.getWorkingSolution()));
+
+        // One-time check of value ranges
+        // to ensure assigned planning values are included in the solution range or any entity value range
+        scoreDirector.assertValueRangeForSolution(initialSolution);
     }
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {
