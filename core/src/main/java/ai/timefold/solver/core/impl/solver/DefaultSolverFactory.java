@@ -119,6 +119,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withLookUpEnabled(true)
                 .withConstraintMatchPolicy(
                         constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED)
+                .withEnvironmentMode(environmentMode)
                 .build();
         solverScope.setScoreDirector(castScoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(castScoreDirector));

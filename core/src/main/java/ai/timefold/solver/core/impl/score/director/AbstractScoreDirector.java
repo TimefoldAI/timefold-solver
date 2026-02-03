@@ -104,6 +104,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     protected Solution_ workingSolution;
     private int workingInitScore = 0;
 
+    private final boolean isStepAssertOrMore;
+
     private @Nullable MoveRepository<Solution_> moveRepository;
 
     protected AbstractScoreDirector(AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder) {
@@ -129,6 +131,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.listVariableStateSupply = getSupplyManager().demand(listVariableDescriptor.getStateDemand());
         }
         setAllChangesWillBeUndoneBeforeStepEnds(false); // Make sure the notifier is correctly initialized.
+        this.isStepAssertOrMore = builder.environmentMode != null && builder.environmentMode.isStepAssertOrMore();
     }
 
     @Override
@@ -267,6 +270,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             entityAndFactVisitor = entityAndFactVisitor == null ? workingObjectLookupVisitor
                     : entityAndFactVisitor.andThen(workingObjectLookupVisitor);
         }
+        // One-time check of value ranges
+        // to ensure assigned planning values are included in the solution range or any entity value range
+        entityAndFactVisitor = entityAndFactVisitor == null ? this::assertValueRangeForEntity
+                : entityAndFactVisitor.andThen(this::assertValueRangeForEntity);
         // This visits all the facts, applying the visitor if non-null.
         if (entityAndFactVisitor != null) {
             solutionDescriptor.visitAllProblemFacts(workingSolution, entityAndFactVisitor);
@@ -352,7 +359,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                         solutionTracker.setAfterMoveSolution(workingSolution);
                     }
                     if (assertMoveScoreFromScratch) {
-                        assertValueRangeForSolution(workingSolution);
                         assertWorkingScoreFromScratch(score, move);
                     }
                     if (consumer != null) {
@@ -509,6 +515,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         variableListenerSupport.afterVariableChanged(variableDescriptor, entity);
         neighborhoodsElementUpdateNotifier.accept(entity);
+        if (isStepAssertOrMore) {
+            assertValueRangeForEntity(entity);
+        }
     }
 
     @Override
@@ -559,6 +568,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             int toIndex) {
         variableListenerSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         neighborhoodsElementUpdateNotifier.accept(entity);
+        if (isStepAssertOrMore) {
+            assertValueRangeForEntity(entity);
+        }
     }
 
     public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
@@ -821,33 +833,36 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
     }
 
-    @Override
-    public void assertValueRangeForSolution(Solution_ workingSolution) {
-        var solutionDescriptor = getSolutionDescriptor();
-        var allEntityDescriptorList = solutionDescriptor.getEntityDescriptors();
-        for (var entityDescriptor : allEntityDescriptorList) {
-            var basicVariableDescriptorList = entityDescriptor.getGenuineBasicVariableDescriptorList();
-            var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
-            var allEntities = entityDescriptor.extractEntities(workingSolution);
-            for (var entity : allEntities) {
-                assertValueRangeForBasicVariables(this, basicVariableDescriptorList, entity);
-                assertValueRangeForListVariable(this, listVariableDescriptor, entity);
-            }
+    private void assertValueRangeForEntity(Object entity) {
+        var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(entity.getClass());
+        if (entityDescriptor == null) {
+            // It may be called for a shadow entity 
+            return;
         }
+        var basicVariableDescriptorList = entityDescriptor.getGenuineBasicVariableDescriptorList();
+        var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+        assertValueRangeForBasicVariables(this, basicVariableDescriptorList, entity, lookUpEnabled);
+        assertValueRangeForListVariable(this, listVariableDescriptor, entity, lookUpEnabled);
     }
 
     private static <Solution_> void assertValueRangeForBasicVariables(InnerScoreDirector<Solution_, ?> scoreDirector,
-            List<GenuineVariableDescriptor<Solution_>> basicVariableDescriptorList, Object entity) {
+            List<GenuineVariableDescriptor<Solution_>> basicVariableDescriptorList, Object entity, boolean lookUpEnabled) {
         if (basicVariableDescriptorList == null || basicVariableDescriptorList.isEmpty()) {
             return;
         }
         for (var variableDescriptor : basicVariableDescriptorList) {
             var value = variableDescriptor.getValue(entity);
+            if (value == null) {
+                return;
+            }
             var valueRange = scoreDirector.getValueRangeManager()
                     .getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
             // We use the lookup search instead of rebasing in order to return the expected error message
-            if (value != null && !valueRange
-                    .contains(Objects.requireNonNullElse(scoreDirector.lookUpWorkingObjectOrReturnNull(value), value))) {
+            var rebasedValue = lookUpEnabled ? scoreDirector.lookUpWorkingObjectOrReturnNull(value) : value;
+            if (rebasedValue == null) {
+                rebasedValue = value;
+            }
+            if (!valueRange.contains(rebasedValue)) {
                 throw new IllegalStateException(
                         "The value (%s) from the planning variable (%s) has been assigned to the entity (%s), but it is outside of the related value range %s."
                                 .formatted(value, variableDescriptor.getVariableName(), entity,
@@ -856,11 +871,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                                                 .toList()));
             }
         }
-
     }
 
     private static <Solution_> void assertValueRangeForListVariable(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ListVariableDescriptor<Solution_> variableDescriptor, Object entity) {
+            ListVariableDescriptor<Solution_> variableDescriptor, Object entity, boolean lookUpEnabled) {
         if (variableDescriptor == null) {
             return;
         }
@@ -871,9 +885,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var valueRange = scoreDirector.getValueRangeManager()
                 .getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
         for (var value : valueList) {
+            if (value == null) {
+                continue;
+            }
             // We use the lookup search instead of rebasing in order to return the expected error message
-            if (value != null && !valueRange
-                    .contains(Objects.requireNonNullElse(scoreDirector.lookUpWorkingObjectOrReturnNull(value), value))) {
+            var rebasedValue = lookUpEnabled ? scoreDirector.lookUpWorkingObjectOrReturnNull(value) : value;
+            if (rebasedValue == null) {
+                rebasedValue = value;
+            }
+            if (!valueRange.contains(rebasedValue)) {
                 throw new IllegalStateException(
                         "The value (%s) from the planning variable (%s) has been assigned to the entity (%s), but it is outside of the related value range %s."
                                 .formatted(value, variableDescriptor.getVariableName(), entity,
@@ -1075,6 +1095,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
+        protected @Nullable EnvironmentMode environmentMode;
 
         protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory) {
             this.scoreDirectorFactory = Objects.requireNonNull(scoreDirectorFactory);
@@ -1095,6 +1116,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         @SuppressWarnings("unchecked")
         public Builder_ withExpectShadowVariablesInCorrectState(boolean expectShadowVariablesInCorrectState) {
             this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
+            return (Builder_) this;
+        }
+
+        @SuppressWarnings("unchecked")
+        public Builder_ withEnvironmentMode(EnvironmentMode environmentMode) {
+            this.environmentMode = environmentMode;
             return (Builder_) this;
         }
 

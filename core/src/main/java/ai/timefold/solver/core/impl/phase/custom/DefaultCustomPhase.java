@@ -29,12 +29,9 @@ public final class DefaultCustomPhase<Solution_>
     private final List<PhaseCommand<Solution_>> customPhaseCommandList;
     private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
 
-    private final boolean assertValueRange;
-
     private DefaultCustomPhase(DefaultCustomPhaseBuilder<Solution_> builder) {
         super(builder);
         this.customPhaseCommandList = builder.customPhaseCommandList;
-        this.assertValueRange = builder.assertValueRange;
     }
 
     @Override
@@ -90,9 +87,6 @@ public final class DefaultCustomPhase<Solution_>
         var scoreDirector = stepScope.getScoreDirector();
         customPhaseCommand.changeWorkingSolution(scoreDirector,
                 () -> phaseTermination.isPhaseTerminated(stepScope.getPhaseScope()));
-        if (assertValueRange) {
-            scoreDirector.assertValueRangeForSolution(scoreDirector.getWorkingSolution());
-        }
         calculateWorkingStepScore(stepScope, customPhaseCommand);
         var solver = stepScope.getPhaseScope().getSolverScope().getSolver();
         solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope);
@@ -130,7 +124,6 @@ public final class DefaultCustomPhase<Solution_>
             extends AbstractPossiblyInitializingPhaseBuilder<Solution_> {
 
         private final List<PhaseCommand<Solution_>> customPhaseCommandList;
-        private boolean assertValueRange = false;
 
         public DefaultCustomPhaseBuilder(int phaseIndex, boolean lastInitializingPhase, String logIndentation,
                 PhaseTermination<Solution_> phaseTermination, List<PhaseCommand<Solution_>> customPhaseCommandList) {
@@ -141,7 +134,6 @@ public final class DefaultCustomPhase<Solution_>
         @Override
         public DefaultCustomPhaseBuilder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
             super.enableAssertions(environmentMode);
-            this.assertValueRange = environmentMode.isFullyAsserted();
             return this;
         }
 

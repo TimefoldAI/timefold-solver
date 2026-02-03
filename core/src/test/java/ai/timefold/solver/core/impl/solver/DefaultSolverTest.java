@@ -2106,7 +2106,7 @@ class DefaultSolverTest {
     void failCustomPhaseValueRangeAssertion() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
                 TestdataListValue.class);
-        solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        solverConfig.setEnvironmentMode(EnvironmentMode.STEP_ASSERT);
         var customPhaseConfig = new CustomPhaseConfig()
                 .withCustomPhaseCommands(new InvalidCustomPhaseCommand());
         solverConfig.setPhaseConfigList(List.of(new ConstructionHeuristicPhaseConfig(), customPhaseConfig));
@@ -2366,11 +2366,11 @@ class DefaultSolverTest {
 
     }
 
-
     public static final class InvalidCustomPhaseCommand implements PhaseCommand<TestdataListSolution> {
 
         @Override
-        public void changeWorkingSolution(ScoreDirector<TestdataListSolution> scoreDirector, BooleanSupplier isPhaseTerminated) {
+        public void changeWorkingSolution(ScoreDirector<TestdataListSolution> scoreDirector,
+                BooleanSupplier isPhaseTerminated) {
             var entity = scoreDirector.getWorkingSolution().getEntityList().get(0);
             scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
             entity.getValueList().add(new TestdataListValue("bad value"));
