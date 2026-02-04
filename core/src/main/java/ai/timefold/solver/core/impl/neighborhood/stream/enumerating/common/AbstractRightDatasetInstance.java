@@ -30,6 +30,12 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
 
     @Override
     public void insert(UniTuple<Right_> tuple) {
+        if (tuple.getStore(compositeKeyStoreIndex) != null) {
+            throw new IllegalStateException(
+                    "Impossible state: the input for the tuple (%s) was already added in the tupleStore."
+                            .formatted(tuple));
+        }
+
         var compositeKey = compositeKeyExtractor.apply(tuple);
         tuple.setStore(entryStoreIndex, indexer.put(compositeKey, tuple));
         tuple.setStore(compositeKeyStoreIndex, compositeKey);
@@ -38,6 +44,12 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
     @Override
     public void update(UniTuple<Right_> tuple) {
         var oldCompositeKey = tuple.getStore(compositeKeyStoreIndex);
+        if (oldCompositeKey == null) {
+            // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
+            insert(tuple);
+            return;
+        }
+
         var newCompositeKey = compositeKeyExtractor.apply(tuple);
         if (!Objects.equals(oldCompositeKey, newCompositeKey)) {
             indexer.remove(oldCompositeKey, tuple.getStore(entryStoreIndex));
@@ -48,7 +60,13 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
 
     @Override
     public void retract(UniTuple<Right_> tuple) {
-        indexer.remove(tuple.removeStore(compositeKeyStoreIndex), tuple.removeStore(entryStoreIndex));
+        var compositeKey = tuple.removeStore(compositeKeyStoreIndex);
+        if (compositeKey == null) {
+            // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
+            return;
+        }
+
+        indexer.remove(compositeKey, tuple.removeStore(entryStoreIndex));
     }
 
     public Iterator<UniTuple<Right_>> iterator(Object compositeKey) {

@@ -45,7 +45,7 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
 
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
-        var entityValuePairs = moveStreamFactory.forEachAssignablePosition(variableMetaModel);
+        var entityValuePairs = moveStreamFactory.forEachDestinationIncludingUnassigned(variableMetaModel);
         var availableValues = moveStreamFactory.forEach(variableMetaModel.type(), false);
         return moveStreamFactory.pick(entityValuePairs)
                 .pick(availableValues,
