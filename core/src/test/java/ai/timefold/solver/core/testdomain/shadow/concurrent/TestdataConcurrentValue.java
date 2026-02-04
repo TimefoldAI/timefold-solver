@@ -53,7 +53,7 @@ public class TestdataConcurrentValue {
     List<TestdataConcurrentValue> concurrentValueGroup;
 
     @ShadowVariablesInconsistent
-    Boolean isInconsistent;
+    boolean inconsistent;
 
     public TestdataConcurrentValue() {
     }
@@ -110,6 +110,38 @@ public class TestdataConcurrentValue {
         this.serviceStartTime = serviceStartTime;
     }
 
+    public LocalDateTime getServiceReadyTime() {
+        return serviceReadyTime;
+    }
+
+    public void setServiceReadyTime(LocalDateTime serviceReadyTime) {
+        this.serviceReadyTime = serviceReadyTime;
+    }
+
+    public LocalDateTime getServiceFinishTime() {
+        return serviceFinishTime;
+    }
+
+    public void setServiceFinishTime(LocalDateTime serviceFinishTime) {
+        this.serviceFinishTime = serviceFinishTime;
+    }
+
+    public List<TestdataConcurrentValue> getConcurrentValueGroup() {
+        return concurrentValueGroup;
+    }
+
+    public void setConcurrentValueGroup(List<TestdataConcurrentValue> concurrentValueGroup) {
+        this.concurrentValueGroup = concurrentValueGroup;
+    }
+
+    public boolean isInconsistent() {
+        return inconsistent;
+    }
+
+    public void setInconsistent(boolean inconsistent) {
+        this.inconsistent = inconsistent;
+    }
+
     public LocalDateTime getCascadingTime() {
         return cascadingTime;
     }
@@ -133,7 +165,7 @@ public class TestdataConcurrentValue {
             value = { "serviceReadyTime", "concurrentValueGroup[].serviceReadyTime" },
             alignmentKey = "concurrentValueGroup")
     public LocalDateTime serviceStartTimeUpdater() {
-        if (isInconsistent) {
+        if (inconsistent) {
             throw new IllegalStateException(
                     "Value (%s) is inconsistent when serviceStartTimeUpdater is called.".formatted(this));
         }
@@ -143,7 +175,7 @@ public class TestdataConcurrentValue {
         var startTime = serviceReadyTime;
         if (concurrentValueGroup != null) {
             for (var visit : concurrentValueGroup) {
-                if (visit.isInconsistent) {
+                if (visit.inconsistent) {
                     throw new IllegalStateException(
                             "Value (%s) is inconsistent when serviceStartTimeUpdater is called.".formatted(visit));
                 }
@@ -169,30 +201,6 @@ public class TestdataConcurrentValue {
         } else {
             cascadingTime = BASE_START_TIME.plusDays(index);
         }
-    }
-
-    public LocalDateTime getServiceFinishTime() {
-        return serviceFinishTime;
-    }
-
-    public void setServiceFinishTime(LocalDateTime serviceFinishTime) {
-        this.serviceFinishTime = serviceFinishTime;
-    }
-
-    public List<TestdataConcurrentValue> getConcurrentValueGroup() {
-        return concurrentValueGroup;
-    }
-
-    public void setConcurrentValueGroup(List<TestdataConcurrentValue> concurrentValueGroup) {
-        this.concurrentValueGroup = concurrentValueGroup;
-    }
-
-    public Boolean isInconsistent() {
-        return isInconsistent;
-    }
-
-    public void setInconsistent(Boolean inconsistent) {
-        isInconsistent = inconsistent;
     }
 
     public boolean getExpectedInconsistent() {

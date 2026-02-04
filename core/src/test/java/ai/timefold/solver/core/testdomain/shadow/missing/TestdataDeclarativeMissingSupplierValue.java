@@ -25,7 +25,7 @@ public class TestdataDeclarativeMissingSupplierValue {
     LocalDateTime endTime;
 
     @ShadowVariablesInconsistent
-    boolean isInvalid;
+    boolean invalid;
 
     @InverseRelationShadowVariable(sourceVariableName = "value")
     List<TestdataDeclarativeMissingSupplierEntity> entityList = new ArrayList<>();
@@ -82,11 +82,11 @@ public class TestdataDeclarativeMissingSupplierValue {
     }
 
     public boolean isInvalid() {
-        return isInvalid;
+        return invalid;
     }
 
     public void setInvalid(boolean invalid) {
-        isInvalid = invalid;
+        this.invalid = invalid;
     }
 
     @Override

@@ -47,8 +47,16 @@ public class TestdataFieldAnnotatedSolution extends TestdataObject {
         return valueList;
     }
 
+    public void setValueList(List<TestdataValue> valueList) {
+        this.valueList = valueList;
+    }
+
     public List<TestdataFieldAnnotatedEntity> getEntityList() {
         return entityList;
+    }
+
+    public void setEntityList(List<TestdataFieldAnnotatedEntity> entityList) {
+        this.entityList = entityList;
     }
 
     public SimpleScore getScore() {

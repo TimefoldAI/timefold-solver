@@ -105,7 +105,7 @@ final class GizmoMemberAccessorEntityEnhancer {
         var declaringClass = Class.forName(fieldInfo.declaringClass().name().toString(), false,
                 Thread.currentThread().getContextClassLoader());
         var fieldMember = declaringClass.getDeclaredField(fieldInfo.name());
-        var member = createMemberDescriptorForField(fieldMember, transformers);
+        var member = createMemberDescriptorForField(fieldMember, transformers, true);
         var memberInfo = new GizmoMemberInfo(member, true, false, (Class<? extends Annotation>) Class
                 .forName(annotationInstance.name().toString(), false, Thread.currentThread().getContextClassLoader()));
         var generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(fieldMember);
@@ -113,7 +113,7 @@ final class GizmoMemberAccessorEntityEnhancer {
         return generatedClassName;
     }
 
-    private void addVirtualFieldGetter(Class<?> classInfo, Field fieldInfo,
+    private void addVirtualFieldGetterAndSetter(Class<?> classInfo, Field fieldInfo,
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         if (!visitedFields.contains(fieldInfo)) {
             transformers.produce(new BytecodeTransformerBuildItem(classInfo.getName(),
@@ -362,7 +362,8 @@ final class GizmoMemberAccessorEntityEnhancer {
                 if (Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
-                solutionFieldToMemberDescriptor.put(field, createMemberDescriptorForField(field, transformers));
+                // Do not enforce a setter; this is for cloning, not an annotation
+                solutionFieldToMemberDescriptor.put(field, createMemberDescriptorForField(field, transformers, false));
             }
             currentClass = currentClass.getSuperclass();
         }
@@ -372,8 +373,10 @@ final class GizmoMemberAccessorEntityEnhancer {
     }
 
     private GizmoMemberDescriptor createMemberDescriptorForField(Field field,
-            BuildProducer<BytecodeTransformerBuildItem> transformers) {
-        if (Modifier.isFinal(field.getModifiers())) {
+            BuildProducer<BytecodeTransformerBuildItem> transformers,
+            boolean enforceSetter) {
+        var isFinal = Modifier.isFinal(field.getModifiers());
+        if (isFinal) {
             makeFieldNonFinal(field, transformers);
         }
 
@@ -382,10 +385,47 @@ final class GizmoMemberAccessorEntityEnhancer {
         var name = field.getName();
 
         // Not being recorded, so can use Type and annotated element directly
-        if (Modifier.isPublic(field.getModifiers())) {
+        if (ReflectionHelper.hasGetterMethod(declaringClass, name)) {
+            var getterMethod = ReflectionHelper.getGetterMethod(declaringClass, name);
+            ReflectionHelper.assertGetterMethod(getterMethod);
+
+            String setterName;
+            if (isFinal) {
+                // It a final field, so no setter exists normally.
+                // In the transformed bytecode, the field is no longer final,
+                // so we can add a setter to delegate field cloning to.
+                addVirtualFieldGetterAndSetter(declaringClass, field, transformers);
+                setterName = getVirtualSetterName(true, name);
+            } else {
+                var setterMethod = ReflectionHelper.getSetterMethod(declaringClass, name);
+                if (setterMethod == null) {
+                    if (enforceSetter) {
+                        throw new IllegalArgumentException(
+                                "The non-final field (%s) on class (%s) has a public getter (%s) but no public setter."
+                                        .formatted(field.getName(), declaringClass.getCanonicalName(), getterMethod));
+                    } else {
+                        addVirtualFieldGetterAndSetter(declaringClass, field, transformers);
+                        setterName = getVirtualSetterName(true, name);
+                    }
+                } else {
+                    if (!Modifier.isPublic(setterMethod.getModifiers())) {
+                        throw new IllegalArgumentException(
+                                "The non-final field (%s) on class (%s) has a public getter (%s) but its setter (%s) is not public."
+                                        .formatted(field.getName(), declaringClass.getCanonicalName(), getterMethod,
+                                                setterMethod));
+                    }
+                    setterName = setterMethod.getName();
+                }
+            }
+            var getterDescriptor = MethodDesc.of(getterMethod);
+            var setterDescriptor =
+                    ClassMethodDesc.of(ClassDesc.ofDescriptor(declaringClass.descriptorString()), setterName, void.class,
+                            field.getType());
+            return new GizmoMemberDescriptor(name, getterDescriptor, memberDescriptor, null, declaringClass, setterDescriptor);
+        } else if (Modifier.isPublic(field.getModifiers())) {
             return new GizmoMemberDescriptor(name, memberDescriptor, declaringClass);
         } else {
-            addVirtualFieldGetter(declaringClass, field, transformers);
+            addVirtualFieldGetterAndSetter(declaringClass, field, transformers);
             var getterName = getVirtualGetterName(true, name);
             var getterDescriptor =
                     ClassMethodDesc.of(ClassDesc.ofDescriptor(declaringClass.descriptorString()), getterName, field.getType());

@@ -294,7 +294,7 @@ class DefaultExhaustiveSearchPhaseTest {
         var e2 = new TestdataListPinnedEntityProvidingEntity("e2", List.of(v1, v4, v5));
         e2.setValueList(List.of(v5, v4));
         // Pin the two first elements
-        e2.setPlanningPinToIndex(2);
+        e2.setPinIndex(2);
         var e3 = new TestdataListPinnedEntityProvidingEntity("e3", List.of(v3, v4, v5));
         solution.setEntityList(List.of(e1, e2, e3));
 

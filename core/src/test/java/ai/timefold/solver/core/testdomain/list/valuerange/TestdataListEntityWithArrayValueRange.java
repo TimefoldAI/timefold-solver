@@ -24,7 +24,7 @@ public class TestdataListEntityWithArrayValueRange extends TestdataObject {
     }
 
     @PlanningListVariable(valueRangeProviderRefs = "arrayValueRange")
-    private final List<TestdataValue> valueList;
+    private List<TestdataValue> valueList;
 
     public TestdataListEntityWithArrayValueRange(String code, List<TestdataValue> valueList) {
         super(code);
@@ -37,5 +37,9 @@ public class TestdataListEntityWithArrayValueRange extends TestdataObject {
 
     public List<TestdataValue> getValueList() {
         return valueList;
+    }
+
+    public void setValueList(List<TestdataValue> valueList) {
+        this.valueList = valueList;
     }
 }

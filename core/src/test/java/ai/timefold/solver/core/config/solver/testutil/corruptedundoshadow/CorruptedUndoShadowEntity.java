@@ -24,6 +24,14 @@ public class CorruptedUndoShadowEntity {
         this.id = id;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public CorruptedUndoShadowValue getValue() {
         return value;
     }

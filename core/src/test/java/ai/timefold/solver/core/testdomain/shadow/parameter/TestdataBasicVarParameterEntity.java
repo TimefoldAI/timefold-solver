@@ -48,6 +48,10 @@ public class TestdataBasicVarParameterEntity {
         return durationInDays;
     }
 
+    public void setDurationInDays(long durationInDays) {
+        this.durationInDays = durationInDays;
+    }
+
     @Override
     public String toString() {
         return "TestdataBasicVarParameterEntity{" +

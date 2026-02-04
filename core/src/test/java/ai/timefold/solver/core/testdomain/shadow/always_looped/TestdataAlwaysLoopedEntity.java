@@ -12,10 +12,10 @@ public class TestdataAlwaysLoopedEntity extends TestdataObject {
     Integer value;
 
     @ShadowVariable(supplierName = "isEvenSupplier")
-    Boolean isEven;
+    Boolean even;
 
     @ShadowVariable(supplierName = "isOddSupplier")
-    Boolean isOdd;
+    Boolean odd;
 
     public TestdataAlwaysLoopedEntity() {
     }
@@ -38,32 +38,40 @@ public class TestdataAlwaysLoopedEntity extends TestdataObject {
     }
 
     public Boolean getEven() {
-        return isEven;
+        return even;
     }
 
     public Boolean getOdd() {
-        return isOdd;
+        return odd;
+    }
+
+    public void setEven(Boolean even) {
+        this.even = even;
+    }
+
+    public void setOdd(Boolean odd) {
+        this.odd = odd;
     }
 
     // Complex methods
-    @ShadowSources({ "value", "isOdd" })
+    @ShadowSources({ "value", "odd" })
     public Boolean isEvenSupplier() {
         if (value == null) {
             return null;
         }
-        if (isOdd != null) {
-            return !isOdd;
+        if (odd != null) {
+            return !odd;
         }
         return value % 2 == 0;
     }
 
-    @ShadowSources({ "value", "isEven" })
+    @ShadowSources({ "value", "even" })
     public Boolean isOddSupplier() {
         if (value == null) {
             return null;
         }
-        if (isEven != null) {
-            return !isEven;
+        if (even != null) {
+            return !even;
         }
         return value % 2 == 1;
     }

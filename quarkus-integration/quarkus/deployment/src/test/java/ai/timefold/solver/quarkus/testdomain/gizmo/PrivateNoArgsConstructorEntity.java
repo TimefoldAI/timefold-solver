@@ -19,4 +19,16 @@ public class PrivateNoArgsConstructorEntity {
     public PrivateNoArgsConstructorEntity(String id) {
         this.id = id;
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 }

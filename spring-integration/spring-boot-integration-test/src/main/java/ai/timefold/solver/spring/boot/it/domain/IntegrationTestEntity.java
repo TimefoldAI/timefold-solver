@@ -70,6 +70,14 @@ public class IntegrationTestEntity {
         return shadowVarWithoutParam;
     }
 
+    public void setShadowVarWithParam(Integer shadowVarWithParam) {
+        this.shadowVarWithParam = shadowVarWithParam;
+    }
+
+    public void setShadowVarWithoutParam(Integer shadowVarWithoutParam) {
+        this.shadowVarWithoutParam = shadowVarWithoutParam;
+    }
+
     @ShadowSources("value")
     public int processShadowVarWithParam(IntegrationTestSolution solution) {
         if (solution == null) {

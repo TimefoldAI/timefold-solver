@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterSolution;
@@ -14,6 +15,7 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.i
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingOnlyBaseAnnotatedSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidCountEntityProvidingWithParameterEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidTypeEntityProvidingWithParameterEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidTypeEntityProvidingWithParameterSolution;
 import ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution;
 
 import org.junit.jupiter.api.Test;
@@ -73,21 +75,27 @@ class ReflectionMethodExtendedMemberAccessorTest {
     @Test
     void invalidEntityReadMethodWithParameter() {
         assertThatCode(TestdataInvalidTypeEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
-                .hasMessageContaining("The parameter type (ai.timefold.solver.core.testdomain.TestdataSolution)")
+                .hasMessageContaining("The parameter type (%s)".formatted(TestdataSolution.class.getCanonicalName()))
                 .hasMessageContaining(
-                        "of the method (getValueRange) must match the solution (ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidTypeEntityProvidingWithParameterSolution).");
+                        "of the method (getValueRange) must match the solution (%s)."
+                                .formatted(TestdataInvalidTypeEntityProvidingWithParameterSolution.class.getCanonicalName()));
         assertThatCode(TestdataInvalidCountEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
                 .hasMessageContaining("The readMethod")
-                .hasMessageContaining("with a ValueRangeProvider annotation must have only one parameter");
+                .hasMessageContaining("with a @%s annotation must have only one parameter"
+                        .formatted(ValueRangeProvider.class.getSimpleName()));
     }
 
     @Test
     void invalidSolutionReadMethodWithParameter() {
         assertThatCode(TestdataInvalidParameterSolution::buildSolutionDescriptor)
                 .hasMessageContainingAll(
-                        "The readMethod (public java.util.List ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution.getValueList(ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution))")
+                        "The readMethod (public java.util.List %s.getValueList(%s))"
+                                .formatted(TestdataInvalidParameterSolution.class.getCanonicalName(),
+                                        TestdataInvalidParameterSolution.class.getCanonicalName()))
                 .hasMessageContainingAll(
-                        " with a ValueRangeProvider annotation must not have any parameters ([class ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution]).");
+                        " with a @%s annotation must not have any parameters ([class %s])."
+                                .formatted(ValueRangeProvider.class.getSimpleName(),
+                                        TestdataInvalidParameterSolution.class.getCanonicalName()));
     }
 
     @Test

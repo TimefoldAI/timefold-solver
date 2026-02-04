@@ -42,7 +42,7 @@ public class TestDataKitchenSinkEntity {
     private String declarativeShadowVariable;
 
     @ShadowVariablesInconsistent
-    private boolean isInconsistent;
+    private boolean inconsistent;
 
     @PiggybackShadowVariable(shadowVariableName = "shadow2")
     private String piggybackShadow;
@@ -50,7 +50,7 @@ public class TestDataKitchenSinkEntity {
     @PlanningVariable(valueRangeProviderRefs = { "names" })
     private String stringVariable;
 
-    private boolean isPinned;
+    private boolean pinned;
 
     @PlanningVariable(valueRangeProviderRefs = { "ints" })
     public Integer getIntVariable() {
@@ -69,18 +69,78 @@ public class TestDataKitchenSinkEntity {
         return stringVariable;
     }
 
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getShadow1() {
+        return shadow1;
+    }
+
+    public void setShadow1(String shadow1) {
+        this.shadow1 = shadow1;
+    }
+
+    public String getShadow2() {
+        return shadow2;
+    }
+
+    public void setShadow2(String shadow2) {
+        this.shadow2 = shadow2;
+    }
+
+    public String getDeclarativeShadowVariable() {
+        return declarativeShadowVariable;
+    }
+
+    public void setDeclarativeShadowVariable(String declarativeShadowVariable) {
+        this.declarativeShadowVariable = declarativeShadowVariable;
+    }
+
+    public boolean isInconsistent() {
+        return inconsistent;
+    }
+
+    public void setInconsistent(boolean inconsistent) {
+        this.inconsistent = inconsistent;
+    }
+
+    public String getPiggybackShadow() {
+        return piggybackShadow;
+    }
+
+    public void setPiggybackShadow(String piggybackShadow) {
+        this.piggybackShadow = piggybackShadow;
+    }
+
+    public String getStringVariable() {
+        return stringVariable;
+    }
+
+    public void setStringVariable(String stringVariable) {
+        this.stringVariable = stringVariable;
+    }
+
+    public void setPinned(boolean pinned) {
+        this.pinned = pinned;
+    }
+
     @ShadowSources(value = "stringVariable", alignmentKey = "groupId")
-    private String copyStringVariable() {
+    public String copyStringVariable() {
         return stringVariable;
     }
 
     @PlanningPin
-    private boolean isPinned() {
-        return isPinned;
+    public boolean isPinned() {
+        return pinned;
     }
 
     @ValueRangeProvider(id = "ints")
-    private List<Integer> myIntValueRange() {
+    public List<Integer> myIntValueRange() {
         return Collections.singletonList(1);
     }
 

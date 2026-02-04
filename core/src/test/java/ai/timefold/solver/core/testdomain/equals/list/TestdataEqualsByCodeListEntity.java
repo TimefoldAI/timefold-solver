@@ -39,6 +39,10 @@ public class TestdataEqualsByCodeListEntity extends TestdataEqualsByCodeListObje
         return valueList;
     }
 
+    public void setValueList(List<TestdataEqualsByCodeListValue> valueList) {
+        this.valueList = valueList;
+    }
+
     public void addValue(TestdataEqualsByCodeListValue value) {
         addValueAt(valueList.size(), value);
     }

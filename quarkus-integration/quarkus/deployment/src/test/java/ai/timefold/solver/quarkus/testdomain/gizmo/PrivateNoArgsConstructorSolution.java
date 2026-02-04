@@ -32,4 +32,25 @@ public class PrivateNoArgsConstructorSolution {
     public List<String> valueRange() {
         return Arrays.asList("1", "2", "3");
     }
+
+    public List<PrivateNoArgsConstructorEntity> getPlanningEntityList() {
+        return planningEntityList;
+    }
+
+    public void setPlanningEntityList(
+            List<PrivateNoArgsConstructorEntity> planningEntityList) {
+        this.planningEntityList = planningEntityList;
+    }
+
+    public SimpleScore getScore() {
+        return score;
+    }
+
+    public void setScore(SimpleScore score) {
+        this.score = score;
+    }
+
+    public int getSomeField() {
+        return someField;
+    }
 }

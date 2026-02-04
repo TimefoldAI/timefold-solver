@@ -3,9 +3,11 @@ package ai.timefold.solver.core.impl.domain.common.accessor;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.Objects;
 import java.util.function.IntPredicate;
 
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
@@ -21,16 +23,18 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
     private final MethodHandle getherMethodHandle;
     private final Method setterMethod;
     private final MethodHandle setterMethodHandle;
+    private final AnnotatedElement annotatedElement;
 
     public ReflectionBeanPropertyMemberAccessor(Method getterMethod) {
-        this(getterMethod, false);
+        this(getterMethod, getterMethod, false);
     }
 
-    public ReflectionBeanPropertyMemberAccessor(Method getterMethod, boolean getterOnly) {
+    public ReflectionBeanPropertyMemberAccessor(Method getterMethod, AnnotatedElement annotatedElement, boolean getterOnly) {
         this.getterMethod = getterMethod;
+        this.annotatedElement = annotatedElement;
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         try {
-            getterMethod.setAccessible(true); // Performance hack by avoiding security checks
+            getterMethod.setAccessible(true);
             this.getherMethodHandle = lookup.unreflect(getterMethod)
                     .asFixedArity();
         } catch (IllegalAccessException e) {
@@ -57,6 +61,11 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
             }
             var getterAccess = AccessModifier.forMethod(getterMethod);
             var setterAccess = AccessModifier.forMethod(setterMethod);
+            if (getterAccess != AccessModifier.PUBLIC) {
+                throw new IllegalArgumentException(
+                        "The getterMethod (%s) on class (%s) is not public, having access modifier (%s) instead."
+                                .formatted(getterMethod.getName(), declaringClass.getCanonicalName(), getterAccess));
+            }
             if (getterAccess != setterAccess) {
                 throw new IllegalArgumentException(
                         "The getterMethod (%s) has access modifier (%s) which does not match the setterMethod (%s) access modifier (%s) on class (%s)."
@@ -64,7 +73,7 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
                                         declaringClass.getCanonicalName()));
             }
             try {
-                setterMethod.setAccessible(true); // Performance hack by avoiding security checks
+                setterMethod.setAccessible(true);
                 this.setterMethodHandle = lookup.unreflect(setterMethod)
                         .asFixedArity();
             } catch (IllegalAccessException e) {
@@ -166,12 +175,25 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
 
     @Override
     public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-        return getterMethod.getAnnotation(annotationClass);
+        return annotatedElement.getAnnotation(annotationClass);
     }
 
     @Override
     public <T extends Annotation> T[] getDeclaredAnnotationsByType(Class<T> annotationClass) {
-        return getterMethod.getDeclaredAnnotationsByType(annotationClass);
+        return annotatedElement.getDeclaredAnnotationsByType(annotationClass);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof ReflectionBeanPropertyMemberAccessor that))
+            return false;
+        return Objects.equals(propertyType, that.propertyType) && Objects.equals(propertyName,
+                that.propertyName) && Objects.equals(annotatedElement, that.annotatedElement);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(propertyType, propertyName, annotatedElement);
     }
 
     @Override

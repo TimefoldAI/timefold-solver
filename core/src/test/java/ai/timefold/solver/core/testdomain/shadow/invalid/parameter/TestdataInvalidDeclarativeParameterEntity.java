@@ -18,4 +18,12 @@ public class TestdataInvalidDeclarativeParameterEntity extends TestdataObject {
         super(code);
     }
 
+    public List<TestdataInvalidDeclarativeParameterValue> getValues() {
+        return values;
+    }
+
+    public void setValues(
+            List<TestdataInvalidDeclarativeParameterValue> values) {
+        this.values = values;
+    }
 }

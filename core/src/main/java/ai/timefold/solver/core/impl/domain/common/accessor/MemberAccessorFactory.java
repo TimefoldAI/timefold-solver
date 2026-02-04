@@ -1,9 +1,11 @@
 package ai.timefold.solver.core.impl.domain.common.accessor;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,10 +61,45 @@ public final class MemberAccessorFactory {
 
     private static MemberAccessor buildReflectiveMemberAccessor(Member member, MemberAccessorType memberAccessorType,
             Class<? extends Annotation> annotationClass) {
+        return buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass,
+                (AnnotatedElement) member, memberAccessorType == MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER);
+    }
+
+    private static MemberAccessor buildReflectiveMemberAccessor(Member member, MemberAccessorType memberAccessorType,
+            Class<? extends Annotation> annotationClass, AnnotatedElement annotatedElement, boolean requireSetter) {
+        var messagePrefix = (annotationClass == null) ? "The" : "The @%s annotated".formatted(annotationClass.getSimpleName());
         if (member instanceof Field field) {
-            return new ReflectionFieldMemberAccessor(field);
+            var getter = ReflectionHelper.getGetterMethod(field.getDeclaringClass(), field.getName());
+            if (getter == null) {
+                var setter = ReflectionHelper.getSetterMethod(field.getDeclaringClass(), field.getName());
+                if (setter != null) {
+                    throw new IllegalArgumentException("%s field (%s) on class (%s) has a setter (%s) but no getter."
+                            .formatted(messagePrefix, field.getName(), field.getDeclaringClass().getCanonicalName(), setter));
+                }
+
+                if (Modifier.isFinal(field.getModifiers()) && requireSetter) {
+                    throw new IllegalArgumentException("%s field (%s) on class (%s) is final but requires a setter."
+                            .formatted(messagePrefix, field.getName(), field.getDeclaringClass().getCanonicalName()));
+                }
+
+                if (Modifier.isPublic(field.getModifiers())) {
+                    return new ReflectionFieldMemberAccessor(field);
+                } else {
+                    throw new IllegalArgumentException(
+                            "%s field (%s) on class (%s) is not public and does not have a public getter method."
+                                    .formatted(messagePrefix, field.getName(), field.getDeclaringClass().getName()));
+                }
+            }
+            // Final fields may only have a getter
+            // Non-final fields MUST have both a getter and setter
+            return buildReflectiveMemberAccessor(getter, memberAccessorType, annotationClass,
+                    field, requireSetter || !Modifier.isFinal(field.getModifiers()));
         } else if (member instanceof Method method) {
             MemberAccessor memberAccessor;
+            if (!Modifier.isPublic(method.getModifiers())) {
+                throw new IllegalStateException("%s method (%s) on class (%s) is not public."
+                        .formatted(messagePrefix, method.getName(), method.getDeclaringClass().getName()));
+            }
             switch (memberAccessorType) {
                 case FIELD_OR_READ_METHOD, FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER:
                     if (!ReflectionHelper.isGetterMethod(method)) {
@@ -80,13 +117,13 @@ public final class MemberAccessorFactory {
                     }
                     // Intentionally fall through (no break)
                 case FIELD_OR_GETTER_METHOD, FIELD_OR_GETTER_METHOD_WITH_SETTER:
-                    boolean getterOnly = memberAccessorType != MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
+                    boolean getterOnly = !requireSetter;
                     if (annotationClass == null) {
                         ReflectionHelper.assertGetterMethod(method);
                     } else {
                         ReflectionHelper.assertGetterMethod(method, annotationClass);
                     }
-                    memberAccessor = new ReflectionBeanPropertyMemberAccessor(method, getterOnly);
+                    memberAccessor = new ReflectionBeanPropertyMemberAccessor(method, annotatedElement, getterOnly);
                     break;
                 case VOID_METHOD:
                     memberAccessor = new ReflectionMethodMemberAccessor(method, false, false);

@@ -23,7 +23,7 @@ public class TestdataChainedVarValue {
     LocalDateTime endTime;
 
     @ShadowVariablesInconsistent
-    boolean isInvalid;
+    boolean invalid;
 
     @InverseRelationShadowVariable(sourceVariableName = "previous")
     TestdataChainedVarEntity next;
@@ -88,11 +88,11 @@ public class TestdataChainedVarValue {
     }
 
     public boolean isInvalid() {
-        return isInvalid;
+        return invalid;
     }
 
     public void setInvalid(boolean invalid) {
-        isInvalid = invalid;
+        this.invalid = invalid;
     }
 
     @Override

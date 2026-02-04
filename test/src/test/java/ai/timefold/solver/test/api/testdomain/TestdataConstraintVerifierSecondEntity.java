@@ -17,6 +17,14 @@ public final class TestdataConstraintVerifierSecondEntity {
         this.value = value;
     }
 
+    public String getPlanningId() {
+        return planningId;
+    }
+
+    public void setPlanningId(String planningId) {
+        this.planningId = planningId;
+    }
+
     public String getValue() {
         return value;
     }

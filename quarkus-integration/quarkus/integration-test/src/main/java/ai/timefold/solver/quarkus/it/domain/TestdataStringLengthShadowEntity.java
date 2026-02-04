@@ -62,6 +62,14 @@ public class TestdataStringLengthShadowEntity implements TestdataStringLengthSha
         return shadowVarWithoutParam;
     }
 
+    public void setShadowVarWithParam(Integer shadowVarWithParam) {
+        this.shadowVarWithParam = shadowVarWithParam;
+    }
+
+    public void setShadowVarWithoutParam(Integer shadowVarWithoutParam) {
+        this.shadowVarWithoutParam = shadowVarWithoutParam;
+    }
+
     @ShadowSources("value")
     public int processShadowVarWithParam(TestdataStringLengthShadowSolution solution) {
         if (solution == null) {

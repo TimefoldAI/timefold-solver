@@ -57,4 +57,43 @@ public class TestdataAutoDiscoverFieldOverrideSolution extends TestdataObject {
         this.score = score;
     }
 
+    public TestdataObject getSingleProblemFact() {
+        return singleProblemFact;
+    }
+
+    public void setSingleProblemFact(TestdataObject singleProblemFact) {
+        this.singleProblemFact = singleProblemFact;
+    }
+
+    public List<TestdataValue> getProblemFactList() {
+        return problemFactList;
+    }
+
+    public void setProblemFactList(List<TestdataValue> problemFactList) {
+        this.problemFactList = problemFactList;
+    }
+
+    public List<String> getListProblemFact() {
+        return listProblemFact;
+    }
+
+    public void setListProblemFact(List<String> listProblemFact) {
+        this.listProblemFact = listProblemFact;
+    }
+
+    public List<TestdataEntity> getEntityList() {
+        return entityList;
+    }
+
+    public void setEntityList(List<TestdataEntity> entityList) {
+        this.entityList = entityList;
+    }
+
+    public TestdataEntity getOtherEntity() {
+        return otherEntity;
+    }
+
+    public void setOtherEntity(TestdataEntity otherEntity) {
+        this.otherEntity = otherEntity;
+    }
 }

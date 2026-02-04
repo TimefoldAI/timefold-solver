@@ -897,7 +897,7 @@ class DefaultSolverTest {
         var partiallyPinnedValue2 = solution.getValueList().get(2);
         partiallyPinnedList.add(partiallyPinnedValue1);
         partiallyPinnedList.add(partiallyPinnedValue2);
-        partiallyPinnedEntity.setPlanningPinToIndex(1); // The first value is pinned.
+        partiallyPinnedEntity.setPinIndex(1); // The first value is pinned.
         partiallyPinnedEntity.setPinned(false); // The list isn't pinned overall.
 
         var solverConfig = PlannerTestUtils
@@ -938,7 +938,7 @@ class DefaultSolverTest {
         var partiallyPinnedValue2 = solution.getValueList().get(2);
         partiallyPinnedList.add(partiallyPinnedValue1);
         partiallyPinnedList.add(partiallyPinnedValue2);
-        partiallyPinnedEntity.setPlanningPinToIndex(1); // The first value is pinned.
+        partiallyPinnedEntity.setPinIndex(1); // The first value is pinned.
         partiallyPinnedEntity.setPinned(false); // The list isn't pinned overall.
 
         var solverConfig = PlannerTestUtils

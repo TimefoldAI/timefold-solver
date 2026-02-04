@@ -15,7 +15,7 @@ public class TestdataShadowedFullEntity extends TestdataObject {
 
     @ShadowVariable(variableListenerClass = TestdataShadowedFullConsistencyListVariableListener.class,
             sourceVariableName = "valueList")
-    Boolean isConsistent;
+    Boolean consistent;
 
     public TestdataShadowedFullEntity() {
         this.valueList = new ArrayList<>();
@@ -28,5 +28,17 @@ public class TestdataShadowedFullEntity extends TestdataObject {
 
     public List<TestdataShadowedFullValue> getValueList() {
         return valueList;
+    }
+
+    public void setValueList(List<TestdataShadowedFullValue> valueList) {
+        this.valueList = valueList;
+    }
+
+    public Boolean getConsistent() {
+        return consistent;
+    }
+
+    public void setConsistent(Boolean consistent) {
+        this.consistent = consistent;
     }
 }

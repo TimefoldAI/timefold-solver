@@ -15,4 +15,8 @@ public class TestdataExtendedQuarkusSolution extends TestdataQuarkusSolution {
     public String getExtraData() {
         return extraData;
     }
+
+    public void setExtraData(String extraData) {
+        this.extraData = extraData;
+    }
 }

@@ -197,11 +197,11 @@ class UniEnumeratingStreamTest {
         fullyPinnedEntity.setPinned(true);
         // 2 values, 1 pinned.
         var partiallyPinnedEntity = solution.getEntityList().get(1);
-        partiallyPinnedEntity.setPlanningPinToIndex(1);
+        partiallyPinnedEntity.setPinIndex(1);
         // 1 value, not pinned.
         var unpinnedEntity = solution.getEntityList().get(2);
         unpinnedEntity.setPinned(false);
-        unpinnedEntity.setPlanningPinToIndex(0);
+        unpinnedEntity.setPinIndex(0);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
         var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
@@ -241,11 +241,11 @@ class UniEnumeratingStreamTest {
         fullyPinnedEntity.setPinned(true);
         // 2 values, 1 pinned.
         var partiallyPinnedEntity = solution.getEntityList().get(1);
-        partiallyPinnedEntity.setPlanningPinToIndex(1);
+        partiallyPinnedEntity.setPinIndex(1);
         // 1 value, not pinned.
         var unpinnedEntity = solution.getEntityList().get(2);
         unpinnedEntity.setPinned(false);
-        unpinnedEntity.setPlanningPinToIndex(0);
+        unpinnedEntity.setPinIndex(0);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
         var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
@@ -286,11 +286,11 @@ class UniEnumeratingStreamTest {
         // 2 values, 1 pinned.
         var partiallyPinnedEntity = solution.getEntityList().get(1);
         partiallyPinnedEntity.setPinned(false);
-        partiallyPinnedEntity.setPlanningPinToIndex(1);
+        partiallyPinnedEntity.setPinIndex(1);
         // 1 value, not pinned.
         var unpinnedEntity = solution.getEntityList().get(2);
         unpinnedEntity.setPinned(false);
-        unpinnedEntity.setPlanningPinToIndex(0);
+        unpinnedEntity.setPinIndex(0);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
         var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
@@ -331,11 +331,11 @@ class UniEnumeratingStreamTest {
         // 2 values, 1 pinned.
         var partiallyPinnedEntity = solution.getEntityList().get(1);
         partiallyPinnedEntity.setPinned(false);
-        partiallyPinnedEntity.setPlanningPinToIndex(1);
+        partiallyPinnedEntity.setPinIndex(1);
         // 1 value, not pinned.
         var unpinnedEntity = solution.getEntityList().get(2);
         unpinnedEntity.setPinned(false);
-        unpinnedEntity.setPlanningPinToIndex(0);
+        unpinnedEntity.setPinIndex(0);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
         var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
@@ -381,12 +381,12 @@ class UniEnumeratingStreamTest {
         fullyPinnedEntity.setValueList(List.of(value1));
         // 2 values, 1 pinned.
         var partiallyPinnedEntity = solution.getEntityList().get(1);
-        partiallyPinnedEntity.setPlanningPinToIndex(1);
+        partiallyPinnedEntity.setPinIndex(1);
         partiallyPinnedEntity.setValueList(List.of(value2, value3));
         // 1 value, not pinned.
         var unpinnedEntity = solution.getEntityList().get(2);
         unpinnedEntity.setPinned(false);
-        unpinnedEntity.setPlanningPinToIndex(0);
+        unpinnedEntity.setPinIndex(0);
         unpinnedEntity.setValueList(List.of(value4));
         // Properly set shadow variables based on the changes above.
         SolutionManager.updateShadowVariables(solution);
@@ -423,12 +423,12 @@ class UniEnumeratingStreamTest {
         fullyPinnedEntity.setValueList(List.of(value1));
         // 2 values, 1 pinned.
         var partiallyPinnedEntity = solution.getEntityList().get(1);
-        partiallyPinnedEntity.setPlanningPinToIndex(1);
+        partiallyPinnedEntity.setPinIndex(1);
         partiallyPinnedEntity.setValueList(List.of(value2, value3));
         // 1 value, not pinned.
         var unpinnedEntity = solution.getEntityList().get(2);
         unpinnedEntity.setPinned(false);
-        unpinnedEntity.setPlanningPinToIndex(0);
+        unpinnedEntity.setPinIndex(0);
         unpinnedEntity.setValueList(List.of(value4));
         // Properly set shadow variables based on the changes above.
         SolutionManager.updateShadowVariables(solution);
@@ -464,12 +464,12 @@ class UniEnumeratingStreamTest {
         fullyPinnedEntity.setValueList(List.of(value0));
         // 2 values, 1 pinned.
         var partiallyPinnedEntity = solution.getEntityList().get(1);
-        partiallyPinnedEntity.setPlanningPinToIndex(1);
+        partiallyPinnedEntity.setPinIndex(1);
         partiallyPinnedEntity.setValueList(List.of(value1, value2));
         // 1 value, not pinned.
         var unpinnedEntity = solution.getEntityList().get(2);
         unpinnedEntity.setPinned(false);
-        unpinnedEntity.setPlanningPinToIndex(0);
+        unpinnedEntity.setPinIndex(0);
         unpinnedEntity.setValueList(List.of(value3));
         // Fully pinned, but not initially present in the solution.
         var entityAddedLater = new TestdataPinnedWithIndexListEntity("entity4", value4);
@@ -508,12 +508,12 @@ class UniEnumeratingStreamTest {
         fullyPinnedEntity.setValueList(List.of(value0));
         // 2 values, 1 pinned.
         var partiallyPinnedEntity = solution.getEntityList().get(1);
-        partiallyPinnedEntity.setPlanningPinToIndex(1);
+        partiallyPinnedEntity.setPinIndex(1);
         // 1 value, not pinned.
         partiallyPinnedEntity.setValueList(List.of(value1, value2));
         var unpinnedEntity = solution.getEntityList().get(2);
         unpinnedEntity.setPinned(false);
-        unpinnedEntity.setPlanningPinToIndex(0);
+        unpinnedEntity.setPinIndex(0);
         unpinnedEntity.setValueList(List.of(value3));
         // Fully pinned, but not initially present in the solution.
         var entityAddedLater = new TestdataPinnedWithIndexListEntity("entity4", value4);

@@ -67,6 +67,62 @@ public class TestdataShadowVariableOrderEntity extends TestdataObject {
         super(code);
     }
 
+    public String getX0G() {
+        return x0G;
+    }
+
+    public void setX0G(String x0G) {
+        this.x0G = x0G;
+    }
+
+    public String getX1D() {
+        return x1D;
+    }
+
+    public void setX1D(String x1D) {
+        this.x1D = x1D;
+    }
+
+    public String getX2E() {
+        return x2E;
+    }
+
+    public void setX2E(String x2E) {
+        this.x2E = x2E;
+    }
+
+    public String getX3C() {
+        return x3C;
+    }
+
+    public void setX3C(String x3C) {
+        this.x3C = x3C;
+    }
+
+    public String getX4F() {
+        return x4F;
+    }
+
+    public void setX4F(String x4F) {
+        this.x4F = x4F;
+    }
+
+    public TestdataValue getX5B() {
+        return x5B;
+    }
+
+    public void setX5B(TestdataValue x5B) {
+        this.x5B = x5B;
+    }
+
+    public TestdataValue getX6A() {
+        return x6A;
+    }
+
+    public void setX6A(TestdataValue x6A) {
+        this.x6A = x6A;
+    }
+
     // ************************************************************************
     // Static inner classes
     // ************************************************************************

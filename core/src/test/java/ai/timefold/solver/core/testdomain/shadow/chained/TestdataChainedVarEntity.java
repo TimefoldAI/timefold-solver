@@ -49,6 +49,10 @@ public class TestdataChainedVarEntity extends TestdataChainedVarValue {
         return durationInDays;
     }
 
+    public void setDurationInDays(long durationInDays) {
+        this.durationInDays = durationInDays;
+    }
+
     @Override
     public String toString() {
         return "TestdataBasicVarEntity{" +

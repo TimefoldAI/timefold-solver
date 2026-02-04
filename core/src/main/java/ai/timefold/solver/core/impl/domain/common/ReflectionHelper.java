@@ -22,6 +22,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -276,6 +277,10 @@ public final class ReflectionHelper {
     }
 
     public static void assertGetterMethod(Method getterMethod) {
+        if (!Modifier.isPublic(getterMethod.getModifiers())) {
+            throw new IllegalStateException("The getterMethod (%s) must be public."
+                    .formatted(getterMethod));
+        }
         if (getterMethod.getParameterTypes().length != 0) {
             throw new IllegalStateException("The getterMethod (%s) must not have any parameters (%s)."
                     .formatted(getterMethod, Arrays.toString(getterMethod.getParameterTypes())));
@@ -304,8 +309,12 @@ public final class ReflectionHelper {
     }
 
     public static void assertGetterMethod(Method getterMethod, Class<? extends Annotation> annotationClass) {
+        if (!Modifier.isPublic(getterMethod.getModifiers())) {
+            throw new IllegalStateException("The getterMethod (%s) with a @%s annotation must be public."
+                    .formatted(getterMethod, annotationClass.getSimpleName()));
+        }
         if (getterMethod.getParameterTypes().length != 0) {
-            throw new IllegalStateException("The getterMethod (%s) with a %s annotation must not have any parameters (%s)."
+            throw new IllegalStateException("The getterMethod (%s) with a @%s annotation must not have any parameters (%s)."
                     .formatted(getterMethod, annotationClass.getSimpleName(),
                             Arrays.toString(getterMethod.getParameterTypes())));
         }
@@ -313,13 +322,13 @@ public final class ReflectionHelper {
         if (methodName.startsWith(PROPERTY_ACCESSOR_PREFIX_GET)) {
             if (getterMethod.getReturnType() == void.class) {
                 throw new IllegalStateException(
-                        "The getterMethod (%s) with a %s annotation must have a non-void return type (%s)."
+                        "The getterMethod (%s) with a @%s annotation must have a non-void return type (%s)."
                                 .formatted(getterMethod, annotationClass.getSimpleName(), getterMethod.getReturnType()));
             }
         } else if (methodName.startsWith(PROPERTY_ACCESSOR_PREFIX_IS)) {
             if (getterMethod.getReturnType() != boolean.class) {
                 throw new IllegalStateException("""
-                        The getterMethod (%s) with a %s annotation must have a primitive boolean return type (%s) \
+                        The getterMethod (%s) with a @%s annotation must have a primitive boolean return type (%s) \
                         or use another prefix in its methodName (%s).
                         Maybe use '%s' instead of '%s'?"""
                         .formatted(getterMethod, annotationClass.getSimpleName(), getterMethod.getReturnType(), methodName,
@@ -327,13 +336,17 @@ public final class ReflectionHelper {
             }
         } else {
             throw new IllegalStateException(
-                    "The getterMethod (%s) with a %s annotation has a methodName (%s) that does not start with a valid prefix (%s)."
+                    "The getterMethod (%s) with a @%s annotation has a methodName (%s) that does not start with a valid prefix (%s)."
                             .formatted(getterMethod, annotationClass.getSimpleName(), methodName,
                                     Arrays.toString(PROPERTY_ACCESSOR_PREFIXES)));
         }
     }
 
     public static void assertReadMethod(Method readMethod, boolean readMethodWithParameter) {
+        if (!Modifier.isPublic(readMethod.getModifiers())) {
+            throw new IllegalStateException("The readMethod (%s) must be public."
+                    .formatted(readMethod));
+        }
         if (!readMethodWithParameter && readMethod.getParameterCount() != 0) {
             throw new IllegalStateException("The readMethod (%s) must not have any parameters (%s)."
                     .formatted(readMethod, Arrays.toString(readMethod.getParameterTypes())));
@@ -350,16 +363,20 @@ public final class ReflectionHelper {
 
     public static void assertReadMethod(Method readMethod, boolean readMethodWithParameter,
             Class<? extends Annotation> annotationClass) {
+        if (!Modifier.isPublic(readMethod.getModifiers())) {
+            throw new IllegalStateException("The readMethod (%s) with a @%s annotation must be public."
+                    .formatted(readMethod, annotationClass.getSimpleName()));
+        }
         if (!readMethodWithParameter && readMethod.getParameterCount() != 0) {
-            throw new IllegalStateException("The readMethod (%s) with a %s annotation must not have any parameters (%s)."
+            throw new IllegalStateException("The readMethod (%s) with a @%s annotation must not have any parameters (%s)."
                     .formatted(readMethod, annotationClass.getSimpleName(), Arrays.toString(readMethod.getParameterTypes())));
         }
         if (readMethodWithParameter && readMethod.getParameterCount() > 1) {
-            throw new IllegalStateException("The readMethod (%s) with a %s annotation must have only one parameter (%s)."
+            throw new IllegalStateException("The readMethod (%s) with a @%s annotation must have only one parameter (%s)."
                     .formatted(readMethod, annotationClass.getSimpleName(), Arrays.toString(readMethod.getParameterTypes())));
         }
         if (readMethod.getReturnType() == void.class) {
-            throw new IllegalStateException("The readMethod (%s) with a %s annotation must have a non-void return type (%s)."
+            throw new IllegalStateException("The readMethod (%s) with a @%s annotation must have a non-void return type (%s)."
                     .formatted(readMethod, annotationClass.getSimpleName(), readMethod.getReturnType()));
         }
     }

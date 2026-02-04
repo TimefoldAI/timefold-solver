@@ -28,4 +28,28 @@ public class TestdataInvalidDeclarativeSolution extends TestdataObject {
     public TestdataInvalidDeclarativeSolution(String code) {
         super(code);
     }
+
+    public List<TestdataInvalidDeclarativeEntity> getEntities() {
+        return entities;
+    }
+
+    public void setEntities(List<TestdataInvalidDeclarativeEntity> entities) {
+        this.entities = entities;
+    }
+
+    public List<TestdataInvalidDeclarativeValue> getValues() {
+        return values;
+    }
+
+    public void setValues(List<TestdataInvalidDeclarativeValue> values) {
+        this.values = values;
+    }
+
+    public SimpleScore getScore() {
+        return score;
+    }
+
+    public void setScore(SimpleScore score) {
+        this.score = score;
+    }
 }

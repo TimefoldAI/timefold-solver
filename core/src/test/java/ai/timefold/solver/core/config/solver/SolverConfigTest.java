@@ -306,6 +306,21 @@ class SolverConfigTest {
         @PlanningScore
         SimpleScore score;
 
+        public List<DummyRecordEntity> getEntities() {
+            return entities;
+        }
+
+        public void setEntities(List<DummyRecordEntity> entities) {
+            this.entities = entities;
+        }
+
+        public SimpleScore getScore() {
+            return score;
+        }
+
+        public void setScore(SimpleScore score) {
+            this.score = score;
+        }
     }
 
     @PlanningEntity
@@ -357,6 +372,40 @@ class SolverConfigTest {
         @PlanningScore
         SimpleScore score;
 
+        public List<DummyEntityWithTwoListVariables> getEntities() {
+            return entities;
+        }
+
+        public void setEntities(
+                List<DummyEntityWithTwoListVariables> entities) {
+            this.entities = entities;
+        }
+
+        public ValueRange<DummyEntityForListVariable> getFirstListValueRange() {
+            return firstListValueRange;
+        }
+
+        public void setFirstListValueRange(
+                ValueRange<DummyEntityForListVariable> firstListValueRange) {
+            this.firstListValueRange = firstListValueRange;
+        }
+
+        public ValueRange<DummyEntityForListVariable> getSecondListValueRange() {
+            return secondListValueRange;
+        }
+
+        public void setSecondListValueRange(
+                ValueRange<DummyEntityForListVariable> secondListValueRange) {
+            this.secondListValueRange = secondListValueRange;
+        }
+
+        public SimpleScore getScore() {
+            return score;
+        }
+
+        public void setScore(SimpleScore score) {
+            this.score = score;
+        }
     }
 
     @PlanningEntity
@@ -368,6 +417,23 @@ class SolverConfigTest {
         @PlanningListVariable(valueRangeProviderRefs = "secondListValueRange")
         private List<DummyEntityForListVariable> secondListVariable;
 
+        public List<DummyEntityForListVariable> getFirstListVariable() {
+            return firstListVariable;
+        }
+
+        public void setFirstListVariable(
+                List<DummyEntityForListVariable> firstListVariable) {
+            this.firstListVariable = firstListVariable;
+        }
+
+        public List<DummyEntityForListVariable> getSecondListVariable() {
+            return secondListVariable;
+        }
+
+        public void setSecondListVariable(
+                List<DummyEntityForListVariable> secondListVariable) {
+            this.secondListVariable = secondListVariable;
+        }
     }
 
     @PlanningEntity

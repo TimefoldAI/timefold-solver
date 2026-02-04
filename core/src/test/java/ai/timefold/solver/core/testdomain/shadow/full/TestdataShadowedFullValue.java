@@ -30,7 +30,7 @@ public class TestdataShadowedFullValue extends TestdataObject {
             sourceVariableName = "nextValue")
     @ShadowVariable(variableListenerClass = TestdataShadowedFullConsistencyListener.class,
             sourceVariableName = "index")
-    Boolean isConsistent;
+    Boolean consistent;
 
     public TestdataShadowedFullValue() {
 
@@ -38,6 +38,46 @@ public class TestdataShadowedFullValue extends TestdataObject {
 
     public TestdataShadowedFullValue(String code) {
         super(code);
+    }
+
+    public TestdataShadowedFullEntity getEntity() {
+        return entity;
+    }
+
+    public void setEntity(TestdataShadowedFullEntity entity) {
+        this.entity = entity;
+    }
+
+    public TestdataShadowedFullValue getPreviousValue() {
+        return previousValue;
+    }
+
+    public void setPreviousValue(TestdataShadowedFullValue previousValue) {
+        this.previousValue = previousValue;
+    }
+
+    public TestdataShadowedFullValue getNextValue() {
+        return nextValue;
+    }
+
+    public void setNextValue(TestdataShadowedFullValue nextValue) {
+        this.nextValue = nextValue;
+    }
+
+    public Integer getIndex() {
+        return index;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
+    }
+
+    public Boolean getConsistent() {
+        return consistent;
+    }
+
+    public void setConsistent(Boolean consistent) {
+        this.consistent = consistent;
     }
 
     public void updateShadows(TestdataShadowedFullEntity entity, int index) {

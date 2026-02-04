@@ -126,7 +126,7 @@ class ListSwapMoveSelectorTest {
         var v2 = new TestdataPinnedWithIndexListValue("v2");
         var v3 = new TestdataPinnedWithIndexListValue("v3");
         var a = new TestdataPinnedWithIndexListEntity("A", v2, v1);
-        a.setPlanningPinToIndex(1); // Ignore v2
+        a.setPinIndex(1); // Ignore v2
         var b = new TestdataPinnedWithIndexListEntity("B");
         b.setPinned(true); // Ignore entirely.
         var c = new TestdataPinnedWithIndexListEntity("C", v3);
@@ -169,7 +169,7 @@ class ListSwapMoveSelectorTest {
         var v4 = new TestdataValue("4");
         var a = new TestdataListPinnedEntityProvidingEntity("A", List.of(v1, v2, v3));
         a.setValueList(List.of(v2, v1));
-        a.setPlanningPinToIndex(1); // Ignore v2.
+        a.setPinIndex(1); // Ignore v2.
         var b = new TestdataListPinnedEntityProvidingEntity("B", List.of(v2, v4));
         b.setPinned(true); // Ignore entirely.
         b.setValueList(List.of(v4));
@@ -410,7 +410,7 @@ class ListSwapMoveSelectorTest {
         var v2 = new TestdataPinnedWithIndexListValue("2");
         var v3 = new TestdataPinnedWithIndexListValue("3");
         var a = new TestdataPinnedWithIndexListEntity("A", v1, v2);
-        a.setPlanningPinToIndex(1); // Ignore v1
+        a.setPinIndex(1); // Ignore v1
         var b = new TestdataPinnedWithIndexListEntity("B");
         b.setPinned(true); // Ignore entirely.
         var c = new TestdataPinnedWithIndexListEntity("C", v3);
@@ -448,7 +448,7 @@ class ListSwapMoveSelectorTest {
         var v4 = new TestdataValue("4");
         var a = new TestdataListPinnedEntityProvidingEntity("A", List.of(v1, v2, v3));
         a.setValueList(List.of(v2, v1));
-        a.setPlanningPinToIndex(1); // Ignore v2.
+        a.setPinIndex(1); // Ignore v2.
         var b = new TestdataListPinnedEntityProvidingEntity("B", List.of(v2, v4));
         b.setPinned(true); // Ignore entirely.
         b.setValueList(List.of(v4));

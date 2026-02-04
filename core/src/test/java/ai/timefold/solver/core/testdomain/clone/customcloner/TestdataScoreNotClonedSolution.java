@@ -23,6 +23,22 @@ public class TestdataScoreNotClonedSolution implements SolutionCloner<TestdataSc
     @PlanningEntityProperty
     private TestdataEntity entity = new TestdataEntity("A");
 
+    public SimpleScore getScore() {
+        return score;
+    }
+
+    public void setScore(SimpleScore score) {
+        this.score = score;
+    }
+
+    public TestdataEntity getEntity() {
+        return entity;
+    }
+
+    public void setEntity(TestdataEntity entity) {
+        this.entity = entity;
+    }
+
     @ValueRangeProvider(id = "valueRange")
     @ProblemFactCollectionProperty
     public List<TestdataValue> valueRange() {

@@ -27,4 +27,20 @@ public class TestdataInvalidDeclarativeEntity extends TestdataObject {
     public Integer shadowSupplier() {
         return values.size();
     }
+
+    public List<TestdataInvalidDeclarativeValue> getValues() {
+        return values;
+    }
+
+    public void setValues(List<TestdataInvalidDeclarativeValue> values) {
+        this.values = values;
+    }
+
+    public Integer getShadow() {
+        return shadow;
+    }
+
+    public void setShadow(Integer shadow) {
+        this.shadow = shadow;
+    }
 }

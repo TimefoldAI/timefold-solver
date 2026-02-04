@@ -27,4 +27,30 @@ public class CorruptedUndoShadowSolution {
         this.entityList = entityList;
         this.valueList = valueList;
     }
+
+    public List<CorruptedUndoShadowEntity> getEntityList() {
+        return entityList;
+    }
+
+    public void setEntityList(
+            List<CorruptedUndoShadowEntity> entityList) {
+        this.entityList = entityList;
+    }
+
+    public List<CorruptedUndoShadowValue> getValueList() {
+        return valueList;
+    }
+
+    public void setValueList(
+            List<CorruptedUndoShadowValue> valueList) {
+        this.valueList = valueList;
+    }
+
+    public SimpleScore getScore() {
+        return score;
+    }
+
+    public void setScore(SimpleScore score) {
+        this.score = score;
+    }
 }
