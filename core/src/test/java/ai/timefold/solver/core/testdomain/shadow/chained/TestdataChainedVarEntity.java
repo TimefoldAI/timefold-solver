@@ -25,10 +25,6 @@ public class TestdataChainedVarEntity extends TestdataChainedVarValue {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public TestdataChainedVarValue getPrevious() {
         return previous;
     }

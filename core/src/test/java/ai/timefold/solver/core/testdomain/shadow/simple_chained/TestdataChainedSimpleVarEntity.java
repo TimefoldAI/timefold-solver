@@ -24,10 +24,6 @@ public class TestdataChainedSimpleVarEntity extends TestdataChainedSimpleVarValu
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public TestdataChainedSimpleVarValue getPrevious() {
         return previous;
     }

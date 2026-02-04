@@ -62,11 +62,11 @@ public final class MemberAccessorFactory {
     private static MemberAccessor buildReflectiveMemberAccessor(Member member, MemberAccessorType memberAccessorType,
             Class<? extends Annotation> annotationClass) {
         return buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass,
-                (AnnotatedElement) member, memberAccessorType == MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER);
+                (AnnotatedElement) member);
     }
 
     private static MemberAccessor buildReflectiveMemberAccessor(Member member, MemberAccessorType memberAccessorType,
-            Class<? extends Annotation> annotationClass, AnnotatedElement annotatedElement, boolean requireSetter) {
+            Class<? extends Annotation> annotationClass, AnnotatedElement annotatedElement) {
         var messagePrefix = (annotationClass == null) ? "The" : "The @%s annotated".formatted(annotationClass.getSimpleName());
         if (member instanceof Field field) {
             var getter = ReflectionHelper.getGetterMethod(field.getDeclaringClass(), field.getName());
@@ -77,7 +77,7 @@ public final class MemberAccessorFactory {
                             .formatted(messagePrefix, field.getName(), field.getDeclaringClass().getCanonicalName(), setter));
                 }
 
-                if (Modifier.isFinal(field.getModifiers()) && requireSetter) {
+                if (Modifier.isFinal(field.getModifiers()) && memberAccessorType.isSetterRequired()) {
                     throw new IllegalArgumentException("%s field (%s) on class (%s) is final but requires a setter."
                             .formatted(messagePrefix, field.getName(), field.getDeclaringClass().getCanonicalName()));
                 }
@@ -93,7 +93,7 @@ public final class MemberAccessorFactory {
             // Final fields may only have a getter
             // Non-final fields MUST have both a getter and setter
             return buildReflectiveMemberAccessor(getter, memberAccessorType, annotationClass,
-                    field, requireSetter || !Modifier.isFinal(field.getModifiers()));
+                    field);
         } else if (member instanceof Method method) {
             MemberAccessor memberAccessor;
             if (!Modifier.isPublic(method.getModifiers())) {
@@ -117,7 +117,7 @@ public final class MemberAccessorFactory {
                     }
                     // Intentionally fall through (no break)
                 case FIELD_OR_GETTER_METHOD, FIELD_OR_GETTER_METHOD_WITH_SETTER:
-                    boolean getterOnly = !requireSetter;
+                    boolean getterOnly = !memberAccessorType.isSetterRequired();
                     if (annotationClass == null) {
                         ReflectionHelper.assertGetterMethod(method);
                     } else {
@@ -210,7 +210,21 @@ public final class MemberAccessorFactory {
         FIELD_OR_READ_METHOD,
         FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER,
         FIELD_OR_GETTER_METHOD,
-        FIELD_OR_GETTER_METHOD_WITH_SETTER,
-        VOID_METHOD
+        FIELD_OR_GETTER_METHOD_WITH_SETTER(true),
+        VOID_METHOD;
+
+        private final boolean setterRequired;
+
+        MemberAccessorType() {
+            setterRequired = false;
+        }
+
+        MemberAccessorType(boolean setterRequired) {
+            this.setterRequired = setterRequired;
+        }
+
+        public boolean isSetterRequired() {
+            return setterRequired;
+        }
     }
 }

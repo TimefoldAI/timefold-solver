@@ -53,10 +53,6 @@ public class TestdataMultiEntityDependencyValue {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public List<TestdataMultiEntityDependencyValue> getDependencies() {
         return dependencies;
     }

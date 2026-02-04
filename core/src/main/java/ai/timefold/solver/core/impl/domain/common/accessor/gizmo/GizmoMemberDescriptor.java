@@ -12,6 +12,9 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
@@ -20,6 +23,7 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 /**
  * Describe and provide simplified/unified access for {@link Member}.
  */
+@NullMarked
 public final class GizmoMemberDescriptor {
 
     /**
@@ -34,6 +38,7 @@ public final class GizmoMemberDescriptor {
     /**
      * The type of the read method parameter. Null if the method does not accept a parameter.
      */
+    @Nullable
     private final Type methodParameterType;
 
     private final GizmoMemberHandler memberHandler;
@@ -46,6 +51,7 @@ public final class GizmoMemberDescriptor {
     /**
      * The MethodDescriptor of the corresponding setter. Empty if not present.
      */
+    @Nullable
     private final MethodDesc setter;
 
     public GizmoMemberDescriptor(Member member) {
@@ -91,7 +97,7 @@ public final class GizmoMemberDescriptor {
     }
 
     public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, MethodDesc metadataDescriptor,
-            Type methodParameterType, Class<?> declaringClass, MethodDesc setterDescriptor) {
+            Type methodParameterType, Class<?> declaringClass, @Nullable MethodDesc setterDescriptor) {
         this.name = name;
         this.memberHandler = GizmoMemberHandler.of(declaringClass, (Class<?>) methodParameterType, memberDescriptor);
         this.metadataHandler = memberDescriptor == metadataDescriptor ? this.memberHandler
@@ -101,7 +107,7 @@ public final class GizmoMemberDescriptor {
     }
 
     public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, Type methodParameterType, Class<?> declaringClass,
-            MethodDesc setterDescriptor) {
+            @Nullable MethodDesc setterDescriptor) {
         this.name = name;
         this.memberHandler = GizmoMemberHandler.of(declaringClass, (Class<?>) methodParameterType, memberDescriptor);
         this.metadataHandler = this.memberHandler;
@@ -110,7 +116,7 @@ public final class GizmoMemberDescriptor {
     }
 
     public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, FieldDesc metadataDescriptor,
-            Type methodParameterType, Class<?> declaringClass, MethodDesc setterDescriptor) {
+            @Nullable Type methodParameterType, Class<?> declaringClass, @Nullable MethodDesc setterDescriptor) {
         this.name = name;
         this.memberHandler = GizmoMemberHandler.of(declaringClass, (Class<?>) methodParameterType, memberDescriptor);
         this.metadataHandler = GizmoMemberHandler.of(declaringClass, name, metadataDescriptor, true);
@@ -118,6 +124,7 @@ public final class GizmoMemberDescriptor {
         this.setter = setterDescriptor;
     }
 
+    @Nullable
     public static Type getMethodParameterType(Method method, boolean methodWithParameter) {
         var parameterCount = method.getParameterCount();
         Type methodParameterType = null;
@@ -244,6 +251,7 @@ public final class GizmoMemberDescriptor {
         return metadataHandler.getType();
     }
 
+    @Nullable
     public Type getMethodParameterType() {
         return methodParameterType;
     }

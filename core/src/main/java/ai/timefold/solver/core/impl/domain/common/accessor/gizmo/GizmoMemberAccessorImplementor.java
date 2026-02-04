@@ -420,7 +420,7 @@ public final class GizmoMemberAccessorImplementor {
     /**
      * Generates the following code:
      * <p>
-     * For a field
+     * For a field without a getter
      *
      * <pre>
      * Object executeGetter(Object bean) {
@@ -428,7 +428,7 @@ public final class GizmoMemberAccessorImplementor {
      * }
      * </pre>
      *
-     * For a method with returning type
+     * For a field with a getter or a method with returning type
      *
      * <pre>
      * Object executeGetter(Object bean) {

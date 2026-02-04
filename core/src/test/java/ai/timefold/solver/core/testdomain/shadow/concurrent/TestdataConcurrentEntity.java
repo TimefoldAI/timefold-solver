@@ -28,10 +28,6 @@ public class TestdataConcurrentEntity {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public List<TestdataConcurrentValue> getValues() {
         return values;
     }

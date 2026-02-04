@@ -26,10 +26,6 @@ public class TestdataMultiDirectionConcurrentEntity {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public List<TestdataMultiDirectionConcurrentValue> getValues() {
         return values;
     }

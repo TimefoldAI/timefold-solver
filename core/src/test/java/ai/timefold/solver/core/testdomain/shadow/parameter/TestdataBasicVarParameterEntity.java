@@ -24,10 +24,6 @@ public class TestdataBasicVarParameterEntity {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public TestdataBasicVarParameterValue getValue() {
         return value;
     }
