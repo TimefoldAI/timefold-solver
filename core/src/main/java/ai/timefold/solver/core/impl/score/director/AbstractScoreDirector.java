@@ -862,6 +862,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             return;
         }
         var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+        if (listVariableDescriptor == null) {
+            // The entity has no genuine list variable
+            return;
+        }
         assertValueRangeForListVariable(this, listVariableDescriptor, entity, valueList);
     }
 
@@ -883,7 +887,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     var allEntities =
                             variableDescriptor.getEntityDescriptor().extractEntities(scoreDirector.getWorkingSolution());
                     if (allEntities.contains(value)) {
-                        return;
+                        continue;
                     }
                 }
                 throw new IllegalStateException(
