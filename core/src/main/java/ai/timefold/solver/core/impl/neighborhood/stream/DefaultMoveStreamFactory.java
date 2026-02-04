@@ -93,7 +93,7 @@ public final class DefaultMoveStreamFactory<Solution_>
     public <Entity_, Value_> UniEnumeratingStream<Solution_, Value_>
             forEachAssignedValueUnfiltered(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         var nodeSharingSupportFunctions = getNodeSharingSupportFunctions(variableMetaModel);
-        return forEach(variableMetaModel.type(), false)
+        return forEachUnfiltered(variableMetaModel.type(), false)
                 .filter(nodeSharingSupportFunctions.assignedValueFilter);
     }
 

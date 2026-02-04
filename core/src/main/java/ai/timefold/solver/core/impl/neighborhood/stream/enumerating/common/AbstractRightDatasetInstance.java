@@ -60,7 +60,7 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
 
     @Override
     public void retract(UniTuple<Right_> tuple) {
-        var compositeKey = tuple.getStore(compositeKeyStoreIndex);
+        var compositeKey = tuple.removeStore(compositeKeyStoreIndex);
         if (compositeKey == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
