@@ -165,7 +165,8 @@ class UniEnumeratingStreamTest {
             EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             Solution_ solution) {
         var scoreDirector =
-                new EasyScoreDirectorFactory<>(enumeratingStreamFactory.getSolutionDescriptor(), s -> SimpleScore.ZERO)
+                new EasyScoreDirectorFactory<>(enumeratingStreamFactory.getSolutionDescriptor(), s -> SimpleScore.ZERO,
+                        EnvironmentMode.PHASE_ASSERT)
                         .buildScoreDirector();
         scoreDirector.setWorkingSolution(solution);
         var sessionContext = new SessionContext<>(scoreDirector);

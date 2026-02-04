@@ -25,6 +25,7 @@ import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultShadowVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -338,8 +339,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
     private static class InternalScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
             extends AbstractScoreDirectorFactory<Solution_, Score_, InternalScoreDirectorFactory<Solution_, Score_>> {
 
-        public InternalScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
-            super(solutionDescriptor);
+        public InternalScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
+            super(solutionDescriptor, environmentMode);
         }
 
         @Override
@@ -387,7 +388,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                 AbstractScoreDirectorBuilder<Solution_, Score_, InternalScoreDirectorFactory<Solution_, Score_>, InternalScoreDirector.Builder<Solution_, Score_>> {
 
             public Builder(SolutionDescriptor<Solution_> solutionDescriptor) {
-                super(new InternalScoreDirectorFactory<>(solutionDescriptor));
+                // We use PHASE_ASSERT by default
+                super(new InternalScoreDirectorFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT));
                 withConstraintMatchPolicy(DISABLED);
                 withLookUpEnabled(false);
                 withExpectShadowVariablesInCorrectState(false);

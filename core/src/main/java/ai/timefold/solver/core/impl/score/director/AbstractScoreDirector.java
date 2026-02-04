@@ -128,7 +128,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.listVariableStateSupply = getSupplyManager().demand(listVariableDescriptor.getStateDemand());
         }
         setAllChangesWillBeUndoneBeforeStepEnds(false); // Make sure the notifier is correctly initialized.
-        this.isStepAssertOrMore = builder.environmentMode != null && builder.environmentMode.isStepAssertOrMore();
+        this.isStepAssertOrMore =
+                scoreDirectorFactory.environmentMode != null && scoreDirectorFactory.environmentMode.isStepAssertOrMore();
     }
 
     @Override
@@ -1102,7 +1103,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
-        protected @Nullable EnvironmentMode environmentMode;
 
         protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory) {
             this.scoreDirectorFactory = Objects.requireNonNull(scoreDirectorFactory);
@@ -1123,12 +1123,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         @SuppressWarnings("unchecked")
         public Builder_ withExpectShadowVariablesInCorrectState(boolean expectShadowVariablesInCorrectState) {
             this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
-            return (Builder_) this;
-        }
-
-        @SuppressWarnings("unchecked")
-        public Builder_ withEnvironmentMode(EnvironmentMode environmentMode) {
-            this.environmentMode = environmentMode;
             return (Builder_) this;
         }
 

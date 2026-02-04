@@ -66,7 +66,7 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
             ConstraintProvider constraintProvider, EnvironmentMode environmentMode, boolean profilingEnabled) {
-        super(solutionDescriptor);
+        super(solutionDescriptor, environmentMode);
         var constraintFactory = new BavetConstraintFactory<>(solutionDescriptor, environmentMode);
         constraintMetaModel = DefaultConstraintMetaModel.of(constraintFactory.buildConstraints(constraintProvider));
         constraintSessionFactory =

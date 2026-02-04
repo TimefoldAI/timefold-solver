@@ -27,6 +27,7 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final SolutionDescriptor<Solution_> solutionDescriptor;
+    protected final EnvironmentMode environmentMode;
     protected final ListVariableDescriptor<Solution_> listVariableDescriptor;
 
     protected InitializingScoreTrend initializingScoreTrend;
@@ -36,8 +37,9 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
     protected boolean assertClonedSolution = false;
     protected boolean trackingWorkingSolution = false;
 
-    public AbstractScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
+    public AbstractScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
         this.solutionDescriptor = solutionDescriptor;
+        this.environmentMode = environmentMode;
         this.listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
     }
 

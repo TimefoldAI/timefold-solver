@@ -7,6 +7,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
@@ -24,7 +25,8 @@ public final class IncrementalScoreDirectorFactory<Solution_, Score_ extends Sco
         extends AbstractScoreDirectorFactory<Solution_, Score_, IncrementalScoreDirectorFactory<Solution_, Score_>> {
 
     public static <Solution_, Score_ extends Score<Score_>> IncrementalScoreDirectorFactory<Solution_, Score_>
-            buildScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config) {
+            buildScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
+                    EnvironmentMode environmentMode) {
         if (!IncrementalScoreCalculator.class.isAssignableFrom(config.getIncrementalScoreCalculatorClass())) {
             throw new IllegalArgumentException(
                     "The incrementalScoreCalculatorClass (%s) does not implement %s."
@@ -37,14 +39,15 @@ public final class IncrementalScoreDirectorFactory<Solution_, Score_ extends Sco
             ConfigUtils.applyCustomProperties(incrementalScoreCalculator, "incrementalScoreCalculatorClass",
                     config.getIncrementalScoreCalculatorCustomProperties(), "incrementalScoreCalculatorCustomProperties");
             return incrementalScoreCalculator;
-        });
+        }, environmentMode);
     }
 
     private final Supplier<IncrementalScoreCalculator<Solution_, Score_>> incrementalScoreCalculatorSupplier;
 
     public IncrementalScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            Supplier<IncrementalScoreCalculator<Solution_, Score_>> incrementalScoreCalculatorSupplier) {
-        super(solutionDescriptor);
+            Supplier<IncrementalScoreCalculator<Solution_, Score_>> incrementalScoreCalculatorSupplier,
+            EnvironmentMode environmentMode) {
+        super(solutionDescriptor, environmentMode);
         this.incrementalScoreCalculatorSupplier = incrementalScoreCalculatorSupplier;
     }
 
