@@ -6,6 +6,7 @@ import java.util.Random;
 import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
+import ai.timefold.solver.core.impl.util.ElementAwareArrayList.Entry;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -28,17 +29,34 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
 
     @Override
     public void insert(Tuple_ tuple) {
+        if (tuple.getStore(entryStoreIndex) != null) {
+            throw new IllegalStateException(
+                    "Impossible state: the input for the tuple (%s) was already added in the tupleStore."
+                            .formatted(tuple));
+        }
+
         tuple.setStore(entryStoreIndex, tupleList.add(tuple));
     }
 
     @Override
     public void update(Tuple_ tuple) {
-        // No need to do anything.
+        if (tuple.getStore(entryStoreIndex) == null) {
+            // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
+            insert(tuple);
+        } else {
+            // No need to do anything.
+        }
     }
 
     @Override
     public void retract(Tuple_ tuple) {
-        tupleList.remove(tuple.removeStore(entryStoreIndex));
+        Entry<Tuple_> entry = tuple.removeStore(entryStoreIndex);
+        if (entry == null) {
+            // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
+            return;
+        }
+
+        tupleList.remove(entry);
     }
 
     @Override

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.neighborhood;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -41,7 +42,6 @@ import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluator;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -59,31 +59,24 @@ class NeighborhoodsTest {
     @Test
     void changeMoveBasedLocalSearch() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        var heuristicConfigPolicy = new HeuristicConfigPolicy.Builder<TestdataSolution>()
-                .withSolutionDescriptor(solutionDescriptor)
-                .build();
+        var heuristicConfigPolicy =
+                new HeuristicConfigPolicy.Builder<TestdataSolution>().withSolutionDescriptor(solutionDescriptor).build();
         var termination = (PhaseTermination<TestdataSolution>) TerminationFactory
-                .<TestdataSolution> create(new TerminationConfig()
-                        .withBestScoreLimit("0")) // All entities are assigned to a particular value.
+                .<TestdataSolution> create(new TerminationConfig().withBestScoreLimit("0")) // All entities are assigned to a particular value.
                 .buildTermination(heuristicConfigPolicy);
 
-        var variableMetaModel = solutionDescriptor.getMetaModel()
-                .genuineEntity(TestdataEntity.class)
-                .basicVariable();
+        var variableMetaModel = solutionDescriptor.getMetaModel().genuineEntity(TestdataEntity.class).basicVariable();
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         // Random selection otherwise LS gets stuck in an endless loop.
         var moveRepository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory,
                 List.of(new ChangeMoveProvider<>(variableMetaModel)), true);
 
-        var acceptor = AcceptorFactory.<TestdataSolution> create(new LocalSearchAcceptorConfig()
-                .withLateAcceptanceSize(400))
+        var acceptor = AcceptorFactory.<TestdataSolution> create(new LocalSearchAcceptorConfig().withLateAcceptanceSize(400))
                 .buildAcceptor(heuristicConfigPolicy);
-        var forager = LocalSearchForagerFactory.<TestdataSolution> create(new LocalSearchForagerConfig()
-                .withAcceptedCountLimit(1))
-                .buildForager();
+        var forager = LocalSearchForagerFactory
+                .<TestdataSolution> create(new LocalSearchForagerConfig().withAcceptedCountLimit(1)).buildForager();
         var localSearchDecider = new LocalSearchDecider<>("", termination, moveRepository, acceptor, forager);
-        var localSearchPhase = new DefaultLocalSearchPhase.Builder<>(0, "", termination, localSearchDecider)
-                .build();
+        var localSearchPhase = new DefaultLocalSearchPhase.Builder<>(0, "", termination, localSearchDecider).build();
 
         // Generates a solution whose entities' values are all set to the second value.
         // The easy calculator penalizes this.
@@ -92,8 +85,8 @@ class NeighborhoodsTest {
         var secondValue = solution.getValueList().get(1);
         solution.getEntityList().forEach(e -> e.setValue(secondValue));
 
-        var scoreDirector = new EasyScoreDirectorFactory<>(solutionDescriptor, new TestingEasyScoreCalculator())
-                .buildScoreDirector();
+        var scoreDirector =
+                new EasyScoreDirectorFactory<>(solutionDescriptor, new TestingEasyScoreCalculator()).buildScoreDirector();
         scoreDirector.setWorkingSolution(solution);
         var score = scoreDirector.calculateScore();
 
@@ -113,8 +106,7 @@ class NeighborhoodsTest {
         solverScope.startingNow();
 
         bestSolutionRecaller.solvingStarted(solverScope);
-        assertThatCode(() -> localSearchPhase.solve(solverScope))
-                .doesNotThrowAnyException();
+        assertThatCode(() -> localSearchPhase.solve(solverScope)).doesNotThrowAnyException();
     }
 
     /**
@@ -140,43 +132,79 @@ class NeighborhoodsTest {
     @Test
     void allowsNullValues() {
         var solutionMetaModel = TestdataAllowsUnassignedSolution.buildMetaModel();
-        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataAllowsUnassignedEntity.class)
-                .basicVariable("value", TestdataValue.class);
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataAllowsUnassignedEntity.class).basicVariable("value",
+                TestdataValue.class);
 
-        var solution = TestdataAllowsUnassignedSolution.generateSolution(2, 2);
+        var solution = TestdataAllowsUnassignedSolution.generateSolution(2, 3);
         var firstEntity = solution.getEntityList().get(0);
-        firstEntity.setValue(null);
+        firstEntity.setValue(solution.getValueList().get(0));
         var secondEntity = solution.getEntityList().get(1);
         secondEntity.setValue(null);
+        var unchangingAssignedEntity = solution.getEntityList().get(2);
+        firstEntity.setValue(solution.getValueList().get(1));
 
-        var moveList = NeighborhoodEvaluator.build(new SwapValuesWithNullAllowed(variableMetaModel), solutionMetaModel)
-                .using(solution)
-                .getMovesAsList(move -> (SwapMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity>) move);
-        assertThat(moveList).hasSize(4);
+        // The above solution, together with the move provider below, should generate 2 swap moves:
+        // - firstEntity <-> secondEntity
+        // - unchangingAssignedEntity <-> secondEntity
+        var context = NeighborhoodEvaluator.build(new SwapAssignedAndUnassigned(variableMetaModel), solutionMetaModel)
+                .using(solution);
+        var moveList =
+                context.getMovesAsList(m -> (SwapMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity>) m);
+        assertThat(moveList).hasSize(2);
+        var move1 = moveList.get(0);
+        assertSoftly(softly -> {
+            assertThat(move1.getPlanningEntities())
+                    .containsExactly(firstEntity, secondEntity);
+            assertThat(move1.getPlanningValues())
+                    .containsExactly(firstEntity.getValue(), secondEntity.getValue());
+        });
+        var move2 = moveList.get(1);
+        assertSoftly(softly -> {
+            assertThat(move2.getPlanningEntities())
+                    .containsExactly(unchangingAssignedEntity, secondEntity);
+            assertThat(move2.getPlanningValues())
+                    .containsExactly(unchangingAssignedEntity.getValue(), secondEntity.getValue());
+        });
+
+        // Execute one swap and verify the new moves:
+        // - unchangingAssignedEntity <-> firstEntity
+        // - secondEntity <-> firstEntity
+        context.getMoveRunContext().execute(move1);
+        moveList = context.getMovesAsList(m -> (SwapMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity>) m);
+        assertThat(moveList).hasSize(2);
+        var move3 = moveList.get(0);
+        assertSoftly(softly -> {
+            assertThat(move3.getPlanningEntities())
+                    .containsExactly(unchangingAssignedEntity, firstEntity);
+            assertThat(move3.getPlanningValues())
+                    .containsExactly(unchangingAssignedEntity.getValue(), firstEntity.getValue());
+        });
+        var move4 = moveList.get(1);
+        assertSoftly(softly -> {
+            assertThat(move4.getPlanningEntities())
+                    .containsExactly(secondEntity, firstEntity);
+            assertThat(move4.getPlanningValues())
+                    .containsExactly(secondEntity.getValue(), firstEntity.getValue());
+        });
+
     }
 
-    private static final class SwapValuesWithNullAllowed implements MoveProvider<TestdataAllowsUnassignedSolution> {
-
-        private PlanningVariableMetaModel<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue> variable;
-
-        public SwapValuesWithNullAllowed(
-                PlanningVariableMetaModel<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue> variable) {
-            this.variable = variable;
-        }
+    private record SwapAssignedAndUnassigned(
+            PlanningVariableMetaModel<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue> variable)
+            implements
+                MoveProvider<TestdataAllowsUnassignedSolution> {
 
         @Override
         public MoveStream<TestdataAllowsUnassignedSolution>
                 build(MoveStreamFactory<TestdataAllowsUnassignedSolution> moveStreamFactory) {
             var assignedEntity = moveStreamFactory.forEach(TestdataAllowsUnassignedEntity.class, false)
-                    .filter((solutionView, entity) -> entity != null && entity.getValue() != null);
-            var unassignedEntity = moveStreamFactory.forEach(TestdataAllowsUnassignedEntity.class, true)
-                    .filter((solutionView, entity) -> entity != null && entity.getValue() == null);
+                    .filter((solutionView, entity) -> entity.getValue() != null);
+            var unassignedEntity = moveStreamFactory.forEach(TestdataAllowsUnassignedEntity.class, false)
+                    .filter((solutionView, entity) -> entity.getValue() == null);
 
             return moveStreamFactory.pick(assignedEntity)
-                    .pick(unassignedEntity, NeighborhoodsJoiners.equal(TestdataAllowsUnassignedEntity::getValue))
-                    .asMove((schedule, assignedShift, unassignedShift) -> Moves.swap(variable, assignedShift,
-                            unassignedShift));
-
+                    .pick(unassignedEntity)
+                    .asMove((schedule, assigned, unassigned) -> Moves.swap(variable, assigned, unassigned));
         }
     }
 
@@ -204,11 +232,8 @@ class NeighborhoodsTest {
                 .listVariable("values", TestdataDeclarativeSimpleListValue.class);
         try (var scoreDirector = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor,
                 constraintFactory -> new Constraint[] {
-                        constraintFactory.forEach(Object.class)
-                                .penalize(SimpleScore.ONE)
-                                .asConstraint("dummy constraint")
-                }, EnvironmentMode.FULL_ASSERT)
-                .buildScoreDirector()) {
+                        constraintFactory.forEach(Object.class).penalize(SimpleScore.ONE).asConstraint("dummy constraint") },
+                EnvironmentMode.FULL_ASSERT).buildScoreDirector()) {
             scoreDirector.setMoveRepository(neighborhoodMoveRepository);
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.calculateScore();
