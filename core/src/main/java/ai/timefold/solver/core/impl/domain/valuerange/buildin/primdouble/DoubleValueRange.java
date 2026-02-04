@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractUncountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
@@ -53,15 +53,15 @@ public class DoubleValueRange extends AbstractUncountableValueRange<Double> {
     // But in practice, no one could use it.
 
     @Override
-    public @NonNull Iterator<Double> createRandomIterator(@NonNull Random workingRandom) {
+    public @NonNull Iterator<Double> createRandomIterator(@NonNull RandomGenerator workingRandom) {
         return new RandomDoubleValueRangeIterator(workingRandom);
     }
 
     private class RandomDoubleValueRangeIterator extends ValueRangeIterator<Double> {
 
-        private final Random workingRandom;
+        private final RandomGenerator workingRandom;
 
-        public RandomDoubleValueRangeIterator(Random workingRandom) {
+        public RandomDoubleValueRangeIterator(RandomGenerator workingRandom) {
             this.workingRandom = workingRandom;
         }
 

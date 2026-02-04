@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.primint;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
@@ -102,16 +102,16 @@ public final class IntValueRange extends AbstractCountableValueRange<Integer> {
     }
 
     @Override
-    public Iterator<Integer> createRandomIterator(Random workingRandom) {
+    public Iterator<Integer> createRandomIterator(RandomGenerator workingRandom) {
         return new RandomIntValueRangeIterator(workingRandom);
     }
 
     private class RandomIntValueRangeIterator extends ValueRangeIterator<Integer> {
 
-        private final Random workingRandom;
+        private final RandomGenerator workingRandom;
         private final long size = getSize();
 
-        public RandomIntValueRangeIterator(Random workingRandom) {
+        public RandomIntValueRangeIterator(RandomGenerator workingRandom) {
             this.workingRandom = workingRandom;
         }
 

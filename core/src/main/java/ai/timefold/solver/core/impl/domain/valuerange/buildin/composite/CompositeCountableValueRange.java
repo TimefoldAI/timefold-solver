@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.composite;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
@@ -86,7 +86,7 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
     }
 
     @Override
-    public Iterator<T> createRandomIterator(Random workingRandom) {
+    public Iterator<T> createRandomIterator(RandomGenerator workingRandom) {
         return cache.iterator(workingRandom);
     }
 

@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.testdomain.mixed.singleentity;
 
 import java.util.Iterator;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -23,7 +23,7 @@ public class MixedCustomMoveIteratorFactory
 
     @Override
     public Iterator<ChangeMove<TestdataMixedSolution>>
-            createRandomMoveIterator(ScoreDirector<TestdataMixedSolution> scoreDirector, Random workingRandom) {
+            createRandomMoveIterator(ScoreDirector<TestdataMixedSolution> scoreDirector, RandomGenerator workingRandom) {
         var solutionDescriptor = TestdataMixedSolution.buildSolutionDescriptor();
         var variableDescriptor =
                 solutionDescriptor.findEntityDescriptor(TestdataMixedEntity.class).getGenuineVariableDescriptor("basicValue");

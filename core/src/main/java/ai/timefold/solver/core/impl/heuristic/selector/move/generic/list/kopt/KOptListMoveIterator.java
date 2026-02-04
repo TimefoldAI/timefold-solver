@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
-    private final Random workingRandom;
+    private final RandomGenerator workingRandom;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
     private final IterableValueSelector<Node_> originSelector;
@@ -27,7 +27,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     private final int pickedKDistributionSum;
     private final int maxCyclesPatchedInInfeasibleMove;
 
-    public KOptListMoveIterator(Random workingRandom, ListVariableDescriptor<Solution_> listVariableDescriptor,
+    public KOptListMoveIterator(RandomGenerator workingRandom, ListVariableDescriptor<Solution_> listVariableDescriptor,
             ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             IterableValueSelector<Node_> originSelector,
             IterableValueSelector<Node_> valueSelector, int minK, int maxK, int[] pickedKDistribution) {

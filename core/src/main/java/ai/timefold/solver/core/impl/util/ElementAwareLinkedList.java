@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.Consumer;
+import java.util.random.RandomGenerator;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -189,7 +189,7 @@ public final class ElementAwareLinkedList<T> implements Iterable<T> {
      * @param random The random instance to use for shuffling.
      * @return never null
      */
-    public Iterator<T> randomizedIterator(Random random) {
+    public Iterator<T> randomizedIterator(RandomGenerator random) {
         return switch (size) {
             case 0 -> Collections.emptyIterator();
             case 1 -> Collections.singleton(first.element()).iterator();
@@ -267,9 +267,9 @@ public final class ElementAwareLinkedList<T> implements Iterable<T> {
 
         private final List<T> elementList;
         private final List<Integer> unusedIndexList;
-        private final Random random;
+        private final RandomGenerator random;
 
-        public RandomElementAwareListIterator(List<T> copiedList, List<Integer> unusedIndexList, Random random) {
+        public RandomElementAwareListIterator(List<T> copiedList, List<Integer> unusedIndexList, RandomGenerator random) {
             this.random = random;
             this.elementList = copiedList;
             this.unusedIndexList = unusedIndexList;

@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
@@ -57,7 +57,7 @@ public final class EmptyValueRange<T> extends AbstractCountableValueRange<T> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Iterator<T> createRandomIterator(Random workingRandom) {
+    public Iterator<T> createRandomIterator(RandomGenerator workingRandom) {
         return (Iterator<T>) EmptyIterator.INSTANCE;
     }
 

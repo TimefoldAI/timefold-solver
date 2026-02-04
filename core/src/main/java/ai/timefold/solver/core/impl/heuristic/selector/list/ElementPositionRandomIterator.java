@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
 import java.util.Iterator;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -20,7 +20,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private final Iterator<Object> replayingValueIterator;
     private final IterableValueSelector<Solution_> valueSelector;
     private final Iterator<Object> entityIterator;
-    private final Random workingRandom;
+    private final RandomGenerator workingRandom;
     private final long totalSize;
     private final boolean allowsUnassignedValues;
     private Iterator<Object> valueIterator;
@@ -29,7 +29,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
 
     public ElementPositionRandomIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             EntitySelector<Solution_> entitySelector, Iterator<Object> replayingValueIterator,
-            IterableValueSelector<Solution_> valueSelector, Random workingRandom, long totalSize,
+            IterableValueSelector<Solution_> valueSelector, RandomGenerator workingRandom, long totalSize,
             boolean allowsUnassignedValues) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();

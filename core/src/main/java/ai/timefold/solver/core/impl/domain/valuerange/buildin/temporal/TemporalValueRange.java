@@ -6,7 +6,7 @@ import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
@@ -153,15 +153,15 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
     }
 
     @Override
-    public Iterator<Temporal_> createRandomIterator(Random workingRandom) {
+    public Iterator<Temporal_> createRandomIterator(RandomGenerator workingRandom) {
         return new RandomTemporalValueRangeIterator(workingRandom);
     }
 
     private class RandomTemporalValueRangeIterator extends ValueRangeIterator<Temporal_> {
 
-        private final Random workingRandom;
+        private final RandomGenerator workingRandom;
 
-        public RandomTemporalValueRangeIterator(Random workingRandom) {
+        public RandomTemporalValueRangeIterator(RandomGenerator workingRandom) {
             this.workingRandom = workingRandom;
         }
 

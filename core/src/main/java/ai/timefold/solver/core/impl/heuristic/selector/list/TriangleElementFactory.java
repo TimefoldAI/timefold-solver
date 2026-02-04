@@ -3,15 +3,15 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 import static ai.timefold.solver.core.impl.heuristic.selector.list.TriangularNumbers.nthTriangle;
 import static ai.timefold.solver.core.impl.heuristic.selector.list.TriangularNumbers.triangularRoot;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 final class TriangleElementFactory {
 
     private final int minimumSubListSize;
     private final int maximumSubListSize;
-    private final Random workingRandom;
+    private final RandomGenerator workingRandom;
 
-    TriangleElementFactory(int minimumSubListSize, int maximumSubListSize, Random workingRandom) {
+    TriangleElementFactory(int minimumSubListSize, int maximumSubListSize, RandomGenerator workingRandom) {
         if (minimumSubListSize > maximumSubListSize) {
             throw new IllegalArgumentException("The minimumSubListSize (" + minimumSubListSize
                     + ") must be less than or equal to the maximumSubListSize (" + maximumSubListSize + ").");

@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.primboolean;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
@@ -63,15 +63,15 @@ public final class BooleanValueRange extends AbstractCountableValueRange<Boolean
     }
 
     @Override
-    public Iterator<Boolean> createRandomIterator(Random workingRandom) {
+    public Iterator<Boolean> createRandomIterator(RandomGenerator workingRandom) {
         return new RandomBooleanValueRangeIterator(workingRandom);
     }
 
     private static final class RandomBooleanValueRangeIterator extends ValueRangeIterator<Boolean> {
 
-        private final Random workingRandom;
+        private final RandomGenerator workingRandom;
 
-        public RandomBooleanValueRangeIterator(Random workingRandom) {
+        public RandomBooleanValueRangeIterator(RandomGenerator workingRandom) {
             this.workingRandom = workingRandom;
         }
 

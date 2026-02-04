@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.decorator;
 
-import java.util.Collections;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
+import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
 public class ShufflingMoveSelector<Solution_> extends AbstractCachingMoveSelector<Solution_> {
 
@@ -24,7 +24,7 @@ public class ShufflingMoveSelector<Solution_> extends AbstractCachingMoveSelecto
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        Collections.shuffle(cachedMoveList, workingRandom);
+        RandomUtils.shuffle(cachedMoveList, workingRandom);
         logger.trace("    Shuffled cachedMoveList with size ({}) in moveSelector({}).",
                 cachedMoveList.size(), this);
         return cachedMoveList.iterator();

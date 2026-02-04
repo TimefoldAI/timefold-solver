@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
-import java.util.Collections;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
+import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
 public final class ShufflingValueSelector<Solution_>
         extends AbstractCachingValueSelector<Solution_>
@@ -31,7 +31,7 @@ public final class ShufflingValueSelector<Solution_>
 
     @Override
     public Iterator<Object> iterator() {
-        Collections.shuffle(cachedValueList, workingRandom);
+        RandomUtils.shuffle(cachedValueList, workingRandom);
         logger.trace("    Shuffled cachedValueList with size ({}) in valueSelector({}).",
                 cachedValueList.size(), this);
         return cachedValueList.iterator();

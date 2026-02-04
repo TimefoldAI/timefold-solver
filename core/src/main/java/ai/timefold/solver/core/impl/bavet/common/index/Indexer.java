@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Iterator;
-import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.util.ListEntry;
@@ -103,12 +103,12 @@ public sealed interface Indexer<T>
      * @param workingRandom used to pick random elements
      * @return iterator for the given composite key, possibly empty
      */
-    Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom);
+    Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom);
 
     /**
-     * As defined by {@link #randomIterator(Object, Random)},
+     * As defined by {@link #randomIterator(Object, RandomGenerator)},
      * but only returning elements matching the given filter.
      */
-    Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter);
+    Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, Predicate<T> filter);
 
 }

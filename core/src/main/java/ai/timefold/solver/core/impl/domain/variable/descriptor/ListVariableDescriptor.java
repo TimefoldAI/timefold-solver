@@ -2,8 +2,8 @@ package ai.timefold.solver.core.impl.domain.variable.descriptor;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.BiPredicate;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -165,7 +165,7 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         }
     }
 
-    public Object getRandomUnpinnedElement(Object entity, Random workingRandom) {
+    public Object getRandomUnpinnedElement(Object entity, RandomGenerator workingRandom) {
         var listVariable = getValue(entity);
         var firstUnpinnedIndex = getFirstUnpinnedIndex(entity);
         return listVariable.get(workingRandom.nextInt(listVariable.size() - firstUnpinnedIndex) + firstUnpinnedIndex);

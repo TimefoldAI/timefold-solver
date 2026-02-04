@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import jakarta.inject.Inject;
 
@@ -232,7 +232,7 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
 
         @Override
         public Iterator<DummyMove> createRandomMoveIterator(ScoreDirector<TestdataSolution> scoreDirector,
-                Random workingRandom) {
+                RandomGenerator workingRandom) {
             return null;
         }
     }

@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.neighborhood;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.neighborhood.stream.MoveIterable;
@@ -16,11 +16,11 @@ import org.jspecify.annotations.Nullable;
 final class RandomOrderNeighborhoodIterator<Solution_> implements Iterator<Move<Solution_>> {
 
     private final List<Iterator<Move<Solution_>>> unexhaustedMoveIteratorList;
-    private final Random workingRandom;
+    private final RandomGenerator workingRandom;
 
     private @Nullable Iterator<Move<Solution_>> currentMoveIterator;
 
-    public RandomOrderNeighborhoodIterator(List<MoveIterable<Solution_>> moveIterableList, Random workingRandom) {
+    public RandomOrderNeighborhoodIterator(List<MoveIterable<Solution_>> moveIterableList, RandomGenerator workingRandom) {
         this.unexhaustedMoveIteratorList = moveIterableList.stream()
                 .map(m -> m.iterator(workingRandom))
                 .collect(Collectors.toList());

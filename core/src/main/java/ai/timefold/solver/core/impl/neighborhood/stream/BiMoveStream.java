@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.neighborhood.stream;
 
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniRightDataset;
@@ -71,7 +71,7 @@ public final class BiMoveStream<Solution_, A, B> implements InnerMoveStream<Solu
         }
 
         @Override
-        public Iterator<Move<Solution_>> iterator(Random random) {
+        public Iterator<Move<Solution_>> iterator(RandomGenerator random) {
             return new BiRandomMoveIterator<>(context, random);
         }
 

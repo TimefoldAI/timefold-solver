@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.BitSet;
 import java.util.NoSuchElementException;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
@@ -21,7 +21,7 @@ final class DefaultUniqueRandomIterator<T> implements UniqueRandomIterator<T> {
 
     private final ElementAwareArrayList<T> source;
     private final int length;
-    private final Random workingRandom;
+    private final RandomGenerator workingRandom;
     private final BitSet removed;
 
     private int removedCount;
@@ -32,7 +32,7 @@ final class DefaultUniqueRandomIterator<T> implements UniqueRandomIterator<T> {
     private @Nullable T next = null;
     private int indexToOptionallyRemove = -1;
 
-    DefaultUniqueRandomIterator(ElementAwareArrayList<T> source, Random workingRandom) {
+    DefaultUniqueRandomIterator(ElementAwareArrayList<T> source, RandomGenerator workingRandom) {
         this.source = source;
         this.length = source.size();
         this.removed = new BitSet(); // Do not size upfront, we may only remove a few elements.
@@ -64,7 +64,7 @@ final class DefaultUniqueRandomIterator<T> implements UniqueRandomIterator<T> {
         return true;
     }
 
-    private int pickIndex(Random workingRandom, int index) {
+    private int pickIndex(RandomGenerator workingRandom, int index) {
         if (removed.get(index)) {
             // use the closest index to avoid skewing the probability
             index = determineActiveIndex(workingRandom, index);
@@ -75,7 +75,7 @@ final class DefaultUniqueRandomIterator<T> implements UniqueRandomIterator<T> {
         return index;
     }
 
-    private int determineActiveIndex(Random workingRandom, int randomIndex) {
+    private int determineActiveIndex(RandomGenerator workingRandom, int randomIndex) {
         var nextClearIndex = removed.nextClearBit(randomIndex);
         var previousClearIndex = removed.previousClearBit(randomIndex);
 

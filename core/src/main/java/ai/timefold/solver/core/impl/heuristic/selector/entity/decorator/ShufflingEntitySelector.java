@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.ListIterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
+import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
 public final class ShufflingEntitySelector<Solution_> extends AbstractCachingEntitySelector<Solution_> {
 
@@ -24,7 +24,7 @@ public final class ShufflingEntitySelector<Solution_> extends AbstractCachingEnt
 
     @Override
     public Iterator<Object> iterator() {
-        Collections.shuffle(cachedEntityList, workingRandom);
+        RandomUtils.shuffle(cachedEntityList, workingRandom);
         logger.trace("    Shuffled cachedEntityList with size ({}) in entitySelector({}).",
                 cachedEntityList.size(), this);
         return cachedEntityList.iterator();
@@ -32,7 +32,7 @@ public final class ShufflingEntitySelector<Solution_> extends AbstractCachingEnt
 
     @Override
     public ListIterator<Object> listIterator() {
-        Collections.shuffle(cachedEntityList, workingRandom);
+        RandomUtils.shuffle(cachedEntityList, workingRandom);
         logger.trace("    Shuffled cachedEntityList with size ({}) in entitySelector({}).",
                 cachedEntityList.size(), this);
         return cachedEntityList.listIterator();

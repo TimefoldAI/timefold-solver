@@ -9,12 +9,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
 import ai.timefold.solver.core.impl.util.CompositeListEntry;
@@ -186,12 +186,12 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, Predicate<T> filter) {
         throw new UnsupportedOperationException("Not yet implemented.");
     }
 

@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
@@ -78,7 +78,7 @@ public final class ValueRangeCache<Value_>
     /**
      * Iterates in random order, does not terminate.
      */
-    public Iterator<Value_> iterator(Random workingRandom) {
+    public Iterator<Value_> iterator(RandomGenerator workingRandom) {
         return new CachedListRandomIterator<>(valuesWithFastRandomAccess, workingRandom);
     }
 

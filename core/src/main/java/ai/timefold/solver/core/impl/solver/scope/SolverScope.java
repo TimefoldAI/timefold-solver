@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
@@ -49,7 +50,7 @@ public class SolverScope<Solution_> {
     private Set<SolverMetric> solverMetricSet = Collections.emptySet();
     private Tags monitoringTags;
     private int startingSolverCount;
-    private Random workingRandom;
+    private RandomGenerator workingRandom;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
     private AbstractSolver<Solution_> solver;
     private DefaultProblemChangeDirector<Solution_> problemChangeDirector;
@@ -142,11 +143,11 @@ public class SolverScope<Solution_> {
         this.startingSolverCount = startingSolverCount;
     }
 
-    public Random getWorkingRandom() {
+    public RandomGenerator getWorkingRandom() {
         return workingRandom;
     }
 
-    public void setWorkingRandom(Random workingRandom) {
+    public void setWorkingRandom(RandomGenerator workingRandom) {
         this.workingRandom = workingRandom;
     }
 

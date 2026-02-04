@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.common.iterator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 
@@ -15,10 +15,10 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 public class CachedListRandomIterator<S> extends SelectionIterator<S> {
 
     protected final List<S> cachedList;
-    protected final Random workingRandom;
+    protected final RandomGenerator workingRandom;
     protected final boolean empty;
 
-    public CachedListRandomIterator(List<S> cachedList, Random workingRandom) {
+    public CachedListRandomIterator(List<S> cachedList, RandomGenerator workingRandom) {
         this.cachedList = cachedList;
         this.workingRandom = workingRandom;
         empty = cachedList.isEmpty();

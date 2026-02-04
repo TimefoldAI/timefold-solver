@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.domain.valuerange.buildin.collection;
 
 import java.util.Iterator;
-import java.util.Random;
 import java.util.Set;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
@@ -73,7 +73,7 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
     }
 
     @Override
-    public Iterator<T> createRandomIterator(Random workingRandom) {
+    public Iterator<T> createRandomIterator(RandomGenerator workingRandom) {
         return getCache().iterator(workingRandom);
     }
 
