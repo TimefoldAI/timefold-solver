@@ -68,9 +68,9 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
 
         // At this point, we are guaranteed to have at most one score director factory selected.
         if (config.getEasyScoreCalculatorClass() != null) {
-            return EasyScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config);
+            return EasyScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config, environmentMode);
         } else if (config.getIncrementalScoreCalculatorClass() != null) {
-            return IncrementalScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config);
+            return IncrementalScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config, environmentMode);
         } else if (config.getConstraintProviderClass() != null) {
             return BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config,
                     environmentMode);

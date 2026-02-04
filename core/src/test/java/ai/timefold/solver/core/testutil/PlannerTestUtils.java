@@ -25,6 +25,7 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -136,7 +137,8 @@ public final class PlannerTestUtils {
 
     public static <Solution_> InnerScoreDirector<Solution_, SimpleScore>
             mockScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor, boolean useSolution) {
-        var scoreDirectorFactory = new EasyScoreDirectorFactory<>(solutionDescriptor, solution_ -> SimpleScore.of(0));
+        var scoreDirectorFactory = new EasyScoreDirectorFactory<>(solutionDescriptor, solution_ -> SimpleScore.of(0),
+                EnvironmentMode.PHASE_ASSERT);
         scoreDirectorFactory
                 .setInitializingScoreTrend(InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1));
         if (useSolution) {

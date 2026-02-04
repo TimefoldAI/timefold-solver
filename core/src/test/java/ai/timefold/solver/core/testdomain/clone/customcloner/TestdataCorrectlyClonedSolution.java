@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.testdomain.clone.customcloner;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityProperty;
@@ -24,11 +24,13 @@ public class TestdataCorrectlyClonedSolution implements SolutionCloner<TestdataC
     @PlanningEntityProperty
     private TestdataEntity entity = new TestdataEntity("A");
 
+    private static final List<TestdataValue> staticList = List.of(new TestdataValue("1"), new TestdataValue("2"));
+
     @ValueRangeProvider(id = "valueRange")
     @ProblemFactCollectionProperty
     public List<TestdataValue> valueRange() {
         // two values needed to allow for at least one doable move, otherwise the second step ends in an infinite loop
-        return Arrays.asList(new TestdataValue("1"), new TestdataValue("2"));
+        return new ArrayList<>(staticList);
     }
 
     @Override

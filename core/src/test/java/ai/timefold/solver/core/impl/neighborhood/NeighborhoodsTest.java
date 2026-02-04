@@ -86,7 +86,8 @@ class NeighborhoodsTest {
         solution.getEntityList().forEach(e -> e.setValue(secondValue));
 
         var scoreDirector =
-                new EasyScoreDirectorFactory<>(solutionDescriptor, new TestingEasyScoreCalculator()).buildScoreDirector();
+                new EasyScoreDirectorFactory<>(solutionDescriptor, new TestingEasyScoreCalculator(),
+                        EnvironmentMode.PHASE_ASSERT).buildScoreDirector();
         scoreDirector.setWorkingSolution(solution);
         var score = scoreDirector.calculateScore();
 

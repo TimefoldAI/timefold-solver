@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -19,7 +20,7 @@ class EasyScoreDirectorTest {
     @Test
     void shadowVariableCorruption() {
         var scoreDirectorFactory = new EasyScoreDirectorFactory<>(TestdataCorruptedShadowedSolution.buildSolutionDescriptor(),
-                (solution_) -> SimpleScore.of(0));
+                (solution_) -> SimpleScore.of(0), EnvironmentMode.PHASE_ASSERT);
         scoreDirectorFactory
                 .setInitializingScoreTrend(InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1));
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {

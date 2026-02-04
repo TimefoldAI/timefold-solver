@@ -817,7 +817,8 @@ class MoveDirectorTest {
     void variableListenersAreTriggeredWhenSolutionIsConsistent() {
         var solutionDescriptor = TestdataShadowedFullSolution.buildSolutionDescriptor();
         var scoreCalculator = new TestdataShadowedFullEasyScoreCalculator();
-        var easyScoreDirectorFactory = new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator);
+        var easyScoreDirectorFactory =
+                new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator, EnvironmentMode.PHASE_ASSERT);
         var innerScoreDirector = easyScoreDirectorFactory.buildScoreDirector();
         var moveDirector = new MoveDirector<>(innerScoreDirector);
 
@@ -864,7 +865,8 @@ class MoveDirectorTest {
     void undoCascadingUpdateShadowVariable() {
         var solutionDescriptor = TestdataSingleCascadingSolution.buildSolutionDescriptor();
         var scoreCalculator = new TestdataSingleCascadingEasyScoreCalculator();
-        var scoreDirectorFactory = new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator);
+        var scoreDirectorFactory =
+                new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator, EnvironmentMode.PHASE_ASSERT);
         var innerScoreDirector = scoreDirectorFactory.buildScoreDirector();
         var moveDirector = new MoveDirector<>(innerScoreDirector);
 

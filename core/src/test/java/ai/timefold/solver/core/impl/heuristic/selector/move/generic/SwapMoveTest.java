@@ -12,6 +12,7 @@ import java.util.Collections;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
@@ -88,7 +89,7 @@ class SwapMoveTest {
 
         var scoreDirectorFactory =
                 new EasyScoreDirectorFactory<>(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor(),
-                        solution -> SimpleScore.ZERO);
+                        solution -> SimpleScore.ZERO, EnvironmentMode.PHASE_ASSERT);
         var scoreDirector = scoreDirectorFactory.buildScoreDirector();
         var entityDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor();
 

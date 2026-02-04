@@ -9,6 +9,7 @@ import java.util.Collections;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
@@ -22,7 +23,7 @@ class EasyScoreDirectorFactoryTest {
         EasyScoreCalculator<TestdataSolution, SimpleScore> scoreCalculator = mock(EasyScoreCalculator.class);
         when(scoreCalculator.calculateScore(any(TestdataSolution.class)))
                 .thenAnswer(invocation -> SimpleScore.of(-10));
-        var directorFactory = new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator);
+        var directorFactory = new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator, EnvironmentMode.PHASE_ASSERT);
         try (var director = directorFactory.buildScoreDirector()) {
             var solution = new TestdataSolution();
             solution.setValueList(Collections.emptyList());

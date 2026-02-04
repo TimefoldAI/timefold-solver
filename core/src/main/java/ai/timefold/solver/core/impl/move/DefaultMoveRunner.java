@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.move;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
@@ -16,9 +17,10 @@ public final class DefaultMoveRunner<Solution_> implements MoveRunner<Solution_>
     private final AbstractScoreDirectorFactory<Solution_, ?, ?> scoreDirectorFactory;
 
     public DefaultMoveRunner(PlanningSolutionMetaModel<Solution_> solutionMetaModel) {
+        // We use PHASE_ASSERT by default
         this(new MoveRunnerScoreDirectorFactory<>(
-                ((DefaultPlanningSolutionMetaModel<Solution_>) Objects.requireNonNull(solutionMetaModel))
-                        .solutionDescriptor()));
+                ((DefaultPlanningSolutionMetaModel<Solution_>) Objects.requireNonNull(solutionMetaModel)).solutionDescriptor(),
+                EnvironmentMode.PHASE_ASSERT));
     }
 
     private DefaultMoveRunner(AbstractScoreDirectorFactory<Solution_, ?, ?> scoreDirectorFactory) {
