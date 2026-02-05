@@ -417,8 +417,8 @@ class ListChangeMoveSelectorTest {
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "1 {A[1]->A[1]}",
                 "3 {B[0]->B[0]}",
+                "3 {B[0]->B[0]}",
                 "3 {B[0]->B[1]}",
-                "2 {A[0]->A[2]}",
                 "3 {B[0]->B[1]}");
     }
 
@@ -449,11 +449,11 @@ class ListChangeMoveSelectorTest {
         // IgnoreBValueSelectionFilter is applied to the value selector used by the destination selector,
         // and that causes the B destination to become an invalid destination
         assertCodesOfNeverEndingMoveSelector(moveSelector,
-                "1 {A[1]->A[2]}",
-                "3 {B[0]->A[1]}",
-                "3 {B[0]->A[1]}",
+                "1 {A[1]->A[1]}",
                 "3 {B[0]->A[0]}",
-                "2 {A[0]->A[2]}");
+                "3 {B[0]->B[0]}",
+                "3 {B[0]->A[2]}",
+                "3 {B[0]->A[1]}");
     }
 
     @Test
@@ -613,11 +613,11 @@ class ListChangeMoveSelectorTest {
         phaseStarted(solverScope, moveSelector);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector,
-                "1 {A[1]->A[0]}",
-                "3 {B[0]->B[1]}",
                 "1 {A[1]->A[1]}",
-                "2 {A[0]->A[2]}",
-                "3 {B[0]->null}");
+                "3 {B[0]->B[1]}",
+                "3 {B[0]->B[1]}",
+                "3 {B[0]->B[1]}",
+                "3 {B[0]->B[1]}");
     }
 
     public static class IgnoreBValueSelectionFilter

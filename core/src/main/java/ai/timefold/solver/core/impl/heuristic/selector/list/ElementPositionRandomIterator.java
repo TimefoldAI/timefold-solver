@@ -5,6 +5,7 @@ import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
@@ -16,21 +17,24 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final EntitySelector<Solution_> entitySelector;
+    private final Iterator<Object> replayingValueIterator;
     private final IterableValueSelector<Solution_> valueSelector;
     private final Iterator<Object> entityIterator;
     private final Random workingRandom;
     private final long totalSize;
     private final boolean allowsUnassignedValues;
-    private final boolean isEntityRange;
-    private boolean maybeOutdated = false;
     private Iterator<Object> valueIterator;
+    private Object selectedValue;
+    private boolean hasNext = false;
 
     public ElementPositionRandomIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
-            EntitySelector<Solution_> entitySelector, IterableValueSelector<Solution_> valueSelector,
-            Random workingRandom, long totalSize, boolean allowsUnassignedValues) {
+            EntitySelector<Solution_> entitySelector, Iterator<Object> replayingValueIterator,
+            IterableValueSelector<Solution_> valueSelector, Random workingRandom, long totalSize,
+            boolean allowsUnassignedValues) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         this.entitySelector = entitySelector;
+        this.replayingValueIterator = replayingValueIterator;
         this.valueSelector = valueSelector;
         this.entityIterator = entitySelector.iterator();
         this.workingRandom = workingRandom;
@@ -41,28 +45,49 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
         }
         this.allowsUnassignedValues = allowsUnassignedValues;
         this.valueIterator = null;
-        this.isEntityRange = !valueSelector.getVariableDescriptor().canExtractValueRangeFromSolution();
+    }
+
+    private void tryUpdateEntityIterator() {
+        // We only update the entity iterator if the iterator is an instance of UpcomingSelectionIterator,
+        // indicating that the entity from the previous move has already been recorded
+        // and need to be discarded.
+        if (entityIterator instanceof UpcomingSelectionIterator) {
+            entityIterator.next();
+        }
+    }
+
+    private boolean hasNextValue() {
+        if (hasNext) {
+            return true;
+        }
+        if (replayingValueIterator == null) {
+            return entityIterator.hasNext();
+        }
+        if (replayingValueIterator.hasNext()) {
+            var oldValue = selectedValue;
+            selectedValue = replayingValueIterator.next();
+            if (oldValue != null && oldValue != selectedValue) {
+                // It means the outer selector picked a new value
+                // and the entity iterator must discard the previous value
+                tryUpdateEntityIterator();
+            }
+            return entityIterator.hasNext();
+        }
+        return selectedValue != null && entityIterator.hasNext();
     }
 
     @Override
     public boolean hasNext() {
-        // If the entityIterator was not used in the last iteration,
-        // its selected value may be inconsistent in cases
-        // where the outer selector has already chosen a new value,
-        // but the destination entity iterator still points to the previous outdated value.
-        if (maybeOutdated && isEntityRange && entityIterator.hasNext()) {
-            // Discard the current stale value
-            entityIterator.next();
-        }
-
         // The valueSelector's hasNext() is insignificant.
-        // The next random destination exists if and only if there is a next entity.
-        maybeOutdated = true;
-        return entityIterator.hasNext();
+        // The next random destination exists if and only if there is a next entity
+        // and the replayed value is selected
+        this.hasNext = hasNextValue();
+        return hasNext;
     }
 
     @Override
     public ElementPosition next() {
+        this.hasNext = false;
         // This code operates under the assumption that the entity selector already filtered out all immovable entities.
         // At this point, entities are only partially pinned, or not pinned at all.
         var entitySize = entitySelector.getSize();
@@ -77,7 +102,6 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
         } else if (random < entityBoundary) {
             // Start with the first unpinned value of each entity, or zero if no pinning.
             var entity = entityIterator.next();
-            maybeOutdated = false;
             return ElementPosition.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity));
         } else { // Value selector already returns only unpinned values.
             if (valueIterator == null) {
@@ -92,7 +116,6 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                 // This skews the selection probability towards entities with fewer unpinned values,
                 // but at this point, there is no other thing we could possibly do.
                 var entity = entityIterator.next();
-                maybeOutdated = false;
                 var unpinnedSize = listVariableDescriptor.getUnpinnedSubListSize(entity);
                 if (unpinnedSize == 0) { // Only the last destination remains.
                     return ElementPosition.of(entity, listVariableDescriptor.getListSize(entity));

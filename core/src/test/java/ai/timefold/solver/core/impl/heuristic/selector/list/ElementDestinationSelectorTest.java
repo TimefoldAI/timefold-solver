@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.mockReplayingValueSelector;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.stepStarted;
@@ -26,14 +27,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
+import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.FromSolutionEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueRangeSelector;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -591,13 +593,15 @@ class ElementDestinationSelectorTest {
         scoreDirector.setWorkingSolution(solution);
 
         var entitySelector = mockEntitySelector(a, b, c);
-        var entityIterator = mock(Iterator.class);
+        var entityIterator = mock(UpcomingSelectionIterator.class);
         doReturn(entityIterator).when(entitySelector).iterator();
         doReturn(a).when(entityIterator).next();
-        doReturn(true, true, true, false).when(entityIterator).hasNext();
+        doReturn(true, true, false).when(entityIterator).hasNext();
         var valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3, v3);
+        IterableValueSelector<TestdataListEntityProvidingSolution> replayingValueIterator =
+                mockReplayingValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1, v3);
 
-        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+        var selector = new ElementDestinationSelector<>(entitySelector, replayingValueIterator, valueSelector, true, false);
 
         // <4 => entity selector; >=4 => value selector
         // Picks value selector twice
