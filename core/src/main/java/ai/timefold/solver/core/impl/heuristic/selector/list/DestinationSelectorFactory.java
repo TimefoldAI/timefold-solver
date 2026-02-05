@@ -115,10 +115,10 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         if (entityValueRangeRecorderId == null) {
             return null;
         }
-        var mimicvalueSelectorConfig = new ValueSelectorConfig()
+        var mimicValueSelectorConfig = new ValueSelectorConfig()
                 .withMimicSelectorRef(entityValueRangeRecorderId);
         return (IterableValueSelector<Solution_>) ValueSelectorFactory
-                .<Solution_> create(mimicvalueSelectorConfig)
+                .<Solution_> create(mimicValueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
     }
 

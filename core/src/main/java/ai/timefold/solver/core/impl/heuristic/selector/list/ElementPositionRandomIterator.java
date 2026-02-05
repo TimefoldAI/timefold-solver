@@ -50,7 +50,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private void tryUpdateEntityIterator() {
         // We only update the entity iterator if the iterator is an instance of UpcomingSelectionIterator,
         // indicating that the entity from the previous move has already been recorded
-        // and need to be discarded.
+        // and needs to be discarded.
         if (entityIterator instanceof UpcomingSelectionIterator) {
             entityIterator.next();
         }
