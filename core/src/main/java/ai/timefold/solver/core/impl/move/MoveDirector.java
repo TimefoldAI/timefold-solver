@@ -178,7 +178,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
                             .formatted(sourceIndex, destinationIndex));
         } else if (sourceIndex < 0 || destinationIndex < 0) {
             throw new IllegalArgumentException(
-                    "The sourceIndex (%d) and destinationIndex (%d) must both be greater than 0."
+                    "The sourceIndex (%d) and destinationIndex (%d) must both be >= 0."
                             .formatted(sourceIndex, destinationIndex));
         }
 

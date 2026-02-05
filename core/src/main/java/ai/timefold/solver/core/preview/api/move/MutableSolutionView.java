@@ -170,7 +170,6 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
     default <Entity_, Value_> Value_ moveValueBetweenLists(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, PositionInList source,
             PositionInList destination) {
-        ;
         return moveValueBetweenLists(variableMetaModel, source.entity(), source.index(), destination.entity(),
                 destination.index());
     }
@@ -201,12 +200,8 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
             Entity_ sourceEntity, int sourceIndex, int destinationIndex);
 
     /**
-     * Moves a value within one entity's {@link PlanningListVariable planning list variable}.
-     * Behaves as if the value is first removed from the source index,
-     * shifting all later values to the left,
-     * and then inserted at the destination index.
-     * This means that, to move the item to the end of the list,
-     * the destination index must equal the list size minus one.
+     * Moves a value within one entity's {@link PlanningListVariable planning list variable},
+     * by the given offset.
      *
      * @param variableMetaModel Describes the variable to be changed.
      * @param sourceEntity The entity whose variable value is to be changed.

@@ -216,26 +216,24 @@ public final class Moves {
     /**
      * Creates a move that moves an element from one position in a list variable to another position.
      * <p>
-     * The element at the left position is removed and inserted at the right position.
-     * The left and right positions may be in the same or different entities.
+     * The element at the source position is removed and inserted at the destination position.
+     * Both positions may be in the same entity or in different entities.
      * <p>
      * If the source and destination are within the same entity, the element is first removed
-     * from the source index (shifting later elements left), then inserted at the destination index.
-     * This means that if the destination index is after the source index,
-     * the user should decrement it by one to account for the shift.
+     * from the source position (shifting later elements left), then inserted at the destination position.
      *
      * @param variableMetaModel describes the list variable to be changed
-     * @param left the source position from which to move the element
-     * @param right the destination position to which to move the element
+     * @param source the source position from which to move the element
+     * @param destination the destination position to which to move the element
      * @param <Solution_> the solution type
      * @param <Entity_> the entity type
      * @param <Value_> the variable value type
-     * @return a move that, when executed, relocates the element from the left position to the right position
+     * @return a move that, when executed, relocates the element from the source position to the destination position
      */
     public static <Solution_, Entity_, Value_> Move<Solution_> change(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, PositionInList left,
-            PositionInList right) {
-        return change(variableMetaModel, left.entity(), left.index(), right.entity(), right.index());
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, PositionInList source,
+            PositionInList destination) {
+        return change(variableMetaModel, source.entity(), source.index(), destination.entity(), destination.index());
     }
 
     /**
@@ -243,9 +241,9 @@ public final class Moves {
      * but with explicit entity and index parameters.
      */
     public static <Solution_, Entity_, Value_> Move<Solution_> change(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ leftEntity, int leftIndex,
-            Entity_ rightEntity, int rightIndex) {
-        return new ListChangeMove<>(variableMetaModel, leftEntity, leftIndex, rightEntity, rightIndex);
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity, int sourceIndex,
+            Entity_ destinationEntity, int destinationIndex) {
+        return new ListChangeMove<>(variableMetaModel, sourceEntity, sourceIndex, destinationEntity, destinationIndex);
     }
 
     /**

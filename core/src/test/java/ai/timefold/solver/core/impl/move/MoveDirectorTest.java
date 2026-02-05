@@ -580,7 +580,7 @@ class MoveDirectorTest {
             var moveDirector = new MoveDirector<>(mockScoreDirector);
             Assertions.assertThatThrownBy(() -> moveDirector.shiftValue(variableMetaModel, entity, 0, 0))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("offset must not be zero");
+                    .hasMessageContaining("offset (0) must not be zero");
         }
 
         @Test

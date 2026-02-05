@@ -100,12 +100,14 @@ public class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Sol
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.sourceEntity = Objects.requireNonNull(sourceEntity);
         if (sourceIndex < 0) {
-            throw new IllegalArgumentException("The sourceIndex (" + sourceIndex + ") must be greater than 0.");
+            throw new IllegalArgumentException("The sourceIndex (%d) must be >= 0."
+                    .formatted(sourceIndex));
         }
         this.sourceIndex = sourceIndex;
         this.destinationEntity = Objects.requireNonNull(destinationEntity);
         if (destinationIndex < 0) {
-            throw new IllegalArgumentException("The destinationIndex (" + destinationIndex + ") must be greater than 0.");
+            throw new IllegalArgumentException("The destinationIndex (%d) must be >= 0."
+                    .formatted(destinationIndex));
         }
         this.destinationIndex = destinationIndex;
     }

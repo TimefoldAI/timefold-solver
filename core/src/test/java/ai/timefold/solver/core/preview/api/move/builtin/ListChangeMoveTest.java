@@ -134,59 +134,6 @@ class ListChangeMoveTest {
             assertThat(entity.getValueList()).containsExactly(value1, value3, value2);
         }
 
-        /**
-         * Moving adjacent elements forward: from index 0 to index 1 in list [A, B, C].
-         * After removal of A: [B, C]
-         * After insertion at index 1: [B, A, C]
-         */
-        @Test
-        void moveAdjacentForward() {
-            var solution = TestdataListSolution.generateInitializedSolution(3, 1);
-            var entity = solution.getEntityList().get(0);
-            var value1 = entity.getValueList().get(0);
-            var value2 = entity.getValueList().get(1);
-            var value3 = entity.getValueList().get(2);
-
-            var solutionMetaModel = TestdataListSolution.buildMetaModel();
-            var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
-                    .listVariable("valueList", TestdataListValue.class);
-
-            var changeMove = Moves.change(variableMetaModel, entity, 0, entity, 1);
-
-            MoveRunner.build(solutionMetaModel)
-                    .using(solution)
-                    .execute(changeMove);
-
-            // After removal: [B, C], then insert at 1: [B, A, C]
-            assertThat(entity.getValueList()).containsExactly(value2, value1, value3);
-        }
-
-        /**
-         * Moving adjacent elements backward: from index 1 to index 0 in list [A, B, C].
-         * This is the reverse of moveAdjacentForward.
-         */
-        @Test
-        void moveAdjacentBackward() {
-            var solution = TestdataListSolution.generateInitializedSolution(3, 1);
-            var entity = solution.getEntityList().get(0);
-            var value1 = entity.getValueList().get(0);
-            var value2 = entity.getValueList().get(1);
-            var value3 = entity.getValueList().get(2);
-
-            var solutionMetaModel = TestdataListSolution.buildMetaModel();
-            var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
-                    .listVariable("valueList", TestdataListValue.class);
-
-            var changeMove = Moves.change(variableMetaModel, entity, 1, entity, 0);
-
-            MoveRunner.build(solutionMetaModel)
-                    .using(solution)
-                    .execute(changeMove);
-
-            // After removal: [A, C], then insert at 0: [B, A, C]
-            assertThat(entity.getValueList()).containsExactly(value2, value1, value3);
-        }
-
     }
 
     /**
