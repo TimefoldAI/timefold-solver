@@ -209,7 +209,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     public <Entity_, Value_> Value_ shiftValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ sourceEntity, int sourceIndex, int offset) {
         if (offset == 0) {
-            throw new IllegalArgumentException("Value shift offset must not be zero.");
+            throw new IllegalArgumentException("The offset (%d) must not be zero.".formatted(offset));
         }
         var destinationIndex = sourceIndex + offset;
         return moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
