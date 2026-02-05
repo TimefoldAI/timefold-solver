@@ -127,7 +127,6 @@ public final class Moves {
     /**
      * Creates a move that swaps the values of multiple planning variables between two entities.
      * <p>
-     * All variables in the list must belong to the same entity class.
      * Both entities must be different instances. For each variable in the list, after execution,
      * the left entity will have the value that the right entity had, and vice versa.
      * <p>
