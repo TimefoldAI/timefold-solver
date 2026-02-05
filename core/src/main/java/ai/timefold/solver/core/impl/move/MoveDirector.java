@@ -176,18 +176,43 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             throw new IllegalArgumentException(
                     "When moving values in the same list, sourceIndex (%d) and destinationIndex (%d) must be different."
                             .formatted(sourceIndex, destinationIndex));
+        } else if (sourceIndex < 0 || destinationIndex < 0) {
+            throw new IllegalArgumentException(
+                    "The sourceIndex (%d) and destinationIndex (%d) must both be greater than 0."
+                            .formatted(sourceIndex, destinationIndex));
         }
 
         var fromIndex = Math.min(sourceIndex, destinationIndex);
         var toIndex = Math.max(sourceIndex, destinationIndex) + 1;
 
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
+        var list = variableDescriptor.getValue(sourceEntity);
+        var listSize = list.size();
+        if (sourceIndex >= listSize) {
+            throw new IllegalArgumentException(
+                    "The sourceIndex (%d) must be less than the list size (%d).".formatted(sourceIndex, listSize));
+        } else if (destinationIndex > listSize) { // destinationIndex == listSize is allowed (append to the end of the list)
+            throw new IllegalArgumentException(
+                    "The destinationIndex (%d) must be less than or equal to the list size (%d)."
+                            .formatted(destinationIndex, listSize));
+        }
+
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
-        var element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
-        variableDescriptor.addElement(sourceEntity, destinationIndex, element);
+        var element = (Value_) list.remove(sourceIndex);
+        list.add(destinationIndex, element);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
         externalScoreDirector.triggerVariableListeners();
         return element;
+    }
+
+    @Override
+    public <Entity_, Value_> Value_ shiftValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ sourceEntity, int sourceIndex, int offset) {
+        if (offset == 0) {
+            throw new IllegalArgumentException("Value shift offset must not be zero.");
+        }
+        var destinationIndex = sourceIndex + offset;
+        return moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
     }
 
     @Override
@@ -227,8 +252,9 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         var fromIndex = Math.min(leftIndex, rightIndex);
         var toIndex = Math.max(leftIndex, rightIndex) + 1;
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
-        variableDescriptor.setElement(entity, leftIndex, rightElement);
-        variableDescriptor.setElement(entity, rightIndex, leftElement);
+        var list = variableDescriptor.getValue(entity);
+        list.set(leftIndex, rightElement);
+        list.set(rightIndex, leftElement);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         externalScoreDirector.triggerVariableListeners();
     }
