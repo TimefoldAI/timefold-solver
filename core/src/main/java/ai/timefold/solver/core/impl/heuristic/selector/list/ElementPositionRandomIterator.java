@@ -21,6 +21,8 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private final Random workingRandom;
     private final long totalSize;
     private final boolean allowsUnassignedValues;
+    private final boolean isEntityRange;
+    private boolean maybeOutdated = false;
     private Iterator<Object> valueIterator;
 
     public ElementPositionRandomIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
@@ -39,12 +41,23 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
         }
         this.allowsUnassignedValues = allowsUnassignedValues;
         this.valueIterator = null;
+        this.isEntityRange = !valueSelector.getVariableDescriptor().canExtractValueRangeFromSolution();
     }
 
     @Override
     public boolean hasNext() {
+        // If the entityIterator was not used in the last iteration,
+        // its selected value may be inconsistent in cases
+        // where the outer selector has already chosen a new value,
+        // but the destination entity iterator still points to the previous outdated value.
+        if (maybeOutdated && isEntityRange && entityIterator.hasNext()) {
+            // Discard the current stale value
+            entityIterator.next();
+        }
+
         // The valueSelector's hasNext() is insignificant.
         // The next random destination exists if and only if there is a next entity.
+        maybeOutdated = true;
         return entityIterator.hasNext();
     }
 
@@ -64,6 +77,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
         } else if (random < entityBoundary) {
             // Start with the first unpinned value of each entity, or zero if no pinning.
             var entity = entityIterator.next();
+            maybeOutdated = false;
             return ElementPosition.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity));
         } else { // Value selector already returns only unpinned values.
             if (valueIterator == null) {
@@ -78,6 +92,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                 // This skews the selection probability towards entities with fewer unpinned values,
                 // but at this point, there is no other thing we could possibly do.
                 var entity = entityIterator.next();
+                maybeOutdated = false;
                 var unpinnedSize = listVariableDescriptor.getUnpinnedSubListSize(entity);
                 if (unpinnedSize == 0) { // Only the last destination remains.
                     return ElementPosition.of(entity, listVariableDescriptor.getListSize(entity));

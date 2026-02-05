@@ -21,8 +21,12 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycl
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -568,5 +572,41 @@ class ElementDestinationSelectorTest {
 
         verifyPhaseLifecycle(entitySelector, 1, 1, 2);
         verifyPhaseLifecycle(valueSelector, 1, 1, 2);
+    }
+
+    @Test
+    void discardOldValues() {
+        var v1 = new TestdataListEntityProvidingValue("V1");
+        var v2 = new TestdataListEntityProvidingValue("V2");
+        var v3 = new TestdataListEntityProvidingValue("V3");
+        var v4 = new TestdataListEntityProvidingValue("V4");
+        var v5 = new TestdataListEntityProvidingValue("V5");
+        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2), List.of(v1, v2));
+        var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3), List.of(v3));
+        var c = new TestdataListEntityProvidingEntity("C", List.of(v3, v4, v5), List.of(v4, v5));
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(a, b, c));
+
+        var scoreDirector = mockScoreDirector(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var entitySelector = mockEntitySelector(a, b, c);
+        var entityIterator = mock(Iterator.class);
+        doReturn(entityIterator).when(entitySelector).iterator();
+        doReturn(a).when(entityIterator).next();
+        doReturn(true, true, true, false).when(entityIterator).hasNext();
+        var valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3, v3);
+
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+
+        // <4 => entity selector; >=4 => value selector
+        // Picks value selector twice
+        var random = new TestRandom(5, 5, 5, 5);
+
+        solvingStarted(selector, scoreDirector, random);
+        assertAllCodesOfIterator(selector.iterator(), "B[1]", "B[1]");
+
+        // Even using only the value selector, the entity iterator must discard previous during the hasNext() calls
+        verify(entityIterator, times(1)).next();
     }
 }
