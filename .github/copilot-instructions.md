@@ -46,11 +46,6 @@ When you identify an issue:
 2. **Why it matters** (1 sentence, only if not obvious)
 3. **Suggested fix** (code snippet or specific action)
 
-Example:
-```
-This could throw an exception if the array is empty. Consider adding a length check.
-```
-
 ## When to Stay Silent
 
 If you're uncertain whether something is an issue, don't comment. 
