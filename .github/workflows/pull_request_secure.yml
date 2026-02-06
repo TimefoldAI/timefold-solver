@@ -30,6 +30,8 @@ jobs:
   # Check if the user is a member of the organization; if so, allow the PR to sail through.
   known_user:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       is_member_of_org: ${{ steps.auth_check.outputs.authorized }}
     steps:
@@ -56,12 +58,16 @@ jobs:
       'external' || 'internal'
       }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - run: true
   integration-tests:
     needs: approval_required
     name: Integration Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     concurrency:
       group: pr-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
@@ -146,6 +152,8 @@ jobs:
     needs: approval_required
     name: Enterprise Edition (Java)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     concurrency:
       group: downstream-enterprise-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
@@ -205,6 +213,8 @@ jobs:
 
   build_documentation:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: approval_required
     name: Build Documentation
     environment:
@@ -285,6 +295,10 @@ jobs:
     needs: approval_required
     name: SonarCloud
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
         with:

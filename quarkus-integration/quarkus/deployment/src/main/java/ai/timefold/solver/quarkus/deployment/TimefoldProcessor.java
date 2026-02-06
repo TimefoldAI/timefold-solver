@@ -93,6 +93,7 @@ import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeBuild;
 import io.quarkus.deployment.recording.RecorderContext;
@@ -205,6 +206,7 @@ class TimefoldProcessor {
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<GeneratedClassBuildItem> generatedClasses,
             BuildProducer<GeneratedResourceBuildItem> generatedResources,
+            BuildProducer<ReflectiveClassBuildItem> registerReflectiveClasses,
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         var indexView = combinedIndex.getIndex();
 
@@ -295,6 +297,15 @@ class TimefoldProcessor {
             additionalBeans.produce(new AdditionalBeanBuildItem(DefaultTimefoldBeanProvider.class));
         }
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldRuntimeConfig.class));
+
+        for (var reflectiveClass : reflectiveClassSet) {
+            registerReflectiveClasses.produce(ReflectiveClassBuildItem.builder(reflectiveClass)
+                    .fields()
+                    .queryMethods()
+                    .reason("Need to read annotations at runtime")
+                    .build());
+        }
+
         return new SolverConfigBuildItem(solverConfigMap, generatedGizmoClasses);
     }
 
@@ -955,7 +966,8 @@ class TimefoldProcessor {
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<GeneratedClassBuildItem> generatedClasses,
             BuildProducer<GeneratedResourceBuildItem> generatedResources,
-            BuildProducer<BytecodeTransformerBuildItem> transformers, Set<Class<?>> reflectiveClassSet) {
+            BuildProducer<BytecodeTransformerBuildItem> transformers,
+            Set<Class<?>> reflectiveClassSet) {
         // Use mvn quarkus:dev -Dquarkus.debug.generated-classes-dir=dump-classes
         // to dump generated classes
         var classOutput = new GeneratedClassGizmo2Adaptor(generatedClasses, generatedResources, true);

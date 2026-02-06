@@ -21,7 +21,7 @@ public class TestdataDynamicFollowerSolution extends TestdataObject {
                 TestdataDynamicFollowerSolution.class, TestdataDynamicLeaderEntity.class, TestdataDynamicFollowerEntity.class);
     }
 
-    public static PlanningSolutionMetaModel<TestdataDynamicFollowerSolution> buildSolutionMetaModel() {
+    public static PlanningSolutionMetaModel<TestdataDynamicFollowerSolution> buildMetaModel() {
         return buildSolutionDescriptor().getMetaModel();
     }
 

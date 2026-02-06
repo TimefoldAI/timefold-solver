@@ -10,6 +10,7 @@ import java.util.Arrays;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -56,7 +57,7 @@ class ChangeMoveTest {
 
         var scoreDirectorFactory =
                 new EasyScoreDirectorFactory<>(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor(),
-                        solution -> SimpleScore.ZERO);
+                        solution -> SimpleScore.ZERO, EnvironmentMode.PHASE_ASSERT);
         var scoreDirector = scoreDirectorFactory.buildScoreDirector();
         var variableDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildVariableDescriptorForValue();
 

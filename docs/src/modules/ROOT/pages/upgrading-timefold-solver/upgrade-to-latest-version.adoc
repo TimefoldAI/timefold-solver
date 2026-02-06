@@ -71,9 +71,8 @@ but in the next major version of the solver,
 we will be removing support for chained shadow variables entirely.
 
 The migration from chained variable to list variable requires some effort and it cannot be automated.
-We invite you to read the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable documentation],
-study the xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing quickstart] as an example implementation,
-and reach out to us for help should you find yourself stuck.
+We invite you to read the xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[chained variable to list variable migration guide],
+and to reach out to us for help should you find yourself stuck.
 ====
 
 '''
@@ -274,6 +273,20 @@ factory.forEach(Shift.class)
     .filter(interval -> interval.end() > 2)
     // ...
 ----
+====
+
+=== Upgrade from 1.26.0 to 1.27.0
+
+.icon:exclamation-triangle[role=red] Variable listeners deprecated for removal
+[%collapsible%open]
+====
+With the introduction of xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[custom shadow variables],
+we have deprecated the variable listener API
+and will be removing the mechanism entirely in Timefold Solver 2.0.
+
+The migration to the new mechanism requires some effort and it cannot be automated.
+We invite you to read the xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[variable listeners to custom shadow variables migration guide],
+and to reach out to us for help should you find yourself stuck.
 ====
 
 === Upgrade from 1.22.0 to 1.23.0

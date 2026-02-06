@@ -4,21 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.List;
-import java.util.stream.StreamSupport;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
-import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolutionManager;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.SessionContext;
-import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluator;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
@@ -36,9 +25,8 @@ class ListChangeMoveProviderTest {
 
     @Test
     void fromSolution() {
-        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
-        var variableMetaModel = solutionDescriptor.getMetaModel()
-                .genuineEntity(TestdataListEntity.class)
+        var solutionMetaModel = TestdataListSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
                 .listVariable();
 
         var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
@@ -49,11 +37,9 @@ class ListChangeMoveProviderTest {
         e2.getValueList().add(initiallyAssignedValue);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveIterable = createMoveIterable(new ListChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
-        assertThat(moveIterable).hasSize(4);
-
-        var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
-                .toList();
+        var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsList();
         assertThat(moveList).hasSize(4);
 
         // Unassign moves are not generated, because the solution does not allow unassigned values.
@@ -105,9 +91,8 @@ class ListChangeMoveProviderTest {
 
     @Test
     void fromEntity() {
-        var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
-        var variableMetaModel = solutionDescriptor.getMetaModel()
-                .genuineEntity(TestdataListEntityProvidingEntity.class)
+        var solutionMetaModel = TestdataListEntityProvidingSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntityProvidingEntity.class)
                 .listVariable();
 
         var solution = TestdataListEntityProvidingSolution.generateSolution();
@@ -121,11 +106,9 @@ class ListChangeMoveProviderTest {
         e2.getValueList().add(initiallyAssignedValue);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveIterable = createMoveIterable(new ListChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
-        assertThat(moveIterable).hasSize(4);
-
-        var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
-                .toList();
+        var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsList();
         assertThat(moveList).hasSize(4);
 
         // v1 can be moved from e2 to e1, because it's in the range for both.
@@ -178,9 +161,8 @@ class ListChangeMoveProviderTest {
 
     @Test
     void fromEntityAllowsUnassigned() {
-        var solutionDescriptor = TestdataListUnassignedEntityProvidingSolution.buildSolutionDescriptor();
-        var variableMetaModel = solutionDescriptor.getMetaModel()
-                .genuineEntity(TestdataListUnassignedEntityProvidingEntity.class)
+        var solutionMetaModel = TestdataListUnassignedEntityProvidingSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListUnassignedEntityProvidingEntity.class)
                 .listVariable();
 
         var solution = TestdataListUnassignedEntityProvidingSolution.generateSolution();
@@ -191,11 +173,9 @@ class ListChangeMoveProviderTest {
         var v3 = solution.getValueList().get(2);
         e2.getValueList().add(v1);
 
-        var moveIterable = createMoveIterable(new ListChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
-        assertThat(moveIterable).hasSize(5);
-
-        var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
-                .toList();
+        var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsList();
         assertThat(moveList).hasSize(5);
 
         // v1 is assigned to e2, so it can be unassigned.
@@ -259,9 +239,8 @@ class ListChangeMoveProviderTest {
 
     @Test
     void fromSolutionAllowsUnassigned() {
-        var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
-        var variableMetaModel = solutionDescriptor.getMetaModel()
-                .genuineEntity(TestdataAllowsUnassignedValuesListEntity.class)
+        var solutionMetaModel = TestdataAllowsUnassignedValuesListSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataAllowsUnassignedValuesListEntity.class)
                 .listVariable();
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 2);
         var e1 = solution.getEntityList().get(0);
@@ -271,11 +250,9 @@ class ListChangeMoveProviderTest {
         e2.getValueList().add(v1);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveIterable = createMoveIterable(new ListChangeMoveProvider<>(variableMetaModel), solutionDescriptor, solution);
-        assertThat(moveIterable).hasSize(5);
-
-        var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
-                .toList();
+        var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsList();
         assertThat(moveList).hasSize(5);
 
         // v1 is assigned to e2, so it can be unassigned.
@@ -349,45 +326,6 @@ class ListChangeMoveProviderTest {
     private static <Solution_, Entity_, Value_> ListAssignMove<Solution_, Entity_, Value_>
             getListAssignMove(List<Move<Solution_>> moveList, int index) {
         return (ListAssignMove<Solution_, Entity_, Value_>) moveList.get(index);
-    }
-
-    private <Solution_> Iterable<Move<Solution_>> createMoveIterable(MoveProvider<Solution_> moveProvider,
-            SolutionDescriptor<Solution_> solutionDescriptor, Solution_ solution) {
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.TRACKED_FULL_ASSERT);
-        var moveStream = moveProvider.build(moveStreamFactory);
-        var scoreDirector = createScoreDirector(solutionDescriptor, solution);
-        var neighborhoodSession = moveStreamFactory.createSession(new SessionContext<>(scoreDirector));
-        solutionDescriptor.visitAll(scoreDirector.getWorkingSolution(), neighborhoodSession::insert);
-        neighborhoodSession.settle();
-        return moveStream.getMoveIterable(neighborhoodSession);
-    }
-
-    private <Solution_> InnerScoreDirector<Solution_, ?> createScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor,
-            Solution_ solution) {
-        var firstEntityClass = solutionDescriptor.getMetaModel().genuineEntities().get(0).type();
-        var constraintProvider = new TestingConstraintProvider(firstEntityClass);
-        var scoreDirectorFactory = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider,
-                EnvironmentMode.TRACKED_FULL_ASSERT);
-        var scoreDirector = scoreDirectorFactory.buildScoreDirector();
-        scoreDirector.setWorkingSolution(solution);
-        return scoreDirector;
-    }
-
-    // The specifics of the constraint provider are not important for this test,
-    // as the score will never be calculated.
-    private record TestingConstraintProvider(Class<?> entityClass) implements ConstraintProvider {
-
-        @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
-            return new Constraint[] { alwaysPenalizingConstraint(constraintFactory) };
-        }
-
-        private Constraint alwaysPenalizingConstraint(ConstraintFactory constraintFactory) {
-            return constraintFactory.forEach(entityClass)
-                    .penalize(SimpleScore.ONE)
-                    .asConstraint("Always penalize");
-        }
-
     }
 
 }

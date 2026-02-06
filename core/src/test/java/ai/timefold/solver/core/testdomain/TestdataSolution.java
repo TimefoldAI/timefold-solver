@@ -19,7 +19,7 @@ public class TestdataSolution extends TestdataObject {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataSolution.class, TestdataEntity.class);
     }
 
-    public static PlanningSolutionMetaModel<TestdataSolution> buildSolutionMetaModel() {
+    public static PlanningSolutionMetaModel<TestdataSolution> buildMetaModel() {
         return buildSolutionDescriptor().getMetaModel();
     }
 

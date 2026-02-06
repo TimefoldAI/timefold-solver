@@ -22,7 +22,7 @@ public class TestdataFollowerSolution extends TestdataObject {
                 TestdataFollowerSolution.class, TestdataLeaderEntity.class, TestdataFollowerEntity.class);
     }
 
-    public static PlanningSolutionMetaModel<TestdataFollowerSolution> buildSolutionMetaModel() {
+    public static PlanningSolutionMetaModel<TestdataFollowerSolution> buildMetaModel() {
         return buildSolutionDescriptor().getMetaModel();
     }
 

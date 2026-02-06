@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -70,6 +71,8 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
@@ -101,12 +104,17 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstValue;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondEntity;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondValue;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.MixedCustomMoveIteratorFactory;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.MixedCustomPhaseCommand;
@@ -136,6 +144,10 @@ import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverse
 import ai.timefold.solver.core.testdomain.sort.comparator.OneValuePerEntityComparatorEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableEntity;
 import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
@@ -1960,6 +1972,151 @@ class DefaultSolverTest {
                 .hasMessageContaining("it cannot be deduced automatically");
     }
 
+    @Test
+    void failBasicVariableInvalidValueRange() {
+        // Solver config
+        var solverConfig =
+                PlannerTestUtils.buildSolverConfig(TestdataEntityProvidingSolution.class, TestdataEntityProvidingEntity.class)
+                        .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = new TestdataEntityProvidingSolution();
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
+        // The entity has an assigned value v3 that is not included in the entity value ranges
+        var e1 = new TestdataEntityProvidingEntity("e1", List.of(v1, v2), v3);
+        var e2 = new TestdataEntityProvidingEntity("e2", List.of(v1, v2), v1);
+        problem.setEntityList(new ArrayList<>(Arrays.asList(e1, e2)));
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining(
+                        "The value (3) from the planning variable (value) has been assigned to the entity (e1), but it is outside of the related value range [1-2]");
+    }
+
+    @Test
+    void failMultipleBasicVariableInvalidValueRange() {
+        // Solver config
+        var solverConfig =
+                PlannerTestUtils
+                        .buildSolverConfig(TestdataAllowsUnassignedMultiVarEntityProvidingSolution.class,
+                                TestdataAllowsUnassignedMultiVarEntityProvidingEntity.class)
+                        .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = new TestdataAllowsUnassignedMultiVarEntityProvidingSolution();
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
+        // The entity has been assigned a value v3 for the second value range,
+        // which is not included in the entity's value ranges
+        var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e1", List.of(v1, v2, v3), v3, List.of(v1, v2), v3,
+                v3);
+        var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e2", List.of(v1, v2, v3), v1, List.of(v1, v2, v3),
+                v1, v1);
+        problem.setEntityList(new ArrayList<>(Arrays.asList(e1, e2)));
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining(
+                        "The value (3) from the planning variable (secondValue) has been assigned to the entity (e1), but it is outside of the related value range [null]∪[1-2]");
+    }
+
+    @Test
+    void failListVariableInvalidValueRange() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListEntityProvidingSolution.class, TestdataListEntityProvidingEntity.class,
+                TestdataListEntityProvidingValue.class)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = new TestdataListEntityProvidingSolution();
+        var v1 = new TestdataListEntityProvidingValue("1");
+        var v2 = new TestdataListEntityProvidingValue("2");
+        var v3 = new TestdataListEntityProvidingValue("3");
+        // The entity has an assigned value v3 that is not included in the entity value ranges
+        var e1 = new TestdataListEntityProvidingEntity("e1", List.of(v1, v2), List.of(v3));
+        var e2 = new TestdataListEntityProvidingEntity("e2", List.of(v1, v2), List.of(v1));
+        problem.setEntityList(new ArrayList<>(Arrays.asList(e1, e2)));
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining(
+                        "The value (3) from the planning variable (valueList) has been assigned to the entity (e1), but it is outside of the related value range [1-2]");
+    }
+
+    @Test
+    void failMixedModelInvalidValueRange() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedMultiEntitySolution.class, TestdataMixedMultiEntityFirstEntity.class,
+                TestdataMixedMultiEntitySecondEntity.class)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = new TestdataMixedMultiEntitySolution();
+        var v1a = new TestdataMixedMultiEntityFirstValue("1");
+        var v2a = new TestdataMixedMultiEntityFirstValue("2");
+        var v3a = new TestdataMixedMultiEntityFirstValue("3");
+        var v1b = new TestdataMixedMultiEntitySecondValue("1", 1);
+        var v2b = new TestdataMixedMultiEntitySecondValue("2", 1);
+        var v3b = new TestdataMixedMultiEntitySecondValue("3", 1);
+
+        // 1 - Invalid basic variable
+        var e1a = new TestdataMixedMultiEntityFirstEntity("e1", 1);
+        var e1b = new TestdataMixedMultiEntitySecondEntity("e1");
+        e1b.setBasicValue(v1b);
+        var e2b = new TestdataMixedMultiEntitySecondEntity("e2");
+        // Invalid assigned value
+        problem.setEntityList(List.of(e1a));
+        problem.setOtherEntityList(List.of(e1b, e2b));
+        problem.setValueList(List.of(v1a, v2a, v3a));
+        problem.setOtherValueList(List.of(v2b, v3b));
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining(
+                        "The value (1) from the planning variable (basicValue) has been assigned to the entity (e1), but it is outside of the related value range [2-3]");
+        e1b.setBasicValue(null);
+
+        // 2 - Invalid list variable
+        // Invalid assigned value
+        e1a.getValueList().add(v1a);
+        problem.setEntityList(List.of(e1a));
+        problem.setOtherEntityList(List.of(e1b, e2b));
+        problem.setValueList(List.of(v2a, v3a));
+        problem.setOtherValueList(List.of(v2b, v3b));
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining(
+                        "The value (1) from the planning variable (valueList) has been assigned to the entity (e1), but it is outside of the related value range [2-3]");
+    }
+
+    @Test
+    void failLocalSearchValueRangeAssertion() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        solverConfig.setEnvironmentMode(EnvironmentMode.FULL_ASSERT);
+        var localSearchPhaseConfig = new LocalSearchPhaseConfig();
+        localSearchPhaseConfig.setMoveSelectorConfig(
+                new MoveIteratorFactoryConfig().withMoveIteratorFactoryClass(InvalidMoveListFactory.class));
+        solverConfig.setPhaseConfigList(List.of(new ConstructionHeuristicPhaseConfig(), localSearchPhaseConfig));
+
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining(
+                        "The value (bad value) from the planning variable (valueList) has been assigned to the entity (Generated Entity 0), but it is outside of the related value range [Generated Value 0-Generated Value 1]");
+    }
+
+    @Test
+    void failCustomPhaseValueRangeAssertion() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class,
+                TestdataListValue.class);
+        solverConfig.setEnvironmentMode(EnvironmentMode.STEP_ASSERT);
+        var customPhaseConfig = new CustomPhaseConfig()
+                .withCustomPhaseCommands(new InvalidCustomPhaseCommand());
+        solverConfig.setPhaseConfigList(List.of(new ConstructionHeuristicPhaseConfig(), customPhaseConfig));
+
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining(
+                        "The value (bad value) from the planning variable (valueList) has been assigned to the entity (Generated Entity 0), but it is outside of the related value range [Generated Value 0-Generated Value 1]");
+    }
+
     public static final class MinimizeUnusedEntitiesEasyScoreCalculator
             implements EasyScoreCalculator<Object, SimpleScore> {
 
@@ -2209,4 +2366,51 @@ class DefaultSolverTest {
 
     }
 
+    public static final class InvalidCustomPhaseCommand implements PhaseCommand<TestdataListSolution> {
+
+        @Override
+        public void changeWorkingSolution(ScoreDirector<TestdataListSolution> scoreDirector,
+                BooleanSupplier isPhaseTerminated) {
+            var entity = scoreDirector.getWorkingSolution().getEntityList().get(0);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().add(new TestdataListValue("bad value"));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, entity.getValueList().size());
+        }
+    }
+
+    public static final class InvalidMoveListFactory implements MoveIteratorFactory<TestdataListSolution, InvalidMove> {
+        @Override
+        public long getSize(ScoreDirector<TestdataListSolution> scoreDirector) {
+            return 1;
+        }
+
+        @Override
+        public Iterator<InvalidMove>
+                createOriginalMoveIterator(ScoreDirector<TestdataListSolution> scoreDirector) {
+            return List.of(new InvalidMove()).iterator();
+        }
+
+        @Override
+        public Iterator<InvalidMove> createRandomMoveIterator(
+                ScoreDirector<TestdataListSolution> scoreDirector,
+                Random workingRandom) {
+            return createOriginalMoveIterator(scoreDirector);
+        }
+    }
+
+    public static final class InvalidMove extends AbstractMove<TestdataListSolution> {
+
+        @Override
+        protected void doMoveOnGenuineVariables(ScoreDirector<TestdataListSolution> scoreDirector) {
+            var entity = scoreDirector.getWorkingSolution().getEntityList().get(0);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().add(new TestdataListValue("bad value"));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, entity.getValueList().size());
+        }
+
+        @Override
+        public boolean isMoveDoable(ScoreDirector<TestdataListSolution> scoreDirector) {
+            return true;
+        }
+    }
 }

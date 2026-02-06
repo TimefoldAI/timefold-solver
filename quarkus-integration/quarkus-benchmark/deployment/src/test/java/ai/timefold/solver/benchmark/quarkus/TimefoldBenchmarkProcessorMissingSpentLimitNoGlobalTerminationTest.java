@@ -33,7 +33,7 @@ class TimefoldBenchmarkProcessorMissingSpentLimitNoGlobalTerminationTest {
         PlannerBenchmarkConfig benchmarkConfig =
                 PlannerBenchmarkConfig
                         .createFromXmlResource("solverBenchmarkConfigSpentLimitPerBenchmarkNoGlobalTermination.xml");
-        assertThatThrownBy(() -> new TimefoldBenchmarkRecorder().benchmarkConfigSupplier(benchmarkConfig, null).get())
+        assertThatThrownBy(() -> new TimefoldBenchmarkRecorder(null).benchmarkConfigSupplier(benchmarkConfig).get())
                 .hasMessage("At least one of the solver benchmarks is not configured to terminate. " +
                         "At least one of the properties " +
                         "quarkus.timefold.benchmark.solver.termination.spent-limit, " +

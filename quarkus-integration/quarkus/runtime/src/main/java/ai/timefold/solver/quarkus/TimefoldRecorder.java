@@ -25,13 +25,15 @@ import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 import org.jspecify.annotations.Nullable;
 
 import io.quarkus.runtime.RuntimeValue;
+import io.quarkus.runtime.annotations.RecordableConstructor;
 import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class TimefoldRecorder {
-    final RuntimeValue<TimefoldRuntimeConfig> timefoldRuntimeConfig;
+    private final RuntimeValue<TimefoldRuntimeConfig> timefoldRuntimeConfig;
 
-    public TimefoldRecorder(final RuntimeValue<TimefoldRuntimeConfig> timefoldRuntimeConfig) {
+    @RecordableConstructor
+    public TimefoldRecorder(RuntimeValue<TimefoldRuntimeConfig> timefoldRuntimeConfig) {
         this.timefoldRuntimeConfig = timefoldRuntimeConfig;
     }
 

@@ -79,7 +79,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
 
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-        // No need to do anything.
+        neighborhoodSession.settle(); // In tests, the stepEnded() might not have been called. Do it here as well, just in case.
     }
 
     @Override

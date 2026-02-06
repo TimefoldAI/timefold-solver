@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
@@ -21,6 +22,10 @@ public class TestdataEntityProvidingSolution extends TestdataObject {
     public static SolutionDescriptor<TestdataEntityProvidingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataEntityProvidingSolution.class,
                 TestdataEntityProvidingEntity.class);
+    }
+
+    public static PlanningSolutionMetaModel<TestdataEntityProvidingSolution> buildMetaModel() {
+        return buildSolutionDescriptor().getMetaModel();
     }
 
     public static TestdataEntityProvidingSolution generateSolution() {
@@ -66,7 +71,11 @@ public class TestdataEntityProvidingSolution extends TestdataObject {
                 }
             }
             var entity = new TestdataEntityProvidingEntity("Generated Entity " + i, valueRange);
-            entity.setValue(initialized ? valueList.get(i % valueListSize) : null);
+            var value = initialized ? valueList.get(i % valueListSize) : null;
+            entity.setValue(value);
+            if (value != null && !entity.getValueRange().contains(value)) {
+                entity.getValueRange().add(value);
+            }
             entityList.add(entity);
         }
         solution.setEntityList(entityList);

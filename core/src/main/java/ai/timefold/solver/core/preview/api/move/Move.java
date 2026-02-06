@@ -41,6 +41,7 @@ import org.jspecify.annotations.NullMarked;
  * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
  * 
  * @param <Solution_>
+ * @see MoveRunner How to test {@link Move}s.
  */
 @NullMarked
 public interface Move<Solution_> {

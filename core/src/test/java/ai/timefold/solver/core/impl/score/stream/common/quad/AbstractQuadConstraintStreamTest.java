@@ -1278,7 +1278,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .join(TestdataLavishEntity.class, filtering((a, b, c) -> a != c && b != c))
                         .join(TestdataLavishEntity.class, filtering((a, b, c, d) -> a != d && b != d))
-                        .flattenLast((d) -> asList(group1, group1, group2))
+                        .flattenLast(d -> asList(group1, group1, group2))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
@@ -1316,7 +1316,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .join(TestdataLavishEntity.class, filtering((a, b, c) -> a != c && b != c))
                         .join(TestdataLavishEntity.class, filtering((a, b, c, d) -> a != d && b != d))
-                        .flattenLast((d) -> asList(group1, group2))
+                        .flattenLast(d -> asList(group1, group2))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
@@ -1351,7 +1351,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .join(TestdataLavishEntity.class, filtering((a, b, c) -> a != c && b != c))
                         .join(TestdataLavishEntity.class, filtering((a, b, c, d) -> a != d && b != d))
-                        .flattenLast((d) -> asList(group1, group1, group2))
+                        .flattenLast(d -> asList(group1, group1, group2))
                         .distinct()
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -1387,7 +1387,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .join(TestdataLavishEntity.class, filtering((a, b, c) -> a != c && b != c))
                         .join(TestdataLavishEntity.class, filtering((a, b, c, d) -> a != d && b != d))
-                        .flattenLast((d) -> asList(group1, group2))
+                        .flattenLast(d -> asList(group1, group2))
                         .distinct()
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -1416,6 +1416,8 @@ public abstract class AbstractQuadConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1464,6 +1466,8 @@ public abstract class AbstractQuadConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1513,6 +1517,8 @@ public abstract class AbstractQuadConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1563,6 +1569,8 @@ public abstract class AbstractQuadConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1614,6 +1622,8 @@ public abstract class AbstractQuadConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1666,6 +1676,8 @@ public abstract class AbstractQuadConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1719,6 +1731,8 @@ public abstract class AbstractQuadConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1773,6 +1787,8 @@ public abstract class AbstractQuadConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1827,6 +1843,8 @@ public abstract class AbstractQuadConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1882,6 +1900,8 @@ public abstract class AbstractQuadConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1935,6 +1955,8 @@ public abstract class AbstractQuadConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1997,6 +2019,7 @@ public abstract class AbstractQuadConstraintStreamTest
         var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         var value1 = solution.getFirstValue();
         var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
         var entity1 = solution.getFirstEntity();
         var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);

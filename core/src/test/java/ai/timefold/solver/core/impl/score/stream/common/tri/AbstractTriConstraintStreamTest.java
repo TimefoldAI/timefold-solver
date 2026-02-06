@@ -1771,6 +1771,8 @@ public abstract class AbstractTriConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1817,6 +1819,8 @@ public abstract class AbstractTriConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1864,6 +1868,8 @@ public abstract class AbstractTriConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1912,6 +1918,8 @@ public abstract class AbstractTriConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -1961,6 +1969,8 @@ public abstract class AbstractTriConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -2011,6 +2021,8 @@ public abstract class AbstractTriConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -2061,6 +2073,8 @@ public abstract class AbstractTriConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -2112,6 +2126,8 @@ public abstract class AbstractTriConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -2161,6 +2177,8 @@ public abstract class AbstractTriConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -2213,6 +2231,8 @@ public abstract class AbstractTriConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -2266,6 +2286,8 @@ public abstract class AbstractTriConstraintStreamTest
         TestdataLavishValue value1 = solution.getFirstValue();
         TestdataLavishValue value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
         TestdataLavishValue value3 = new TestdataLavishValue("MyValue 3", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        solution.getValueList().add(value3);
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
@@ -2325,6 +2347,7 @@ public abstract class AbstractTriConstraintStreamTest
         var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
         var value1 = solution.getFirstValue();
         var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
         var entity1 = solution.getFirstEntity();
         var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
                 value2);
