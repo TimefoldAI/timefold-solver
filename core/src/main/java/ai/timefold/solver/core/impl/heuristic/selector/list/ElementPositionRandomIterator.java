@@ -68,7 +68,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
             selectedValue = replayingValueIterator.next();
             if (oldValue != null && oldValue != selectedValue) {
                 // It means the outer selector picked a new value
-                // and the entity iterator must discard the previous value
+                // and the entity iterator must discard the previous entity
                 tryUpdateEntityIterator();
             }
             return entityIterator.hasNext();

@@ -598,10 +598,10 @@ class ElementDestinationSelectorTest {
         doReturn(a).when(entityIterator).next();
         doReturn(true, true, false).when(entityIterator).hasNext();
         var valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3, v3);
-        IterableValueSelector<TestdataListEntityProvidingSolution> replayingValueIterator =
+        IterableValueSelector<TestdataListEntityProvidingSolution> replayingValueSelector =
                 mockReplayingValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1, v3);
 
-        var selector = new ElementDestinationSelector<>(entitySelector, replayingValueIterator, valueSelector, true, false);
+        var selector = new ElementDestinationSelector<>(entitySelector, replayingValueSelector, valueSelector, true, false);
 
         // <4 => entity selector; >=4 => value selector
         // Picks value selector twice
@@ -610,7 +610,8 @@ class ElementDestinationSelectorTest {
         solvingStarted(selector, scoreDirector, random);
         assertAllCodesOfIterator(selector.iterator(), "B[1]", "B[1]");
 
-        // Even using only the value selector, the entity iterator must discard previous during the hasNext() calls
+        // Even using only the value selector,
+        // the entity iterator must discard the previous entity during the hasNext() calls
         verify(entityIterator, times(1)).next();
     }
 }
