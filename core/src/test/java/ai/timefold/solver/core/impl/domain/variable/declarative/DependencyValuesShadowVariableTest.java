@@ -13,7 +13,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
-import ai.timefold.solver.core.preview.api.move.MoveRunner;
+import ai.timefold.solver.core.preview.api.move.MoveTester;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyConstraintProvider;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyEntity;
@@ -99,7 +99,7 @@ class DependencyValuesShadowVariableTest {
         // and C.startTime/C.endTime remains null and C.isInconsistent is true.
         // When the move is undone, C.startTime/C.endTime remains null,
         // and C.isInconsistent is false.
-        MoveRunner.build(solutionMetamodel)
+        MoveTester.build(solutionMetamodel)
                 .using(schedule)
                 .executeTemporarily(Moves.assign(variableMetamodel, valueC, entityA, 0), solution -> {
                     assertThat(valueC.getStartTime()).isNull();

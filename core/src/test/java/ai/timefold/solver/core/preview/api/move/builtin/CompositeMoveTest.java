@@ -2,7 +2,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ai.timefold.solver.core.preview.api.move.MoveRunner;
+import ai.timefold.solver.core.preview.api.move.MoveTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -30,7 +30,7 @@ class CompositeMoveTest {
         var move3 = Moves.change(variableMetaModel, entity3, value2);
         var compositeMove = Moves.compose(move1, move2, move3);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .execute(compositeMove);
 
@@ -58,7 +58,7 @@ class CompositeMoveTest {
         var changeMove = Moves.change(variableMetaModel, entity3, value3);
         var compositeMove = Moves.compose(swapMove, changeMove);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .execute(compositeMove);
 
@@ -81,7 +81,7 @@ class CompositeMoveTest {
         var changeMove = Moves.change(variableMetaModel, entity, newValue);
         var compositeMove = Moves.compose(changeMove);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .execute(compositeMove);
 
@@ -115,7 +115,7 @@ class CompositeMoveTest {
 
         var nestedComposite = Moves.compose(composite1, composite2);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .execute(nestedComposite);
 
@@ -148,7 +148,7 @@ class CompositeMoveTest {
         var move3 = Moves.change(variableMetaModel, entity3, value2);
         var compositeMove = Moves.compose(move1, move2, move3);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(compositeMove, view -> {
                     // All changes should be applied
@@ -193,7 +193,7 @@ class CompositeMoveTest {
 
         var nestedComposite = Moves.compose(composite1, composite2);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(nestedComposite, view -> {
                     // All 4 changes should be applied

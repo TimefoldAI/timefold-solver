@@ -2,7 +2,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ai.timefold.solver.core.preview.api.move.MoveRunner;
+import ai.timefold.solver.core.preview.api.move.MoveTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -25,7 +25,7 @@ class SwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, entity2);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .execute(swapMove);
 
@@ -50,7 +50,7 @@ class SwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, entity2);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .execute(swapMove);
 
@@ -76,7 +76,7 @@ class SwapMoveTest {
         var swap1 = Moves.swap(variableMetaModel, entity1, entity2);
         var swap2 = Moves.swap(variableMetaModel, entity2, entity3);
 
-        var context = MoveRunner.build(solutionMetaModel)
+        var context = MoveTester.build(solutionMetaModel)
                 .using(solution);
         context.execute(swap1);
         context.execute(swap2);
@@ -102,7 +102,7 @@ class SwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, entity2);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(swapMove, view -> {
                     // During temporary execution, values should be swapped
@@ -132,7 +132,7 @@ class SwapMoveTest {
         var swap1 = Moves.swap(variableMetaModel, entity1, entity2);
         var swap2 = Moves.swap(variableMetaModel, entity2, entity3);
 
-        var context = MoveRunner.build(solutionMetaModel)
+        var context = MoveTester.build(solutionMetaModel)
                 .using(solution);
 
         // Execute swap1 temporarily and verify

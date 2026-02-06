@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import ai.timefold.solver.core.preview.api.move.MoveRunner;
+import ai.timefold.solver.core.preview.api.move.MoveTester;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -45,7 +45,7 @@ class ListChangeMoveTest {
 
             var changeMove = Moves.change(variableMetaModel, entity, 0, entity, 2);
 
-            MoveRunner.build(solutionMetaModel)
+            MoveTester.build(solutionMetaModel)
                     .using(solution)
                     .execute(changeMove);
 
@@ -72,7 +72,7 @@ class ListChangeMoveTest {
 
             var changeMove = Moves.change(variableMetaModel, entity, 2, entity, 0);
 
-            MoveRunner.build(solutionMetaModel)
+            MoveTester.build(solutionMetaModel)
                     .using(solution)
                     .execute(changeMove);
 
@@ -99,7 +99,7 @@ class ListChangeMoveTest {
 
             var changeMove = Moves.change(variableMetaModel, entity, 1, entity, 0);
 
-            MoveRunner.build(solutionMetaModel)
+            MoveTester.build(solutionMetaModel)
                     .using(solution)
                     .execute(changeMove);
 
@@ -126,7 +126,7 @@ class ListChangeMoveTest {
 
             var changeMove = Moves.change(variableMetaModel, entity, 1, entity, 2);
 
-            MoveRunner.build(solutionMetaModel)
+            MoveTester.build(solutionMetaModel)
                     .using(solution)
                     .execute(changeMove);
 
@@ -161,7 +161,7 @@ class ListChangeMoveTest {
 
             var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 0);
 
-            MoveRunner.build(solutionMetaModel)
+            MoveTester.build(solutionMetaModel)
                     .using(solution)
                     .execute(changeMove);
 
@@ -192,7 +192,7 @@ class ListChangeMoveTest {
             // Move value1 from entity1[0] to entity2[2] (end of entity2)
             var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 2);
 
-            MoveRunner.build(solutionMetaModel)
+            MoveTester.build(solutionMetaModel)
                     .using(solution)
                     .execute(changeMove);
 
@@ -219,7 +219,7 @@ class ListChangeMoveTest {
             // Move value1 from entity1[0] to entity2[1] (middle of entity2)
             var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 1);
 
-            MoveRunner.build(solutionMetaModel)
+            MoveTester.build(solutionMetaModel)
                     .using(solution)
                     .execute(changeMove);
 
@@ -244,7 +244,7 @@ class ListChangeMoveTest {
             // Move value1 from entity1[0] to empty entity2[0]
             var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 0);
 
-            MoveRunner.build(solutionMetaModel)
+            MoveTester.build(solutionMetaModel)
                     .using(solution)
                     .execute(changeMove);
 
@@ -269,7 +269,7 @@ class ListChangeMoveTest {
             // Move value1 from entity1[0] to entity2[1] (end)
             var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 1);
 
-            MoveRunner.build(solutionMetaModel)
+            MoveTester.build(solutionMetaModel)
                     .using(solution)
                     .execute(changeMove);
 
@@ -343,7 +343,7 @@ class ListChangeMoveTest {
                             entity, 0, entity, 1);
 
             // getPlanningValues requires the move to be executed first to know the value
-            MoveRunner.build(solutionMetaModel)
+            MoveTester.build(solutionMetaModel)
                     .using(solution)
                     .execute(changeMove);
 
@@ -398,7 +398,7 @@ class ListChangeMoveTest {
             var changeMove = Moves.change(variableMetaModel, entity1, 0, entity2, 1);
 
             // Execute to populate the planning value
-            MoveRunner.build(solutionMetaModel)
+            MoveTester.build(solutionMetaModel)
                     .using(solution)
                     .execute(changeMove);
 

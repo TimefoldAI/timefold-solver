@@ -291,28 +291,28 @@ reducing the need for custom move implementations in most scenarios.
 
 
 [#neighborhoodsTestingMoves]
-=== Testing moves with `MoveRunner`
+=== Testing moves with `MoveTester`
 
 When developing custom moves, it is essential to verify that they correctly modify the solution
 and interact properly with the solver's infrastructure.
-The `MoveRunner` API provides a simple testing utility to execute moves in isolation,
+The `MoveTester` API provides a simple testing utility to execute moves in isolation,
 making it easy to write unit tests for your custom move implementations.
 
-IMPORTANT: The `MoveRunner` API is designed exclusively for testing purposes.
+IMPORTANT: The `MoveTester` API is designed exclusively for testing purposes.
 It should not be used in production code or during normal solver operation.
 It is not thread-safe and not fine-tuned for performance.
 
-[#neighborhoodsMoveRunnerBasics]
+[#neighborhoodsMoveTesterBasics]
 ==== Basic usage
 
-The `MoveRunner` API follows a fluent builder pattern:
+The `MoveTester` API follows a fluent builder pattern:
 
 [source,java,options="nowrap"]
 ----
 // Timetable is the solution class, Lesson is a planning entity class.
 var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
-var runner = MoveRunner.build(solutionMetaModel);
-var context = runner.using(solution);
+var tester = MoveTester.build(solutionMetaModel);
+var context = tester.using(solution);
 var move = ...; // Move you wish to test.
 context.execute(move);
 ----
@@ -324,7 +324,7 @@ The API requires:
 3. **Solution instance**: The working solution to execute the move on
 4. **Move instance**: The move to execute
 
-[#neighborhoodsMoveRunnerPermanent]
+[#neighborhoodsMoveTesterPermanent]
 ==== Permanent execution
 
 The `execute()` method applies a move permanently to the solution:
@@ -343,8 +343,8 @@ void testChangeMove() {
 
     var move = Moves.change(variableMetaModel, lesson, newRoom);
 
-    var runner = MoveRunner.build(solutionMetaModel);
-    var context = runner.using(timetable);
+    var tester = MoveTester.build(solutionMetaModel);
+    var context = tester.using(timetable);
     context.execute(move);
 
     assertThat(lesson.getRoom()).isEqualTo(newRoom); // Assertion from a test framework of choice.
@@ -353,7 +353,7 @@ void testChangeMove() {
 
 After `execute()` returns, the solution is modified and all shadow variables are updated.
 
-[#neighborhoodsMoveRunnerTemporary]
+[#neighborhoodsMoveTesterTemporary]
 ==== Temporary execution with automatic undo
 
 The `executeTemporarily()` method allows you to test a move's effects without permanently modifying the solution.
@@ -374,8 +374,8 @@ void testMoveThenUndo() {
 
     var move = Moves.change(variableMetaModel, lesson, newRoom);
 
-    var runner = MoveRunner.build(solutionMetaModel);
-    var context = runner.using(timetable);
+    var tester = MoveTester.build(solutionMetaModel);
+    var context = tester.using(timetable);
 
     // All the code above is just domain setup.
     context.executeTemporarily(move, view -> {
@@ -624,28 +624,28 @@ However, we expect that most move providers will eventually be able to use built
 which will be expanded over time to cover more use cases.
 
 [#neighborhoodsMoveStreamsTesting]
-=== Testing move generation with `NeighborhoodEvaluator`
+=== Testing move generation with `NeighborhoodTester`
 
 Having created a custom `MoveProvider`, it is essential to verify that it correctly generates moves
 and interacts properly with the solver's infrastructure.
-The `NeighborhoodEvaluator` API provides a simple testing utility
+The `NeighborhoodTester` API provides a simple testing utility
 to enumerate and sample moves from a move provider in isolation,
 making it easy to write unit tests for your move providers.
 
-IMPORTANT: The `NeighborhoodEvaluator` API is designed exclusively for testing purposes.
+IMPORTANT: The `NeighborhoodTester` API is designed exclusively for testing purposes.
 It should not be used in production code or during normal solver operation.
 It is not thread-safe and not fine-tuned for performance.
 
 [#neighborhoodsMoveStreamsTestingBasics]
 ==== Basic usage
 
-The `NeighborhoodEvaluator` API follows a fluent builder pattern:
+The `NeighborhoodTester` API follows a fluent builder pattern:
 
 [source,java,options="nowrap"]
 ----
 // Timetable is the solution class, Lesson is a planning entity class.
 var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
-var evaluator = NeighborhoodEvaluator.build(new SwapMoveProvider(), solutionMetaModel);
+var evaluator = NeighborhoodTester.build(new SwapMoveProvider(), solutionMetaModel);
 var context = evaluator.using(solution);
 var moves = context.getMovesAsList(); // These are all moves the provider can generate for the given solution.
 
@@ -677,15 +677,15 @@ or to filter them on-the-fly.
 [#neighborhoodsMoveStreamsTestingRunningMoves]
 ==== Running the generated moves
 
-The moves generated by the `NeighborhoodEvaluator` can be executed
-using <<neighborhoodsMoveRunnerBasics,the MoveRunner API>>,
-and an initialized `MoveRunContext` can be obtained directly from the `NeighborhoodEvaluatorContext` instance.
+The moves generated by the `NeighborhoodTester` can be executed
+using <<neighborhoodsMoveTesterBasics,the MoveTester API>>,
+and an initialized `MoveTestContext` can be obtained directly from the `NeighborhoodTestContext` instance.
 
 [source,java,options="nowrap"]
 ----
-var evaluator = NeighborhoodEvaluator.build(new SwapMoveProvider(), solutionMetaModel);
-var evaluatorContext = evaluator.using(solution);
-var moveRunContext = evaluatorContext.getMoveRunContext();
+var tester = NeighborhoodTester.build(new SwapMoveProvider(), solutionMetaModel);
+var testerContext = tester.using(solution);
+var moveTestContext = evaluatorContext.getMoveTestContext();
 ----
 
 Temporary execution with automatic undo is particularly useful for testing move correctness,
@@ -693,15 +693,15 @@ and can be combined with using `getMovesAsIterator()` to avoid loading all moves
 
 [source,java,options="nowrap"]
 ----
-var evaluator = NeighborhoodEvaluator.build(new SwapMoveProvider(), solutionMetaModel);
-var evaluatorContext = evaluator.using(solution);
-var moveIterator = evaluatorContext.getMovesAsIterator();
+var tester = NeighborhoodTester.build(new SwapMoveProvider(), solutionMetaModel);
+var testContext = tester.using(solution);
+var moveIterator = testContext.getMovesAsIterator();
 
 assertThat(moveIterator).hasNext();
 var firstMove = moveIterator.next();
 
-var moveRunContext = evaluatorContext.getMoveRunContext();
-moveRunContext.executeTemporarily(firstMove, solutionView -> assertThat(firstEntity.getValue())
+var moveTestContext = testContext.getMoveTestContext();
+moveTestContext.executeTemporarily(firstMove, solutionView -> assertThat(firstEntity.getValue())
                 .isEqualTo(firstValue)); // Check that the move did what was expected.
 assertThat(firstEntity.getValue()).isNull(); // Check that the move's effect was correctly undone.
 ----
@@ -711,7 +711,7 @@ However, permanent execution will place all move iterators in an undefined state
 and it is therefore recommended to only use permanent execution
 when you no longer need to iterate over more moves.
 To continue iterating after permanent execution,
-you must re-obtain the move iterator from the `NeighborhoodEvaluatorContext` instance.
+you must re-obtain the move iterator from the `NeighborhoodTestContext` instance.
 
 
 [#neighborhoodsConfiguring]

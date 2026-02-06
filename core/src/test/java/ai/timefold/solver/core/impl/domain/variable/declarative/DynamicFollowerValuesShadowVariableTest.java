@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.preview.api.move.MoveRunner;
+import ai.timefold.solver.core.preview.api.move.MoveTester;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.shadow.dynamic_follower.TestdataDynamicFollowerConstraintProvider;
@@ -61,7 +61,7 @@ class DynamicFollowerValuesShadowVariableTest {
         var variableMetamodel = solutionMetamodel.genuineEntity(TestdataDynamicLeaderEntity.class)
                 .basicVariable("value", TestdataValue.class);
 
-        var context = MoveRunner.build(solutionMetamodel)
+        var context = MoveTester.build(solutionMetamodel)
                 .using(solution);
         context.execute(Moves.change(variableMetamodel, leaderA, value1));
         assertThat(follower1.getValue()).isEqualTo(value1);
@@ -107,7 +107,7 @@ class DynamicFollowerValuesShadowVariableTest {
         var variableMetamodel = solutionMetamodel.genuineEntity(TestdataDynamicFollowerEntity.class)
                 .basicVariable("leader", TestdataDynamicLeaderEntity.class);
 
-        var context = MoveRunner.build(solutionMetamodel)
+        var context = MoveTester.build(solutionMetamodel)
                 .using(solution);
 
         context.execute(Moves.change(variableMetamodel, follower1, leaderB));

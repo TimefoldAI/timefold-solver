@@ -11,9 +11,9 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import org.assertj.core.error.AssertionErrorCreator;
 import org.junit.jupiter.api.Test;
 
-// Much of the test coverage for NeighborhoodEvaluator is in tests for the specific MoveProviders.
+// Much of the test coverage for NeighborhoodTester is in tests for the specific MoveProviders.
 // There is no better coverage than real-world use cases. (Eating our own dog food.)
-class NeighborhoodEvaluatorTest {
+class NeighborhoodTesterTest {
 
     @Test
     void temporaryMoveExecutionDoesNotAffectMoveIterator() {
@@ -29,7 +29,7 @@ class NeighborhoodEvaluatorTest {
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
 
-        var evaluatedNeighborhood = NeighborhoodEvaluator.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var evaluatedNeighborhood = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution);
         var moveList = evaluatedNeighborhood
                 .getMovesAsList(move -> (ChangeMove<TestdataSolution, TestdataEntity, TestdataValue>) move);
@@ -43,7 +43,7 @@ class NeighborhoodEvaluatorTest {
                 .findFirst()
                 .orElseThrow(() -> new AssertionErrorCreator()
                         .assertionError("Move not found in move list."));
-        evaluatedNeighborhood.getMoveRunContext()
+        evaluatedNeighborhood.getMoveTestContext()
                 .executeTemporarily(firstMove, solutionView -> assertThat(firstEntity.getValue())
                         .isEqualTo(firstValue));
         assertThat(firstEntity.getValue()).isNull();
@@ -88,7 +88,7 @@ class NeighborhoodEvaluatorTest {
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
 
-        var evaluatedNeighborhood = NeighborhoodEvaluator.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var evaluatedNeighborhood = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution);
         var moveList =
                 evaluatedNeighborhood
@@ -102,7 +102,7 @@ class NeighborhoodEvaluatorTest {
                 .findFirst()
                 .orElseThrow(() -> new AssertionErrorCreator()
                         .assertionError("Move not found in move list."));
-        evaluatedNeighborhood.getMoveRunContext()
+        evaluatedNeighborhood.getMoveTestContext()
                 .execute(firstMove);
         assertThat(firstEntity.getValue()).isEqualTo(firstValue);
 

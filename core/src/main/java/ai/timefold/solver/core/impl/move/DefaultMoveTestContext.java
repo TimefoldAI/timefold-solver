@@ -5,17 +5,17 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.MoveRunContext;
+import ai.timefold.solver.core.preview.api.move.MoveTestContext;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public final class DefaultMoveRunContext<Solution_> implements MoveRunContext<Solution_> {
+public final class DefaultMoveTestContext<Solution_> implements MoveTestContext<Solution_> {
 
     private final AbstractScoreDirector<Solution_, ?, ?> scoreDirector;
 
-    DefaultMoveRunContext(AbstractScoreDirector<Solution_, ?, ?> scoreDirector) {
+    DefaultMoveTestContext(AbstractScoreDirector<Solution_, ?, ?> scoreDirector) {
         this.scoreDirector = Objects.requireNonNull(scoreDirector, "scoreDirector");
     }
 

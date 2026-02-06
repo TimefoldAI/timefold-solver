@@ -7,24 +7,24 @@ import java.util.function.Function;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.MoveRunContext;
-import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluationContext;
+import ai.timefold.solver.core.preview.api.move.MoveTestContext;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTestContext;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class DefaultNeighborhoodEvaluationContext<Solution_>
-        implements NeighborhoodEvaluationContext<Solution_> {
+final class DefaultNeighborhoodTestContext<Solution_>
+        implements NeighborhoodTestContext<Solution_> {
 
     private final NeighborhoodsBasedMoveRepository<Solution_> moveRepository;
-    private final MoveRunContext<Solution_> moveRunContext;
+    private final MoveTestContext<Solution_> moveTestContext;
     private final LocalSearchPhaseScope<Solution_> phaseScope;
 
-    DefaultNeighborhoodEvaluationContext(NeighborhoodsBasedMoveRepository<Solution_> moveRepository,
-            MoveRunContext<Solution_> moveRunContext,
+    DefaultNeighborhoodTestContext(NeighborhoodsBasedMoveRepository<Solution_> moveRepository,
+            MoveTestContext<Solution_> moveTestContext,
             LocalSearchPhaseScope<Solution_> phaseScope) {
         this.moveRepository = Objects.requireNonNull(moveRepository, "moveRepository");
-        this.moveRunContext = Objects.requireNonNull(moveRunContext, "moveRunContext");
+        this.moveTestContext = Objects.requireNonNull(moveTestContext, "moveTestContext");
         this.phaseScope = Objects.requireNonNull(phaseScope, "phaseScope");
     }
 
@@ -38,8 +38,8 @@ final class DefaultNeighborhoodEvaluationContext<Solution_>
     }
 
     @Override
-    public MoveRunContext<Solution_> getMoveRunContext() {
-        return moveRunContext;
+    public MoveTestContext<Solution_> getMoveTestContext() {
+        return moveTestContext;
     }
 
     private record CastingIterator<Solution_, Move_ extends Move<Solution_>>(Iterator<Move<Solution_>> childIterator,

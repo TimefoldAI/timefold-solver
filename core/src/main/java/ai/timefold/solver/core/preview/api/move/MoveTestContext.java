@@ -7,20 +7,20 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Provides methods for executing moves on a bound planning solution instance.
  * <p>
- * Created via {@link MoveRunner#using(Object)}, this context binds a specific solution
+ * Created via {@link MoveTester#using(Object)}, this context binds a specific solution
  * instance to the runner and exposes execution methods.
  * <p>
  * This class is NOT thread-safe.
  * <p>
- * <strong>This type is part of the Preview API which is under development.</strong>
- * There are no guarantees for backward compatibility; any class, method, or field may change
+ * <strong>This package and all of its contents are part of the Neighborhoods API,
+ * which is under development and is only offered as a preview feature.</strong>
+ * There are no guarantees for backward compatibility; any method or field may change
  * or be removed without prior notice, although we will strive to avoid this as much as possible.
- * Migration support will be provided via OpenRewrite recipes when breaking changes occur.
  *
  * @param <Solution_> the planning solution type
  */
 @NullMarked
-public interface MoveRunContext<Solution_> {
+public interface MoveTestContext<Solution_> {
 
     /**
      * Executes the given move permanently on the bound solution.
@@ -31,7 +31,7 @@ public interface MoveRunContext<Solution_> {
      * If the move throws an exception, the exception propagates to the caller
      * and the solution state may be only partially modified.
      * In this case, the caller must discard the solution instance
-     * and get a new instance of this class via {@link MoveRunner#using(Object)}.
+     * and get a new instance of this class via {@link MoveTester#using(Object)}.
      *
      * @param move the move to execute
      */
@@ -53,7 +53,7 @@ public interface MoveRunContext<Solution_> {
      * <li>If an exception occurs during move execution, the callback, or undo operation,
      * the solution state is undefined and no restoration is attempted.
      * The caller must discard the solution instance
-     * and get a new instance of this class via {@link MoveRunner#using(Object)}.</li>
+     * and get a new instance of this class via {@link MoveTester#using(Object)}.</li>
      * </ul>
      *
      * @param move the move to execute temporarily

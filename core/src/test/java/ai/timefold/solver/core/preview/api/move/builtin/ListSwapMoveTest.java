@@ -2,7 +2,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ai.timefold.solver.core.preview.api.move.MoveRunner;
+import ai.timefold.solver.core.preview.api.move.MoveTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -25,7 +25,7 @@ class ListSwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity, 0, entity, 2);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .execute(swapMove);
 
@@ -51,7 +51,7 @@ class ListSwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, 0, entity2, 0);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .execute(swapMove);
 
@@ -75,7 +75,7 @@ class ListSwapMoveTest {
         // Swap adjacent positions 1 and 2
         var swapMove = Moves.swap(variableMetaModel, entity, 1, entity, 2);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .execute(swapMove);
 
@@ -102,7 +102,7 @@ class ListSwapMoveTest {
         var e2v0 = entity2.getValueList().get(0);
         var e2v1 = entity2.getValueList().get(1);
 
-        var context = MoveRunner.build(solutionMetaModel)
+        var context = MoveTester.build(solutionMetaModel)
                 .using(solution);
         context.execute(move1);
         context.execute(move2);
@@ -126,7 +126,7 @@ class ListSwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity, 0, entity, 2);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(swapMove, view -> {
                     // During temporary execution, positions should be swapped
@@ -153,7 +153,7 @@ class ListSwapMoveTest {
 
         var swapMove = Moves.swap(variableMetaModel, entity1, 0, entity2, 0);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(swapMove, view -> {
                     // Values should be swapped

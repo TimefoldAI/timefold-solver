@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
-import ai.timefold.solver.core.preview.api.move.MoveRunner;
+import ai.timefold.solver.core.preview.api.move.MoveTester;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedSolution;
@@ -42,7 +42,7 @@ class MixedModelTest {
                 TestdataMixedEntity.class, TestdataMixedValue.class);
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataMixedValue.class)
                 .basicVariable("delay", Integer.class);
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(problem)
                 .executeTemporarily(Moves.change(variableMetaModel, value1, 2),
                         newSolution -> {
