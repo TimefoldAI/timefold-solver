@@ -25,7 +25,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private final boolean allowsUnassignedValues;
     private Iterator<Object> valueIterator;
     private Object selectedValue;
-    private boolean hasNext = false;
+    private boolean hasNextValue = false;
 
     public ElementPositionRandomIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             EntitySelector<Solution_> entitySelector, Iterator<Object> replayingValueIterator,
@@ -57,7 +57,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     }
 
     private boolean hasNextValue() {
-        if (hasNext) {
+        if (hasNextValue) {
             return true;
         }
         if (replayingValueIterator == null) {
@@ -81,13 +81,13 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
         // The valueSelector's hasNext() is insignificant.
         // The next random destination exists if and only if there is a next entity
         // and the replayed value is selected
-        this.hasNext = hasNextValue();
-        return hasNext;
+        this.hasNextValue = hasNextValue();
+        return hasNextValue;
     }
 
     @Override
     public ElementPosition next() {
-        this.hasNext = false;
+        this.hasNextValue = false;
         // This code operates under the assumption that the entity selector already filtered out all immovable entities.
         // At this point, entities are only partially pinned, or not pinned at all.
         var entitySize = entitySelector.getSize();
