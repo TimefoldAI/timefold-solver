@@ -193,12 +193,13 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
         return o instanceof ElementDestinationSelector<?> that
                 && randomSelection == that.randomSelection
                 && Objects.equals(entitySelector, that.entitySelector)
+                && Objects.equals(replayingValueSelector, that.replayingValueSelector)
                 && Objects.equals(valueSelector, that.valueSelector);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(entitySelector, valueSelector, randomSelection);
+        return Objects.hash(entitySelector, replayingValueSelector, valueSelector, randomSelection);
     }
 
     @Override
