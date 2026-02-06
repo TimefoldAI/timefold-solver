@@ -50,7 +50,7 @@ please link:https://timefold.ai/blog/migrating-score-drl-to-constraint-streams[u
 Timefold Solver 1.x is backward compatible with OptaPlanner 8.x,
 except for the following changes:
 
-* Minimum Java 17 (LTS). Java 21 (LTS) and the latest Java version are also supported.
+* Minimum Java 17. Java 21 and 25 are also supported.
 * The Maven/Gradle GAVs changed:
 ** The groupId changed from `org.optaplanner` to `ai.timefold.solver`.
 ** The artifactIds changed from `optaplanner-\*` to `timefold-solver-*`.
