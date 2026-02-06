@@ -33,8 +33,8 @@
 ## Skip These (Low Value)
 
 Do not comment on:
-- **Style/formatting** - CI handles this
-- **Test failures** - CI handles this (full test suite)
+- **Style/formatting** - CI enforces uniform code style
+- **Test failures** - CI will block merges with failing tests
 - **Suggestions to add comments** - for self-documenting code
 - **Refactoring suggestions** - unless there's a clear bug or maintainability issue
 - **Multiple issues in one comment** - avoid combining issues; write a separate comment for each and focus each on the single most critical issue
