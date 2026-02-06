@@ -1,0 +1,135 @@
+# Jobs in this workflow deal with secrets.
+# Since they may be executed from forks by untrusted users,
+# we need to ensure that the user is a member of the organization
+# or that there is explicit approval for their jobs to run.
+name: Documentation Preview
+
+env:
+  NODE_OPTIONS: "--max_old_space_size=4096"
+
+on:
+  # There are two differences to "pull_request" here:
+  # - The workflow will receive secrets, even in PRs from forks.
+  # - The workflow will be executed automatically, without requiring a manual approval.
+  # Therefore the workflow needs to be explicitly secured; see "known_user" and "approval_required" jobs below.
+  pull_request_target:
+    branches: [ main ]
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - 'docs/**'
+      - '.github/workflows/**'
+
+jobs:
+  # Check if the user is a member of the organization; if so, allow the PR to sail through.
+  known_user:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      is_member_of_org: ${{ steps.auth_check.outputs.authorized }}
+    steps:
+      - id: auth_check
+        env:
+          GH_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}  # Release account is a Solver Gatekeeper.
+        shell: bash
+        run: |
+          # -g to allow actors such as dependabot[bot]
+          ORG_MEMBERSHIP=`curl -g -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/orgs/TimefoldAI/memberships/${{ github.actor }}" | jq -r '.state == "active"'`
+          echo "authorized=$ORG_MEMBERSHIP" >> "$GITHUB_OUTPUT"
+      - id: validation
+        shell: bash
+        run: |
+          echo "Authorized user: ${{ steps.auth_check.outputs.authorized }}"
+  # If the user is not a member, require a member to approve the PR.
+  approval_required:
+    needs: known_user
+    environment:
+      ${{
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name != github.repository &&
+      (needs.known_user.outputs.is_member_of_org != 'true' || github.actor == 'dependabot[bot]') &&
+      'external' || 'internal'
+      }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - run: true
+
+  build_documentation:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: approval_required
+    name: Build Documentation
+    environment:
+      name: "documentation (preview)"
+      url: ${{ steps.deploy.outputs.deployment-url }}
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+    steps:
+      - name: Checkout frontend
+        id: checkout-frontend
+        uses: actions/checkout@v6
+        with:
+          repository: TimefoldAI/frontend
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+      - name: Install pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+      - name: Use Aikido Sec Safe Chain
+        run: |
+          pnpm install -g @aikidosec/safe-chain@1.1.7
+          safe-chain setup-ci
+      - name: Set up NodeJs
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v6
+        with:
+          repository: "${{ github.event.pull_request.head.repo.owner.login || 'TimefoldAI' }}/timefold-solver"
+          ref: ${{ github.event.pull_request.head.sha || 'main' }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
+          path: "./timefold-solver"
+          fetch-depth: 0
+
+      - name: Updating Antora configuration
+        working-directory: "./timefold-solver"
+        run: |
+          echo "=== Updating antora.yml"
+          sed -i "s/\${project\.version}b0/SNAPSHOT/g" docs/src/antora.yml
+          sed -i "s/\${project\.version}/SNAPSHOT/g" docs/src/antora.yml
+          sed -i "s/\${maven\.compiler\.release}/$(find build/build-parent/ -name pom.xml -exec grep '<maven.compiler.release>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          sed -i "s/\${maven\.min\.version}/$(find build/build-parent/ -name pom.xml -exec grep '<maven.min.version>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          sed -i "s/\${version\.io\.quarkus}/$(find build/build-parent/ -name pom.xml -exec grep '<version.io.quarkus>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          sed -i "s/\${version\.org\.springframework\.boot}/$(find build/build-parent/ -name pom.xml -exec grep '<version.org.springframework.boot>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          sed -i "s/\${version\.ch\.qos\.logback}/$(find build/build-parent/ -name pom.xml -exec grep '<version.ch.qos.logback>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          sed -i "s/\${version\.exec\.plugin}/$(find build/build-parent/ -name pom.xml -exec grep '<version.exec.plugin>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          sed -i "s/\${version\.rewrite\.plugin}/$(find . -name pom.xml -exec grep '<version.rewrite.plugin>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          cat docs/src/antora.yml
+
+      - name: Build Documentation
+        working-directory: "./"
+        env:
+          GIT_CREDENTIALS: ${{ secrets.GIT_CREDENTIALS }}
+        run: |
+          yq -i e 'del(.content.sources)' apps/docs/antora-playbook.yml
+          yq -i e 'del(.site.keys)' apps/docs/antora-playbook.yml
+          yq -i e '.content.sources += [{"url": "../../timefold-solver", "start_path": "docs/src"}]' apps/docs/antora-playbook.yml
+          aikido-pnpm install --frozen-lockfile
+          aikido-pnpm build --filter @timefoldai/docs
+
+      - name: Deploy Documentation (Preview Mode)
+        if: ${{ env.BRANCH_NAME != 'main' }}
+        id: deploy
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ./apps/docs
+          command: pages deploy ./public-serve --project-name=timefold-docs --branch=${{ github.ref }}
+          packageManager: pnpm
