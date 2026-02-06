@@ -37,7 +37,7 @@ Do not comment on:
 - **Test failures** - CI handles this (full test suite)
 - **Suggestions to add comments** - for self-documenting code
 - **Refactoring suggestions** - unless there's a clear bug or maintainability issue
-- **Multiple issues in one comment** - choose the single most critical issue
+- **Multiple issues in one comment** - avoid combining issues; write a separate comment for each and focus each on the single most critical issue
 
 ## Response Format
 
