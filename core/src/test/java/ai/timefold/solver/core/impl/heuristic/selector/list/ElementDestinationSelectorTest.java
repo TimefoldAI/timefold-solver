@@ -612,6 +612,6 @@ class ElementDestinationSelectorTest {
 
         // Even using only the value selector,
         // the entity iterator must discard the previous entity during the hasNext() calls
-        verify(entityIterator, times(1)).next();
+        verify(entityIterator, times(1)).discardUpcomingSelection();
     }
 }

@@ -51,8 +51,9 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
         // We only update the entity iterator if the iterator is an instance of UpcomingSelectionIterator,
         // indicating that the entity from the previous move has already been recorded
         // and needs to be discarded.
-        if (entityIterator instanceof UpcomingSelectionIterator) {
-            entityIterator.next();
+        if (entityIterator instanceof UpcomingSelectionIterator upcomingSelectionIterator) {
+            // WWe discard the selection without invoking the next() operation in order to avoid skipping valid moves
+            upcomingSelectionIterator.discardUpcomingSelection();
         }
     }
 
