@@ -22,13 +22,13 @@
 - Resource leaks (files, connections, memory)
 - Off-by-one errors or boundary conditions
 - Incorrect error propagation
-- Unnecessary comments that just restate what the code already shows (remove them)
 
 ### Architecture & Patterns
 - Code that violates existing patterns in the codebase
 - Inconsistent use of libraries or frameworks
 - Missing error handling
 - Inconsistent naming of methods, variables, classes
+- Unnecessary comments that just restate what the code already shows (remove them)
 
 ## Skip These (Low Value)
 
