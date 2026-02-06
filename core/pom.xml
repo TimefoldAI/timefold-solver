@@ -32,7 +32,7 @@
     <dependency>
       <groupId>io.quarkus.gizmo</groupId>
       <artifactId>gizmo2</artifactId>
-      <optional>true</optional>
+      <!--      <optional>true</optional>-->
     </dependency>
 
     <!-- External dependencies -->

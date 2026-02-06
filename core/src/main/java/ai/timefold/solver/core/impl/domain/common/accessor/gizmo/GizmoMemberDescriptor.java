@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 
 import org.jspecify.annotations.NullMarked;
@@ -60,15 +59,6 @@ public final class GizmoMemberDescriptor {
 
     public GizmoMemberDescriptor(Member member, boolean methodWithParameter) {
         Class<?> declaringClass = member.getDeclaringClass();
-        if (!Modifier.isPublic(member.getModifiers())) {
-            throw new IllegalStateException("""
-                    Member (%s) of class (%s) is not public and domainAccessType is %s.
-                    %sMaybe use domainAccessType %s instead of %s."""
-                    .formatted(member.getName(), member.getDeclaringClass().getName(), DomainAccessType.GIZMO,
-                            ((member instanceof Field) ? "Maybe put the annotations onto the public getter of the field.\n"
-                                    : ""),
-                            DomainAccessType.REFLECTION, DomainAccessType.GIZMO));
-        }
         if (member instanceof Field field) {
             var fieldDescriptor = FieldDesc.of(field);
             this.name = member.getName();
@@ -76,6 +66,11 @@ public final class GizmoMemberDescriptor {
             this.setter = null;
             this.methodParameterType = null;
         } else if (member instanceof Method method) {
+            if (!Modifier.isPublic(method.getModifiers())) {
+                throw new IllegalStateException("""
+                        Member (%s) of class (%s) is not public."""
+                        .formatted(method.getName(), declaringClass.getName()));
+            }
             var methodDescriptor = MethodDesc.of(method);
             this.name = ReflectionHelper.isGetterMethod(method) ? ReflectionHelper.getGetterPropertyName(member)
                     : member.getName();

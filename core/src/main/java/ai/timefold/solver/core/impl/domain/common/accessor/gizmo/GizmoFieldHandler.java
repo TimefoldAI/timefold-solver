@@ -23,7 +23,8 @@ final class GizmoFieldHandler implements GizmoMemberHandler {
     private final @Nullable MethodDesc setterDescriptor;
     private final boolean canBeWritten;
 
-    GizmoFieldHandler(Class<?> declaringClass, FieldDesc fieldDescriptor, boolean canBeWritten) {
+    GizmoFieldHandler(Class<?> declaringClass, FieldDesc fieldDescriptor, boolean ignoreChecks, boolean canBeWritten,
+            boolean isFieldPublic) {
         this.declaringClass = declaringClass;
         this.fieldDescriptor = fieldDescriptor;
         var getterMethod = ReflectionHelper.getGetterMethod(declaringClass, fieldDescriptor.name());
@@ -34,10 +35,20 @@ final class GizmoFieldHandler implements GizmoMemberHandler {
                 throw new IllegalArgumentException("Field (%s) in class (%s) is a write-only field."
                         .formatted(fieldDescriptor.name(), declaringClass.getName()));
             }
+            if (!ignoreChecks && !isFieldPublic) {
+                throw new IllegalStateException("""
+                        Member (%s) of class (%s) is not public."""
+                        .formatted(fieldDescriptor.name(), declaringClass.getName()));
+            }
             getterDescriptor = null;
             setterDescriptor = null;
             this.canBeWritten = canBeWritten;
         } else {
+            if (!ignoreChecks && !Modifier.isPublic(getterMethod.getModifiers())) {
+                throw new IllegalStateException("""
+                        Member (%s) of class (%s) is not public."""
+                        .formatted(getterMethod.getName(), getterMethod.getDeclaringClass().getName()));
+            }
             ReflectionHelper.assertGetterMethod(getterMethod);
             getterDescriptor = MethodDesc.of(getterMethod);
 
