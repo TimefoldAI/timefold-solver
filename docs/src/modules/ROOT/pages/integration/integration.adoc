@@ -635,7 +635,7 @@ and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQ
 
 [NOTE]
 ====
-Timefold Solver Spring Boot Starter only supports Spring Boot version 3.2.x and up.
+Timefold Solver Spring Boot Starter only supports Spring Boot version 3.5.x.
 ====
 
 [#integrationWithSpringBootProperties]
