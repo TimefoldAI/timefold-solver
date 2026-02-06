@@ -685,7 +685,7 @@ and an initialized `MoveTestContext` can be obtained directly from the `Neighbor
 ----
 var tester = NeighborhoodTester.build(new SwapMoveProvider(), solutionMetaModel);
 var testerContext = tester.using(solution);
-var moveTestContext = evaluatorContext.getMoveTestContext();
+var moveTestContext = testerContext.getMoveTestContext();
 ----
 
 Temporary execution with automatic undo is particularly useful for testing move correctness,
