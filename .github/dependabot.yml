@@ -4,8 +4,9 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
-      time: '01:00' # Otherwise it picks a random time.
-    open-pull-requests-limit: 10
+      day: "monday"
+      time: "01:00" # Otherwise it picks a random time.
+    open-pull-requests-limit: 99
     commit-message:
       prefix: "deps: "
     labels: ["dependencies"] # Don't use any other labels.
@@ -18,12 +19,14 @@ updates:
       spring:
         patterns:
           - "org.springframework.boot:*"
+          - "org.springframework:*"
+          - "org.springdoc:*"
       openrewrite:
         patterns:
           - "org.openrewrite.maven:*"
           - "org.openrewrite.recipe:*"
       # Everything else can be grouped together to minimize the number of PRs.
-      # If any dependency ever breaks our code, it will be upgrouped.
+      # If any dependency ever breaks our code, it will be ungrouped.
       regular:
         patterns:
           - "*"
@@ -31,14 +34,15 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
-      time: '01:00' # Otherwise it picks a random time.
-    open-pull-requests-limit: 10
+      day: "monday"
+      time: "01:00" # Otherwise it picks a random time.
+    open-pull-requests-limit: 99
     commit-message:
       prefix: "deps: "
     labels: ["dependencies"] # Don't use any other labels.
     groups:
       # Everything can be grouped together to minimize the number of PRs.
-      # If any dependency ever breaks our code, it will be upgrouped.
+      # If any dependency ever breaks our code, it will be ungrouped.
       regular:
         patterns:
           - "*"
