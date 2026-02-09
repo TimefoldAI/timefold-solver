@@ -2,157 +2,151 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>ai.timefold.solver</groupId>
-    <artifactId>timefold-solver-spring-integration</artifactId>
-    <version>999-SNAPSHOT</version>
-  </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-spring-integration</artifactId>
+        <version>999-SNAPSHOT</version>
+    </parent>
 
-  <artifactId>spring-boot-integration-test</artifactId>
+    <artifactId>spring-boot-integration-test</artifactId>
 
-  <name>Timefold Solver Spring Boot - Integration tests</name>
-  <description>Spring Boot integration tests for Timefold</description>
+    <name>Timefold Solver Spring Boot - Integration tests</name>
+    <description>Spring Boot integration tests for Timefold</description>
 
-  <properties>
-    <java.module.name>ai.timefold.solver.spring.boot</java.module.name>
-    <!-- Code of integration tests should not be a part of test coverage reports. -->
-    <sonar.coverage.exclusions>**/*</sonar.coverage.exclusions>
-    <version.junit.platform.launcher>1.12.1</version.junit.platform.launcher>
-  </properties>
+    <properties>
+        <java.module.name>ai.timefold.solver.spring.boot</java.module.name>
+        <!-- Code of integration tests should not be a part of test coverage reports. -->
+        <sonar.coverage.exclusions>**/*</sonar.coverage.exclusions>
+        <version.junit.platform.launcher>1.12.1</version.junit.platform.launcher>
+    </properties>
 
-  <dependencyManagement>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <type>pom</type>
+                <scope>import</scope>
+                <version>${version.org.springframework.boot}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
-      <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-dependencies</artifactId>
-        <type>pom</type>
-        <scope>import</scope>
-        <version>${version.org.springframework.boot}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
-  <dependencies>
-    <!-- Spring boot -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-webmvc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-spring-boot-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-autoconfigure</artifactId>
-    </dependency>
-
-    <!-- Testing -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webflux</artifactId>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
-  <profiles>
-    <profile>
-      <id>native</id>
-      <activation>
-        <property>
-          <name>native</name>
-          <value>true</value>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
+        <!-- Spring boot -->
+        <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-            <configuration>
-              <finalName>timefold-spring-boot-integration-test</finalName>
-              <image>
-                <builder>paketobuildpacks/builder:tiny</builder>
-                <env>
-                  <BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
-                </env>
-              </image>
-            </configuration>
-            <executions>
-              <execution>
-                <id>process-aot</id>
-                <goals>
-                  <goal>process-aot</goal>
-                  <goal>process-test-aot</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.graalvm.buildtools</groupId>
-            <artifactId>native-maven-plugin</artifactId>
-            <extensions>true</extensions>
-            <executions>
-              <execution>
-                <id>build-native</id>
-                <goals>
-                  <goal>compile-no-fork</goal>
-                  <goal>test</goal>
-                </goals>
-                <phase>package</phase>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ai.timefold.solver</groupId>
+            <artifactId>timefold-solver-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webflux</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <configuration>
-                  <imageName>app.native</imageName>
+                    <skip>true</skip>
                 </configuration>
-              </execution>
-              <execution>
-                <id>add-reachability-metadata</id>
-                <goals>
-                  <goal>add-reachability-metadata</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <imageName>app.native</imageName>
-              <buildArgs>
-                <!-- Ob == fast build -->
-                <buildArg>-Ob</buildArg>
-                <buildArg>--no-fallback -H:+ReportExceptionStackTraces</buildArg>
-                <!--
-                    JUnit 6.0.x introduced an issue for native compilation
-                    affecting GraalVM 21. Newer versions of GraalVM are not impacted by this issue,
-                    and parameters may be removed once a fix is merged and published.
-                 -->
-                <buildArg>--initialize-at-build-time=org.junit.jupiter.engine.discovery.MethodSegmentResolver</buildArg>
-              </buildArgs>
-              <metadataRepository>
-                <enabled>true</enabled>
-              </metadataRepository>
-            </configuration>
-          </plugin>
+            </plugin>
         </plugins>
-      </build>
-    </profile>
-  </profiles>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>native</id>
+            <activation>
+                <property>
+                    <name>native</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <finalName>timefold-spring-boot-integration-test</finalName>
+                            <image>
+                                <builder>paketobuildpacks/builder:tiny</builder>
+                                <env>
+                                    <BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
+                                </env>
+                            </image>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>process-aot</id>
+                                <goals>
+                                    <goal>process-aot</goal>
+                                    <goal>process-test-aot</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <imageName>app.native</imageName>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>add-reachability-metadata</id>
+                                <goals>
+                                    <goal>add-reachability-metadata</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <imageName>app.native</imageName>
+                            <buildArgs>
+                                <!-- Ob == fast build -->
+                                <buildArg>-Ob</buildArg>
+                                <buildArg>--no-fallback -H:+ReportExceptionStackTraces</buildArg>
+                            </buildArgs>
+                            <metadataRepository>
+                                <enabled>true</enabled>
+                            </metadataRepository>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

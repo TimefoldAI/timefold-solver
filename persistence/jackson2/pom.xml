@@ -17,7 +17,9 @@
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
-    This module contains the Jackson 2 integration.
+    This module includes the Jackson 2 integration,
+    which has been deprecated in favor of the newer Jackson 3 module, timefold-solver-jackson.
+    Therefore, it is recommended to use timefold-solver-jackson unless Quarkus is specifically required.
   </description>
   <url>https://solver.timefold.ai</url>
 
