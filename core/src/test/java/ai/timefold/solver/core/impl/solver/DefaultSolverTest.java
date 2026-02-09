@@ -123,6 +123,8 @@ import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.multipleprovider.TestdataMixedMultipleProviderEntity;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.multipleprovider.TestdataMixedMultipleProviderSolution;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedMixedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedMixedSolution;
@@ -1386,6 +1388,19 @@ class DefaultSolverTest {
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
                 .isEmpty();
+    }
+
+    @Test
+    void solveMixedModelWithMultipleProviders() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedMultipleProviderSolution.class, TestdataMixedMultipleProviderEntity.class)
+                .withPhaseList(Collections.emptyList())
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(16))
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = TestdataMixedMultipleProviderSolution.generateUninitializedSolution(3, 3, 3);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution).isNotNull();
     }
 
     @Test

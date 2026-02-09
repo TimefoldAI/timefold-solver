@@ -566,6 +566,10 @@ public class ValueSelectorFactory<Solution_>
         }
         var valueSelectorConfig = new ValueSelectorConfig()
                 .withMimicSelectorRef(entityValueRangeRecorderId);
+        // We set the name for the list variable in case there are multiple variables present
+        if (entityDescriptor.hasBothGenuineListAndBasicVariables()) {
+            valueSelectorConfig.setVariableName(valueSelector.getVariableDescriptor().getVariableName());
+        }
         var replayingValueSelector =
                 (IterableValueSelector<Solution_>) ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                         .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
