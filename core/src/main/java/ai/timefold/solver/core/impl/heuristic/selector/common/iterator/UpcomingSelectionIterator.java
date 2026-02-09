@@ -52,6 +52,10 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
         return null;
     }
 
+    public void discardUpcomingSelection() {
+        upcomingCreated = false;
+    }
+
     @Override
     public String toString() {
         if (!upcomingCreated) {

@@ -5,6 +5,7 @@ import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
@@ -16,19 +17,24 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final EntitySelector<Solution_> entitySelector;
+    private final Iterator<Object> replayingValueIterator;
     private final IterableValueSelector<Solution_> valueSelector;
     private final Iterator<Object> entityIterator;
     private final Random workingRandom;
     private final long totalSize;
     private final boolean allowsUnassignedValues;
     private Iterator<Object> valueIterator;
+    private Object selectedValue;
+    private boolean hasNextValue = false;
 
     public ElementPositionRandomIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
-            EntitySelector<Solution_> entitySelector, IterableValueSelector<Solution_> valueSelector,
-            Random workingRandom, long totalSize, boolean allowsUnassignedValues) {
+            EntitySelector<Solution_> entitySelector, Iterator<Object> replayingValueIterator,
+            IterableValueSelector<Solution_> valueSelector, Random workingRandom, long totalSize,
+            boolean allowsUnassignedValues) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         this.entitySelector = entitySelector;
+        this.replayingValueIterator = replayingValueIterator;
         this.valueSelector = valueSelector;
         this.entityIterator = entitySelector.iterator();
         this.workingRandom = workingRandom;
@@ -41,15 +47,48 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
         this.valueIterator = null;
     }
 
+    private void tryUpdateEntityIterator() {
+        // We only update the entity iterator if the iterator is an instance of UpcomingSelectionIterator,
+        // indicating that the entity from the previous move has already been recorded
+        // and needs to be discarded.
+        if (entityIterator instanceof UpcomingSelectionIterator upcomingSelectionIterator) {
+            // We discard the selection without invoking the next() operation in order to avoid skipping valid moves
+            upcomingSelectionIterator.discardUpcomingSelection();
+        }
+    }
+
+    private boolean hasNextValue() {
+        if (hasNextValue) {
+            return true;
+        }
+        if (replayingValueIterator == null) {
+            return entityIterator.hasNext();
+        }
+        if (replayingValueIterator.hasNext()) {
+            var oldValue = selectedValue;
+            selectedValue = replayingValueIterator.next();
+            if (oldValue != null && oldValue != selectedValue) {
+                // It means the outer selector picked a new value
+                // and the entity iterator must discard the previous entity
+                tryUpdateEntityIterator();
+            }
+            return entityIterator.hasNext();
+        }
+        return selectedValue != null && entityIterator.hasNext();
+    }
+
     @Override
     public boolean hasNext() {
         // The valueSelector's hasNext() is insignificant.
-        // The next random destination exists if and only if there is a next entity.
-        return entityIterator.hasNext();
+        // The next random destination exists if and only if there is a next entity
+        // and the replayed value is selected
+        this.hasNextValue = hasNextValue();
+        return hasNextValue;
     }
 
     @Override
     public ElementPosition next() {
+        this.hasNextValue = false;
         // This code operates under the assumption that the entity selector already filtered out all immovable entities.
         // At this point, entities are only partially pinned, or not pinned at all.
         var entitySize = entitySelector.getSize();

@@ -40,6 +40,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
 
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final EntitySelector<Solution_> entitySelector;
+    private final IterableValueSelector<Solution_> replayingValueSelector;
     private final IterableValueSelector<Solution_> valueSelector;
     private final boolean randomSelection;
     private final boolean isExhaustiveSearch;
@@ -48,14 +49,16 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
 
     public ElementDestinationSelector(EntitySelector<Solution_> entitySelector, IterableValueSelector<Solution_> valueSelector,
             boolean randomSelection) {
-        this(entitySelector, valueSelector, randomSelection, false);
+        this(entitySelector, null, valueSelector, randomSelection, false);
     }
 
-    public ElementDestinationSelector(EntitySelector<Solution_> entitySelector, IterableValueSelector<Solution_> valueSelector,
+    public ElementDestinationSelector(EntitySelector<Solution_> entitySelector,
+            IterableValueSelector<Solution_> replayingValueSelector, IterableValueSelector<Solution_> valueSelector,
             boolean randomSelection, boolean isExhaustiveSearch) {
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         this.entitySelector = entitySelector;
         var selector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableStateSupply);
+        this.replayingValueSelector = replayingValueSelector;
         this.valueSelector = listVariableDescriptor.allowsUnassignedValues() ? filterUnassignedValues(selector) : selector;
         this.randomSelection = randomSelection;
         this.isExhaustiveSearch = isExhaustiveSearch;
@@ -124,8 +127,9 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             var totalValueSize = valueSelector.getSize()
                     - (allowsUnassignedValues ? listVariableStateSupply.getUnassignedCount() : 0);
             var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
-            return new ElementPositionRandomIterator<>(listVariableStateSupply, entitySelector, valueSelector,
-                    workingRandom, totalSize, allowsUnassignedValues);
+            return new ElementPositionRandomIterator<>(listVariableStateSupply, entitySelector,
+                    replayingValueSelector != null ? replayingValueSelector.iterator() : null, valueSelector, workingRandom,
+                    totalSize, allowsUnassignedValues);
         } else {
             if (entitySelector.getSize() == 0) {
                 return Collections.emptyIterator();
@@ -189,12 +193,13 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
         return o instanceof ElementDestinationSelector<?> that
                 && randomSelection == that.randomSelection
                 && Objects.equals(entitySelector, that.entitySelector)
+                && Objects.equals(replayingValueSelector, that.replayingValueSelector)
                 && Objects.equals(valueSelector, that.valueSelector);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(entitySelector, valueSelector, randomSelection);
+        return Objects.hash(entitySelector, replayingValueSelector, valueSelector, randomSelection);
     }
 
     @Override
