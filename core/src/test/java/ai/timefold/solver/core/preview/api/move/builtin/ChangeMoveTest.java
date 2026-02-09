@@ -2,7 +2,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ai.timefold.solver.core.preview.api.move.MoveRunner;
+import ai.timefold.solver.core.preview.api.move.MoveTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -23,7 +23,7 @@ class ChangeMoveTest {
 
         var changeMove = Moves.change(variableMetaModel, entity, newValue);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .execute(changeMove);
 
@@ -41,7 +41,7 @@ class ChangeMoveTest {
 
         var changeMove = Moves.change(variableMetaModel, entity, null);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .execute(changeMove);
 
@@ -65,7 +65,7 @@ class ChangeMoveTest {
         var move2 = Moves.change(variableMetaModel, entity2, value1);
         var move3 = Moves.change(variableMetaModel, entity3, value2);
 
-        var context = MoveRunner.build(solutionMetaModel)
+        var context = MoveTester.build(solutionMetaModel)
                 .using(solution);
         context.execute(move1);
         context.execute(move2);
@@ -89,7 +89,7 @@ class ChangeMoveTest {
 
         var changeMove = Moves.change(variableMetaModel, entity, newValue);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(changeMove, view -> {
                     // During temporary execution, value should be changed
@@ -121,7 +121,7 @@ class ChangeMoveTest {
         var move3 = Moves.change(variableMetaModel, entity3, value2);
         var compositeMove = Moves.compose(move1, move2, move3);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(compositeMove, view -> {
                     // All changes should be applied

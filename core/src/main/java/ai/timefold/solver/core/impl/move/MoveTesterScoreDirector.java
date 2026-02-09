@@ -11,10 +11,10 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.jspecify.annotations.NullMarked;
 
-final class MoveRunnerScoreDirector<Solution_, Score_ extends Score<Score_>>
-        extends AbstractScoreDirector<Solution_, Score_, MoveRunnerScoreDirectorFactory<Solution_, Score_>> {
+final class MoveTesterScoreDirector<Solution_, Score_ extends Score<Score_>>
+        extends AbstractScoreDirector<Solution_, Score_, MoveTesterScoreDirectorFactory<Solution_, Score_>> {
 
-    private MoveRunnerScoreDirector(Builder<Solution_, Score_> builder) {
+    private MoveTesterScoreDirector(Builder<Solution_, Score_> builder) {
         super(builder);
     }
 
@@ -46,19 +46,19 @@ final class MoveRunnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     @NullMarked
     static final class Builder<Solution_, Score_ extends Score<Score_>> extends
-            AbstractScoreDirectorBuilder<Solution_, Score_, MoveRunnerScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
+            AbstractScoreDirectorBuilder<Solution_, Score_, MoveTesterScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
 
-        public Builder(MoveRunnerScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
+        public Builder(MoveTesterScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
             super(scoreDirectorFactory);
         }
 
         @Override
-        public MoveRunnerScoreDirector<Solution_, Score_> build() {
-            return new MoveRunnerScoreDirector<>(this);
+        public MoveTesterScoreDirector<Solution_, Score_> build() {
+            return new MoveTesterScoreDirector<>(this);
         }
 
         @Override
-        public MoveRunnerScoreDirector<Solution_, Score_> buildDerived() {
+        public MoveTesterScoreDirector<Solution_, Score_> buildDerived() {
             throw new UnsupportedOperationException(); // This should never be derived, only used for testing.
         }
     }

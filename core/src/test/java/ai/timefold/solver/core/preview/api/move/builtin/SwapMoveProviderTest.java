@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
-import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluator;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
@@ -31,7 +31,7 @@ class SwapMoveProviderTest {
         // With 3 entities, only 3 swap moves are possible: e1 <-> e2, e1 <-> e3, e2 <-> e3.
         // But we only have 2 values, guaranteeing that two entities will share a value.
         // Therefore there will only be 4 swap moves (including duplicates).
-        var moveList = NeighborhoodEvaluator.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(move -> (SwapMove<TestdataSolution, TestdataEntity>) move);
         assertThat(moveList).hasSize(4);
@@ -87,7 +87,7 @@ class SwapMoveProviderTest {
         // With 3 entities, only 3 swap moves are possible: e1 <-> e2, e1 <-> e3, e2 <-> e3.
         // But we only have 2 unique combinations of values, guaranteeing that two entities will share values.
         // Therefore there will only be 4 swap moves (including duplicates).
-        var moveList = NeighborhoodEvaluator.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(move -> (SwapMove<TestdataMultiVarSolution, TestdataMultiVarEntity>) move);
         assertThat(moveList).hasSize(4);
@@ -138,7 +138,7 @@ class SwapMoveProviderTest {
         // With 3 entities, only 3 swap moves are possible: e1 <-> e2, e1 <-> e3, e2 <-> e3.
         // We only have 1 value for primary and secondary variables,
         // therefore with the tertiary variable excluded, there will be no swap moves.
-        var moveList = NeighborhoodEvaluator.build(new SwapMoveProvider<>(allowedVariableMetaModels), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new SwapMoveProvider<>(allowedVariableMetaModels), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(move -> (SwapMove<TestdataMultiVarSolution, TestdataMultiVarEntity>) move);
         assertThat(moveList).isEmpty();

@@ -5,7 +5,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Collections;
 
-import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluator;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -38,7 +38,7 @@ class ChangeMoveProviderTest {
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
 
-        var moveList = NeighborhoodEvaluator.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(move -> (ChangeMove<TestdataSolution, TestdataEntity, TestdataValue>) move);
         assertThat(moveList).hasSize(4);
@@ -94,7 +94,7 @@ class ChangeMoveProviderTest {
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
 
-        var moveList = NeighborhoodEvaluator.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(
                         move -> (ChangeMove<TestdataIncompleteValueRangeSolution, TestdataIncompleteValueRangeEntity, TestdataValue>) move);
@@ -148,7 +148,7 @@ class ChangeMoveProviderTest {
         // - firstEntity is already assigned to firstValue, the only possible value; skip.
         // - Assign secondEntity to firstValue,
         //   as it is currently assigned to secondValue, and the value range only contains firstValue.
-        var moveList = NeighborhoodEvaluator.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(
                         move -> (ChangeMove<TestdataEntityProvidingSolution, TestdataEntityProvidingEntity, TestdataValue>) move);
@@ -182,7 +182,7 @@ class ChangeMoveProviderTest {
         //   as it is currently assigned to secondValue, and the value range only contains firstValue.
         // Null is not in the value range, but as documented,
         // null is added automatically to value ranges when allowsUnassigned is true.
-        var moveList = NeighborhoodEvaluator.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(
                         move -> (ChangeMove<TestdataAllowsUnassignedEntityProvidingSolution, TestdataAllowsUnassignedEntityProvidingEntity, TestdataValue>) move);
@@ -229,7 +229,7 @@ class ChangeMoveProviderTest {
 
         // Filters out moves that would change the value to the value the entity already has.
         // Therefore this will have 4 moves (2 entities * 2 values) as opposed to 6 (2 entities * 3 values).
-        var moveList = NeighborhoodEvaluator.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(
                         move -> (ChangeMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue>) move);

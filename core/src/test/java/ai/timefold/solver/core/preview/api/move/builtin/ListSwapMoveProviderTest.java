@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
-import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluator;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -34,7 +34,7 @@ class ListSwapMoveProviderTest {
         e2.getValueList().add(assignedValue3);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveList = NeighborhoodEvaluator.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList();
         assertThat(moveList).hasSize(6);
@@ -110,7 +110,7 @@ class ListSwapMoveProviderTest {
         e2.getValueList().add(initiallyAssignedValue);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveList = NeighborhoodEvaluator.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList();
 

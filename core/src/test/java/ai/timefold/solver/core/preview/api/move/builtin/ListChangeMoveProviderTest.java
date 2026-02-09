@@ -7,7 +7,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluator;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
@@ -37,7 +37,7 @@ class ListChangeMoveProviderTest {
         e2.getValueList().add(initiallyAssignedValue);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList();
         assertThat(moveList).hasSize(4);
@@ -106,7 +106,7 @@ class ListChangeMoveProviderTest {
         e2.getValueList().add(initiallyAssignedValue);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList();
         assertThat(moveList).hasSize(4);
@@ -173,7 +173,7 @@ class ListChangeMoveProviderTest {
         var v3 = solution.getValueList().get(2);
         e2.getValueList().add(v1);
 
-        var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList();
         assertThat(moveList).hasSize(5);
@@ -250,7 +250,7 @@ class ListChangeMoveProviderTest {
         e2.getValueList().add(v1);
         SolutionManager.updateShadowVariables(solution);
 
-        var moveList = NeighborhoodEvaluator.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+        var moveList = NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList();
         assertThat(moveList).hasSize(5);

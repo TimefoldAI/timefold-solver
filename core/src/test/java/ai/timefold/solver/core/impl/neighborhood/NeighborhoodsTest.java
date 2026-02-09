@@ -39,7 +39,7 @@ import ai.timefold.solver.core.preview.api.move.builtin.ChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.move.builtin.SwapMove;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
-import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodEvaluator;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTester;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -147,7 +147,7 @@ class NeighborhoodsTest {
         // The above solution, together with the move provider below, should generate 2 swap moves:
         // - firstEntity <-> secondEntity
         // - unchangingAssignedEntity <-> secondEntity
-        var context = NeighborhoodEvaluator.build(new SwapAssignedAndUnassigned(variableMetaModel), solutionMetaModel)
+        var context = NeighborhoodTester.build(new SwapAssignedAndUnassigned(variableMetaModel), solutionMetaModel)
                 .using(solution);
         var moveList =
                 context.getMovesAsList(m -> (SwapMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity>) m);
@@ -170,7 +170,7 @@ class NeighborhoodsTest {
         // Execute one swap and verify the new moves:
         // - unchangingAssignedEntity <-> firstEntity
         // - secondEntity <-> firstEntity
-        context.getMoveRunContext().execute(move1);
+        context.getMoveTestContext().execute(move1);
         moveList = context.getMovesAsList(m -> (SwapMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity>) m);
         assertThat(moveList).hasSize(2);
         var move3 = moveList.get(0);

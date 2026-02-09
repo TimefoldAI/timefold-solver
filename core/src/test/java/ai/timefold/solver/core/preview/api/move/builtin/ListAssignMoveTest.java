@@ -2,7 +2,7 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ai.timefold.solver.core.preview.api.move.MoveRunner;
+import ai.timefold.solver.core.preview.api.move.MoveTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -23,7 +23,7 @@ class ListAssignMoveTest {
 
         var assignMove = Moves.assign(variableMetaModel, value, entity, 0);
 
-        MoveRunner.build(solutionMetaModel).using(solution)
+        MoveTester.build(solutionMetaModel).using(solution)
                 .execute(assignMove);
 
         assertThat(entity.getValueList()).hasSize(1);
@@ -46,7 +46,7 @@ class ListAssignMoveTest {
         var move2 = Moves.assign(variableMetaModel, value2, entity, 1);
         var move3 = Moves.assign(variableMetaModel, value3, entity, 1); // Insert at position 1
 
-        var context = MoveRunner.build(solutionMetaModel)
+        var context = MoveTester.build(solutionMetaModel)
                 .using(solution);
         context.execute(move1);
         context.execute(move2);
@@ -77,7 +77,7 @@ class ListAssignMoveTest {
         var move2 = Moves.assign(variableMetaModel, value2, entity2, 0);
         var move3 = Moves.assign(variableMetaModel, value3, entity3, 0);
 
-        var context = MoveRunner.build(solutionMetaModel)
+        var context = MoveTester.build(solutionMetaModel)
                 .using(solution);
         context.execute(move1);
         context.execute(move2);
@@ -100,7 +100,7 @@ class ListAssignMoveTest {
 
         var assignMove = Moves.assign(variableMetaModel, value, entity, 0);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(assignMove, view -> {
                     // During temporary execution, value should be assigned
@@ -129,7 +129,7 @@ class ListAssignMoveTest {
         var move3 = Moves.assign(variableMetaModel, value3, entity, 1);
         var compositeMove = Moves.compose(move1, move2, move3);
 
-        MoveRunner.build(solutionMetaModel)
+        MoveTester.build(solutionMetaModel)
                 .using(solution)
                 .executeTemporarily(compositeMove, view -> {
                     // All assignments should be applied
