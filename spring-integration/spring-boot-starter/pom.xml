@@ -47,7 +47,7 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-jackson3</artifactId>
+      <artifactId>timefold-solver-jackson</artifactId>
     </dependency>
     <!-- Required by Spring Boot reference guide. -->
     <dependency>

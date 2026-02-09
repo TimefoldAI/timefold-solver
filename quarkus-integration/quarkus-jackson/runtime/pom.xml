@@ -25,7 +25,7 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-jackson</artifactId>
+      <artifactId>timefold-solver-jackson2</artifactId>
     </dependency>
   </dependencies>
   <build>
@@ -41,7 +41,7 @@
             <phase>compile</phase>
             <configuration>
               <capabilities>
-                <provides>ai.timefold.solver.timefold-quarkus-jackson</provides>
+                <provides>ai.timefold.solver.timefold-quarkus-jackson2</provides>
               </capabilities>
             </configuration>
           </execution>
@@ -63,7 +63,7 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <configuration>
           <ignoredUnusedDeclaredDependencies>
-            <dependency>ai.timefold.solver:timefold-solver-jackson</dependency>
+            <dependency>ai.timefold.solver:timefold-solver-jackson2</dependency>
             <dependency>io.quarkus:quarkus-jackson</dependency>
           </ignoredUnusedDeclaredDependencies>
         </configuration>

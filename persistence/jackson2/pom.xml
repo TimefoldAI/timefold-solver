@@ -9,7 +9,7 @@
     <version>999-SNAPSHOT</version>
   </parent>
 
-  <artifactId>timefold-solver-jackson</artifactId>
+  <artifactId>timefold-solver-jackson2</artifactId>
 
   <name>Timefold Solver Jackson 2</name>
   <description>
@@ -22,7 +22,7 @@
   <url>https://solver.timefold.ai</url>
 
   <properties>
-    <java.module.name>ai.timefold.solver.jackson</java.module.name>
+    <java.module.name>ai.timefold.solver.jackson2</java.module.name>
   </properties>
 
   <dependencies>

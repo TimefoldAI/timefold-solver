@@ -34,7 +34,7 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-jackson</artifactId>
+      <artifactId>timefold-solver-jackson2</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
