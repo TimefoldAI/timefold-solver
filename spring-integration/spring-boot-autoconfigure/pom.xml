@@ -31,6 +31,10 @@
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-jackson3</artifactId>
+    </dependency>
 
     <!-- Need this so we can @Autowire ConstraintVerifier -->
     <dependency>
@@ -46,11 +50,6 @@
       <optional>true</optional>
     </dependency>
 
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-jackson</artifactId>
-      <optional>true</optional>
-    </dependency>
     <dependency>
       <groupId>io.quarkus.gizmo</groupId>
       <artifactId>gizmo2</artifactId>
@@ -77,13 +76,13 @@
       <artifactId>spring-boot-persistence</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-jackson2</artifactId>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
     </dependency>
 
     <!-- Required for serializing the SolverConfig in native mode -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <optional>true</optional>
     </dependency>
@@ -97,15 +96,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-autoconfigure-processor</artifactId>
       <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
     </dependency>
 
     <!-- Testing -->
