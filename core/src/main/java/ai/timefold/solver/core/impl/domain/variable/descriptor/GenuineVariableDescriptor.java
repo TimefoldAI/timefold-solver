@@ -82,12 +82,9 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
     }
 
     private MemberAccessor[] findAnonymousValueRangeMemberAccessors(DescriptorPolicy descriptorPolicy) {
-        var supportsValueRangeProviderFromEntity = !isListVariable();
         var applicableValueRangeProviderAccessors =
-                supportsValueRangeProviderFromEntity ? Stream.concat(
-                        descriptorPolicy.getAnonymousFromEntityValueRangeProviderSet().stream(),
-                        descriptorPolicy.getAnonymousFromSolutionValueRangeProviderSet().stream())
-                        : descriptorPolicy.getAnonymousFromSolutionValueRangeProviderSet().stream();
+                Stream.concat(descriptorPolicy.getAnonymousFromEntityValueRangeProviderSet().stream(),
+                        descriptorPolicy.getAnonymousFromSolutionValueRangeProviderSet().stream());
         return applicableValueRangeProviderAccessors
                 .filter(valueRangeProviderAccessor -> {
                     /*

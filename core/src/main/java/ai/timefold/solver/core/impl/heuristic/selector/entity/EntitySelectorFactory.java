@@ -255,6 +255,11 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         } else {
             var valueSelectorConfig = new ValueSelectorConfig()
                     .withMimicSelectorRef(valueRangeRecorderId.recorderId());
+            // We set the name for the list variable in case there are multiple variables present
+            if (entitySelector.getEntityDescriptor().hasBothGenuineListAndBasicVariables()) {
+                valueSelectorConfig.setVariableName(
+                        entitySelector.getEntityDescriptor().getGenuineListVariableDescriptor().getVariableName());
+            }
             var replayingValueSelector = (IterableValueSelector<Solution_>) ValueSelectorFactory
                     .<Solution_> create(valueSelectorConfig)
                     .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType, selectionOrder);
