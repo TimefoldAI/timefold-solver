@@ -1385,7 +1385,7 @@ public final class ConstraintCollectors {
                     @NonNull Function<? super A, ? extends Key> keyMapper,
                     @NonNull Function<? super A, ? extends Value> valueMapper,
                     @NonNull IntFunction<ValueSet> valueSetFunction) {
-        return InnerUniConstraintCollectors.toMap(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
+        return InnerUniConstraintCollectors.toSortedMap(keyMapper, valueMapper, TreeMap::new, valueSetFunction);
     }
 
     /**

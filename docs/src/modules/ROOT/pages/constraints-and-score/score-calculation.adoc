@@ -671,7 +671,7 @@ image::constraints-and-score/score-calculation/constraintStreamGroupBy.png[align
 
 [NOTE]
 ====
-Objects used as group key must obey the https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#hashCode()[general contract of `hashCode`].
+Objects used as group key must obey the https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#hashCode()[general contract of `hashCode`].
 Most importantly, "whenever it is invoked on the same object more than once during an execution of a Java application, the `hashCode` method must consistently return the same integer."
 
 For this reason, it is not recommended to use mutable objects (especially mutable collections) as group keys.

@@ -1760,8 +1760,6 @@ Mimic selection is useful to create <<cartesianProductMoveSelector,a composite m
 [NOTE]
 ====
 Nearby selection is a commercial feature of xref:enterprise-edition/enterprise-edition.adoc[Timefold Solver Enterprise Edition].
-It is not open source, and it is free for development use only.
-https://timefold.ai/blog/2023/optaplanner-fork/[Learn more about Timefold].
 ====
 
 Read about nearby selection in the xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby selection section]

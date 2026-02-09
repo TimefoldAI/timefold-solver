@@ -47,7 +47,7 @@ If you are starting out, we recommend working on the quickstarts first, as those
 > **All contributions must comply with the [Timefold Solver Constitution](.specify/memory/constitution.md).**
 > The constitution defines our core principles, technology stack, code quality standards, and development practices. Key areas include:
 > - **Core Principles**: Fail Fast, Understandable Error Messages, Consistent Terminology, Real World Usefulness, Automated Testing, Good Code Hygiene
-> - **Technology Stack**: JDK 17 compatibility, nullability policy, dependency constraints, test infrastructure, security requirements
+> - **Technology Stack**: JDK 21 compatibility, nullability policy, dependency constraints, test infrastructure, security requirements
 > - **Code Quality**: SonarCloud quality gates (Reliability ≥ B, Maintainability ≥ B), code coverage requirements, automated formatting
 > - **Package Structure**: Public API (`api` packages) and Configuration (`config` packages) are 100% backwards compatible; Implementation can change freely
 > 

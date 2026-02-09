@@ -369,23 +369,15 @@ Timefold Solver is a **fast and efficient constraint solver** built with Java. T
 
 ### I. Java Language Version
 
-The codebase MUST maintain **JDK 17 compile-time compatibility** while supporting the latest JDK runtime:
+The codebase MUST maintain **JDK 21 compile-time compatibility** while supporting the latest JDK runtime:
 
-1. **Minimum version**: JDK 17 - The codebase must compile and run on JDK 17
-2. **Compile-time compatibility**: MUST target JDK 17 - Only features available in JDK 17 are allowed
+1. **Minimum version**: JDK 21 - The codebase must compile and run on JDK 21
+2. **Compile-time compatibility**: MUST target JDK 21 - Only features available in JDK 21 are allowed
 3. **Runtime compatibility**: SHOULD support the latest available JDK version - The codebase should run on newer JDK releases
-4. **Older versions**: JDK 16 and earlier need NOT be supported
+4. **Older versions**: JDK 20 and earlier need NOT be supported
 
 **Modern Java features ENCOURAGED**:
-- Use all applicable features available in JDK 17 and earlier
-- **Local variable type inference (var keyword)** (JDK 10+) - Significantly reduces boilerplate by inferring types from initializers. Use when the type is obvious from the right-hand side, improving readability and reducing verbosity. Example: `var list = new ArrayList<String>()` instead of `ArrayList<String> list = new ArrayList<String>()`
-- **Records** (JDK 16+) - For immutable data carriers
-- **Text blocks** (JDK 15+) - For multi-line strings (e.g., exception messages, SQL, JSON)
-- **Pattern matching for instanceof** (JDK 16+) - For cleaner type checks
-- **Sealed classes** (JDK 17) - For restricted class hierarchies
-- **Switch expressions** (JDK 14+) - For concise, exhaustive switching
-- **Stream API** - Use judiciously; prefer simple for loops when they are clearer and more efficient
-- **String::formatted** (JDK 13+) - For string formatting (as shown in Principle IV)
+- Use all applicable features available in JDK 21 and earlier
 
 **Explicitly AVOIDED features**:
 - **Optional** - Avoid using `Optional` in Java. This is an agreed-upon convention to prevent bike-shedding discussions. Use nullable types with proper `@Nullable` annotations from JSpecify instead (see Nullability Policy below).
@@ -427,12 +419,15 @@ public class ScoreCalculator {
 }
 ```
 
-**Rationale**: JDK 17 is a Long-Term Support (LTS) release with excellent performance, modern language features, and wide industry adoption. Maintaining compile-time compatibility with JDK 17 ensures broad compatibility, while supporting the latest JDK runtime ensures users can benefit from the newest JVM improvements. Using modern Java features improves code quality, readability, and maintainability, but avoiding `Optional` and overuse of streams prevents unnecessary complexity and performance overhead. Controlled use of null within implementations, while preventing it from escaping class boundaries, provides both safety and flexibility.
+**Rationale**: JDK 21 is a Long-Term Support (LTS) release with excellent performance, modern language features, and wide industry adoption. 
+Maintaining compile-time compatibility with JDK 21 ensures broad compatibility, while supporting the latest JDK runtime ensures users can benefit from the newest JVM improvements. 
+Using modern Java features improves code quality, readability, and maintainability, but avoiding `Optional` and overuse of streams prevents unnecessary complexity and performance overhead. 
+Controlled use of null within implementations, while preventing it from escaping class boundaries, provides both safety and flexibility.
 
 **Enforcement**: 
-- Build configuration MUST target JDK 17 for compilation
-- CI MUST verify compilation and tests pass on JDK 17
-- CI SHOULD test on all currently supported JDK LTS versions; as of January 2026, that is JDK 17, 21 and 25.
+- Build configuration MUST target JDK 21 for compilation
+- CI MUST verify compilation and tests pass on JDK 21
+- CI SHOULD test on all currently supported JDK LTS versions.
 - Code reviews MUST verify that null values do not escape class boundaries without explicit `@Nullable` annotations
 - Code reviews SHOULD encourage use of modern Java features where appropriate
 - Code reviews SHOULD reject use of `Optional`
@@ -834,4 +829,4 @@ This constitution is a living document. As the project evolves, principles may b
 
 ---
 
-**Version**: 1.1.0
+**Version**: 2.0.0

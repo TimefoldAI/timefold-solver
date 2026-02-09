@@ -28,14 +28,14 @@ Developed by the original OptaPlanner team, our aim is to free the world of wast
 == Get started with Timefold Solver in Java
 
 image:https://img.shields.io/maven-central/v/ai.timefold.solver/timefold-solver-bom?logo=apache-maven&style=for-the-badge["Maven artifact", link="https://ossindex.sonatype.org/component/pkg:maven/ai.timefold.solver/timefold-solver-bom"]
-image:https://img.shields.io/badge/Java-17+-brightgreen.svg?style=for-the-badge["JVM support", link="https://sdkman.io"]
+image:https://img.shields.io/badge/Java-21+-brightgreen.svg?style=for-the-badge["JVM support", link="https://sdkman.io"]
 
 * https://docs.timefold.ai/timefold-solver/latest/quickstart/overview[Read a Getting Started guide.]
 * https://github.com/TimefoldAI/timefold-quickstarts[Clone the Quickstarts repository.]
 
 == Build from source
 
-. Install JDK 17+ and Maven 3.9+, for example with https://sdkman.io[Sdkman]:
+. Install JDK 21+ and Maven 3.9.11, for example with https://sdkman.io[Sdkman]:
 +
 ----
 $ sdk install java
