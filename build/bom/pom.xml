@@ -89,30 +89,13 @@
       </dependency>
       <dependency>
         <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-jackson2</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
         <artifactId>timefold-solver-jackson</artifactId>
         <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
         <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-jackson2</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-        <classifier>sources</classifier>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
         <artifactId>timefold-solver-jackson</artifactId>
-        <type>test-jar</type>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-jackson2</artifactId>
         <type>test-jar</type>
         <version>${version.ai.timefold.solver}</version>
       </dependency>

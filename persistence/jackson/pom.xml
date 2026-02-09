@@ -22,7 +22,7 @@
   <url>https://solver.timefold.ai</url>
 
   <properties>
-    <java.module.name>ai.timefold.solver.jackson2</java.module.name>
+    <java.module.name>ai.timefold.solver.jackson</java.module.name>
   </properties>
 
   <dependencies>

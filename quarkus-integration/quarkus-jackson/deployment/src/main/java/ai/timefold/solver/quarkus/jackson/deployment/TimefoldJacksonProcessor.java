@@ -1,6 +1,6 @@
 package ai.timefold.solver.quarkus.jackson.deployment;
 
-import ai.timefold.solver.jackson2.api.TimefoldJacksonModule;
+import ai.timefold.solver.quarkus.jackson.api.TimefoldJacksonModule;
 
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;

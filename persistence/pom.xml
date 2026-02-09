@@ -26,9 +26,7 @@
   <modules>
     <module>common</module>
     <module>jaxb</module>
-    <!-- Jackson3 module -->
     <module>jackson</module>
-    <module>jackson2</module>
     <module>jpa</module>
     <module>jsonb</module>
   </modules>
