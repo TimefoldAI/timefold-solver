@@ -28,7 +28,6 @@
     <module>jaxb</module>
     <module>jackson</module>
     <module>jpa</module>
-    <module>jsonb</module>
   </modules>
 
 </project>
