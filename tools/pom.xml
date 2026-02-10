@@ -24,7 +24,6 @@
   <url>https://solver.timefold.ai</url>
 
   <modules>
-    <module>webui</module>
   </modules>
 
 </project>
