@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
@@ -21,14 +21,14 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
     private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
     private final int minimumRuinedCount;
     private final int maximumRuinedCount;
-    private final Random workingRandom;
+    private final RandomGenerator workingRandom;
 
     public ListRuinRecreateMoveIterator(IterableValueSelector<Solution_> valueSelector,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope,
             ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, int minimumRuinedCount,
             int maximumRuinedCount,
-            Random workingRandom) {
+            RandomGenerator workingRandom) {
         this.valueSelector = valueSelector;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.solverScope = solverScope;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -58,14 +58,14 @@ import org.jspecify.annotations.Nullable;
 final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solution_>> {
 
     private final BiMoveStreamContext<Solution_, A, B> context;
-    private final Random workingRandom;
+    private final RandomGenerator workingRandom;
 
     // Fields required for iteration.
     private final Iterator<UniTuple<A>> leftTupleIterator;
     private final int rightIteratorStoreIndex;
     private @Nullable Move<Solution_> nextMove;
 
-    public BiRandomMoveIterator(BiMoveStreamContext<Solution_, A, B> context, Random workingRandom) {
+    public BiRandomMoveIterator(BiMoveStreamContext<Solution_, A, B> context, RandomGenerator workingRandom) {
         this.context = Objects.requireNonNull(context);
         this.workingRandom = Objects.requireNonNull(workingRandom);
         var leftDatasetInstance = context.getLeftDatasetInstance();

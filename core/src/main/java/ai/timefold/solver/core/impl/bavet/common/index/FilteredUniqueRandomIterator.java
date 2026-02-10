@@ -2,8 +2,8 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
@@ -27,7 +27,7 @@ public final class FilteredUniqueRandomIterator<T> implements UniqueRandomIterat
     private boolean hasNext = false;
     private @Nullable T next = null;
 
-    FilteredUniqueRandomIterator(ElementAwareArrayList<T> source, Random workingRandom, Predicate<T> filter) {
+    FilteredUniqueRandomIterator(ElementAwareArrayList<T> source, RandomGenerator workingRandom, Predicate<T> filter) {
         this.filter = Objects.requireNonNull(filter);
         this.delegate = new DefaultUniqueRandomIterator<>(source, workingRandom);
     }

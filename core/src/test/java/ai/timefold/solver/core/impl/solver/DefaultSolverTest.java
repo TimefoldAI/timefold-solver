@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.BooleanSupplier;
+import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
@@ -2408,7 +2409,7 @@ class DefaultSolverTest {
         @Override
         public Iterator<InvalidMove> createRandomMoveIterator(
                 ScoreDirector<TestdataListSolution> scoreDirector,
-                Random workingRandom) {
+                RandomGenerator workingRandom) {
             return createOriginalMoveIterator(scoreDirector);
         }
     }

@@ -2,8 +2,8 @@ package ai.timefold.solver.core.config.heuristic.selector.move.generic;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Consumer;
+import java.util.random.RandomGenerator;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
@@ -117,7 +117,7 @@ public class SwapMoveSelectorConfig
     @Override
     public @NonNull SwapMoveSelectorConfig enableNearbySelection(
             @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            @NonNull Random random) {
+            @NonNull RandomGenerator random) {
         return NearbyUtil.enable(this, distanceMeter, random);
     }
 

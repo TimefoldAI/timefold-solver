@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.domain.valuerange.buildin.composite;
 
 import java.util.Iterator;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
@@ -89,15 +89,15 @@ public final class NullAllowingCountableValueRange<T> extends AbstractCountableV
     }
 
     @Override
-    public @NonNull Iterator<T> createRandomIterator(@NonNull Random workingRandom) {
+    public @NonNull Iterator<T> createRandomIterator(@NonNull RandomGenerator workingRandom) {
         return new RandomNullValueRangeIterator(workingRandom);
     }
 
     private class RandomNullValueRangeIterator extends ValueRangeIterator<T> {
 
-        private final Random workingRandom;
+        private final RandomGenerator workingRandom;
 
-        public RandomNullValueRangeIterator(Random workingRandom) {
+        public RandomNullValueRangeIterator(RandomGenerator workingRandom) {
             this.workingRandom = workingRandom;
         }
 

@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.solver.random;
 
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.config.solver.random.RandomType;
 
@@ -28,7 +29,7 @@ public class DefaultRandomFactory implements RandomFactory {
     }
 
     @Override
-    public Random createRandom() {
+    public RandomGenerator createRandom() {
         switch (randomType) {
             case JDK:
                 return randomSeed == null ? new Random() : new Random(randomSeed);

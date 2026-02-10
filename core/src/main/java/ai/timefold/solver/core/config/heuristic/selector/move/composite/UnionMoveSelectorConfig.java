@@ -3,8 +3,8 @@ package ai.timefold.solver.core.config.heuristic.selector.move.composite;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Consumer;
+import java.util.random.RandomGenerator;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElements;
@@ -187,7 +187,7 @@ public class UnionMoveSelectorConfig
     @Override
     public @NonNull UnionMoveSelectorConfig enableNearbySelection(
             @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            @NonNull Random random) {
+            @NonNull RandomGenerator random) {
         UnionMoveSelectorConfig nearbyConfig = copyConfig();
         var updatedMoveSelectorList = new LinkedList<MoveSelectorConfig>();
         for (var selectorConfig : moveSelectorConfigList) {

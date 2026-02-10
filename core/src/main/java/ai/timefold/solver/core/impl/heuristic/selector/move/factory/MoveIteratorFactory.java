@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.factory;
 
 import java.util.Iterator;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -49,7 +49,7 @@ public interface MoveIteratorFactory<Solution_, Move_ extends Move<Solution_>> {
      * @param scoreDirector never null, the {@link ScoreDirector}
      *        which has the {@link ScoreDirector#getWorkingSolution()} of which the {@link Move}s need to be generated
      * @return never null, an {@link Iterator} that will end sooner or later
-     * @throws UnsupportedOperationException if only {@link #createRandomMoveIterator(ScoreDirector, Random)} is
+     * @throws UnsupportedOperationException if only {@link #createRandomMoveIterator(ScoreDirector, RandomGenerator)} is
      *         supported
      */
     Iterator<Move_> createOriginalMoveIterator(ScoreDirector<Solution_> scoreDirector);
@@ -59,11 +59,11 @@ public interface MoveIteratorFactory<Solution_, Move_ extends Move<Solution_>> {
      *
      * @param scoreDirector never null, the {@link ScoreDirector}
      *        which has the {@link ScoreDirector#getWorkingSolution()} of which the {@link Move}s need to be generated
-     * @param workingRandom never null, the {@link Random} to use when any random number is needed,
+     * @param workingRandom never null, the {@link RandomGenerator} to use when any random number is needed,
      *        so {@link EnvironmentMode#PHASE_ASSERT} works correctly
      * @return never null, an {@link Iterator} that is allowed (or even presumed) to be never ending
      * @throws UnsupportedOperationException if only {@link #createOriginalMoveIterator(ScoreDirector)} is supported
      */
-    Iterator<Move_> createRandomMoveIterator(ScoreDirector<Solution_> scoreDirector, Random workingRandom);
+    Iterator<Move_> createRandomMoveIterator(ScoreDirector<Solution_> scoreDirector, RandomGenerator workingRandom);
 
 }

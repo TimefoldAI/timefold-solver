@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Iterator;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
@@ -26,7 +26,7 @@ public sealed interface UniqueRandomIterator<T>
         extends Iterator<T>
         permits DefaultUniqueRandomIterator, FilteredUniqueRandomIterator {
 
-    static <T> Iterator<T> of(ElementAwareArrayList<T> list, Random random) {
+    static <T> Iterator<T> of(ElementAwareArrayList<T> list, RandomGenerator random) {
         return new DefaultUniqueRandomIterator<>(list, random);
     }
 

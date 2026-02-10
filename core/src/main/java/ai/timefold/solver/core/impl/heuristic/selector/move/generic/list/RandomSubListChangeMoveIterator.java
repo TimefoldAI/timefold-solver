@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.Iterator;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
@@ -17,13 +17,13 @@ class RandomSubListChangeMoveIterator<Solution_> extends UpcomingSelectionIterat
     private final Iterator<SubList> subListIterator;
     private final Iterator<ElementPosition> destinationIterator;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
-    private final Random workingRandom;
+    private final RandomGenerator workingRandom;
     private final boolean selectReversingMoveToo;
 
     RandomSubListChangeMoveIterator(
             SubListSelector<Solution_> subListSelector,
             DestinationSelector<Solution_> destinationSelector,
-            Random workingRandom,
+            RandomGenerator workingRandom,
             boolean selectReversingMoveToo) {
         this.subListIterator = subListSelector.iterator();
         this.destinationIterator = destinationSelector.iterator();

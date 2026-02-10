@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Iterator;
-import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
 import ai.timefold.solver.core.impl.util.ListEntry;
@@ -46,12 +46,12 @@ public final class LinkedListIndexerBackend<T> implements IndexerBackend<T> {
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) { // Neighborhoods will not get here.
+    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) { // Neighborhoods will not get here.
         throw new UnsupportedOperationException("Impossible state: This backend does not support random access.");
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) { // Neighborhoods will not get here.
+    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, Predicate<T> filter) { // Neighborhoods will not get here.
         throw new UnsupportedOperationException("Impossible state: This backend does not support random access.");
     }
 

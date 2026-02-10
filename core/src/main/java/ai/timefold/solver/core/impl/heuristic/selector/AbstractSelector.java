@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
@@ -22,7 +22,7 @@ public abstract class AbstractSelector<Solution_> implements Selector<Solution_>
 
     protected PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
 
-    protected Random workingRandom = null;
+    protected RandomGenerator workingRandom = null;
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {

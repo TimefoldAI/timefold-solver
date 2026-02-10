@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.Supplier;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedValuePlacer;
@@ -363,12 +363,12 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
 
         private final Supplier<Value_> upcomingValueSupplier;
         private final ReachableValues<Entity_, Value_> reachableValues;
-        private final Random workingRandom;
+        private final RandomGenerator workingRandom;
         private Value_ currentUpcomingValue;
         private List<Entity_> entityList;
 
         private RandomFilteringValueRangeIterator(Supplier<Value_> upcomingValueSupplier,
-                ReachableValues<Entity_, Value_> reachableValues, Random workingRandom) {
+                ReachableValues<Entity_, Value_> reachableValues, RandomGenerator workingRandom) {
             this.upcomingValueSupplier = upcomingValueSupplier;
             this.reachableValues = Objects.requireNonNull(reachableValues);
             this.workingRandom = workingRandom;

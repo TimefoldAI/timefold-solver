@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.util.ListEntry;
 
@@ -122,11 +122,12 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom) {
+    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
         return createRandomIterator(queryCompositeKey, workingRandom, null);
     }
 
-    private Iterator<T> createRandomIterator(Object queryCompositeKey, Random workingRandom, @Nullable Predicate<T> filter) {
+    private Iterator<T> createRandomIterator(Object queryCompositeKey, RandomGenerator workingRandom,
+            @Nullable Predicate<T> filter) {
         if (downstreamIndexerMap.isEmpty()) {
             return Collections.emptyIterator();
         }
@@ -145,7 +146,7 @@ final class EqualIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, Random workingRandom, Predicate<T> filter) {
+    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, Predicate<T> filter) {
         return createRandomIterator(queryCompositeKey, workingRandom, filter);
     }
 

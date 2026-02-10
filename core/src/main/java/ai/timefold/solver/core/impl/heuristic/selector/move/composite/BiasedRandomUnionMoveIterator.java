@@ -5,9 +5,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Random;
 import java.util.TreeMap;
 import java.util.function.ToDoubleFunction;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
@@ -18,13 +18,13 @@ final class BiasedRandomUnionMoveIterator<Solution_> extends SelectionIterator<M
 
     private final Map<Iterator<Move<Solution_>>, ProbabilityItem<Solution_>> probabilityItemMap;
     private final NavigableMap<Double, Iterator<Move<Solution_>>> moveIteratorMap;
-    private final Random workingRandom;
+    private final RandomGenerator workingRandom;
     private double probabilityWeightTotal;
     private boolean stale;
 
     public BiasedRandomUnionMoveIterator(List<MoveSelector<Solution_>> childMoveSelectorList,
             ToDoubleFunction<MoveSelector<Solution_>> probabilityWeightFunction,
-            Random workingRandom) {
+            RandomGenerator workingRandom) {
         this.probabilityItemMap = new LinkedHashMap<>(childMoveSelectorList.size());
         for (MoveSelector<Solution_> moveSelector : childMoveSelectorList) {
             Iterator<Move<Solution_>> moveIterator = moveSelector.iterator();

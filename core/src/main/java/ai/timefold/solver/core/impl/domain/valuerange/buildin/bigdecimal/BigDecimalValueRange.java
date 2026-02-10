@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
@@ -118,16 +118,16 @@ public final class BigDecimalValueRange extends AbstractCountableValueRange<BigD
     }
 
     @Override
-    public Iterator<BigDecimal> createRandomIterator(Random workingRandom) {
+    public Iterator<BigDecimal> createRandomIterator(RandomGenerator workingRandom) {
         return new RandomBigDecimalValueRangeIterator(workingRandom);
     }
 
     private class RandomBigDecimalValueRangeIterator extends ValueRangeIterator<BigDecimal> {
 
-        private final Random workingRandom;
+        private final RandomGenerator workingRandom;
         private final long size = getSize();
 
-        public RandomBigDecimalValueRangeIterator(Random workingRandom) {
+        public RandomBigDecimalValueRangeIterator(RandomGenerator workingRandom) {
             this.workingRandom = workingRandom;
         }
 

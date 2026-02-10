@@ -3,8 +3,8 @@ package ai.timefold.solver.core.api.domain.valuerange;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -54,9 +54,9 @@ public interface ValueRange<T> {
      * Each element might be selected multiple times.
      * Scales well because it does not require caching.
      *
-     * @param workingRandom the {@link Random} to use when any random number is needed,
+     * @param workingRandom the {@link RandomGenerator} to use when any random number is needed,
      *        so runs are reproducible.
      */
-    Iterator<T> createRandomIterator(Random workingRandom);
+    Iterator<T> createRandomIterator(RandomGenerator workingRandom);
 
 }

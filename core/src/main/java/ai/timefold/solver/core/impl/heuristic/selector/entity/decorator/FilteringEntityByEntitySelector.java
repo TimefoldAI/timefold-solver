@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.Supplier;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
@@ -424,7 +424,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         private final Iterator<Entity_> allEntitiesIterator;
         private final BasicVariableDescriptor<Solution_> basicVariableDescriptor;
         private final ReachableValues<Entity_, Value_> reachableValues;
-        private final Random workingRandom;
+        private final RandomGenerator workingRandom;
         private final int maxBailoutSize;
         private Entity_ currentReplayedEntity = null;
         private Iterator<Entity_> entityIterator;
@@ -434,7 +434,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         private SingleVariableRandomFilteringValueRangeIterator(Supplier<Entity_> upcomingEntitySupplier,
                 Iterator<Entity_> allEntitiesIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
                 ValueRangeManager<Solution_> valueRangeManager, ReachableValues<Entity_, Value_> reachableValues,
-                Random workingRandom, int maxBailoutSize) {
+                RandomGenerator workingRandom, int maxBailoutSize) {
             super(upcomingEntitySupplier, basicVariableDescriptors, valueRangeManager);
             this.allEntitiesIterator = allEntitiesIterator;
             if (basicVariableDescriptors.length > 1) {
@@ -552,9 +552,9 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private static class RandomListIterator<Value_> implements Iterator<Value_> {
 
         private final List<Value_> values;
-        private final Random workingRandom;
+        private final RandomGenerator workingRandom;
 
-        private RandomListIterator(List<Value_> values, Random workingRandom) {
+        private RandomListIterator(List<Value_> values, RandomGenerator workingRandom) {
             this.values = values;
             this.workingRandom = workingRandom;
         }

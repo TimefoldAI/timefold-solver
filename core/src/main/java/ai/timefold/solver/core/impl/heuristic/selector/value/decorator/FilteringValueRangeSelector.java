@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.Supplier;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -379,14 +379,14 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     private class RandomFilteringValueRangeIterator<Entity_, Value_>
             extends AbstractFilteringValueRangeIterator<Entity_, Value_> {
 
-        private final Random workingRandom;
+        private final RandomGenerator workingRandom;
         private int maxBailoutSize;
         private Value_ replayedValue;
         private List<Value_> reachableValueList = null;
 
         private RandomFilteringValueRangeIterator(Supplier<Value_> upcomingValueSupplier,
                 ReachableValues<Entity_, Value_> reachableValues,
-                ListVariableStateSupply<Solution_, Entity_, Value_> listVariableStateSupply, Random workingRandom,
+                ListVariableStateSupply<Solution_, Entity_, Value_> listVariableStateSupply, RandomGenerator workingRandom,
                 boolean checkSourceAndDestination) {
             super(upcomingValueSupplier, reachableValues, listVariableStateSupply, checkSourceAndDestination);
             this.workingRandom = workingRandom;

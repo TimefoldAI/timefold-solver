@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.neighborhood;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodSession;
@@ -28,7 +28,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
 
     private @Nullable DefaultNeighborhoodSession<Solution_> neighborhoodSession;
     private @Nullable List<MoveIterable<Solution_>> moveIterableList;
-    private @Nullable Random workingRandom;
+    private @Nullable RandomGenerator workingRandom;
 
     public NeighborhoodsBasedMoveRepository(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
             List<MoveProvider<Solution_>> neighborhood, boolean random) {

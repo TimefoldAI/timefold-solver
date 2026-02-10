@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -607,7 +607,7 @@ public class ConfigUtils {
         return abbreviate(list, 3);
     }
 
-    public static String addRandomSuffix(String name, Random random) {
+    public static String addRandomSuffix(String name, RandomGenerator random) {
         var value = new StringBuilder(name);
         value.append("-");
         random.ints(97, 122) // ['a', 'z']
