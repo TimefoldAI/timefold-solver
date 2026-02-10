@@ -140,26 +140,18 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
+        <groupId>com.coderplus.maven.plugins</groupId>
+        <artifactId>copy-rename-maven-plugin</artifactId>
         <executions>
           <execution>
-            <!-- Copy the solver.xsd to make sure it's available from the IDE without running maven first. -->
             <id>copy-solver-xsd</id>
             <phase>process-resources</phase>
             <goals>
-              <goal>copy-resources</goal>
+              <goal>copy</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.basedir}/src/main/resources</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${project.build.outputDirectory}</directory>
-                  <includes>
-                    <include>solver.xsd</include>
-                  </includes>
-                  <targetPath>${project.basedir}/src/main/resources</targetPath>
-                </resource>
-              </resources>
+              <sourceFile>${project.build.outputDirectory}/${schema.filename.solver.intermediary}</sourceFile>
+              <destinationFile>${project.basedir}/src/main/resources/${schema.filename.solver}</destinationFile>
             </configuration>
           </execution>
         </executions>
