@@ -15,10 +15,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMove
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.KOptMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
@@ -97,35 +93,6 @@ class MoveSelectorConfigTest {
                 .isNotNull();
         assertThat(nearbyConfig.getSecondaryEntitySelectorConfig().getNearbySelectionConfig().getNearbyDistanceMeterClass())
                 .isNotNull();
-    }
-
-    @Test
-    void assertEnableNearbyForTailChainMoveSelectorConfig() {
-        // Default configuration
-        TailChainSwapMoveSelectorConfig config = new TailChainSwapMoveSelectorConfig();
-        assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
-        TailChainSwapMoveSelectorConfig nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
-        assertThat(nearbyConfig).isNotNull();
-        assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
-        assertThat(nearbyConfig.getEntitySelectorConfig()).isNotNull();
-        assertThat(nearbyConfig.getValueSelectorConfig()).isNotNull();
-        assertThat(nearbyConfig.getValueSelectorConfig().getNearbySelectionConfig()).isNotNull();
-        assertThat(nearbyConfig.getValueSelectorConfig().getNearbySelectionConfig().getNearbyDistanceMeterClass()).isNotNull();
-
-        // Custom configuration
-        config = new TailChainSwapMoveSelectorConfig();
-        config.withEntitySelectorConfig(new EntitySelectorConfig().withSelectionOrder(SelectionOrder.PROBABILISTIC));
-        assertThat(config.hasNearbySelectionConfig()).isFalse();
-        assertThat(NearbyAutoConfigurationEnabled.class.isAssignableFrom(config.getClass())).isTrue();
-        nearbyConfig = config.enableNearbySelection(TestDistanceMeter.class, new Random());
-        assertThat(nearbyConfig).isNotNull();
-        assertThat(nearbyConfig.hasNearbySelectionConfig()).isTrue();
-        assertThat(nearbyConfig.getEntitySelectorConfig().getSelectionOrder()).isEqualTo(SelectionOrder.PROBABILISTIC);
-        assertThat(nearbyConfig.getEntitySelectorConfig()).isNotNull();
-        assertThat(nearbyConfig.getValueSelectorConfig()).isNotNull();
-        assertThat(nearbyConfig.getValueSelectorConfig().getNearbySelectionConfig()).isNotNull();
-        assertThat(nearbyConfig.getValueSelectorConfig().getNearbySelectionConfig().getNearbyDistanceMeterClass()).isNotNull();
     }
 
     @Test
@@ -356,9 +323,6 @@ class MoveSelectorConfigTest {
                 new CartesianProductMoveSelectorConfig(),
                 new MoveIteratorFactoryConfig(),
                 new MoveListFactoryConfig(),
-                new KOptMoveSelectorConfig(),
-                new SubChainChangeMoveSelectorConfig(),
-                new SubChainSwapMoveSelectorConfig(),
                 new SubListChangeMoveSelectorConfig(),
                 new SubListSwapMoveSelectorConfig(),
                 new PillarChangeMoveSelectorConfig(),

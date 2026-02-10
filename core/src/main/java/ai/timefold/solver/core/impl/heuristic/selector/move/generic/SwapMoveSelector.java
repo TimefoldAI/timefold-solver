@@ -1,21 +1,14 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractOriginalSwapIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractRandomSwapIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.ChainedSwapMove;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
@@ -23,9 +16,6 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
     protected final EntitySelector<Solution_> rightEntitySelector;
     protected final List<GenuineVariableDescriptor<Solution_>> variableDescriptorList;
     protected final boolean randomSelection;
-
-    protected final boolean anyChained;
-    protected List<SingletonInverseVariableSupply> inverseVariableSupplyList = null;
 
     public SwapMoveSelector(EntitySelector<Solution_> leftEntitySelector, EntitySelector<Solution_> rightEntitySelector,
             List<GenuineVariableDescriptor<Solution_>> variableDescriptorList, boolean randomSelection) {
@@ -41,7 +31,6 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
                     + ") which is not equal to the rightEntitySelector's entityClass ("
                     + rightEntityDescriptor.getEntityClass() + ").");
         }
-        boolean anyChained = false;
         if (variableDescriptorList.isEmpty()) {
             throw new IllegalStateException("The selector (" + this
                     + ")'s variableDescriptors (" + variableDescriptorList + ") is empty.");
@@ -55,13 +44,7 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
                         + ") which is not equal or a superclass to the leftEntitySelector's entityClass ("
                         + leftEntityDescriptor.getEntityClass() + ").");
             }
-            boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
-                    && basicVariableDescriptor.isChained();
-            if (isChained) {
-                anyChained = true;
-            }
         }
-        this.anyChained = anyChained;
         phaseLifecycleSupport.addEventListener(leftEntitySelector);
         if (leftEntitySelector != rightEntitySelector) {
             phaseLifecycleSupport.addEventListener(rightEntitySelector);
@@ -70,35 +53,7 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
 
     @Override
     public boolean supportsPhaseAndSolverCaching() {
-        return !anyChained;
-    }
-
-    @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        super.solvingStarted(solverScope);
-        if (anyChained) {
-            inverseVariableSupplyList = new ArrayList<>(variableDescriptorList.size());
-            SupplyManager supplyManager = solverScope.getScoreDirector().getSupplyManager();
-            for (GenuineVariableDescriptor<Solution_> variableDescriptor : variableDescriptorList) {
-                SingletonInverseVariableSupply inverseVariableSupply;
-                boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
-                        && basicVariableDescriptor.isChained();
-                if (isChained) {
-                    inverseVariableSupply = supplyManager.demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-                } else {
-                    inverseVariableSupply = null;
-                }
-                inverseVariableSupplyList.add(inverseVariableSupply);
-            }
-        }
-    }
-
-    @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
-        if (anyChained) {
-            inverseVariableSupplyList = null;
-        }
+        return true;
     }
 
     // ************************************************************************
@@ -126,20 +81,14 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
             return new AbstractOriginalSwapIterator<>(leftEntitySelector, rightEntitySelector) {
                 @Override
                 protected Move<Solution_> newSwapSelection(Object leftSubSelection, Object rightSubSelection) {
-                    return anyChained
-                            ? new ChainedSwapMove<>(variableDescriptorList, inverseVariableSupplyList, leftSubSelection,
-                                    rightSubSelection)
-                            : new SwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
+                    return new SwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
                 }
             };
         } else {
             return new AbstractRandomSwapIterator<>(leftEntitySelector, rightEntitySelector) {
                 @Override
                 protected Move<Solution_> newSwapSelection(Object leftSubSelection, Object rightSubSelection) {
-                    return anyChained
-                            ? new ChainedSwapMove<>(variableDescriptorList, inverseVariableSupplyList, leftSubSelection,
-                                    rightSubSelection)
-                            : new SwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
+                    return new SwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
                 }
             };
         }

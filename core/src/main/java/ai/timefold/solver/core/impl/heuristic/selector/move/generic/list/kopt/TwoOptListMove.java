@@ -221,8 +221,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
         var doable = !sameEntity ||
         // A shift will rotate the entire list, changing the visiting order
                 shift != 0 ||
-                // The chain flipped by a K-Opt only changes if there are at least 2 values
-                // in the chain
+                // The chain flipped by a K-Opt only changes if there are at least 2 values in the chain
                 Math.abs(secondEdgeEndpoint - firstEdgeEndpoint) >= 2;
         if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;

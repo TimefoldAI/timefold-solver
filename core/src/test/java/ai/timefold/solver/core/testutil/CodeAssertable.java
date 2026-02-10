@@ -17,7 +17,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUna
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListUnassignMove;
-import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChain;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 
@@ -110,9 +109,6 @@ public interface CodeAssertable {
             return unassignedLocation::toString;
         } else if (o instanceof PositionInList locationInList) {
             return () -> convert(locationInList.entity()) + "[" + locationInList.index() + "]";
-        } else if (o instanceof SubChain subChain) {
-            final String code = convert(subChain.getEntityList()).getCode();
-            return () -> code;
         }
         throw new AssertionError(("o's class (" + o.getClass() + ") cannot be converted to CodeAssertable."));
     }

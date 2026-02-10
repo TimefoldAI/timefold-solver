@@ -934,8 +934,7 @@ public class GizmoSolutionClonerImplementor {
      * }
      * </pre>
      *
-     * The cloneQueue is to prevent stack overflow on chained models, or models
-     * where many entities can be reached from a single entity.
+     * The cloneQueue is to prevent stack overflow on models where many entities can be reached from a single entity.
      **/
     private void createDeepCloneHelperMethod(ClonerDescriptor clonerDescriptor,
             Class<?> entityClass) {

@@ -882,14 +882,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             var valueRange = scoreDirector.getValueRangeManager()
                     .getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
             if (!valueRange.contains(value)) {
-                if (variableDescriptor.isChained()) {
-                    // We also check the entity list
-                    var allEntities =
-                            variableDescriptor.getEntityDescriptor().extractEntities(scoreDirector.getWorkingSolution());
-                    if (allEntities.contains(value)) {
-                        continue;
-                    }
-                }
                 throw new IllegalStateException(
                         "The value (%s) from the planning variable (%s) has been assigned to the entity (%s), but it is outside of the related value range %s."
                                 .formatted(value, variableDescriptor.getVariableName(), entity, valueRange));

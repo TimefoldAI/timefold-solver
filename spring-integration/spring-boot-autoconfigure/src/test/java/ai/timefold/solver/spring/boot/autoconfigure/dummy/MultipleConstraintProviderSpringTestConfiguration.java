@@ -4,8 +4,8 @@ import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@AutoConfigurationPackage(basePackages = { "ai.timefold.solver.spring.boot.autoconfigure.normal.domain",
-        "ai.timefold.solver.spring.boot.autoconfigure.normal.constraints",
-        "ai.timefold.solver.spring.boot.autoconfigure.chained.constraints" })
+@AutoConfigurationPackage(basePackages = { "ai.timefold.solver.spring.boot.autoconfigure.basic.domain",
+        "ai.timefold.solver.spring.boot.autoconfigure.basic.constraints",
+        "ai.timefold.solver.spring.boot.autoconfigure.declarative.constraints" })
 public class MultipleConstraintProviderSpringTestConfiguration {
 }

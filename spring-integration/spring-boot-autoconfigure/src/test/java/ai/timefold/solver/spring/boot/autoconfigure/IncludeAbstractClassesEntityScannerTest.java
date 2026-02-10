@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
-import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -32,7 +31,6 @@ class IncludeAbstractClassesEntityScannerTest {
             PlanningPin.class,
             PlanningVariable.class,
             PlanningListVariable.class,
-            AnchorShadowVariable.class,
             CustomShadowVariable.class,
             IndexShadowVariable.class,
             InverseRelationShadowVariable.class,

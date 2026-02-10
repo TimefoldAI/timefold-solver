@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 import java.util.Iterator;
 import java.util.List;
 
-import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractOriginalSwapIterator;
@@ -42,12 +41,6 @@ public class PillarSwapMoveSelector<Solution_> extends GenericMoveSelector<Solut
                         + ") has a variableDescriptor (" + variableDescriptor
                         + ") with a entityClass (" + variableDescriptor.getEntityDescriptor().getEntityClass()
                         + ") which is not equal to the leftPillarSelector's entityClass (" + leftEntityClass + ").");
-            }
-            boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
-                    && basicVariableDescriptor.isChained();
-            if (isChained) {
-                throw new IllegalStateException("The selector (%s) has a variableDescriptor (%s) which is chained (%s)."
-                        .formatted(this, variableDescriptor, isChained));
             }
         }
         phaseLifecycleSupport.addEventListener(leftPillarSelector);

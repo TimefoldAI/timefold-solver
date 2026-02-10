@@ -53,9 +53,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChan
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
@@ -64,7 +61,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubLi
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
-import ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
@@ -84,13 +80,6 @@ import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedAnchor;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
-import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedBrownEntity;
-import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedGreenEntity;
-import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedMultiEntityAnchor;
-import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedMultiEntitySolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -483,23 +472,6 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveChainedEmptyEntityList() {
-        var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataChainedSolution.class, TestdataChainedEntity.class)
-                .withPhases(new CustomPhaseConfig()
-                        .withCustomPhaseCommands(new FailCommand()));
-
-        var solution = new TestdataChainedSolution("s1");
-        solution.setChainedAnchorList(Arrays.asList(new TestdataChainedAnchor("v1"), new TestdataChainedAnchor("v2")));
-        solution.setChainedEntityList(Collections.emptyList());
-
-        solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
-                BestScoreChangedEvent.solvingStarted(SimpleScore.ZERO));
-        assertThat(solution).isNotNull();
-        assertThat(solution.getScore()).isNotNull();
-    }
-
-    @Test
     void solveEmptyEntityListAndEmptyValueList() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig()
@@ -772,52 +744,6 @@ class DefaultSolverTest {
         assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(1));
     }
 
-    /**
-     * Verifies <a href="https://issues.redhat.com/browse/PLANNER-2798">PLANNER-2798</a>.
-     */
-    @Test
-    void solveWithMultipleChainedPlanningEntities() {
-        var solverConfig = new SolverConfig()
-                .withSolutionClass(TestdataChainedMultiEntitySolution.class)
-                .withEntityClasses(TestdataChainedBrownEntity.class, TestdataChainedGreenEntity.class)
-                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
-                .withTerminationConfig(new TerminationConfig().withBestScoreLimit("0"))
-                .withPhases(
-                        // Each planning entity class needs a separate CH phase.
-                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()
-                                .withEntitySelectorConfig(new EntitySelectorConfig(TestdataChainedBrownEntity.class))),
-                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()
-                                .withEntitySelectorConfig(new EntitySelectorConfig(TestdataChainedGreenEntity.class))),
-                        new LocalSearchPhaseConfig().withMoveSelectorConfig(new UnionMoveSelectorConfig().withMoveSelectors(
-                                new ChangeMoveSelectorConfig(),
-                                new SwapMoveSelectorConfig(),
-                                // Include TailChainSwapMoveSelector, which uses ExternalizedAnchorVariableSupply.
-                                new TailChainSwapMoveSelectorConfig().withEntitySelectorConfig(
-                                        new EntitySelectorConfig(TestdataChainedBrownEntity.class)),
-                                new TailChainSwapMoveSelectorConfig().withEntitySelectorConfig(
-                                        new EntitySelectorConfig(TestdataChainedGreenEntity.class)))));
-        SolverFactory<TestdataChainedMultiEntitySolution> solverFactory = SolverFactory.create(solverConfig);
-        var solver = solverFactory.buildSolver();
-
-        var anchors = List.of(
-                new TestdataChainedMultiEntityAnchor("a1"),
-                new TestdataChainedMultiEntityAnchor("a2"),
-                new TestdataChainedMultiEntityAnchor("a3"));
-        var brownEntities = List.of(
-                new TestdataChainedBrownEntity("b1"),
-                new TestdataChainedBrownEntity("b2"));
-        var greenEntities = List.of(
-                new TestdataChainedGreenEntity("g1"),
-                new TestdataChainedGreenEntity("g2"),
-                new TestdataChainedGreenEntity("g3"));
-        var solution =
-                new TestdataChainedMultiEntitySolution(brownEntities, greenEntities, anchors);
-
-        solution = solver.solve(solution);
-        assertThat(solution).isNotNull();
-        assertThat(solution.getScore()).isNotNull();
-    }
-
     @Test
     void solveWithPlanningListVariableEntityPinFair() {
         var expectedValueCount = 4;
@@ -1022,48 +948,6 @@ class DefaultSolverTest {
         allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig());
         // R&R - basic
         allMoveSelectionConfigList.add(new RuinRecreateMoveSelectorConfig());
-        // Union of all moves
-        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
-        return allMoveSelectionConfigList;
-    }
-
-    @ParameterizedTest
-    @MethodSource("generateMovesForChainedVar")
-    void solveChainedVarMoveConfig(MoveSelectorConfig moveSelectionConfig) {
-        // Local search
-        var localSearchConfig =
-                new LocalSearchPhaseConfig()
-                        .withMoveSelectorConfig(moveSelectionConfig)
-                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
-        // Solver config
-        var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataChainedSolution.class, TestdataChainedEntity.class)
-                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
-                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
-
-        var problem = TestdataChainedSolution.generateUninitializedSolution(2, 2);
-        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
-                .doesNotThrowAnyException();
-    }
-
-    private static List<MoveSelectorConfig> generateMovesForChainedVar() {
-        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
-        // Change - chained
-        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
-        // Swap - chained
-        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
-        // Tail Chain - chained
-        allMoveSelectionConfigList.add(new TailChainSwapMoveSelectorConfig()
-                .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject")));
-        // Subchain chain - chained
-        allMoveSelectionConfigList
-                .add(new SubChainChangeMoveSelectorConfig().withSubChainSelectorConfig(new SubChainSelectorConfig()
-                        .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject")))
-                        .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject")));
-        // Subchain swap - chained
-        allMoveSelectionConfigList
-                .add(new SubChainSwapMoveSelectorConfig().withSubChainSelectorConfig(new SubChainSelectorConfig()
-                        .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject"))));
         // Union of all moves
         allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
         return allMoveSelectionConfigList;

@@ -12,7 +12,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigur
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
@@ -304,16 +303,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     new ListSwapMoveSelectorConfig(), new KOptListMoveSelectorConfig());
         } else {
             // We only have basic variables.
-            var basicVariableDescriptorList = solutionDescriptor.getBasicVariableDescriptorList();
-            if (solutionDescriptor.hasChainedVariable() && basicVariableDescriptorList.size() == 1) {
-                // if there is only one chained variable, we add TailChainSwapMoveSelectorConfig
-                return new UnionMoveSelectorConfig().withMoveSelectors(new ChangeMoveSelectorConfig(),
-                        new SwapMoveSelectorConfig(), new TailChainSwapMoveSelectorConfig());
-            } else {
-                // Basic variables or a mixed model with basic and chained variables
-                return new UnionMoveSelectorConfig().withMoveSelectors(new ChangeMoveSelectorConfig(),
-                        new SwapMoveSelectorConfig());
-            }
+            return new UnionMoveSelectorConfig().withMoveSelectors(new ChangeMoveSelectorConfig(),
+                    new SwapMoveSelectorConfig());
         }
     }
 }

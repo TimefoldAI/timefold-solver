@@ -5,14 +5,12 @@ import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.domain.variable.PlanningVariableGraphType;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
@@ -156,7 +154,7 @@ public record RootVariableSource<Entity_, Value_>(
                                 "The source path (%s) starting from root entity (%s) referencing multiple facts (%s, %s) in a row."
                                         .formatted(variablePath, rootEntityClass.getSimpleName(),
                                                 chainToVariable.get(chainToVariable.size() - 2).getName(),
-                                                chainToVariable.get(chainToVariable.size() - 1).getName()));
+                                                chainToVariable.getLast().getName()));
                     }
                 }
                 currentEntity = memberAccessor.getType();
@@ -391,22 +389,7 @@ public record RootVariableSource<Entity_, Value_>(
             return ParentVariableType.NEXT;
         }
         if (getAnnotation(declaringClass, memberName, InverseRelationShadowVariable.class) != null) {
-            // inverse can be both directional and undirectional;
-            // it is directional in chained models, undirectional otherwise
-            var inverseVariable =
-                    Objects.requireNonNull(getAnnotation(declaringClass, memberName, InverseRelationShadowVariable.class));
-            var sourceClass = memberAccessor.getType();
-            var variableName = inverseVariable.sourceVariableName();
-            PlanningVariable sourcePlanningVariable = getAnnotation(sourceClass, variableName, PlanningVariable.class);
-            if (sourcePlanningVariable == null) {
-                // Must have a PlanningListVariable instead
-                return ParentVariableType.INVERSE;
-            }
-            if (sourcePlanningVariable.graphType() == PlanningVariableGraphType.CHAINED) {
-                return ParentVariableType.CHAINED_NEXT;
-            } else {
-                return ParentVariableType.INVERSE;
-            }
+            return ParentVariableType.INVERSE;
         }
         if (getAnnotation(declaringClass, memberName, PlanningVariable.class) != null) {
             return ParentVariableType.VARIABLE;

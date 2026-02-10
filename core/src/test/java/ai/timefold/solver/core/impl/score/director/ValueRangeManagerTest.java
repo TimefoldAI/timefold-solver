@@ -5,10 +5,8 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertReversedNonNu
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
@@ -21,9 +19,6 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedAnchor;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
 import ai.timefold.solver.core.testdomain.composite.TestdataCompositeEntity;
 import ai.timefold.solver.core.testdomain.composite.TestdataCompositeSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -875,42 +870,6 @@ class ValueRangeManagerTest {
     }
 
     @Test
-    void problemScaleChained() {
-        var anchorCount = 20;
-        var entityCount = 500;
-        var solutionDescriptor = TestdataChainedSolution.buildSolutionDescriptor();
-        var solution = generateChainedSolution(anchorCount, entityCount);
-
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
-        assertSoftly(softly -> {
-            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * 2);
-            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize())
-                    .isEqualTo(entityCount + anchorCount);
-            // 1 unchained value is inside the solution
-            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount())
-                    .isEqualTo(entityCount + anchorCount + 1);
-            softly.assertThat(valueRangeManager.getStatistics().getProblemScale())
-                    .isCloseTo(MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, 10, 500, 20)
-                            / (double) MathUtils.LOG_PRECISION, Percentage.withPercentage(1.0));
-        });
-    }
-
-    static TestdataChainedSolution generateChainedSolution(int anchorCount, int entityCount) {
-        var solution = new TestdataChainedSolution("test solution");
-        var anchorList = IntStream.range(0, anchorCount)
-                .mapToObj(Integer::toString)
-                .map(TestdataChainedAnchor::new).toList();
-        solution.setChainedAnchorList(anchorList);
-        var entityList = IntStream.range(0, entityCount)
-                .mapToObj(Integer::toString)
-                .map(TestdataChainedEntity::new).toList();
-        solution.setChainedEntityList(entityList);
-        solution.setUnchainedValueList(Collections.singletonList(new TestdataValue("v")));
-        return solution;
-    }
-
-    @Test
     void problemScaleList() {
         var valueCount = 500;
         var entityCount = 20;
@@ -962,27 +921,6 @@ class ValueRangeManagerTest {
             softly.assertThat(valueRangeManager.getStatistics().getProblemScale())
                     .isCloseTo(Math.log10(2), Percentage.withPercentage(1.0));
         });
-    }
-
-    @Test
-    void assertProblemScaleListIsApproximatelyProblemScaleChained() {
-        var valueCount = 500;
-        var entityCount = 20;
-
-        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
-        var listSolution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
-        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, listSolution);
-        var listPowerExponent = valueRangeManager.getStatistics().getProblemScale();
-
-        var solutionDescriptorChained = TestdataChainedSolution.buildSolutionDescriptor();
-        var solutionChained = generateChainedSolution(entityCount, valueCount);
-        var valueRangeManagerChained = ValueRangeManager.of(solutionDescriptorChained, solutionChained);
-        var chainedPowerExponent = valueRangeManagerChained.getStatistics().getProblemScale();
-
-        // Since they are using different bases in calculation, some difference is expected,
-        // but the numbers should be relatively (i.e. ~1%) close.
-        assertThat(Math.pow(10, listPowerExponent))
-                .isCloseTo(Math.pow(10, chainedPowerExponent), Percentage.withPercentage(1));
     }
 
     @Test

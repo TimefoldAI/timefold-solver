@@ -212,7 +212,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * or have a single entity or element unassigned.
      *
      * <p>
-     * For problems with only basic planning variables or with chained planning variables,
+     * For problems with only basic planning variables,
      * the fitted element is a planning entity of the problem.
      * Each available planning value will be tested by setting it to the planning variable in question.
      * For problems with a list variable,

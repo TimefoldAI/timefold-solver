@@ -17,9 +17,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMove
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -59,13 +56,7 @@ public class ExhaustiveSearchPhaseConfig extends PhaseConfig<ExhaustiveSearchPha
             @XmlElement(name = PillarChangeMoveSelectorConfig.XML_ELEMENT_NAME,
                     type = PillarChangeMoveSelectorConfig.class),
             @XmlElement(name = PillarSwapMoveSelectorConfig.XML_ELEMENT_NAME, type = PillarSwapMoveSelectorConfig.class),
-            @XmlElement(name = SubChainChangeMoveSelectorConfig.XML_ELEMENT_NAME,
-                    type = SubChainChangeMoveSelectorConfig.class),
-            @XmlElement(name = SubChainSwapMoveSelectorConfig.XML_ELEMENT_NAME,
-                    type = SubChainSwapMoveSelectorConfig.class),
             @XmlElement(name = SwapMoveSelectorConfig.XML_ELEMENT_NAME, type = SwapMoveSelectorConfig.class),
-            @XmlElement(name = TailChainSwapMoveSelectorConfig.XML_ELEMENT_NAME,
-                    type = TailChainSwapMoveSelectorConfig.class),
             @XmlElement(name = UnionMoveSelectorConfig.XML_ELEMENT_NAME, type = UnionMoveSelectorConfig.class)
     })
     protected MoveSelectorConfig moveSelectorConfig = null;

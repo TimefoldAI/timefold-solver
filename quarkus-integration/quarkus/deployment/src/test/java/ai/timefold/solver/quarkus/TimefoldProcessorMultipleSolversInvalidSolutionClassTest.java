@@ -8,7 +8,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.quarkus.testdomain.chained.TestdataChainedQuarkusSolution;
+import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarSolution;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusSolution;
@@ -74,14 +74,14 @@ class TimefoldProcessorMultipleSolversInvalidSolutionClassTest {
                             TestdataQuarkusShadowVariableSolution.class,
                             TestdataQuarkusShadowVariableConstraintProvider.class,
                             TestdataQuarkusShadowVariableListener.class)
-                    .addClasses(TestdataChainedQuarkusSolution.class)
+                    .addClasses(TestdataBasicVarSolution.class)
                     .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml")
                     .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml"))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining(
                             "Unused classes ([%s]) found with a @PlanningSolution annotation."
-                                    .formatted(TestdataChainedQuarkusSolution.class.getName())));
+                                    .formatted(TestdataBasicVarSolution.class.getName())));
 
     @Inject
     @Named("solver1")

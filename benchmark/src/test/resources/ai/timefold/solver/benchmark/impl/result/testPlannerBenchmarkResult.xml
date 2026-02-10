@@ -15,8 +15,8 @@
     <name>First Fit</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -63,8 +63,8 @@
     <name>First Fit Decreasing</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -111,8 +111,8 @@
     <name>Tabu Search</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -124,16 +124,6 @@
         <constructionHeuristicType>FIRST_FIT_DECREASING</constructionHeuristicType>
       </constructionHeuristic>
       <localSearch>
-        <unionMoveSelector>
-          <changeMoveSelector/>
-          <swapMoveSelector/>
-          <subChainChangeMoveSelector>
-            <selectReversingMoveToo>true</selectReversingMoveToo>
-          </subChainChangeMoveSelector>
-          <subChainSwapMoveSelector>
-            <selectReversingMoveToo>true</selectReversingMoveToo>
-          </subChainSwapMoveSelector>
-        </unionMoveSelector>
         <acceptor>
           <entityTabuSize>9</entityTabuSize>
         </acceptor>
@@ -177,8 +167,8 @@
     <name>Late Acceptance</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -190,16 +180,6 @@
         <constructionHeuristicType>FIRST_FIT_DECREASING</constructionHeuristicType>
       </constructionHeuristic>
       <localSearch>
-        <unionMoveSelector>
-          <changeMoveSelector/>
-          <swapMoveSelector/>
-          <subChainChangeMoveSelector>
-            <selectReversingMoveToo>true</selectReversingMoveToo>
-          </subChainChangeMoveSelector>
-          <subChainSwapMoveSelector>
-            <selectReversingMoveToo>true</selectReversingMoveToo>
-          </subChainSwapMoveSelector>
-        </unionMoveSelector>
         <acceptor>
           <lateAcceptanceSize>200</lateAcceptanceSize>
         </acceptor>
@@ -243,8 +223,8 @@
     <name>Tabu Search Nearby</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -277,16 +257,6 @@
               </nearbySelection>
             </secondaryEntitySelector>
           </swapMoveSelector>
-          <tailChainSwapMoveSelector>
-            <entitySelector id="entitySelector3"/>
-            <valueSelector>
-              <nearbySelection>
-                <originEntitySelector mimicSelectorRef="entitySelector3"/>
-                <nearbyDistanceMeterClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
-                <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-              </nearbySelection>
-            </valueSelector>
-          </tailChainSwapMoveSelector>
         </unionMoveSelector>
         <acceptor>
           <entityTabuSize>9</entityTabuSize>
@@ -331,8 +301,8 @@
     <name>Late Acceptance Nearby</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -365,16 +335,6 @@
               </nearbySelection>
             </secondaryEntitySelector>
           </swapMoveSelector>
-          <tailChainSwapMoveSelector>
-            <entitySelector id="entitySelector3"/>
-            <valueSelector>
-              <nearbySelection>
-                <originEntitySelector mimicSelectorRef="entitySelector3"/>
-                <nearbyDistanceMeterClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyDistanceNearbyMeter</nearbyDistanceMeterClass>
-                <parabolicDistributionSizeMaximum>40</parabolicDistributionSizeMaximum>
-              </nearbySelection>
-            </valueSelector>
-          </tailChainSwapMoveSelector>
         </unionMoveSelector>
         <acceptor>
           <lateAcceptanceSize>200</lateAcceptanceSize>

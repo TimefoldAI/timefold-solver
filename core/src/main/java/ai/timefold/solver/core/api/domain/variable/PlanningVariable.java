@@ -43,23 +43,12 @@ public @interface PlanningVariable {
      * A variable will automatically add the planning value null
      * to the {@link ValueRangeProvider}'s range.
      * <p>
-     * Allowing unassigned is not compatible with {@link PlanningVariableGraphType#CHAINED} true.
      * Allowing unassigned is not compatible with a primitive property type.
      *
      * @see PlanningListVariable#allowsUnassignedValues()
      * @return true if null is a valid value for this planning variable
      */
     boolean allowsUnassigned() default false;
-
-    /**
-     * In some use cases, such as Vehicle Routing, planning entities form a specific graph type,
-     * as specified by {@link PlanningVariableGraphType}.
-     *
-     * @return never null, defaults to {@link PlanningVariableGraphType#NONE}
-     * @deprecated Chained variable is deprecated. Use {@link PlanningListVariable list variable} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.31.0")
-    PlanningVariableGraphType graphType() default PlanningVariableGraphType.NONE;
 
     /**
      * Allows sorting a collection of planning values for this variable.

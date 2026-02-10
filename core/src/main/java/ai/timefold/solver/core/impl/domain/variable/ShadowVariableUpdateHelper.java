@@ -120,7 +120,6 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             session.processBasicVariable(entities);
-            session.processChainedVariable(entities);
         } else {
             session.processListVariable(entities);
             session.processCascadingVariable(entities);
@@ -150,7 +149,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
             var shadowEntityToUpdate = new IdentityHashMap<Object, ShadowEntityVariable>();
             for (var entityWithDescriptor : fetchEntityAndDescriptors(entities)) {
                 // Iterate over all basic variables and update the inverse relation field
-                for (var variableDescriptor : fetchBasicDescriptors(entityWithDescriptor.entityDescriptor(), false)) {
+                for (var variableDescriptor : fetchBasicDescriptors(entityWithDescriptor.entityDescriptor())) {
                     var shadowEntity = variableDescriptor.getValue(entityWithDescriptor.entity());
                     addShadowEntity(entityWithDescriptor, variableDescriptor, shadowEntity, shadowEntityToUpdate);
                 }
@@ -178,26 +177,6 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                 }
                 shadowEntityToUpdate.putIfAbsent(shadowEntity,
                         new ShadowEntityVariable(descriptor.getVariableName(), values));
-            }
-        }
-
-        /**
-         * Identify and auto-update {@link InverseRelationShadowVariable inverse shadow variables} of shadow entities for
-         * chained models.
-         *
-         * @param entities the entities to be analyzed
-         */
-        public void processChainedVariable(Object... entities) {
-            for (var entityWithDescriptor : fetchEntityAndDescriptors(entities)) {
-                // We filter all planning entities and update the inverse shadow variable
-                for (var variableDescriptor : fetchBasicDescriptors(entityWithDescriptor.entityDescriptor(), true)) {
-                    var shadowEntity = variableDescriptor.getValue(entityWithDescriptor.entity());
-                    if (shadowEntity != null) {
-                        // If the planning value is set, we update the inverse element
-                        updateShadowVariable(shadowEntity.getClass(), InverseRelationShadowVariableDescriptor.class,
-                                shadowEntity, entityWithDescriptor.entity());
-                    }
-                }
             }
         }
 
@@ -322,13 +301,10 @@ public final class ShadowVariableUpdateHelper<Solution_> {
             return descriptorList;
         }
 
-        private List<BasicVariableDescriptor<Solution_>> fetchBasicDescriptors(EntityDescriptor<Solution_> entityDescriptor,
-                boolean chained) {
+        private List<BasicVariableDescriptor<Solution_>> fetchBasicDescriptors(EntityDescriptor<Solution_> entityDescriptor) {
             var descriptorList = new ArrayList<BasicVariableDescriptor<Solution_>>();
             for (var descriptor : entityDescriptor.getDeclaredGenuineVariableDescriptors()) {
-                if (descriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
-                        && ((!chained && !basicVariableDescriptor.isChained())
-                                || (chained && basicVariableDescriptor.isChained()))) {
+                if (descriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
                     descriptorList.add(basicVariableDescriptor);
                 }
             }

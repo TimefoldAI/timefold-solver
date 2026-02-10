@@ -22,8 +22,8 @@ import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
@@ -158,12 +158,12 @@ class PlannerBenchmarkResultTest {
     // nested class below are used in the testPlannerBenchmarkResult.xml
 
     private static abstract class DummyIncrementalScoreCalculator
-            implements IncrementalScoreCalculator<TestdataChainedSolution, SimpleScore> {
+            implements IncrementalScoreCalculator<TestdataSolution, SimpleScore> {
 
     }
 
     private static abstract class DummyDistanceNearbyMeter
-            implements NearbyDistanceMeter<TestdataChainedSolution, TestdataChainedEntity> {
+            implements NearbyDistanceMeter<TestdataSolution, TestdataEntity> {
 
     }
 }

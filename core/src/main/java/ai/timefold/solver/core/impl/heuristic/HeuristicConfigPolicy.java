@@ -40,7 +40,6 @@ public class HeuristicConfigPolicy<Solution_> {
     private final ValueSorterManner valueSorterManner;
     private final ClassInstanceCache classInstanceCache;
     private final boolean reinitializeVariableFilterEnabled;
-    private final boolean initializedChainedValueFilterEnabled;
     private final boolean unassignedValuesAllowed;
     private final Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
     private final RandomGenerator random;
@@ -62,7 +61,6 @@ public class HeuristicConfigPolicy<Solution_> {
         this.valueSorterManner = builder.valueSorterManner;
         this.classInstanceCache = builder.classInstanceCache;
         this.reinitializeVariableFilterEnabled = builder.reinitializeVariableFilterEnabled;
-        this.initializedChainedValueFilterEnabled = builder.initializedChainedValueFilterEnabled;
         this.unassignedValuesAllowed = builder.unassignedValuesAllowed;
         this.nearbyDistanceMeterClass = builder.nearbyDistanceMeterClass;
         this.random = builder.random;
@@ -112,10 +110,6 @@ public class HeuristicConfigPolicy<Solution_> {
         return reinitializeVariableFilterEnabled;
     }
 
-    public boolean isInitializedChainedValueFilterEnabled() {
-        return initializedChainedValueFilterEnabled;
-    }
-
     public boolean isUnassignedValuesAllowed() {
         return unassignedValuesAllowed;
     }
@@ -152,7 +146,6 @@ public class HeuristicConfigPolicy<Solution_> {
                 .withEntitySorterManner(entitySorterManner)
                 .withValueSorterManner(valueSorterManner)
                 .withReinitializeVariableFilterEnabled(reinitializeVariableFilterEnabled)
-                .withInitializedChainedValueFilterEnabled(initializedChainedValueFilterEnabled)
                 .withUnassignedValuesAllowed(unassignedValuesAllowed)
                 .build();
     }
@@ -279,7 +272,6 @@ public class HeuristicConfigPolicy<Solution_> {
         private ValueSorterManner valueSorterManner = ValueSorterManner.NONE;
 
         private boolean reinitializeVariableFilterEnabled = false;
-        private boolean initializedChainedValueFilterEnabled = false;
         private boolean unassignedValuesAllowed = false;
 
         private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
@@ -353,11 +345,6 @@ public class HeuristicConfigPolicy<Solution_> {
 
         public Builder<Solution_> withReinitializeVariableFilterEnabled(boolean reinitializeVariableFilterEnabled) {
             this.reinitializeVariableFilterEnabled = reinitializeVariableFilterEnabled;
-            return this;
-        }
-
-        public Builder<Solution_> withInitializedChainedValueFilterEnabled(boolean initializedChainedValueFilterEnabled) {
-            this.initializedChainedValueFilterEnabled = initializedChainedValueFilterEnabled;
             return this;
         }
 

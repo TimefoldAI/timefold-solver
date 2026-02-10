@@ -26,20 +26,6 @@ public enum ParentVariableType {
      */
     PREVIOUS(true, false),
 
-    /*
-     * Previous element variable accessed from the root object in a chained model
-     * (i.e. PlanningVariable(graphType = PlanningVariableGraphType.CHAINED))
-     * is not included, since it would require a source path to accept properties
-     * that are only included on subclasses of the property's type (since the
-     * value of a chained value is either an entity (which has the property) or
-     * an anchor (which does not have the property)).
-     */
-
-    /**
-     * Variable on a next element variable accessed from the root object in a chained model.
-     */
-    CHAINED_NEXT(true, false),
-
     /**
      * A variable accessed indirectly from a fact or variable.
      */

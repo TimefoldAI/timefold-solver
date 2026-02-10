@@ -286,74 +286,6 @@ to specify which destination, value, or subList should be nearby the selection.
     </unionMoveSelector>
 ----
 
-==== Nearby selection with a chained variable
-
-NOTE: Chained variable is deprecated and will be removed in Timefold Solver 2.0.
-Use xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] instead.
-
-To quickly configure nearby selection with a chained planning variable,
-add `nearbyDistanceMeterClass` element to your configuration file.
-The following enables nearby selection with a chained variable
-for the local search:
-
-[source,xml,options="nowrap"]
-----
-<?xml version="1.0" encoding="UTF-8"?>
-<solver xmlns="https://timefold.ai/xsd/solver">
-    ...
-    <nearbyDistanceMeterClass>org.acme.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-    ...
-</solver>
-----
-
-By default, the following move selectors are included:
-
-- xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change],
-- xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap],
-- Change with Nearby,
-- Swap with Nearby
-- and xref:optimization-algorithms/move-selector-reference.adoc#tailChainSwapMoveSelector[Tail Chain Swap] with Nearby.
-
-===== Advanced configuration for local search
-
-To customize the move selectors,
-add a `nearbySelection` element in the `entitySelector` or `valueSelector`
-and use xref:optimization-algorithms/overview.adoc#mimicSelection[mimic selection]
-to specify which entity should be nearby the selection.
-
-[source,xml,options="nowrap"]
-----
-    <unionMoveSelector>
-      <changeMoveSelector>
-        <entitySelector id="entitySelector1"/>
-        <valueSelector>
-          <nearbySelection>
-            <originEntitySelector mimicSelectorRef="entitySelector1"/>
-            <nearbyDistanceMeterClass>...CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-          </nearbySelection>
-        </valueSelector>
-      </changeMoveSelector>
-      <swapMoveSelector>
-        <entitySelector id="entitySelector2"/>
-        <secondaryEntitySelector>
-          <nearbySelection>
-            <originEntitySelector mimicSelectorRef="entitySelector2"/>
-            <nearbyDistanceMeterClass>...CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-          </nearbySelection>
-        </secondaryEntitySelector>
-      </swapMoveSelector>
-      <tailChainSwapMoveSelector>
-        <entitySelector id="entitySelector3"/>
-        <valueSelector>
-          <nearbySelection>
-            <originEntitySelector mimicSelectorRef="entitySelector3"/>
-            <nearbyDistanceMeterClass>...CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-          </nearbySelection>
-        </valueSelector>
-      </tailChainSwapMoveSelector>
-    </unionMoveSelector>
-----
-
 ==== Power-tweaking distribution type
 
 The solver allows you to tweak the distribution type of the nearby selection,
@@ -607,11 +539,6 @@ is to run a non-partitioned Local Search after the Partitioned Search phase.
 Not all use cases can be partitioned.
 Partitioning only works for use cases where the planning entities and value ranges can be split into n partitions,
 without any of the constraints crossing boundaries between partitions.
-====
-
-[WARNING]
-====
-Models with xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained variables] cannot apply the partitioned search method.
 ====
 
 [#partitionedSearchConfiguration]
