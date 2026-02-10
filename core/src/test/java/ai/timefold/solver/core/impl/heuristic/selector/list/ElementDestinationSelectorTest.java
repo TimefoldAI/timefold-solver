@@ -431,7 +431,7 @@ class ElementDestinationSelectorTest {
         var a = new TestdataPinnedWithIndexListEntity("A", v1, v2);
         var b = new TestdataPinnedWithIndexListEntity("B");
         var c = new TestdataPinnedWithIndexListEntity("C", v3);
-        a.setPlanningPinToIndex(2);
+        a.setPinIndex(2);
         c.setPinned(true);
 
         var solution = new TestdataPinnedWithIndexListSolution();
@@ -528,7 +528,7 @@ class ElementDestinationSelectorTest {
         var a = new TestdataPinnedWithIndexListEntity("A");
         var b = new TestdataPinnedWithIndexListEntity("B", new TestdataPinnedWithIndexListValue("B0"),
                 new TestdataPinnedWithIndexListValue("B1"));
-        b.setPlanningPinToIndex(1); // B0 will be ignored.
+        b.setPinIndex(1); // B0 will be ignored.
         var solution = new TestdataPinnedWithIndexListSolution();
         solution.setEntityList(List.of(a, b));
         solution.setValueList(List.of(b.getValueList().get(0), b.getValueList().get(1)));

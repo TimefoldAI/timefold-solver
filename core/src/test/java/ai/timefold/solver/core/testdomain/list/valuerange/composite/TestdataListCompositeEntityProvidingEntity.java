@@ -49,6 +49,10 @@ public class TestdataListCompositeEntityProvidingEntity extends TestdataObject {
         return valueRange1;
     }
 
+    public List<TestdataListEntityProvidingValue> getValueRange2() {
+        return valueRange2;
+    }
+
     public List<TestdataListEntityProvidingValue> getValueList() {
         return valueList;
     }

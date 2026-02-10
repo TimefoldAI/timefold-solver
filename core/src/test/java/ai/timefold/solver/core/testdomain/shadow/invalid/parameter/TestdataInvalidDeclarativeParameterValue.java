@@ -22,7 +22,7 @@ public class TestdataInvalidDeclarativeParameterValue extends TestdataObject {
     TestdataInvalidDeclarativeParameterValue invalidParameter;
 
     @ShadowVariablesInconsistent
-    boolean isInconsistent;
+    boolean inconsistent;
 
     public TestdataInvalidDeclarativeParameterValue() {
     }
@@ -64,11 +64,11 @@ public class TestdataInvalidDeclarativeParameterValue extends TestdataObject {
     }
 
     public boolean isInconsistent() {
-        return isInconsistent;
+        return inconsistent;
     }
 
     public void setInconsistent(boolean inconsistent) {
-        isInconsistent = inconsistent;
+        this.inconsistent = inconsistent;
     }
 
     @ShadowSources("previous")

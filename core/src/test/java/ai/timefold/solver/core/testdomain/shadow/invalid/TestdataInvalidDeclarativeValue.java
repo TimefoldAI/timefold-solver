@@ -25,7 +25,7 @@ public class TestdataInvalidDeclarativeValue extends TestdataObject {
     TestdataInvalidDeclarativeValue shadow;
 
     @ShadowVariablesInconsistent
-    boolean isInconsistent;
+    boolean inconsistent;
 
     public TestdataInvalidDeclarativeValue() {
     }
@@ -75,11 +75,11 @@ public class TestdataInvalidDeclarativeValue extends TestdataObject {
     }
 
     public boolean isInconsistent() {
-        return isInconsistent;
+        return inconsistent;
     }
 
     public void setInconsistent(boolean inconsistent) {
-        isInconsistent = inconsistent;
+        this.inconsistent = inconsistent;
     }
 
     @ShadowSources("previous")

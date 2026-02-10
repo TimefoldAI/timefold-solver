@@ -25,7 +25,7 @@ public class TestdataBasicVarValue {
     LocalDateTime endTime;
 
     @ShadowVariablesInconsistent
-    boolean isInvalid;
+    boolean invalid;
 
     @InverseRelationShadowVariable(sourceVariableName = "value")
     List<TestdataBasicVarEntity> entityList = new ArrayList<>();
@@ -90,11 +90,11 @@ public class TestdataBasicVarValue {
     }
 
     public boolean isInvalid() {
-        return isInvalid;
+        return invalid;
     }
 
     public void setInvalid(boolean invalid) {
-        isInvalid = invalid;
+        this.invalid = invalid;
     }
 
     @Override

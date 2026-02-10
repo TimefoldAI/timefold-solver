@@ -11,4 +11,12 @@ public class OnlyMultiArgsConstructorEntity extends PrivateNoArgsConstructorEnti
     public OnlyMultiArgsConstructorEntity(String id) {
         super(id);
     }
+
+    public String getAnotherValue() {
+        return anotherValue;
+    }
+
+    public void setAnotherValue(String anotherValue) {
+        this.anotherValue = anotherValue;
+    }
 }

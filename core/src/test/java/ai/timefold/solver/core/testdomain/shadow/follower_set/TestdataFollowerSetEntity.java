@@ -30,6 +30,18 @@ public class TestdataFollowerSetEntity extends TestdataObject implements Testdat
         return value;
     }
 
+    public void setValue(TestdataValue value) {
+        this.value = value;
+    }
+
+    public List<TestdataLeaderEntity> getLeaders() {
+        return leaders;
+    }
+
+    public void setLeaders(List<TestdataLeaderEntity> leaders) {
+        this.leaders = leaders;
+    }
+
     @ShadowSources("leaders[].value")
     public TestdataValue valueSupplier() {
         var min = leaders.get(0).getValue();

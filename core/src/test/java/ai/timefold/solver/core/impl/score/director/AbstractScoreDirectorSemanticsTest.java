@@ -200,7 +200,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         firstEntity.setPinned(true);
         var secondEntity = solution.getEntityList().get(1);
         secondEntity.setValueList(List.of(solution.getValueList().get(1)));
-        secondEntity.setPlanningPinToIndex(1);
+        secondEntity.setPinIndex(1);
 
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);

@@ -89,6 +89,10 @@ public class TestdataListMultipleShadowVariableValue extends TestdataObject {
         return cascadeValue;
     }
 
+    public void setCascadeValue(Integer cascadeValue) {
+        this.cascadeValue = cascadeValue;
+    }
+
     public void updateCascadeValue() {
         this.cascadeValue = index + 10;
     }

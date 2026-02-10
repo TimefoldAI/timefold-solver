@@ -41,10 +41,9 @@ class ReflectionBeanPropertyMemberAccessorTest {
         assertThatCode(() -> new ReflectionBeanPropertyMemberAccessor(
                 TestdataDifferentGetterSetterVisibilityEntity.class.getDeclaredMethod("getValue2")))
                 .hasMessageContainingAll("getterMethod (getValue2)",
-                        "has access modifier (package-private)",
-                        "not match the setterMethod (setValue2)",
-                        "access modifier (protected)",
-                        "on class (ai.timefold.solver.core.testdomain.invalid.gettersetter.TestdataDifferentGetterSetterVisibilityEntity)");
+                        "on class (%s)".formatted(TestdataDifferentGetterSetterVisibilityEntity.class.getCanonicalName()),
+                        "is not public",
+                        "having access modifier (package-private) instead.");
     }
 
     @Test

@@ -105,7 +105,7 @@ final class GizmoMemberAccessorEntityEnhancer {
         var declaringClass = Class.forName(fieldInfo.declaringClass().name().toString(), false,
                 Thread.currentThread().getContextClassLoader());
         var fieldMember = declaringClass.getDeclaredField(fieldInfo.name());
-        var member = createMemberDescriptorForField(fieldMember, transformers);
+        var member = createMemberDescriptorForField(fieldMember, transformers, false);
         var memberInfo = new GizmoMemberInfo(member, true, false, (Class<? extends Annotation>) Class
                 .forName(annotationInstance.name().toString(), false, Thread.currentThread().getContextClassLoader()));
         var generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(fieldMember);
@@ -113,7 +113,7 @@ final class GizmoMemberAccessorEntityEnhancer {
         return generatedClassName;
     }
 
-    private void addVirtualFieldGetter(Class<?> classInfo, Field fieldInfo,
+    private void addVirtualFieldGetterAndSetter(Class<?> classInfo, Field fieldInfo,
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         if (!visitedFields.contains(fieldInfo)) {
             transformers.produce(new BytecodeTransformerBuildItem(classInfo.getName(),
@@ -362,7 +362,8 @@ final class GizmoMemberAccessorEntityEnhancer {
                 if (Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
-                solutionFieldToMemberDescriptor.put(field, createMemberDescriptorForField(field, transformers));
+                // Do not enforce a setter; this is for cloning, not an annotation
+                solutionFieldToMemberDescriptor.put(field, createMemberDescriptorForField(field, transformers, true));
             }
             currentClass = currentClass.getSuperclass();
         }
@@ -372,8 +373,10 @@ final class GizmoMemberAccessorEntityEnhancer {
     }
 
     private GizmoMemberDescriptor createMemberDescriptorForField(Field field,
-            BuildProducer<BytecodeTransformerBuildItem> transformers) {
-        if (Modifier.isFinal(field.getModifiers())) {
+            BuildProducer<BytecodeTransformerBuildItem> transformers,
+            boolean isForCloning) {
+        var isFinal = Modifier.isFinal(field.getModifiers());
+        if (isFinal) {
             makeFieldNonFinal(field, transformers);
         }
 
@@ -382,10 +385,11 @@ final class GizmoMemberAccessorEntityEnhancer {
         var name = field.getName();
 
         // Not being recorded, so can use Type and annotated element directly
-        if (Modifier.isPublic(field.getModifiers())) {
+        if ((ReflectionHelper.hasGetterMethod(declaringClass, name) || Modifier.isPublic(field.getModifiers()))
+                && !isForCloning) {
             return new GizmoMemberDescriptor(name, memberDescriptor, declaringClass);
         } else {
-            addVirtualFieldGetter(declaringClass, field, transformers);
+            addVirtualFieldGetterAndSetter(declaringClass, field, transformers);
             var getterName = getVirtualGetterName(true, name);
             var getterDescriptor =
                     ClassMethodDesc.of(ClassDesc.ofDescriptor(declaringClass.descriptorString()), getterName, field.getType());

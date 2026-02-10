@@ -38,6 +38,10 @@ public class TestdataFieldAnnotatedEntity extends TestdataObject {
         return value;
     }
 
+    public void setValue(TestdataValue value) {
+        this.value = value;
+    }
+
     // ************************************************************************
     // Complex methods
     // ************************************************************************

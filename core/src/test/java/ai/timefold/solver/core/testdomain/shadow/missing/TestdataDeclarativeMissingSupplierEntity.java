@@ -23,10 +23,6 @@ public class TestdataDeclarativeMissingSupplierEntity {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public TestdataDeclarativeMissingSupplierValue getValue() {
         return value;
     }
@@ -45,6 +41,10 @@ public class TestdataDeclarativeMissingSupplierEntity {
 
     public long getDurationInDays() {
         return durationInDays;
+    }
+
+    public void setDurationInDays(long durationInDays) {
+        this.durationInDays = durationInDays;
     }
 
     @Override

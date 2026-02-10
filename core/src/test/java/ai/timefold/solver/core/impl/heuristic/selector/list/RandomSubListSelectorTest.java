@@ -85,7 +85,7 @@ class RandomSubListSelectorTest {
         var v3 = new TestdataPinnedWithIndexListValue("3");
         var v4 = new TestdataPinnedWithIndexListValue("4");
         var a = new TestdataPinnedWithIndexListEntity("A", v1, v2, v3, v4);
-        a.setPlanningPinToIndex(1); // Ignore v1.
+        a.setPinIndex(1); // Ignore v1.
         var b = new TestdataPinnedWithIndexListEntity("B");
         var solution = new TestdataPinnedWithIndexListSolution();
         solution.setEntityList(List.of(a, b));

@@ -43,7 +43,7 @@ public class TestdataMultiDirectionConcurrentValue {
     List<TestdataMultiDirectionConcurrentValue> concurrentValueGroup;
 
     @ShadowVariablesInconsistent
-    boolean isInvalid;
+    boolean invalid;
 
     public TestdataMultiDirectionConcurrentValue() {
     }
@@ -54,10 +54,6 @@ public class TestdataMultiDirectionConcurrentValue {
 
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public TestdataMultiDirectionConcurrentEntity getEntity() {
@@ -98,6 +94,14 @@ public class TestdataMultiDirectionConcurrentValue {
 
     public void setServiceStartTime(LocalDateTime serviceStartTime) {
         this.serviceStartTime = serviceStartTime;
+    }
+
+    public LocalDateTime getServiceReadyTime() {
+        return serviceReadyTime;
+    }
+
+    public void setServiceReadyTime(LocalDateTime serviceReadyTime) {
+        this.serviceReadyTime = serviceReadyTime;
     }
 
     @ShadowSources({ "previousValue.serviceFinishTime", "entity" })
@@ -152,11 +156,11 @@ public class TestdataMultiDirectionConcurrentValue {
     }
 
     public boolean isInvalid() {
-        return isInvalid;
+        return invalid;
     }
 
     public void setInvalid(boolean invalid) {
-        isInvalid = invalid;
+        this.invalid = invalid;
     }
 
     @Override

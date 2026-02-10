@@ -28,7 +28,7 @@ public class TestdataMultiEntityDependencyValue {
     LocalDateTime endTime;
 
     @ShadowVariablesInconsistent
-    boolean isInvalid;
+    boolean invalid;
 
     @InverseRelationShadowVariable(sourceVariableName = "values")
     TestdataMultiEntityDependencyEntity entity;
@@ -49,6 +49,10 @@ public class TestdataMultiEntityDependencyValue {
         this.dependencies = dependencies;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public List<TestdataMultiEntityDependencyValue> getDependencies() {
         return dependencies;
     }
@@ -64,6 +68,14 @@ public class TestdataMultiEntityDependencyValue {
 
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
+    }
+
+    public TestdataMultiEntityDependencyValue getPreviousValue() {
+        return previousValue;
+    }
+
+    public void setPreviousValue(TestdataMultiEntityDependencyValue previousValue) {
+        this.previousValue = previousValue;
     }
 
     @ShadowSources({ "dependencies[].endTime", "previousValue.endTime", "entity.readyTime" })
@@ -116,11 +128,11 @@ public class TestdataMultiEntityDependencyValue {
     }
 
     public boolean isInvalid() {
-        return isInvalid;
+        return invalid;
     }
 
     public void setInvalid(boolean invalid) {
-        isInvalid = invalid;
+        this.invalid = invalid;
     }
 
     public TestdataMultiEntityDependencyEntity getEntity() {

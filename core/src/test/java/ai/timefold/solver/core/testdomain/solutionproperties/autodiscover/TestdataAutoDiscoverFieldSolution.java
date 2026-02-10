@@ -54,4 +54,44 @@ public class TestdataAutoDiscoverFieldSolution extends TestdataObject {
         this.score = score;
     }
 
+    public TestdataConstraintConfiguration getConstraintConfiguration() {
+        return constraintConfiguration;
+    }
+
+    public void setConstraintConfiguration(
+            TestdataConstraintConfiguration constraintConfiguration) {
+        this.constraintConfiguration = constraintConfiguration;
+    }
+
+    public TestdataObject getSingleProblemFact() {
+        return singleProblemFact;
+    }
+
+    public void setSingleProblemFact(TestdataObject singleProblemFact) {
+        this.singleProblemFact = singleProblemFact;
+    }
+
+    public List<TestdataValue> getProblemFactList() {
+        return problemFactList;
+    }
+
+    public void setProblemFactList(List<TestdataValue> problemFactList) {
+        this.problemFactList = problemFactList;
+    }
+
+    public List<TestdataEntity> getEntityList() {
+        return entityList;
+    }
+
+    public void setEntityList(List<TestdataEntity> entityList) {
+        this.entityList = entityList;
+    }
+
+    public TestdataEntity getOtherEntity() {
+        return otherEntity;
+    }
+
+    public void setOtherEntity(TestdataEntity otherEntity) {
+        this.otherEntity = otherEntity;
+    }
 }

@@ -729,18 +729,18 @@ class RootVariableSourceTest {
                 planningSolutionMetaModel,
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
-                "isInconsistent",
+                "inconsistent",
                 DEFAULT_MEMBER_ACCESSOR_FACTORY,
                 DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContainingAll(
-                        "The source path (isInconsistent) starting from root class (%s) accesses a @%s property (isInconsistent)"
+                        "The source path (inconsistent) starting from root class (%s) accesses a @%s property (inconsistent)"
                                 .formatted(TestdataInvalidDeclarativeValue.class.getCanonicalName(),
                                         ShadowVariablesInconsistent.class.getSimpleName()),
                         "Supplier methods are only called when all of their dependencies are consistent",
                         "reading @%s properties are not needed since they are guaranteed to be false"
                                 .formatted(ShadowVariablesInconsistent.class.getSimpleName()),
-                        "Maybe remove the source path (isInconsistent) from the @%s?"
+                        "Maybe remove the source path (inconsistent) from the @%s?"
                                 .formatted(ShadowSources.class.getSimpleName()));
     }
 

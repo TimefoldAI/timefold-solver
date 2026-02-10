@@ -48,6 +48,10 @@ public class TestdataChainedSimpleVarValue {
         return cumulativeDurationInDays;
     }
 
+    public void setCumulativeDurationInDays(int cumulativeDurationInDays) {
+        this.cumulativeDurationInDays = cumulativeDurationInDays;
+    }
+
     @ShadowSources("next.cumulativeDurationInDays")
     public int updateCumulativeDurationInDays() {
         if (next == null) {

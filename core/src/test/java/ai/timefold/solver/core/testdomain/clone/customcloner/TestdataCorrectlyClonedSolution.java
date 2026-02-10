@@ -47,4 +47,24 @@ public class TestdataCorrectlyClonedSolution implements SolutionCloner<TestdataC
         return clonedByCustomCloner;
     }
 
+    public void setClonedByCustomCloner(boolean clonedByCustomCloner) {
+        this.clonedByCustomCloner = clonedByCustomCloner;
+    }
+
+    public SimpleScore getScore() {
+        return score;
+    }
+
+    public void setScore(SimpleScore score) {
+        this.score = score;
+    }
+
+    public TestdataEntity getEntity() {
+        return entity;
+    }
+
+    public void setEntity(TestdataEntity entity) {
+        this.entity = entity;
+    }
+
 }

@@ -28,7 +28,6 @@ public sealed class ReflectionMethodMemberAccessor extends AbstractMemberAccesso
         this.returnType = readMethod.getReturnType();
         this.methodName = readMethod.getName();
         try {
-            readMethod.setAccessible(true);
             this.methodHandle = MethodHandles.lookup()
                     .unreflect(readMethod)
                     .asFixedArity();

@@ -74,6 +74,18 @@ public class TestdataCascadingInvalidSource {
         return cascadeValue;
     }
 
+    public void setCascadeValue(Integer cascadeValue) {
+        this.cascadeValue = cascadeValue;
+    }
+
+    public Integer getCascadeValue2() {
+        return cascadeValue2;
+    }
+
+    public void setCascadeValue2(Integer cascadeValue2) {
+        this.cascadeValue2 = cascadeValue2;
+    }
+
     //---Complex methods---//
     public void updateCascadeValue() {
         if (value != null) {

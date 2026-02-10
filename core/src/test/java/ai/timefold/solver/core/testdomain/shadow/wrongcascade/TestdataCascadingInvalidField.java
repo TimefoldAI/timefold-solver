@@ -70,6 +70,10 @@ public class TestdataCascadingInvalidField {
         return cascadeValue;
     }
 
+    public void setCascadeValue(Integer cascadeValue) {
+        this.cascadeValue = cascadeValue;
+    }
+
     //---Complex methods---//
     public void updateCascadeValue() {
         if (value != null) {

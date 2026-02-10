@@ -24,10 +24,6 @@ public class TestdataBasicVarParameterEntity {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public TestdataBasicVarParameterValue getValue() {
         return value;
     }
@@ -46,6 +42,10 @@ public class TestdataBasicVarParameterEntity {
 
     public long getDurationInDays() {
         return durationInDays;
+    }
+
+    public void setDurationInDays(long durationInDays) {
+        this.durationInDays = durationInDays;
     }
 
     @Override

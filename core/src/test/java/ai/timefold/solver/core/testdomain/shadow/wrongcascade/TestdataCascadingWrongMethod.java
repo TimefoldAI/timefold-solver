@@ -72,8 +72,16 @@ public class TestdataCascadingWrongMethod {
         return cascadeValue;
     }
 
+    public void setCascadeValue(Integer cascadeValue) {
+        this.cascadeValue = cascadeValue;
+    }
+
     public Integer getCascadeValueReturnType() {
         return cascadeValueReturnType;
+    }
+
+    public void setCascadeValueReturnType(Integer cascadeValueReturnType) {
+        this.cascadeValueReturnType = cascadeValueReturnType;
     }
 
     //---Complex methods---//

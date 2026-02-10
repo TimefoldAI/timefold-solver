@@ -27,6 +27,14 @@ public class TestdataMixedSolution {
         // required for cloning
     }
 
+    public SimpleScore getScore() {
+        return score;
+    }
+
+    public void setScore(SimpleScore score) {
+        this.score = score;
+    }
+
     public List<TestdataMixedEntity> getMixedEntityList() {
         return mixedEntityList;
     }

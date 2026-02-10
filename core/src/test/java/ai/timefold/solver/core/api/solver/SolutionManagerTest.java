@@ -1857,7 +1857,7 @@ public class SolutionManagerTest {
         var c1 = new TestdataPinnedWithIndexListValue("c1");
         var c = new TestdataPinnedWithIndexListEntity("c", c0, c1);
         c.setPinned(false);
-        c.setPlanningPinToIndex(1); // Destination c[0] will be unavailable.
+        c.setPinIndex(1); // Destination c[0] will be unavailable.
         var solution = new TestdataPinnedWithIndexListSolution();
         var uninitializedValue = new TestdataPinnedWithIndexListValue("uninitialized");
         solution.setEntityList(Arrays.asList(a, b, c));
@@ -1918,7 +1918,7 @@ public class SolutionManagerTest {
         var c1 = new TestdataPinnedWithIndexListValue("c1");
         var c = new TestdataPinnedWithIndexListEntity("c", c0, c1);
         c.setPinned(false);
-        c.setPlanningPinToIndex(1); // Destination c[0] will be unavailable.
+        c.setPinIndex(1); // Destination c[0] will be unavailable.
         var solution = new TestdataPinnedWithIndexListSolution();
         var uninitializedValue = new TestdataPinnedWithIndexListValue("uninitialized");
         solution.setEntityList(Arrays.asList(a, b, c));
@@ -1980,7 +1980,7 @@ public class SolutionManagerTest {
         var evaluatedValue = new TestdataPinnedWithIndexListValue("c1");
         var c = new TestdataPinnedWithIndexListEntity("c", c0, evaluatedValue);
         c.setPinned(false);
-        c.setPlanningPinToIndex(1); // Destination c[0] will be unavailable.
+        c.setPinIndex(1); // Destination c[0] will be unavailable.
         var solution = new TestdataPinnedWithIndexListSolution();
         solution.setEntityList(Arrays.asList(a, b, c));
         solution.setValueList(Arrays.asList(b0, c0, evaluatedValue));
@@ -2030,7 +2030,7 @@ public class SolutionManagerTest {
         var c = new TestdataPinnedWithIndexListEntity("c", c0, c1);
         var d = new TestdataPinnedWithIndexListEntity("d");
         c.setPinned(false);
-        c.setPlanningPinToIndex(1); // Destination c[0] will be unavailable.
+        c.setPinIndex(1); // Destination c[0] will be unavailable.
         var solution = new TestdataPinnedWithIndexListSolution();
         var uninitializedValue = new TestdataPinnedWithIndexListValue("uninitialized");
         solution.setEntityList(Arrays.asList(a, b, c, d));
@@ -2054,7 +2054,7 @@ public class SolutionManagerTest {
         var c = new TestdataPinnedWithIndexListEntity("c", c0, c1);
         var d = new TestdataPinnedWithIndexListEntity("d");
         c.setPinned(false);
-        c.setPlanningPinToIndex(1); // Destination c[0] will be unavailable.
+        c.setPinIndex(1); // Destination c[0] will be unavailable.
         var solution = new TestdataPinnedWithIndexListSolution();
         var uninitializedValue = new TestdataPinnedWithIndexListValue("uninitialized");
         solution.setEntityList(Arrays.asList(a, b, c, d));

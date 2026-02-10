@@ -25,10 +25,6 @@ public class TestdataChainedVarEntity extends TestdataChainedVarValue {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public TestdataChainedVarValue getPrevious() {
         return previous;
     }
@@ -47,6 +43,10 @@ public class TestdataChainedVarEntity extends TestdataChainedVarValue {
 
     public long getDurationInDays() {
         return durationInDays;
+    }
+
+    public void setDurationInDays(long durationInDays) {
+        this.durationInDays = durationInDays;
     }
 
     @Override

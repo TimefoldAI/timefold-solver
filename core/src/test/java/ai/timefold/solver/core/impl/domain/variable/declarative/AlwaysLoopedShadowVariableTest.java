@@ -31,7 +31,7 @@ class AlwaysLoopedShadowVariableTest {
         assertThatCode(() -> solver.solve(problem)).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContainingAll(
                         "There are fixed dependency loops in the graph for variables",
-                        "isOdd",
-                        "isEven");
+                        "odd",
+                        "even");
     }
 }
