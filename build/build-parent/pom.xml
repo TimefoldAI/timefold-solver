@@ -47,6 +47,7 @@
     <version.enforcer.plugin>3.6.2</version.enforcer.plugin>
     <version.jacoco.plugin>0.8.14</version.jacoco.plugin>
     <version.jar.plugin>3.5.0</version.jar.plugin>
+    <version.copy-rename.plugin>1.0.1</version.copy-rename.plugin>
     <version.jaxb2.plugin>4.1.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
     <version.sonar.plugin>5.5.0.6356</version.sonar.plugin>
