@@ -52,7 +52,3 @@ deploy:
             artifactId: timefold-solver-ide-config
             sourceJar: true
             javadocJar: false
-          - groupId: ai.timefold.solver
-            artifactId: timefold-solver-webui
-            sourceJar: true
-            javadocJar: false

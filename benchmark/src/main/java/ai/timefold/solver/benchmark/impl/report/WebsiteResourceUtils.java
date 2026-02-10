@@ -9,27 +9,19 @@ import java.util.function.Function;
 public final class WebsiteResourceUtils {
 
     private static final String RESOURCE_NAMESPACE = "/ai/timefold/solver/benchmark/impl/report/";
-    private static final String WEBJAR_RESOURCE_NAMESPACE = "META-INF/resources/webjars/timefold/";
 
     public static void copyResourcesTo(File benchmarkReportDirectory) {
-        // Manually extract webjars, as webjar-locator had issues with Quarkus.
-        copyWebjarResource(benchmarkReportDirectory, "css/timefold-webui.css");
-        copyWebjarResource(benchmarkReportDirectory, "js/timefold-webui.js");
-        copyWebjarResource(benchmarkReportDirectory, "img/timefold-favicon.svg");
-        copyWebjarResource(benchmarkReportDirectory, "img/timefold-logo-horizontal-negative.svg");
-        copyWebjarResource(benchmarkReportDirectory, "img/timefold-logo-horizontal-positive.svg");
-        copyWebjarResource(benchmarkReportDirectory, "img/timefold-logo-stacked-positive.svg");
-        // Manually copy some other resources.
+        copyResource(benchmarkReportDirectory, "website/css/timefold-webui.css");
         copyResource(benchmarkReportDirectory, "website/css/prettify.css");
         copyResource(benchmarkReportDirectory, "website/css/app.css");
+        copyResource(benchmarkReportDirectory, "website/js/timefold-webui.js");
         copyResource(benchmarkReportDirectory, "website/js/chartjs-plugin-watermark.js");
         copyResource(benchmarkReportDirectory, "website/js/prettify.js");
         copyResource(benchmarkReportDirectory, "website/js/app.js");
-    }
-
-    private static void copyWebjarResource(File benchmarkReportDirectory, String websiteResource) {
-        copyResource(benchmarkReportDirectory, WEBJAR_RESOURCE_NAMESPACE, websiteResource, "website/" + websiteResource,
-                s -> WebsiteResourceUtils.class.getClassLoader().getResourceAsStream(s));
+        copyResource(benchmarkReportDirectory, "website/img/timefold-favicon.svg");
+        copyResource(benchmarkReportDirectory, "website/img/timefold-logo-horizontal-negative.svg");
+        copyResource(benchmarkReportDirectory, "website/img/timefold-logo-horizontal-positive.svg");
+        copyResource(benchmarkReportDirectory, "website/img/timefold-logo-stacked-positive.svg");
     }
 
     private static void copyResource(File benchmarkReportDirectory, String websiteResource) {
