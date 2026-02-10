@@ -70,32 +70,31 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
         EntityDescriptor<Solution_> sourceEntityDescriptor = getEntityDescriptor().getSolutionDescriptor()
                 .findEntityDescriptor(sourceClass);
         if (sourceEntityDescriptor == null) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has an @" + InverseRelationShadowVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with a sourceClass (" + sourceClass
-                    + ") which is not a valid planning entity."
-                    + "\nMaybe check the annotations of the class (" + sourceClass + ")."
-                    + "\nMaybe add the class (" + sourceClass
-                    + ") among planning entities in the solver configuration.");
+            throw new IllegalArgumentException("""
+                    The entityClass (%s) has an @%s-annotated property (%s) \
+                    with a sourceClass (%s) which is not a valid planning entity.
+                    Maybe check the annotations of the class (%s).
+                    Maybe add the class (%s) among planning entities in the solver configuration."""
+                    .formatted(entityDescriptor.getEntityClass(), InverseRelationShadowVariable.class.getSimpleName(),
+                            variableMemberAccessor.getName(), sourceClass, sourceClass, sourceClass));
         }
         String sourceVariableName = shadowVariableAnnotation.sourceVariableName();
         // TODO can we getGenuineVariableDescriptor()?
         sourceVariableDescriptor = sourceEntityDescriptor.getVariableDescriptor(sourceVariableName);
         if (sourceVariableDescriptor == null) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has an @" + InverseRelationShadowVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with sourceVariableName (" + sourceVariableName
-                    + ") which is not a valid planning variable on entityClass ("
-                    + sourceEntityDescriptor.getEntityClass() + ").\n"
-                    + sourceEntityDescriptor.buildInvalidVariableNameExceptionMessage(sourceVariableName));
+            throw new IllegalStateException("""
+                    The entityClass (%s) has an @%s-annotated property (%s) \
+                    with sourceVariableName (%s) which is not a valid planning variable on entityClass (%s).
+                    %s"""
+                    .formatted(entityDescriptor.getEntityClass(), InverseRelationShadowVariable.class.getSimpleName(),
+                            variableMemberAccessor.getName(), sourceVariableName, sourceEntityDescriptor.getEntityClass(),
+                            sourceEntityDescriptor.buildInvalidVariableNameExceptionMessage(sourceVariableName)));
         }
         boolean list = sourceVariableDescriptor.isListVariable();
         if (singleton) {
             if (!list) {
                 throw new IllegalArgumentException("""
-                        The entityClass (%s) has an @%s annotated property (%s) \
+                        The entityClass (%s) has an @%s-annotated property (%s) \
                         which does not return a %s with sourceVariableName (%s) which is not a list variable @%s.
                         Only list variable supports a singleton inverse."""
                         .formatted(entityDescriptor.getEntityClass(), InverseRelationShadowVariable.class.getSimpleName(),
@@ -105,7 +104,7 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
         } else {
             if (list) {
                 throw new IllegalArgumentException("""
-                        The entityClass (%s) has an @%s annotated property (%s) \
+                        The entityClass (%s) has an @%s-annotated property (%s) \
                         which returns a %s with sourceVariableName (%s) which is a list variable @%s.
                         A list variable supports only a singleton inverse."""
                         .formatted(entityDescriptor.getEntityClass(), InverseRelationShadowVariable.class.getSimpleName(),

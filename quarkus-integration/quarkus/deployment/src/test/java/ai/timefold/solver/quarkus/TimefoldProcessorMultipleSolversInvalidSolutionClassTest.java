@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarSolution;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusSolution;
@@ -58,6 +59,29 @@ class TimefoldProcessorMultipleSolversInvalidSolutionClassTest {
                             TestdataQuarkusShadowVariableSolution.class.getName())
                     .hasMessageContaining(TestdataQuarkusSolution.class.getName())
                     .hasMessageContaining("on the classpath."));
+
+    // Unused classes
+    @RegisterExtension
+    static final QuarkusUnitTest config3 = new QuarkusUnitTest()
+            .overrideConfigKey("quarkus.timefold.solver.\"solver1\".solver-config-xml",
+                    "ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".solver-config-xml",
+                    "ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml")
+            .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
+                    .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
+                            TestdataQuarkusConstraintProvider.class)
+                    .addClasses(TestdataQuarkusShadowVariableEntity.class,
+                            TestdataQuarkusShadowVariableSolution.class,
+                            TestdataQuarkusShadowVariableConstraintProvider.class,
+                            TestdataQuarkusShadowVariableListener.class)
+                    .addClasses(TestdataBasicVarSolution.class)
+                    .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml")
+                    .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml"))
+            .assertException(t -> assertThat(t)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining(
+                            "Unused classes ([%s]) found with a @PlanningSolution annotation."
+                                    .formatted(TestdataBasicVarSolution.class.getName())));
 
     @Inject
     @Named("solver1")

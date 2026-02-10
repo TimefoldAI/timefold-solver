@@ -190,7 +190,7 @@ However, the time coordinate of each element can be deduced from its position in
 If the elements’ position on time axis affects the score,
 use a xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variable] to calculate the time.
 
-This pattern is implemented using the  xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable].
+This pattern is implemented using the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable].
 The planning entity determines the starting time of the first element in its planning list variable.
 The second element's starting time is calculated based on the starting time and duration of the first element.
 For example, in task assignment, Beth (the entity) starts working at 8:00, thus her first task starts at 8:00.

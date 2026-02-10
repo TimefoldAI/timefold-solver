@@ -48,7 +48,7 @@ public record ProblemSizeStatistics(long entityCount,
         if (approximateProblemSizeLog < 10) { // log_10(10_000_000_000) = 10
             return "%s".formatted(format(Math.pow(10d, approximateProblemSizeLog), BASIC_FORMATTER, locale));
         }
-        // The actual number will often be too large to fit in a double, so cannot use normal
+        // The actual number will often be too large to fit in a double, so cannot use basic
         // formatting.
         // Separate the exponent into its integral and fractional parts
         // Use the integral part as the power of 10, and the fractional part as the significant digits.

@@ -5,7 +5,7 @@ import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-public class DummySpringIncrementalScore implements IncrementalScoreCalculator {
+public class DummySpringListIncrementalScore implements IncrementalScoreCalculator {
     @Override
     public void resetWorkingSolution(@NonNull Object workingSolution) {
 

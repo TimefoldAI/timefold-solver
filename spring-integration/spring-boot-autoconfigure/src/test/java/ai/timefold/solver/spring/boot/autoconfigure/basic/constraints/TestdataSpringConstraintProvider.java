@@ -1,11 +1,11 @@
-package ai.timefold.solver.spring.boot.autoconfigure.normal.constraints;
+package ai.timefold.solver.spring.boot.autoconfigure.basic.constraints;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
-import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity;
+import ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringEntity;
 
 import org.jspecify.annotations.NonNull;
 

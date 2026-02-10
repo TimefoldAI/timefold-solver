@@ -9,13 +9,13 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.spring.boot.autoconfigure.basic.NormalSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.basic.constraints.TestdataSpringConstraintProvider;
+import ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringEntity;
+import ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringSolution;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperty;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.multiple.MultipleConstraintSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.normal.NormalSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataSpringConstraintProvider;
-import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity;
-import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import org.assertj.core.api.AssertionsForClassTypes;

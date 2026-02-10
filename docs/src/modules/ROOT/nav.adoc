@@ -34,3 +34,4 @@
 ** xref:upgrading-timefold-solver/overview.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/upgrade-to-latest-version.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/backwards-compatibility.adoc[leveloffset=+1]
+* xref:enterprise-edition/enterprise-edition.adoc[leveloffset=+1]

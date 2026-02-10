@@ -322,7 +322,6 @@ public class ValueSelectorFactory<Solution_>
             if (config.getFilterClass() != null) {
                 filterList.add(instanceCache.newInstance(config, "filterClass", config.getFilterClass()));
             }
-            // Filter out pinned entities
             valueSelector = FilteringValueSelector.of(valueSelector, SelectionFilter.compose(filterList));
         }
         return valueSelector;

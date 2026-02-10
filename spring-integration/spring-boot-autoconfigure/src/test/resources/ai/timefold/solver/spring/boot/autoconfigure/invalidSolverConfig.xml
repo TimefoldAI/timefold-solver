@@ -2,10 +2,10 @@
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
     <solutionClass>ai.timefold.solver.spring.boot.autoconfigure.invalid.solution.InvalidRecordTestdataSpringSolution</solutionClass>
-    <entityClass>ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity</entityClass>
+    <entityClass>ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringEntity</entityClass>
     <scoreDirectorFactory>
         <constraintProviderClass>
-            ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataSpringConstraintProvider
+          ai.timefold.solver.spring.boot.autoconfigure.basic.constraints.TestdataSpringConstraintProvider
         </constraintProviderClass>
     </scoreDirectorFactory>
 </solver>

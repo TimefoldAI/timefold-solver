@@ -26,13 +26,13 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
+import ai.timefold.solver.spring.boot.autoconfigure.basic.EmptySpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.basic.NormalSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.basic.constraints.TestdataSpringConstraintProvider;
+import ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringEntity;
+import ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringSolution;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.entity.InvalidEntitySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.normal.EmptySpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.normal.NormalSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataSpringConstraintProvider;
-import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity;
-import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import org.junit.jupiter.api.Test;
@@ -212,14 +212,14 @@ class TimefoldSolverWithSolverConfigXmlAutoConfigurationTest {
         // Invalid class
         assertThatCode(() -> contextRunner
                 .withPropertyValues(
-                        "timefold.solver.nearby-distance-meter-class=ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution")
+                        "timefold.solver.nearby-distance-meter-class=ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringSolution")
                 .run(context -> {
                     var solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                     assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
                 }))
                 .rootCause().message().contains("The Nearby Selection Meter class",
-                        "ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution");
+                        "ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringSolution");
     }
 
     @Test

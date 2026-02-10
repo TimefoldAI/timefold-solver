@@ -22,6 +22,8 @@ public class InvalidMethodTestdataSpringEntity {
 
     private List<String> values;
 
+    private String anchorShadow;
+
     private String custom;
 
     private int indexShadow;

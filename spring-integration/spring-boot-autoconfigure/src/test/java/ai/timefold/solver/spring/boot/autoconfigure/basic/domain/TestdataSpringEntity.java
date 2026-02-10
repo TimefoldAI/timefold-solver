@@ -1,4 +1,4 @@
-package ai.timefold.solver.spring.boot.autoconfigure.normal.domain;
+package ai.timefold.solver.spring.boot.autoconfigure.basic.domain;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
