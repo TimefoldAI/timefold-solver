@@ -18,12 +18,6 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.spring.boot.autoconfigure.chained.ChainedSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.chained.constraints.TestdataChainedSpringConstraintProvider;
-import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringAnchor;
-import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringEntity;
-import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringObject;
-import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringSolution;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.declarative.SupplierVariableSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.declarative.domain.TestdataSpringSupplierVariableEntity;
@@ -49,7 +43,6 @@ import org.springframework.test.context.TestExecutionListeners;
 class TimefoldSolverSingleSolverAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
-    private final ApplicationContextRunner chainedContextRunner;
     private final ApplicationContextRunner supplierVariableContextRunner;
     private final ApplicationContextRunner missingSupplierVariableContextRunner;
     private final ApplicationContextRunner multimoduleRunner;
@@ -61,10 +54,6 @@ class TimefoldSolverSingleSolverAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(NormalSpringTestConfiguration.class);
-        chainedContextRunner = new ApplicationContextRunner()
-                .withConfiguration(
-                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(ChainedSpringTestConfiguration.class);
         supplierVariableContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
@@ -214,28 +203,6 @@ class TimefoldSolverSingleSolverAutoConfigurationTest {
                     var solution = solverJob.getFinalBestSolution();
                     assertThat(solution).isNotNull();
                     assertThat(solution.getScore().score()).isNotNegative();
-                });
-    }
-
-    @Test
-    void chained_solverConfigXml_none() {
-        chainedContextRunner
-                .withClassLoader(allDefaultsFilteredClassLoader)
-                .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
-                    assertThat(solverConfig).isNotNull();
-                    assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataChainedSpringSolution.class);
-                    assertThat(solverConfig.getEntityClassList()).containsExactlyInAnyOrder(
-                            TestdataChainedSpringObject.class,
-                            TestdataChainedSpringEntity.class,
-                            TestdataChainedSpringAnchor.class);
-                    assertThat(solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass())
-                            .isEqualTo(TestdataChainedSpringConstraintProvider.class);
-                    // No termination defined
-                    assertThat(solverConfig.getTerminationConfig()).isNull();
-                    var solverFactory = context.getBean(SolverFactory.class);
-                    assertThat(solverFactory).isNotNull();
-                    assertThat(solverFactory.buildSolver()).isNotNull();
                 });
     }
 

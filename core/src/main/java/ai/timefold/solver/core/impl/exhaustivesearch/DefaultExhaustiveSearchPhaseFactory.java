@@ -63,7 +63,6 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                 exhaustiveSearchType.getDefaultValueSorterManner());
         var phaseConfigPolicy = solverConfigPolicy.cloneBuilder()
                 .withReinitializeVariableFilterEnabled(true)
-                .withInitializedChainedValueFilterEnabled(true)
                 .withEntitySorterManner(entitySorterManner)
                 .withValueSorterManner(valueSorterManner)
                 .build();

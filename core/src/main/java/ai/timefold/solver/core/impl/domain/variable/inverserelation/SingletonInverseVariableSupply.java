@@ -4,7 +4,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 
 /**
- * Currently only supported for chained variables and {@link PlanningListVariable list variables},
+ * Currently only supported for {@link PlanningListVariable list variables},
  * which guarantee that no 2 entities use the same planningValue.
  */
 public interface SingletonInverseVariableSupply extends Supply {

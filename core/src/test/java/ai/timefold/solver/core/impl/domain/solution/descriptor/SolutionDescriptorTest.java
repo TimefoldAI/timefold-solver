@@ -32,7 +32,6 @@ import ai.timefold.solver.core.testdomain.invalid.duplicateweightoverrides.Testd
 import ai.timefold.solver.core.testdomain.invalid.entityannotatedasproblemfact.TestdataEntityAnnotatedAsProblemFactArraySolution;
 import ai.timefold.solver.core.testdomain.invalid.entityannotatedasproblemfact.TestdataEntityAnnotatedAsProblemFactCollectionSolution;
 import ai.timefold.solver.core.testdomain.invalid.entityannotatedasproblemfact.TestdataEntityAnnotatedAsProblemFactSolution;
-import ai.timefold.solver.core.testdomain.invalid.multivar.TestdataInvalidMultiVarSolution;
 import ai.timefold.solver.core.testdomain.invalid.nosolution.TestdataNoSolution;
 import ai.timefold.solver.core.testdomain.invalid.variablemap.TestdataMapConfigurationSolution;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
@@ -408,15 +407,6 @@ class SolutionDescriptorTest {
     void testBadFactCollection() {
         assertThatCode(TestdataBadFactCollectionSolution::buildSolutionDescriptor)
                 .hasMessageContaining("that does not return a Collection or an array.");
-    }
-
-    @Test
-    void testBadChainedAndListModel() {
-        assertThatCode(TestdataInvalidMultiVarSolution::buildSolutionDescriptor)
-                .hasMessageContaining("Combining chained variables")
-                .hasMessageContaining("with list variables")
-                .hasMessageContaining("on a single planning entity")
-                .hasMessageContaining("is not supported");
     }
 
     @Test

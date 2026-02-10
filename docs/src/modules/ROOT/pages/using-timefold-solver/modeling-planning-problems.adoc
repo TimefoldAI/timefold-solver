@@ -112,7 +112,6 @@ For more detailed guidance on when to use which variant, read the xref:design-pa
 
 - xref:planningVariable[@PlanningVariable]: contains a single *planning value*. *Planning values* can be assigned to multiple *planning entities*.
 - xref:planningListVariable[@PlanningListVariable]: contains multiple *planning values* in a specific order. *Planning values* can only be assigned to a single *planning entity*.
-- xref:chainedPlanningVariable[Chained @PlanningVariable]: allows *planning entities* to point to each other and form a chain. *Planning values* can only be part of a single chain.
 
 A planning entity can contain xref:mixedModels[a mix] of these genuine variables, with some limitations.
 
@@ -137,8 +136,9 @@ When the customers for a vehicle change, the arrival time for each customer is a
 For more information, see the xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStartDomainModel[vehicle routing domain model].
 ====
 
-Depending on your use of xref:planningVariable[@PlanningVariable], xref:planningListVariable[@PlanningListVariable] or the xref:chainedPlanningVariable[Chained @PlanningVariable]
-several built-in shadow variables are provided. These are documented in the details section of the respective genuine planning variables.
+Depending on your use of xref:planningVariable[@PlanningVariable] or the xref:planningListVariable[@PlanningListVariable]
+several built-in shadow variables are provided.
+These are documented in the details section of the respective genuine planning variables.
 
 In addition, Timefold Solver also provides a way to xref:shadowVariable[implement shadow variables yourself].
 
@@ -516,7 +516,7 @@ public class Lesson {
 [NOTE]
 ====
 For more advanced planning variables used to model precedence relationships,
-see xref:#planningListVariable[planning list variable] and xref:#chainedPlanningVariable[chained planning variable].
+see xref:#planningListVariable[planning list variable].
 ====
 
 
@@ -674,9 +674,7 @@ For example, the vehicle routing problem can be modeled as follows:
 
 image::quickstart/vehicle-routing/vehicleRoutingClassDiagramAnnotated.png[]
 
-This model is closer to the reality than the chained model.
-Each vehicle has a list of customers to go to in the order given by the list.
-And indeed, the object model matches the natural language description of the problem:
+The object model matches the natural language description of the problem:
 
 [tabs]
 ====
@@ -1228,11 +1226,6 @@ For example, if department A and B can both use room X, then their `List<Room>` 
 A `ValueRangeProvider` on the planning entity consumes more memory than `ValueRangeProvider` on the Solution and disables certain automatic performance optimizations.
 ====
 
-[WARNING]
-====
-A `ValueRangeProvider` on the planning entity is not currently compatible with a <<chainedPlanningVariable,chained>> variable.
-====
-
 The value range annotated method can also be defined with a single parameter,
 which must be of the same type as the solution class.
 The method will have access to the current solution and allow for the dynamic generation of a list of values.
@@ -1542,233 +1535,6 @@ _None of the current planning variable state in any of the planning entities sho
 During construction heuristics, those variables are likely to be ``null``.
 For example, none of the `timeslot` variables of any `Lesson` may be used to determine the order of a ``Timeslot``.
 
-[#chainedPlanningVariable]
-== Chained planning variable (TSP, VRP, ...)
-
-NOTE: Chained variable is deprecated and will be removed in Timefold Solver 2.0.
-Use <<planningListVariable,planning list variable>> instead.
-
-Chained planning variable is one way to implement the xref:design-patterns/design-patterns.adoc#chainedThroughTimePattern[Chained Through Time pattern].
-This pattern is used for some use cases, such as TSP and vehicle routing.
-Only use the chained planning variable to implement this pattern
-if you plan to use some of the advanced planning features
-that are not yet supported by the <<planningListVariable,planning list variable>>.
-
-Chained planning variable allows the planning entities to point to each other and form a chain.
-By modeling the problem as a set of chains (instead of a set of trees/loops), the search space is heavily reduced.
-
-A planning variable that is chained either:
-
-* Directly points to a problem fact (or planning entity), which is called an __anchor__.
-* Points to another planning entity with the same planning variable, which recursively points to an anchor.
-
-Here are some examples of valid and invalid chains:
-
-image::using-timefold-solver/modeling-planning-problems/chainPrinciples.png[align="center"]
-
-[#chainedVariableConsiderations]
-=== Chained variable considerations
-
-*Every initialized planning entity is part of an open-ended chain that begins from an anchor.* A valid model means that:
-
-* A chain is never a loop. The tail is always open.
-* Every chain always has exactly one anchor. The anchor is never an instance of the planning entity class that contains the chained planning variable.
-* A chain is never a tree, it is always a line. Every anchor or planning entity has at most one trailing planning entity.
-* Every initialized planning entity is part of a chain.
-* An anchor with no planning entities pointing to it, is also considered a chain.
-
-[NOTE]
-====
-If your constraints dictate a closed chain, model it as an open-ended chain (which is easier to persist in a database) and implement a score constraint for the last entity back to the anchor.
-====
-
-The optimization algorithms and built-in ``Move``s do chain correction to guarantee that the model stays valid:
-
-image::using-timefold-solver/modeling-planning-problems/chainCorrection.png[align="center"]
-
-
-[WARNING]
-====
-A custom `Move` implementation must leave the model in a valid state.
-====
-
-For example, in TSP the anchor is a `Domicile` (in vehicle routing it is ``Vehicle``):
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-public class Domicile ... implements Standstill {
-    ...
-
-    public City getCity() {...}
-
-}
-----
-====
-
-The anchor (which is a problem fact) and the planning entity implement a common interface, for example TSP's ``Standstill``:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-public interface Standstill {
-
-    City getCity();
-
-}
-----
-
-
-====
-
-That interface is the return type of the planning variable.
-Furthermore, the planning variable is chained.
-For example, TSP's `Visit` would look like this:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Visit ... implements Standstill {
-    ...
-
-    public City getCity() {...}
-
-    @PlanningVariable(graphType = PlanningVariableGraphType.CHAINED)
-    public Standstill getPreviousStandstill() {
-        return previousStandstill;
-    }
-
-    public void setPreviousStandstill(Standstill previousStandstill) {
-        this.previousStandstill = previousStandstill;
-    }
-
-}
-----
-====
-
-[NOTE]
-====
-Two value range providers are usually combined:
-
-* The value range provider that holds the anchors, for example ``domicileList``.
-* The value range provider that holds the initialized planning entities, for example ``visitList``.
-
-Since ``Domicile`` and ``Visit`` both implement ``Standstill``, an <<anonymousValueRangeProviders,anonymous value range>> on ``Standstill`` will combine both value ranges.
-====
-
-[WARNING]
-====
-Despite using the same base annotation as <<planningVariable, basic planning variables>>, <<chainedPlanningVariable,chained>> planning variables are not compatible with the `allowsUnassigned` attribute.
-====
-
-[#chainedVariableShadowVariable]
-=== Chained variable shadow variables
-
-NOTE: Chained variable is deprecated and will be removed in Timefold Solver 2.0.
-Use <<planningListVariable,planning list variable>> instead.
-
-When a planning entity uses <<chainedPlanningVariable,a chained variable>>, you can use the following built-in annotations to derive shadow variables from that genuine planning variable.
-
-- xref:bidirectionalVariableForChainedVariable[@InverseRelationShadowVariable]: Used to get the planning entity containing the chained planning variable to which a planning value is assigned;
-- xref:anchorShadowVariable[@AnchorShadowVariable]: Used to get the planning entity containing the planning variable list to which a planning value is assigned;
-
-If the built-in shadow variable annotations are insufficient, xref:customShadowVariable[@ShadowVariable] can be used to create custom handlers.
-
-[#bidirectionalVariableForChainedVariable]
-==== Bi-directional variable (inverse relation shadow variable)
-
-Two variables are bi-directional if their instances always point to each other,
-unless one side points to `null` and the other side does not exist.
-So if A references B, then B references A.
-
-For a chained planning variable, the bi-directional relationship is always a one-to-one relationship.
-In that case, the genuine side looks like this:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Customer ... {
-
-    @PlanningVariable(graphType = PlanningVariableGraphType.CHAINED, ...)
-    public Standstill getPreviousStandstill() {
-        return previousStandstill;
-    }
-    public void setPreviousStandstill(Standstill previousStandstill) {...}
-
-}
-----
-====
-
-And the shadow side looks like this:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Standstill {
-
-    @InverseRelationShadowVariable(sourceVariableName = "previousStandstill")
-    public Customer getNextCustomer() {
-         return nextCustomer;
-    }
-    public void setNextCustomer(Customer nextCustomer) {...}
-
-}
-----
-====
-
-[WARNING]
-====
-The input planning problem of a `Solver` must not violate bi-directional relationships.
-If A points to B, then B must point to A.
-Timefold Solver will not violate that principle during planning, but the input must not violate it either.
-====
-
-[#anchorShadowVariable]
-==== Anchor shadow variable
-
-An anchor shadow variable is the anchor of <<chainedPlanningVariable,a chained variable>>.
-
-Annotate the anchor property as a `@AnchorShadowVariable` annotation:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Customer {
-
-    @AnchorShadowVariable(sourceVariableName = "previousStandstill")
-    public Vehicle getVehicle() {...}
-    public void setVehicle(Vehicle vehicle) {...}
-
-}
-----
-
-
-====
-
-The `sourceVariableName` property is the name of the chained variable on the same entity class.
-
 [#mixedModels]
 == Mixed models
 
@@ -1824,11 +1590,6 @@ public class LineOperation {
 ----
 ====
 
-[WARNING]
-====
-Creating mixed models with chained and list variables is prohibited, and only one list variable can be defined.
-====
-
 [#shadowVariable]
 == Shadow variables
 
@@ -1844,13 +1605,13 @@ Shadow variables can be defined by:
 === Built-in shadow variables
 
 Timefold Solver provides various built-in shadow variable annotation that make configuring common shadow variables trivial.
-Their applicability and usage varies depending on your use of xref:basicVariableShadowVariable[@PlanningVariable], xref:listVariableShadowVariables[@PlanningListVariable] or the xref:chainedVariableShadowVariable[chained @PlanningVariable]
+Their applicability and usage varies depending on your use of xref:basicVariableShadowVariable[@PlanningVariable]
+or the xref:listVariableShadowVariables[@PlanningListVariable].
 
 Detailed information on these built-in shadow variables can be found in the section on shadow variables of each of the genuine variable variants:
 
 - xref:basicVariableShadowVariable[Built-in shadow variables for @PlanningVariable],
-- xref:listVariableShadowVariables[Built-in shadow variables for  @PlanningListVariable]
-- xref:chainedVariableShadowVariable[Built-in shadow variables for chained @PlanningVariable]
+- xref:listVariableShadowVariables[Built-in shadow variables for @PlanningListVariable]
 
 [#customShadowVariable]
 === Custom Shadow Variables
@@ -3167,13 +2928,6 @@ If the problem facts were cloned too,
 then you would have to make sure that the new planning entity clones also refer to the new problem facts clones used by the cloned solution.
 For example, if you were to clone all `Timeslot` instances,
 then each `Lesson` clone and the `Timetable` clone itself should refer to those new `Timeslot` clones.
-
-[WARNING]
-====
-Cloning an entity with a <<chainedPlanningVariable,chained>> variable is devious:
-a variable of an entity A might point to another entity B.
-If A is cloned, then its variable must point to the clone of B, not the original B.
-====
 
 
 [#createAnUninitializedSolution]

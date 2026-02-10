@@ -10,7 +10,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,21 +20,10 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologic
 import ai.timefold.solver.core.impl.domain.variable.declarative.GraphNode;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableUpdaterInfo;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.ExternalizedSingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableListener;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.NeighborhoodNotifier;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
-import ai.timefold.solver.core.testdomain.TestdataEntity;
-import ai.timefold.solver.core.testdomain.TestdataSolution;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
-import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedEntity;
-import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedSolution;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
@@ -45,77 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class VariableListenerSupportTest {
-
-    @Test
-    void demandBasic() {
-        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        var scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
-        var solution = new TestdataSolution();
-        solution.setEntityList(Collections.emptyList());
-        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-        when(scoreDirector.getSupplyManager()).thenReturn(mock(SupplyManager.class));
-        VariableListenerSupport<TestdataSolution> variableListenerSupport = VariableListenerSupport.create(scoreDirector);
-        variableListenerSupport.linkVariableListeners();
-
-        var variableDescriptor = solutionDescriptor.getEntityDescriptorStrict(TestdataEntity.class)
-                .getVariableDescriptor("value");
-
-        var supply1 = variableListenerSupport
-                .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        var supply2 = variableListenerSupport
-                .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        assertThat(supply2).isSameAs(supply1);
-    }
-
-    @Test
-    void demandChained() {
-        var solutionDescriptor = TestdataChainedSolution.buildSolutionDescriptor();
-        var scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
-        var solution = new TestdataChainedSolution();
-        solution.setChainedEntityList(Collections.emptyList());
-        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-        when(scoreDirector.getSupplyManager()).thenReturn(mock(SupplyManager.class));
-        VariableListenerSupport<TestdataChainedSolution> variableListenerSupport =
-                VariableListenerSupport.create(scoreDirector);
-        variableListenerSupport.linkVariableListeners();
-
-        VariableDescriptor<TestdataChainedSolution> variableDescriptor =
-                solutionDescriptor.getEntityDescriptorStrict(TestdataChainedEntity.class)
-                        .getVariableDescriptor("chainedObject");
-
-        var supply1 = variableListenerSupport
-                .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        assertThat(supply1)
-                .isInstanceOf(ExternalizedSingletonInverseVariableSupply.class);
-        var supply2 = variableListenerSupport
-                .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        assertThat(supply2).isSameAs(supply1);
-    }
-
-    @Test
-    void demandRichChained() {
-        var solutionDescriptor = TestdataShadowingChainedSolution.buildSolutionDescriptor();
-        var scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
-        var solution = new TestdataShadowingChainedSolution();
-        solution.setChainedEntityList(Collections.emptyList());
-        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
-        when(scoreDirector.getSupplyManager()).thenReturn(mock(SupplyManager.class));
-        var variableListenerSupport = VariableListenerSupport.create(scoreDirector);
-        variableListenerSupport.linkVariableListeners();
-
-        var variableDescriptor = solutionDescriptor
-                .getEntityDescriptorStrict(TestdataShadowingChainedEntity.class)
-                .getVariableDescriptor("chainedObject");
-
-        var supply1 = variableListenerSupport.demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        assertThat(supply1)
-                .isInstanceOf(SingletonInverseVariableListener.class);
-        var supply2 = variableListenerSupport.demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        assertThat(supply2).isSameAs(supply1);
-    }
 
     @Test
     void shadowVariableListenerOrder() {

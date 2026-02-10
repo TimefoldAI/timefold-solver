@@ -17,20 +17,9 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.spring.boot.autoconfigure.chained.ChainedSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.chained.constraints.TestdataChainedSpringConstraintProvider;
-import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringSolution;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
-import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleConstraintProviderSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleEasyScoreConstraintSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleIncrementalScoreConstraintSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleSolutionsSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.NoEntitySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.NoSolutionSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.dummy.chained.constraints.easy.DummyChainedSpringEasyScore;
-import ai.timefold.solver.spring.boot.autoconfigure.dummy.chained.constraints.incremental.DummyChainedSpringIncrementalScore;
-import ai.timefold.solver.spring.boot.autoconfigure.dummy.normal.constraints.easy.DummySpringEasyScore;
-import ai.timefold.solver.spring.boot.autoconfigure.dummy.normal.constraints.incremental.DummySpringIncrementalScore;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.entity.InvalidEntitySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.solution.InvalidSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
@@ -38,7 +27,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.multimodule.MultiModuleSprin
 import ai.timefold.solver.spring.boot.autoconfigure.normal.EmptySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NoConstraintsSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NormalSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataSpringConstraintProvider;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
@@ -62,7 +50,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
     private final ApplicationContextRunner contextRunner;
     private final ApplicationContextRunner emptyContextRunner;
     private final ApplicationContextRunner noUserConfigurationContextRunner;
-    private final ApplicationContextRunner chainedContextRunner;
     private final ApplicationContextRunner multimoduleRunner;
     private final FilteredClassLoader allDefaultsFilteredClassLoader;
 
@@ -75,10 +62,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(EmptySpringTestConfiguration.class);
-        chainedContextRunner = new ApplicationContextRunner()
-                .withConfiguration(
-                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(ChainedSpringTestConfiguration.class);
         multimoduleRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
@@ -453,22 +436,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
     }
 
     @Test
-    void chained_solverConfigXml_none() {
-        chainedContextRunner
-                .withClassLoader(allDefaultsFilteredClassLoader)
-                .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
-                .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
-                .run(context -> {
-                    var solver1 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver1");
-                    var solver2 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver2");
-                    assertThat(solver1).isNotNull();
-                    assertThat(solver2).isNotNull();
-                });
-    }
-
-    @Test
     void noSolutionClass() {
         assertThatCode(() -> noUserConfigurationContextRunner
                 .withUserConfiguration(NoSolutionSpringTestConfiguration.class)
@@ -476,34 +443,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains("No classes were found with a @PlanningSolution annotation.");
-    }
-
-    @Test
-    void multipleSolutionClasses() {
-        assertThatCode(() -> noUserConfigurationContextRunner
-                .withUserConfiguration(MultipleSolutionsSpringTestConfiguration.class)
-                .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
-                .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "Some solver configs", "solver2", "solver1",
-                        "don't specify a PlanningSolution class, yet there are multiple available",
-                        TestdataChainedSpringSolution.class.getSimpleName(),
-                        TestdataSpringSolution.class.getSimpleName(),
-                        "on the classpath.");
-    }
-
-    @Test
-    void unusedSolutionClass() {
-        assertThatCode(() -> noUserConfigurationContextRunner
-                .withUserConfiguration(MultipleSolutionsSpringTestConfiguration.class)
-                .withPropertyValues(
-                        "timefold.solver.solver1.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/normalSolverConfig.xml")
-                .withPropertyValues(
-                        "timefold.solver.solver2.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/normalSolverConfig.xml")
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "Unused classes ([ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringSolution]) found with a @PlanningSolution annotation.");
     }
 
     @Test
@@ -525,144 +464,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains(
                         "No classes found that implement EasyScoreCalculator, ConstraintProvider, or IncrementalScoreCalculator.");
-    }
-
-    @Test
-    void multipleEasyScoreConstraints() {
-        assertThatCode(() -> noUserConfigurationContextRunner
-                .withUserConfiguration(MultipleEasyScoreConstraintSpringTestConfiguration.class)
-                .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
-                .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "Some solver configs", "solver2", "solver1",
-                        "don't specify a EasyScoreCalculator score calculator class, yet there are multiple available",
-                        DummyChainedSpringEasyScore.class.getSimpleName(),
-                        DummySpringEasyScore.class.getSimpleName(),
-                        "on the classpath.");
-    }
-
-    @Test
-    void multipleConstraintProviderConstraints() {
-        assertThatCode(() -> noUserConfigurationContextRunner
-                .withUserConfiguration(MultipleConstraintProviderSpringTestConfiguration.class)
-                .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
-                .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "Some solver configs", "solver2", "solver1",
-                        "don't specify a ConstraintProvider score calculator class, yet there are multiple available",
-                        TestdataChainedSpringConstraintProvider.class.getSimpleName(),
-                        TestdataSpringConstraintProvider.class.getSimpleName(),
-                        "on the classpath.");
-    }
-
-    @Test
-    void multipleIncrementalScoreConstraints() {
-        assertThatCode(() -> noUserConfigurationContextRunner
-                .withUserConfiguration(MultipleIncrementalScoreConstraintSpringTestConfiguration.class)
-                .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
-                .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "Some solver configs", "solver2", "solver1",
-                        "don't specify a IncrementalScoreCalculator score calculator class, yet there are multiple available",
-                        DummyChainedSpringIncrementalScore.class.getSimpleName(),
-                        DummySpringIncrementalScore.class.getSimpleName(),
-                        "on the classpath.");
-    }
-
-    @Test
-    void multipleEasyScoreConstraintsXml_property() {
-        assertThatCode(() -> noUserConfigurationContextRunner
-                .withUserConfiguration(MultipleEasyScoreConstraintSpringTestConfiguration.class)
-                .withPropertyValues(
-                        "timefold.solver.solver1.solver-config-xml=solverConfig.xml")
-                .withPropertyValues(
-                        "timefold.solver.solver2.solver-config-xml=solverConfig.xml")
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "Some solver configs", "solver2", "solver1",
-                        "don't specify a EasyScoreCalculator score calculator class, yet there are multiple available",
-                        DummyChainedSpringEasyScore.class.getSimpleName(),
-                        DummySpringEasyScore.class.getSimpleName(),
-                        "on the classpath.");
-    }
-
-    @Test
-    void multipleConstraintProviderConstraintsXml_property() {
-        assertThatCode(() -> noUserConfigurationContextRunner
-                .withUserConfiguration(MultipleConstraintProviderSpringTestConfiguration.class)
-                .withPropertyValues(
-                        "timefold.solver.solver1.solver-config-xml=solverConfig.xml")
-                .withPropertyValues(
-                        "timefold.solver.solver2.solver-config-xml=solverConfig.xml")
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "Some solver configs", "solver2", "solver1",
-                        "don't specify a ConstraintProvider score calculator class, yet there are multiple available",
-                        TestdataChainedSpringConstraintProvider.class.getSimpleName(),
-                        TestdataSpringConstraintProvider.class.getSimpleName(),
-                        "on the classpath.");
-    }
-
-    @Test
-    void multipleIncrementalScoreConstraintsXml_property() {
-        assertThatCode(() -> noUserConfigurationContextRunner
-                .withUserConfiguration(MultipleIncrementalScoreConstraintSpringTestConfiguration.class)
-                .withPropertyValues(
-                        "timefold.solver.solver1.solver-config-xml=solverConfig.xml")
-                .withPropertyValues(
-                        "timefold.solver.solver2.solver-config-xml=solverConfig.xml")
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "Some solver configs", "solver2", "solver1",
-                        "don't specify a IncrementalScoreCalculator score calculator class, yet there are multiple available",
-                        DummyChainedSpringIncrementalScore.class.getSimpleName(),
-                        DummySpringIncrementalScore.class.getSimpleName(),
-                        "on the classpath.");
-    }
-
-    @Test
-    void unusedEasyScoreConstraints() {
-        assertThatCode(() -> noUserConfigurationContextRunner
-                .withUserConfiguration(MultipleEasyScoreConstraintSpringTestConfiguration.class)
-                .withPropertyValues(
-                        "timefold.solver.solver1.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/easyScoreSolverConfig.xml")
-                .withPropertyValues(
-                        "timefold.solver.solver2.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/easyScoreSolverConfig.xml")
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "Unused classes ([" + DummySpringEasyScore.class.getCanonicalName()
-                                + "]) that implements EasyScoreCalculator were found.");
-    }
-
-    @Test
-    void unusedConstraintProviderConstraints() {
-        assertThatCode(() -> noUserConfigurationContextRunner
-                .withUserConfiguration(MultipleConstraintProviderSpringTestConfiguration.class)
-                .withPropertyValues(
-                        "timefold.solver.solver1.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/normalSolverConfig.xml")
-                .withPropertyValues(
-                        "timefold.solver.solver2.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/normalSolverConfig.xml")
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "Unused classes ([" + TestdataChainedSpringConstraintProvider.class.getCanonicalName()
-                                + "]) that implements ConstraintProvider were found.");
-    }
-
-    @Test
-    void unusedIncrementalScoreConstraints() {
-        assertThatCode(() -> noUserConfigurationContextRunner
-                .withUserConfiguration(MultipleIncrementalScoreConstraintSpringTestConfiguration.class)
-                .withPropertyValues(
-                        "timefold.solver.solver1.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/incrementalScoreSolverConfig.xml")
-                .withPropertyValues(
-                        "timefold.solver.solver2.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/incrementalScoreSolverConfig.xml")
-                .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "Unused classes ([" + DummySpringIncrementalScore.class.getCanonicalName()
-                                + "]) that implements IncrementalScoreCalculator were found.");
     }
 
     @Test

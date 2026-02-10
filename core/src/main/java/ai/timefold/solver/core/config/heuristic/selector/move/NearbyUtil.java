@@ -7,7 +7,6 @@ import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorCo
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
@@ -76,16 +75,6 @@ public final class NearbyUtil {
         secondaryConfig.withNearbySelectionConfig(configureNearbySelectionWithEntity(entityConfig.getId(), distanceMeter));
         return nearbyConfig.withEntitySelectorConfig(entityConfig)
                 .withSecondaryEntitySelectorConfig(secondaryConfig);
-    }
-
-    public static @NonNull TailChainSwapMoveSelectorConfig enable(
-            @NonNull TailChainSwapMoveSelectorConfig tailChainSwapMoveSelectorConfig,
-            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, @NonNull RandomGenerator random) {
-        var nearbyConfig = tailChainSwapMoveSelectorConfig.copyConfig();
-        var entityConfig = configureEntitySelector(nearbyConfig.getEntitySelectorConfig(), random);
-        var valueConfig = configureValueSelector(nearbyConfig.getValueSelectorConfig(), entityConfig.getId(), distanceMeter);
-        return nearbyConfig.withEntitySelectorConfig(entityConfig)
-                .withValueSelectorConfig(valueConfig);
     }
 
     public static @NonNull ListChangeMoveSelectorConfig enable(

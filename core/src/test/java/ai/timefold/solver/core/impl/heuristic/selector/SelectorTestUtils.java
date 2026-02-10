@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector;
 
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -9,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 import java.util.function.Consumer;
 
@@ -18,7 +16,6 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheTy
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicReplayingEntitySelector;
@@ -33,8 +30,6 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.testdomain.chained.TestdataChainedObject;
 
 public class SelectorTestUtils {
 
@@ -197,34 +192,6 @@ public class SelectorTestUtils {
         when(moveSelector.getSize()).thenReturn((long) moveList.size());
         when(moveSelector.supportsPhaseAndSolverCaching()).thenReturn(true);
         return moveSelector;
-    }
-
-    public static SingletonInverseVariableSupply mockSingletonInverseVariableSupply(
-            final TestdataChainedEntity[] allEntities) {
-        return planningValue -> {
-            for (TestdataChainedEntity entity : allEntities) {
-                if (entity.getChainedObject().equals(planningValue)) {
-                    return entity;
-                }
-            }
-            return null;
-        };
-    }
-
-    public static void assertChain(TestdataChainedObject... chainedObjects) {
-        TestdataChainedObject chainedObject = chainedObjects[0];
-        for (int i = 1; i < chainedObjects.length; i++) {
-            TestdataChainedEntity chainedEntity = (TestdataChainedEntity) chainedObjects[i];
-            if (!Objects.equals(chainedObject, chainedEntity.getChainedObject())) {
-                fail("Chain assertion failed for chainedEntity (" + chainedEntity + ").\n"
-                        + "Expected: " + chainedObject + "\n"
-                        + "Actual:   " + chainedEntity.getChainedObject() + "\n"
-                        + "Expected chain: " + Arrays.toString(chainedObjects) + "\n"
-                        + "Actual chain:   " + Arrays.toString(Arrays.copyOf(chainedObjects, i)) + " ... ["
-                        + chainedEntity.getChainedObject() + ", " + chainedEntity + "] ...");
-            }
-            chainedObject = chainedEntity;
-        }
     }
 
     // ************************************************************************

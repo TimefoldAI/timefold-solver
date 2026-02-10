@@ -4,18 +4,13 @@ import java.util.Comparator;
 
 import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.domain.variable.PlanningVariableGraphType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.MovableChainedTrailingValueFilter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
-    private SelectionFilter<Solution_, Object> movableChainedTrailingValueFilter;
-    private boolean chained;
     private boolean allowsUnassigned;
 
     // ************************************************************************
@@ -25,10 +20,6 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     public BasicVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
         super(ordinal, entityDescriptor, variableMemberAccessor);
-    }
-
-    public boolean isChained() {
-        return chained;
     }
 
     public boolean allowsUnassigned() {
@@ -43,7 +34,6 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     protected void processPropertyAnnotations(DescriptorPolicy descriptorPolicy) {
         PlanningVariable planningVariableAnnotation = variableMemberAccessor.getAnnotation(PlanningVariable.class);
         processAllowsUnassigned(planningVariableAnnotation);
-        processChained(planningVariableAnnotation);
         processValueRangeRefs(descriptorPolicy, planningVariableAnnotation.valueRangeProviderRefs());
         var sortingProperties = assertSortingProperties(planningVariableAnnotation);
         processSorting(sortingProperties.comparatorPropertyName(), sortingProperties.comparatorClass(),
@@ -126,44 +116,6 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
         }
     }
 
-    private void processChained(PlanningVariable planningVariableAnnotation) {
-        chained = planningVariableAnnotation.graphType() == PlanningVariableGraphType.CHAINED;
-        if (!chained) {
-            return;
-        }
-        if (!acceptsValueType(entityDescriptor.getEntityClass())) {
-            throw new IllegalArgumentException(
-                    """
-                            The entityClass (%s) has a @%s-annotated property (%s) with chained (%s) and propertyType (%s) which is not a superclass/interface of or the same as the entityClass (%s).
-                            If an entity's chained planning variable cannot point to another entity of the same class, then it is impossible to make a chain longer than 1 entity and therefore chaining is useless."""
-                            .formatted(entityDescriptor.getEntityClass(),
-                                    PlanningVariable.class.getSimpleName(),
-                                    variableMemberAccessor.getName(),
-                                    chained,
-                                    getVariablePropertyType(),
-                                    entityDescriptor.getEntityClass()));
-        }
-        if (allowsUnassigned) {
-            throw new IllegalArgumentException(
-                    "The entityClass (%s) has a @%s-annotated property (%s) with chained (%s), which is not compatible with nullable (%s)."
-                            .formatted(entityDescriptor.getEntityClass(),
-                                    PlanningVariable.class.getSimpleName(),
-                                    variableMemberAccessor.getName(),
-                                    chained,
-                                    allowsUnassigned));
-        }
-    }
-
-    @Override
-    public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
-        super.linkVariableDescriptors(descriptorPolicy);
-        if (chained && entityDescriptor.hasEffectiveMovableEntityFilter()) {
-            movableChainedTrailingValueFilter = new MovableChainedTrailingValueFilter<>(this);
-        } else {
-            movableChainedTrailingValueFilter = null;
-        }
-    }
-
     // ************************************************************************
     // Worker methods
     // ************************************************************************
@@ -176,14 +128,6 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     @Override
     public boolean isInitialized(Object entity) {
         return allowsUnassigned || getValue(entity) != null;
-    }
-
-    public boolean hasMovableChainedTrailingValueFilter() {
-        return movableChainedTrailingValueFilter != null;
-    }
-
-    public SelectionFilter<Solution_, Object> getMovableChainedTrailingValueFilter() {
-        return movableChainedTrailingValueFilter;
     }
 
     @Override

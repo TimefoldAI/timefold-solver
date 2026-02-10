@@ -713,16 +713,7 @@
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
                                     
             
-            <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
-                                    
-            
             <xs:element name="swapMoveSelector" type="tns:swapMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="tailChainSwapMoveSelector" type="tns:tailChainSwapMoveSelectorConfig"/>
                                     
             
             <xs:element name="unionMoveSelector" type="tns:unionMoveSelectorConfig"/>
@@ -809,16 +800,7 @@
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
                                     
             
-            <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
-                                    
-            
             <xs:element name="swapMoveSelector" type="tns:swapMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="tailChainSwapMoveSelector" type="tns:tailChainSwapMoveSelectorConfig"/>
                                     
             
             <xs:element name="unionMoveSelector" type="tns:unionMoveSelectorConfig"/>
@@ -1187,12 +1169,6 @@
             <xs:element name="listMultistageMoveSelector" type="tns:listMultistageMoveSelectorConfig"/>
                                     
             
-            <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
-                                    
-            
             <xs:element name="subListChangeMoveSelector" type="tns:subListChangeMoveSelectorConfig"/>
                                     
             
@@ -1200,9 +1176,6 @@
                                     
             
             <xs:element name="swapMoveSelector" type="tns:swapMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="tailChainSwapMoveSelector" type="tns:tailChainSwapMoveSelectorConfig"/>
                                     
             
             <xs:element name="unionMoveSelector" type="tns:unionMoveSelectorConfig"/>
@@ -1724,111 +1697,6 @@
   </xs:complexType>
       
   
-  <xs:complexType name="subChainChangeMoveSelectorConfig">
-            
-    
-    <xs:complexContent>
-                  
-      
-      <xs:extension base="tns:moveSelectorConfig">
-                        
-        
-        <xs:sequence>
-                              
-          
-          <xs:element minOccurs="0" name="entityClass" type="xs:string"/>
-                              
-          
-          <xs:element minOccurs="0" name="subChainSelector" type="tns:subChainSelectorConfig"/>
-                              
-          
-          <xs:element minOccurs="0" name="valueSelector" type="tns:valueSelectorConfig"/>
-                              
-          
-          <xs:element minOccurs="0" name="selectReversingMoveToo" type="xs:boolean"/>
-                            
-        
-        </xs:sequence>
-                      
-      
-      </xs:extension>
-                
-    
-    </xs:complexContent>
-          
-  
-  </xs:complexType>
-      
-  
-  <xs:complexType name="subChainSelectorConfig">
-            
-    
-    <xs:complexContent>
-                  
-      
-      <xs:extension base="tns:selectorConfig">
-                        
-        
-        <xs:sequence>
-                              
-          
-          <xs:element minOccurs="0" name="valueSelector" type="tns:valueSelectorConfig"/>
-                              
-          
-          <xs:element minOccurs="0" name="minimumSubChainSize" type="xs:int"/>
-                              
-          
-          <xs:element minOccurs="0" name="maximumSubChainSize" type="xs:int"/>
-                            
-        
-        </xs:sequence>
-                      
-      
-      </xs:extension>
-                
-    
-    </xs:complexContent>
-          
-  
-  </xs:complexType>
-      
-  
-  <xs:complexType name="subChainSwapMoveSelectorConfig">
-            
-    
-    <xs:complexContent>
-                  
-      
-      <xs:extension base="tns:moveSelectorConfig">
-                        
-        
-        <xs:sequence>
-                              
-          
-          <xs:element minOccurs="0" name="entityClass" type="xs:string"/>
-                              
-          
-          <xs:element minOccurs="0" name="subChainSelector" type="tns:subChainSelectorConfig"/>
-                              
-          
-          <xs:element minOccurs="0" name="secondarySubChainSelector" type="tns:subChainSelectorConfig"/>
-                              
-          
-          <xs:element minOccurs="0" name="selectReversingMoveToo" type="xs:boolean"/>
-                            
-        
-        </xs:sequence>
-                      
-      
-      </xs:extension>
-                
-    
-    </xs:complexContent>
-          
-  
-  </xs:complexType>
-      
-  
   <xs:complexType name="subListChangeMoveSelectorConfig">
             
     
@@ -1958,36 +1826,6 @@
   </xs:complexType>
       
   
-  <xs:complexType name="tailChainSwapMoveSelectorConfig">
-            
-    
-    <xs:complexContent>
-                  
-      
-      <xs:extension base="tns:moveSelectorConfig">
-                        
-        
-        <xs:sequence>
-                              
-          
-          <xs:element minOccurs="0" name="entitySelector" type="tns:entitySelectorConfig"/>
-                              
-          
-          <xs:element minOccurs="0" name="valueSelector" type="tns:valueSelectorConfig"/>
-                            
-        
-        </xs:sequence>
-                      
-      
-      </xs:extension>
-                
-    
-    </xs:complexContent>
-          
-  
-  </xs:complexType>
-      
-  
   <xs:complexType name="unionMoveSelectorConfig">
             
     
@@ -2042,12 +1880,6 @@
             <xs:element name="listMultistageMoveSelector" type="tns:listMultistageMoveSelectorConfig"/>
                                     
             
-            <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
-                                    
-            
             <xs:element name="subListChangeMoveSelector" type="tns:subListChangeMoveSelectorConfig"/>
                                     
             
@@ -2055,9 +1887,6 @@
                                     
             
             <xs:element name="swapMoveSelector" type="tns:swapMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="tailChainSwapMoveSelector" type="tns:tailChainSwapMoveSelectorConfig"/>
                                     
             
             <xs:element name="unionMoveSelector" type="tns:unionMoveSelectorConfig"/>
@@ -2174,16 +2003,7 @@
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
                                     
             
-            <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
-                                    
-            
             <xs:element name="swapMoveSelector" type="tns:swapMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="tailChainSwapMoveSelector" type="tns:tailChainSwapMoveSelectorConfig"/>
                                     
             
             <xs:element name="unionMoveSelector" type="tns:unionMoveSelectorConfig"/>
@@ -2243,16 +2063,7 @@
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
                                     
             
-            <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
-                                    
-            
             <xs:element name="swapMoveSelector" type="tns:swapMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="tailChainSwapMoveSelector" type="tns:tailChainSwapMoveSelectorConfig"/>
                                     
             
             <xs:element name="unionMoveSelector" type="tns:unionMoveSelectorConfig"/>
@@ -2378,16 +2189,7 @@
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
                                     
             
-            <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
-                                    
-            
             <xs:element name="swapMoveSelector" type="tns:swapMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="tailChainSwapMoveSelector" type="tns:tailChainSwapMoveSelectorConfig"/>
                                     
             
             <xs:element name="unionMoveSelector" type="tns:unionMoveSelectorConfig"/>
@@ -2462,12 +2264,6 @@
             <xs:element name="listMultistageMoveSelector" type="tns:listMultistageMoveSelectorConfig"/>
                                     
             
-            <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
-                                    
-            
             <xs:element name="subListChangeMoveSelector" type="tns:subListChangeMoveSelectorConfig"/>
                                     
             
@@ -2475,9 +2271,6 @@
                                     
             
             <xs:element name="swapMoveSelector" type="tns:swapMoveSelectorConfig"/>
-                                    
-            
-            <xs:element name="tailChainSwapMoveSelector" type="tns:tailChainSwapMoveSelectorConfig"/>
                                     
             
             <xs:element name="unionMoveSelector" type="tns:unionMoveSelectorConfig"/>

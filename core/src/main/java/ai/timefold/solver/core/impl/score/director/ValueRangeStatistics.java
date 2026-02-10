@@ -230,48 +230,25 @@ final class ValueRangeStatistics<Solution_> {
             var valueCount = variableDescriptor.canExtractValueRangeFromSolution()
                     ? valueRangeManager.countOnSolution(variableDescriptor.getValueRangeDescriptor(), solution)
                     : valueRangeManager.countOnEntity(variableDescriptor.getValueRangeDescriptor(), entity);
-            // TODO: When minimum Java supported is 21, this can be replaced with a sealed interface switch
-            if (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
-                if (basicVariableDescriptor.isChained()) {
-                    // An entity is a value
-                    tracker.addListValueCount(1);
-                    if (!entityDescriptor.isMovable(solution, entity)) {
-                        tracker.addPinnedListValueCount(1);
-                    }
-                    // Anchors are entities
-                    var valueRange = variableDescriptor.canExtractValueRangeFromSolution()
-                            ? valueRangeManager.getFromSolution(variableDescriptor.getValueRangeDescriptor(), solution)
-                            : valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
-                    var valueIterator = valueRange.createOriginalIterator();
-                    while (valueIterator.hasNext()) {
-                        var value = valueIterator.next();
-                        if (variableDescriptor.isValuePotentialAnchor(value)) {
-                            if (tracker.isAnchorVisited(value)) {
-                                continue;
-                            }
-                            // Assumes anchors are not pinned
-                            tracker.incrementListEntityCount(true);
-                        }
-                    }
-                } else {
+            switch (variableDescriptor) {
+                case BasicVariableDescriptor<Solution_> basicVariableDescriptor -> {
                     if (entityDescriptor.isMovable(solution, entity)) {
                         tracker.addBasicProblemScale(valueCount);
                     }
                 }
-            } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                var size = valueRangeManager.countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), solution);
-                tracker.setListTotalValueCount((int) size);
-                if (entityDescriptor.isMovable(solution, entity)) {
-                    tracker.incrementListEntityCount(true);
-                    tracker.addPinnedListValueCount(listVariableDescriptor.getFirstUnpinnedIndex(entity));
-                } else {
-                    tracker.incrementListEntityCount(false);
-                    tracker.addPinnedListValueCount(listVariableDescriptor.getListSize(entity));
+                case ListVariableDescriptor<Solution_> listVariableDescriptor -> {
+                    var size = valueRangeManager.countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), solution);
+                    tracker.setListTotalValueCount((int) size);
+                    if (entityDescriptor.isMovable(solution, entity)) {
+                        tracker.incrementListEntityCount(true);
+                        tracker.addPinnedListValueCount(listVariableDescriptor.getFirstUnpinnedIndex(entity));
+                    } else {
+                        tracker.incrementListEntityCount(false);
+                        tracker.addPinnedListValueCount(listVariableDescriptor.getListSize(entity));
+                    }
                 }
-            } else {
-                throw new IllegalStateException(
-                        "Unhandled subclass of %s encountered (%s).".formatted(VariableDescriptor.class.getSimpleName(),
-                                variableDescriptor.getClass().getSimpleName()));
+                default -> throw new IllegalStateException("Unhandled subclass of %s encountered (%s)."
+                        .formatted(VariableDescriptor.class.getSimpleName(), variableDescriptor.getClass().getSimpleName()));
             }
         }
     }

@@ -14,9 +14,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.ChainedChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -75,14 +73,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
                     continue;
                 }
                 // Uninitialize the basic variable.
-                if (basicVariableDescriptor.isChained()) {
-                    var demand = new SingletonInverseVariableDemand<>(basicVariableDescriptor);
-                    var supply = supplyManager.demand(demand);
-                    moveDirector.execute(new ChainedChangeMove<>(basicVariableDescriptor, clonedElement, null, supply));
-                    supplyManager.cancel(demand);
-                } else {
-                    moveDirector.execute(new ChangeMove<>(basicVariableDescriptor, clonedElement, null));
-                }
+                moveDirector.execute(new ChangeMove<>(basicVariableDescriptor, clonedElement, null));
             }
         }
         scoreDirector.triggerVariableListeners();

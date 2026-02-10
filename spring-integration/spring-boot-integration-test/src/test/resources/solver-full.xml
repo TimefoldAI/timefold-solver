@@ -1027,107 +1027,9 @@
             <variableNameInclude>string</variableNameInclude>
           </variableNameIncludes>
         </pillarSwapMoveSelector>
-        <subChainChangeMoveSelector>
-          <cacheType>STEP</cacheType>
-          <selectionOrder>SHUFFLED</selectionOrder>
-          <filterClass>java.lang.Object</filterClass>
-          <sorterComparatorClass>java.lang.Object</sorterComparatorClass>
-          <sorterWeightFactoryClass>java.lang.Object</sorterWeightFactoryClass>
-          <sorterOrder>ASCENDING</sorterOrder>
-          <sorterClass>java.lang.Object</sorterClass>
-          <probabilityWeightFactoryClass>java.lang.Object</probabilityWeightFactoryClass>
-          <selectedCountLimit>10</selectedCountLimit>
-          <fixedProbabilityWeight>1.051732E7</fixedProbabilityWeight>
-          <entityClass>java.lang.Object</entityClass>
-          <subChainSelector>
-            <valueSelector id="string" mimicSelectorRef="string" variableName="string">
-              <downcastEntityClass>java.lang.Object</downcastEntityClass>
-              <cacheType>PHASE</cacheType>
-              <selectionOrder>SORTED</selectionOrder>
-              <nearbySelection>
-                <originEntitySelector id="string" mimicSelectorRef="string">
-                  <entityClass>java.lang.Object</entityClass>
-                  <cacheType>JUST_IN_TIME</cacheType>
-                  <selectionOrder>PROBABILISTIC</selectionOrder>
-                  <nearbySelection/>
-                  <filterClass>java.lang.Object</filterClass>
-                  <sorterManner>NONE</sorterManner>
-                  <sorterComparatorClass>java.lang.Object</sorterComparatorClass>
-                  <sorterWeightFactoryClass>java.lang.Object</sorterWeightFactoryClass>
-                  <sorterOrder>DESCENDING</sorterOrder>
-                  <sorterClass>java.lang.Object</sorterClass>
-                  <probabilityWeightFactoryClass>java.lang.Object</probabilityWeightFactoryClass>
-                  <selectedCountLimit>10</selectedCountLimit>
-                </originEntitySelector>
-                <originSubListSelector id="string" mimicSelectorRef="string">
-                  <valueSelector/>
-                  <nearbySelection/>
-                  <minimumSubListSize>3</minimumSubListSize>
-                  <maximumSubListSize>3</maximumSubListSize>
-                </originSubListSelector>
-                <originValueSelector/>
-                <nearbyDistanceMeterClass>java.lang.Object</nearbyDistanceMeterClass>
-                <nearbySelectionDistributionType>LINEAR_DISTRIBUTION</nearbySelectionDistributionType>
-                <blockDistributionSizeMinimum>3</blockDistributionSizeMinimum>
-                <blockDistributionSizeMaximum>3</blockDistributionSizeMaximum>
-                <blockDistributionSizeRatio>1.051732E7</blockDistributionSizeRatio>
-                <blockDistributionUniformDistributionProbability>1.051732E7
-                </blockDistributionUniformDistributionProbability>
-                <linearDistributionSizeMaximum>3</linearDistributionSizeMaximum>
-                <parabolicDistributionSizeMaximum>3</parabolicDistributionSizeMaximum>
-                <betaDistributionAlpha>1.051732E7</betaDistributionAlpha>
-                <betaDistributionBeta>1.051732E7</betaDistributionBeta>
-              </nearbySelection>
-              <filterClass>java.lang.Object</filterClass>
-              <sorterManner>NONE</sorterManner>
-              <sorterComparatorClass>java.lang.Object</sorterComparatorClass>
-              <sorterWeightFactoryClass>java.lang.Object</sorterWeightFactoryClass>
-              <sorterOrder>DESCENDING</sorterOrder>
-              <sorterClass>java.lang.Object</sorterClass>
-              <probabilityWeightFactoryClass>java.lang.Object</probabilityWeightFactoryClass>
-              <selectedCountLimit>10</selectedCountLimit>
-            </valueSelector>
-            <minimumSubChainSize>3</minimumSubChainSize>
-            <maximumSubChainSize>3</maximumSubChainSize>
-          </subChainSelector>
-          <valueSelector id="string" mimicSelectorRef="string" variableName="string">
-            <downcastEntityClass>java.lang.Object</downcastEntityClass>
-            <cacheType>PHASE</cacheType>
-            <selectionOrder>RANDOM</selectionOrder>
-            <nearbySelection>
-              <originEntitySelector id="string" mimicSelectorRef="string">
-                <entityClass>java.lang.Object</entityClass>
-                <cacheType>STEP</cacheType>
-                <selectionOrder>SORTED</selectionOrder>
-                <nearbySelection/>
-                <filterClass>java.lang.Object</filterClass>
-                <sorterManner>DECREASING_DIFFICULTY</sorterManner>
-                <sorterComparatorClass>java.lang.Object</sorterComparatorClass>
-                <sorterWeightFactoryClass>java.lang.Object</sorterWeightFactoryClass>
-                <sorterOrder>ASCENDING</sorterOrder>
-                <sorterClass>java.lang.Object</sorterClass>
-                <probabilityWeightFactoryClass>java.lang.Object</probabilityWeightFactoryClass>
-                <selectedCountLimit>10</selectedCountLimit>
-              </originEntitySelector>
-              <originSubListSelector id="string" mimicSelectorRef="string">
-                <valueSelector/>
-                <nearbySelection/>
-                <minimumSubListSize>3</minimumSubListSize>
-                <maximumSubListSize>3</maximumSubListSize>
-              </originSubListSelector>
-              <originValueSelector/>
-              <nearbyDistanceMeterClass>java.lang.Object</nearbyDistanceMeterClass>
-              <nearbySelectionDistributionType>BLOCK_DISTRIBUTION</nearbySelectionDistributionType>
-              <blockDistributionSizeMinimum>3</blockDistributionSizeMinimum>
-              <blockDistributionSizeMaximum>3</blockDistributionSizeMaximum>
-            </nearbySelection>
-          </valueSelector>
-        </subChainChangeMoveSelector>
-        <subChainSwapMoveSelector/>
         <subListChangeMoveSelector/>
         <subListSwapMoveSelector/>
         <swapMoveSelector/>
-        <tailChainSwapMoveSelector/>
         <unionMoveSelector/>
       </cartesianProductMoveSelector>
       <changeMoveSelector/>
@@ -1135,10 +1037,7 @@
       <moveListFactory/>
       <pillarChangeMoveSelector/>
       <pillarSwapMoveSelector/>
-      <subChainChangeMoveSelector/>
-      <subChainSwapMoveSelector/>
       <swapMoveSelector/>
-      <tailChainSwapMoveSelector/>
       <unionMoveSelector/>
     </queuedEntityPlacer>
   </constructionHeuristic>

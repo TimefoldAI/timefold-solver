@@ -97,7 +97,6 @@ public class ConstructionHeuristicDecider<Solution_> {
                     // Specifically:
                     //      1/ NoChangeMove for list variable; means "try to not assign that value".
                     //      2/ ChangeMove for basic variable; move from null to null means "try to not assign that value".
-                    //      3/ Technically also ChainedChangeMove, but chained doesn't support unassigned values.
                     // Every other non-doable move must not be executed, as it may cause all sorts of issues.
                     // Example: ListChangeMove from a[0] to a[1] when the list of 'a' only has 1 element.
                     //      This move is correctly non-doable,

@@ -3,7 +3,6 @@ package ai.timefold.solver.spring.boot.autoconfigure.invalid.type;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
-import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -22,8 +21,6 @@ public class InvalidMethodTestdataSpringEntity {
     private String value;
 
     private List<String> values;
-
-    private String anchorShadow;
 
     private String custom;
 
@@ -67,15 +64,6 @@ public class InvalidMethodTestdataSpringEntity {
 
     public void setValues(List<String> values) {
         this.values = values;
-    }
-
-    @AnchorShadowVariable(sourceVariableName = "source")
-    public String getAnchorShadow() {
-        return anchorShadow;
-    }
-
-    public void setAnchorShadow(String anchorShadow) {
-        this.anchorShadow = anchorShadow;
     }
 
     @CustomShadowVariable

@@ -12,9 +12,6 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarEntity;
 import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarSolution;
 import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarValue;
-import ai.timefold.solver.core.testdomain.shadow.chained.TestdataChainedVarEntity;
-import ai.timefold.solver.core.testdomain.shadow.chained.TestdataChainedVarSolution;
-import ai.timefold.solver.core.testdomain.shadow.chained.TestdataChainedVarValue;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullEntity;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullSolution;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullValue;
@@ -144,38 +141,4 @@ class ShadowVariableUpdateTest {
         assertThat(value2.getEndTime()).isEqualTo(value2.getStartTime().plus(value2.getDuration()));
     }
 
-    @Test
-    void updateChainedShadowVariables() {
-        var value1 = new TestdataChainedVarValue("v1", Duration.ofDays(10));
-        var value2 = new TestdataChainedVarValue("v2", Duration.ofDays(20));
-        var entity1 = new TestdataChainedVarEntity("e1", value1);
-        var entity2 = new TestdataChainedVarEntity("e2", value2);
-        SolutionManager.updateShadowVariables(TestdataChainedVarSolution.class, entity1, entity2, value1, value2);
-        assertThat(value1.getNext()).isSameAs(entity1);
-        assertThat(value2.getNext()).isSameAs(entity2);
-        assertThat(value1.getStartTime()).isEqualTo(TestdataBasicVarValue.DEFAULT_TIME.plusDays(1));
-        assertThat(value1.getEndTime()).isEqualTo(value1.getStartTime().plus(value1.getDuration()));
-        assertThat(value2.getStartTime()).isEqualTo(TestdataBasicVarValue.DEFAULT_TIME.plusDays(1));
-        assertThat(value2.getEndTime()).isEqualTo(value2.getStartTime().plus(value2.getDuration()));
-        assertThat(entity1.getDurationInDays()).isEqualTo(value1.getDuration().toDays());
-        assertThat(entity2.getDurationInDays()).isEqualTo(value2.getDuration().toDays());
-    }
-
-    @Test
-    void solutionUpdateChainedShadowVariables() {
-        var value1 = new TestdataChainedVarValue("v1", Duration.ofSeconds(10));
-        var value2 = new TestdataChainedVarValue("v2", Duration.ofSeconds(20));
-        var entity1 = new TestdataChainedVarEntity("e1", value1);
-        var entity2 = new TestdataChainedVarEntity("e2", value2);
-        var solution = new TestdataChainedVarSolution();
-        solution.setEntities(List.of(entity1, entity2));
-        solution.setValues(List.of(value1, value2));
-        SolutionManager.updateShadowVariables(solution);
-        assertThat(value1.getNext()).isSameAs(entity1);
-        assertThat(value2.getNext()).isSameAs(entity2);
-        assertThat(value1.getStartTime()).isEqualTo(TestdataBasicVarValue.DEFAULT_TIME.plusDays(1));
-        assertThat(value1.getEndTime()).isEqualTo(value1.getStartTime().plus(value1.getDuration()));
-        assertThat(value2.getStartTime()).isEqualTo(TestdataBasicVarValue.DEFAULT_TIME.plusDays(1));
-        assertThat(value2.getEndTime()).isEqualTo(value2.getStartTime().plus(value2.getDuration()));
-    }
 }

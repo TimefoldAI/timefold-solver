@@ -72,8 +72,8 @@ public final class SubPillarConfigPolicy {
                     + ") must be at least 1.");
         }
         if (minimumSubPillarSize > maximumSubPillarSize) {
-            throw new IllegalStateException("The minimumPillarSize (" + minimumSubPillarSize
-                    + ") must be at least maximumSubChainSize (" + maximumSubPillarSize + ").");
+            throw new IllegalStateException("The minimumPillarSize (%d) must be <= maximumPillarSize (%d)."
+                    .formatted(minimumSubPillarSize, maximumSubPillarSize));
         }
     }
 

@@ -13,10 +13,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChan
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.KOptMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListMultistageMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
@@ -35,10 +31,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.PillarChange
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.PillarSwapMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMoveSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.KOptMoveSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListSwapMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListChangeMoveSelectorFactory;
@@ -49,57 +41,46 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.Li
 public interface MoveSelectorFactory<Solution_> {
 
     static <Solution_> AbstractMoveSelectorFactory<Solution_, ?> create(MoveSelectorConfig<?> moveSelectorConfig) {
-        if (moveSelectorConfig instanceof ChangeMoveSelectorConfig changeMoveSelectorConfig) {
-            return new ChangeMoveSelectorFactory<>(changeMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof ListChangeMoveSelectorConfig listChangeMoveSelectorConfig) {
-            return new ListChangeMoveSelectorFactory<>(listChangeMoveSelectorConfig, false);
-        } else if (moveSelectorConfig instanceof SwapMoveSelectorConfig swapMoveSelectorConfig) {
-            return new SwapMoveSelectorFactory<>(swapMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof ListSwapMoveSelectorConfig listSwapMoveSelectorConfig) {
-            return new ListSwapMoveSelectorFactory<>(listSwapMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof PillarChangeMoveSelectorConfig pillarChangeMoveSelectorConfig) {
-            return new PillarChangeMoveSelectorFactory<>(pillarChangeMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof PillarSwapMoveSelectorConfig pillarSwapMoveSelectorConfig) {
-            return new PillarSwapMoveSelectorFactory<>(pillarSwapMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof SubChainChangeMoveSelectorConfig subChainChangeMoveSelectorConfig) {
-            return new SubChainChangeMoveSelectorFactory<>(subChainChangeMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof SubListChangeMoveSelectorConfig subListChangeMoveSelectorConfig) {
-            return new SubListChangeMoveSelectorFactory<>(subListChangeMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof SubChainSwapMoveSelectorConfig subChainSwapMoveSelectorConfig) {
-            return new SubChainSwapMoveSelectorFactory<>(subChainSwapMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof SubListSwapMoveSelectorConfig subListSwapMoveSelectorConfig) {
-            return new SubListSwapMoveSelectorFactory<>(subListSwapMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof TailChainSwapMoveSelectorConfig tailChainSwapMoveSelectorConfig) {
-            return new TailChainSwapMoveSelectorFactory<>(tailChainSwapMoveSelectorConfig);
-        } else if (KOptMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {
-            return new KOptMoveSelectorFactory<>((KOptMoveSelectorConfig) moveSelectorConfig);
-        } else if (KOptListMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {
-            return new KOptListMoveSelectorFactory<>((KOptListMoveSelectorConfig) moveSelectorConfig);
-        } else if (moveSelectorConfig instanceof RuinRecreateMoveSelectorConfig ruinRecreateMoveSelectorConfig) {
-            return new RuinRecreateMoveSelectorFactory<>(ruinRecreateMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof ListRuinRecreateMoveSelectorConfig listRuinRecreateMoveSelectorConfig) {
-            return new ListRuinRecreateMoveSelectorFactory<>(listRuinRecreateMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof MoveIteratorFactoryConfig moveIteratorFactoryConfig) {
-            return new MoveIteratorFactoryFactory<>(moveIteratorFactoryConfig);
-        } else if (moveSelectorConfig instanceof MoveListFactoryConfig moveListFactoryConfig) {
-            return new MoveListFactoryFactory<>(moveListFactoryConfig);
-        } else if (moveSelectorConfig instanceof UnionMoveSelectorConfig unionMoveSelectorConfig) {
-            return new UnionMoveSelectorFactory<>(unionMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof CartesianProductMoveSelectorConfig cartesianProductMoveSelectorConfig) {
-            return new CartesianProductMoveSelectorFactory<>(cartesianProductMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof MultistageMoveSelectorConfig multistageMoveSelectorConfig) {
-            var enterpriseService = TimefoldSolverEnterpriseService
-                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTISTAGE_MOVE);
-            return enterpriseService.buildBasicMultistageMoveSelectorFactory(multistageMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof ListMultistageMoveSelectorConfig listMultistageMoveSelectorConfig) {
-            var enterpriseService = TimefoldSolverEnterpriseService
-                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTISTAGE_MOVE);
-            return enterpriseService
-                    .buildListMultistageMoveSelectorFactory(listMultistageMoveSelectorConfig);
-        } else {
-            throw new IllegalArgumentException(String.format("Unknown %s type: (%s).",
-                    MoveSelectorConfig.class.getSimpleName(), moveSelectorConfig.getClass().getName()));
-        }
+        return switch (moveSelectorConfig) {
+            case ChangeMoveSelectorConfig changeMoveSelectorConfig -> new ChangeMoveSelectorFactory<>(changeMoveSelectorConfig);
+            case ListChangeMoveSelectorConfig listChangeMoveSelectorConfig ->
+                new ListChangeMoveSelectorFactory<>(listChangeMoveSelectorConfig, false);
+            case SwapMoveSelectorConfig swapMoveSelectorConfig -> new SwapMoveSelectorFactory<>(swapMoveSelectorConfig);
+            case ListSwapMoveSelectorConfig listSwapMoveSelectorConfig ->
+                new ListSwapMoveSelectorFactory<>(listSwapMoveSelectorConfig);
+            case PillarChangeMoveSelectorConfig pillarChangeMoveSelectorConfig ->
+                new PillarChangeMoveSelectorFactory<>(pillarChangeMoveSelectorConfig);
+            case PillarSwapMoveSelectorConfig pillarSwapMoveSelectorConfig ->
+                new PillarSwapMoveSelectorFactory<>(pillarSwapMoveSelectorConfig);
+            case SubListChangeMoveSelectorConfig subListChangeMoveSelectorConfig ->
+                new SubListChangeMoveSelectorFactory<>(subListChangeMoveSelectorConfig);
+            case SubListSwapMoveSelectorConfig subListSwapMoveSelectorConfig ->
+                new SubListSwapMoveSelectorFactory<>(subListSwapMoveSelectorConfig);
+            case KOptListMoveSelectorConfig kOptListMoveSelectorConfig ->
+                new KOptListMoveSelectorFactory<>(kOptListMoveSelectorConfig);
+            case RuinRecreateMoveSelectorConfig ruinRecreateMoveSelectorConfig ->
+                new RuinRecreateMoveSelectorFactory<>(ruinRecreateMoveSelectorConfig);
+            case ListRuinRecreateMoveSelectorConfig listRuinRecreateMoveSelectorConfig ->
+                new ListRuinRecreateMoveSelectorFactory<>(listRuinRecreateMoveSelectorConfig);
+            case MoveIteratorFactoryConfig moveIteratorFactoryConfig ->
+                new MoveIteratorFactoryFactory<>(moveIteratorFactoryConfig);
+            case MoveListFactoryConfig moveListFactoryConfig -> new MoveListFactoryFactory<>(moveListFactoryConfig);
+            case UnionMoveSelectorConfig unionMoveSelectorConfig -> new UnionMoveSelectorFactory<>(unionMoveSelectorConfig);
+            case CartesianProductMoveSelectorConfig cartesianProductMoveSelectorConfig ->
+                new CartesianProductMoveSelectorFactory<>(cartesianProductMoveSelectorConfig);
+            case MultistageMoveSelectorConfig multistageMoveSelectorConfig -> {
+                var enterpriseService = TimefoldSolverEnterpriseService
+                        .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTISTAGE_MOVE);
+                yield enterpriseService.buildBasicMultistageMoveSelectorFactory(multistageMoveSelectorConfig);
+            }
+            case ListMultistageMoveSelectorConfig listMultistageMoveSelectorConfig -> {
+                var enterpriseService = TimefoldSolverEnterpriseService
+                        .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTISTAGE_MOVE);
+                yield enterpriseService.buildListMultistageMoveSelectorFactory(listMultistageMoveSelectorConfig);
+            }
+            default -> throw new IllegalArgumentException("Unknown %s type: (%s)."
+                    .formatted(MoveSelectorConfig.class.getSimpleName(), moveSelectorConfig.getClass().getName()));
+        };
     }
 
     static <Solution_> AbstractMoveSelectorFactory<Solution_, ?>

@@ -11,9 +11,6 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NonNull;
 
-/**
- * Alternative to {@link SingletonInverseVariableListener}.
- */
 public class ExternalizedSingletonInverseVariableSupply<Solution_> implements
         SourcedBasicVariableListener<Solution_, Object>,
         SingletonInverseVariableSupply {

@@ -29,7 +29,6 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
@@ -48,7 +47,6 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.CompositeValueRangeDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableDescriptor;
@@ -87,7 +85,6 @@ public class EntityDescriptor<Solution_> {
             PlanningVariable.class,
             PlanningListVariable.class,
             InverseRelationShadowVariable.class,
-            AnchorShadowVariable.class,
             IndexShadowVariable.class,
             PreviousElementShadowVariable.class,
             NextElementShadowVariable.class,
@@ -409,9 +406,6 @@ public class EntityDescriptor<Solution_> {
             var variableDescriptor =
                     new InverseRelationShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
-        } else if (variableAnnotationClass.equals(AnchorShadowVariable.class)) {
-            var variableDescriptor = new AnchorShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
-            declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(IndexShadowVariable.class)) {
             var variableDescriptor = new IndexShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
@@ -716,16 +710,6 @@ public class EntityDescriptor<Solution_> {
         }
         return getDeclaredGenuineVariableDescriptors().stream()
                 .anyMatch(descriptor -> !descriptor.isListVariable());
-    }
-
-    public boolean hasAnyGenuineChainedVariables() {
-        if (!isGenuine()) {
-            return false;
-        }
-        return getDeclaredGenuineVariableDescriptors().stream()
-                .filter(descriptor -> descriptor instanceof BasicVariableDescriptor<Solution_>)
-                .map(descriptor -> (BasicVariableDescriptor<Solution_>) descriptor)
-                .anyMatch(BasicVariableDescriptor::isChained);
     }
 
     public boolean hasAnyGenuineListVariables() {

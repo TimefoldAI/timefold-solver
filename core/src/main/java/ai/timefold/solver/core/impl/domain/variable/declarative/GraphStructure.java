@@ -109,9 +109,7 @@ public enum GraphStructure {
                     }
                     // The group variable is unused/always empty
                 }
-                // CHAINED_NEXT has a complex comparator function;
-                // so use ARBITRARY despite the fact it can be represented using SINGLE_DIRECTIONAL_PARENT
-                case INDIRECT, INVERSE, VARIABLE, CHAINED_NEXT -> isArbitrary = true;
+                case INDIRECT, INVERSE, VARIABLE -> isArbitrary = true;
                 case NEXT, PREVIOUS -> {
                     if (parentMetaModel == null) {
                         parentMetaModel = variableSource.variableSourceReferences().get(0).variableMetaModel();

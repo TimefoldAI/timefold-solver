@@ -138,18 +138,6 @@
         <minutesSpentLimit>5</minutesSpentLimit>
         <bestScoreLimit>0hard/0soft</bestScoreLimit>
       </termination>
-      <unionMoveSelector>
-        <subChainChangeMoveSelector>
-          <subChainSelector>
-            <maximumSubChainSize>50</maximumSubChainSize>
-          </subChainSelector>
-          <selectReversingMoveToo>true</selectReversingMoveToo>
-        </subChainChangeMoveSelector>
-        <subChainSwapMoveSelector>
-          <selectReversingMoveToo>false</selectReversingMoveToo>
-        </subChainSwapMoveSelector>
-        <tailChainSwapMoveSelector/>
-      </unionMoveSelector>
       <acceptor>
         <simulatedAnnealingStartingTemperature>2hard/10000soft</simulatedAnnealingStartingTemperature>
       </acceptor>

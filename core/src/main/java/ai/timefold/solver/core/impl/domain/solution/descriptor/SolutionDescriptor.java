@@ -751,19 +751,6 @@ public final class SolutionDescriptor<Solution_> {
                     "Defining multiple list variables (%s) across the model is currently not supported."
                             .formatted(listVariableDescriptorList));
         }
-
-        var listVariableDescriptor = listVariableDescriptorList.get(0);
-        var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
-        // We will not support chained and list variables at the same entity,
-        // and the validation can be removed once we discontinue support for chained variables.
-        if (hasChainedVariable()) {
-            var basicVariableDescriptorList = new ArrayList<>(listVariableEntityDescriptor.getGenuineVariableDescriptorList());
-            basicVariableDescriptorList.remove(listVariableDescriptor);
-            throw new UnsupportedOperationException(
-                    "Combining chained variables (%s) with list variables (%s) on a single planning entity (%s) is not supported."
-                            .formatted(basicVariableDescriptorList, listVariableDescriptor,
-                                    listVariableDescriptor.getEntityDescriptor().getEntityClass().getCanonicalName()));
-        }
     }
 
     private Set<Class<?>> collectEntityAndProblemFactClasses() {
@@ -917,10 +904,6 @@ public final class SolutionDescriptor<Solution_> {
 
     public boolean hasBasicVariable() {
         return !getBasicVariableDescriptorList().isEmpty();
-    }
-
-    public boolean hasChainedVariable() {
-        return getGenuineEntityDescriptors().stream().anyMatch(EntityDescriptor::hasAnyGenuineChainedVariables);
     }
 
     public boolean hasListVariable() {

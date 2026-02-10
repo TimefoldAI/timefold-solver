@@ -35,11 +35,4 @@ public non-sealed interface PlanningVariableMetaModel<Solution_, Entity_, Value_
      */
     boolean allowsUnassigned();
 
-    /**
-     * Returns whether the planning variable is chained.
-     *
-     * @return {@code true} if the planning variable is chained, {@code false} otherwise.
-     */
-    boolean isChained();
-
 }

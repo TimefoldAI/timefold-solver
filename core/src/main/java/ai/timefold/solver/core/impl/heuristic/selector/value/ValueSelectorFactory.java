@@ -16,7 +16,6 @@ import ai.timefold.solver.core.config.heuristic.selector.common.decorator.Select
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
@@ -31,7 +30,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingVa
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.DowncastingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueRangeSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.InitializedValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.IterableFromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ProbabilityValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ReinitializeVariableValueSelector;
@@ -121,7 +119,7 @@ public class ValueSelectorFactory<Solution_>
         validateSelectedLimit(minimumCacheType);
 
         // baseValueSelector and lower should be SelectionOrder.ORIGINAL if they are going to get cached completely
-        var randomSelection = determineBaseRandomSelection(variableDescriptor, resolvedCacheType, resolvedSelectionOrder);
+        var randomSelection = determineBaseRandomSelection(resolvedCacheType, resolvedSelectionOrder);
         var instanceCache = configPolicy.getClassInstanceCache();
         var sorter = determineSorter(variableDescriptor, resolvedSelectionOrder, instanceCache);
         var valueSelector = buildBaseValueSelector(variableDescriptor, sorter,
@@ -140,7 +138,6 @@ public class ValueSelectorFactory<Solution_>
                     inheritedSelectionOrder, randomSelection, entityValueRangeRecorderId, assertBothSides);
         }
         valueSelector = applyFiltering(valueSelector, instanceCache);
-        valueSelector = applyInitializedChainedValueFilter(configPolicy, variableDescriptor, valueSelector);
         valueSelector = applyProbability(resolvedCacheType, resolvedSelectionOrder, valueSelector, instanceCache);
         valueSelector = applyShuffling(resolvedCacheType, resolvedSelectionOrder, valueSelector);
         valueSelector = applyCaching(resolvedCacheType, resolvedSelectionOrder, valueSelector);
@@ -203,15 +200,15 @@ public class ValueSelectorFactory<Solution_>
         return entityDescriptor;
     }
 
-    protected boolean determineBaseRandomSelection(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            SelectionCacheType resolvedCacheType, SelectionOrder resolvedSelectionOrder) {
+    protected boolean determineBaseRandomSelection(SelectionCacheType resolvedCacheType,
+            SelectionOrder resolvedSelectionOrder) {
         return switch (resolvedSelectionOrder) {
             case ORIGINAL, SORTED, SHUFFLED, PROBABILISTIC ->
                 // baseValueSelector and lower should be ORIGINAL if they are going to get cached completely
                 false;
             case RANDOM ->
                 // Predict if caching will occur
-                resolvedCacheType.isNotCached() || !hasFiltering(variableDescriptor);
+                resolvedCacheType.isNotCached() || config.getFilterClass() == null;
             default -> throw new IllegalStateException("The selectionOrder (" + resolvedSelectionOrder
                     + ") is not implemented.");
         };
@@ -318,36 +315,15 @@ public class ValueSelectorFactory<Solution_>
         }
     }
 
-    private boolean hasFiltering(GenuineVariableDescriptor<Solution_> variableDescriptor) {
-        return config.getFilterClass() != null ||
-                (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
-                        && basicVariableDescriptor.hasMovableChainedTrailingValueFilter());
-    }
-
     protected ValueSelector<Solution_> applyFiltering(ValueSelector<Solution_> valueSelector,
             ClassInstanceCache instanceCache) {
-        var variableDescriptor = valueSelector.getVariableDescriptor();
-        if (hasFiltering(variableDescriptor)) {
+        if (config.getFilterClass() != null) {
             List<SelectionFilter<Solution_, Object>> filterList = new ArrayList<>(config.getFilterClass() == null ? 1 : 2);
             if (config.getFilterClass() != null) {
                 filterList.add(instanceCache.newInstance(config, "filterClass", config.getFilterClass()));
             }
             // Filter out pinned entities
-            if (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
-                    && basicVariableDescriptor.hasMovableChainedTrailingValueFilter()) {
-                filterList.add(basicVariableDescriptor.getMovableChainedTrailingValueFilter());
-            }
             valueSelector = FilteringValueSelector.of(valueSelector, SelectionFilter.compose(filterList));
-        }
-        return valueSelector;
-    }
-
-    protected ValueSelector<Solution_> applyInitializedChainedValueFilter(HeuristicConfigPolicy<Solution_> configPolicy,
-            GenuineVariableDescriptor<Solution_> variableDescriptor, ValueSelector<Solution_> valueSelector) {
-        var isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
-                && basicVariableDescriptor.isChained();
-        if (configPolicy.isInitializedChainedValueFilterEnabled() && isChained) {
-            valueSelector = InitializedValueSelector.create(valueSelector);
         }
         return valueSelector;
     }

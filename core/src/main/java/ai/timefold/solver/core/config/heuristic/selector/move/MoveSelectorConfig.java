@@ -21,9 +21,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChan
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
@@ -55,12 +52,9 @@ import org.jspecify.annotations.Nullable;
         PillarSwapMoveSelectorConfig.class,
         RuinRecreateMoveSelectorConfig.class,
         ListRuinRecreateMoveSelectorConfig.class,
-        SubChainChangeMoveSelectorConfig.class,
-        SubChainSwapMoveSelectorConfig.class,
         SubListChangeMoveSelectorConfig.class,
         SubListSwapMoveSelectorConfig.class,
         SwapMoveSelectorConfig.class,
-        TailChainSwapMoveSelectorConfig.class,
         UnionMoveSelectorConfig.class
 })
 @XmlType(propOrder = {
