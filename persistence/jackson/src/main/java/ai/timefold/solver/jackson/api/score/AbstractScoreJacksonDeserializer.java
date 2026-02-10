@@ -8,7 +8,7 @@ import tools.jackson.databind.ValueDeserializer;
  * Jackson binding support for a {@link Score} type.
  * <p>
  * For example: use
- * {@code @JsonSerialize(using = HardSoftScoreScoreJacksonSerializer.class) @JsonDeserialize(using = HardSoftScoreJacksonDeserializer.class)}
+ * {@code @JsonSerialize(using = HardSoftScoreJacksonSerializer.class) @JsonDeserialize(using = HardSoftScoreJacksonDeserializer.class)}
  * on a {@code HardSoftScore score} field and it will marshalled to JSON as {@code "score":"-999hard/-999soft"}.
  *
  * @see Score

@@ -15,18 +15,6 @@
   <name>Timefold Solver Quarkus Jackson</name>
   <url>https://solver.timefold.ai</url>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.fasterxml.jackson</groupId>
-        <artifactId>jackson-bom</artifactId>
-        <version>${version.com.fasterxml.jackson}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <modules>
     <module>runtime</module>
     <module>deployment</module>

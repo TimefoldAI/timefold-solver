@@ -41,6 +41,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 
+import tools.jackson.databind.JacksonModule;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -214,7 +215,7 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
     static class TimefoldJacksonConfiguration {
 
         @Bean
-        tools.jackson.databind.JacksonModule jacksonModule() {
+        JacksonModule jacksonModule() {
             return TimefoldJacksonModule.createModule();
         }
 
