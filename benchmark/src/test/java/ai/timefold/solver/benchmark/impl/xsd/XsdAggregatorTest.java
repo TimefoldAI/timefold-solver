@@ -25,9 +25,9 @@ class XsdAggregatorTest {
 
     @Test
     void validateByMergedXsd() throws IOException {
-        // 1. Use the solver.xsd and the benchmark-with-import.xsd from the classpath.
-        File solverXsd = getResourceAsFile("/solver.xsd");
-        File benchmarkXsd = getResourceAsFile("/benchmark-with-import.xsd");
+        // 1. Use the solver.xsd and the benchmark-updated.xsd from the classpath.
+        File solverXsd = getResourceAsFile("/solver-updated.xsd");
+        File benchmarkXsd = getResourceAsFile("/benchmark-updated.xsd");
         File mergedBenchmarkXsd = File.createTempFile("benchmark_", ".xsd");
 
         // 2. Merge them to a single file.
