@@ -105,10 +105,7 @@
         <groupId>org.revapi</groupId>
         <artifactId>revapi-maven-plugin</artifactId>
         <configuration>
-          <!-- Introduction of API package to check -->
-          <oldArtifacts>
-            <artifact>${project.groupId}:timefold-solver-quarkus-deployment:1.18.0</artifact>
-          </oldArtifacts>
+          <skip>true</skip> <!-- Temporarily until we've released 2.0.0. -->
         </configuration>
       </plugin>
       <plugin>

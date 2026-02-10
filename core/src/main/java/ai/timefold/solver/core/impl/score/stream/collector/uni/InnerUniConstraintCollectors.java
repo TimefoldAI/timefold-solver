@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -180,6 +181,15 @@ public class InnerUniConstraintCollectors {
             Supplier<Result_> mapSupplier,
             BinaryOperator<Value_> mergeFunction) {
         return new ToSimpleMapUniCollector<>(keyFunction, valueFunction, mapSupplier, mergeFunction);
+    }
+
+    public static <A, Key_ extends Comparable<? super Key_>, Value_, Set_ extends Set<Value_>, Result_ extends SortedMap<Key_, Set_>>
+            UniConstraintCollector<A, ?, Result_> toSortedMap(
+                    Function<? super A, ? extends Key_> keyFunction,
+                    Function<? super A, ? extends Value_> valueFunction,
+                    Supplier<Result_> mapSupplier,
+                    IntFunction<Set_> setFunction) {
+        return new ToMultiMapUniCollector<>(keyFunction, valueFunction, mapSupplier, setFunction);
     }
 
     public static <A, Mapped_> UniConstraintCollector<A, ?, Set<Mapped_>> toSet(Function<? super A, ? extends Mapped_> mapper) {

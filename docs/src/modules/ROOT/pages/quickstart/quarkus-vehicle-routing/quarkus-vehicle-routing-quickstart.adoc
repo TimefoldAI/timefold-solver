@@ -64,7 +64,7 @@ include::../shared/java-prerequisites.adoc[]
 
 == The build file and the dependencies
 
-Use https://code.quarkus.io/?a=timefold-solver-quickstart&j=17&e=rest&e=rest-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus[code.quarkus.io] to generate an application
+Use https://code.quarkus.io/?a=timefold-solver-quickstart&j=21&e=rest&e=rest-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus[code.quarkus.io] to generate an application
 with the following extensions, for Maven or Gradle:
 
 [NOTE]
@@ -296,7 +296,7 @@ Kotlin::
         </dependencies>
         <configuration>
           <javaParameters>true</javaParameters>
-          <jvmTarget>17</jvmTarget>
+          <jvmTarget>21</jvmTarget>
           <compilerPlugins>
             <plugin>all-open</plugin>
           </compilerPlugins>
