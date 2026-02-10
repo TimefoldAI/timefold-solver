@@ -61,7 +61,7 @@ public class JacksonSolutionFileIO<Solution_> implements SolutionFileIO<Solution
         try {
             mapper.writerWithDefaultPrettyPrinter().writeValue(file, solution);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Failed write", e);
+            throw new IllegalArgumentException("Failed writing the solution.", e);
         }
     }
 

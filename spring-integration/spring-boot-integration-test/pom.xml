@@ -21,18 +21,6 @@
         <version.junit.platform.launcher>1.12.1</version.junit.platform.launcher>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <type>pom</type>
-                <scope>import</scope>
-                <version>${version.org.springframework.boot}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <!-- Spring boot -->
         <dependency>

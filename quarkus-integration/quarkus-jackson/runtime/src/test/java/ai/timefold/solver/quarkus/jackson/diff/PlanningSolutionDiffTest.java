@@ -3,7 +3,7 @@ package ai.timefold.solver.quarkus.jackson.diff;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.timefold.solver.core.testdomain.equals.TestdataEqualsByCodeSolution;
-import ai.timefold.solver.quarkus.jackson.api.TimefoldJacksonModule;
+import ai.timefold.solver.quarkus.jackson.TimefoldJacksonModule;
 
 import org.junit.jupiter.api.Test;
 

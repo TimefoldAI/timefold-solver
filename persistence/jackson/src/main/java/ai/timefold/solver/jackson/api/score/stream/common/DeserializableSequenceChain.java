@@ -31,11 +31,17 @@ record DeserializableSequenceChain<Value_, Difference_ extends Comparable<Differ
 
     @Override
     public @Nullable Sequence<Value_, Difference_> getFirstSequence() {
+        if (sequences().isEmpty()) {
+            return null;
+        }
         return sequences().get(0);
     }
 
     @Override
     public @Nullable Sequence<Value_, Difference_> getLastSequence() {
+        if (sequences().isEmpty()) {
+            return null;
+        }
         return sequences().get(sequences().size() - 1);
     }
 

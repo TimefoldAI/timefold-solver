@@ -2,7 +2,7 @@
  * Includes support for deserialization of
  * {@link ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff}.
  * The serialization happens automatically,
- * if the user has registered {@link ai.timefold.solver.quarkus.jackson.api.TimefoldJacksonModule}
+ * if the user has registered {@link ai.timefold.solver.quarkus.jackson.TimefoldJacksonModule}
  * with their {@link com.fasterxml.jackson.databind.ObjectMapper}.
  *
  * <p>

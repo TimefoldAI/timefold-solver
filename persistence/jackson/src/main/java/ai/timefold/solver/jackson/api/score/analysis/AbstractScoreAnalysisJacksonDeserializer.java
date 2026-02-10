@@ -44,7 +44,7 @@ public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Sc
             if (matchesNode == null) {
                 constraintAnalysisList.put(constraintRef,
                         new ConstraintAnalysis<>(constraintRef, constraintWeight, constraintScore, null,
-                                matchCountNode == null ? -1 : Integer.parseInt(matchCountNode.asString())));
+                                matchCountNode == null ? -1 : matchCountNode.asInt(-1)));
             } else {
                 for (var matchNode : constraintNode.get("matches")) {
                     var matchScore = parseScore(matchNode.get("score").asString());
