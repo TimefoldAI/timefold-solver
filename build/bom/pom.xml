@@ -101,23 +101,6 @@
       </dependency>
       <dependency>
         <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-jsonb</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-jsonb</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-        <classifier>sources</classifier>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-jsonb</artifactId>
-        <type>test-jar</type>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
         <artifactId>timefold-solver-jpa</artifactId>
         <version>${version.ai.timefold.solver}</version>
       </dependency>
@@ -250,57 +233,6 @@
       <dependency>
         <groupId>ai.timefold.solver</groupId>
         <artifactId>timefold-solver-quarkus-jackson-integration-test</artifactId>
-        <type>test-jar</type>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-quarkus-jsonb</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-quarkus-jsonb</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-        <classifier>sources</classifier>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-quarkus-jsonb</artifactId>
-        <type>test-jar</type>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-quarkus-jsonb-deployment</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-quarkus-jsonb-deployment</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-        <classifier>sources</classifier>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-quarkus-jsonb-deployment</artifactId>
-        <type>test-jar</type>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-quarkus-jsonb-integration-test</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-quarkus-jsonb-integration-test</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-        <classifier>sources</classifier>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-quarkus-jsonb-integration-test</artifactId>
         <type>test-jar</type>
         <version>${version.ai.timefold.solver}</version>
       </dependency>

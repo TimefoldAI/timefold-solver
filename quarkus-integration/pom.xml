@@ -32,7 +32,6 @@
     <module>quarkus</module>
     <module>quarkus-benchmark</module>
     <module>quarkus-jackson</module>
-    <module>quarkus-jsonb</module>
   </modules>
 
   <build>
