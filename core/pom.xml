@@ -142,6 +142,7 @@
       <plugin>
         <groupId>com.coderplus.maven.plugins</groupId>
         <artifactId>copy-rename-maven-plugin</artifactId>
+        <version>${version.copy-rename.plugin}</version>
         <executions>
           <execution>
             <id>copy-solver-xsd</id>
