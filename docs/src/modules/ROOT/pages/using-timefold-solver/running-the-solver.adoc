@@ -169,7 +169,7 @@ All modes other than `NON_REPRODUCIBLE` are <<environmentModeReproducibility,rep
 
 The `TRACKED_FULL_ASSERT` mode turns on all the <<environmentModeFullAssert, `FULL_ASSERT`>> assertions
 and additionally tracks changes to the working solution.
-This allows the solver to report exactly what variables were corrupted and what variable listener events are missing.
+This allows the solver to report exactly what variables were corrupted.
 
 In particular, the solver will recalculate all shadow variables from scratch on the solution after the undo and then report:
 
@@ -182,11 +182,11 @@ This is to detect if the solution was corrupted before the move was evaluated du
 - Variables that are different between "from scratch" and "undo".
 This is to detect if recalculating the shadow variables from scratch is different from the incremental shadow variable calculation.
 
-- Missing variable listener events for the actual move.
+- Missing events for the actual move.
 Any variable that changed between the "before move" solution and the "after move" solution without either a
 `beforeVariableChanged` or `afterVariableChanged` would be reported here.
 
-- Missing variable listener events for undo move.
+- Missing events for undo move.
 Any variable that changed between the "after move" solution and "after undo move" solution without either a
 `beforeVariableChanged` or `afterVariableChanged` would be reported here.
 

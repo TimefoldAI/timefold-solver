@@ -1912,8 +1912,7 @@ The method to use here depends on whether the constraint stream in question is t
 
 [NOTE]
 ====
-`ConstraintVerifier` does not trigger variable listeners.
-It will neither set nor update shadow variables.
+`ConstraintVerifier` will neither set nor update shadow variables.
 If the tested constraints depend on shadow variables,
 it is your responsibility to assign the correct values beforehand.
 
@@ -1967,8 +1966,7 @@ or provide the entire planning solution instead.
 
 To test all constraints while updating all xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables],
 call `giveSolution(...)` and `settingAllShadowVariables()`.
-This approach ensures that the shadow variable listeners are triggered,
-and the constraints that depend on the related variables are evaluated accordingly.
+This approach ensures that constraints which depend on the related variables are evaluated accordingly.
 
 [tabs]
 ====
@@ -1985,8 +1983,7 @@ Java::
 
 [NOTE]
 ====
-`ConstraintVerifier` does not trigger variable listeners.
-It will neither set nor update shadow variables.
+`ConstraintVerifier` will neither set nor update shadow variables.
 If the tested constraints depend on shadow variables,
 it is your responsibility to assign the correct values beforehand.
 ====
