@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascadingEntity;
 import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascadingSolution;
 import ai.timefold.solver.core.testdomain.shadow.wrongcascade.TestdataCascadingInvalidField;
-import ai.timefold.solver.core.testdomain.shadow.wrongcascade.TestdataCascadingInvalidPiggyback;
 import ai.timefold.solver.core.testdomain.shadow.wrongcascade.TestdataCascadingInvalidSource;
 import ai.timefold.solver.core.testdomain.shadow.wrongcascade.TestdataCascadingWrongMethod;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
@@ -36,12 +35,6 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                 .withMessageContaining(
                         "Shadow variables such as @CascadingUpdateShadowVariable are not allowed to be used as source")
                 .withMessageContaining("Maybe check if cascadeValue is annotated with @CascadingUpdateShadowVariable");
-        assertThatIllegalArgumentException().isThrownBy(TestdataCascadingInvalidPiggyback::buildEntityDescriptor)
-                .withMessageContainingAll(
-                        "The entityClass (class ai.timefold.solver.core.testdomain.shadow.wrongcascade.TestdataCascadingInvalidPiggyback)",
-                        "has a @PiggybackShadowVariable annotated property (cascadeValue2)",
-                        "with refVariable (TestdataCascadingInvalidPiggyback.cascadeValue) that",
-                        "lacks a VariableListener @ShadowVariable annotation.");
     }
 
     @Test

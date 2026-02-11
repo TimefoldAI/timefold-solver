@@ -2227,36 +2227,6 @@ Java::
 ----
 ====
 
-==== Piggyback shadow variable
-
-If one `VariableListener` changes two or more shadow variables (because having two separate ``VariableListener``s would be inefficient), then annotate only the first shadow variable with `@ShadowVariable` and specify the `variableListenerClass` there.
-Use `@PiggybackShadowVariable` on each shadow variable updated by that variable listener and reference the first shadow variable:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @PlanningVariable(...)
-    public Standstill getPreviousStandstill() {
-        return previousStandstill;
-    }
-
-    @ShadowVariable(
-            variableListenerClass = TransportTimeAndCapacityUpdatingVariableListener.class,
-            sourceVariableName = "previousStandstill")
-    public Integer getTransportTime() {
-        return transportTime;
-    }
-
-    @PiggybackShadowVariable(shadowVariableName = "transportTime")
-    public Integer getCapacity() {
-        return capacity;
-    }
-----
-====
-
 
 [#variableListenerTriggeringOrder]
 ==== VariableListener triggering order

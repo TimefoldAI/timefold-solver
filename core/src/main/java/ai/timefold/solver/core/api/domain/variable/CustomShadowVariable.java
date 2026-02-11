@@ -57,8 +57,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
  * <p>
  * It is specified on a getter of a java bean property (or a field) of a {@link PlanningEntity} class.
  *
- * @deprecated Deprecated in favor of {@link ShadowVariable} (normal shadow variable with {@link #variableListenerClass()})
- *             and {@link PiggybackShadowVariable} (if {@link #variableListenerRef()} is used).
+ * @deprecated Deprecated in favor of {@link ShadowVariable}.
  */
 @Deprecated(forRemoval = true)
 @Target({ METHOD, FIELD })

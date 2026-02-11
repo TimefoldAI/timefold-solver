@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.testdomain.shadow.order;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -16,19 +15,6 @@ public class TestdataShadowVariableOrderEntity extends TestdataObject {
         return TestdataShadowVariableOrderSolution.buildSolutionDescriptor()
                 .findEntityDescriptorOrFail(TestdataShadowVariableOrderEntity.class);
     }
-
-    /*
-     * The variables correspond to the scenario described in shadowVariableOrder.png. The last letter matches the variable name
-     * on the diagram. 'xN' is an artificial prefix to force an order in which the fields are iterated that is different from
-     * the alphabetical order of the original variable names (which, coincidentally, is the expected order of variable
-     * listeners).
-     */
-
-    /**
-     * G -> F
-     */
-    @PiggybackShadowVariable(shadowVariableName = "x4F")
-    private String x0G;
 
     /**
      * D -> C
@@ -65,14 +51,6 @@ public class TestdataShadowVariableOrderEntity extends TestdataObject {
 
     public TestdataShadowVariableOrderEntity(String code) {
         super(code);
-    }
-
-    public String getX0G() {
-        return x0G;
-    }
-
-    public void setX0G(String x0G) {
-        this.x0G = x0G;
     }
 
     public String getX1D() {

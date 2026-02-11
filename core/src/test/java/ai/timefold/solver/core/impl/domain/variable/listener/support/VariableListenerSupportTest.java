@@ -1,15 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atMost;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,9 +18,18 @@ import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEn
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
 import ai.timefold.solver.core.testdomain.shadow.order.TestdataShadowVariableOrderEntity;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class VariableListenerSupportTest {
 
@@ -78,8 +77,6 @@ class VariableListenerSupportTest {
                 .map(VariableListenerNotifiable::toString)
                 .containsExactly("(3) FG");
         assertThat(registry.get(entityDescriptor.getVariableDescriptor("x4F")))
-                .isEmpty();
-        assertThat(registry.get(entityDescriptor.getVariableDescriptor("x0G")))
                 .isEmpty();
     }
 

@@ -26,7 +26,6 @@ import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableReference;
@@ -80,7 +79,6 @@ public final class DotNames {
     static final DotName INDEX_SHADOW_VARIABLE = DotName.createSimple(IndexShadowVariable.class.getName());
     static final DotName INVERSE_RELATION_SHADOW_VARIABLE = DotName.createSimple(InverseRelationShadowVariable.class.getName());
     static final DotName NEXT_ELEMENT_SHADOW_VARIABLE = DotName.createSimple(NextElementShadowVariable.class.getName());
-    static final DotName PIGGYBACK_SHADOW_VARIABLE = DotName.createSimple(PiggybackShadowVariable.class.getName());
     static final DotName PREVIOUS_ELEMENT_SHADOW_VARIABLE = DotName.createSimple(PreviousElementShadowVariable.class.getName());
     static final DotName SHADOW_VARIABLE = DotName.createSimple(ShadowVariable.class.getName());
     static final DotName SHADOW_VARIABLES_INCONSISTENT = DotName.createSimple(ShadowVariablesInconsistent.class.getName());
@@ -106,7 +104,6 @@ public final class DotNames {
             INDEX_SHADOW_VARIABLE,
             INVERSE_RELATION_SHADOW_VARIABLE,
             NEXT_ELEMENT_SHADOW_VARIABLE,
-            PIGGYBACK_SHADOW_VARIABLE,
             PREVIOUS_ELEMENT_SHADOW_VARIABLE,
             SHADOW_VARIABLE,
             SHADOW_VARIABLES_INCONSISTENT,
@@ -132,7 +129,6 @@ public final class DotNames {
             INDEX_SHADOW_VARIABLE,
             INVERSE_RELATION_SHADOW_VARIABLE,
             NEXT_ELEMENT_SHADOW_VARIABLE,
-            PIGGYBACK_SHADOW_VARIABLE,
             PREVIOUS_ELEMENT_SHADOW_VARIABLE,
             SHADOW_VARIABLE,
             SHADOW_VARIABLES_INCONSISTENT,

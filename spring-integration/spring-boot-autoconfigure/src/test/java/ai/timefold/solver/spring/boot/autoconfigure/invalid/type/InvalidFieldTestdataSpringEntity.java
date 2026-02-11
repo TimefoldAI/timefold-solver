@@ -7,7 +7,6 @@ import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
@@ -36,9 +35,6 @@ public class InvalidFieldTestdataSpringEntity {
 
     @NextElementShadowVariable(sourceVariableName = "source")
     private String next;
-
-    @PiggybackShadowVariable(shadowVariableName = "variable")
-    private String piggy;
 
     @PreviousElementShadowVariable(sourceVariableName = "source")
     private String previous;
@@ -104,14 +100,6 @@ public class InvalidFieldTestdataSpringEntity {
 
     public void setNext(String next) {
         this.next = next;
-    }
-
-    public String getPiggy() {
-        return piggy;
-    }
-
-    public void setPiggy(String piggy) {
-        this.piggy = piggy;
     }
 
     public String getPrevious() {

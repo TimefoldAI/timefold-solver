@@ -7,7 +7,6 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableReference;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
@@ -43,9 +42,6 @@ public class TestDataKitchenSinkEntity {
 
     @ShadowVariablesInconsistent
     private boolean inconsistent;
-
-    @PiggybackShadowVariable(shadowVariableName = "shadow2")
-    private String piggybackShadow;
 
     @PlanningVariable(valueRangeProviderRefs = { "names" })
     private String stringVariable;
@@ -107,14 +103,6 @@ public class TestDataKitchenSinkEntity {
 
     public void setInconsistent(boolean inconsistent) {
         this.inconsistent = inconsistent;
-    }
-
-    public String getPiggybackShadow() {
-        return piggybackShadow;
-    }
-
-    public void setPiggybackShadow(String piggybackShadow) {
-        this.piggybackShadow = piggybackShadow;
     }
 
     public String getStringVariable() {

@@ -1,11 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable.custom;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.mockito.Mockito.verify;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,35 +8,19 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowedChildEntity;
 import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowedParentEntity;
 import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowedSolution;
-import ai.timefold.solver.core.testdomain.shadow.cyclic.TestdataSevenNonCyclicShadowedSolution;
-import ai.timefold.solver.core.testdomain.shadow.cyclic.invalid.TestdataCyclicReferencedShadowedSolution;
-import ai.timefold.solver.core.testdomain.shadow.cyclic.invalid.TestdataCyclicShadowedSolution;
 import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedEntity;
 import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedEntityUniqueEvents;
 import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedSolution;
 import ai.timefold.solver.core.testdomain.shadow.wronglistener.TestdataWrongBasicShadowEntity;
 import ai.timefold.solver.core.testdomain.shadow.wronglistener.TestdataWrongListShadowEntity;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
-
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.Mockito.verify;
+
 class CustomVariableListenerTest {
-
-    @Test
-    void cyclic() {
-        assertThatIllegalStateException().isThrownBy(TestdataCyclicShadowedSolution::buildSolutionDescriptor);
-    }
-
-    @Test
-    void cyclicReferenced() {
-        assertThatIllegalStateException().isThrownBy(TestdataCyclicReferencedShadowedSolution::buildSolutionDescriptor);
-    }
-
-    @Test
-    void nonCyclicWithSevenDisorderedShadows() {
-        assertThatCode(TestdataSevenNonCyclicShadowedSolution::buildSolutionDescriptor)
-                .doesNotThrowAnyException();
-    }
 
     @Test
     void listVariableListenerWithBasicSourceVariable() {

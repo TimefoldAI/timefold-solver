@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.testdomain.shadow.manytomany;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -66,7 +66,7 @@ public class TestdataManyToManyShadowedEntity extends TestdataObject {
         this.composedCode = composedCode;
     }
 
-    @PiggybackShadowVariable(shadowVariableName = "composedCode")
+    @ShadowVariable(supplierName = "updateReverseComposedCode")
     public String getReverseComposedCode() {
         return reverseComposedCode;
     }
@@ -78,6 +78,14 @@ public class TestdataManyToManyShadowedEntity extends TestdataObject {
     // ************************************************************************
     // Complex methods
     // ************************************************************************
+
+    @ShadowSources({ "primaryValue", "secondaryValue" })
+    public String updateReverseComposedCode() {
+        if (primaryValue == null || secondaryValue == null) {
+            return null;
+        }
+        return secondaryValue.getCode() + "-" + primaryValue.getCode();
+    }
 
     // ************************************************************************
     // Static inner classes
@@ -103,20 +111,14 @@ public class TestdataManyToManyShadowedEntity extends TestdataObject {
             TestdataValue primaryValue = entity.getPrimaryValue();
             TestdataValue secondaryValue = entity.getSecondaryValue();
             String composedValue;
-            String reverseComposedValue;
             if (primaryValue == null || secondaryValue == null) {
                 composedValue = null;
-                reverseComposedValue = null;
             } else {
                 composedValue = primaryValue.getCode() + "-" + secondaryValue.getCode();
-                reverseComposedValue = secondaryValue.getCode() + "-" + primaryValue.getCode();
             }
             scoreDirector.beforeVariableChanged(entity, "composedCode");
             entity.setComposedCode(composedValue);
             scoreDirector.afterVariableChanged(entity, "composedCode");
-            scoreDirector.beforeVariableChanged(entity, "reverseComposedCode");
-            entity.setReverseComposedCode(reverseComposedValue);
-            scoreDirector.afterVariableChanged(entity, "reverseComposedCode");
         }
 
     }

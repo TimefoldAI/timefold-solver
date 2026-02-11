@@ -11,7 +11,6 @@ import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
@@ -35,7 +34,6 @@ class IncludeAbstractClassesEntityScannerTest {
             IndexShadowVariable.class,
             InverseRelationShadowVariable.class,
             NextElementShadowVariable.class,
-            PiggybackShadowVariable.class,
             PreviousElementShadowVariable.class,
             ShadowVariable.class
     };
