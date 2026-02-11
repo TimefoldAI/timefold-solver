@@ -11,13 +11,13 @@
 
   <artifactId>timefold-solver-jackson</artifactId>
 
-  <name>Timefold Solver Jackson</name>
+  <name>Timefold Solver Jackson 3</name>
   <description>
     Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
-    This module contains the Jackson integration.
+    This module contains the Jackson 3 integration.
   </description>
   <url>https://solver.timefold.ai</url>
 
@@ -50,7 +50,7 @@
     </dependency>
     <!-- XML and JSON -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
     </dependency>
     <dependency>
@@ -58,7 +58,7 @@
       <artifactId>jackson-annotations</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <!-- Testing -->

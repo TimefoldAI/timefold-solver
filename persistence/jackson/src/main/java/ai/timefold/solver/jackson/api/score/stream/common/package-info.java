@@ -8,7 +8,7 @@
  * through user-specified {@link ai.timefold.solver.core.api.score.stream.ConstraintJustification}.
  * The serialization and deserialization of these types happens automatically,
  * if the user has registered {@link ai.timefold.solver.jackson.api.TimefoldJacksonModule}
- * with their {@link com.fasterxml.jackson.databind.ObjectMapper}.
+ * with their {@link tools.jackson.databind.ObjectMapper}.
  *
  * <p>
  * Sequences carry user-specified types of values and for this to work,

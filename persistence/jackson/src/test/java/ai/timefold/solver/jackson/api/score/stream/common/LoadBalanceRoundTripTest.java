@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 class LoadBalanceRoundTripTest {
 
@@ -29,7 +29,7 @@ class LoadBalanceRoundTripTest {
     }
 
     @Test
-    void roundTrip() throws JsonProcessingException {
+    void roundTrip() throws JacksonException {
         // Prepare the data to be serialized.
         Item a = new Item("A");
         Item b = new Item("B");
@@ -45,8 +45,8 @@ class LoadBalanceRoundTripTest {
         var loadBalance = (LoadBalance<Item>) collector.finisher().apply(context);
 
         ObjectMapper objectMapper = JsonMapper.builder()
-                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
-                .serializationInclusion(JsonInclude.Include.NON_NULL)
+                .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_NULL)
+                        .withValueInclusion(JsonInclude.Include.NON_NULL))
                 .addModule(TimefoldJacksonModule.createModule())
                 .build();
 
@@ -57,7 +57,7 @@ class LoadBalanceRoundTripTest {
     }
 
     private static void assertRoundTrip(ObjectMapper objectMapper, LoadBalance<Item> original,
-            String expectedSerialization) throws JsonProcessingException {
+            String expectedSerialization) throws JacksonException {
         var serialized = objectMapper.writeValueAsString(original);
         assertThat(serialized).isEqualToIgnoringWhitespace(expectedSerialization);
 

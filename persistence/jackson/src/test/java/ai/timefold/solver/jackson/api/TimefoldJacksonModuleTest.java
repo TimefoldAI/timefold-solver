@@ -30,12 +30,13 @@ import ai.timefold.solver.jackson.api.solver.AbstractRecommendedFitJacksonDeseri
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.type.TypeFactory;
 
 class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
@@ -48,7 +49,7 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
     void polymorphicScore() {
         var objectMapper = JsonMapper.builder()
                 .addModule(TimefoldJacksonModule.createModule())
-                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .disable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
                 .build();
 
         var input = new TestTimefoldJacksonModuleWrapper();
@@ -69,10 +70,12 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
     }
 
     @Test
-    void scoreAnalysisWithoutMatches() throws JsonProcessingException {
-        var objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+    void scoreAnalysisWithoutMatches() throws JacksonException {
+        var objectMapper = JsonMapper.builder()
+                .addModule(TimefoldJacksonModule.createModule())
+                .addModule(new CustomJacksonModule())
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_DEFAULT))
+                .build();
 
         var constraintRef1 = ConstraintRef.of("packageB", "constraint1");
         var constraintRef2 = ConstraintRef.of("packageA", "constraint2");
@@ -105,23 +108,23 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                            } ]
                          }""");
 
-        objectMapper.registerModule(new CustomJacksonModule());
         ScoreAnalysis<HardSoftScore> deserialized = objectMapper.readValue(serialized, ScoreAnalysis.class);
         assertThat(deserialized).isEqualTo(originalScoreAnalysis);
     }
 
     @Test
-    void scoreAnalysisWithMatches() throws JsonProcessingException {
-        var objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+    void scoreAnalysisWithMatches() throws JacksonException {
+        var objectMapper = JsonMapper.builder()
+                .addModule(TimefoldJacksonModule.createModule())
+                .addModule(new CustomJacksonModule())
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_DEFAULT))
+                .build();
 
         var originalScoreAnalysis = getScoreAnalysis();
         var serialized = objectMapper.writeValueAsString(originalScoreAnalysis);
         assertThat(serialized)
                 .isEqualToIgnoringWhitespace(getSerializedScoreAnalysis());
 
-        objectMapper.registerModule(new CustomJacksonModule());
         ScoreAnalysis<HardSoftScore> deserialized = objectMapper.readValue(serialized, ScoreAnalysis.class);
         assertThat(deserialized).isEqualTo(originalScoreAnalysis);
     }
@@ -185,10 +188,12 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
     }
 
     @Test
-    void recommendedFit() throws JsonProcessingException {
-        var objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+    void recommendedFit() throws JacksonException {
+        var objectMapper = JsonMapper.builder()
+                .addModule(TimefoldJacksonModule.createModule())
+                .addModule(new CustomJacksonModule())
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_DEFAULT))
+                .build();
 
         var proposition = new Pair<>("A", "1");
         var originalScoreAnalysis = getScoreAnalysis();
@@ -206,10 +211,9 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                              "scoreDiff" : %s
                            } ]""".formatted(getSerializedScoreAnalysis()));
 
-        objectMapper.registerModule(new CustomJacksonModule());
         List<RecommendedFit<Pair<String, String>, HardSoftScore>> deserialized =
                 objectMapper.readValue(serialized,
-                        TypeFactory.defaultInstance().constructCollectionType(List.class, RecommendedFit.class));
+                        TypeFactory.createDefaultInstance().constructCollectionType(List.class, RecommendedFit.class));
         assertThat(deserialized)
                 .hasSize(1)
                 .first()
@@ -217,10 +221,12 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
     }
 
     @Test
-    void recommendedAssignment() throws JsonProcessingException {
-        var objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+    void recommendedAssignment() throws JacksonException {
+        var objectMapper = JsonMapper.builder()
+                .addModule(TimefoldJacksonModule.createModule())
+                .addModule(new CustomJacksonModule())
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_DEFAULT))
+                .build();
 
         var proposition = new Pair<>("A", "1");
         var originalScoreAnalysis = getScoreAnalysis();
@@ -238,10 +244,9 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                              "scoreDiff" : %s
                            } ]""".formatted(getSerializedScoreAnalysis()));
 
-        objectMapper.registerModule(new CustomJacksonModule());
         List<RecommendedAssignment<Pair<String, String>, HardSoftScore>> deserialized =
                 objectMapper.readValue(serialized,
-                        TypeFactory.defaultInstance().constructCollectionType(List.class, RecommendedAssignment.class));
+                        TypeFactory.createDefaultInstance().constructCollectionType(List.class, RecommendedAssignment.class));
         assertThat(deserialized)
                 .hasSize(1)
                 .first()
@@ -249,10 +254,12 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
     }
 
     @Test
-    void constraintWeightOverrides() throws JsonProcessingException {
-        var objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+    void constraintWeightOverrides() throws JacksonException {
+        var objectMapper = JsonMapper.builder()
+                .addModule(TimefoldJacksonModule.createModule())
+                .addModule(new CustomJacksonModule())
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_DEFAULT))
+                .build();
 
         var constraintWeightOverrides = ConstraintWeightOverrides.of(
                 Map.of(
@@ -267,7 +274,6 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                             "constraint2":"0hard/2soft"
                         }""");
 
-        objectMapper.registerModule(new CustomJacksonModule());
         var deserialized = objectMapper.readValue(serialized, ConstraintWeightOverrides.class);
         assertThat(deserialized).isEqualTo(constraintWeightOverrides);
     }

@@ -1,6 +1,5 @@
 package ai.timefold.solver.jackson.api.solver;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -8,17 +7,18 @@ import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
 import ai.timefold.solver.core.impl.solver.DefaultRecommendedFit;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ValueDeserializer;
 
 /**
  * @deprecated Prefer to use the {@link AbstractRecommendedAssignmentJacksonDeserializer} instead.
  */
 @Deprecated(forRemoval = true, since = "1.15.0")
 public abstract class AbstractRecommendedFitJacksonDeserializer<Proposition_, Score_ extends Score<Score_>>
-        extends JsonDeserializer<RecommendedFit<Proposition_, Score_>> {
+        extends ValueDeserializer<RecommendedFit<Proposition_, Score_>> {
 
     /**
      * {@link DefaultRecommendedFit} requires ID for purposes of ordering,
@@ -32,7 +32,7 @@ public abstract class AbstractRecommendedFitJacksonDeserializer<Proposition_, Sc
 
     @Override
     public final RecommendedFit<Proposition_, Score_> deserialize(JsonParser p, DeserializationContext ctxt)
-            throws IOException {
+            throws JacksonException {
         JsonNode node = p.readValueAsTree();
         Proposition_ proposition = ctxt.readTreeAsValue(node.get("proposition"), getPropositionClass());
         ScoreAnalysis<Score_> diff = ctxt.readTreeAsValue(node.get("scoreDiff"), ScoreAnalysis.class);

@@ -1,6 +1,5 @@
 package ai.timefold.solver.jackson.api.score.analysis;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,10 +12,11 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ValueDeserializer;
 
 /**
  * Extend this to implement {@link ScoreAnalysis} deserialization specific for your domain.
@@ -24,30 +24,30 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @param <Score_>
  */
 public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Score<Score_>>
-        extends JsonDeserializer<ScoreAnalysis<Score_>> {
+        extends ValueDeserializer<ScoreAnalysis<Score_>> {
 
     @Override
-    public final ScoreAnalysis<Score_> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public final ScoreAnalysis<Score_> deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
         JsonNode node = p.readValueAsTree();
-        var score = parseScore(node.get("score").asText());
+        var score = parseScore(node.get("score").asString());
         var initialized = node.get("initialized").asBoolean();
         var constraintAnalysisList = new HashMap<ConstraintRef, ConstraintAnalysis<Score_>>();
         for (var constraintNode : node.get("constraints")) {
-            var constraintPackage = constraintNode.get("package").asText();
-            var constraintName = constraintNode.get("name").asText();
+            var constraintPackage = constraintNode.get("package").asString();
+            var constraintName = constraintNode.get("name").asString();
             var constraintRef = ConstraintRef.of(constraintPackage, constraintName);
-            var constraintWeight = parseScore(constraintNode.get("weight").asText());
-            var constraintScore = parseScore(constraintNode.get("score").asText());
+            var constraintWeight = parseScore(constraintNode.get("weight").asString());
+            var constraintScore = parseScore(constraintNode.get("score").asString());
             var matchScoreList = new ArrayList<MatchAnalysis<Score_>>();
             var matchesNode = constraintNode.get("matches");
             var matchCountNode = constraintNode.get("matchCount");
             if (matchesNode == null) {
                 constraintAnalysisList.put(constraintRef,
                         new ConstraintAnalysis<>(constraintRef, constraintWeight, constraintScore, null,
-                                matchCountNode == null ? -1 : Integer.parseInt(matchCountNode.asText())));
+                                matchCountNode == null ? -1 : matchCountNode.asInt(-1)));
             } else {
                 for (var matchNode : constraintNode.get("matches")) {
-                    var matchScore = parseScore(matchNode.get("score").asText());
+                    var matchScore = parseScore(matchNode.get("score").asString());
                     var justificationNode = matchNode.get("justification");
                     if (justificationNode == null) {
                         // Not allowed; if matches are present, they must have justifications.

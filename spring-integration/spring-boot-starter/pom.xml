@@ -28,6 +28,16 @@
   <dependencies>
     <!-- Internal dependencies -->
     <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-spring-boot-autoconfigure</artifactId>
     </dependency>
@@ -43,6 +53,10 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-persistence</artifactId>
     </dependency>
   </dependencies>
 

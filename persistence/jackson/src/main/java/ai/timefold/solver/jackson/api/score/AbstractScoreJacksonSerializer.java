@@ -1,17 +1,15 @@
 package ai.timefold.solver.jackson.api.score;
 
-import java.io.IOException;
-
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.jackson.api.TimefoldJacksonModule;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
 /**
  * Jackson binding support for a {@link Score} subtype.
@@ -26,12 +24,11 @@ import com.fasterxml.jackson.databind.ser.ContextualSerializer;
  * @see Score
  * @param <Score_> the actual score type
  */
-public abstract class AbstractScoreJacksonSerializer<Score_ extends Score<Score_>> extends JsonSerializer<Score_>
-        implements ContextualSerializer {
+public abstract class AbstractScoreJacksonSerializer<Score_ extends Score<Score_>> extends ValueSerializer<Score_> {
 
     @Override
-    public JsonSerializer<?> createContextual(SerializerProvider provider, BeanProperty property)
-            throws JsonMappingException {
+    public ValueSerializer<?> createContextual(SerializationContext provider, BeanProperty property)
+            throws DatabindException {
         JavaType propertyType = property.getType();
         if (Score.class.equals(propertyType.getRawClass())) {
             // If the property type is Score (not HardSoftScore for example),
@@ -43,7 +40,7 @@ public abstract class AbstractScoreJacksonSerializer<Score_ extends Score<Score_
     }
 
     @Override
-    public void serialize(Score_ score, JsonGenerator generator, SerializerProvider serializers) throws IOException {
+    public void serialize(Score_ score, JsonGenerator generator, SerializationContext serializers) throws JacksonException {
         generator.writeString(score.toString());
     }
 

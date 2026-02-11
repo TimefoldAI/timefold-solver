@@ -1,7 +1,5 @@
 package ai.timefold.solver.jackson.api.score;
 
-import java.io.IOException;
-
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
@@ -17,9 +15,10 @@ import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecim
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.jackson.api.score.buildin.hardsoft.HardSoftScoreJacksonDeserializer;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 
 /**
  * Jackson binding support for a {@link Score} type (but not a subtype).
@@ -33,12 +32,12 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
  * @see Score
  * @see PolymorphicScoreJacksonDeserializer
  */
-public class PolymorphicScoreJacksonDeserializer extends JsonDeserializer<Score> {
+public class PolymorphicScoreJacksonDeserializer extends ValueDeserializer<Score> {
 
     @Override
-    public Score deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+    public Score deserialize(JsonParser parser, DeserializationContext context) throws JacksonException {
         parser.nextToken();
-        String scoreClassSimpleName = parser.getCurrentName();
+        String scoreClassSimpleName = parser.currentName();
         parser.nextToken();
         String scoreString = parser.getValueAsString();
         if (scoreClassSimpleName.equals(SimpleScore.class.getSimpleName())) {

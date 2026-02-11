@@ -1,13 +1,14 @@
 package ai.timefold.solver.jackson.impl.domain.solution;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  *
@@ -19,14 +20,13 @@ public class JacksonSolutionFileIO<Solution_> implements SolutionFileIO<Solution
     private final ObjectMapper mapper;
 
     public JacksonSolutionFileIO(Class<Solution_> clazz) {
-        this(clazz, new ObjectMapper());
+        // Loads TimefoldJacksonModule via ServiceLoader, as well as any other Jackson modules on the classpath.
+        this(clazz, JsonMapper.builder().findAndAddModules().build());
     }
 
     public JacksonSolutionFileIO(Class<Solution_> clazz, ObjectMapper mapper) {
         this.clazz = clazz;
         this.mapper = mapper;
-        // Loads TimefoldJacksonModule via ServiceLoader, as well as any other Jackson modules on the classpath.
-        mapper.findAndRegisterModules();
     }
 
     @Override
@@ -43,7 +43,7 @@ public class JacksonSolutionFileIO<Solution_> implements SolutionFileIO<Solution
     public Solution_ read(File inputSolutionFile) {
         try {
             return mapper.readValue(inputSolutionFile, clazz);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputSolutionFile + ").", e);
         }
     }
@@ -51,7 +51,7 @@ public class JacksonSolutionFileIO<Solution_> implements SolutionFileIO<Solution
     public Solution_ read(InputStream inputSolutionStream) {
         try {
             return mapper.readValue(inputSolutionStream, clazz);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Failed reading inputSolutionStream.", e);
         }
     }
@@ -60,7 +60,7 @@ public class JacksonSolutionFileIO<Solution_> implements SolutionFileIO<Solution
     public void write(Solution_ solution, File file) {
         try {
             mapper.writerWithDefaultPrettyPrinter().writeValue(file, solution);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Failed write", e);
         }
     }

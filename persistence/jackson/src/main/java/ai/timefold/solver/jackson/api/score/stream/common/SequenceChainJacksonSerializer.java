@@ -1,21 +1,21 @@
 package ai.timefold.solver.jackson.api.score.stream.common;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
 public final class SequenceChainJacksonSerializer<Value_, Difference_ extends Comparable<Difference_>>
-        extends JsonSerializer<SequenceChain<Value_, Difference_>> {
+        extends ValueSerializer<SequenceChain<Value_, Difference_>> {
 
     @Override
     public void serialize(SequenceChain<Value_, Difference_> sequenceChain, JsonGenerator jsonGenerator,
-            SerializerProvider serializerProvider) throws IOException {
+            SerializationContext serializerProvider) throws JacksonException {
         var serializedSequenceList =
                 new ArrayList<SerializableSequence<Value_>>(sequenceChain.getConsecutiveSequences().size());
         for (var sequence : sequenceChain.getConsecutiveSequences()) {
@@ -23,7 +23,7 @@ public final class SequenceChainJacksonSerializer<Value_, Difference_ extends Co
                     new SerializableSequence<>(sequence.isFirst(), sequence.isLast(), List.copyOf(sequence.getItems()));
             serializedSequenceList.add(serializedSequence);
         }
-        jsonGenerator.writeObject(new SerializableSequenceChain<>(serializedSequenceList));
+        jsonGenerator.writePOJO(new SerializableSequenceChain<>(serializedSequenceList));
     }
 
 }

@@ -72,10 +72,10 @@ import ai.timefold.solver.jackson.preview.api.domain.solution.diff.PlanningEntit
 import ai.timefold.solver.jackson.preview.api.domain.solution.diff.PlanningSolutionDiffJacksonSerializer;
 import ai.timefold.solver.jackson.preview.api.domain.solution.diff.PlanningVariableDiffJacksonSerializer;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.JacksonModule;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 /**
  * This class adds all Jackson serializers and deserializers.
@@ -85,11 +85,11 @@ public class TimefoldJacksonModule extends SimpleModule {
     /**
      * Jackson modules can be loaded automatically via {@link java.util.ServiceLoader}.
      * This will happen if you use {@link JacksonSolutionFileIO}.
-     * Otherwise, register the module with {@link ObjectMapper#registerModule(Module)}.
+     * Otherwise, register the module with {@link JsonMapper.Builder#addModule(JacksonModule)}.
      *
      * @return never null
      */
-    public static Module createModule() {
+    public static JacksonModule createModule() {
         return new TimefoldJacksonModule();
 
     }
@@ -135,10 +135,10 @@ public class TimefoldJacksonModule extends SimpleModule {
         addSerializer(ConstraintRef.class, new ConstraintRefJacksonSerializer());
         addDeserializer(ConstraintRef.class, new ConstraintRefJacksonDeserializer());
         addSerializer(ScoreAnalysis.class, new ScoreAnalysisJacksonSerializer());
-        var serializer = (JsonSerializer) new RecommendedAssignmentJacksonSerializer<>();
+        var serializer = (ValueSerializer) new RecommendedAssignmentJacksonSerializer<>();
         addSerializer(RecommendedAssignment.class, serializer);
         addSerializer(DefaultRecommendedAssignment.class, serializer);
-        addSerializer(RecommendedFit.class, (JsonSerializer) new RecommendedFitJacksonSerializer<>());
+        addSerializer(RecommendedFit.class, (ValueSerializer) new RecommendedFitJacksonSerializer<>());
 
         // Constraint weights
         addSerializer(ConstraintWeightOverrides.class, new ConstraintWeightOverridesSerializer());

@@ -12,8 +12,8 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.jackson.api.score.buildin.simple.SimpleScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.buildin.simple.SimpleScoreJacksonSerializer;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 @PlanningSolution
 public class JacksonTestdataSolution extends JacksonTestdataObject {

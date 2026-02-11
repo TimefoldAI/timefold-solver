@@ -1,6 +1,5 @@
 package ai.timefold.solver.jackson.api.solver;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -9,11 +8,12 @@ import ai.timefold.solver.core.api.solver.RecommendedAssignment;
 import ai.timefold.solver.core.impl.solver.DefaultRecommendedAssignment;
 import ai.timefold.solver.jackson.api.score.analysis.AbstractScoreAnalysisJacksonDeserializer;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ValueDeserializer;
 
 /**
  * Extend this to implement {@link RecommendedAssignment} deserialization specific for your domain.
@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @param <Score_>
  */
 public abstract class AbstractRecommendedAssignmentJacksonDeserializer<Proposition_, Score_ extends Score<Score_>>
-        extends JsonDeserializer<RecommendedAssignment<Proposition_, Score_>> {
+        extends ValueDeserializer<RecommendedAssignment<Proposition_, Score_>> {
 
     /**
      * {@link DefaultRecommendedAssignment} requires ID for purposes of ordering,
@@ -42,7 +42,7 @@ public abstract class AbstractRecommendedAssignmentJacksonDeserializer<Propositi
 
     @Override
     public final RecommendedAssignment<Proposition_, Score_> deserialize(JsonParser p, DeserializationContext ctxt)
-            throws IOException {
+            throws JacksonException {
         JsonNode node = p.readValueAsTree();
         Proposition_ proposition = ctxt.readTreeAsValue(node.get("proposition"), getPropositionClass());
         ScoreAnalysis<Score_> diff = ctxt.readTreeAsValue(node.get("scoreDiff"), ScoreAnalysis.class);

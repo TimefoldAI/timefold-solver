@@ -19,14 +19,66 @@
   </properties>
 
   <dependencies>
+    <!-- Internal dependencies -->
+    <dependency>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-core</artifactId>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-persistence-common</artifactId>
+    </dependency>
+    <!-- External dependencies -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jackson</artifactId>
     </dependency>
+    <!-- Logging -->
     <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-jackson</artifactId>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>test</scope>
     </dependency>
+    <!-- XML and JSON -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+   </dependency>
+   <!-- standardized nullness annotations  -->
+   <dependency>
+     <groupId>org.jspecify</groupId>
+     <artifactId>jspecify</artifactId>
+   </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -63,7 +115,6 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <configuration>
           <ignoredUnusedDeclaredDependencies>
-            <dependency>ai.timefold.solver:timefold-solver-jackson</dependency>
             <dependency>io.quarkus:quarkus-jackson</dependency>
           </ignoredUnusedDeclaredDependencies>
         </configuration>

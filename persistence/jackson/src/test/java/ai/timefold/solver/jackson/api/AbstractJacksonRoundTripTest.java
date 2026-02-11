@@ -1,8 +1,7 @@
 package ai.timefold.solver.jackson.api;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 public abstract class AbstractJacksonRoundTripTest {
 
@@ -20,7 +19,7 @@ public abstract class AbstractJacksonRoundTripTest {
         try {
             jsonString = objectMapper.writeValueAsString(input);
             output = (W) objectMapper.readValue(jsonString, input.getClass());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("Marshalling or unmarshalling for input (" + input + ") failed.", e);
         }
         return output;

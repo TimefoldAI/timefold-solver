@@ -7,14 +7,14 @@ import ai.timefold.solver.jackson.api.TimefoldJacksonModule;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 class PlanningSolutionDiffTest {
 
     @Test
-    void serialize() throws JsonProcessingException {
+    void serialize() throws JacksonException {
         var oldSolution = TestdataEqualsByCodeSolution.generateSolution("A", 2, 2);
         oldSolution.getEntityList().get(0).setValue(oldSolution.getValueList().get(1));
         var newSolution = TestdataEqualsByCodeSolution.generateSolution("B", 3, 3);
@@ -23,7 +23,7 @@ class PlanningSolutionDiffTest {
 
         var objectMapper = JsonMapper.builder()
                 .addModule(TimefoldJacksonModule.createModule())
-                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .disable(MapperFeature.SORT_CREATOR_PROPERTIES_FIRST)
                 .build();
 
         var serialized = objectMapper.writeValueAsString(diff);

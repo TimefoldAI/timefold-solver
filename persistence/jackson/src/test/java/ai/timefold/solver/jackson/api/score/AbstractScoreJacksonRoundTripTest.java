@@ -3,12 +3,11 @@ package ai.timefold.solver.jackson.api.score;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-import java.io.IOException;
-
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.jackson.api.AbstractJacksonRoundTripTest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 public abstract class AbstractScoreJacksonRoundTripTest extends AbstractJacksonRoundTripTest {
 
@@ -24,7 +23,7 @@ public abstract class AbstractScoreJacksonRoundTripTest extends AbstractJacksonR
             ObjectMapper objectMapper = new ObjectMapper();
             jsonString = objectMapper.writeValueAsString(input);
             output = (W) objectMapper.readValue(jsonString, input.getClass());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("Marshalling or unmarshalling for input (" + input + ") failed.", e);
         }
         assertThat(output.getScore()).isEqualTo(expectedScore);

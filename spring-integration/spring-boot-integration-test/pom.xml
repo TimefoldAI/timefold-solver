@@ -21,23 +21,11 @@
     <version.junit.platform.launcher>1.12.1</version.junit.platform.launcher>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-dependencies</artifactId>
-        <type>pom</type>
-        <scope>import</scope>
-        <version>${version.org.springframework.boot}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <!-- Spring boot -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
@@ -58,18 +46,6 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-webflux</artifactId>
       <scope>test</scope>
-    </dependency>
-    <!--
-      Spring Boot 3.5.0 uses JUnit 5.12.1, while the solver code has upgraded to 5.12.2.
-      The difference between versions is affecting native compilation because of interoperability issues.
-      The following temporary workaround updates the junit-platform-launcher version to a newer one
-      that resolves the interoperability issue: https://junit.org/junit5/docs/current/user-guide/#running-tests-build-maven
-      TODO - Remove this dependency once the Spring Boot uses a consistent JUnit version with the Solver
-    -->
-    <dependency>
-      <groupId>org.junit.platform</groupId>
-      <artifactId>junit-platform-launcher</artifactId>
-      <scope>runtime</scope>
     </dependency>
   </dependencies>
 
