@@ -24,6 +24,8 @@
   <url>https://solver.timefold.ai</url>
 
   <modules>
+    <module>benchmark</module>
+    <module>benchmark-aggregator</module>
   </modules>
 
 </project>
