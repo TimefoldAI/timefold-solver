@@ -44,8 +44,6 @@ class TimefoldProcessorSolverYamlTest {
         assertTrue(solverConfig.getDaemon());
         assertEquals("2", solverConfig.getMoveThreadCount());
         assertEquals(DomainAccessType.REFLECTION, solverConfig.getDomainAccessType());
-        assertEquals(null,
-                solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamImplType());
 
         assertNotNull(solverFactory);
     }

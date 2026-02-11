@@ -30,7 +30,6 @@ import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.AbstractConfig;
@@ -578,14 +577,6 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
             scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         }
         scoreDirectorFactoryConfig.setConstraintProviderClass(constraintProviderClass);
-        return this;
-    }
-
-    public @NonNull SolverConfig withConstraintStreamImplType(@NonNull ConstraintStreamImplType constraintStreamImplType) {
-        if (scoreDirectorFactoryConfig == null) {
-            scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
-        }
-        scoreDirectorFactoryConfig.setConstraintStreamImplType(constraintStreamImplType);
         return this;
     }
 

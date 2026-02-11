@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -57,14 +56,6 @@ public class SolverProperties {
      * Enable the Nearby Selection quick configuration.
      */
     private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
-
-    /**
-     * What constraint stream implementation to use. Defaults to BAVET.
-     *
-     * @deprecated No longer used.
-     */
-    @Deprecated(forRemoval = true, since = "1.4.0")
-    private ConstraintStreamImplType constraintStreamImplType;
 
     private Boolean constraintStreamProfilingEnabled;
 
@@ -146,22 +137,6 @@ public class SolverProperties {
 
     public void setNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass) {
         this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
-    }
-
-    /**
-     * @deprecated No longer used.
-     */
-    @Deprecated(forRemoval = true, since = "1.4.0")
-    public ConstraintStreamImplType getConstraintStreamImplType() {
-        return constraintStreamImplType;
-    }
-
-    /**
-     * @deprecated No longer used.
-     */
-    @Deprecated(forRemoval = true, since = "1.4.0")
-    public void setConstraintStreamImplType(ConstraintStreamImplType constraintStreamImplType) {
-        this.constraintStreamImplType = constraintStreamImplType;
     }
 
     public Boolean getConstraintStreamProfilingEnabled() {

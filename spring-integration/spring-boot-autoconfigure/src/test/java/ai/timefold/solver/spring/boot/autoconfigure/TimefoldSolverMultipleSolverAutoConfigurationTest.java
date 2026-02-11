@@ -7,7 +7,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
@@ -426,12 +425,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean(SolverManager.class)))
                 .hasMessageContaining(
                         "No qualifying bean of type 'ai.timefold.solver.core.api.solver.SolverManager' available");
-        assertThatCode(() -> contextRunner
-                .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
-                .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
-                .run(context -> context.getBean(ScoreManager.class)))
-                .hasMessageContaining(
-                        "No qualifying bean of type 'ai.timefold.solver.core.api.score.ScoreManager' available");
         assertThatCode(() -> contextRunner
                 .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
                 .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")

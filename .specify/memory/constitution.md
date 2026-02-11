@@ -607,7 +607,7 @@ The public API MUST follow these design principles to ensure stability, flexibil
 3. **Factory Pattern for Object Creation** (MUST):
    - Object creation in public API MUST use factory methods, factory classes, or builders
    - ✅ `SolverFactory.create(SolverConfig)` → returns `Solver` interface
-   - ✅ `ScoreManager.create(SolverFactory)` → returns `ScoreManager` interface
+   - ✅ `SolverManager.create(SolverFactory)` → returns `SolverManager` interface
    - ❌ `new DefaultSolver(config)` (incorrect - direct instantiation of implementation)
    - Factories provide flexibility to change implementations, perform validation, and manage object lifecycle
 

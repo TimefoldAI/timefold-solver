@@ -4,19 +4,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -37,6 +34,7 @@ import org.jspecify.annotations.Nullable;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}.
  */
+@NullMarked
 public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
 
     // ************************************************************************
@@ -52,8 +50,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}
      */
-    static <Solution_, ProblemId_> @NonNull SolverManager<Solution_, ProblemId_> create(
-            @NonNull SolverConfig solverConfig) {
+    static <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> create(SolverConfig solverConfig) {
         return create(solverConfig, new SolverManagerConfig());
     }
 
@@ -66,8 +63,8 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}.
      */
-    static <Solution_, ProblemId_> @NonNull SolverManager<Solution_, ProblemId_> create(
-            @NonNull SolverConfig solverConfig, @NonNull SolverManagerConfig solverManagerConfig) {
+    static <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> create(SolverConfig solverConfig,
+            SolverManagerConfig solverManagerConfig) {
         return create(SolverFactory.create(solverConfig), solverManagerConfig);
     }
 
@@ -77,8 +74,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}
      */
-    static <Solution_, ProblemId_> @NonNull SolverManager<Solution_, ProblemId_> create(
-            @NonNull SolverFactory<Solution_> solverFactory) {
+    static <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> create(SolverFactory<Solution_> solverFactory) {
         return create(solverFactory, new SolverManagerConfig());
     }
 
@@ -88,8 +84,8 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}.
      */
-    static <Solution_, ProblemId_> @NonNull SolverManager<Solution_, ProblemId_> create(
-            @NonNull SolverFactory<Solution_> solverFactory, @NonNull SolverManagerConfig solverManagerConfig) {
+    static <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> create(SolverFactory<Solution_> solverFactory,
+            SolverManagerConfig solverManagerConfig) {
         return new DefaultSolverManager<>(solverFactory, solverManagerConfig);
     }
 
@@ -101,7 +97,6 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * Creates a Builder that allows to customize and submit a planning problem to solve.
      *
      */
-    @NonNull
     SolverJobBuilder<Solution_, ProblemId_> solveBuilder();
 
     // ************************************************************************
@@ -125,7 +120,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
      * @param problem a {@link PlanningSolution} usually with uninitialized planning variables
      */
-    default @NonNull SolverJob<Solution_, ProblemId_> solve(@NonNull ProblemId_ problemId, @NonNull Solution_ problem) {
+    default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId, Solution_ problem) {
         return solveBuilder()
                 .withProblemId(problemId)
                 .withProblem(problem)
@@ -141,8 +136,8 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param problem a {@link PlanningSolution} usually with uninitialized planning variables
      * @param finalBestSolutionConsumer called only once, at the end, on a consumer thread
      */
-    default @NonNull SolverJob<Solution_, ProblemId_> solve(@NonNull ProblemId_ problemId,
-            @NonNull Solution_ problem, @Nullable Consumer<? super Solution_> finalBestSolutionConsumer) {
+    default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId, Solution_ problem,
+            @Nullable Consumer<? super Solution_> finalBestSolutionConsumer) {
         SolverJobBuilder<Solution_, ProblemId_> builder = solveBuilder()
                 .withProblemId(problemId)
                 .withProblem(problem);
@@ -153,128 +148,6 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
     }
 
     /**
-     * As defined by {@link #solve(Object, Object)}.
-     *
-     * @param problemId a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problem a {@link PlanningSolution} usually with uninitialized planning variables
-     * @param finalBestSolutionConsumer called only once, at the end, on a consumer thread
-     * @param exceptionHandler called if an exception or error occurs.
-     *        If null it defaults to logging the exception as an error.
-     * @deprecated It is recommended to use {@link #solveBuilder()}
-     */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    default @NonNull SolverJob<Solution_, ProblemId_> solve(@NonNull ProblemId_ problemId,
-            @NonNull Solution_ problem, @Nullable Consumer<? super Solution_> finalBestSolutionConsumer,
-            @Nullable BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        SolverJobBuilder<Solution_, ProblemId_> builder = solveBuilder()
-                .withProblemId(problemId)
-                .withProblem(problem);
-        if (finalBestSolutionConsumer != null) {
-            builder.withFinalBestSolutionConsumer(finalBestSolutionConsumer);
-        }
-        if (exceptionHandler != null) {
-            builder.withExceptionHandler(exceptionHandler);
-        }
-        return builder.run();
-    }
-
-    /**
-     * Submits a planning problem to solve and returns immediately.
-     * The planning problem is solved on a solver {@link Thread}, as soon as one is available.
-     * <p>
-     * When the solver terminates, the {@code finalBestSolutionConsumer} is called once with the final best solution,
-     * on a consumer {@link Thread}, as soon as one is available.
-     * To listen to intermediate best solutions too, use {@link #solveAndListen(Object, Object, Consumer)} instead.
-     * <p>
-     * Defaults to logging exceptions as an error.
-     * <p>
-     * To stop a solver job before it naturally terminates, call {@link #terminateEarly(Object)}.
-     *
-     * @param problemId an ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problemFinder a function that returns a {@link PlanningSolution}, usually with uninitialized planning
-     *        variables
-     * @param finalBestSolutionConsumer called only once, at the end, on a consumer thread
-     * @deprecated It is recommended to use {@link #solveBuilder()}
-     */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    default @NonNull SolverJob<Solution_, ProblemId_> solve(@NonNull ProblemId_ problemId,
-            @NonNull Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            @Nullable Consumer<? super Solution_> finalBestSolutionConsumer) {
-        SolverJobBuilder<Solution_, ProblemId_> builder = solveBuilder()
-                .withProblemId(problemId)
-                .withProblemFinder(problemFinder);
-        if (finalBestSolutionConsumer != null) {
-            builder.withFinalBestSolutionConsumer(finalBestSolutionConsumer);
-        }
-        return builder.run();
-    }
-
-    /**
-     * As defined by {@link #solve(Object, Function, Consumer)}.
-     *
-     * @param problemId a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problemFinder function that returns a {@link PlanningSolution}, usually with uninitialized planning
-     *        variables
-     * @param finalBestSolutionConsumer called only once, at the end, on a consumer thread
-     * @param exceptionHandler called if an exception or error occurs.
-     *        If null it defaults to logging the exception as an error.
-     * @deprecated It is recommended to use {@link #solveBuilder()}
-     */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    default @NonNull SolverJob<Solution_, ProblemId_> solve(@NonNull ProblemId_ problemId,
-            @NonNull Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            @Nullable Consumer<? super Solution_> finalBestSolutionConsumer,
-            @Nullable BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        SolverJobBuilder<Solution_, ProblemId_> builder = solveBuilder()
-                .withProblemId(problemId)
-                .withProblemFinder(problemFinder);
-        if (finalBestSolutionConsumer != null) {
-            builder.withFinalBestSolutionConsumer(finalBestSolutionConsumer);
-        }
-        if (exceptionHandler != null) {
-            builder.withExceptionHandler(exceptionHandler);
-        }
-        return builder.run();
-    }
-
-    /**
-     * Submits a planning problem to solve and returns immediately.
-     * The planning problem is solved on a solver {@link Thread}, as soon as one is available.
-     * <p>
-     * When the solver finds a new best solution, the {@code bestSolutionConsumer} is called every time,
-     * on a consumer {@link Thread}, as soon as one is available (taking into account any throttling waiting time),
-     * unless a newer best solution is already available by then (in which case skip ahead discards it).
-     * <p>
-     * Defaults to logging exceptions as an error.
-     * <p>
-     * To stop a solver job before it naturally terminates, call {@link #terminateEarly(Object)}.
-     *
-     * @param problemId a ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problemFinder a function that returns a {@link PlanningSolution}, usually with uninitialized planning
-     *        variables
-     * @param bestSolutionConsumer called multiple times, on a consumer thread
-     * @deprecated It is recommended to use {@link #solveBuilder()} while also providing a consumer for the best solution
-     */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    default @NonNull SolverJob<Solution_, ProblemId_> solveAndListen(@NonNull ProblemId_ problemId,
-            @NonNull Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            @NonNull Consumer<? super Solution_> bestSolutionConsumer) {
-        return solveBuilder()
-                .withProblemId(problemId)
-                .withProblemFinder(problemFinder)
-                .withBestSolutionConsumer(bestSolutionConsumer)
-                .run();
-    }
-
-    /**
      * Submits a planning problem to solve and returns immediately.
      * The planning problem is solved on a solver {@link Thread}, as soon as one is available.
      * <p>
@@ -292,82 +165,13 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param problem a {@link PlanningSolution} usually with uninitialized planning variables
      * @param bestSolutionConsumer called multiple times, on a consumer thread
      */
-    default @NonNull SolverJob<Solution_, ProblemId_> solveAndListen(@NonNull ProblemId_ problemId, @NonNull Solution_ problem,
-            @NonNull Consumer<? super Solution_> bestSolutionConsumer) {
+    default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId, Solution_ problem,
+            Consumer<? super Solution_> bestSolutionConsumer) {
         return solveBuilder()
                 .withProblemId(problemId)
                 .withProblem(problem)
                 .withBestSolutionEventConsumer(event -> bestSolutionConsumer.accept(event.solution()))
                 .run();
-    }
-
-    /**
-     * As defined by {@link #solveAndListen(Object, Function, Consumer)}.
-     *
-     * @param problemId an ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problemFinder function that returns a {@link PlanningSolution}, usually with uninitialized planning
-     *        variables
-     * @param bestSolutionConsumer called multiple times, on a consumer thread
-     * @param exceptionHandler called if an exception or error occurs.
-     *        If null it defaults to logging the exception as an error.
-     * @deprecated It is recommended to use {@link #solveBuilder()} while also providing a consumer for the best solution
-     */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    default @NonNull SolverJob<Solution_, ProblemId_> solveAndListen(@NonNull ProblemId_ problemId,
-            @NonNull Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            @NonNull Consumer<? super Solution_> bestSolutionConsumer,
-            @Nullable BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        SolverJobBuilder<Solution_, ProblemId_> builder = solveBuilder()
-                .withProblemId(problemId)
-                .withProblemFinder(problemFinder)
-                .withBestSolutionConsumer(bestSolutionConsumer);
-        if (exceptionHandler != null) {
-            builder.withExceptionHandler(exceptionHandler);
-        }
-        return builder.run();
-    }
-
-    /**
-     * As defined by {@link #solveAndListen(Object, Function, Consumer)}.
-     * <p>
-     * The final best solution is delivered twice:
-     * first to the {@code bestSolutionConsumer} when it is found
-     * and then again to the {@code finalBestSolutionConsumer} when the solver terminates.
-     * Do not store the solution twice.
-     * This allows for use cases that only process the {@link Score} first (during best solution changed events)
-     * and then store the solution upon termination.
-     *
-     * @param problemId an ID for each planning problem. This must be unique.
-     *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
-     *        {@link #getSolverStatus(Object) to get the status} or if the problem changes while solving.
-     * @param problemFinder function that returns a {@link PlanningSolution}, usually with uninitialized planning
-     *        variables
-     * @param bestSolutionConsumer called multiple times, on a consumer thread
-     * @param finalBestSolutionConsumer called only once, at the end, on a consumer thread.
-     *        That final best solution is already consumed by the bestSolutionConsumer earlier.
-     * @param exceptionHandler called if an exception or error occurs.
-     *        If null it defaults to logging the exception as an error.
-     * @deprecated It is recommended to use {@link #solveBuilder()} while also providing a consumer for the best solution
-     */
-    @Deprecated(forRemoval = true, since = "1.6.0")
-    default @NonNull SolverJob<Solution_, ProblemId_> solveAndListen(@NonNull ProblemId_ problemId,
-            @NonNull Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            @NonNull Consumer<? super Solution_> bestSolutionConsumer,
-            @Nullable Consumer<? super Solution_> finalBestSolutionConsumer,
-            @Nullable BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
-        SolverJobBuilder<Solution_, ProblemId_> builder = solveBuilder()
-                .withProblemId(problemId)
-                .withProblemFinder(problemFinder)
-                .withBestSolutionConsumer(bestSolutionConsumer);
-        if (finalBestSolutionConsumer != null) {
-            builder.withFinalBestSolutionConsumer(finalBestSolutionConsumer);
-        }
-        if (exceptionHandler != null) {
-            builder.withExceptionHandler(exceptionHandler);
-        }
-        return builder.run();
     }
 
     /**
@@ -380,16 +184,13 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param problemId a value given to {@link #solve(Object, Object, Consumer)}
      *        or {@link #solveAndListen(Object, Object, Consumer)}
      */
-    @NonNull
-    SolverStatus getSolverStatus(@NonNull ProblemId_ problemId);
+    SolverStatus getSolverStatus(ProblemId_ problemId);
 
     /**
      * As defined by {@link #addProblemChanges(Object, List)}, only with a single {@link ProblemChange}.
      * Prefer to submit multiple {@link ProblemChange}s at once to reduce the considerable overhead of multiple calls.
      */
-    @NonNull
-    default CompletableFuture<Void> addProblemChange(@NonNull ProblemId_ problemId,
-            @NonNull ProblemChange<Solution_> problemChange) {
+    default CompletableFuture<Void> addProblemChange(ProblemId_ problemId, ProblemChange<Solution_> problemChange) {
         return addProblemChanges(problemId, Collections.singletonList(problemChange));
     }
 
@@ -406,9 +207,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @throws IllegalStateException if there is no solver actively solving the problem associated with the problemId
      * @see ProblemChange Learn more about problem change semantics.
      */
-    @NonNull
-    CompletableFuture<Void> addProblemChanges(@NonNull ProblemId_ problemId,
-            @NonNull List<ProblemChange<Solution_>> problemChangeList);
+    CompletableFuture<Void> addProblemChanges(ProblemId_ problemId, List<ProblemChange<Solution_>> problemChangeList);
 
     /**
      * Terminates the solver or cancels the solver job if it hasn't (re)started yet.
@@ -426,7 +225,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param problemId a value given to {@link #solve(Object, Object, Consumer)}
      *        or {@link #solveAndListen(Object, Object, Consumer)}
      */
-    void terminateEarly(@NonNull ProblemId_ problemId);
+    void terminateEarly(ProblemId_ problemId);
 
     /**
      * Terminates all solvers, cancels all solver jobs that haven't (re)started yet

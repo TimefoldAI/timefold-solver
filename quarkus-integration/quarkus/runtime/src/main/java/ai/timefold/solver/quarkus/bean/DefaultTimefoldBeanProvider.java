@@ -5,7 +5,6 @@ import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
@@ -43,8 +42,6 @@ public class DefaultTimefoldBeanProvider {
 
     private SolutionManager<?, ?> solutionManager;
 
-    private ScoreManager<?, ?> scoreManager;
-
     @SuppressWarnings("unchecked")
     @DefaultBean
     @Dependent
@@ -77,129 +74,6 @@ public class DefaultTimefoldBeanProvider {
             solverManager = SolverManager.create(solverFactory, solverManagerConfig);
         }
         return (SolverManager<Solution_, ProblemId_>) solverManager;
-    }
-
-    // Quarkus-ARC-Weld can't deal with enum pattern generics such as Score<S extends Score<S>>.
-    // See https://github.com/quarkusio/quarkus/pull/12137
-    //    @DefaultBean
-    //    @Dependent
-    //    @Produces
-    @SuppressWarnings("unchecked")
-    @Deprecated(forRemoval = true)
-    <Solution_, Score_ extends Score<Score_>> ScoreManager<Solution_, Score_>
-            scoreManager(SolverFactory<Solution_> solverFactory) {
-        if (scoreManager == null) {
-            scoreManager = ScoreManager.create(solverFactory);
-        }
-        return (ScoreManager<Solution_, Score_>) scoreManager;
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, SimpleScore> scoreManager_workaroundSimpleScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, SimpleLongScore> scoreManager_workaroundSimpleLongScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, SimpleBigDecimalScore> scoreManager_workaroundSimpleBigDecimalScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardSoftScore> scoreManager_workaroundHardSoftScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardSoftLongScore> scoreManager_workaroundHardSoftLongScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardSoftBigDecimalScore> scoreManager_workaroundHardSoftBigDecimalScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardMediumSoftScore> scoreManager_workaroundHardMediumSoftScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardMediumSoftLongScore> scoreManager_workaroundHardMediumSoftLongScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardMediumSoftBigDecimalScore> scoreManager_workaroundHardMediumSoftBigDecimalScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, BendableScore> scoreManager_workaroundBendableScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, BendableLongScore> scoreManager_workaroundBendableLongScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, BendableBigDecimalScore> scoreManager_workaroundBendableBigDecimalScore(
-            SolverFactory<Solution_> solverFactory) {
-        return scoreManager(solverFactory);
     }
 
     // Quarkus-ARC-Weld can't deal with enum pattern generics such as Score<S extends Score<S>>.

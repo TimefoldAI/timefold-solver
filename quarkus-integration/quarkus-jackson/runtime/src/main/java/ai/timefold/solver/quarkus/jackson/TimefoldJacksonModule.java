@@ -21,7 +21,6 @@ import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
-import ai.timefold.solver.core.api.solver.RecommendedFit;
 import ai.timefold.solver.core.impl.domain.solution.DefaultConstraintWeightOverrides;
 import ai.timefold.solver.core.impl.solver.DefaultRecommendedAssignment;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningEntityDiff;
@@ -70,7 +69,6 @@ import ai.timefold.solver.quarkus.jackson.score.stream.common.SequenceJacksonDes
 import ai.timefold.solver.quarkus.jackson.score.stream.common.SequenceJacksonSerializer;
 import ai.timefold.solver.quarkus.jackson.solution.JacksonSolutionFileIO;
 import ai.timefold.solver.quarkus.jackson.solver.RecommendedAssignmentJacksonSerializer;
-import ai.timefold.solver.quarkus.jackson.solver.RecommendedFitJacksonSerializer;
 
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
@@ -94,12 +92,7 @@ public class TimefoldJacksonModule extends SimpleModule {
 
     }
 
-    /**
-     * @deprecated Have the module loaded automatically via {@link JacksonSolutionFileIO} or use {@link #createModule()}.
-     *             This constructor will be hidden in a future major version of Timefold.
-     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Deprecated(forRemoval = true)
     public TimefoldJacksonModule() {
         super("Timefold");
         // For non-subtype Score fields/properties, we also need to record the score type
@@ -138,7 +131,6 @@ public class TimefoldJacksonModule extends SimpleModule {
         var serializer = (JsonSerializer) new RecommendedAssignmentJacksonSerializer<>();
         addSerializer(RecommendedAssignment.class, serializer);
         addSerializer(DefaultRecommendedAssignment.class, serializer);
-        addSerializer(RecommendedFit.class, (JsonSerializer) new RecommendedFitJacksonSerializer<>());
 
         // Constraint weights
         addSerializer(ConstraintWeightOverrides.class, new ConstraintWeightOverridesSerializer());

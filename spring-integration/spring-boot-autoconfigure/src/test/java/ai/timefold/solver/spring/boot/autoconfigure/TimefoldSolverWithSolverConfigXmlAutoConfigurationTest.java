@@ -4,14 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.util.Collections;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -236,7 +234,6 @@ class TimefoldSolverWithSolverConfigXmlAutoConfigurationTest {
                     assertTrue(solverConfig.getDaemon());
                     assertEquals("2", solverConfig.getMoveThreadCount());
                     assertEquals(DomainAccessType.REFLECTION, solverConfig.getDomainAccessType());
-                    assertNull(solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamImplType());
                     assertEquals(Duration.ofHours(4), solverConfig.getTerminationConfig().getSpentLimit());
                     assertEquals(Duration.ofHours(5), solverConfig.getTerminationConfig().getUnimprovedSpentLimit());
                     assertEquals(SimpleScore.of(0).toString(), solverConfig.getTerminationConfig().getBestScoreLimit());
@@ -267,7 +264,6 @@ class TimefoldSolverWithSolverConfigXmlAutoConfigurationTest {
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                     assertThat(context.getBean(SolverManager.class)).isNotNull();
                     assertThat(context.getBean(SolutionManager.class)).isNotNull();
-                    assertThat(context.getBean(ScoreManager.class)).isNotNull();
                     assertThat(context.getBean(ConstraintVerifier.class)).isNotNull();
                 });
     }
@@ -366,8 +362,6 @@ class TimefoldSolverWithSolverConfigXmlAutoConfigurationTest {
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
                     assertThat(solverFactory).isNotNull();
-                    var scoreManager = context.getBean(ScoreManager.class);
-                    assertThat(scoreManager).isNotNull();
                     SolutionManager<TestdataSpringSolution, SimpleScore> solutionManager =
                             context.getBean(SolutionManager.class);
                     assertThat(((DefaultSolverFactory) solverFactory).getScoreDirectorFactory())

@@ -107,8 +107,6 @@
                     
           <xs:element minOccurs="0" name="constraintProviderCustomProperties" type="tns:jaxbAdaptedMap"/>
                     
-          <xs:element minOccurs="0" name="constraintStreamImplType" type="tns:constraintStreamImplType"/>
-                    
           <xs:element minOccurs="0" name="constraintStreamAutomaticNodeSharing" type="xs:boolean"/>
                     
           <xs:element minOccurs="0" name="constraintStreamProfilingEnabled" type="xs:boolean"/>
@@ -116,8 +114,6 @@
           <xs:element minOccurs="0" name="incrementalScoreCalculatorClass" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="incrementalScoreCalculatorCustomProperties" type="tns:jaxbAdaptedMap"/>
-                    
-          <xs:element maxOccurs="unbounded" minOccurs="0" name="scoreDrl" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="initializingScoreTrend" type="xs:string"/>
                     
@@ -1604,18 +1600,6 @@
       <xs:enumeration value="REFLECTION"/>
             
       <xs:enumeration value="GIZMO"/>
-          
-    </xs:restriction>
-      
-  </xs:simpleType>
-    
-  <xs:simpleType name="constraintStreamImplType">
-        
-    <xs:restriction base="xs:string">
-            
-      <xs:enumeration value="BAVET"/>
-            
-      <xs:enumeration value="DROOLS"/>
           
     </xs:restriction>
       

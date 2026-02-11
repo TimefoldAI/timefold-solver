@@ -7,7 +7,6 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -52,8 +51,6 @@ class TimefoldProcessorInvalidTest {
     SolverFactory<TestdataInvalidInverseRelationSolution> solverFactory;
     @Inject
     SolverManager<TestdataInvalidInverseRelationSolution, Long> solverManager;
-    @Inject
-    ScoreManager<TestdataInvalidInverseRelationSolution, SimpleScore> scoreManager;
     @Inject
     SolutionManager<TestdataInvalidInverseRelationSolution, SimpleScore> solutionManager;
 

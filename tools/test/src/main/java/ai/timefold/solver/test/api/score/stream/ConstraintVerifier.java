@@ -10,7 +10,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -73,21 +72,6 @@ public interface ConstraintVerifier<ConstraintProvider_ extends ConstraintProvid
                 scoreDirectorFactoryConfig.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
 
         return new DefaultConstraintVerifier(constraintProvider, solutionDescriptor);
-    }
-
-    /**
-     * All subsequent calls to {@link #verifyThat(BiFunction)} and {@link #verifyThat()}
-     * use the given {@link ConstraintStreamImplType}.
-     *
-     * @return this
-     * @deprecated There is only one implementation, so this method is deprecated.
-     *             This method no longer has any effect.
-     */
-    @NonNull
-    @Deprecated(forRemoval = true, since = "1.16.0")
-    default ConstraintVerifier<ConstraintProvider_, Solution_> withConstraintStreamImplType(
-            @NonNull ConstraintStreamImplType constraintStreamImplType) {
-        return this;
     }
 
     /**

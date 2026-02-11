@@ -12,7 +12,6 @@ import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.SolverJobStartedEvent;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * Provides a fluent contract that allows customization and submission of planning problems to solve.
@@ -62,18 +61,6 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
             withProblemFinder(@NonNull Function<? super ProblemId_, ? extends Solution_> problemFinder);
 
     /**
-     * As defined by {@link #withBestSolutionEventConsumer(Consumer)}.
-     *
-     * @deprecated Use {@link #withBestSolutionEventConsumer(Consumer)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.28.0")
-    @NonNull
-    default SolverJobBuilder<Solution_, ProblemId_>
-            withBestSolutionConsumer(@NonNull Consumer<? super Solution_> bestSolutionConsumer) {
-        return withBestSolutionEventConsumer(event -> bestSolutionConsumer.accept(event.solution()));
-    }
-
-    /**
      * Sets the best solution consumer, which may be called multiple times during the solving process.
      * <p>
      * Don't apply any changes to the solution instance while the solver runs.
@@ -88,18 +75,6 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
             withBestSolutionEventConsumer(@NonNull Consumer<NewBestSolutionEvent<Solution_>> bestSolutionEventConsumer);
 
     /**
-     * As defined by {@link #withFinalBestSolutionEventConsumer}.
-     *
-     * @deprecated Use {@link #withFinalBestSolutionEventConsumer(Consumer)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.28.0")
-    @NonNull
-    default SolverJobBuilder<Solution_, ProblemId_>
-            withFinalBestSolutionConsumer(@NonNull Consumer<? super Solution_> finalBestSolutionConsumer) {
-        return withFinalBestSolutionEventConsumer(event -> finalBestSolutionConsumer.accept(event.solution()));
-    }
-
-    /**
      * Sets the final best solution consumer, which is called at the end of the solving process and returns the final
      * best solution.
      *
@@ -112,34 +87,6 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
                     @NonNull Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionEventConsumer);
 
     /**
-     * As defined by {@link #withFirstInitializedSolutionEventConsumer(Consumer)}.
-     *
-     * @deprecated Use {@link #withFirstInitializedSolutionEventConsumer(Consumer)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.19.0")
-    @NonNull
-    default SolverJobBuilder<Solution_, ProblemId_>
-            withFirstInitializedSolutionConsumer(@NonNull Consumer<? super Solution_> firstInitializedSolutionConsumer) {
-        return withFirstInitializedSolutionEventConsumer(event -> firstInitializedSolutionConsumer.accept(event.solution()));
-    }
-
-    /**
-     * As defined by {@link #withFirstInitializedSolutionEventConsumer(Consumer)}.
-     *
-     * @deprecated Use {@link #withFirstInitializedSolutionEventConsumer(Consumer)} instead.
-     *
-     * @param firstInitializedSolutionConsumer called only once before starting the first Local Search phase
-     * @return this
-     */
-    @Deprecated(forRemoval = true, since = "1.28.0")
-    @NonNull
-    default SolverJobBuilder<Solution_, ProblemId_> withFirstInitializedSolutionConsumer(
-            @NonNull FirstInitializedSolutionConsumer<? super Solution_> firstInitializedSolutionConsumer) {
-        return withFirstInitializedSolutionEventConsumer(
-                event -> firstInitializedSolutionConsumer.accept(event.solution(), event.isTerminatedEarly()));
-    }
-
-    /**
      * Sets the consumer of the first initialized solution,
      * the beginning of the actual optimization process.
      * First initialized solution is the solution at the end of the last phase
@@ -150,17 +97,6 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      */
     SolverJobBuilder<Solution_, ProblemId_> withFirstInitializedSolutionEventConsumer(
             @NonNull Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionEventConsumer);
-
-    /**
-     * As defined by {@link #withSolverJobStartedEventConsumer(Consumer)}.
-     *
-     * @deprecated Use {@link #withSolverJobStartedEventConsumer(Consumer)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.28.0")
-    default SolverJobBuilder<Solution_, ProblemId_>
-            withSolverJobStartedConsumer(Consumer<? super Solution_> solverJobStartedConsumer) {
-        return withSolverJobStartedEventConsumer(event -> solverJobStartedConsumer.accept(event.solution()));
-    }
 
     /**
      * Sets the consumer for when the solver starts its solving process.
@@ -198,28 +134,4 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
     @NonNull
     SolverJob<Solution_, ProblemId_> run();
 
-    /**
-     * A consumer that accepts the first initialized solution.
-     *
-     * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
-     */
-    @NullMarked
-    interface FirstInitializedSolutionConsumer<Solution_> {
-
-        /**
-         * Accepts the first solution after initialization.
-         *
-         * @param solution the first solution after initialization phase(s) finished
-         * @param isTerminatedEarly false in most common cases.
-         *        True if the solver was terminated early, before the solution could be fully initialized,
-         *        typically as a result of construction heuristic running for too long
-         *        and tripping a time-based termination condition.
-         *        In that case, there will likely be no other phase after this one
-         *        and the solver will terminate as well, without launching any optimizing phase.
-         *        Therefore, the solution captured with {@link SolverJobBuilder#withBestSolutionConsumer(Consumer)}
-         *        will likely be unchanged from this one.
-         */
-        void accept(Solution_ solution, boolean isTerminatedEarly);
-
-    }
 }
