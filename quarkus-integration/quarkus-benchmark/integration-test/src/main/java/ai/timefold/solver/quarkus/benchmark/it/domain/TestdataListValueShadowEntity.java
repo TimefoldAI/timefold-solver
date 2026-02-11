@@ -2,6 +2,7 @@ package ai.timefold.solver.quarkus.benchmark.it.domain;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
@@ -13,8 +14,11 @@ public class TestdataListValueShadowEntity {
     @InverseRelationShadowVariable(sourceVariableName = "values")
     private TestdataStringLengthShadowEntity entity;
 
+    @PreviousElementShadowVariable(sourceVariableName = "values")
+    private TestdataListValueShadowEntity previousValue;
+
     @ShadowVariable(supplierName = "updateLength")
-    private Integer length;
+    private int length;
 
     public TestdataListValueShadowEntity() {
     }
@@ -39,26 +43,29 @@ public class TestdataListValueShadowEntity {
         this.entity = entity;
     }
 
-    public Integer getLength() {
+    public TestdataListValueShadowEntity getPreviousValue() {
+        return previousValue;
+    }
+
+    public void setPreviousValue(TestdataListValueShadowEntity previousValue) {
+        this.previousValue = previousValue;
+    }
+
+    public int getLength() {
         return length;
     }
 
-    public void setLength(Integer length) {
+    public void setLength(int length) {
         this.length = length;
     }
 
-    @ShadowSources("entity")
-    public Integer updateLength() {
-        var oldLength = length != null ? length : 0;
-        var newLength = entity != null ? entity.getValues().stream()
-                .map(TestdataListValueShadowEntity::getValue)
-                .mapToInt(TestdataListValueShadowEntity::getLength)
-                .sum() : 0;
-        if (oldLength != newLength) {
-            return newLength;
-        } else {
-            return length;
+    @ShadowSources("previousValue.length")
+    public int updateLength() {
+        var out = getLength(value);
+        if (previousValue != null) {
+            out += previousValue.getLength();
         }
+        return out;
     }
 
     private static int getLength(String value) {
