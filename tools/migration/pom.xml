@@ -7,7 +7,7 @@
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-build-parent</artifactId>
     <version>999-SNAPSHOT</version>
-    <relativePath>../build/build-parent/pom.xml</relativePath>
+    <relativePath>../../build/build-parent/pom.xml</relativePath>
   </parent>
 
   <artifactId>timefold-solver-migration</artifactId>

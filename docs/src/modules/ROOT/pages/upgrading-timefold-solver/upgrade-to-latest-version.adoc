@@ -33,7 +33,7 @@ Gradle::
 --
 [source,shell,subs=attributes+]
 ----
-curl https://raw.githubusercontent.com/TimefoldAI/timefold-solver/refs/tags/v{timefold-solver-version}/migration/upgrade-timefold.gradle > upgrade-timefold.gradle ; gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version} ; rm upgrade-timefold.gradle
+curl https://raw.githubusercontent.com/TimefoldAI/timefold-solver/refs/tags/v{timefold-solver-version}/tools/migration/upgrade-timefold.gradle > upgrade-timefold.gradle ; gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version} ; rm upgrade-timefold.gradle
 ----
 --
 ====
