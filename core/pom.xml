@@ -140,33 +140,25 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>${version.antrun.plugin}</version>
         <executions>
           <execution>
-            <!-- Copy the solver.xsd to make sure it's available from the IDE without running maven first. -->
-            <id>copy-solver-xsd</id>
+            <id>move-solver-xsd</id>
             <phase>process-resources</phase>
             <goals>
-              <goal>copy-resources</goal>
+              <goal>run</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.basedir}/src/main/resources</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${project.build.outputDirectory}</directory>
-                  <includes>
-                    <include>solver.xsd</include>
-                  </includes>
-                  <targetPath>${project.basedir}/src/main/resources</targetPath>
-                </resource>
-              </resources>
+              <target>
+                <move file="${project.build.outputDirectory}/${schema.filename.solver.intermediary}" tofile="${project.basedir}/src/main/resources/${schema.filename.solver}"/>
+              </target>
             </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
   </build>
-
   <profiles>
     <profile>
       <id>check-xsd-changes</id>

@@ -194,9 +194,9 @@
               <!-- Merge the first two XSD files to a standalone benchmark XSD file containing XML types from both of them. -->
               <mainClass>ai.timefold.solver.benchmark.impl.xsd.XsdAggregator</mainClass>
               <arguments>
-                <argument>${project.build.outputDirectory}/${schema.filename.solver}</argument>
+                <argument>${project.build.outputDirectory}/${schema.filename.solver.intermediary}</argument>
+                <argument>${project.build.outputDirectory}/${schema.filename.benchmark.intermediary}</argument>
                 <argument>${project.build.outputDirectory}/${schema.filename.benchmark}</argument>
-                <argument>${project.build.outputDirectory}/benchmark.xsd</argument>
               </arguments>
             </configuration>
           </execution>
