@@ -50,12 +50,10 @@ public class TestdataListValueShadowEntity {
     @ShadowSources("entity")
     public Integer updateLength() {
         var oldLength = length != null ? length : 0;
-        var newLength = entity != null ?
-                entity.getValues().stream()
-                        .map(TestdataListValueShadowEntity::getValue)
-                        .mapToInt(TestdataListValueShadowEntity::getLength)
-                        .sum() :
-                0;
+        var newLength = entity != null ? entity.getValues().stream()
+                .map(TestdataListValueShadowEntity::getValue)
+                .mapToInt(TestdataListValueShadowEntity::getLength)
+                .sum() : 0;
         if (oldLength != newLength) {
             return newLength;
         } else {
