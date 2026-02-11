@@ -135,19 +135,6 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesBy(int)}.
      *
-     * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
-     * @param message sometimes null, description of the scenario being asserted
-     * @throws AssertionError when the expected penalty is not observed
-     * @deprecated Use {@link #penalizesBy(String, int)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void penalizesBy(int matchWeightTotal, String message) {
-        penalizesBy(message, matchWeightTotal);
-    }
-
-    /**
-     * As defined by {@link #penalizesBy(int)}.
-     *
      * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
@@ -162,20 +149,6 @@ public interface SingleConstraintAssertion {
      */
     default void penalizesBy(long matchWeightTotal) {
         penalizesBy(null, matchWeightTotal);
-    }
-
-    /**
-     * As defined by {@link #penalizesBy(long)}.
-     *
-     * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
-     * @param message sometimes null, description of the scenario being asserted
-     * @throws AssertionError when the expected penalty is not observed
-     *
-     * @deprecated Use {@link #penalizesBy(String, long)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void penalizesBy(long matchWeightTotal, String message) {
-        penalizesBy(message, matchWeightTotal);
     }
 
     /**
@@ -200,20 +173,6 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesBy(BigDecimal)}.
      *
-     * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
-     * @param message sometimes null, description of the scenario being asserted
-     * @throws AssertionError when the expected penalty is not observed
-     *
-     * @deprecated Use {@link #penalizesBy(String, BigDecimal)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void penalizesBy(BigDecimal matchWeightTotal, String message) {
-        penalizesBy(message, matchWeightTotal);
-    }
-
-    /**
-     * As defined by {@link #penalizesBy(BigDecimal)}.
-     *
      * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
@@ -231,20 +190,6 @@ public interface SingleConstraintAssertion {
      */
     default void penalizes(long times) {
         penalizes(null, times);
-    }
-
-    /**
-     * As defined by {@link #penalizes(long)}.
-     *
-     * @param times at least 0, expected number of times that the constraint will penalize
-     * @param message sometimes null, description of the scenario being asserted
-     * @throws AssertionError when the expected penalty is not observed
-     *
-     * @deprecated Use {@link #penalizes(String, long)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void penalizes(long times, String message) {
-        penalizes(message, times);
     }
 
     /**
@@ -296,20 +241,6 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWith(int)}.
      *
-     * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
-     * @param message sometimes null, description of the scenario being asserted
-     * @throws AssertionError when the expected reward is not observed
-     *
-     * @deprecated Use {@link #rewardsWith(String, int)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void rewardsWith(int matchWeightTotal, String message) {
-        rewardsWith(message, matchWeightTotal);
-    }
-
-    /**
-     * As defined by {@link #rewardsWith(int)}.
-     *
      * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
@@ -324,20 +255,6 @@ public interface SingleConstraintAssertion {
      */
     default void rewardsWith(long matchWeightTotal) {
         rewardsWith(null, matchWeightTotal);
-    }
-
-    /**
-     * As defined by {@link #rewardsWith(long)}.
-     *
-     * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
-     * @param message sometimes null, description of the scenario being asserted
-     * @throws AssertionError when the expected reward is not observed
-     *
-     * @deprecated Use {@link #rewardsWith(String, long)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void rewardsWith(long matchWeightTotal, String message) {
-        rewardsWith(message, matchWeightTotal);
     }
 
     /**
@@ -362,20 +279,6 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWith(BigDecimal)}.
      *
-     * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
-     * @param message sometimes null, description of the scenario being asserted
-     * @throws AssertionError when the expected reward is not observed
-     *
-     * @deprecated Use {@link #rewardsWith(String, BigDecimal)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void rewardsWith(BigDecimal matchWeightTotal, String message) {
-        rewardsWith(message, matchWeightTotal);
-    }
-
-    /**
-     * As defined by {@link #rewardsWith(BigDecimal)}.
-     *
      * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
@@ -393,20 +296,6 @@ public interface SingleConstraintAssertion {
      */
     default void rewards(long times) {
         rewards(null, times);
-    }
-
-    /**
-     * As defined by {@link #rewards(long)}.
-     *
-     * @param times at least 0, expected number of times that the constraint will reward
-     * @param message sometimes null, description of the scenario being asserted
-     * @throws AssertionError when the expected reward is not observed
-     *
-     * @deprecated Use {@link #rewards(String, long)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void rewards(long times, String message) {
-        rewards(message, times);
     }
 
     /**
