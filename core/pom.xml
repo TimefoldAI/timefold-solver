@@ -146,7 +146,7 @@
         <version>${version.antrun.plugin}</version>
         <executions>
           <execution>
-            <id>copy-solver-xsd</id>
+            <id>move-solver-xsd</id>
             <phase>process-resources</phase>
             <goals>
               <goal>run</goal>
