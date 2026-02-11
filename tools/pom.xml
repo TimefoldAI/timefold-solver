@@ -13,7 +13,7 @@
   <artifactId>timefold-solver-tools-parent</artifactId>
   <packaging>pom</packaging>
 
-  <name>Timefold Solver tools parent</name>
+  <name>Timefold Solver Tools Parent</name>
   <description>
     Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
@@ -27,6 +27,7 @@
     <module>benchmark</module>
     <module>benchmark-aggregator</module>
     <module>migration</module>
+    <module>test</module>
   </modules>
 
 </project>

@@ -61,7 +61,6 @@
     <module>build/ide-config</module>
     <module>build/build-parent</module>
     <module>core</module>
-    <module>test</module><!-- TODO move to core/test -->
     <module>persistence</module>
     <module>spring-integration</module>
     <module>quarkus-integration</module>
@@ -161,30 +160,6 @@
             </executions>
           </plugin>
         </plugins>
-      </build>
-    </profile>
-    <profile>
-      <!--
-        Migration to Timefold 0.9 involves upgrading to Quarkus 3, Spring Boot 3 and migrating to jakarta.* packages.
-        Timefold 0.8 remains compatible with Quarkus 2, Spring Boot 2 and javax.* packages.
-        Both Timefold 0.8 and 0.9 are functionally equal.
-      -->
-      <id>8-to-9-migration</id>
-      <activation>
-        <property>
-          <name>migration</name>
-        </property>
-      </activation>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.openrewrite.maven</groupId>
-              <artifactId>rewrite-maven-plugin</artifactId>
-              <version>${version.rewrite.plugin}</version>
-            </plugin>
-          </plugins>
-        </pluginManagement>
       </build>
     </profile>
   </profiles>
