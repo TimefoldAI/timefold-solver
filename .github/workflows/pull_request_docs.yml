@@ -13,7 +13,7 @@ on:
   # - The workflow will be executed automatically, without requiring a manual approval.
   # Therefore the workflow needs to be explicitly secured; see "known_user" and "approval_required" jobs below.
   pull_request_target:
-    branches: [ main ]
+    branches: [ main, 1.x ]
     types:
       - opened
       - reopened
@@ -124,7 +124,7 @@ jobs:
           aikido-pnpm build --filter @timefoldai/docs
 
       - name: Deploy Documentation (Preview Mode)
-        if: ${{ env.BRANCH_NAME != 'main' }}
+        if: ${{ env.BRANCH_NAME != 'main' && env.BRANCH_NAME != '1.x' }}
         id: deploy
         uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3
         with:
