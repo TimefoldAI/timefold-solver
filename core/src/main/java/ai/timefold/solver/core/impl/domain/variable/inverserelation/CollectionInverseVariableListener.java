@@ -3,13 +3,13 @@ package ai.timefold.solver.core.impl.domain.variable.inverserelation;
 import java.util.Collection;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.InnerBasicVariableListener;
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 public class CollectionInverseVariableListener<Solution_>
-        implements InnerBasicVariableListener<Solution_, Object>,
+        implements BasicVariableListener<Solution_, Object>,
         CollectionInverseVariableSupply {
 
     protected final InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
@@ -23,9 +23,9 @@ public class CollectionInverseVariableListener<Solution_>
 
     @Override
     public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        InnerVariableListener.forEachEntity(scoreDirector, shadowVariableDescriptor.getEntityDescriptor().getEntityClass(),
+        VariableListener.forEachEntity(scoreDirector, shadowVariableDescriptor.getEntityDescriptor().getEntityClass(),
                 value -> getInverseCollection(value).clear());
-        InnerVariableListener.forEachEntity(scoreDirector, sourceVariableDescriptor.getEntityDescriptor().getEntityClass(),
+        VariableListener.forEachEntity(scoreDirector, sourceVariableDescriptor.getEntityDescriptor().getEntityClass(),
                 entity -> insert(scoreDirector, entity));
     }
 

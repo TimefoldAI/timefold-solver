@@ -30,7 +30,6 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultShadowVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ChangedVariableNotifier;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph;
@@ -97,13 +96,6 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         var solutionDescriptor =
                 SolutionDescriptor.buildSolutionDescriptor(Objects.requireNonNull(solutionClass),
                         entityClassList.toArray(new Class<?>[0]));
-        var customShadowVariableDescriptorList = solutionDescriptor.getAllShadowVariableDescriptors().stream()
-                .filter(CustomShadowVariableDescriptor.class::isInstance)
-                .toList();
-        if (!customShadowVariableDescriptorList.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Custom shadow variable descriptors are not supported (%s)".formatted(customShadowVariableDescriptorList));
-        }
         var variableListenerSupport =
                 VariableListenerSupport.create(new InternalScoreDirector.Builder<>(solutionDescriptor).build());
         var missingShadowVariableTypeList = variableListenerSupport.getSupportedShadowVariableTypes().stream()

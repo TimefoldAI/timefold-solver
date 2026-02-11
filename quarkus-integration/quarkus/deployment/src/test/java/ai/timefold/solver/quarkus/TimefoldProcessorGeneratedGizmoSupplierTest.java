@@ -11,6 +11,9 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
@@ -31,7 +34,6 @@ import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity;
 import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
-import ai.timefold.solver.quarkus.testdomain.gizmo.DummyVariableListener;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -55,7 +57,6 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
                             TestdataBothAnnotatedChildEntity.class,
                             DummyInterfaceEntity.class,
                             DummyAbstractEntity.class,
-                            DummyVariableListener.class,
                             DummyChangeMoveFilter.class,
                             DummyConstraintProvider.class,
                             DummyEasyScoreCalculator.class,
@@ -88,7 +89,6 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
         assertFactoryContains(DummyMoveListFactory.class);
         assertFactoryContains(DummySolutionPartitioner.class);
         assertFactoryContains(DummyValueFilter.class);
-        assertFactoryContains(DummyVariableListener.class);
         assertFactoryContains(DummyEntityComparator.class);
         assertFactoryContains(DummyAbstractEntityComparatorFactory.class);
 
@@ -115,20 +115,44 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
 
     @PlanningEntity(comparatorClass = DummyEntityComparator.class)
     public interface DummyInterfaceEntity {
-        @ShadowVariable(variableListenerClass = DummyVariableListener.class,
-                sourceEntityClass = TestdataEntity.class, sourceVariableName = "value")
+
+        @ValueRangeProvider
+        List<String> getValues();
+
+        @PlanningVariable
+        String getValue();
+
+        void setValue(String value);
+
+        @ShadowVariable(supplierName = "updateLength")
         Integer getLength();
 
         void setLength(Integer length);
+
+        @ShadowSources("value")
+        Integer updateLength();
+
     }
 
     @PlanningEntity(comparatorFactoryClass = DummyAbstractEntityComparatorFactory.class)
     public abstract static class DummyAbstractEntity {
-        @ShadowVariable(variableListenerClass = DummyVariableListener.class,
-                sourceEntityClass = TestdataEntity.class, sourceVariableName = "value")
+
+        @ValueRangeProvider
+        public abstract List<String> getValues();
+
+        @PlanningVariable
+        public abstract String getValue();
+
+        public abstract String setValue(String value);
+
+        @ShadowVariable(supplierName = "updateLength")
         public abstract Integer getLength();
 
         public abstract void setLength(Integer length);
+
+        @ShadowSources("value")
+        public abstract Integer updateLength();
+
     }
 
     public static class DummySolutionPartitioner implements SolutionPartitioner<TestdataSolution> {

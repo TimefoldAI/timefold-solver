@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.move;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -50,11 +49,6 @@ import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
-import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullEntity;
-import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullMultiSwapListMove;
-import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullSolution;
-import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullValue;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
@@ -984,54 +978,6 @@ class MoveDirectorTest {
         // Uses a new instance of SolverScope
         verify(constructionHeuristicPhase, times(1)).solve(any());
         ephemeralMoveDirector.close();
-    }
-
-    @Test
-    void variableListenersAreTriggeredWhenSolutionIsConsistent() {
-        var solutionDescriptor = TestdataShadowedFullSolution.buildSolutionDescriptor();
-        var scoreCalculator = new TestdataShadowedFullEasyScoreCalculator();
-        var easyScoreDirectorFactory =
-                new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator, EnvironmentMode.PHASE_ASSERT);
-        var innerScoreDirector = easyScoreDirectorFactory.buildScoreDirector();
-        var moveDirector = new MoveDirector<>(innerScoreDirector);
-
-        var entityA = new TestdataShadowedFullEntity("Entity A");
-        var entityB = new TestdataShadowedFullEntity("Entity B");
-
-        var valueA = new TestdataShadowedFullValue("Value A");
-        var valueB = new TestdataShadowedFullValue("Value B");
-        var valueC = new TestdataShadowedFullValue("Value C");
-        var valueD = new TestdataShadowedFullValue("Value D");
-        var valueE = new TestdataShadowedFullValue("Value E");
-        var valueF = new TestdataShadowedFullValue("Value F");
-
-        entityA.getValueList().addAll(List.of(valueA, valueB, valueC));
-        valueA.updateShadows(entityA, 0);
-        valueB.updateShadows(entityA, 1);
-        valueC.updateShadows(entityA, 2);
-
-        entityB.getValueList().addAll(List.of(valueD, valueE, valueF));
-        valueD.updateShadows(entityB, 0);
-        valueE.updateShadows(entityB, 1);
-        valueF.updateShadows(entityB, 2);
-
-        var workingSolution = new TestdataShadowedFullSolution();
-        workingSolution.setCode("Solution");
-        workingSolution.setEntityList(List.of(entityA, entityB));
-        workingSolution.setValueList(List.of(valueA, valueB, valueC, valueD, valueE, valueF));
-
-        innerScoreDirector.setWorkingSolution(workingSolution);
-
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            var move = new TestdataShadowedFullMultiSwapListMove(entityA, entityB,
-                    List.of(List.of(valueE, valueF), List.of(valueA, valueB, valueC, valueD)),
-                    List.of(List.of(valueA, valueB, valueC, valueD), List.of(valueE, valueF)));
-            move.doMoveOnly(scoreDirector);
-            scoreDirector.triggerVariableListeners();
-        } catch (Exception e) {
-            fail(e);
-        }
     }
 
     @Test

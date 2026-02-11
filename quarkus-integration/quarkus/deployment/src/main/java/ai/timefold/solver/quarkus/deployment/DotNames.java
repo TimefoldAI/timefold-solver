@@ -22,7 +22,6 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
@@ -75,7 +74,6 @@ public final class DotNames {
     static final DotName PLANNING_VARIABLE_REFERENCE = DotName.createSimple(PlanningVariableReference.class.getName());
     static final DotName VALUE_RANGE_PROVIDER = DotName.createSimple(ValueRangeProvider.class.getName());
 
-    static final DotName CUSTOM_SHADOW_VARIABLE = DotName.createSimple(CustomShadowVariable.class.getName());
     static final DotName INDEX_SHADOW_VARIABLE = DotName.createSimple(IndexShadowVariable.class.getName());
     static final DotName INVERSE_RELATION_SHADOW_VARIABLE = DotName.createSimple(InverseRelationShadowVariable.class.getName());
     static final DotName NEXT_ELEMENT_SHADOW_VARIABLE = DotName.createSimple(NextElementShadowVariable.class.getName());
@@ -100,7 +98,6 @@ public final class DotNames {
             PLANNING_PIN_TO_INDEX,
             PLANNING_VARIABLE,
             PLANNING_LIST_VARIABLE,
-            CUSTOM_SHADOW_VARIABLE,
             INDEX_SHADOW_VARIABLE,
             INVERSE_RELATION_SHADOW_VARIABLE,
             NEXT_ELEMENT_SHADOW_VARIABLE,
@@ -125,7 +122,6 @@ public final class DotNames {
             PLANNING_LIST_VARIABLE,
             PLANNING_VARIABLE_REFERENCE,
             VALUE_RANGE_PROVIDER,
-            CUSTOM_SHADOW_VARIABLE,
             INDEX_SHADOW_VARIABLE,
             INVERSE_RELATION_SHADOW_VARIABLE,
             NEXT_ELEMENT_SHADOW_VARIABLE,
@@ -147,7 +143,6 @@ public final class DotNames {
         PLANNING_ENTITY(DotNames.PLANNING_ENTITY, PlanningEntity.class),
         PLANNING_VARIABLE(DotNames.PLANNING_VARIABLE, PlanningVariable.class),
         PLANNING_LIST_VARIABLE(DotNames.PLANNING_LIST_VARIABLE, PlanningListVariable.class),
-        CUSTOM_SHADOW_VARIABLE(DotNames.CUSTOM_SHADOW_VARIABLE, CustomShadowVariable.class),
         SHADOW_VARIABLE(DotNames.SHADOW_VARIABLE, ShadowVariable.class);
 
         private final DotName annotationDotName;

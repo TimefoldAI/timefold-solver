@@ -13,7 +13,6 @@ import jakarta.ws.rs.core.MediaType;
 
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.quarkus.it.devui.domain.StringLengthVariableListener;
 import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity;
 import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowSolution;
 import ai.timefold.solver.quarkus.it.devui.solver.TestdataStringLengthConstraintProvider;
@@ -34,8 +33,7 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
     @RegisterExtension
     static final QuarkusDevModeTest config = new QuarkusDevModeTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addClasses(StringLengthVariableListener.class,
-                            TestdataStringLengthShadowEntity.class, TestdataStringLengthShadowSolution.class,
+                    .addClasses(TestdataStringLengthShadowEntity.class, TestdataStringLengthShadowSolution.class,
                             TestdataStringLengthConstraintProvider.class,
                             TimefoldTestResource.class));
 

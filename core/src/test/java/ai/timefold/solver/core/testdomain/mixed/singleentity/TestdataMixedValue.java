@@ -25,9 +25,6 @@ public class TestdataMixedValue extends TestdataObject {
     @IndexShadowVariable(sourceVariableName = "valueList")
     private Integer index;
 
-    @ShadowVariable(variableListenerClass = TestdataMixedVariableListener.class, sourceVariableName = "index")
-    private Integer shadowVariableListenerValue;
-
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadingShadowValue")
     private Integer cascadingShadowVariableValue;
 
@@ -72,14 +69,6 @@ public class TestdataMixedValue extends TestdataObject {
 
     public void setIndex(Integer index) {
         this.index = index;
-    }
-
-    public Integer getShadowVariableListenerValue() {
-        return shadowVariableListenerValue;
-    }
-
-    public void setShadowVariableListenerValue(Integer shadowVariableListenerValue) {
-        this.shadowVariableListenerValue = shadowVariableListenerValue;
     }
 
     public Integer getCascadingShadowVariableValue() {

@@ -24,8 +24,8 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -243,7 +243,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     /**
      * Note: resetting the working solution does NOT substitute the calls to before/after methods of
      * the {@link ProblemChangeDirector} during {@link ProblemChange problem changes},
-     * as these calls are propagated to {@link InnerVariableListener variable listeners},
+     * as these calls are propagated to {@link VariableListener variable listeners},
      * which update shadow variables in the {@link PlanningSolution working solution} to keep it consistent.
      *
      * @param workingSolution the working solution to set

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import ai.timefold.solver.quarkus.testdomain.gizmo.DummyConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.gizmo.DummyVariableListener;
 import ai.timefold.solver.quarkus.testdomain.gizmo.TestDataKitchenSinkAutoDiscoverFieldSolution;
 import ai.timefold.solver.quarkus.testdomain.gizmo.TestDataKitchenSinkEntity;
 
@@ -22,8 +21,7 @@ class TimefoldProcessorGizmoKitchenSinkAutoDiscoverFieldTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestDataKitchenSinkAutoDiscoverFieldSolution.class,
                             TestDataKitchenSinkEntity.class,
-                            DummyConstraintProvider.class,
-                            DummyVariableListener.class))
+                            DummyConstraintProvider.class))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(UnsupportedOperationException.class)
                     .hasMessageContaining("autoDiscoverMemberType"));

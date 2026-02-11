@@ -22,7 +22,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <ChangeEvent_>
  */
 @NullMarked
-public interface InnerVariableListener<Solution_, ChangeEvent_ extends ChangeEvent> extends Closeable {
+public interface VariableListener<Solution_, ChangeEvent_ extends ChangeEvent> extends Closeable {
 
     void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector, ChangeEvent_ event);
 
@@ -49,7 +49,7 @@ public interface InnerVariableListener<Solution_, ChangeEvent_ extends ChangeEve
     }
 
     /**
-     * Called before this {@link InnerVariableListener} is thrown away and not used anymore.
+     * Called before this {@link VariableListener} is thrown away and not used anymore.
      */
     @Override
     default void close() {

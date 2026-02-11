@@ -1,5 +1,14 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -17,68 +26,11 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
-import ai.timefold.solver.core.testdomain.shadow.order.TestdataShadowVariableOrderEntity;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atMost;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 class VariableListenerSupportTest {
-
-    @Test
-    void shadowVariableListenerOrder() {
-        var entityDescriptor = TestdataShadowVariableOrderEntity.buildEntityDescriptor();
-        var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
-        var scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
-        when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
-
-        var registry = new NotifiableRegistry<>(solutionDescriptor);
-        var variableListenerSupport = new VariableListenerSupport<>(scoreDirector, registry, DefaultTopologicalOrderGraph::new);
-
-        variableListenerSupport.linkVariableListeners();
-
-        assertThat(registry.getAll())
-                .map(Object::toString)
-                .containsExactly(
-                        "(0) C",
-                        "(1) D",
-                        "(2) E",
-                        "(3) FG");
-
-        assertThat(registry.get(entityDescriptor))
-                .map(Object::toString)
-                .containsExactly(
-                        "(0) C",
-                        "(1) D",
-                        "(2) E",
-                        "(3) FG");
-
-        assertThat(registry.get(entityDescriptor.getVariableDescriptor("x6A")))
-                .map(VariableListenerNotifiable::toString)
-                .containsExactly("(0) C");
-        assertThat(registry.get(entityDescriptor.getVariableDescriptor("x5B")))
-                .map(VariableListenerNotifiable::toString)
-                .containsExactly("(2) E");
-        assertThat(registry.get(entityDescriptor.getVariableDescriptor("x3C")))
-                .map(VariableListenerNotifiable::toString)
-                .containsExactly("(1) D", "(2) E");
-        assertThat(registry.get(entityDescriptor.getVariableDescriptor("x1D")))
-                .isEmpty();
-        assertThat(registry.get(entityDescriptor.getVariableDescriptor("x2E")))
-                .map(VariableListenerNotifiable::toString)
-                .containsExactly("(3) FG");
-        assertThat(registry.get(entityDescriptor.getVariableDescriptor("x4F")))
-                .isEmpty();
-    }
 
     private static class MockTopologicalOrderGraph extends DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         Object[] nodeToEntities;

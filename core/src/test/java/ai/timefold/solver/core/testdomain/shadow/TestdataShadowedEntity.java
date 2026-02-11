@@ -2,15 +2,12 @@ package ai.timefold.solver.core.testdomain.shadow;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.testdomain.DummyVariableListener;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-
-import org.jspecify.annotations.NonNull;
 
 @PlanningEntity
 public class TestdataShadowedEntity extends TestdataObject {
@@ -48,7 +45,7 @@ public class TestdataShadowedEntity extends TestdataObject {
         this.value = value;
     }
 
-    @ShadowVariable(variableListenerClass = FirstShadowUpdatingVariableListener.class, sourceVariableName = "value")
+    @ShadowVariable(supplierName = "updateFirstShadow")
     public String getFirstShadow() {
         return firstShadow;
     }
@@ -61,33 +58,12 @@ public class TestdataShadowedEntity extends TestdataObject {
     // Complex methods
     // ************************************************************************
 
-    // ************************************************************************
-    // Static inner classes
-    // ************************************************************************
-
-    public static class FirstShadowUpdatingVariableListener
-            extends DummyVariableListener<TestdataShadowedSolution, TestdataShadowedEntity> {
-
-        @Override
-        public void afterEntityAdded(@NonNull ScoreDirector<TestdataShadowedSolution> scoreDirector,
-                @NonNull TestdataShadowedEntity entity) {
-            updateShadow(scoreDirector, entity);
+    @ShadowSources("value")
+    public String updateFirstShadow() {
+        if (value == null) {
+            return null;
         }
-
-        @Override
-        public void afterVariableChanged(@NonNull ScoreDirector<TestdataShadowedSolution> scoreDirector,
-                @NonNull TestdataShadowedEntity entity) {
-            updateShadow(scoreDirector, entity);
-        }
-
-        private void updateShadow(ScoreDirector<TestdataShadowedSolution> scoreDirector,
-                TestdataShadowedEntity entity) {
-            TestdataValue value = entity.getValue();
-            scoreDirector.beforeVariableChanged(entity, "firstShadow");
-            entity.setFirstShadow((value == null) ? null : value.getCode() + "/firstShadow");
-            scoreDirector.afterVariableChanged(entity, "firstShadow");
-        }
-
+        return value.getCode() + "/firstShadow";
     }
 
 }

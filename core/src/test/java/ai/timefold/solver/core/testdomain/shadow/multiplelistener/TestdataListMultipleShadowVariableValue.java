@@ -10,7 +10,6 @@ import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
@@ -32,8 +31,6 @@ public class TestdataListMultipleShadowVariableValue extends TestdataObject {
     private TestdataListMultipleShadowVariableValue next;
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer cascadeValue;
-    @ShadowVariable(variableListenerClass = TestdataListMultipleShadowVariableListener.class, sourceVariableName = "entity")
-    private Integer listenerValue;
     private final List<TestdataListMultipleShadowVariableEntity> entityHistory = new ArrayList<>();
     private final List<Integer> indexHistory = new ArrayList<>();
     private final List<TestdataListMultipleShadowVariableValue> previousHistory = new ArrayList<>();
@@ -95,17 +92,6 @@ public class TestdataListMultipleShadowVariableValue extends TestdataObject {
 
     public void updateCascadeValue() {
         this.cascadeValue = index + 10;
-    }
-
-    public Integer getListenerValue() {
-        if (listenerValue == null) {
-            return 0;
-        }
-        return listenerValue;
-    }
-
-    public void setListenerValue(Integer listenerValue) {
-        this.listenerValue = listenerValue;
     }
 
     public List<TestdataListMultipleShadowVariableEntity> getEntityHistory() {

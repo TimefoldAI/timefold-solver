@@ -1140,10 +1140,6 @@ class DefaultSolverTest {
                 .filter(e -> e.getValueList().isEmpty())
                 .count()).isEqualTo(expectedSize);
 
-        // Check custom listener execution
-        assertThat(solution.getValueList().stream().allMatch(v -> v.getShadowVariableListenerValue().equals(v.getIndex())))
-                .isTrue();
-
         // Check cascading shadow variable
         assertThat(solution.getValueList().stream().allMatch(v -> v.getCascadingShadowVariableValue().equals(v.getIndex() + 1)))
                 .isTrue();

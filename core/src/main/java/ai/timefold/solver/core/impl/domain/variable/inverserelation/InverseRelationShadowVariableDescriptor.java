@@ -13,8 +13,8 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -149,7 +149,7 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
         return new VariableListenerWithSources<>(buildVariableListener(), sourceVariableDescriptor).toCollection();
     }
 
-    private InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>> buildVariableListener() {
+    private VariableListener<Solution_, BasicVariableChangeEvent<Object>> buildVariableListener() {
         if (singleton) {
             throw new UnsupportedOperationException("Impossible state: Handled by %s."
                     .formatted(ListVariableStateSupply.class.getSimpleName()));

@@ -2,6 +2,7 @@ package ai.timefold.solver.quarkus.testdomain.shadowvariable;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
 @PlanningEntity
@@ -29,16 +30,21 @@ public class TestdataQuarkusShadowVariableEntity {
         this.value2 = value2;
     }
 
-    @ShadowVariable(variableListenerClass = TestdataQuarkusShadowVariableListener.class,
-            sourceVariableName = "value1")
-    @ShadowVariable(variableListenerClass = TestdataQuarkusShadowVariableListener.class,
-            sourceVariableName = "value2")
+    @ShadowVariable(supplierName = "updateValue1AndValue2")
     public String getValue1AndValue2() {
         return value1AndValue2;
     }
 
     public void setValue1AndValue2(String value1AndValue2) {
         this.value1AndValue2 = value1AndValue2;
+    }
+
+    @ShadowSources({ "value1", "value2" })
+    public String updateValue1AndValue2() {
+        if (value1 == null || value2 == null) {
+            return null;
+        }
+        return value1 + "+" + value2;
     }
 
 }

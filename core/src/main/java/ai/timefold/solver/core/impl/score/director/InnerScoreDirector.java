@@ -27,8 +27,8 @@ import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.MoveDirector;
@@ -315,7 +315,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void assertExpectedWorkingScore(InnerScore<Score_> expectedWorkingScore, Object completedAction);
 
     /**
-     * Asserts that if all {@link InnerVariableListener}s are forcibly triggered,
+     * Asserts that if all {@link VariableListener}s are forcibly triggered,
      * and therefore all shadow variables are updated if needed,
      * that none of the shadow variables of the {@link PlanningSolution working solution} change,
      * Then also asserts that the {@link Score} calculated for the {@link PlanningSolution working solution} afterwards

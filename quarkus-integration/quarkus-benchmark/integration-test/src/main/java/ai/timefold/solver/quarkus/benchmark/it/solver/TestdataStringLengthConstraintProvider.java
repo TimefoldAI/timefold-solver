@@ -19,7 +19,7 @@ public class TestdataStringLengthConstraintProvider implements ConstraintProvide
                         .penalize(HardSoftScore.ONE_HARD)
                         .asConstraint("Don't assign 2 entities the same value."),
                 factory.forEach(TestdataListValueShadowEntity.class)
-                        .reward(HardSoftScore.ONE_SOFT, a -> a.getLength())
+                        .reward(HardSoftScore.ONE_SOFT, TestdataListValueShadowEntity::getLength)
                         .asConstraint("Maximize value length")
         };
     }

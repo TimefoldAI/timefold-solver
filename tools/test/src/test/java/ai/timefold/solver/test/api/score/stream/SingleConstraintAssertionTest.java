@@ -105,39 +105,6 @@ class SingleConstraintAssertionTest {
                 .settingAllShadowVariables()
                 .indictsWith(solution.getValueList().get(0)))
                 .doesNotThrowAnyException();
-
-        // Custom listener
-        solution.getEntityList().get(0).setValueList(List.of(solution.getValueList().get(1)));
-        solution.getValueList().get(0).setEntity(null);
-        // Test listener penalty
-        assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::penalizeListener)
-                .givenSolution(solution)
-                .settingAllShadowVariables()
-                .penalizesBy(20)).doesNotThrowAnyException();
-
-        // Test listener reward
-        assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::rewardListener)
-                .givenSolution(solution)
-                .settingAllShadowVariables()
-                .rewardsWith(40)).doesNotThrowAnyException();
-
-        // Test listener justification
-        assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::penalizeListener)
-                .givenSolution(solution)
-                .settingAllShadowVariables()
-                .justifiesWith(DefaultConstraintJustification.of(SimpleScore.of(-20), solution.getValueList().get(1))))
-                .doesNotThrowAnyException();
-
-        // Test listener indictment
-        assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::penalizeListener)
-                .givenSolution(solution)
-                .settingAllShadowVariables()
-                .indictsWith(solution.getValueList().get(1)))
-                .doesNotThrowAnyException();
     }
 
     @Test

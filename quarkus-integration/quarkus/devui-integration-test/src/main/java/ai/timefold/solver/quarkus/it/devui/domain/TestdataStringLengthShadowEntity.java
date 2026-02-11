@@ -2,6 +2,7 @@ package ai.timefold.solver.quarkus.it.devui.domain;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
 @PlanningEntity
@@ -10,8 +11,7 @@ public class TestdataStringLengthShadowEntity {
     @PlanningVariable(valueRangeProviderRefs = "valueRange")
     private String value;
 
-    @ShadowVariable(variableListenerClass = StringLengthVariableListener.class,
-            sourceEntityClass = TestdataStringLengthShadowEntity.class, sourceVariableName = "value")
+    @ShadowVariable(supplierName = "updateLength")
     private Integer length;
 
     // ************************************************************************
@@ -32,6 +32,11 @@ public class TestdataStringLengthShadowEntity {
 
     public void setLength(Integer length) {
         this.length = length;
+    }
+
+    @ShadowSources("value")
+    public Integer updateLength() {
+        return value == null ? null : value.length();
     }
 
 }

@@ -16,7 +16,7 @@
   <!-- Don't pollute the test log with a stacktrace -->
   <logger name="ai.timefold.solver.benchmark.impl.DefaultPlannerBenchmark.singleBenchmarkRunnerException" level="error"/>
 
-  <root level="info">
+  <root level="debug">
     <appender-ref ref="asyncAppender" />
   </root>
 

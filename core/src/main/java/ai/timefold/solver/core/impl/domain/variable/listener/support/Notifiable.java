@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.VariableListener;
 
 /**
  * A notifiable’s purpose is to execute variable listener methods. This interface is the most
  * generalized form of a notifiable. It covers variable listener methods that are executed immediately
- * ({@link InnerVariableListener#resetWorkingSolution} and {@link InnerVariableListener#close}.
+ * ({@link VariableListener#resetWorkingSolution} and {@link VariableListener#close}.
  *
  * <p>
  * Specialized notifiables use {@link Notification}s to record planing variable changes and defer triggering of "after" methods

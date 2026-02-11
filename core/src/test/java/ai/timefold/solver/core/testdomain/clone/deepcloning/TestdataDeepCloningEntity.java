@@ -6,10 +6,8 @@ import java.util.Map;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.cloner.DeepPlanningClone;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.testdomain.DummyVariableListener;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
@@ -130,7 +128,6 @@ public class TestdataDeepCloningEntity extends TestdataObject {
     }
 
     @DeepPlanningClone
-    @ShadowVariable(variableListenerClass = DummyVariableListener.class, sourceVariableName = "value")
     public List<String> getShadowVariableList() {
         return shadowVariableList;
     }
@@ -140,7 +137,6 @@ public class TestdataDeepCloningEntity extends TestdataObject {
     }
 
     @DeepPlanningClone
-    @ShadowVariable(variableListenerClass = DummyVariableListener.class, sourceVariableName = "value")
     public Map<String, String> getShadowVariableMap() {
         return shadowVariableMap;
     }

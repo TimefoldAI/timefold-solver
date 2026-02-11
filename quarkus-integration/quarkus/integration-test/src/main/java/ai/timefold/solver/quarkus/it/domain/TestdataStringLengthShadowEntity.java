@@ -13,8 +13,7 @@ public class TestdataStringLengthShadowEntity implements TestdataStringLengthSha
 
     private List<String> valueList;
 
-    @ShadowVariable(variableListenerClass = StringLengthVariableListener.class,
-            sourceEntityClass = TestdataStringLengthShadowEntity.class, sourceVariableName = "value")
+    @ShadowVariable(supplierName = "updateLength")
     private Integer length;
 
     @ShadowVariable(supplierName = "processShadowVarWithParam")
@@ -43,6 +42,14 @@ public class TestdataStringLengthShadowEntity implements TestdataStringLengthSha
 
     public void setLength(Integer length) {
         this.length = length;
+    }
+
+    @ShadowSources("value")
+    public Integer updateLength() {
+        if (value == null) {
+            return null;
+        }
+        return value.length();
     }
 
     @Override

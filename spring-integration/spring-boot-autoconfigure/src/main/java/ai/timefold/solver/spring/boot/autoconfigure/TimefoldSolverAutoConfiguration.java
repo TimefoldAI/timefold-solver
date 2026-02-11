@@ -18,7 +18,6 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
@@ -82,7 +81,6 @@ public class TimefoldSolverAutoConfiguration
             PlanningPin.class,
             PlanningVariable.class,
             PlanningListVariable.class,
-            CustomShadowVariable.class,
             IndexShadowVariable.class,
             InverseRelationShadowVariable.class,
             NextElementShadowVariable.class,

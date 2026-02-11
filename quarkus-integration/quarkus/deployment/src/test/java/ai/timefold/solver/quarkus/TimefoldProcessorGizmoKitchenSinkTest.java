@@ -19,7 +19,6 @@ import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
 import ai.timefold.solver.quarkus.testdomain.gizmo.DummyConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.gizmo.DummyVariableListener;
 import ai.timefold.solver.quarkus.testdomain.gizmo.TestDataKitchenSinkEntity;
 import ai.timefold.solver.quarkus.testdomain.gizmo.TestDataKitchenSinkSolution;
 
@@ -38,8 +37,7 @@ class TimefoldProcessorGizmoKitchenSinkTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestDataKitchenSinkEntity.class,
                             TestDataKitchenSinkSolution.class,
-                            DummyConstraintProvider.class,
-                            DummyVariableListener.class));
+                            DummyConstraintProvider.class));
 
     @Inject
     SolverFactory<TestDataKitchenSinkSolution> solverFactory;

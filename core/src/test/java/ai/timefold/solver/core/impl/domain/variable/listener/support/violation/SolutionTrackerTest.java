@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -130,11 +130,11 @@ public class SolutionTrackerTest {
     void testBuildScoreCorruptionMessageGoodVariableListeners() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var supplyManager = Mockito.mock(SupplyManager.class);
-        var variableListeners = new ArrayList<InnerVariableListener<?, BasicVariableChangeEvent<?>>>();
+        var variableListeners = new ArrayList<VariableListener<?, BasicVariableChangeEvent<?>>>();
         Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
             var demand = invocation.getArgument(0, Demand.class);
             var supply = demand.createExternalizedSupply(supplyManager);
-            variableListeners.add((InnerVariableListener<?, BasicVariableChangeEvent<?>>) supply);
+            variableListeners.add((VariableListener<?, BasicVariableChangeEvent<?>>) supply);
             return supply;
         });
         var tracker = new SolutionTracker<>(solutionDescriptor, supplyManager);
@@ -197,11 +197,11 @@ public class SolutionTrackerTest {
     void testBuildScoreCorruptionMessageGoodForwardVariableListeners() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var supplyManager = Mockito.mock(SupplyManager.class);
-        var variableListeners = new ArrayList<InnerVariableListener<?, BasicVariableChangeEvent<?>>>();
+        var variableListeners = new ArrayList<VariableListener<?, BasicVariableChangeEvent<?>>>();
         Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
             var demand = invocation.getArgument(0, Demand.class);
             var supply = demand.createExternalizedSupply(supplyManager);
-            variableListeners.add((InnerVariableListener<?, BasicVariableChangeEvent<?>>) supply);
+            variableListeners.add((VariableListener<?, BasicVariableChangeEvent<?>>) supply);
             return supply;
         });
         SolutionTracker<TestdataSolution> tracker = new SolutionTracker<>(solutionDescriptor,
@@ -257,11 +257,11 @@ public class SolutionTrackerTest {
     void testBuildScoreCorruptionMessageGoodUndoVariableListeners() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var supplyManager = Mockito.mock(SupplyManager.class);
-        var variableListeners = new ArrayList<InnerVariableListener<?, BasicVariableChangeEvent<?>>>();
+        var variableListeners = new ArrayList<VariableListener<?, BasicVariableChangeEvent<?>>>();
         Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
             Demand<?> demand = invocation.getArgument(0, Demand.class);
             var supply = demand.createExternalizedSupply(supplyManager);
-            variableListeners.add((InnerVariableListener<?, BasicVariableChangeEvent<?>>) supply);
+            variableListeners.add((VariableListener<?, BasicVariableChangeEvent<?>>) supply);
             return supply;
         });
         var tracker = new SolutionTracker<>(solutionDescriptor,

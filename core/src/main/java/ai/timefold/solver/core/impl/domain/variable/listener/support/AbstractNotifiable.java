@@ -4,10 +4,10 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.InnerBasicVariableListener;
-import ai.timefold.solver.core.impl.domain.variable.InnerListVariableListener;
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.util.ListBasedScalingOrderedSet;
 
@@ -20,7 +20,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <Listener_> the variable listener type
  */
 @NullMarked
-abstract class AbstractNotifiable<Solution_, ChangeEvent_ extends ChangeEvent, Listener_ extends InnerVariableListener<Solution_, ChangeEvent_>>
+abstract class AbstractNotifiable<Solution_, ChangeEvent_ extends ChangeEvent, Listener_ extends VariableListener<Solution_, ChangeEvent_>>
         implements EntityNotifiable<Solution_> {
 
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
@@ -28,26 +28,26 @@ abstract class AbstractNotifiable<Solution_, ChangeEvent_ extends ChangeEvent, L
     private final Collection<Notification<Solution_, ChangeEvent_, Listener_>> notificationQueue;
     private final int globalOrder;
 
-    static <Solution_, ChangeEvent_ extends ChangeEvent, Listener_ extends InnerVariableListener<Solution_, ChangeEvent_>>
+    static <Solution_, ChangeEvent_ extends ChangeEvent, Listener_ extends VariableListener<Solution_, ChangeEvent_>>
             EntityNotifiable<Solution_> buildNotifiable(
                     InnerScoreDirector<Solution_, ?> scoreDirector,
                     Listener_ variableListener,
                     int globalOrder) {
-        if (variableListener instanceof InnerBasicVariableListener<?, ?> basicVariableListener) {
+        if (variableListener instanceof BasicVariableListener<?, ?> basicVariableListener) {
             return new VariableListenerNotifiable<>(
                     scoreDirector,
-                    (InnerBasicVariableListener<Solution_, Object>) basicVariableListener,
+                    (BasicVariableListener<Solution_, Object>) basicVariableListener,
                     variableListener.requiresUniqueEntityEvents() ? new ListBasedScalingOrderedSet<>() : new ArrayDeque<>(),
                     globalOrder);
-        } else if (variableListener instanceof InnerListVariableListener<?, ?, ?> listVariableListener) {
+        } else if (variableListener instanceof ListVariableListener<?, ?, ?> listVariableListener) {
             return new ListVariableListenerNotifiable<>(
                     scoreDirector,
-                    (InnerListVariableListener<Solution_, Object, Object>) listVariableListener,
+                    (ListVariableListener<Solution_, Object, Object>) listVariableListener,
                     new ArrayDeque<>(), globalOrder);
         } else {
             throw new IllegalArgumentException("Impossible state: InnerVariableListener (%s) must be an instance of %s or %s."
-                    .formatted(variableListener.getClass().getCanonicalName(), InnerBasicVariableListener.class.getSimpleName(),
-                            InnerListVariableListener.class.getSimpleName()));
+                    .formatted(variableListener.getClass().getCanonicalName(), BasicVariableListener.class.getSimpleName(),
+                            ListVariableListener.class.getSimpleName()));
         }
     }
 
@@ -62,7 +62,7 @@ abstract class AbstractNotifiable<Solution_, ChangeEvent_ extends ChangeEvent, L
     }
 
     @Override
-    public InnerVariableListener<Solution_, ?> getVariableListener() {
+    public VariableListener<Solution_, ?> getVariableListener() {
         return variableListener;
     }
 

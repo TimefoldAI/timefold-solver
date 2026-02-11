@@ -38,11 +38,6 @@ import ai.timefold.solver.core.testdomain.collection.TestdataEntityCollectionPro
 import ai.timefold.solver.core.testdomain.collection.TestdataEntityCollectionPropertySolution;
 import ai.timefold.solver.core.testdomain.collection.TestdataSetBasedEntity;
 import ai.timefold.solver.core.testdomain.collection.TestdataSetBasedSolution;
-import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowEntity;
-import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowExtendedShadowEntity;
-import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowShadowEntity;
-import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowSolution;
-import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowVariable;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedBaseEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedExtendedSolution;
@@ -1044,29 +1039,6 @@ public abstract class AbstractSolutionClonerTest {
             }
         }
 
-    }
-
-    @Test
-    void cloneExtendedShadowEntities() {
-        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(TestdataExtendedShadowSolution.class,
-                TestdataExtendedShadowEntity.class, TestdataExtendedShadowShadowEntity.class);
-        var cloner = createSolutionCloner(solutionDescriptor);
-
-        var entity0 = new TestdataExtendedShadowEntity(0);
-        entity0.myPlanningVariable = new TestdataExtendedShadowVariable(0);
-        var shadowEntity = new TestdataExtendedShadowExtendedShadowEntity(entity0);
-
-        var original = new TestdataExtendedShadowSolution(shadowEntity);
-        var clone = cloner.cloneSolution(original);
-
-        assertThat(clone.shadowEntityList)
-                .hasSize(1)
-                .isNotSameAs(original.shadowEntityList)
-                .first()
-                .isNotNull();
-
-        assertThat(clone.shadowEntityList.get(0))
-                .isNotSameAs(original.shadowEntityList.get(0));
     }
 
     private static class MaxStackFrameFinder {

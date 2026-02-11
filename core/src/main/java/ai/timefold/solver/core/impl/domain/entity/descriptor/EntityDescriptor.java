@@ -30,7 +30,6 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
@@ -47,8 +46,6 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.CompositeValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ShadowVariablesInconsistentVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
@@ -87,8 +84,6 @@ public class EntityDescriptor<Solution_> {
             PreviousElementShadowVariable.class,
             NextElementShadowVariable.class,
             ShadowVariable.class,
-            ShadowVariable.List.class,
-            CustomShadowVariable.class,
             CascadingUpdateShadowVariable.class,
             ShadowVariablesInconsistent.class
     };
@@ -414,16 +409,9 @@ public class EntityDescriptor<Solution_> {
             var variableDescriptor =
                     new NextElementShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
-        } else if (variableAnnotationClass.equals(ShadowVariable.class)
-                || variableAnnotationClass.equals(ShadowVariable.List.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor;
-            var annotation = memberAccessor.getAnnotation(ShadowVariable.class);
-            if (annotation != null && !annotation.supplierName().isEmpty()) {
-                variableDescriptor =
-                        new DeclarativeShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
-            } else {
-                variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
-            }
+        } else if (variableAnnotationClass.equals(ShadowVariable.class)) {
+            ShadowVariableDescriptor<Solution_> variableDescriptor =
+                    new DeclarativeShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)) {
             var variableDescriptor =
@@ -443,10 +431,6 @@ public class EntityDescriptor<Solution_> {
             var variableDescriptor = new ShadowVariablesInconsistentVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
                     memberAccessor);
             shadowVariablesInconsistentDescriptor = variableDescriptor;
-            declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
-        } else if (variableAnnotationClass.equals(CustomShadowVariable.class)) {
-            var variableDescriptor =
-                    new LegacyCustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else {
             throw new IllegalStateException("The variableAnnotationClass (%s) is not implemented."

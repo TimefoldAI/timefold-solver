@@ -21,8 +21,7 @@ import java.lang.annotation.Target;
  * Distinct {@code targetMethod} can be defined, but there is no guarantee about the order in which they are executed.
  * Therefore, caution is required when using multiple {@code targetMethod} per model.
  * <p>
- * Except for {@link PiggybackShadowVariable},
- * the use of {@link CascadingUpdateShadowVariable} as a source for other variables,
+ * The use of {@link CascadingUpdateShadowVariable} as a source for other variables,
  * such as {@link ShadowVariable}, is not allowed.
  * <p>
  * Important: it must only change the shadow variable(s) for which it's configured.

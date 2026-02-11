@@ -7,10 +7,8 @@ import java.util.Map;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.cloner.DeepPlanningClone;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.testdomain.DummyVariableListener;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
@@ -29,10 +27,8 @@ public class TestdataFieldAnnotatedDeepCloningEntity extends TestdataObject {
     @PlanningVariable(valueRangeProviderRefs = "valueRange")
     private TestdataValue value;
     @DeepPlanningClone
-    @ShadowVariable(variableListenerClass = DummyVariableListener.class, sourceVariableName = "value")
     private List<String> shadowVariableList;
     @DeepPlanningClone
-    @ShadowVariable(variableListenerClass = DummyVariableListener.class, sourceVariableName = "value")
     private Map<String, String> shadowVariableMap;
 
     @DeepPlanningClone

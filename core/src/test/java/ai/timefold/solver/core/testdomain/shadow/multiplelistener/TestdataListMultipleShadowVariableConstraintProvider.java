@@ -12,10 +12,7 @@ public final class TestdataListMultipleShadowVariableConstraintProvider implemen
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
                 penalizeCascadingUpdate(constraintFactory),
-                rewardCascadingUpdate(constraintFactory),
-                penalizeListener(constraintFactory),
-                rewardListener(constraintFactory),
-
+                rewardCascadingUpdate(constraintFactory)
         };
     }
 
@@ -31,15 +28,4 @@ public final class TestdataListMultipleShadowVariableConstraintProvider implemen
                 .asConstraint("Reward by cascade values");
     }
 
-    public Constraint penalizeListener(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(TestdataListMultipleShadowVariableValue.class)
-                .penalize(SimpleScore.ONE, TestdataListMultipleShadowVariableValue::getListenerValue)
-                .asConstraint("Penalize by listener values");
-    }
-
-    public Constraint rewardListener(ConstraintFactory constraintFactory) {
-        return constraintFactory.forEach(TestdataListMultipleShadowVariableValue.class)
-                .reward(SimpleScore.ONE, v -> v.getListenerValue() * 2)
-                .asConstraint("Reward by listener values");
-    }
 }
