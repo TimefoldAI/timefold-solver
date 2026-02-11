@@ -111,7 +111,7 @@
                     
           <xs:element minOccurs="0" name="constraintStreamAutomaticNodeSharing" type="xs:boolean"/>
                     
-          <xs:element minOccurs="0" name="constraintStreamProfilingMode" type="tns:constraintProfilingMode"/>
+          <xs:element minOccurs="0" name="constraintStreamProfilingEnabled" type="xs:boolean"/>
                     
           <xs:element minOccurs="0" name="incrementalScoreCalculatorClass" type="xs:string"/>
                     
@@ -1754,20 +1754,6 @@
       <xs:enumeration value="BAVET"/>
             
       <xs:enumeration value="DROOLS"/>
-          
-    </xs:restriction>
-      
-  </xs:simpleType>
-    
-  <xs:simpleType name="constraintProfilingMode">
-        
-    <xs:restriction base="xs:string">
-            
-      <xs:enumeration value="NONE"/>
-            
-      <xs:enumeration value="BY_METHOD"/>
-            
-      <xs:enumeration value="BY_LINE"/>
           
     </xs:restriction>
       
