@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
-import ai.timefold.solver.core.api.solver.RecommendedFit;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolutionUpdatePolicy;
@@ -150,15 +149,6 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
             ScoreAnalysisFetchPolicy fetchPolicy) {
         var assigner = new Assigner<Solution_, Score_, RecommendedAssignment<Out_, Score_>, In_, Out_>(solverFactory,
                 propositionFunction, DefaultRecommendedAssignment::new, fetchPolicy, solution, evaluatedEntityOrElement);
-        return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, ConstraintMatchPolicy.match(fetchPolicy),
-                true);
-    }
-
-    @Override
-    public <In_, Out_> List<RecommendedFit<Out_, Score_>> recommendFit(Solution_ solution, In_ fittedEntityOrElement,
-            Function<In_, @Nullable Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
-        var assigner = new Assigner<Solution_, Score_, RecommendedFit<Out_, Score_>, In_, Out_>(solverFactory,
-                propositionFunction, DefaultRecommendedFit::new, fetchPolicy, solution, fittedEntityOrElement);
         return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, ConstraintMatchPolicy.match(fetchPolicy),
                 true);
     }
