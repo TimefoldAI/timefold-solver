@@ -18,14 +18,14 @@
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
-    This module contains the benchmarker aggregator,
+    This module contains the benchmark aggregator,
     building blocks of a desktop application that would allow to merge different benchmark reports.
     This module is not covered by our backwards compatibility promise.
   </description>
   <url>https://solver.timefold.ai</url>
 
   <properties>
-    <java.module.name>ai.timefold.solver.benchmark</java.module.name>
+    <java.module.name>ai.timefold.solver.benchmark.aggregator</java.module.name>
   </properties>
 
   <dependencies>

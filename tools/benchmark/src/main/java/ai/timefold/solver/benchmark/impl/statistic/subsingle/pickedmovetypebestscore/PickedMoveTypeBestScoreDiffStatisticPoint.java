@@ -10,7 +10,7 @@ public class PickedMoveTypeBestScoreDiffStatisticPoint extends StatisticPoint {
     private final long timeMillisSpent;
     /**
      * Not a {@link Class}{@code <}{@link Move}{@code >} because {@link CompositeMove}s need to be atomized
-     * and because that {@link Class} might no longer exist when benchmark aggregator runs.
+     * and because that {@link Class} might no longer exist when the benchmark aggregator runs.
      */
     private final String moveType;
     private final Score bestScoreDiff;
