@@ -4,7 +4,7 @@
 # The timefold.ai website can then be refreshed from the release branch and/or tag.
 name: timefold-solver
 title: Timefold Solver ${project.version}
-version: latest
+version: 1.x
 asciidoc:
   attributes:
     timefold-solver-version: ${project.version}
