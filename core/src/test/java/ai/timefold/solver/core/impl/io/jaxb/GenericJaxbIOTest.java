@@ -47,7 +47,7 @@ class GenericJaxbIOTest {
         assertThatExceptionOfType(TimefoldXmlSerializationException.class)
                 .isThrownBy(() -> xmlIO.readOverridingNamespace(new StringReader(maliciousXml)))
                 .withRootCauseExactlyInstanceOf(SAXParseException.class)
-                .withStackTraceContaining("DOCTYPE is disallowed");
+                .withStackTraceContaining("disallow-doctype-decl");
     }
 
     @XmlRootElement
