@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Represents the result of the Assignment Recommendation API,
- * see {@link SolutionManager#recommendFit(Object, Object, Function)}.
+ * see {@link SolutionManager#recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)}.
  *
  * <p>
  * In order to be fully serializable to JSON, propositions must be fully serializable to JSON.

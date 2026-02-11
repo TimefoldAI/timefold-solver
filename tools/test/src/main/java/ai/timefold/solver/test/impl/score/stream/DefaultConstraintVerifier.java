@@ -18,7 +18,6 @@ public final class DefaultConstraintVerifier<ConstraintProvider_ extends Constra
     private final ConstraintProvider_ constraintProvider;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     /**
-     * {@link ConstraintVerifier} is mutable.
      * Since this method can be run at any time, possibly invalidating the pre-built score director factories,
      * the easiest way of dealing with the issue is to keep an internal immutable constraint verifier instance
      * and clearing it every time the configuration changes.

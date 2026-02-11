@@ -93,7 +93,7 @@ public class TimefoldJacksonModule extends SimpleModule {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private TimefoldJacksonModule() {
+    public TimefoldJacksonModule() {
         super("Timefold");
         // For non-subtype Score fields/properties, we also need to record the score type
         addSerializer(Score.class, new PolymorphicScoreJacksonSerializer());

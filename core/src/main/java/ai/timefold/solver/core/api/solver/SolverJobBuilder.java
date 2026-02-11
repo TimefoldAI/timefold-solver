@@ -12,7 +12,6 @@ import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.SolverJobStartedEvent;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.NullMarked;
 
 /**
  * Provides a fluent contract that allows customization and submission of planning problems to solve.
@@ -135,28 +134,4 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
     @NonNull
     SolverJob<Solution_, ProblemId_> run();
 
-    /**
-     * A consumer that accepts the first initialized solution.
-     *
-     * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
-     */
-    @NullMarked
-    interface FirstInitializedSolutionConsumer<Solution_> {
-
-        /**
-         * Accepts the first solution after initialization.
-         *
-         * @param solution the first solution after initialization phase(s) finished
-         * @param isTerminatedEarly false in most common cases.
-         *        True if the solver was terminated early, before the solution could be fully initialized,
-         *        typically as a result of construction heuristic running for too long
-         *        and tripping a time-based termination condition.
-         *        In that case, there will likely be no other phase after this one
-         *        and the solver will terminate as well, without launching any optimizing phase.
-         *        Therefore, the solution captured with {@link SolverJobBuilder#withBestSolutionConsumer(Consumer)}
-         *        will likely be unchanged from this one.
-         */
-        void accept(Solution_ solution, boolean isTerminatedEarly);
-
-    }
 }
