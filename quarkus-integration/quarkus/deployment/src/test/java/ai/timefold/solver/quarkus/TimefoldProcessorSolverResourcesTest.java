@@ -102,7 +102,6 @@ class TimefoldProcessorSolverResourcesTest {
         assertThat(solverConfig.getNearbyDistanceMeterClass()).isNull();
         assertThat(solverConfig.getDaemon()).isTrue();
         assertThat(solverConfig.getDomainAccessType()).isEqualTo(DomainAccessType.REFLECTION);
-        assertThat(solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamImplType()).isNull();
         assertThat(solver1Factory).isNotNull();
         assertThat(solverConfig.getTerminationConfig().getSpentLimit()).isEqualTo(Duration.ofHours(4));
         assertThat(solverConfig.getTerminationConfig().getUnimprovedSpentLimit()).isEqualTo(Duration.ofHours(5));

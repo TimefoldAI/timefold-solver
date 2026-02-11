@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -44,12 +43,6 @@ public enum SolverProperty {
                             "Cannot find the Nearby Selection Meter class (%s).".formatted(value.toString()));
                 }
             }),
-    /**
-     * @deprecated No longer used.
-     */
-    @Deprecated(forRemoval = true, since = "1.4.0")
-    CONSTRAINT_STREAM_IMPL_TYPE("constraint-stream-impl-type", SolverProperties::setConstraintStreamImplType,
-            value -> ConstraintStreamImplType.valueOf(value.toString())),
     CONSTRAINT_STREAM_PROFILING_ENABLED("constraint-stream-profiling-enabled",
             SolverProperties::setConstraintStreamProfilingEnabled,
             value -> Boolean.valueOf(value.toString())),

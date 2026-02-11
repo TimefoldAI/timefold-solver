@@ -6,7 +6,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactory;
@@ -57,13 +56,6 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
 
     protected AbstractScoreDirectorFactory<Solution_, Score_, ?> decideMultipleScoreDirectorFactories(
             SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
-        if (!ConfigUtils.isEmptyCollection(config.getScoreDrlList())) {
-            throw new IllegalStateException(
-                    """
-                            DRL constraints requested via scoreDrlList (%s), but this is no longer supported in Timefold Solver 0.9 and later.
-                            Maybe upgrade from scoreDRL to ConstraintStreams using this recipe: https://timefold.ai/blog/migrating-score-drl-to-constraint-streams"""
-                            .formatted(config.getScoreDrlList()));
-        }
         assertCorrectDirectorFactory(config);
 
         // At this point, we are guaranteed to have at most one score director factory selected.

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
@@ -235,7 +234,6 @@ class TimefoldSolverWithSolverConfigXmlAutoConfigurationTest {
                     assertTrue(solverConfig.getDaemon());
                     assertEquals("2", solverConfig.getMoveThreadCount());
                     assertEquals(DomainAccessType.REFLECTION, solverConfig.getDomainAccessType());
-                    assertNull(solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamImplType());
                     assertEquals(Duration.ofHours(4), solverConfig.getTerminationConfig().getSpentLimit());
                     assertEquals(Duration.ofHours(5), solverConfig.getTerminationConfig().getUnimprovedSpentLimit());
                     assertEquals(SimpleScore.of(0).toString(), solverConfig.getTerminationConfig().getBestScoreLimit());
