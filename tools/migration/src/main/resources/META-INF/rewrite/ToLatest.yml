@@ -23,7 +23,6 @@ recipeList:
       newMethodName: forEachUniquePair
   - ai.timefold.solver.migration.v8.ScoreGettersRecipe
   - ai.timefold.solver.migration.v8.ConstraintRefRecipe
-  - ai.timefold.solver.migration.v8.SolverManagerBuilderRecipe
   - ai.timefold.solver.migration.v8.NullableRecipe
   - ai.timefold.solver.migration.v8.SingleConstraintAssertionMethodsRecipe
   - ai.timefold.solver.migration.v8.AsConstraintRecipe
