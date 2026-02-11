@@ -11,7 +11,6 @@ import java.time.Duration;
 import java.util.Collections;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -267,7 +266,6 @@ class TimefoldSolverWithSolverConfigXmlAutoConfigurationTest {
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                     assertThat(context.getBean(SolverManager.class)).isNotNull();
                     assertThat(context.getBean(SolutionManager.class)).isNotNull();
-                    assertThat(context.getBean(ScoreManager.class)).isNotNull();
                     assertThat(context.getBean(ConstraintVerifier.class)).isNotNull();
                 });
     }
@@ -366,8 +364,6 @@ class TimefoldSolverWithSolverConfigXmlAutoConfigurationTest {
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
                     assertThat(solverFactory).isNotNull();
-                    var scoreManager = context.getBean(ScoreManager.class);
-                    assertThat(scoreManager).isNotNull();
                     SolutionManager<TestdataSpringSolution, SimpleScore> solutionManager =
                             context.getBean(SolutionManager.class);
                     assertThat(((DefaultSolverFactory) solverFactory).getScoreDirectorFactory())

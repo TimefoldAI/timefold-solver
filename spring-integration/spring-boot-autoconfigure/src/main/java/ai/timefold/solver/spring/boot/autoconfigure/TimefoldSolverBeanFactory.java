@@ -3,7 +3,6 @@ package ai.timefold.solver.spring.boot.autoconfigure;
 import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
@@ -106,19 +105,6 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
             solverManagerConfig.setParallelSolverCount(solverManagerProperties.getParallelSolverCount());
         }
         return SolverManager.create(solverFactory, solverManagerConfig);
-    }
-
-    @Bean
-    @Lazy
-    @ConditionalOnMissingBean
-    @Deprecated(forRemoval = true)
-    /**
-     * @deprecated Use {@link SolutionManager} instead.
-     */
-    public <Solution_, Score_ extends Score<Score_>> ScoreManager<Solution_, Score_> scoreManager() {
-        failInjectionWithMultipleSolvers(ScoreManager.class.getName());
-        SolverFactory<Solution_> solverFactory = context.getBean(SolverFactory.class);
-        return ScoreManager.create(solverFactory);
     }
 
     @Bean

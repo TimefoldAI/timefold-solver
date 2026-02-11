@@ -10,7 +10,6 @@ import java.util.stream.IntStream;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -45,8 +44,6 @@ class TimefoldProcessorExtendedSolutionSolveTest {
     @Inject
     SolverManager<TestdataQuarkusSolution, Long> solverManager;
     @Inject
-    ScoreManager<TestdataQuarkusSolution, SimpleScore> scoreManager;
-    @Inject
     SolutionManager<TestdataQuarkusSolution, SimpleScore> solutionManager;
 
     @Test
@@ -58,7 +55,6 @@ class TimefoldProcessorExtendedSolutionSolveTest {
         assertNotNull(solverManager);
         // There is only one SolverFactory instance
         assertSame(solverFactory, ((DefaultSolverManager<TestdataQuarkusSolution, Long>) solverManager).getSolverFactory());
-        assertNotNull(scoreManager);
     }
 
     @Test

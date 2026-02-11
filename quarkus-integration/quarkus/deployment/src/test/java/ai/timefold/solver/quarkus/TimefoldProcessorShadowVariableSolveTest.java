@@ -10,7 +10,6 @@ import java.util.stream.IntStream;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -46,8 +45,6 @@ class TimefoldProcessorShadowVariableSolveTest {
     SolverFactory<TestdataQuarkusShadowVariableSolution> solverFactory;
     @Inject
     SolverManager<TestdataQuarkusShadowVariableSolution, Long> solverManager;
-    @Inject
-    ScoreManager<TestdataQuarkusShadowVariableSolution, SimpleScore> scoreManager;
     @Inject
     SolutionManager<TestdataQuarkusShadowVariableSolution, SimpleScore> solutionManager;
 

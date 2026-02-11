@@ -7,5 +7,6 @@
 - [ ] `webui` module removal.
 - [ ] `benchmark-aggregator` split into separate module.
 - [ ] `benchmark` no longer has the method to open in a browser.
+- [ ] Migration recipe must mention to first run Solver migration to 1.x, and only then to 2.0.0.
 
 Remove this file when done.

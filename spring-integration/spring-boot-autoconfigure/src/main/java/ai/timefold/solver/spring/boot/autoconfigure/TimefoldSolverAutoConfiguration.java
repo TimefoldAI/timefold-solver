@@ -27,7 +27,6 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -70,8 +69,8 @@ import org.springframework.core.NativeDetector;
 import org.springframework.core.env.Environment;
 
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass({ SolverConfig.class, SolverFactory.class, ScoreManager.class, SolutionManager.class, SolverManager.class })
-@ConditionalOnMissingBean({ SolverConfig.class, SolverFactory.class, ScoreManager.class, SolutionManager.class,
+@ConditionalOnClass({ SolverConfig.class, SolverFactory.class, SolutionManager.class, SolverManager.class })
+@ConditionalOnMissingBean({ SolverConfig.class, SolverFactory.class, SolutionManager.class,
         SolverManager.class })
 @EnableConfigurationProperties({ TimefoldProperties.class })
 public class TimefoldSolverAutoConfiguration

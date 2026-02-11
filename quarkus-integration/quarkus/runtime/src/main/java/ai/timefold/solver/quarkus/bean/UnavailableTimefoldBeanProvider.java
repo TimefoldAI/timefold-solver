@@ -5,7 +5,6 @@ import jakarta.enterprise.inject.Produces;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
@@ -42,103 +41,6 @@ public class UnavailableTimefoldBeanProvider {
     @Produces
     <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManager() {
         throw createException(SolverManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, SimpleScore> scoreManager_workaroundSimpleScore() {
-        throw createException(ScoreManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, SimpleLongScore> scoreManager_workaroundSimpleLongScore() {
-        throw createException(ScoreManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, SimpleBigDecimalScore> scoreManager_workaroundSimpleBigDecimalScore() {
-        throw createException(ScoreManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardSoftScore> scoreManager_workaroundHardSoftScore() {
-        throw createException(ScoreManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardSoftLongScore> scoreManager_workaroundHardSoftLongScore() {
-        throw createException(ScoreManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardSoftBigDecimalScore> scoreManager_workaroundHardSoftBigDecimalScore() {
-        throw createException(ScoreManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardMediumSoftScore> scoreManager_workaroundHardMediumSoftScore() {
-        throw createException(ScoreManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardMediumSoftLongScore> scoreManager_workaroundHardMediumSoftLongScore() {
-        throw createException(ScoreManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, HardMediumSoftBigDecimalScore>
-            scoreManager_workaroundHardMediumSoftBigDecimalScore() {
-        throw createException(ScoreManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, BendableScore> scoreManager_workaroundBendableScore() {
-        throw createException(ScoreManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, BendableLongScore> scoreManager_workaroundBendableLongScore() {
-        throw createException(ScoreManager.class);
-    }
-
-    @Deprecated(forRemoval = true)
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> ScoreManager<Solution_, BendableBigDecimalScore> scoreManager_workaroundBendableBigDecimalScore() {
-        throw createException(ScoreManager.class);
     }
 
     @DefaultBean
