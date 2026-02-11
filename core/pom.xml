@@ -140,26 +140,25 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>com.coderplus.maven.plugins</groupId>
-        <artifactId>copy-rename-maven-plugin</artifactId>
-        <version>${version.copy-rename.plugin}</version>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>${version.antrun.plugin}</version>
         <executions>
           <execution>
             <id>copy-solver-xsd</id>
             <phase>process-resources</phase>
             <goals>
-              <goal>copy</goal>
+              <goal>run</goal>
             </goals>
             <configuration>
-              <sourceFile>${project.build.outputDirectory}/${schema.filename.solver.intermediary}</sourceFile>
-              <destinationFile>${project.basedir}/src/main/resources/${schema.filename.solver}</destinationFile>
+              <target>
+                <copy file="${project.build.outputDirectory}/${schema.filename.solver.intermediary}" tofile="${project.basedir}/src/main/resources/${schema.filename.solver}"/>
+              </target>
             </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
   </build>
-
   <profiles>
     <profile>
       <id>check-xsd-changes</id>
