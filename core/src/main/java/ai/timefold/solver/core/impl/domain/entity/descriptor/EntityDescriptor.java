@@ -410,7 +410,7 @@ public class EntityDescriptor<Solution_> {
                     new NextElementShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(ShadowVariable.class)) {
-            ShadowVariableDescriptor<Solution_> variableDescriptor =
+            var variableDescriptor =
                     new DeclarativeShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)) {

@@ -29,32 +29,25 @@ abstract class AbstractNotifiable<Solution_, ChangeEvent_ extends ChangeEvent, L
     private final int globalOrder;
 
     static <Solution_, ChangeEvent_ extends ChangeEvent, Listener_ extends VariableListener<Solution_, ChangeEvent_>>
-            EntityNotifiable<Solution_> buildNotifiable(
-                    InnerScoreDirector<Solution_, ?> scoreDirector,
-                    Listener_ variableListener,
-                    int globalOrder) {
+            EntityNotifiable<Solution_>
+            buildNotifiable(InnerScoreDirector<Solution_, ?> scoreDirector, Listener_ variableListener, int globalOrder) {
         if (variableListener instanceof BasicVariableListener<?, ?> basicVariableListener) {
-            return new VariableListenerNotifiable<>(
-                    scoreDirector,
+            return new VariableListenerNotifiable<>(scoreDirector,
                     (BasicVariableListener<Solution_, Object>) basicVariableListener,
                     variableListener.requiresUniqueEntityEvents() ? new ListBasedScalingOrderedSet<>() : new ArrayDeque<>(),
                     globalOrder);
         } else if (variableListener instanceof ListVariableListener<?, ?, ?> listVariableListener) {
-            return new ListVariableListenerNotifiable<>(
-                    scoreDirector,
-                    (ListVariableListener<Solution_, Object, Object>) listVariableListener,
-                    new ArrayDeque<>(), globalOrder);
+            return new ListVariableListenerNotifiable<>(scoreDirector,
+                    (ListVariableListener<Solution_, Object, Object>) listVariableListener, new ArrayDeque<>(), globalOrder);
         } else {
-            throw new IllegalArgumentException("Impossible state: InnerVariableListener (%s) must be an instance of %s or %s."
-                    .formatted(variableListener.getClass().getCanonicalName(), BasicVariableListener.class.getSimpleName(),
-                            ListVariableListener.class.getSimpleName()));
+            throw new IllegalArgumentException("Impossible state: %s (%s) must be an instance of %s or %s.".formatted(
+                    VariableListener.class.getSimpleName(), variableListener.getClass().getCanonicalName(),
+                    BasicVariableListener.class.getSimpleName(), ListVariableListener.class.getSimpleName()));
         }
     }
 
-    AbstractNotifiable(InnerScoreDirector<Solution_, ?> scoreDirector,
-            Listener_ variableListener,
-            Collection<Notification<Solution_, ChangeEvent_, Listener_>> notificationQueue,
-            int globalOrder) {
+    AbstractNotifiable(InnerScoreDirector<Solution_, ?> scoreDirector, Listener_ variableListener,
+            Collection<Notification<Solution_, ChangeEvent_, Listener_>> notificationQueue, int globalOrder) {
         this.scoreDirector = scoreDirector;
         this.variableListener = variableListener;
         this.notificationQueue = notificationQueue;
