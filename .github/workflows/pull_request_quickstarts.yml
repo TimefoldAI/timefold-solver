@@ -8,6 +8,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main, '*.x']
+    branches-ignore: ['1.*'] # ignore the CI for the 1.x branches
     types:
       - opened
       - reopened
