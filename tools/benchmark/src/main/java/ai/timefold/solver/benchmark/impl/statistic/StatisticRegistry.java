@@ -30,7 +30,6 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
         implements PhaseLifecycleListener<Solution_> {
 
-    private static final String CONSTRAINT_PACKAGE_TAG = "constraint.package";
     private static final String CONSTRAINT_NAME_TAG = "constraint.name";
 
     List<Consumer<SolverScope<Solution_>>> solverMeterListenerList = new ArrayList<>();
@@ -109,14 +108,13 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
         // Add the constraint ids from the meter ids
         getMeterIds(metric, runId)
                 .stream()
-                .map(meterId -> ConstraintRef.of(meterId.getTag(CONSTRAINT_PACKAGE_TAG), meterId.getTag(CONSTRAINT_NAME_TAG)))
+                .map(meterId -> ConstraintRef.of(meterId.getTag(CONSTRAINT_NAME_TAG)))
                 .distinct()
                 .forEach(constraintRef -> {
-                    var constraintMatchTotalRunId = runId.and(CONSTRAINT_PACKAGE_TAG, constraintRef.packageName())
-                            .and(CONSTRAINT_NAME_TAG, constraintRef.constraintName());
-                    // Get the score from the corresponding constraint package and constraint name meters
+                    var constraintMatchTotalRunId = runId.and(CONSTRAINT_NAME_TAG, constraintRef.constraintName());
+                    // Get the score from the corresponding constraint name meters
                     extractScoreFromMeters(metric, constraintMatchTotalRunId,
-                            // Get the count gauge (add constraint package and constraint name to the run tags)
+                            // Get the count gauge (add constraint name to the run tags)
                             score -> {
                                 var count = SolverMetricUtil.getGaugeValue(this, SolverMetricUtil.getGaugeName(metric, "count"),
                                         constraintMatchTotalRunId);

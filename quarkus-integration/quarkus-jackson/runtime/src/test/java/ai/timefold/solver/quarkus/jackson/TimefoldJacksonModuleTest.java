@@ -71,8 +71,8 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
         objectMapper.registerModule(TimefoldJacksonModule.createModule());
 
-        var constraintRef1 = ConstraintRef.of("packageB", "constraint1");
-        var constraintRef2 = ConstraintRef.of("packageA", "constraint2");
+        var constraintRef1 = ConstraintRef.of("constraint1");
+        var constraintRef2 = ConstraintRef.of("constraint2");
         var constraintAnalysis1 =
                 new ConstraintAnalysis<>(constraintRef1, HardSoftScore.ofSoft(1), HardSoftScore.ofSoft(2), null);
         var constraintAnalysis2 =
@@ -89,13 +89,11 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                            "score" : "1hard/2soft",
                            "initialized" : true,
                            "constraints" : [ {
-                             "package" : "packageA",
                              "name" : "constraint2",
                              "weight" : "1hard/0soft",
                              "score" : "1hard/0soft",
                              "matchCount" : 2
                            }, {
-                             "package" : "packageB",
                              "name" : "constraint1",
                              "weight" : "0hard/1soft",
                              "score" : "0hard/2soft"
@@ -124,8 +122,8 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
     }
 
     private static ScoreAnalysis<HardSoftScore> getScoreAnalysis() {
-        var constraintRef1 = ConstraintRef.of("package1", "constraint1");
-        var constraintRef2 = ConstraintRef.of("package2", "constraint2");
+        var constraintRef1 = ConstraintRef.of("constraint1");
+        var constraintRef2 = ConstraintRef.of("constraint2");
         var matchAnalysis1 = new MatchAnalysis<>(constraintRef1, HardSoftScore.ofHard(1),
                 DefaultConstraintJustification.of(HardSoftScore.ofHard(1), "A", "B"));
         var matchAnalysis2 = new MatchAnalysis<>(constraintRef1, HardSoftScore.ofHard(1),
@@ -151,7 +149,6 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                   "score" : "2hard/4soft",
                   "initialized" : true,
                   "constraints" : [ {
-                    "package" : "package1",
                     "name" : "constraint1",
                     "weight" : "1hard/0soft",
                     "score" : "2hard/0soft",
@@ -165,7 +162,6 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                      ],
                     "matchCount" : 2
                   }, {
-                    "package" : "package2",
                     "name" : "constraint2",
                     "weight" : "0hard/1soft",
                     "score" : "0hard/4soft",

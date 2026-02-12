@@ -73,9 +73,7 @@ public class TestdataShadowedIncrementalScoreCalculator
     }
 
     private DefaultConstraintMatchTotal<SimpleScore> update() {
-        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(
-                ConstraintRef.of(getClass().getPackageName(), "testConstraint"),
-                SimpleScore.ONE);
+        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(ConstraintRef.of("testConstraint"), SimpleScore.ONE);
         this.indictmentMap = new HashMap<>();
         for (TestdataShadowedEntity left : workingSolution.getEntityList()) {
             TestdataValue value = left.getValue();

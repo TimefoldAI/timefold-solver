@@ -36,8 +36,6 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -60,7 +58,6 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpStrategyResolver;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
-import ai.timefold.solver.core.impl.domain.solution.ConstraintConfigurationBasedConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.OverridesBasedConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutionCloner;
@@ -265,11 +262,6 @@ public final class SolutionDescriptor<Solution_> {
     private AutoDiscoverMemberType autoDiscoverMemberType;
     private LookUpStrategyResolver lookUpStrategyResolver;
 
-    /**
-     * @deprecated {@link ConstraintConfiguration} was replaced by {@link ConstraintWeightOverrides}.
-     */
-    @Deprecated(forRemoval = true, since = "1.13.0")
-    private MemberAccessor constraintConfigurationMemberAccessor;
     private final Map<String, MemberAccessor> problemFactMemberAccessorMap = new LinkedHashMap<>();
     private final Map<String, MemberAccessor> problemFactCollectionMemberAccessorMap = new LinkedHashMap<>();
     private final Map<String, MemberAccessor> entityMemberAccessorMap = new LinkedHashMap<>();
@@ -438,9 +430,7 @@ public final class SolutionDescriptor<Solution_> {
         if (annotationClass == null) {
             return;
         }
-        if (annotationClass.equals(ConstraintConfigurationProvider.class)) {
-            processConstraintConfigurationProviderAnnotation(descriptorPolicy, member, annotationClass);
-        } else if (annotationClass.equals(ProblemFactProperty.class)
+        if (annotationClass.equals(ProblemFactProperty.class)
                 || annotationClass.equals(ProblemFactCollectionProperty.class)) {
             processProblemFactPropertyAnnotation(descriptorPolicy, member, annotationClass);
         } else if (annotationClass.equals(PlanningEntityProperty.class)
@@ -459,7 +449,6 @@ public final class SolutionDescriptor<Solution_> {
     private Class<? extends Annotation> extractFactEntityOrScoreAnnotationClassOrAutoDiscover(
             Member member, List<Class<?>> entityClassList) {
         var annotationClass = ConfigUtils.extractAnnotationClass(member,
-                ConstraintConfigurationProvider.class,
                 ProblemFactProperty.class,
                 ProblemFactCollectionProperty.class,
                 PlanningEntityProperty.class, PlanningEntityCollectionProperty.class,
@@ -499,14 +488,6 @@ public final class SolutionDescriptor<Solution_> {
                     }
                     if (entityClassList.stream().anyMatch(entityClass -> entityClass.isAssignableFrom(elementType))) {
                         annotationClass = PlanningEntityCollectionProperty.class;
-                    } else if (elementType.isAnnotationPresent(ConstraintConfiguration.class)) {
-                        throw new IllegalStateException(
-                                """
-                                        The autoDiscoverMemberType (%s) cannot accept a member (%s) of type (%s) with an elementType (%s) that has a @%s annotation.
-                                        Maybe use a member of the type (%s) directly instead of a %s or array of that type."""
-                                        .formatted(autoDiscoverMemberType, member, type, elementType,
-                                                ConstraintConfiguration.class.getSimpleName(), elementType,
-                                                Collection.class.getSimpleName()));
                     } else {
                         annotationClass = ProblemFactCollectionProperty.class;
                     }
@@ -516,60 +497,12 @@ public final class SolutionDescriptor<Solution_> {
                                     .formatted(autoDiscoverMemberType, member, type, Map.class.getSimpleName()));
                 } else if (entityClassList.stream().anyMatch(entityClass -> entityClass.isAssignableFrom(type))) {
                     annotationClass = PlanningEntityProperty.class;
-                } else if (type.isAnnotationPresent(ConstraintConfiguration.class)) {
-                    annotationClass = ConstraintConfigurationProvider.class;
                 } else {
                     annotationClass = ProblemFactProperty.class;
                 }
             }
         }
         return annotationClass;
-    }
-
-    /**
-     * @deprecated {@link ConstraintConfiguration} was replaced by {@link ConstraintWeightOverrides}.
-     */
-    @Deprecated(forRemoval = true, since = "1.13.0")
-    private void processConstraintConfigurationProviderAnnotation(DescriptorPolicy descriptorPolicy, Member member,
-            Class<? extends Annotation> annotationClass) {
-        if (constraintWeightSupplier != null) {
-            throw new IllegalStateException("""
-                    The solution class (%s) has both a %s member and a %s-annotated member.
-                    %s is deprecated, please remove it from your codebase and keep %s only."""
-                    .formatted(solutionClass, ConstraintWeightOverrides.class.getSimpleName(),
-                            ConstraintConfigurationProvider.class.getSimpleName(),
-                            ConstraintConfigurationProvider.class.getSimpleName(),
-                            ConstraintWeightOverrides.class.getSimpleName()));
-        }
-        var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
-                FIELD_OR_READ_METHOD, annotationClass, descriptorPolicy.getDomainAccessType());
-        if (constraintConfigurationMemberAccessor != null) {
-            if (!constraintConfigurationMemberAccessor.getName().equals(memberAccessor.getName())
-                    || !constraintConfigurationMemberAccessor.getClass().equals(memberAccessor.getClass())) {
-                throw new IllegalStateException(
-                        """
-                                The solutionClass (%s) has a @%s annotated member (%s) that is duplicated by another member (%s).
-                                Maybe the annotation is defined on both the field and its getter."""
-                                .formatted(solutionClass, ConstraintConfigurationProvider.class.getSimpleName(), memberAccessor,
-                                        constraintConfigurationMemberAccessor));
-            }
-            // Bottom class wins. Bottom classes are parsed first due to ConfigUtil.getAllAnnotatedLineageClasses()
-            return;
-        }
-        assertNoFieldAndGetterDuplicationOrConflict(memberAccessor, annotationClass);
-        constraintConfigurationMemberAccessor = memberAccessor;
-        // Every ConstraintConfiguration is also a problem fact
-        problemFactMemberAccessorMap.put(memberAccessor.getName(), memberAccessor);
-
-        var constraintConfigurationClass = constraintConfigurationMemberAccessor.getType();
-        if (!constraintConfigurationClass.isAnnotationPresent(ConstraintConfiguration.class)) {
-            throw new IllegalStateException(
-                    "The solutionClass (%s) has a @%s annotated member (%s) that does not return a class (%s) that has a %s annotation."
-                            .formatted(solutionClass, ConstraintConfigurationProvider.class.getSimpleName(), member,
-                                    constraintConfigurationClass, ConstraintConfiguration.class.getSimpleName()));
-        }
-        constraintWeightSupplier =
-                ConstraintConfigurationBasedConstraintWeightSupplier.create(this, constraintConfigurationClass);
     }
 
     private void processProblemFactPropertyAnnotation(DescriptorPolicy descriptorPolicy, Member member,
@@ -639,11 +572,7 @@ public final class SolutionDescriptor<Solution_> {
         MemberAccessor duplicate;
         Class<? extends Annotation> otherAnnotationClass;
         var memberName = memberAccessor.getName();
-        if (constraintConfigurationMemberAccessor != null
-                && constraintConfigurationMemberAccessor.getName().equals(memberName)) {
-            duplicate = constraintConfigurationMemberAccessor;
-            otherAnnotationClass = ConstraintConfigurationProvider.class;
-        } else if (problemFactMemberAccessorMap.containsKey(memberName)) {
+        if (problemFactMemberAccessorMap.containsKey(memberName)) {
             duplicate = problemFactMemberAccessorMap.get(memberName);
             otherAnnotationClass = ProblemFactProperty.class;
         } else if (problemFactCollectionMemberAccessorMap.containsKey(memberName)) {
@@ -912,14 +841,6 @@ public final class SolutionDescriptor<Solution_> {
 
     public boolean hasBothBasicAndListVariables() {
         return hasBasicVariable() && hasListVariable();
-    }
-
-    /**
-     * @deprecated {@link ConstraintConfiguration} was replaced by {@link ConstraintWeightOverrides}.
-     */
-    @Deprecated(forRemoval = true, since = "1.13.0")
-    public MemberAccessor getConstraintConfigurationMemberAccessor() {
-        return constraintConfigurationMemberAccessor;
     }
 
     @SuppressWarnings("unchecked")

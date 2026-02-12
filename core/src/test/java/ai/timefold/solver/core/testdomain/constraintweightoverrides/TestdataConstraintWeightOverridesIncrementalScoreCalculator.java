@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.constraintconfiguration;
+package ai.timefold.solver.core.testdomain.constraintweightoverrides;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,15 +9,14 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 
 import org.jspecify.annotations.NonNull;
 
-@Deprecated(forRemoval = true, since = "1.13.0")
-public final class TestdataConstraintWeighIncrementalScoreCalculator
-        implements IncrementalScoreCalculator<TestdataConstraintConfigurationSolution, SimpleScore> {
+public final class TestdataConstraintWeightOverridesIncrementalScoreCalculator
+        implements IncrementalScoreCalculator<TestdataConstraintWeightOverridesSolution, SimpleScore> {
 
-    private TestdataConstraintConfigurationSolution workingSolution;
+    private TestdataConstraintWeightOverridesSolution workingSolution;
     private List<TestdataEntity> entityList;
 
     @Override
-    public void resetWorkingSolution(@NonNull TestdataConstraintConfigurationSolution workingSolution) {
+    public void resetWorkingSolution(@NonNull TestdataConstraintWeightOverridesSolution workingSolution) {
         this.workingSolution = workingSolution;
         this.entityList = new ArrayList<>(workingSolution.getEntityList());
     }
@@ -54,7 +53,11 @@ public final class TestdataConstraintWeighIncrementalScoreCalculator
 
     @Override
     public @NonNull SimpleScore calculateScore() {
-        SimpleScore constraintWeight = workingSolution.getConstraintConfiguration().getFirstWeight();
-        return constraintWeight.multiply(entityList.size());
+        var firstWeight = workingSolution.getConstraintWeightOverrides()
+                .getConstraintWeight("First weight");
+        if (firstWeight != null) {
+            return SimpleScore.of(workingSolution.getEntityList().size() * firstWeight.score());
+        }
+        return SimpleScore.of(workingSolution.getEntityList().size());
     }
 }

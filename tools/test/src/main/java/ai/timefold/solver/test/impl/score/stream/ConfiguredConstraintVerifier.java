@@ -28,8 +28,7 @@ import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 final class ConfiguredConstraintVerifier<ConstraintProvider_ extends ConstraintProvider, Solution_, Score_ extends Score<Score_>> {
 
     // Exists so that people can not, even by accident, pick the same constraint ID as the default cache key.
-    private final ConstraintRef defaultScoreDirectorFactoryMapKey =
-            ConstraintRef.of(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+    private final ConstraintRef defaultScoreDirectorFactoryMapKey = ConstraintRef.of(UUID.randomUUID().toString());
 
     private final ConstraintProvider_ constraintProvider;
     @SuppressWarnings("java:S5164") // Suppress SonarCloud ThreadLocal warning; this is safe in the context of tests.

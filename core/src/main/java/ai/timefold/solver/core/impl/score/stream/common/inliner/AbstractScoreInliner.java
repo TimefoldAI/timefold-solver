@@ -216,7 +216,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                 var constraintMatch = carrier.get();
                 constraintMatchTotal.addConstraintMatch(constraintMatch);
             }
-            constraintIdToConstraintMatchTotalMap.put(constraint.getConstraintRef().constraintId(), constraintMatchTotal);
+            constraintIdToConstraintMatchTotalMap.put(constraint.getConstraintRef().constraintName(), constraintMatchTotal);
         }
         this.constraintIdToConstraintMatchTotalMap = constraintIdToConstraintMatchTotalMap;
     }

@@ -29,7 +29,6 @@ import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecim
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
@@ -875,38 +874,6 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
 
     @Override
     @TestTemplate
-    @Deprecated(forRemoval = true)
-    public void ifExistsIncludesNullVarsWithFrom() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
-        solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
-        solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
-                null);
-        solution.getEntityList().add(entity2);
-
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
-                buildScoreDirector(factory -> factory.fromUniquePair(TestdataLavishEntity.class)
-                        .ifExists(TestdataLavishEntity.class,
-                                filtering((a, b, c) -> a != c && b != c))
-                        .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
-
-        // From scratch
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), entity1));
-
-        // Incremental
-        scoreDirector.beforeProblemFactRemoved(entity2);
-        solution.getEntityList().remove(entity2);
-        scoreDirector.afterProblemFactRemoved(entity2);
-        assertScore(scoreDirector);
-    }
-
-    @Override
-    @TestTemplate
     public void ifNotExists_unknownClass() {
         assertThatThrownBy(() -> buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                 .ifNotExists(Integer.class)
@@ -1082,38 +1049,6 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
 
     @Override
     @TestTemplate
-    @Deprecated(forRemoval = true)
-    public void ifNotExistsIncludesNullVarsWithFrom() {
-        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        TestdataLavishEntityGroup entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
-        solution.getEntityGroupList().add(entityGroup);
-        TestdataLavishEntity entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
-        solution.getEntityList().add(entity1);
-        TestdataLavishEntity entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
-                null);
-        solution.getEntityList().add(entity2);
-
-        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
-                buildScoreDirector(factory -> factory.fromUniquePair(TestdataLavishEntity.class)
-                        .ifNotExists(TestdataLavishEntity.class,
-                                filtering((a, b, c) -> a != c && b != c))
-                        .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
-
-        // From scratch
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector);
-
-        // Incremental
-        scoreDirector.beforeProblemFactRemoved(entity2);
-        solution.getEntityList().remove(entity2);
-        scoreDirector.afterProblemFactRemoved(entity2);
-        assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity(), entity1));
-    }
-
-    @Override
-    @TestTemplate
     public void ifExistsAfterGroupBy() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 0, 1, 0);
         TestdataLavishValue value1 = new TestdataLavishValue("MyValue 1", solution.getFirstValueGroup());
@@ -1207,8 +1142,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, solution.getFirstEntity().toString(), 6),
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, solution.getEntityList().get(1).toString(), 5));
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, solution.getFirstEntity().toString(), 6),
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, solution.getEntityList().get(1).toString(), 5));
 
         // Incremental; we have a new first entity, and less entities in total.
         TestdataLavishEntity entity = solution.getFirstEntity();
@@ -1216,7 +1151,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, solution.getFirstEntity().toString(), 5));
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, solution.getFirstEntity().toString(), 5));
     }
 
     @Override
@@ -1238,8 +1173,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity1.toString(), 2, singleton(entity1)),
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity2.toString(), 1, singleton(entity2)));
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity1.toString(), 2, singleton(entity1)),
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity2.toString(), 1, singleton(entity2)));
 
         // Incremental
         TestdataLavishEntity entity = solution.getFirstEntity();
@@ -1247,7 +1182,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity2.toString(), 1, singleton(entity2)));
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity2.toString(), 1, singleton(entity2)));
     }
 
     @Override
@@ -1272,9 +1207,9 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity1.toString(), Long.MAX_VALUE, Long.MAX_VALUE,
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity1.toString(), Long.MAX_VALUE, Long.MAX_VALUE,
                         singleton(entity1)),
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
                         singleton(entity2)));
 
         // Incremental
@@ -1283,7 +1218,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
                         singleton(entity2)));
     }
 
@@ -2719,13 +2654,10 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         assertThat(scoreDirector.getIndictmentMap())
                 .containsOnlyKeys(entityList);
 
-        String constraintFqn =
-                ConstraintRef.composeConstraintId(scoreDirector.getSolutionDescriptor()
-                        .getSolutionClass().getPackageName(), TEST_CONSTRAINT_NAME);
         Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
         assertThat(constraintMatchTotalMap)
-                .containsOnlyKeys(constraintFqn);
-        ConstraintMatchTotal<Score_> constraintMatchTotal = constraintMatchTotalMap.get(constraintFqn);
+                .containsOnlyKeys(TEST_CONSTRAINT_NAME);
+        ConstraintMatchTotal<Score_> constraintMatchTotal = constraintMatchTotalMap.get(TEST_CONSTRAINT_NAME);
         assertThat(constraintMatchTotal.getConstraintMatchSet())
                 .hasSize(entityList.size() * 3);
         List<ConstraintMatch<Score_>> constraintMatchList = new ArrayList<>(constraintMatchTotal.getConstraintMatchSet());
@@ -3008,13 +2940,10 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         assertThat(scoreDirector.getIndictmentMap())
                 .containsOnlyKeys(entityList);
 
-        String constraintFqn =
-                ConstraintRef.composeConstraintId(scoreDirector.getSolutionDescriptor()
-                        .getSolutionClass().getPackageName(), TEST_CONSTRAINT_NAME);
         Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
         assertThat(constraintMatchTotalMap)
-                .containsOnlyKeys(constraintFqn);
-        ConstraintMatchTotal<Score_> constraintMatchTotal = constraintMatchTotalMap.get(constraintFqn);
+                .containsOnlyKeys(TEST_CONSTRAINT_NAME);
+        ConstraintMatchTotal<Score_> constraintMatchTotal = constraintMatchTotalMap.get(TEST_CONSTRAINT_NAME);
         assertThat(constraintMatchTotal.getConstraintMatchSet())
                 .hasSize(entityList.size() * 3);
         List<ConstraintMatch<Score_>> constraintMatchList = new ArrayList<>(constraintMatchTotal.getConstraintMatchSet());

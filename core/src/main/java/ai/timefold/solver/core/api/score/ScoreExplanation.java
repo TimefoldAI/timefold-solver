@@ -11,14 +11,13 @@ import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Build by {@link SolutionManager#explain(Object)} to hold {@link ConstraintMatchTotal}s and {@link Indictment}s
@@ -29,12 +28,12 @@ import org.jspecify.annotations.NonNull;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the actual score type
  */
+@NullMarked
 public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
 
     /**
      * Retrieve the {@link PlanningSolution} that the score being explained comes from.
      */
-    @NonNull
     Solution_ getSolution();
 
     /**
@@ -42,7 +41,6 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * If the specific {@link Score} type used by the {@link PlanningSolution} is required,
      * call {@link #getSolution()} and retrieve it from there.
      */
-    @NonNull
     Score_ getScore();
 
     /**
@@ -64,7 +62,6 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * use {@link ScoreExplanation#getConstraintMatchTotalMap()} and {@link ScoreExplanation#getIndictmentMap()}
      * and convert those into a domain-specific API.
      */
-    @NonNull
     String getSummary();
 
     /**
@@ -72,11 +69,9 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * <p>
      * The sum of {@link ConstraintMatchTotal#getScore()} equals {@link #getScore()}.
      *
-     * @return the key is the constraintId
-     *         (to create one, use {@link ConstraintRef#composeConstraintId(String, String)}).
+     * @return the key is the constraint name
      * @see #getIndictmentMap()
      */
-    @NonNull
     Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap();
 
     /**
@@ -100,7 +95,6 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * @return all constraint matches
      * @see #getIndictmentMap()
      */
-    @NonNull
     List<ConstraintJustification> getJustificationList();
 
     /**
@@ -112,8 +106,8 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * @return all constraint matches associated with the given justification class
      * @see #getIndictmentMap()
      */
-    default <ConstraintJustification_ extends ConstraintJustification> @NonNull List<ConstraintJustification_>
-            getJustificationList(@NonNull Class<? extends ConstraintJustification_> constraintJustificationClass) {
+    default <ConstraintJustification_ extends ConstraintJustification> List<ConstraintJustification_>
+            getJustificationList(Class<? extends ConstraintJustification_> constraintJustificationClass) {
         return getJustificationList()
                 .stream()
                 .filter(constraintJustification -> constraintJustificationClass
@@ -135,7 +129,6 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      *         {@link PlanningEntity planning entity}
      * @see #getConstraintMatchTotalMap()
      */
-    @NonNull
     Map<Object, Indictment<Score_>> getIndictmentMap();
 
 }

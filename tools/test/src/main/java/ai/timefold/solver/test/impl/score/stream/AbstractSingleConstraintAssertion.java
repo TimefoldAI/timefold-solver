@@ -315,9 +315,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
             // Reward and positive or penalty and negative means all is OK.
             return;
         }
-        var constraintId = constraint.getConstraintRef().constraintId();
         var assertionMessage = buildAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
-                impact, constraintId, message);
+                impact, constraint.getConstraintRef().constraintName(), message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -340,9 +339,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
             // Reward and positive or penalty and negative means all is OK.
             return;
         }
-        var constraintId = constraint.getConstraintRef().constraintId();
         var assertionMessage = buildMoreThanAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
-                impact, constraintId, message);
+                impact, constraint.getConstraintRef().constraintName(), message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -365,9 +363,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
             // Reward and positive or penalty and negative means all is OK.
             return;
         }
-        var constraintId = constraint.getConstraintRef().constraintId();
         var assertionMessage = buildLessThanAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
-                impact, constraintId, message);
+                impact, constraint.getConstraintRef().constraintName(), message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -384,8 +381,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
             return;
         }
 
-        var constraintId = constraint.getConstraintRef().constraintId();
-        var assertionMessage = buildNoImpactAssertionErrorMessage(impact, constraintId, message);
+        var assertionMessage =
+                buildNoImpactAssertionErrorMessage(impact, constraint.getConstraintRef().constraintName(), message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -398,14 +395,14 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
 
         // No justifications
         if (emptyJustifications) {
-            var assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
+            var assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintName(),
                     justificationCollection, emptyList(), emptyList(), justificationCollection, message);
             throw new AssertionError(assertionMessage);
         }
 
         // Empty justifications
         if (justificationCollection.isEmpty()) {
-            var assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
+            var assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintName(),
                     emptyList(), Arrays.asList(justifications), Arrays.asList(justifications), emptyList(), message);
             throw new AssertionError(assertionMessage);
         }
@@ -426,7 +423,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         if (expectedNotFound.isEmpty() && unexpectedFound.isEmpty()) {
             return;
         }
-        var assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
+        var assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintName(),
                 unexpectedFound, expectedNotFound, Arrays.asList(justifications), justificationCollection, message);
         throw new AssertionError(assertionMessage);
     }
@@ -441,14 +438,14 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         // No indictments
         var indictmentObjectList = indictmentCollection.stream().map(Indictment::getIndictedObject).toList();
         if (emptyIndictments && !indictmentObjectList.isEmpty()) {
-            var assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
+            var assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintName(),
                     indictmentObjectList, emptyList(), emptyList(), indictmentObjectList, message);
             throw new AssertionError(assertionMessage);
         }
 
         // Empty indictments
         if (indictmentObjectList.isEmpty()) {
-            var assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
+            var assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintName(),
                     emptyList(), Arrays.asList(indictments), Arrays.asList(indictments), emptyList(), message);
             throw new AssertionError(assertionMessage);
         }
@@ -469,7 +466,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         if (expectedNotFound.isEmpty() && unexpectedFound.isEmpty()) {
             return;
         }
-        var assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
+        var assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintName(),
                 unexpectedFound, expectedNotFound, Arrays.asList(indictments), indictmentObjectList, message);
         throw new AssertionError(assertionMessage);
     }
@@ -523,9 +520,9 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         if (actualMatchCount == expectedMatchCount) {
             return;
         }
-        var constraintId = constraint.getConstraintRef().constraintId();
         var assertionMessage =
-                buildAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount, constraintId, message);
+                buildAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount,
+                        constraint.getConstraintRef().constraintName(), message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -534,9 +531,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         if (actualMatchCount > expectedMatchCount) {
             return;
         }
-        var constraintId = constraint.getConstraintRef().constraintId();
         var assertionMessage = buildMoreThanAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount,
-                constraintId, message);
+                constraint.getConstraintRef().constraintName(), message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -545,9 +541,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         if (actualMatchCount < expectedMatchCount) {
             return;
         }
-        var constraintId = constraint.getConstraintRef().constraintId();
         var assertionMessage = buildLessThanAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount,
-                constraintId, message);
+                constraint.getConstraintRef().constraintName(), message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -555,8 +550,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         if (determineMatchCount(scoreImpactType) > 0) {
             return;
         }
-        var constraintId = constraint.getConstraintRef().constraintId();
-        var assertionMessage = buildAssertionErrorMessage(scoreImpactType, constraintId, message);
+        var assertionMessage =
+                buildAssertionErrorMessage(scoreImpactType, constraint.getConstraintRef().constraintName(), message);
         throw new AssertionError(assertionMessage);
     }
 

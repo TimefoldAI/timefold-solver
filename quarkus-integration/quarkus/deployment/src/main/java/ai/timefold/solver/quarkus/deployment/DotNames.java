@@ -7,8 +7,6 @@ import java.util.Set;
 
 import jakarta.inject.Named;
 
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
@@ -59,9 +57,6 @@ public final class DotNames {
     static final DotName CONSTRAINT_PROVIDER = DotName.createSimple(ConstraintProvider.class.getName());
     static final DotName INCREMENTAL_SCORE_CALCULATOR =
             DotName.createSimple(IncrementalScoreCalculator.class.getName());
-    static final DotName CONSTRAINT_CONFIGURATION_PROVIDER =
-            DotName.createSimple(ConstraintConfigurationProvider.class.getName());
-    static final DotName CONSTRAINT_WEIGHT = DotName.createSimple(ConstraintWeight.class.getName());
     static final DotName CONSTRAINT_WEIGHT_OVERRIDES = DotName.createSimple(ConstraintWeightOverrides.class.getName());
 
     static final DotName PLANNING_ENTITY = DotName.createSimple(PlanningEntity.class.getName());
@@ -113,8 +108,6 @@ public final class DotNames {
             PLANNING_SCORE,
             PROBLEM_FACT_COLLECTION_PROPERTY,
             PROBLEM_FACT_PROPERTY,
-            CONSTRAINT_CONFIGURATION_PROVIDER,
-            CONSTRAINT_WEIGHT,
             PLANNING_PIN,
             PLANNING_PIN_TO_INDEX,
             PLANNING_ID,

@@ -16,16 +16,16 @@ class ConstraintMatchTest {
 
     @Test
     void equalsAndHashCode() { // No CM should equal any other.
-        ConstraintMatch<SimpleScore> constraintMatch = buildConstraintMatch("a. b", "c", ZERO, "e1");
+        ConstraintMatch<SimpleScore> constraintMatch = buildConstraintMatch("c", ZERO, "e1");
         PlannerAssert.assertObjectsAreEqual(constraintMatch, constraintMatch);
-        ConstraintMatch<SimpleScore> constraintMatch2 = buildConstraintMatch("a. b", "c", ZERO, "e1");
+        ConstraintMatch<SimpleScore> constraintMatch2 = buildConstraintMatch("c", ZERO, "e1");
         // Cast to avoid Comparable checks.
         PlannerAssert.assertObjectsAreNotEqual(constraintMatch, (Object) constraintMatch2);
     }
 
-    private <Score_ extends Score<Score_>> ConstraintMatch<Score_> buildConstraintMatch(String constraintPackage,
-            String constraintName, Score_ score, Object... indictments) {
-        return new ConstraintMatch<>(ConstraintRef.of(constraintPackage, constraintName),
+    private <Score_ extends Score<Score_>> ConstraintMatch<Score_> buildConstraintMatch(String constraintName, Score_ score,
+            Object... indictments) {
+        return new ConstraintMatch<>(ConstraintRef.of(constraintName),
                 DefaultConstraintJustification.of(score, indictments),
                 Arrays.asList(indictments), score);
     }
@@ -33,19 +33,16 @@ class ConstraintMatchTest {
     @Test
     void compareTo() {
         PlannerAssert.assertCompareToOrder(
-                buildConstraintMatch("a.b", "a", ZERO, "a"),
-                buildConstraintMatch("a.b", "a", ZERO, "a", "aa"),
-                buildConstraintMatch("a.b", "a", ZERO, "a", "ab"),
-                buildConstraintMatch("a.b", "a", ZERO, "a", "c"),
-                buildConstraintMatch("a.b", "a", ZERO, "a", "aa", "a"),
-                buildConstraintMatch("a.b", "a", ZERO, "a", "aa", "b"),
-                buildConstraintMatch("a.b", "a", ONE, "a", "aa"),
-                buildConstraintMatch("a.b", "b", ZERO, "a", "aa"),
-                buildConstraintMatch("a.b", "b", ZERO, "a", "ab"),
-                buildConstraintMatch("a.b", "b", ZERO, "a", "c"),
-                buildConstraintMatch("a.c", "a", ZERO, "a", "aa"),
-                buildConstraintMatch("a.c", "a", ZERO, "a", "ab"),
-                buildConstraintMatch("a.c", "a", ZERO, "a", "c"));
+                buildConstraintMatch("a", ZERO, "a"),
+                buildConstraintMatch("a", ZERO, "a", "aa"),
+                buildConstraintMatch("a", ZERO, "a", "ab"),
+                buildConstraintMatch("a", ZERO, "a", "c"),
+                buildConstraintMatch("a", ZERO, "a", "aa", "a"),
+                buildConstraintMatch("a", ZERO, "a", "aa", "b"),
+                buildConstraintMatch("a", ONE, "a", "aa"),
+                buildConstraintMatch("b", ZERO, "a", "aa"),
+                buildConstraintMatch("b", ZERO, "a", "ab"),
+                buildConstraintMatch("b", ZERO, "a", "c"));
     }
 
 }

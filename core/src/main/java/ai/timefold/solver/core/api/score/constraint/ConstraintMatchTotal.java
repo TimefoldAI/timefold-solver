@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Explains the {@link Score} of a {@link PlanningSolution}, from the opposite side than {@link Indictment}.
@@ -19,49 +19,18 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <Score_> the actual score type
  */
+@NullMarked
 public interface ConstraintMatchTotal<Score_ extends Score<Score_>> {
 
-    /**
-     * @param constraintPackage never null
-     * @param constraintName never null
-     * @return never null
-     * @deprecated Prefer {@link ConstraintRef#of(String, String)}.
-     */
-    @Deprecated(forRemoval = true, since = "1.4.0")
-    static String composeConstraintId(String constraintPackage, String constraintName) {
-        return constraintPackage + "/" + constraintName;
-    }
-
-    @NonNull
     ConstraintRef getConstraintRef();
-
-    /**
-     * @return never null
-     * @deprecated Prefer {@link #getConstraintRef()}.
-     */
-    @Deprecated(forRemoval = true, since = "1.4.0")
-    default String getConstraintPackage() {
-        return getConstraintRef().packageName();
-    }
-
-    /**
-     * @return never null
-     * @deprecated Prefer {@link #getConstraintRef()}.
-     */
-    @Deprecated(forRemoval = true, since = "1.4.0")
-    default String getConstraintName() {
-        return getConstraintRef().constraintName();
-    }
 
     /**
      * The effective value of constraint weight after applying optional overrides.
      * It is independent to the state of the {@link PlanningVariable planning variables}.
      * Do not confuse with {@link #getScore()}.
      */
-    @NonNull
     Score_ getConstraintWeight();
 
-    @NonNull
     Set<ConstraintMatch<Score_>> getConstraintMatchSet();
 
     /**
@@ -74,16 +43,6 @@ public interface ConstraintMatchTotal<Score_ extends Score<Score_>> {
     /**
      * Sum of the {@link #getConstraintMatchSet()}'s {@link ConstraintMatch#getScore()}.
      */
-    @NonNull
     Score_ getScore();
-
-    /**
-     * @return never null
-     * @deprecated Prefer {@link #getConstraintRef()}.
-     */
-    @Deprecated(forRemoval = true, since = "1.4.0")
-    default String getConstraintId() {
-        return getConstraintRef().constraintId();
-    }
 
 }

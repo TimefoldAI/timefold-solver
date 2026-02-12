@@ -20,7 +20,7 @@ class DefaultConstraintMatchTotalTest {
         TestdataEntity e2 = new TestdataEntity("e2");
         TestdataEntity e3 = new TestdataEntity("e3");
         DefaultConstraintMatchTotal<SimpleScore> constraintMatchTotal =
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("package1", "constraint1"), SimpleScore.ZERO);
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("constraint1"), SimpleScore.ZERO);
         assertThat(constraintMatchTotal.getScore()).isEqualTo(SimpleScore.ZERO);
 
         ConstraintMatch<SimpleScore> match1 =
@@ -45,26 +45,25 @@ class DefaultConstraintMatchTotalTest {
     @Test
     void equalsAndHashCode() {
         PlannerAssert.assertObjectsAreEqual(
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "c"), SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "c"), SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "c"), SimpleScore.of(-7)));
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("c"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("c"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("c"), SimpleScore.of(-7)));
         PlannerAssert.assertObjectsAreNotEqual(
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "c"), SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "d"), SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.c", "d"), SimpleScore.ZERO));
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("c"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("d"), SimpleScore.ZERO));
     }
 
     @Test
     void compareTo() {
         PlannerAssert.assertCompareToOrder(
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "aa"), SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "ab"), SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "ca"), SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "cb"), SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.b", "d"), SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.c", "a"), SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.c", "b"), SimpleScore.ZERO),
-                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a.c", "c"), SimpleScore.ZERO));
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("a"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("aa"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("ab"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("b"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("c"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("ca"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("cb"), SimpleScore.ZERO),
+                new DefaultConstraintMatchTotal<>(ConstraintRef.of("d"), SimpleScore.ZERO));
     }
 
 }

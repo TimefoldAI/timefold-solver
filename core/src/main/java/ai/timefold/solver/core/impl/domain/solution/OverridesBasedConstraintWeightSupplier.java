@@ -93,22 +93,11 @@ public final class OverridesBasedConstraintWeightSupplier<Score_ extends Score<S
     }
 
     @Override
-    public String getDefaultConstraintPackage() {
-        return solutionDescriptor.getSolutionClass().getPackageName();
-    }
-
-    @Override
     public Score_ getConstraintWeight(ConstraintRef constraintRef, Solution_ workingSolution) {
-        if (!constraintRef.packageName().equals(getDefaultConstraintPackage())) {
-            throw new IllegalStateException("""
-                    The constraint (%s) is not in the default package (%s).
-                    Constraint packages are deprecated, check your constraint implementation."""
-                    .formatted(constraintRef, getDefaultConstraintPackage()));
-        }
         if (workingSolution == null) { // ConstraintVerifier is known to cause null here.
             return null;
         }
-        var weight = (Score_) getConstraintWeights(workingSolution).getConstraintWeight(constraintRef.constraintName());
+        var weight = getConstraintWeights(workingSolution).getConstraintWeight(constraintRef.constraintName());
         if (weight == null) { // This is fine; use default value from ConstraintProvider.
             return null;
         }

@@ -43,13 +43,12 @@ class ScoreAnalysisTest {
 
     @Test
     void summarize() {
-        var constraintPackage = "constraintPackage";
         var constraintName1 = "constraint1";
         var constraintName2 = "constraint2";
         var constraintName3 = "constraint3";
-        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
-        var constraintId2 = ConstraintRef.of(constraintPackage, constraintName2);
-        var constraintId3 = ConstraintRef.of(constraintPackage, constraintName3);
+        var constraintId1 = ConstraintRef.of(constraintName1);
+        var constraintId2 = ConstraintRef.of(constraintName2);
+        var constraintId3 = ConstraintRef.of(constraintName3);
 
         var constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(1));
         addConstraintMatch(constraintMatchTotal, SimpleScore.of(2), "A", "B", "C");
@@ -109,11 +108,10 @@ class ScoreAnalysisTest {
 
     @Test
     void summarizeUninitializedSolution() {
-        var constraintPackage = "constraintPackage";
         var constraintName1 = "constraint1";
         var constraintName2 = "constraint2";
-        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
-        var constraintId2 = ConstraintRef.of(constraintPackage, constraintName2);
+        var constraintId1 = ConstraintRef.of(constraintName1);
+        var constraintId2 = ConstraintRef.of(constraintName2);
 
         var constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(0));
         var constraintMatchTotal2 = new DefaultConstraintMatchTotal<>(constraintId2, SimpleScore.of(0));
@@ -147,9 +145,8 @@ class ScoreAnalysisTest {
 
     @Test
     void failFastSummarize() {
-        var constraintPackage = "constraintPackage";
         var constraintName1 = "constraint1";
-        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
+        var constraintId1 = ConstraintRef.of(constraintName1);
 
         var constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(1));
         addConstraintMatch(constraintMatchTotal, SimpleScore.of(2), "A", "B", "C");
@@ -166,11 +163,10 @@ class ScoreAnalysisTest {
 
     @Test
     void summarizeWithLimit() {
-        var constraintPackage = "constraintPackage";
         var constraintName1 = "constraint1";
         var constraintName2 = "constraint2";
-        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
-        var constraintId2 = ConstraintRef.of(constraintPackage, constraintName2);
+        var constraintId1 = ConstraintRef.of(constraintName1);
+        var constraintId2 = ConstraintRef.of(constraintName2);
 
         var constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(1));
         addConstraintMatch(constraintMatchTotal, SimpleScore.of(2), "A", "B", "C");
@@ -229,13 +225,12 @@ class ScoreAnalysisTest {
 
     @Test
     void diffWithConstraintMatchesWithoutMatchAnalysis() {
-        var constraintPackage = "constraintPackage";
         var constraintName1 = "constraint1";
         var constraintName2 = "constraint2";
         var constraintName3 = "constraint3";
-        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
-        var constraintId2 = ConstraintRef.of(constraintPackage, constraintName2);
-        var constraintId3 = ConstraintRef.of(constraintPackage, constraintName3);
+        var constraintId1 = ConstraintRef.of(constraintName1);
+        var constraintId2 = ConstraintRef.of(constraintName2);
+        var constraintId3 = ConstraintRef.of(constraintName3);
 
         var constraintMatchTotal1 = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(1));
         addConstraintMatch(constraintMatchTotal1, SimpleScore.of(2), "A", "B", "C");
@@ -326,13 +321,12 @@ class ScoreAnalysisTest {
 
     @Test
     void diffWithConstraintMatchesWithMatchCountOnly() {
-        var constraintPackage = "constraintPackage";
         var constraintName1 = "constraint1";
         var constraintName2 = "constraint2";
         var constraintName3 = "constraint3";
-        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
-        var constraintId2 = ConstraintRef.of(constraintPackage, constraintName2);
-        var constraintId3 = ConstraintRef.of(constraintPackage, constraintName3);
+        var constraintId1 = ConstraintRef.of(constraintName1);
+        var constraintId2 = ConstraintRef.of(constraintName2);
+        var constraintId3 = ConstraintRef.of(constraintName3);
 
         var constraintMatchTotal1 = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(1));
         addConstraintMatch(constraintMatchTotal1, SimpleScore.of(2), "A", "B", "C");
@@ -430,13 +424,12 @@ class ScoreAnalysisTest {
 
     @Test
     void diffWithConstraintMatchesAndMatchAnalysis() {
-        var constraintPackage = "constraintPackage";
         var constraintName1 = "constraint1";
         var constraintName2 = "constraint2";
         var constraintName3 = "constraint3";
-        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
-        var constraintId2 = ConstraintRef.of(constraintPackage, constraintName2);
-        var constraintId3 = ConstraintRef.of(constraintPackage, constraintName3);
+        var constraintId1 = ConstraintRef.of(constraintName1);
+        var constraintId2 = ConstraintRef.of(constraintName2);
+        var constraintId3 = ConstraintRef.of(constraintName3);
 
         var constraintMatchTotal1 = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(1));
         addConstraintMatch(constraintMatchTotal1, SimpleScore.of(2), "A", "B", "C");
@@ -565,13 +558,12 @@ class ScoreAnalysisTest {
 
     @Test
     void diffWithConstraintMatchesAndMatchAnalysisWithSomeIdenticalMatches() {
-        var constraintPackage = "constraintPackage";
         var constraintName1 = "constraint1";
         var constraintName2 = "constraint2";
         var constraintName3 = "constraint3";
-        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
-        var constraintId2 = ConstraintRef.of(constraintPackage, constraintName2);
-        var constraintId3 = ConstraintRef.of(constraintPackage, constraintName3);
+        var constraintId1 = ConstraintRef.of(constraintName1);
+        var constraintId2 = ConstraintRef.of(constraintName2);
+        var constraintId3 = ConstraintRef.of(constraintName3);
 
         var constraintMatchTotal1 = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(1));
         addConstraintMatch(constraintMatchTotal1, SimpleScore.of(2), "A", "B", "C");

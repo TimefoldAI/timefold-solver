@@ -7,8 +7,8 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorSemanticsTest;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
-import ai.timefold.solver.core.testdomain.constraintconfiguration.TestdataConstraintConfigurationSolution;
-import ai.timefold.solver.core.testdomain.constraintconfiguration.TestdataConstraintWeighIncrementalScoreCalculator;
+import ai.timefold.solver.core.testdomain.constraintweightoverrides.TestdataConstraintWeightOverridesIncrementalScoreCalculator;
+import ai.timefold.solver.core.testdomain.constraintweightoverrides.TestdataConstraintWeightOverridesSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListIncrementalScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListIncrementalScoreCalculator;
@@ -17,13 +17,14 @@ import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIn
 final class IncrementalScoreDirectorSemanticsTest extends AbstractScoreDirectorSemanticsTest {
 
     @Override
-    protected ScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
+    protected ScoreDirectorFactory<TestdataConstraintWeightOverridesSolution, SimpleScore>
             buildScoreDirectorFactoryWithConstraintConfiguration(
-                    SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
+                    SolutionDescriptor<TestdataConstraintWeightOverridesSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
-                .withIncrementalScoreCalculatorClass(TestdataConstraintWeighIncrementalScoreCalculator.class);
-        var scoreDirectorFactoryFactory = new ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore>(
-                scoreDirectorFactoryConfig);
+                .withIncrementalScoreCalculatorClass(TestdataConstraintWeightOverridesIncrementalScoreCalculator.class);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataConstraintWeightOverridesSolution, SimpleScore>(
+                        scoreDirectorFactoryConfig);
         return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 

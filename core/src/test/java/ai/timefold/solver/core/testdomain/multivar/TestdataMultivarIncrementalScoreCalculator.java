@@ -70,9 +70,7 @@ public class TestdataMultivarIncrementalScoreCalculator
     }
 
     private DefaultConstraintMatchTotal<SimpleScore> update() {
-        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(
-                ConstraintRef.of(getClass().getPackageName(), "testConstraint"),
-                SimpleScore.ONE);
+        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(ConstraintRef.of("testConstraint"), SimpleScore.ONE);
         this.indictmentMap = new HashMap<>();
         for (TestdataMultiVarEntity left : workingSolution.getMultiVarEntityList()) {
             int count = left.getPrimaryValue() == left.getSecondaryValue() ? 0 : 1;

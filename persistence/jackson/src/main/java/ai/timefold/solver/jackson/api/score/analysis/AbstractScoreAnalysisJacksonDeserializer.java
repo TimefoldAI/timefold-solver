@@ -33,9 +33,8 @@ public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Sc
         var initialized = node.get("initialized").asBoolean();
         var constraintAnalysisList = new HashMap<ConstraintRef, ConstraintAnalysis<Score_>>();
         for (var constraintNode : node.get("constraints")) {
-            var constraintPackage = constraintNode.get("package").asString();
             var constraintName = constraintNode.get("name").asString();
-            var constraintRef = ConstraintRef.of(constraintPackage, constraintName);
+            var constraintRef = ConstraintRef.of(constraintName);
             var constraintWeight = parseScore(constraintNode.get("weight").asString());
             var constraintScore = parseScore(constraintNode.get("score").asString());
             var matchScoreList = new ArrayList<MatchAnalysis<Score_>>();

@@ -29,15 +29,8 @@ public abstract class AbstractConstraintBuilder<Score_ extends Score<Score_>> im
     @Override
     public final @NonNull Constraint asConstraintDescribed(@NonNull String constraintName,
             @NonNull String constraintDescription, @NonNull String constraintGroup) {
-        return constraintConstructor.apply(null, constraintName, constraintDescription, constraintGroup, constraintWeight,
+        return constraintConstructor.apply(constraintName, constraintDescription, constraintGroup, constraintWeight,
                 impactType, getJustificationMapping(), getIndictedObjectsMapping());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public final Constraint asConstraint(String constraintPackage, String constraintName) {
-        return constraintConstructor.apply(constraintPackage, constraintName, "", Constraint.DEFAULT_CONSTRAINT_GROUP,
-                constraintWeight, impactType, getJustificationMapping(), getIndictedObjectsMapping());
     }
 
 }

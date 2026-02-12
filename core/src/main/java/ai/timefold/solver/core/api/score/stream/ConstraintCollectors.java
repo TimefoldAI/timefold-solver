@@ -7,7 +7,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.temporal.Temporal;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -526,29 +525,6 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by {@link #min()}, only with a custom {@link Comparator}.
-     *
-     * @deprecated Deprecated in favor of {@link #min(Function, Function)},
-     *             as this method can lead to unavoidable score corruptions.
-     */
-    @Deprecated(forRemoval = true, since = "1.0.0")
-    public static <A> UniConstraintCollector<A, ?, A> min(Comparator<? super A> comparator) {
-        return min(ConstantLambdaUtils.identity(), comparator);
-    }
-
-    /**
-     * As defined by {@link #min(Function)}, only with a custom {@link Comparator}.
-     *
-     * @deprecated Deprecated in favor of {@link #min(Function, Function)},
-     *             as this method can lead to unavoidable score corruptions.
-     */
-    @Deprecated(forRemoval = true, since = "1.0.0")
-    public static <A, Mapped> UniConstraintCollector<A, ?, Mapped> min(Function<A, Mapped> groupValueMapping,
-            Comparator<? super Mapped> comparator) {
-        return InnerUniConstraintCollectors.min(groupValueMapping, comparator);
-    }
-
-    /**
      * As defined by {@link #min(Function)}.
      */
     public static <A, B, Mapped extends Comparable<? super Mapped>> @NonNull BiConstraintCollector<A, B, ?, Mapped> min(
@@ -564,18 +540,6 @@ public final class ConstraintCollectors {
             min(@NonNull BiFunction<A, B, Mapped> groupValueMapping,
                     @NonNull Function<Mapped, Comparable_> comparableFunction) {
         return InnerBiConstraintCollectors.min(groupValueMapping, comparableFunction);
-    }
-
-    /**
-     * As defined by {@link #min(Function)}, only with a custom {@link Comparator}.
-     *
-     * @deprecated Deprecated in favor of {@link #min(BiFunction, Function)},
-     *             as this method can lead to unavoidable score corruptions.
-     */
-    @Deprecated(forRemoval = true, since = "1.0.0")
-    public static <A, B, Mapped> BiConstraintCollector<A, B, ?, Mapped> min(BiFunction<A, B, Mapped> groupValueMapping,
-            Comparator<? super Mapped> comparator) {
-        return InnerBiConstraintCollectors.min(groupValueMapping, comparator);
     }
 
     /**
@@ -597,18 +561,6 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by {@link #min(Function)}, only with a custom {@link Comparator}.
-     *
-     * @deprecated Deprecated in favor of {@link #min(TriFunction, Function)},
-     *             as this method can lead to unavoidable score corruptions.
-     */
-    @Deprecated(forRemoval = true, since = "1.0.0")
-    public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, Mapped> min(
-            TriFunction<A, B, C, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return InnerTriConstraintCollectors.min(groupValueMapping, comparator);
-    }
-
-    /**
      * As defined by {@link #min(Function)}.
      */
     public static <A, B, C, D, Mapped extends Comparable<? super Mapped>>
@@ -625,18 +577,6 @@ public final class ConstraintCollectors {
             min(@NonNull QuadFunction<A, B, C, D, Mapped> groupValueMapping,
                     @NonNull Function<Mapped, Comparable_> comparableFunction) {
         return InnerQuadConstraintCollectors.min(groupValueMapping, comparableFunction);
-    }
-
-    /**
-     * As defined by {@link #min(Function)}, only with a custom {@link Comparator}.
-     *
-     * @deprecated Deprecated in favor of {@link #min(QuadFunction, Function)},
-     *             as this method can lead to unavoidable score corruptions.
-     */
-    @Deprecated(forRemoval = true, since = "1.0.0")
-    public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, Mapped> min(
-            QuadFunction<A, B, C, D, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return InnerQuadConstraintCollectors.min(groupValueMapping, comparator);
     }
 
     // ************************************************************************
@@ -690,17 +630,6 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by {@link #max()}, only with a custom {@link Comparator}.
-     *
-     * @deprecated Deprecated in favor of {@link #max(Function, Function)},
-     *             as this method can lead to unavoidable score corruptions.
-     */
-    @Deprecated(forRemoval = true, since = "1.0.0")
-    public static <A> UniConstraintCollector<A, ?, A> max(Comparator<? super A> comparator) {
-        return InnerUniConstraintCollectors.max(ConstantLambdaUtils.identity(), comparator);
-    }
-
-    /**
      * Returns a collector that finds a maximum value in a group of elements.
      * The elements will be compared according to the value returned by the comparable function.
      * <p>
@@ -727,18 +656,6 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by {@link #max(Function)}, only with a custom {@link Comparator}.
-     *
-     * @deprecated Deprecated in favor of {@link #max(Function, Function)},
-     *             as this method can lead to unavoidable score corruptions.
-     */
-    @Deprecated(forRemoval = true, since = "1.0.0")
-    public static <A, Mapped> UniConstraintCollector<A, ?, Mapped> max(Function<A, Mapped> groupValueMapping,
-            Comparator<? super Mapped> comparator) {
-        return InnerUniConstraintCollectors.max(groupValueMapping, comparator);
-    }
-
-    /**
      * As defined by {@link #max(Function)}.
      */
     public static <A, B, Mapped extends Comparable<? super Mapped>> @NonNull BiConstraintCollector<A, B, ?, Mapped> max(
@@ -754,18 +671,6 @@ public final class ConstraintCollectors {
             max(@NonNull BiFunction<A, B, Mapped> groupValueMapping,
                     @NonNull Function<Mapped, Comparable_> comparableFunction) {
         return InnerBiConstraintCollectors.max(groupValueMapping, comparableFunction);
-    }
-
-    /**
-     * As defined by {@link #max()}, only with a custom {@link Comparator}.
-     *
-     * @deprecated Deprecated in favor of {@link #max(BiFunction, Function)},
-     *             as this method can lead to unavoidable score corruptions.
-     */
-    @Deprecated(forRemoval = true, since = "1.0.0")
-    public static <A, B, Mapped> BiConstraintCollector<A, B, ?, Mapped> max(BiFunction<A, B, Mapped> groupValueMapping,
-            Comparator<? super Mapped> comparator) {
-        return InnerBiConstraintCollectors.max(groupValueMapping, comparator);
     }
 
     /**
@@ -787,18 +692,6 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by {@link #max()}, only with a custom {@link Comparator}.
-     *
-     * @deprecated Deprecated in favor of {@link #max(TriFunction, Function)},
-     *             as this method can lead to unavoidable score corruptions.
-     */
-    @Deprecated(forRemoval = true, since = "1.0.0")
-    public static <A, B, C, Mapped> TriConstraintCollector<A, B, C, ?, Mapped> max(
-            TriFunction<A, B, C, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return InnerTriConstraintCollectors.max(groupValueMapping, comparator);
-    }
-
-    /**
      * As defined by {@link #max(Function)}.
      */
     public static <A, B, C, D, Mapped extends Comparable<? super Mapped>>
@@ -815,27 +708,6 @@ public final class ConstraintCollectors {
             max(@NonNull QuadFunction<A, B, C, D, Mapped> groupValueMapping,
                     @NonNull Function<Mapped, Comparable_> comparableFunction) {
         return InnerQuadConstraintCollectors.max(groupValueMapping, comparableFunction);
-    }
-
-    /**
-     * As defined by {@link #max()}, only with a custom {@link Comparator}.
-     *
-     * @deprecated Deprecated in favor of {@link #max(QuadFunction, Function)},
-     *             as this method can lead to unavoidable score corruptions.
-     */
-    @Deprecated(forRemoval = true, since = "1.0.0")
-    public static <A, B, C, D, Mapped> QuadConstraintCollector<A, B, C, D, ?, Mapped> max(
-            QuadFunction<A, B, C, D, Mapped> groupValueMapping, Comparator<? super Mapped> comparator) {
-        return InnerQuadConstraintCollectors.max(groupValueMapping, comparator);
-    }
-
-    /**
-     * @deprecated Prefer {@link #toList()}, {@link #toSet()} or {@link #toSortedSet()}
-     */
-    @Deprecated(/* forRemoval = true */)
-    public static <A, Result extends Collection<A>> UniConstraintCollector<A, ?, Result> toCollection(
-            IntFunction<Result> collectionFunction) {
-        return toCollection(ConstantLambdaUtils.identity(), collectionFunction);
     }
 
     // ************************************************************************
@@ -1062,15 +934,6 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * @deprecated Prefer {@link #toList(Function)}, {@link #toSet(Function)} or {@link #toSortedSet(Function)}
-     */
-    @Deprecated(/* forRemoval = true */)
-    public static <A, Mapped, Result extends Collection<Mapped>> UniConstraintCollector<A, ?, Result> toCollection(
-            Function<A, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return InnerUniConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
-    }
-
-    /**
      * Creates constraint collector that returns {@link Set} of the same element type as the {@link ConstraintStream}.
      * Makes no guarantees on iteration order.
      * For stable iteration order, use {@link #toSortedSet()}.
@@ -1126,16 +989,6 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * @deprecated Prefer {@link #toList(BiFunction)}, {@link #toSet(BiFunction)}
-     *             or {@link #toSortedSet(BiFunction)}
-     */
-    @Deprecated(/* forRemoval = true */)
-    public static <A, B, Mapped, Result extends Collection<Mapped>> BiConstraintCollector<A, B, ?, Result> toCollection(
-            BiFunction<A, B, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return InnerBiConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
-    }
-
-    /**
      * As defined by {@link #toSet(Function)}.
      */
     public static <A, B, Mapped> @NonNull BiConstraintCollector<A, B, ?, Set<Mapped>> toSet(
@@ -1165,16 +1018,6 @@ public final class ConstraintCollectors {
     public static <A, B, Mapped> @NonNull BiConstraintCollector<A, B, ?, List<Mapped>> toList(
             @NonNull BiFunction<A, B, Mapped> groupValueMapping) {
         return InnerBiConstraintCollectors.toList(groupValueMapping);
-    }
-
-    /**
-     * @deprecated Prefer {@link #toList(TriFunction)}, {@link #toSet(TriFunction)}
-     *             or {@link #toSortedSet(TriFunction)}
-     */
-    @Deprecated(/* forRemoval = true */)
-    public static <A, B, C, Mapped, Result extends Collection<Mapped>> TriConstraintCollector<A, B, C, ?, Result> toCollection(
-            TriFunction<A, B, C, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return InnerTriConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
     }
 
     /**
@@ -1208,16 +1051,6 @@ public final class ConstraintCollectors {
     public static <A, B, C, Mapped> @NonNull TriConstraintCollector<A, B, C, ?, List<Mapped>> toList(
             @NonNull TriFunction<A, B, C, Mapped> groupValueMapping) {
         return InnerTriConstraintCollectors.toList(groupValueMapping);
-    }
-
-    /**
-     * @deprecated Prefer {@link #toList(QuadFunction)}, {@link #toSet(QuadFunction)}
-     *             or {@link #toSortedSet(QuadFunction)}
-     */
-    @Deprecated(/* forRemoval = true */)
-    public static <A, B, C, D, Mapped, Result extends Collection<Mapped>> QuadConstraintCollector<A, B, C, D, ?, Result>
-            toCollection(QuadFunction<A, B, C, D, Mapped> groupValueMapping, IntFunction<Result> collectionFunction) {
-        return InnerQuadConstraintCollectors.toCollection(groupValueMapping, collectionFunction);
     }
 
     /**

@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.score.stream.PrecomputeFactory;
 /**
  * Determines the behavior of joins and conditional propagation
  * based on whether they are coming off of a constraint stream started by
- * either {@link ConstraintFactory#from(Class)}, {@link ConstraintFactory#forEach(Class)},
+ * either {@link ConstraintFactory#forEach(Class)},
  * or {@link PrecomputeFactory#forEachUnfiltered(Class)}
  * family of methods.
  *
@@ -37,20 +37,6 @@ public enum RetrievalSemantics {
      * <p>
      * Applies when the stream comes off of a {@link PrecomputeFactory#forEachUnfiltered(Class)} family of methods.
      */
-    PRECOMPUTE,
+    PRECOMPUTE
 
-    /**
-     * Joins include entities with null planning variables if these variables allow unassigned values.
-     * Conditional propagation always includes entities with null planning variables,
-     * regardless of whether their planning variables allow unassigned values.
-     *
-     * <p>
-     * Applies when the stream comes off of a {@link ConstraintFactory#from(Class)}
-     * family of methods.
-     *
-     * @deprecated this semantics is deprecated and kept around for backward compatibility reasons.
-     *             It will be removed in 2.0, together with the from() family of methods, along with this entire enum.
-     */
-    @Deprecated(forRemoval = true)
-    LEGACY
 }

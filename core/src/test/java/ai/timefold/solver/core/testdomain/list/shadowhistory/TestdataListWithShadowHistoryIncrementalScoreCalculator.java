@@ -67,7 +67,7 @@ public class TestdataListWithShadowHistoryIncrementalScoreCalculator
     }
 
     private DefaultConstraintMatchTotal<SimpleScore> update(TestdataListSolutionWithShadowHistory workingSolution) {
-        var constraintRef = ConstraintRef.of(getClass().getPackageName(), "testConstraint");
+        var constraintRef = ConstraintRef.of("testConstraint");
         var constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraintRef, SimpleScore.ONE);
         for (var e : workingSolution.getEntityList()) {
             int value = (int) Math.pow(e.getValueList().size(), 2);

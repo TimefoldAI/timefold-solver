@@ -14,7 +14,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
@@ -69,12 +68,9 @@ public abstract class AbstractConstraintStreamTest {
                 .sum();
         if (implSupport.constraintMatchPolicy().isJustificationEnabled()) {
             for (var assertableMatch : assertableMatches) {
-                var constraintPackage = assertableMatch.constraintPackage == null
-                        ? scoreDirector.getSolutionDescriptor().getSolutionClass().getPackage().getName()
-                        : assertableMatch.constraintPackage;
                 var constraintMatchTotals =
                         scoreDirector.getConstraintMatchTotalMap();
-                var constraintId = ConstraintRef.composeConstraintId(constraintPackage, assertableMatch.constraintName);
+                var constraintId = assertableMatch.constraintName;
                 var constraintMatchTotal = constraintMatchTotals.get(constraintId);
                 if (constraintMatchTotal == null) {
                     throw new IllegalStateException("Requested constraint matches for unknown constraint (" +
@@ -113,10 +109,6 @@ public abstract class AbstractConstraintStreamTest {
         return assertMatchWithScore(-1, justifications);
     }
 
-    protected static AssertableMatch assertMatch(String constraintPackage, String constraintName, Object... justifications) {
-        return assertMatchWithScore(-1, constraintPackage, constraintName, justifications);
-    }
-
     protected static AssertableMatch assertMatch(String constraintName, Object... justifications) {
         return assertMatchWithScore(-1, constraintName, justifications);
     }
@@ -129,34 +121,20 @@ public abstract class AbstractConstraintStreamTest {
         return new AssertableMatch(score, constraintName, justifications);
     }
 
-    protected static AssertableMatch assertMatchWithScore(int score, String constraintPackage, String constraintName,
-            Object... justifications) {
-        return new AssertableMatch(score, constraintPackage, constraintName, justifications);
-    }
-
     protected static class AssertableMatch {
 
         private final int score;
-        private final String constraintPackage;
         private final String constraintName;
         private final List<Object> justificationList;
 
         public AssertableMatch(int score, String constraintName, Object... justifications) {
-            this(score, null, constraintName, justifications);
-        }
-
-        public AssertableMatch(int score, String constraintPackage, String constraintName, Object... justifications) {
             this.justificationList = Arrays.asList(justifications);
-            this.constraintPackage = constraintPackage;
             this.constraintName = constraintName;
             this.score = score;
         }
 
         public boolean isEqualTo(ConstraintMatch<?> constraintMatch) {
             if (score != ((SimpleScore) constraintMatch.getScore()).score()) {
-                return false;
-            }
-            if (constraintPackage != null && !constraintPackage.equals(constraintMatch.getConstraintRef().packageName())) {
                 return false;
             }
             if (!constraintName.equals(constraintMatch.getConstraintRef().constraintName())) {
@@ -181,11 +159,7 @@ public abstract class AbstractConstraintStreamTest {
 
         @Override
         public String toString() {
-            if (constraintPackage == null) {
-                return constraintName + " " + justificationList + "=" + score;
-            } else {
-                return constraintPackage + "/" + constraintName + " " + justificationList + "=" + score;
-            }
+            return constraintName + " " + justificationList + "=" + score;
         }
 
     }

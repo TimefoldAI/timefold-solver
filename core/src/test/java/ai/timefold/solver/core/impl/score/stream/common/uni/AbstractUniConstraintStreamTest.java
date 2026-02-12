@@ -32,7 +32,6 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -652,45 +651,6 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    @Deprecated(forRemoval = true)
-    public void ifExistsIncludesNullVarsWithFrom() {
-        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
-        solution.getEntityGroupList().add(entityGroup);
-        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
-        solution.getEntityList().add(entity1);
-        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
-                solution.getFirstValue());
-        solution.getEntityList().add(entity2);
-        var entity3 = new TestdataLavishEntity("Entity with null var", solution.getFirstEntityGroup(), null);
-        solution.getEntityList().add(entity3);
-
-        // from() will skip entity3, as it is not initialized.
-        // ifExists() will still catch it, as it ignores that check.
-        var scoreDirector =
-                buildScoreDirector(factory -> factory.from(TestdataLavishEntity.class)
-                        .ifExistsOther(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
-                        .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
-
-        // From scratch
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity()),
-                assertMatch(entity2));
-
-        // Incremental
-        scoreDirector.beforeProblemPropertyChanged(entity2);
-        entity2.setEntityGroup(entityGroup);
-        scoreDirector.afterProblemPropertyChanged(entity2);
-        assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity()),
-                assertMatch(entity1),
-                assertMatch(entity2));
-    }
-
-    @Override
-    @TestTemplate
     public void ifNotExists_unknownClass() {
         assertThatThrownBy(() -> buildScoreDirector(factory -> factory.forEach(TestdataLavishValueGroup.class)
                 .ifNotExists(Integer.class)
@@ -854,37 +814,6 @@ public abstract class AbstractUniConstraintStreamTest
         assertScore(scoreDirector,
                 assertMatch(solution.getFirstEntity()),
                 assertMatch(entity1));
-    }
-
-    @Override
-    @TestTemplate
-    @Deprecated(forRemoval = true)
-    public void ifNotExistsIncludesNullVarsWithFrom() {
-        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
-        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
-        solution.getEntityGroupList().add(entityGroup);
-        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, solution.getFirstValue());
-        solution.getEntityList().add(entity1);
-        var entity2 = new TestdataLavishEntity("Entity with null var", solution.getFirstEntityGroup(), null);
-        solution.getEntityList().add(entity2);
-
-        var scoreDirector =
-                buildScoreDirector(factory -> factory.from(TestdataLavishEntity.class)
-                        .ifNotExistsOther(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
-                        .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
-
-        // From scratch
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch(entity1));
-
-        // Incremental
-        scoreDirector.beforeProblemPropertyChanged(entity2);
-        entity2.setEntityGroup(entityGroup);
-        scoreDirector.afterProblemPropertyChanged(entity2);
-        assertScore(scoreDirector,
-                assertMatch(solution.getFirstEntity()));
     }
 
     @TestTemplate
@@ -3202,13 +3131,10 @@ public abstract class AbstractUniConstraintStreamTest
         assertThat(scoreDirector.getIndictmentMap())
                 .containsOnlyKeys(entityList);
 
-        var constraintFqn =
-                ConstraintRef.composeConstraintId(scoreDirector.getSolutionDescriptor()
-                        .getSolutionClass().getPackageName(), TEST_CONSTRAINT_NAME);
         var constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
         assertThat(constraintMatchTotalMap)
-                .containsOnlyKeys(constraintFqn);
-        var constraintMatchTotal = constraintMatchTotalMap.get(constraintFqn);
+                .containsOnlyKeys(TEST_CONSTRAINT_NAME);
+        var constraintMatchTotal = constraintMatchTotalMap.get(TEST_CONSTRAINT_NAME);
         assertThat(constraintMatchTotal.getConstraintMatchSet())
                 .hasSize(entityList.size());
         List<ConstraintMatch<Score_>> constraintMatchList = new ArrayList<>(constraintMatchTotal.getConstraintMatchSet());
@@ -3488,13 +3414,10 @@ public abstract class AbstractUniConstraintStreamTest
         assertThat(scoreDirector.getIndictmentMap())
                 .containsOnlyKeys(entityList);
 
-        var constraintFqn =
-                ConstraintRef.composeConstraintId(scoreDirector.getSolutionDescriptor()
-                        .getSolutionClass().getPackageName(), TEST_CONSTRAINT_NAME);
         var constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
         assertThat(constraintMatchTotalMap)
-                .containsOnlyKeys(constraintFqn);
-        var constraintMatchTotal = constraintMatchTotalMap.get(constraintFqn);
+                .containsOnlyKeys(TEST_CONSTRAINT_NAME);
+        var constraintMatchTotal = constraintMatchTotalMap.get(TEST_CONSTRAINT_NAME);
         assertThat(constraintMatchTotal.getConstraintMatchSet())
                 .hasSize(entityList.size());
         List<ConstraintMatch<Score_>> constraintMatchList = new ArrayList<>(constraintMatchTotal.getConstraintMatchSet());
@@ -3867,27 +3790,6 @@ public abstract class AbstractUniConstraintStreamTest
     }
 
     @TestTemplate
-    @Deprecated(forRemoval = true)
-    public void fromIncludesNullWhenAllowsUnassigned() {
-        var solution = TestdataAllowsUnassignedSolution.generateSolution();
-        var entityWithNull = solution.getEntityList().get(0);
-        var entityWithValue = solution.getEntityList().get(1);
-
-        InnerScoreDirector<TestdataAllowsUnassignedSolution, SimpleScore> scoreDirector = buildScoreDirector(
-                TestdataAllowsUnassignedSolution.buildSolutionDescriptor(),
-                constraintFactory -> new Constraint[] {
-                        constraintFactory.from(TestdataAllowsUnassignedEntity.class)
-                                .penalize(SimpleScore.ONE)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector,
-                assertMatch(entityWithNull),
-                assertMatch(entityWithValue));
-    }
-
-    @TestTemplate
     public void constraintProvidedFromUnknownPackage() throws ClassNotFoundException, NoSuchMethodException,
             InvocationTargetException, IllegalAccessException {
         var clz = Class.forName("TestdataInUnnamedPackageSolution");
@@ -3901,7 +3803,7 @@ public abstract class AbstractUniConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch("unnamed.package", "Always penalize", entityList.get(0)));
+                assertMatch("Always penalize", entityList.get(0)));
     }
 
 }

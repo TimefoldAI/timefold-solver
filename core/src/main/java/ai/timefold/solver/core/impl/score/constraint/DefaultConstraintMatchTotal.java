@@ -11,7 +11,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
-import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -31,40 +30,6 @@ public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> imp
 
     private final Set<ConstraintMatch<Score_>> constraintMatchSet = new LinkedHashSet<>();
     private Score_ score;
-
-    /**
-     * @deprecated Prefer {@link #DefaultConstraintMatchTotal(ConstraintRef, Score_)}.
-     */
-    @Deprecated(forRemoval = true, since = "1.4.0")
-    public DefaultConstraintMatchTotal(String constraintPackage, String constraintName) {
-        this(ConstraintRef.of(constraintPackage, constraintName));
-    }
-
-    /**
-     *
-     * @deprecated Prefer {@link #DefaultConstraintMatchTotal(ConstraintRef, Score_)}.
-     */
-    @Deprecated(forRemoval = true, since = "1.5.0")
-    public DefaultConstraintMatchTotal(ConstraintRef constraintRef) {
-        this.constraintRef = requireNonNull(constraintRef);
-        this.constraintWeight = null;
-    }
-
-    /**
-     * @deprecated Prefer {@link #DefaultConstraintMatchTotal(ConstraintRef, Score_)}.
-     */
-    @Deprecated(forRemoval = true, since = "1.4.0")
-    public DefaultConstraintMatchTotal(Constraint constraint, Score_ constraintWeight) {
-        this(constraint.getConstraintRef(), constraintWeight);
-    }
-
-    /**
-     * @deprecated Prefer {@link #DefaultConstraintMatchTotal(ConstraintRef, Score_)}.
-     */
-    @Deprecated(forRemoval = true, since = "1.4.0")
-    public DefaultConstraintMatchTotal(String constraintPackage, String constraintName, Score_ constraintWeight) {
-        this(ConstraintRef.of(constraintPackage, constraintName), constraintWeight);
-    }
 
     public DefaultConstraintMatchTotal(ConstraintRef constraintRef, Score_ constraintWeight) {
         this.constraintRef = requireNonNull(constraintRef);

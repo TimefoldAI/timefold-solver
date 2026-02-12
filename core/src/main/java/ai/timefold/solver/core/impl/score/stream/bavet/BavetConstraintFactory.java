@@ -36,27 +36,13 @@ import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class BavetConstraintFactory<Solution_>
         extends InnerConstraintFactory<Solution_, BavetConstraint<Solution_>> {
 
-    /**
-     * Used for code in no package, also called the "unnamed package".
-     * Classes here can only be instantiated via reflection,
-     * they cannot be imported and used directly.
-     * But still, in corner cases such as Kotlin notebooks,
-     * all code is in the unnamed package.
-     * Assume a constraint provider under these conditions,
-     * where asConstraint(...) only specifies constraint name, not constraint package.
-     * In this situation, the default constraint package is used.
-     */
-    private static final String DEFAULT_CONSTRAINT_PACKAGE = "unnamed.package";
-
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final EnvironmentMode environmentMode;
-    private final String defaultConstraintPackage;
 
     private final Map<BavetAbstractConstraintStream<Solution_>, BavetAbstractConstraintStream<Solution_>> sharingStreamMap =
             new HashMap<>(256);
@@ -64,21 +50,6 @@ public final class BavetConstraintFactory<Solution_>
     public BavetConstraintFactory(SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
         this.solutionDescriptor = solutionDescriptor;
         this.environmentMode = Objects.requireNonNull(environmentMode);
-        var weightSupplier = solutionDescriptor.getConstraintWeightSupplier();
-        if (weightSupplier == null) {
-            defaultConstraintPackage = determineDefaultConstraintPackage(solutionDescriptor.getSolutionClass().getPackage());
-        } else {
-            defaultConstraintPackage = determineDefaultConstraintPackage(weightSupplier.getDefaultConstraintPackage());
-        }
-    }
-
-    private static String determineDefaultConstraintPackage(@Nullable Package pkg) {
-        var asString = pkg == null ? "" : pkg.getName();
-        return determineDefaultConstraintPackage(asString);
-    }
-
-    private static String determineDefaultConstraintPackage(@Nullable String constraintPackage) {
-        return constraintPackage == null || constraintPackage.isEmpty() ? DEFAULT_CONSTRAINT_PACKAGE : constraintPackage;
     }
 
     public <Stream_ extends BavetAbstractConstraintStream<Solution_>> Stream_ share(Stream_ stream) {
@@ -193,20 +164,6 @@ public final class BavetConstraintFactory<Solution_>
     }
 
     @Override
-    public <A> UniConstraintStream<A> from(Class<A> fromClass) {
-        assertValidFromType(fromClass);
-        var entityDescriptor = solutionDescriptor.findEntityDescriptor(fromClass);
-        if (entityDescriptor != null && entityDescriptor.isGenuine()) {
-            var predicate = (Predicate<A>) entityDescriptor.getIsInitializedPredicate();
-            return share(
-                    new BavetForEachUniConstraintStream<>(this, fromClass, new PredicateSupplier<>(predicate),
-                            RetrievalSemantics.LEGACY));
-        } else {
-            return share(new BavetForEachUniConstraintStream<>(this, fromClass, null, RetrievalSemantics.LEGACY));
-        }
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
     public <Stream_ extends ConstraintStream> Stream_
             precompute(Function<PrecomputeFactory, Stream_> precomputeSupplier) {
@@ -239,12 +196,6 @@ public final class BavetConstraintFactory<Solution_>
         }
     }
 
-    @Override
-    public <A> UniConstraintStream<A> fromUnfiltered(Class<A> fromClass) {
-        assertValidFromType(fromClass);
-        return share(new BavetForEachUniConstraintStream<>(this, fromClass, null, RetrievalSemantics.LEGACY));
-    }
-
     // ************************************************************************
     // Getters/setters
     // ************************************************************************
@@ -256,11 +207,6 @@ public final class BavetConstraintFactory<Solution_>
 
     public EnvironmentMode getEnvironmentMode() {
         return environmentMode;
-    }
-
-    @Override
-    public String getDefaultConstraintPackage() {
-        return defaultConstraintPackage;
     }
 
 }

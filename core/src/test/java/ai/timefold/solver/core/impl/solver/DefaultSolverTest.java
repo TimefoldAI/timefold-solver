@@ -2089,7 +2089,7 @@ class DefaultSolverTest {
 
         @Override
         public @NonNull Collection<ConstraintMatchTotal<SimpleScore>> getConstraintMatchTotals() {
-            return Collections.singletonList(new DefaultConstraintMatchTotal<>(ConstraintRef.of("a", "b"), SimpleScore.of(1)));
+            return Collections.singletonList(new DefaultConstraintMatchTotal<>(ConstraintRef.of("b"), SimpleScore.of(1)));
         }
 
         @Override

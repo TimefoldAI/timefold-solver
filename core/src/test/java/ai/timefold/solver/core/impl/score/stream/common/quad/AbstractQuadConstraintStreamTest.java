@@ -28,7 +28,6 @@ import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecim
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
@@ -308,13 +307,6 @@ public abstract class AbstractQuadConstraintStreamTest
 
     @Override
     @TestTemplate
-    @Deprecated(forRemoval = true)
-    @Disabled("Would cause too many matches to meaningfully assert; cost-benefit ratio is wrong here.")
-    public void ifExistsIncludesNullVarsWithFrom() {
-    }
-
-    @Override
-    @TestTemplate
     public void ifNotExists_unknownClass() {
         assertThatThrownBy(() -> buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                 .join(TestdataLavishEntityGroup.class, equal(TestdataLavishEntity::getEntityGroup, identity()))
@@ -469,14 +461,6 @@ public abstract class AbstractQuadConstraintStreamTest
     @TestTemplate
     @Disabled("Would cause too many matches to meaningfully assert; cost-benefit ratio is wrong here.")
     public void ifNotExistsDoesNotIncludeUnassigned() {
-
-    }
-
-    @Override
-    @TestTemplate
-    @Deprecated(forRemoval = true)
-    @Disabled("Would cause too many matches to meaningfully assert; cost-benefit ratio is wrong here.")
-    public void ifNotExistsIncludesNullVarsWithFrom() {
 
     }
 
@@ -739,8 +723,8 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity1.toString(), 2, singleton(entity1)),
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity2.toString(), 1, singleton(entity2)));
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity1.toString(), 2, singleton(entity1)),
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity2.toString(), 1, singleton(entity2)));
 
         // Incremental
         TestdataLavishEntity entity = solution.getFirstEntity();
@@ -748,7 +732,7 @@ public abstract class AbstractQuadConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity2.toString(), 1, singleton(entity2)));
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity2.toString(), 1, singleton(entity2)));
     }
 
     @Override
@@ -777,9 +761,9 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity1.toString(), Long.MAX_VALUE, Long.MAX_VALUE,
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity1.toString(), Long.MAX_VALUE, Long.MAX_VALUE,
                         singleton(entity1)),
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
                         singleton(entity2)));
 
         // Incremental
@@ -788,7 +772,7 @@ public abstract class AbstractQuadConstraintStreamTest
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, null, TEST_CONSTRAINT_NAME, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
+                assertMatchWithScore(-1, TEST_CONSTRAINT_NAME, entity2.toString(), Long.MIN_VALUE, Long.MIN_VALUE,
                         singleton(entity2)));
     }
 
@@ -1251,7 +1235,7 @@ public abstract class AbstractQuadConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch(null, TEST_CONSTRAINT_NAME, solution.getFirstEntity().getCode(),
+                assertMatch(TEST_CONSTRAINT_NAME, solution.getFirstEntity().getCode(),
                         solution.getEntityList().get(1).getCode(), solution.getFirstEntityGroup().getCode(),
                         solution.getEntityGroupList().get(1).getCode()));
 
@@ -2129,13 +2113,10 @@ public abstract class AbstractQuadConstraintStreamTest
                         valueList.get(0),
                         valueList.get(1));
 
-        String constraintFqn =
-                ConstraintRef.composeConstraintId(scoreDirector.getSolutionDescriptor()
-                        .getSolutionClass().getPackageName(), TEST_CONSTRAINT_NAME);
         Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
         assertThat(constraintMatchTotalMap)
-                .containsOnlyKeys(constraintFqn);
-        ConstraintMatchTotal<Score_> constraintMatchTotal = constraintMatchTotalMap.get(constraintFqn);
+                .containsOnlyKeys(TEST_CONSTRAINT_NAME);
+        ConstraintMatchTotal<Score_> constraintMatchTotal = constraintMatchTotalMap.get(TEST_CONSTRAINT_NAME);
         assertThat(constraintMatchTotal.getConstraintMatchSet())
                 .hasSize(2);
         List<ConstraintMatch<Score_>> constraintMatchList = new ArrayList<>(constraintMatchTotal.getConstraintMatchSet());
@@ -2454,13 +2435,10 @@ public abstract class AbstractQuadConstraintStreamTest
                         valueList.get(0),
                         valueList.get(1));
 
-        String constraintFqn =
-                ConstraintRef.composeConstraintId(scoreDirector.getSolutionDescriptor()
-                        .getSolutionClass().getPackageName(), TEST_CONSTRAINT_NAME);
         Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
         assertThat(constraintMatchTotalMap)
-                .containsOnlyKeys(constraintFqn);
-        ConstraintMatchTotal<Score_> constraintMatchTotal = constraintMatchTotalMap.get(constraintFqn);
+                .containsOnlyKeys(TEST_CONSTRAINT_NAME);
+        ConstraintMatchTotal<Score_> constraintMatchTotal = constraintMatchTotalMap.get(TEST_CONSTRAINT_NAME);
         assertThat(constraintMatchTotal.getConstraintMatchSet())
                 .hasSize(2);
         List<ConstraintMatch<Score_>> constraintMatchList = new ArrayList<>(constraintMatchTotal.getConstraintMatchSet());

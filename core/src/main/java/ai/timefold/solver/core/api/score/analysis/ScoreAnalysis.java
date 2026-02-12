@@ -126,27 +126,9 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
     }
 
     /**
-     * As defined by {@link #getConstraintAnalysis(ConstraintRef)}
-     * where the arguments are first composed into a singular constraint ID.
-     *
-     * @return null if no constraint matches of such constraint are present
-     * @deprecated Use {@link #getConstraintAnalysis(String)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.13.0")
-    public @Nullable ConstraintAnalysis<Score_> getConstraintAnalysis(@NonNull String constraintPackage,
-            @NonNull String constraintName) {
-        return getConstraintAnalysis(ConstraintRef.of(constraintPackage, constraintName));
-    }
-
-    /**
      * As defined by {@link #getConstraintAnalysis(ConstraintRef)}.
      *
      * @return null if no constraint matches of such constraint are present
-     * @throws IllegalStateException if multiple constraints with the same name are present,
-     *         which is possible if they are in different constraint packages.
-     *         Constraint packages are deprecated, we recommend avoiding them and instead naming constraints uniquely.
-     *         If you must use constraint packages, see {@link #getConstraintAnalysis(String, String)}
-     *         (also deprecated) and reach out to us to discuss your use case.
      */
     public @Nullable ConstraintAnalysis<Score_> getConstraintAnalysis(@NonNull String constraintName) {
         var constraintAnalysisList = constraintMap.entrySet()
@@ -157,11 +139,8 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
         return switch (constraintAnalysisList.size()) {
             case 0 -> null;
             case 1 -> constraintAnalysisList.get(0);
-            default -> throw new IllegalStateException("""
-                    Multiple constraints with the same name (%s) are present in the score analysis.
-                    This may be caused by the use of multiple constraint packages, a deprecated feature.
-                    Please avoid using constraint packages and keep constraint names unique."""
-                    .formatted(constraintName));
+            default -> throw new IllegalStateException(
+                    "Impossible state: Multiple constraints with the same name (%s) are present in the score analysis.");
         };
     }
 

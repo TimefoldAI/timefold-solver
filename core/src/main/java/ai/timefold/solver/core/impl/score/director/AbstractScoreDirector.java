@@ -1032,7 +1032,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     """.formatted(workingLabel, matches.size(), suffix));
             matches.stream().sorted().limit(CONSTRAINT_MATCH_DISPLAY_LIMIT).forEach(match -> analysis.append("""
                         %s/%s=%s
-                    """.formatted(match.constraintRef().constraintId(), match.justification(), match.score())));
+                    """.formatted(match.constraintRef().constraintName(), match.justification(), match.score())));
             if (matches.size() >= CONSTRAINT_MATCH_DISPLAY_LIMIT) {
                 analysis.append("""
                             ... %s more

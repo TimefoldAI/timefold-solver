@@ -27,7 +27,7 @@ public final class ConstraintMatchTotalStepScoreSubSingleStatisticTest
     protected List<ConstraintMatchTotalStepScoreStatisticPoint> getInputPoints() {
         return Collections
                 .singletonList(new ConstraintMatchTotalStepScoreStatisticPoint(Long.MAX_VALUE,
-                        ConstraintRef.of("CN", "CP"),
+                        ConstraintRef.of("CP"),
                         Integer.MAX_VALUE, SimpleScore.of(Integer.MAX_VALUE)));
     }
 
@@ -36,7 +36,7 @@ public final class ConstraintMatchTotalStepScoreSubSingleStatisticTest
         assertions.assertThat(outputPoints)
                 .hasSize(1)
                 .first()
-                .matches(s -> Objects.equals(s.getConstraintRef().constraintId(), "CN/CP"), "Constraint IDs do not match.")
+                .matches(s -> Objects.equals(s.getConstraintRef().constraintName(), "CP"), "Constraint names do not match.")
                 .matches(s -> s.getConstraintMatchCount() == Integer.MAX_VALUE, "Constraint match counts do not match.")
                 .matches(s -> s.getScoreTotal().equals(SimpleScore.of(Integer.MAX_VALUE)), "Scores do not match.")
                 .matches(s -> s.getTimeMillisSpent() == Long.MAX_VALUE, "Millis do not match.");

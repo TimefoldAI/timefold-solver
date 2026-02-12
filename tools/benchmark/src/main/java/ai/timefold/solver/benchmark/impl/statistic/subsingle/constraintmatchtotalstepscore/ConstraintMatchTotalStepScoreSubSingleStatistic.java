@@ -47,8 +47,8 @@ public class ConstraintMatchTotalStepScoreSubSingleStatistic<Solution_>
     protected ConstraintMatchTotalStepScoreStatisticPoint createPointFromCsvLine(ScoreDefinition<?> scoreDefinition,
             List<String> csvLine) {
         return new ConstraintMatchTotalStepScoreStatisticPoint(Long.parseLong(csvLine.get(0)),
-                ConstraintRef.of(csvLine.get(1), csvLine.get(2)), Integer.parseInt(csvLine.get(3)),
-                scoreDefinition.parseScore(csvLine.get(4)));
+                ConstraintRef.of(csvLine.get(1)), Integer.parseInt(csvLine.get(2)),
+                scoreDefinition.parseScore(csvLine.get(3)));
     }
 
     @Override

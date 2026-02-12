@@ -12,6 +12,8 @@
 - [ ] `ConstraintStreamImplType` is gone; configs, Quarkus, Spring, constraint verifier.
 - [ ] Removal of PiggyBack
 - [ ] Removal of VariableListener together with all related shadow variables
-- [ ] Removal of old environment modes
+- [ ] Removal of old environment modes (Migration script?)
+- [ ] `ConstraintConfiguration` replaced by `ConstraintWeightOverrides` (copy from 1.x upgrade recipe).
+- [ ] `ConstraintRef.of()` now only accepts name, not package and name. (Migration script!)
 
 Remove this file when done.

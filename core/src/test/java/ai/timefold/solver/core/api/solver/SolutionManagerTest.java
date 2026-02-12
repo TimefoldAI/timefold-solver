@@ -400,7 +400,7 @@ public class SolutionManagerTest {
             softly.assertThat(scoreExplanation.getScore()).isNotNull();
             softly.assertThat(scoreExplanation.getSummary()).isNotBlank();
             softly.assertThat(scoreExplanation.getConstraintMatchTotalMap())
-                    .containsOnlyKeys("ai.timefold.solver.core.testdomain.shadow/testConstraint");
+                    .containsOnlyKeys("testConstraint");
             softly.assertThat(scoreExplanation.getIndictmentMap())
                     .containsOnlyKeys(solution.getEntityList().toArray());
 

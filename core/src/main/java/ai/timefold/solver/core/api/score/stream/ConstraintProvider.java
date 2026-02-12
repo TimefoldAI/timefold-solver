@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.api.score.stream;
 
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.score.Score;
 
 import org.jspecify.annotations.NonNull;
@@ -17,7 +16,7 @@ public interface ConstraintProvider {
      * To create a {@link Constraint}, start with {@link ConstraintFactory#forEach(Class)}.
      *
      * @return an array of all {@link Constraint constraints} that could apply.
-     *         The constraints with a zero {@link ConstraintWeight} for a particular problem
+     *         The constraints with a zero weight for a particular problem
      *         will be automatically disabled when scoring that problem, to improve performance.
      */
     Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory);

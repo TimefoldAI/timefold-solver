@@ -16,8 +16,8 @@ public final class TestConstraint<Solution_, Score_ extends Score<Score_>>
 
     public TestConstraint(TestConstraintFactory<Solution_, Score_> constraintFactory, String constraintName,
             String constraintGroup, Score_ constraintWeight) {
-        super(constraintFactory, ConstraintRef.of(constraintFactory.getDefaultConstraintPackage(), constraintName), "",
-                constraintGroup, constraintWeight, ScoreImpactType.REWARD, null, null);
+        super(constraintFactory, ConstraintRef.of(constraintName), "", constraintGroup, constraintWeight,
+                ScoreImpactType.REWARD, null, null);
     }
 
 }

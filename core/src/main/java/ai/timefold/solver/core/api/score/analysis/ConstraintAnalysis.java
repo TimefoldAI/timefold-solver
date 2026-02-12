@@ -175,17 +175,6 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
     }
 
     /**
-     * Return package name of the constraint that this analysis is for.
-     *
-     * @return equal to {@code constraintRef.packageName()}
-     * @deprecated Do not rely on constraint package in user code.
-     */
-    @Deprecated(forRemoval = true, since = "1.13.0")
-    public String constraintPackage() {
-        return constraintRef.packageName();
-    }
-
-    /**
      * Return name of the constraint that this analysis is for.
      *
      * @return equal to {@code constraintRef.constraintName()}

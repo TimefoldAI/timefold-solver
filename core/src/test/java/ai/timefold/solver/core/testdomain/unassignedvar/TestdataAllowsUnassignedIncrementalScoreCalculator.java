@@ -74,9 +74,7 @@ public class TestdataAllowsUnassignedIncrementalScoreCalculator
     }
 
     private DefaultConstraintMatchTotal<SimpleScore> update() {
-        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(
-                ConstraintRef.of(getClass().getPackageName(), "testConstraint"),
-                SimpleScore.ONE);
+        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(ConstraintRef.of("testConstraint"), SimpleScore.ONE);
         this.indictmentMap = new HashMap<>();
         for (TestdataAllowsUnassignedEntity left : workingSolution.getEntityList()) {
             TestdataValue value = left.getValue();
