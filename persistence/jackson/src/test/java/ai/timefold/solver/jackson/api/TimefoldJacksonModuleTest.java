@@ -282,7 +282,7 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
     @Test
     void testServiceProvider() {
-        ServiceLoader<JacksonModule > loader = ServiceLoader.load(JacksonModule.class);
+        ServiceLoader<JacksonModule> loader = ServiceLoader.load(JacksonModule.class);
         assertThat(loader).hasSizeGreaterThan(0);
     }
 
