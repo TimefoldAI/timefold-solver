@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
@@ -30,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.JacksonModule;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
@@ -240,6 +242,12 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
         var deserialized = objectMapper.readValue(serialized, ConstraintWeightOverrides.class);
         assertThat(deserialized).isEqualTo(constraintWeightOverrides);
+    }
+
+    @Test
+    void testServiceProvider() {
+        ServiceLoader<JacksonModule> loader = ServiceLoader.load(JacksonModule.class);
+        assertThat(loader).hasSizeGreaterThan(0);
     }
 
     public static final class CustomJacksonModule extends SimpleModule {
