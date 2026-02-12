@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 120
     steps:
       # Clone timefold-solver
-      # No need to check for stale repo, as GitHub merges the main repo into the fork automatically.
+      # No need to check for stale repo, as GitHub merges the main repo into the fork automatically.xx
       - name: Checkout timefold-solver
         uses: actions/checkout@v6
         with:
