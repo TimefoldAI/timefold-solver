@@ -1,10 +1,9 @@
 package ai.timefold.solver.core.impl.score.definition;
 
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
-import ai.timefold.solver.core.impl.score.buildin.HardSoftScoreDefinition;
+import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
 /**

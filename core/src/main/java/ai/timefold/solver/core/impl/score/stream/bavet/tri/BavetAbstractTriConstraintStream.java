@@ -14,7 +14,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
@@ -466,7 +465,7 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
 
     @Override
     public <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> innerImpact(Score_ constraintWeight,
-            ToIntTriFunction<A, B, C> matchWeigher, ScoreImpactType scoreImpactType) {
+            ToLongTriFunction<A, B, C> matchWeigher, ScoreImpactType scoreImpactType) {
         var stream = shareAndAddChild(new BavetScoringTriConstraintStream<>(constraintFactory, this, matchWeigher));
         return newTerminator(stream, constraintWeight, scoreImpactType);
     }
@@ -479,13 +478,6 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
                                 constraintDescription, constraintGroup, constraintWeight_, impactType_, justificationMapping,
                                 indictedObjectsMapping, stream),
                 impactType, constraintWeight);
-    }
-
-    @Override
-    public <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> innerImpact(Score_ constraintWeight,
-            ToLongTriFunction<A, B, C> matchWeigher, ScoreImpactType scoreImpactType) {
-        var stream = shareAndAddChild(new BavetScoringTriConstraintStream<>(constraintFactory, this, matchWeigher));
-        return newTerminator(stream, constraintWeight, scoreImpactType);
     }
 
     @Override

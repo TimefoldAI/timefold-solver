@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.stream.bavet.bi;
 
 import java.math.BigDecimal;
 import java.util.function.BiFunction;
-import java.util.function.ToIntBiFunction;
 import java.util.function.ToLongBiFunction;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -19,12 +18,6 @@ final class BavetScoringBiConstraintStream<Solution_, A, B>
 
     private final BiImpactHandler<A, B> scoreImpact;
     private BavetConstraint<Solution_> constraint;
-
-    public BavetScoringBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractBiConstraintStream<Solution_, A, B> parent, ToIntBiFunction<A, B> intMatchWeigher) {
-        super(constraintFactory, parent);
-        this.scoreImpact = new BiIntImpactHandler<>(intMatchWeigher);
-    }
 
     public BavetScoringBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetAbstractBiConstraintStream<Solution_, A, B> parent, ToLongBiFunction<A, B> longMatchWeigher) {

@@ -23,7 +23,6 @@ Create the `src/main/java/org/acme/vehiclerouting/domain/VehicleRoutePlan.java` 
 ----
 package org.acme.vehiclerouting.domain;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -31,7 +30,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionPrope
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 
 import org.acme.vehiclerouting.domain.geo.DrivingTimeCalculator;
@@ -48,7 +47,7 @@ public class VehicleRoutePlan {
     private List<Visit> visits;
 
     @PlanningScore
-    private HardSoftLongScore score;
+    private HardSoftScore score;
 
     // Fields and constructors used for visualization excluded
 
@@ -92,7 +91,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionPrope
 import ai.timefold.solver.core.api.domain.solution.PlanningScore
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore
+import ai.timefold.solver.core.api.score.HardSoftScore
 import ai.timefold.solver.core.api.solver.SolverStatus
 
 import org.acme.vehiclerouting.domain.geo.DrivingTimeCalculator
@@ -112,7 +111,7 @@ class VehicleRoutePlan {
         private set
 
     @PlanningScore
-    var score: HardSoftLongScore? = null
+    var score: HardSoftScore? = null
 
     // Fields and constructors used for visualization excluded
 

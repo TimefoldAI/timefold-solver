@@ -28,9 +28,8 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
+import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
@@ -58,7 +57,6 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.testdomain.score.TestdataSimpleBigDecimalScoreSolution;
-import ai.timefold.solver.core.testdomain.score.TestdataSimpleLongScoreSolution;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishExtra;
@@ -3091,24 +3089,6 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void penalizeUnweightedLong() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEach(TestdataEntity.class)
-                                .penalizeLong(SimpleLongScore.ONE)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-7));
-        assertDefaultJustifications(scoreDirector, solution.getEntityList());
-    }
-
-    @Override
-    @TestTemplate
     public void penalizeUnweightedBigDecimal() {
         TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
@@ -3172,24 +3152,6 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void penalizeLong() {
-        var solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEach(TestdataEntity.class)
-                                .penalizeLong(SimpleLongScore.ONE, entity -> 2L)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-14));
-        assertDefaultJustifications(scoreDirector, solution.getEntityList());
-    }
-
-    @Override
-    @TestTemplate
     public void penalizeBigDecimal() {
         var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
@@ -3231,24 +3193,6 @@ public abstract class AbstractUniConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(14));
-        assertDefaultJustifications(scoreDirector, solution.getEntityList());
-    }
-
-    @Override
-    @TestTemplate
-    public void rewardLong() {
-        var solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEach(TestdataEntity.class)
-                                .rewardLong(SimpleLongScore.ONE, entity -> 2L)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(14));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3302,24 +3246,6 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void impactPositiveLong() {
-        var solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEach(TestdataEntity.class)
-                                .impactLong(SimpleLongScore.ONE, entity -> 2L)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(14));
-        assertDefaultJustifications(scoreDirector, solution.getEntityList());
-    }
-
-    @Override
-    @TestTemplate
     public void impactPositiveBigDecimal() {
         var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
@@ -3349,24 +3275,6 @@ public abstract class AbstractUniConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-14));
-        assertDefaultJustifications(scoreDirector, solution.getEntityList());
-    }
-
-    @Override
-    @TestTemplate
-    public void impactNegativeLong() {
-        var solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEach(TestdataEntity.class)
-                                .impactLong(SimpleLongScore.ONE, entity -> -2L)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-14));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3457,26 +3365,6 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void penalizeLongCustomJustifications() {
-        var solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEach(TestdataEntity.class)
-                                .penalizeLong(SimpleLongScore.ONE, entity -> 2L)
-                                .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                                .indictWith(Set::of)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-14));
-        assertCustomJustifications(scoreDirector, solution.getEntityList());
-    }
-
-    @Override
-    @TestTemplate
     public void penalizeBigDecimalCustomJustifications() {
         var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
@@ -3524,26 +3412,6 @@ public abstract class AbstractUniConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(14));
-        assertCustomJustifications(scoreDirector, solution.getEntityList());
-    }
-
-    @Override
-    @TestTemplate
-    public void rewardLongCustomJustifications() {
-        var solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEach(TestdataEntity.class)
-                                .rewardLong(SimpleLongScore.ONE, entity -> 2L)
-                                .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                                .indictWith(Set::of)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(14));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3603,26 +3471,6 @@ public abstract class AbstractUniConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void impactPositiveLongCustomJustifications() {
-        var solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEach(TestdataEntity.class)
-                                .impactLong(SimpleLongScore.ONE, entity -> 2L)
-                                .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                                .indictWith(Set::of)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(14));
-        assertCustomJustifications(scoreDirector, solution.getEntityList());
-    }
-
-    @Override
-    @TestTemplate
     public void impactPositiveBigDecimalCustomJustifications() {
         var solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
@@ -3656,26 +3504,6 @@ public abstract class AbstractUniConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-14));
-        assertCustomJustifications(scoreDirector, solution.getEntityList());
-    }
-
-    @Override
-    @TestTemplate
-    public void impactNegativeLongCustomJustifications() {
-        var solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEach(TestdataEntity.class)
-                                .impactLong(SimpleLongScore.ONE, entity -> -2L)
-                                .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                                .indictWith(Set::of)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-14));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 

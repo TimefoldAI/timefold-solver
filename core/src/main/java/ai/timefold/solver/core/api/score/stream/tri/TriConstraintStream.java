@@ -2,7 +2,6 @@ package ai.timefold.solver.core.api.score.stream.tri;
 
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOne;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneBigDecimal;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneLong;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
@@ -17,7 +16,6 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.function.QuadPredicate;
-import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
@@ -1305,20 +1303,11 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
     // ************************************************************************
 
     /**
-     * As defined by {@link #penalize(Score, ToIntTriFunction)}, where the match weight is one (1).
+     * As defined by {@link #penalize(Score, ToLongTriFunction)}, where the match weight is one (1).
      */
     default <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_>
             penalize(@NonNull Score_ constraintWeight) {
-        return penalize(constraintWeight, triConstantOne());
-    }
-
-    /**
-     * As defined by {@link #penalizeLong(Score, ToLongTriFunction)}, where the match weight is one (1).
-     *
-     */
-    default <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_>
-            penalizeLong(@NonNull Score_ constraintWeight) {
-        return penalizeLong(constraintWeight, triConstantOneLong());
+        return penalize(constraintWeight, triConstantOneLong());
     }
 
     /**
@@ -1337,33 +1326,25 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * The constraintWeight specified here can be overridden using {@link ConstraintWeightOverrides}
      * on the {@link PlanningSolution}-annotated class
-     * <p>
-     * For non-int {@link Score} types use {@link #penalizeLong(Score, ToLongTriFunction)} or
-     * {@link #penalizeBigDecimal(Score, TriFunction)} instead.
      *
      * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
+     * @see #penalizeBigDecimal(Score, TriFunction) You may use BigDecimal instead of long.
      */
     <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> penalize(@NonNull Score_ constraintWeight,
-            @NonNull ToIntTriFunction<A, B, C> matchWeigher);
-
-    /**
-     * As defined by {@link #penalize(Score, ToIntTriFunction)}, with a penalty of type long.
-     */
-    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> penalizeLong(@NonNull Score_ constraintWeight,
             @NonNull ToLongTriFunction<A, B, C> matchWeigher);
 
     /**
-     * As defined by {@link #penalize(Score, ToIntTriFunction)}, with a penalty of type {@link BigDecimal}.
+     * As defined by {@link #penalize(Score, ToLongTriFunction)}, with a penalty of type {@link BigDecimal}.
      */
     <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> penalizeBigDecimal(
             @NonNull Score_ constraintWeight, @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher);
 
     /**
-     * As defined by {@link #reward(Score, ToIntTriFunction)}, where the match weight is one (1).
+     * As defined by {@link #reward(Score, ToLongTriFunction)}, where the match weight is one (1).
      */
     default <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_>
             reward(@NonNull Score_ constraintWeight) {
-        return reward(constraintWeight, triConstantOne());
+        return reward(constraintWeight, triConstantOneLong());
     }
 
     /**
@@ -1373,23 +1354,15 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * The constraintWeight specified here can be overridden using {@link ConstraintWeightOverrides}
      * on the {@link PlanningSolution}-annotated class
-     * <p>
-     * For non-int {@link Score} types use {@link #rewardLong(Score, ToLongTriFunction)} or
-     * {@link #rewardBigDecimal(Score, TriFunction)} instead.
      *
      * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
+     * @see #rewardBigDecimal(Score, TriFunction) You may use BigDecimal instead of long.
      */
     <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> reward(@NonNull Score_ constraintWeight,
-            @NonNull ToIntTriFunction<A, B, C> matchWeigher);
-
-    /**
-     * As defined by {@link #reward(Score, ToIntTriFunction)}, with a penalty of type long.
-     */
-    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> rewardLong(@NonNull Score_ constraintWeight,
             @NonNull ToLongTriFunction<A, B, C> matchWeigher);
 
     /**
-     * As defined by {@link #reward(Score, ToIntTriFunction)}, with a penalty of type {@link BigDecimal}.
+     * As defined by {@link #reward(Score, ToLongTriFunction)}, with a penalty of type {@link BigDecimal}.
      */
     <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> rewardBigDecimal(
             @NonNull Score_ constraintWeight, @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher);
@@ -1403,7 +1376,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      */
     default <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_>
             impact(@NonNull Score_ constraintWeight) {
-        return impact(constraintWeight, triConstantOne());
+        return impact(constraintWeight, triConstantOneLong());
     }
 
     /**
@@ -1417,18 +1390,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * negative weights.
      *
      * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
+     * @see #impactBigDecimal(Score, TriFunction) You may use BigDecimal instead of long.
      */
     <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> impact(@NonNull Score_ constraintWeight,
-            @NonNull ToIntTriFunction<A, B, C> matchWeigher);
-
-    /**
-     * As defined by {@link #impact(Score, ToIntTriFunction)}, with an impact of type long.
-     */
-    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> impactLong(@NonNull Score_ constraintWeight,
             @NonNull ToLongTriFunction<A, B, C> matchWeigher);
 
     /**
-     * As defined by {@link #impact(Score, ToIntTriFunction)}, with an impact of type {@link BigDecimal}.
+     * As defined by {@link #impact(Score, ToLongTriFunction)}, with an impact of type {@link BigDecimal}.
      */
     <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> impactBigDecimal(
             @NonNull Score_ constraintWeight, @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher);

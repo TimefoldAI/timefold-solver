@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
+import ai.timefold.solver.core.api.score.BendableScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
@@ -49,20 +49,20 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                 .build();
 
         var input = new TestTimefoldJacksonModuleWrapper();
-        input.setBendableScore(BendableScore.of(new int[] { 1000, 200 }, new int[] { 34 }));
+        input.setBendableScore(BendableScore.of(new long[] { 1000, 200 }, new long[] { 34 }));
         input.setHardSoftScore(HardSoftScore.of(-1, -20));
         input.setPolymorphicScore(HardSoftScore.of(-20, -300));
         var output = serializeAndDeserialize(objectMapper, input);
-        assertThat(output.getBendableScore()).isEqualTo(BendableScore.of(new int[] { 1000, 200 }, new int[] { 34 }));
+        assertThat(output.getBendableScore()).isEqualTo(BendableScore.of(new long[] { 1000, 200 }, new long[] { 34 }));
         assertThat(output.getHardSoftScore()).isEqualTo(HardSoftScore.of(-1, -20));
         assertThat(output.getPolymorphicScore()).isEqualTo(HardSoftScore.of(-20, -300));
 
-        input.setPolymorphicScore(BendableScore.of(new int[] { -1, -20 }, new int[] { -300, -4000, -50000 }));
+        input.setPolymorphicScore(BendableScore.of(new long[] { -1, -20 }, new long[] { -300, -4000, -50000 }));
         output = serializeAndDeserialize(objectMapper, input);
-        assertThat(output.getBendableScore()).isEqualTo(BendableScore.of(new int[] { 1000, 200 }, new int[] { 34 }));
+        assertThat(output.getBendableScore()).isEqualTo(BendableScore.of(new long[] { 1000, 200 }, new long[] { 34 }));
         assertThat(output.getHardSoftScore()).isEqualTo(HardSoftScore.of(-1, -20));
         assertThat(output.getPolymorphicScore())
-                .isEqualTo(BendableScore.of(new int[] { -1, -20 }, new int[] { -300, -4000, -50000 }));
+                .isEqualTo(BendableScore.of(new long[] { -1, -20 }, new long[] { -300, -4000, -50000 }));
     }
 
     @Test

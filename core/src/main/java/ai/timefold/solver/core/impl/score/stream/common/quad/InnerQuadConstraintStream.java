@@ -6,7 +6,6 @@ import java.util.Collection;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.function.ToIntQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
@@ -89,70 +88,40 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalize(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToIntQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_>
+            penalize(@NonNull Score_ constraintWeight, @NonNull ToLongQuadFunction<A, B, C, D> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalizeLong(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToLongQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_>
+            penalizeBigDecimal(@NonNull Score_ constraintWeight, @NonNull QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalizeBigDecimal(
-            @NonNull Score_ constraintWeight,
-            @NonNull QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
-        return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
-    }
-
-    @Override
-    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> reward(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToIntQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_>
+            reward(@NonNull Score_ constraintWeight, @NonNull ToLongQuadFunction<A, B, C, D> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> rewardLong(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToLongQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_>
+            rewardBigDecimal(@NonNull Score_ constraintWeight, @NonNull QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> rewardBigDecimal(
-            @NonNull Score_ constraintWeight,
-            @NonNull QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
-        return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
-    }
-
-    @Override
-    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> impact(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToIntQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_>
+            impact(@NonNull Score_ constraintWeight, @NonNull ToLongQuadFunction<A, B, C, D> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> impactLong(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToLongQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_>
+            impactBigDecimal(@NonNull Score_ constraintWeight, @NonNull QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
-
-    @Override
-    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> impactBigDecimal(
-            @NonNull Score_ constraintWeight,
-            @NonNull QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
-        return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
-    }
-
-    <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> innerImpact(Score_ constraintWeight,
-            ToIntQuadFunction<A, B, C, D> matchWeigher, ScoreImpactType scoreImpactType);
 
     <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> innerImpact(Score_ constraintWeight,
             ToLongQuadFunction<A, B, C, D> matchWeigher, ScoreImpactType scoreImpactType);

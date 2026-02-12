@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.common;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.testconstraint.TestConstraint;
 import ai.timefold.solver.core.testconstraint.TestConstraintFactory;
 import ai.timefold.solver.core.testdomain.TestdataSolution;

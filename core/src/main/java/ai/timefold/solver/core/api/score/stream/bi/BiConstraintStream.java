@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.api.score.stream.bi;
 
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOne;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneBigDecimal;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneLong;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
@@ -12,7 +11,6 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.ToIntBiFunction;
 import java.util.function.ToLongBiFunction;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -1278,17 +1276,10 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
     // ************************************************************************
 
     /**
-     * As defined by {@link #penalize(Score, ToIntBiFunction)}, where the match weight is one (1).
+     * As defined by {@link #penalize(Score, ToLongBiFunction)}, where the match weight is one (1).
      */
     default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> penalize(Score_ constraintWeight) {
-        return penalize(constraintWeight, biConstantOne());
-    }
-
-    /**
-     * As defined by {@link #penalizeLong(Score, ToLongBiFunction)}, where the match weight is one (1).
-     */
-    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> penalizeLong(Score_ constraintWeight) {
-        return penalizeLong(constraintWeight, biConstantOneLong());
+        return penalize(constraintWeight, biConstantOneLong());
     }
 
     /**
@@ -1306,33 +1297,25 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * <p>
      * The constraintWeight specified here can be overridden using {@link ConstraintWeightOverrides}
      * on the {@link PlanningSolution}-annotated class
-     * <p>
-     * For non-int {@link Score} types use {@link #penalizeLong(Score, ToLongBiFunction)} or
-     * {@link #penalizeBigDecimal(Score, BiFunction)} instead.
      *
      * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
+     * @see #penalizeBigDecimal(Score, BiFunction) You may use BigDecimal instead of long.
      */
     <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> penalize(@NonNull Score_ constraintWeight,
-            @NonNull ToIntBiFunction<A, B> matchWeigher);
-
-    /**
-     * As defined by {@link #penalize(Score, ToIntBiFunction)}, with a penalty of type long.
-     */
-    <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> penalizeLong(@NonNull Score_ constraintWeight,
             @NonNull ToLongBiFunction<A, B> matchWeigher);
 
     /**
-     * As defined by {@link #penalize(Score, ToIntBiFunction)}, with a penalty of type {@link BigDecimal}.
+     * As defined by {@link #penalize(Score, ToLongBiFunction)}, with a penalty of type {@link BigDecimal}.
      */
     <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> penalizeBigDecimal(
             @NonNull Score_ constraintWeight,
             @NonNull BiFunction<A, B, BigDecimal> matchWeigher);
 
     /**
-     * As defined by {@link #reward(Score, ToIntBiFunction)}, where the match weight is one (1).
+     * As defined by {@link #reward(Score, ToLongBiFunction)}, where the match weight is one (1).
      */
     default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> reward(@NonNull Score_ constraintWeight) {
-        return reward(constraintWeight, biConstantOne());
+        return reward(constraintWeight, biConstantOneLong());
     }
 
     /**
@@ -1342,23 +1325,15 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * <p>
      * The constraintWeight specified here can be overridden using {@link ConstraintWeightOverrides}
      * on the {@link PlanningSolution}-annotated class
-     * <p>
-     * For non-int {@link Score} types use {@link #rewardLong(Score, ToLongBiFunction)} or
-     * {@link #rewardBigDecimal(Score, BiFunction)} instead.
      *
      * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
+     * @see #rewardBigDecimal(Score, BiFunction) You may use BigDecimal instead of long.
      */
     <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> reward(@NonNull Score_ constraintWeight,
-            @NonNull ToIntBiFunction<A, B> matchWeigher);
-
-    /**
-     * As defined by {@link #reward(Score, ToIntBiFunction)}, with a penalty of type long.
-     */
-    <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> rewardLong(@NonNull Score_ constraintWeight,
             @NonNull ToLongBiFunction<A, B> matchWeigher);
 
     /**
-     * As defined by {@link #reward(Score, ToIntBiFunction)}, with a penalty of type {@link BigDecimal}.
+     * As defined by {@link #reward(Score, ToLongBiFunction)}, with a penalty of type {@link BigDecimal}.
      */
     <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> rewardBigDecimal(@NonNull Score_ constraintWeight,
             @NonNull BiFunction<A, B, BigDecimal> matchWeigher);
@@ -1371,7 +1346,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * negative weights.
      */
     default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> impact(@NonNull Score_ constraintWeight) {
-        return impact(constraintWeight, biConstantOne());
+        return impact(constraintWeight, biConstantOneLong());
     }
 
     /**
@@ -1385,18 +1360,13 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * negative weights.
      *
      * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
+     * @see #impactBigDecimal(Score, BiFunction) You may use BigDecimal instead of long.
      */
     <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> impact(@NonNull Score_ constraintWeight,
-            @NonNull ToIntBiFunction<A, B> matchWeigher);
-
-    /**
-     * As defined by {@link #impact(Score, ToIntBiFunction)}, with an impact of type long.
-     */
-    <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> impactLong(@NonNull Score_ constraintWeight,
             @NonNull ToLongBiFunction<A, B> matchWeigher);
 
     /**
-     * As defined by {@link #impact(Score, ToIntBiFunction)}, with an impact of type {@link BigDecimal}.
+     * As defined by {@link #impact(Score, ToLongBiFunction)}, with an impact of type {@link BigDecimal}.
      */
     <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> impactBigDecimal(@NonNull Score_ constraintWeight,
             @NonNull BiFunction<A, B, BigDecimal> matchWeigher);

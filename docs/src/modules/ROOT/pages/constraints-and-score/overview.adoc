@@ -307,7 +307,7 @@ see xref:integration/integration.adoc#integration[the integration chapter].
 [#simpleScore]
 === `SimpleScore`
 
-A `SimpleScore` has a single `int` value, for example ``-123``.
+A `SimpleScore` has a single `long` value, for example ``-123``.
 It has a single score level.
 
 [tabs]
@@ -321,16 +321,13 @@ Java::
 ----
 ====
 
-Variants of this `Score` type:
-
-* `SimpleLongScore` uses a `long` value instead of an `int` value.
-* `SimpleBigDecimalScore` uses a `BigDecimal` value instead of an `int` value.
+A variant score type `SimpleBigDecimalScore` uses a `BigDecimal` value instead of an `long` value.
 
 
 [#hardSoftScore]
 === `HardSoftScore` (Recommended)
 
-A `HardSoftScore` has a hard `int` value and a soft `int` value, for example ``-123hard/-456soft``.
+A `HardSoftScore` has a hard `long` value and a soft `long` value, for example ``-123hard/-456soft``.
 It has two score levels (hard and soft).
 
 [tabs]
@@ -344,16 +341,13 @@ Java::
 ----
 ====
 
-Variants of this `Score` type:
-
-* `HardSoftLongScore` uses `long` values instead of `int` values.
-* `HardSoftBigDecimalScore` uses `BigDecimal` values instead of `int` values.
+A variant score type `HardSoftBigDecimalScore` uses `BigDecimal` values instead of `long` values.
 
 
 [#hardMediumSoftScore]
 === `HardMediumSoftScore`
 
-A `HardMediumSoftScore` which has a hard `int` value, a medium `int` value and a soft `int` value, for example ``-123hard/-456medium/-789soft``.
+A `HardMediumSoftScore` which has a hard `long` value, a medium `long` value and a soft `long` value, for example ``-123hard/-456medium/-789soft``.
 It has three score levels (hard, medium and soft).
 The hard level determines if the solution is feasible,
 and the medium level and soft level score values determine
@@ -371,17 +365,14 @@ Java::
 ----
 ====
 
-Variants of this `Score` type:
-
-* `HardMediumSoftLongScore` uses `long` values instead of `int` values.
-* `HardMediumSoftBigDecimalScore` uses `BigDecimal` values instead of `int` values.
+A variant score type `HardMediumSoftBigDecimalScore` uses `BigDecimal` values instead of `long` values.
 
 
 [#bendableScore]
 === `BendableScore`
 
 A `BendableScore` has a configurable number of score levels.
-It has an array of hard `int` values and an array of soft `int` values,
+It has an array of hard `long` values and an array of soft `long` values,
 for example with two hard levels and three soft levels, the score can be ``[-123/-456]hard/[-789/-012/-345]soft``.
 In that case, it has five score levels.
 A solution is feasible if all hard levels are at least zero.
@@ -412,10 +403,7 @@ Usually, multiple constraints share the same level and are weighted against each
 Use xref:constraints-and-score/understanding-the-score.adoc[score explanations] to get the weight of individual constraints in the same level.
 ====
 
-Variants of this `Score` type:
-
-* `BendableLongScore` uses `long` values instead of `int` values.
-* `BendableBigDecimalScore` uses `BigDecimal` values instead of `int` values.
+A variant score type `BendableBigDecimalScore` uses `BigDecimal` values instead of `long` values.
 
 
 [#calculateTheScore]

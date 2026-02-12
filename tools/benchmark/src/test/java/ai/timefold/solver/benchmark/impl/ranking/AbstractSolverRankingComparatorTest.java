@@ -6,9 +6,9 @@ import ai.timefold.solver.benchmark.impl.result.ProblemBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.ScoreDifferencePercentage;
 import ai.timefold.solver.benchmark.impl.result.SingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SolverBenchmarkResult;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 
 public abstract class AbstractSolverRankingComparatorTest {
 
@@ -34,9 +34,9 @@ public abstract class AbstractSolverRankingComparatorTest {
             List<SingleBenchmarkResult> singleBenchmarkResultList,
             long hardScore, long softScore, long hardBestScore, long softBestScore, long hardWorstScore, long softWorstScore) {
         return addSingleBenchmark(solverBenchmarkResult, singleBenchmarkResultList,
-                HardSoftLongScore.of(hardScore, softScore),
-                HardSoftLongScore.of(hardBestScore, softBestScore),
-                HardSoftLongScore.of(hardWorstScore, softWorstScore));
+                HardSoftScore.of(hardScore, softScore),
+                HardSoftScore.of(hardBestScore, softBestScore),
+                HardSoftScore.of(hardWorstScore, softWorstScore));
     }
 
     protected <Score_ extends Score<Score_>> SingleBenchmarkResult addSingleBenchmark(

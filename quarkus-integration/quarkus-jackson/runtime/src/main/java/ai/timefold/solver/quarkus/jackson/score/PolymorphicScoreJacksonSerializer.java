@@ -2,9 +2,8 @@ package ai.timefold.solver.quarkus.jackson.score;
 
 import java.io.IOException;
 
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.quarkus.jackson.score.buildin.hardsoft.HardSoftScoreJacksonSerializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

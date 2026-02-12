@@ -16,8 +16,8 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
-SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
-ScoreAnalysis<HardSoftLongScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
+SolutionManager<VehicleRoutePlan, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
+ScoreAnalysis<HardSoftScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
 System.out.println(scoreAnalysis.summarize());
 ----
 ====
@@ -72,8 +72,8 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
-SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
-ScoreAnalysis<HardSoftLongScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
+SolutionManager<VehicleRoutePlan, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
+ScoreAnalysis<HardSoftScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
 ----
 ====
 
@@ -98,8 +98,8 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
-SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
-ScoreAnalysis<HardSoftLongScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
+SolutionManager<VehicleRoutePlan, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
+ScoreAnalysis<HardSoftScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
 System.out.println(scoreAnalysis.summarize());
 ----
 ====
@@ -242,7 +242,7 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
-SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
+SolutionManager<VehicleRoutePlan, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
 ...
 PlanningSolutionDiff<VehicleRoutePlan> solutionDiff = solutionManager.diff(oldSolution, newSolution);
 ----
@@ -273,20 +273,20 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
-SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
-ScoreExplanation<VehicleRoutePlan, HardSoftLongScore> scoreExplanation = solutionManager.explain(vehicleRoutePlan);
-Map<Object, Indictment<HardSoftLongScore>> indictmentMap = scoreExplanation.getIndictmentMap();
+SolutionManager<VehicleRoutePlan, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
+ScoreExplanation<VehicleRoutePlan, HardSoftScore> scoreExplanation = solutionManager.explain(vehicleRoutePlan);
+Map<Object, Indictment<HardSoftScore>> indictmentMap = scoreExplanation.getIndictmentMap();
 for (Visit visit : vehicleRoutePlan.getVisits()) {
-    Indictment<HardSoftLongScore> indictment = indictmentMap.get(visit);
+    Indictment<HardSoftScore> indictment = indictmentMap.get(visit);
     if (indictment == null) {
         continue;
     }
     // The score impact of that planning entity
-    HardSoftLongScore totalScore = indictment.getScore();
+    HardSoftScore totalScore = indictment.getScore();
 
-    for (ConstraintMatch<HardSoftLongScore> constraintMatch : indictment.getConstraintMatchSet()) {
+    for (ConstraintMatch<HardSoftScore> constraintMatch : indictment.getConstraintMatchSet()) {
         String constraintName = constraintMatch.getConstraintName();
-        HardSoftLongScore score = constraintMatch.getScore();
+        HardSoftScore score = constraintMatch.getScore();
         ...
     }
 }

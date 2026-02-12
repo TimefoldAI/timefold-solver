@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.exhaustivesearch.node.comparator;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.junit.jupiter.api.Test;

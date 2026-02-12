@@ -7,10 +7,10 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.jackson.api.score.buildin.simple.SimpleScoreJacksonDeserializer;
-import ai.timefold.solver.jackson.api.score.buildin.simple.SimpleScoreJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.buildin.SimpleScoreJacksonDeserializer;
+import ai.timefold.solver.jackson.api.score.buildin.SimpleScoreJacksonSerializer;
 
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;

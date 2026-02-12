@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.PrecomputeFactory;

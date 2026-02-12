@@ -23,9 +23,8 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
+import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.stream.Constraint;
@@ -40,7 +39,6 @@ import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupp
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.score.TestdataSimpleBigDecimalScoreSolution;
-import ai.timefold.solver.core.testdomain.score.TestdataSimpleLongScoreSolution;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishExtra;
@@ -2062,26 +2060,6 @@ public abstract class AbstractQuadConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void penalizeUnweightedLong() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEachUniquePair(TestdataEntity.class, equal(TestdataEntity::getValue))
-                                .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
-                                .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
-                                .penalizeLong(SimpleLongScore.ONE)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-2));
-        assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
-    }
-
-    @Override
-    @TestTemplate
     public void penalizeUnweightedBigDecimal() {
         TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
@@ -2155,26 +2133,6 @@ public abstract class AbstractQuadConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void penalizeLong() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEachUniquePair(TestdataEntity.class, equal(TestdataEntity::getValue))
-                                .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
-                                .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
-                                .penalizeLong(SimpleLongScore.ONE, (entity, entity2, value, value2) -> 2L)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
-        assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
-    }
-
-    @Override
-    @TestTemplate
     public void penalizeBigDecimal() {
         TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
@@ -2225,26 +2183,6 @@ public abstract class AbstractQuadConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
-        assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
-    }
-
-    @Override
-    @TestTemplate
-    public void rewardLong() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEachUniquePair(TestdataEntity.class, equal(TestdataEntity::getValue))
-                                .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
-                                .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
-                                .rewardLong(SimpleLongScore.ONE, (entity, entity2, value, value2) -> 2L)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2306,26 +2244,6 @@ public abstract class AbstractQuadConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void impactPositiveLong() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEachUniquePair(TestdataEntity.class, equal(TestdataEntity::getValue))
-                                .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
-                                .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
-                                .impactLong(SimpleLongScore.ONE, (entity, entity2, value, value2) -> 2L)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
-        assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
-    }
-
-    @Override
-    @TestTemplate
     public void impactPositiveBigDecimal() {
         TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
@@ -2359,26 +2277,6 @@ public abstract class AbstractQuadConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
-        assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
-    }
-
-    @Override
-    @TestTemplate
-    public void impactNegativeLong() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEachUniquePair(TestdataEntity.class, equal(TestdataEntity::getValue))
-                                .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
-                                .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
-                                .impactLong(SimpleLongScore.ONE, (entity, entity2, value, value2) -> -2L)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2479,28 +2377,6 @@ public abstract class AbstractQuadConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void penalizeLongCustomJustifications() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEachUniquePair(TestdataEntity.class, equal(TestdataEntity::getValue))
-                                .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
-                                .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
-                                .penalizeLong(SimpleLongScore.ONE, (entity, entity2, value, value2) -> 2L)
-                                .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                                .indictWith(List::of)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
-        assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
-    }
-
-    @Override
-    @TestTemplate
     public void penalizeBigDecimalCustomJustifications() {
         TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
@@ -2558,28 +2434,6 @@ public abstract class AbstractQuadConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
-        assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
-    }
-
-    @Override
-    @TestTemplate
-    public void rewardLongCustomJustifications() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEachUniquePair(TestdataEntity.class, equal(TestdataEntity::getValue))
-                                .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
-                                .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
-                                .rewardLong(SimpleLongScore.ONE, (entity, entity2, value, value2) -> 2L)
-                                .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                                .indictWith(List::of)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2647,28 +2501,6 @@ public abstract class AbstractQuadConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void impactPositiveLongCustomJustifications() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEachUniquePair(TestdataEntity.class, equal(TestdataEntity::getValue))
-                                .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
-                                .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
-                                .impactLong(SimpleLongScore.ONE, (entity, entity2, value, value2) -> 2L)
-                                .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                                .indictWith(List::of)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
-        assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
-    }
-
-    @Override
-    @TestTemplate
     public void impactPositiveBigDecimalCustomJustifications() {
         TestdataSimpleBigDecimalScoreSolution solution = TestdataSimpleBigDecimalScoreSolution.generateSolution();
 
@@ -2707,28 +2539,6 @@ public abstract class AbstractQuadConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
-        assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
-    }
-
-    @Override
-    @TestTemplate
-    public void impactNegativeLongCustomJustifications() {
-        TestdataSimpleLongScoreSolution solution = TestdataSimpleLongScoreSolution.generateSolution();
-
-        InnerScoreDirector<TestdataSimpleLongScoreSolution, SimpleLongScore> scoreDirector = buildScoreDirector(
-                TestdataSimpleLongScoreSolution.buildSolutionDescriptor(),
-                factory -> new Constraint[] {
-                        factory.forEachUniquePair(TestdataEntity.class, equal(TestdataEntity::getValue))
-                                .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
-                                .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
-                                .impactLong(SimpleLongScore.ONE, (entity, entity2, value, value2) -> -2L)
-                                .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                                .indictWith(List::of)
-                                .asConstraint(TEST_CONSTRAINT_NAME)
-                });
-
-        scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 

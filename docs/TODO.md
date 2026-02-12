@@ -16,5 +16,11 @@
 - [ ] `ConstraintConfiguration` replaced by `ConstraintWeightOverrides` (copy from 1.x upgrade recipe).
 - [ ] `ConstraintRef.of()` now only accepts name, not package and name. (Migration script!)
 - [ ] Custom scores are no longer possible. (They weren't even before, really.)
+- [ ] ai.timefold.solver.api.score.buildin.* -> ai.timefold.solver.api.score
+- [ ] ai.timefold.solver.jpa.api.score.buildin.* -> ai.timefold.solver.jpa.api.score 
+- [ ] ai.timefold.solver.jackson.api.score.buildin.* -> ai.timefold.solver.jackson.api.score
+- [ ] ai.timefold.solver.jaxb.api.score.buildin.* -> ai.timefold.solver.jaxb.api.score
+- [ ] Bendable constructors now long[] instead of int[].
+- [ ] penalizeLong/rewardLong/impactLong are no more.
 
-Remove this file when done.
+- Remove this file when done.

@@ -2,7 +2,6 @@ package ai.timefold.solver.core.api.score.stream.uni;
 
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEquals;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOne;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneBigDecimal;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneLong;
 
@@ -13,7 +12,6 @@ import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Stream;
 
@@ -1660,20 +1658,11 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     // ************************************************************************
 
     /**
-     * As defined by {@link #penalize(Score, ToIntFunction)}, where the match weight is one (1).
+     * As defined by {@link #penalize(Score, ToLongFunction)}, where the match weight is one (1).
      *
      */
     default <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> penalize(@NonNull Score_ constraintWeight) {
-        return penalize(constraintWeight, uniConstantOne());
-    }
-
-    /**
-     * As defined by {@link #penalizeLong(Score, ToLongFunction)}, where the match weight is one (1).
-     *
-     */
-    default <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_>
-            penalizeLong(@NonNull Score_ constraintWeight) {
-        return penalizeLong(constraintWeight, uniConstantOneLong());
+        return penalize(constraintWeight, uniConstantOneLong());
     }
 
     /**
@@ -1692,32 +1681,24 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * <p>
      * The constraintWeight specified here can be overridden using {@link ConstraintWeightOverrides}
      * on the {@link PlanningSolution}-annotated class
-     * <p>
-     * For non-int {@link Score} types use {@link #penalizeLong(Score, ToLongFunction)} or
-     * {@link #penalizeBigDecimal(Score, Function)} instead.
      *
      * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
+     * @see #penalizeBigDecimal(Score, Function) You may use BigDecimal instead of long.
      */
     <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> penalize(@NonNull Score_ constraintWeight,
-            @NonNull ToIntFunction<A> matchWeigher);
-
-    /**
-     * As defined by {@link #penalize(Score, ToIntFunction)}, with a penalty of type long.
-     */
-    <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> penalizeLong(@NonNull Score_ constraintWeight,
             @NonNull ToLongFunction<A> matchWeigher);
 
     /**
-     * As defined by {@link #penalize(Score, ToIntFunction)}, with a penalty of type {@link BigDecimal}.
+     * As defined by {@link #penalize(Score, ToLongFunction)}, with a penalty of type {@link BigDecimal}.
      */
     <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> penalizeBigDecimal(@NonNull Score_ constraintWeight,
             @NonNull Function<A, BigDecimal> matchWeigher);
 
     /**
-     * As defined by {@link #reward(Score, ToIntFunction)}, where the match weight is one (1).
+     * As defined by {@link #reward(Score, ToLongFunction)}, where the match weight is one (1).
      */
     default <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> reward(@NonNull Score_ constraintWeight) {
-        return reward(constraintWeight, uniConstantOne());
+        return reward(constraintWeight, uniConstantOneLong());
     }
 
     /**
@@ -1727,24 +1708,15 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * <p>
      * The constraintWeight specified here can be overridden using {@link ConstraintWeightOverrides}
      * on the {@link PlanningSolution}-annotated class
-     * <p>
-     * For non-int {@link Score} types use {@link #rewardLong(Score, ToLongFunction)} or
-     * {@link #rewardBigDecimal(Score, Function)} instead.
      *
      * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
+     * @see #rewardBigDecimal(Score, Function) You may use BigDecimal instead of long.
      */
     <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> reward(@NonNull Score_ constraintWeight,
-            @NonNull ToIntFunction<A> matchWeigher);
-
-    /**
-     * As defined by {@link #reward(Score, ToIntFunction)}, with a penalty of type long.
-     */
-    @NonNull
-    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> rewardLong(@NonNull Score_ constraintWeight,
             @NonNull ToLongFunction<A> matchWeigher);
 
     /**
-     * As defined by {@link #reward(Score, ToIntFunction)}, with a penalty of type {@link BigDecimal}.
+     * As defined by {@link #reward(Score, ToLongFunction)}, with a penalty of type {@link BigDecimal}.
      */
     @NonNull
     <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> rewardBigDecimal(@NonNull Score_ constraintWeight,
@@ -1758,7 +1730,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * negative weights.
      */
     default <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> impact(@NonNull Score_ constraintWeight) {
-        return impact(constraintWeight, uniConstantOne());
+        return impact(constraintWeight, uniConstantOneLong());
     }
 
     /**
@@ -1772,18 +1744,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * negative weights.
      *
      * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
+     * @see #impactBigDecimal(Score, Function) You may use BigDecimal instead of long.
      */
     <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> impact(@NonNull Score_ constraintWeight,
-            @NonNull ToIntFunction<A> matchWeigher);
-
-    /**
-     * As defined by {@link #impact(Score, ToIntFunction)}, with an impact of type long.
-     */
-    <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> impactLong(@NonNull Score_ constraintWeight,
             @NonNull ToLongFunction<A> matchWeigher);
 
     /**
-     * As defined by {@link #impact(Score, ToIntFunction)}, with an impact of type {@link BigDecimal}.
+     * As defined by {@link #impact(Score, ToLongFunction)}, with an impact of type {@link BigDecimal}.
      */
     <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> impactBigDecimal(@NonNull Score_ constraintWeight,
             @NonNull Function<A, BigDecimal> matchWeigher);

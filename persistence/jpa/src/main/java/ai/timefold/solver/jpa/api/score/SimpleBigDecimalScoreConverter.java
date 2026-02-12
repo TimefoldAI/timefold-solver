@@ -1,0 +1,28 @@
+package ai.timefold.solver.jpa.api.score;
+
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+
+import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
+
+@Converter
+public class SimpleBigDecimalScoreConverter implements AttributeConverter<SimpleBigDecimalScore, String> {
+
+    @Override
+    public String convertToDatabaseColumn(SimpleBigDecimalScore score) {
+        if (score == null) {
+            return null;
+        }
+
+        return score.toString();
+    }
+
+    @Override
+    public SimpleBigDecimalScore convertToEntityAttribute(String scoreString) {
+        if (scoreString == null) {
+            return null;
+        }
+
+        return SimpleBigDecimalScore.parseScore(scoreString);
+    }
+}

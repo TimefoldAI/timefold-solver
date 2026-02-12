@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.Score;
@@ -97,78 +96,45 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalize(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToIntTriFunction<A, B, C> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_>
+            penalize(@NonNull Score_ constraintWeight, @NonNull ToLongTriFunction<A, B, C> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeLong(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToLongTriFunction<A, B, C> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_>
+            penalizeBigDecimal(@NonNull Score_ constraintWeight, @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeBigDecimal(
-            @NonNull Score_ constraintWeight,
-            @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher) {
-        return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
-    }
-
-    @Override
-    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> reward(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToIntTriFunction<A, B, C> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_>
+            reward(@NonNull Score_ constraintWeight, @NonNull ToLongTriFunction<A, B, C> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> rewardLong(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToLongTriFunction<A, B, C> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_>
+            rewardBigDecimal(@NonNull Score_ constraintWeight, @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> rewardBigDecimal(
-            @NonNull Score_ constraintWeight,
-            @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher) {
-        return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
-    }
-
-    @Override
-    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impact(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToIntTriFunction<A, B, C> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_>
+            impact(@NonNull Score_ constraintWeight, @NonNull ToLongTriFunction<A, B, C> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
     @Override
-    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impactLong(
-            @NonNull Score_ constraintWeight,
-            @NonNull ToLongTriFunction<A, B, C> matchWeigher) {
-        return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
-    }
-
-    @Override
-    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impactBigDecimal(
-            @NonNull Score_ constraintWeight,
-            @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_>
+            impactBigDecimal(@NonNull Score_ constraintWeight, @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
     <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> innerImpact(Score_ constraintWeight,
-            ToIntTriFunction<A, B, C> matchWeigher,
-            ScoreImpactType scoreImpactType);
+            ToLongTriFunction<A, B, C> matchWeigher, ScoreImpactType scoreImpactType);
 
     <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> innerImpact(Score_ constraintWeight,
-            ToLongTriFunction<A, B, C> matchWeigher,
-            ScoreImpactType scoreImpactType);
-
-    <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> innerImpact(Score_ constraintWeight,
-            TriFunction<A, B, C, BigDecimal> matchWeigher,
-            ScoreImpactType scoreImpactType);
+            TriFunction<A, B, C, BigDecimal> matchWeigher, ScoreImpactType scoreImpactType);
 
 }

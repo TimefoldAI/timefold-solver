@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 
 @PlanningSolution
 public class TestDataKitchenSinkSolution {
@@ -26,7 +26,7 @@ public class TestDataKitchenSinkSolution {
     private List<String> problemFactListProperty;
 
     @PlanningScore
-    private HardSoftLongScore score;
+    private HardSoftScore score;
 
     public TestDataKitchenSinkSolution() {
 
@@ -34,7 +34,7 @@ public class TestDataKitchenSinkSolution {
 
     public TestDataKitchenSinkSolution(TestDataKitchenSinkEntity planningEntityProperty,
             List<TestDataKitchenSinkEntity> planningEntityListProperty, String problemFactProperty,
-            List<String> problemFactListProperty, HardSoftLongScore score) {
+            List<String> problemFactListProperty, HardSoftScore score) {
         this.planningEntityProperty = planningEntityProperty;
         this.planningEntityListProperty = planningEntityListProperty;
         this.problemFactProperty = problemFactProperty;
@@ -75,11 +75,11 @@ public class TestDataKitchenSinkSolution {
         this.problemFactListProperty = problemFactListProperty;
     }
 
-    public HardSoftLongScore getScore() {
+    public HardSoftScore getScore() {
         return score;
     }
 
-    public void setScore(HardSoftLongScore score) {
+    public void setScore(HardSoftScore score) {
         this.score = score;
     }
 }

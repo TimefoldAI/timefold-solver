@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;

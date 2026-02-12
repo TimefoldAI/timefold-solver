@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Comparator;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 

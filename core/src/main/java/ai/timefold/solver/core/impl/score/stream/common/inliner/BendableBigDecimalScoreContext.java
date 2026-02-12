@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
+import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;

@@ -4,10 +4,10 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertCompareToOrde
 
 import java.util.Comparator;
 
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
+import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
 
 import org.junit.jupiter.api.Test;
 

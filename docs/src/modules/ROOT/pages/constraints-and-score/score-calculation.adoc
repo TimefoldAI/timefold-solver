@@ -383,7 +383,7 @@ Java::
                 .filter(customer -> customer.getVehicle() != null)
                 .groupBy(Customer::getVehicle, sum(Customer::getDemand))
                 .filter((vehicle, demand) -> demand > vehicle.getCapacity())
-                .penalizeLong(HardSoftLongScore.ONE_HARD,
+                .penalizeLong(HardSoftScore.ONE_HARD,
                         (vehicle, demand) -> demand - vehicle.getCapacity())
                 .asConstraint("vehicleCapacity");
     }
@@ -406,7 +406,7 @@ Java::
                 .filter(customer -> customer.getVehicle() != null)
                 .groupBy(Customer::getVehicle, sum(Customer::getDemand))
                 .filter((vehicle, demand) -> demand > vehicle.getCapacity())
-                .penalizeLong(HardSoftLongScore.ONE_HARD,
+                .penalizeLong(HardSoftScore.ONE_HARD,
                         (vehicle, demand) -> demand - vehicle.getCapacity())
                 .indictWith((vehicle, demand) -> List.of(vehicle))
                 .asConstraint("vehicleCapacity");
@@ -429,7 +429,7 @@ Java::
                 .filter(customer -> customer.getVehicle() != null)
                 .groupBy(Customer::getVehicle, sum(Customer::getDemand))
                 .filter((vehicle, demand) -> demand > vehicle.getCapacity())
-                .penalizeLong(HardSoftLongScore.ONE_HARD,
+                .penalizeLong(HardSoftScore.ONE_HARD,
                         (vehicle, demand) -> demand - vehicle.getCapacity())
                 .justifyWith((vehicle, demand, score) ->
                     new VehicleDemandOveruse(vehicle, demand, score))
@@ -1781,7 +1781,7 @@ Java::
     Constraint vehicleCapacity(ConstraintFactory factory) {
         return factory.forEach(Vehicle.class)
                 .filter(vehicle -> vehicle.getTotalDemand() > vehicle.getCapacity())
-                .penalizeLong(HardSoftLongScore.ONE_HARD,
+                .penalizeLong(HardSoftScore.ONE_HARD,
                         vehicle -> vehicle.getTotalDemand() - vehicle.getCapacity())
                 .asConstraint(VEHICLE_CAPACITY);
     }

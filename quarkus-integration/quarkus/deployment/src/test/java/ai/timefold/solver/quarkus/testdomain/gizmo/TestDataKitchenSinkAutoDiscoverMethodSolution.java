@@ -4,7 +4,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 
 @PlanningSolution(autoDiscoverMemberType = AutoDiscoverMemberType.GETTER)
 public class TestDataKitchenSinkAutoDiscoverMethodSolution {
@@ -13,7 +13,7 @@ public class TestDataKitchenSinkAutoDiscoverMethodSolution {
     private List<TestDataKitchenSinkEntity> planningEntityListProperty;
     private String problemFactProperty;
     private List<String> problemFactListProperty;
-    private HardSoftLongScore score;
+    private HardSoftScore score;
 
     public TestDataKitchenSinkAutoDiscoverMethodSolution() {
 
@@ -21,7 +21,7 @@ public class TestDataKitchenSinkAutoDiscoverMethodSolution {
 
     public TestDataKitchenSinkAutoDiscoverMethodSolution(TestDataKitchenSinkEntity planningEntityProperty,
             List<TestDataKitchenSinkEntity> planningEntityListProperty, String problemFactProperty,
-            List<String> problemFactListProperty, HardSoftLongScore score) {
+            List<String> problemFactListProperty, HardSoftScore score) {
         this.planningEntityProperty = planningEntityProperty;
         this.planningEntityListProperty = planningEntityListProperty;
         this.problemFactProperty = problemFactProperty;
@@ -61,11 +61,11 @@ public class TestDataKitchenSinkAutoDiscoverMethodSolution {
         this.problemFactListProperty = problemFactListProperty;
     }
 
-    public HardSoftLongScore getScore() {
+    public HardSoftScore getScore() {
         return score;
     }
 
-    public void setScore(HardSoftLongScore score) {
+    public void setScore(HardSoftScore score) {
         this.score = score;
     }
 }

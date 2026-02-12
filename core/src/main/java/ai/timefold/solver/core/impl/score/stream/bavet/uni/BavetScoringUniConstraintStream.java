@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.stream.bavet.uni;
 
 import java.math.BigDecimal;
 import java.util.function.Function;
-import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -19,12 +18,6 @@ final class BavetScoringUniConstraintStream<Solution_, A>
 
     private final UniImpactHandler<A> scoreImpact;
     private BavetConstraint<Solution_> constraint;
-
-    public BavetScoringUniConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractUniConstraintStream<Solution_, A> parent, ToIntFunction<A> intMatchWeigher) {
-        super(constraintFactory, parent);
-        this.scoreImpact = new UniIntImpactHandler<>(intMatchWeigher);
-    }
 
     public BavetScoringUniConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetAbstractUniConstraintStream<Solution_, A> parent, ToLongFunction<A> longMatchWeigher) {

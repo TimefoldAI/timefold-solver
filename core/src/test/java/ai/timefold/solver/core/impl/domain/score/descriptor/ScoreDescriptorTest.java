@@ -2,10 +2,10 @@ package ai.timefold.solver.core.impl.domain.score.descriptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;

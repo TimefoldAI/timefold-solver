@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.AbstractSubSingleStatisticTest;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.assertj.core.api.SoftAssertions;

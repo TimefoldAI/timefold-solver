@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Collections;
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
+import ai.timefold.solver.core.api.score.BendableScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
@@ -118,13 +118,13 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
     void impactAllMatchWeightOverflow() {
         var constraintWeight = buildScore(100, 1_000, 10_000);
         var impacter = buildScoreImpacter(constraintWeight);
-        assertThatThrownBy(() -> impacter.impactScore(Integer.MAX_VALUE, ConstraintMatchSupplier.empty()))
+        assertThatThrownBy(() -> impacter.impactScore(Long.MAX_VALUE, ConstraintMatchSupplier.empty()))
                 .isInstanceOf(ArithmeticException.class);
     }
 
     @Test
     void impactAllTotalOverflow() {
-        var constraintWeight = buildScore(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        var constraintWeight = buildScore(Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE);
         var impacter = buildScoreImpacter(constraintWeight);
         impacter.impactScore(1, ConstraintMatchSupplier.empty()); // This will send the total right to the limit.
         assertThatThrownBy(() -> impacter.impactScore(1, ConstraintMatchSupplier.empty()))
@@ -142,10 +142,10 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
         return new BendableScoreInliner(constraintWeightMap, constraintMatchPolicy, 1, 2);
     }
 
-    private BendableScore buildScore(int hard, int soft1, int soft2) {
+    private BendableScore buildScore(long hard, long soft1, long soft2) {
         return BendableScore.of(
-                new int[] { hard },
-                new int[] { soft1, soft2 });
+                new long[] { hard },
+                new long[] { soft1, soft2 });
     }
 
 }

@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
 import java.math.BigDecimal;
 
-import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.HardSoftBigDecimalScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;

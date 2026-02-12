@@ -3,7 +3,7 @@ package ai.timefold.solver.core.testdomain.list.pinned.index;
 import java.util.ArrayList;
 import java.util.List;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 
 import org.jspecify.annotations.NonNull;

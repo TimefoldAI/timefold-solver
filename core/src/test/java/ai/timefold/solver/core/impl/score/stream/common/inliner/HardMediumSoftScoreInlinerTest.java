@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Collections;
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
@@ -119,13 +119,13 @@ class HardMediumSoftScoreInlinerTest
     void impactAllMatchWeightOverflow() {
         var constraintWeight = HardMediumSoftScore.of(10, 100, 1_000);
         var impacter = buildScoreImpacter(constraintWeight);
-        assertThatThrownBy(() -> impacter.impactScore(Integer.MAX_VALUE, ConstraintMatchSupplier.empty()))
+        assertThatThrownBy(() -> impacter.impactScore(Long.MAX_VALUE, ConstraintMatchSupplier.empty()))
                 .isInstanceOf(ArithmeticException.class);
     }
 
     @Test
     void impactAllTotalOverflow() {
-        var constraintWeight = HardMediumSoftScore.of(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        var constraintWeight = HardMediumSoftScore.of(Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE);
         var impacter = buildScoreImpacter(constraintWeight);
         impacter.impactScore(1, ConstraintMatchSupplier.empty()); // This will send the total right to the limit.
         assertThatThrownBy(() -> impacter.impactScore(1, ConstraintMatchSupplier.empty()))

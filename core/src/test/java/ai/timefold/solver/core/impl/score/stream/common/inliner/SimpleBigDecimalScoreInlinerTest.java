@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
+import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;

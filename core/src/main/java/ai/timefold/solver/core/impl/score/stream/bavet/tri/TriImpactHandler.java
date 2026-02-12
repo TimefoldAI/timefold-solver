@@ -12,6 +12,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 sealed interface TriImpactHandler<A, B, C>
         extends ImpactHandler<TriTuple<A, B, C>>
-        permits TriBigDecimalImpactHandler, TriIntImpactHandler, TriLongImpactHandler {
+        permits TriBigDecimalImpactHandler, TriLongImpactHandler {
 
 }

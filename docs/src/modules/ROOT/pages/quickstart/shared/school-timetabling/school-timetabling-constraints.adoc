@@ -119,7 +119,7 @@ Create a `src/main/java/org/acme/schooltimetabling/solver/TimetableConstraintPro
 package org.acme.schooltimetabling.solver;
 
 import org.acme.schooltimetabling.domain.Lesson;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -185,7 +185,7 @@ Create a `src/main/kotlin/org/acme/schooltimetabling/solver/TimetableConstraintP
 ----
 package org.acme.kotlin.schooltimetabling.solver
 
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore
+import ai.timefold.solver.core.api.score.HardSoftScore
 import ai.timefold.solver.core.api.score.stream.Constraint
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider

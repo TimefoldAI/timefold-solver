@@ -11,11 +11,9 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
-import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 import org.jspecify.annotations.NonNull;
@@ -60,11 +58,7 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
          * Easy doesn't support constraint analysis at all.
          * CS always provides constraint weights.
          */
-        Objects.requireNonNull(weight, () -> """
-                The constraint weight must be non-null.
-                Maybe use a non-deprecated %s constructor in your %s implementation?"""
-                .formatted(DefaultConstraintMatchTotal.class.getSimpleName(),
-                        ConstraintMatchAwareIncrementalScoreCalculator.class.getSimpleName()));
+        Objects.requireNonNull(weight);
         Objects.requireNonNull(score);
     }
 

@@ -21,12 +21,6 @@ final class LongWeightedScoreImpacter<Score_ extends Score<Score_>, Context_ ext
     }
 
     @Override
-    public ScoreImpact<Score_> impactScore(int matchWeight, @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
-        context.getConstraint().assertCorrectImpact(matchWeight);
-        return impactFunction.impact(context, matchWeight, constraintMatchSupplier); // int can be cast to long
-    }
-
-    @Override
     public ScoreImpact<Score_> impactScore(long matchWeight,
             @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
         context.getConstraint().assertCorrectImpact(matchWeight);

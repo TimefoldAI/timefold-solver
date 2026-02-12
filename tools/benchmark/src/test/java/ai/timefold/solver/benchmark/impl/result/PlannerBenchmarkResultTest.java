@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import ai.timefold.solver.benchmark.impl.loader.FileProblemProvider;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.random.RandomType;

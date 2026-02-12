@@ -2,7 +2,7 @@ package ai.timefold.solver.test.api.score.stream;
 
 import java.math.BigDecimal;
 
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
@@ -123,7 +123,7 @@ public interface SingleConstraintAssertion {
      * For example: a match with a match weight of {@code 10} on a constraint with a constraint weight of {@code -2hard}
      * reduces the score by {@code -20hard}. In that case, this assertion checks for {@code 10}.
      * <p>
-     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftLongScore long scores}.
+     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftScore long scores}.
      *
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
@@ -229,7 +229,7 @@ public interface SingleConstraintAssertion {
      * For example: a match with a match weight of {@code 10} on a constraint with a constraint weight of {@code -2hard}
      * reduces the score by {@code -20hard}. In that case, this assertion checks for {@code 10}.
      * <p>
-     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftLongScore long scores}.
+     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftScore long scores}.
      *
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
@@ -338,7 +338,7 @@ public interface SingleConstraintAssertion {
      * reduces the score by {@code -20hard}.
      * In that case, this assertion checks for {@code 10}.
      * <p>
-     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftLongScore long scores}.
+     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftScore long scores}.
      *
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
@@ -428,7 +428,7 @@ public interface SingleConstraintAssertion {
      * reduces the score by {@code -20hard}.
      * In that case, this assertion checks for {@code 10}.
      * <p>
-     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftLongScore long scores}.
+     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftScore long scores}.
      *
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
@@ -519,7 +519,7 @@ public interface SingleConstraintAssertion {
      * reduces the score by {@code -20hard}.
      * In that case, this assertion checks for {@code 10}.
      * <p>
-     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftLongScore long scores}.
+     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftScore long scores}.
      *
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
@@ -609,7 +609,7 @@ public interface SingleConstraintAssertion {
      * reduces the score by {@code -20hard}.
      * In that case, this assertion checks for {@code 10}.
      * <p>
-     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftLongScore long scores}.
+     * An {@code int matchWeightTotal} automatically casts to {@code long} for {@link HardSoftScore long scores}.
      *
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed

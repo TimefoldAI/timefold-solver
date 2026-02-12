@@ -11,7 +11,6 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.QuadPredicate;
-import ai.timefold.solver.core.api.function.ToIntQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.Score;
@@ -415,7 +414,7 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
 
     @Override
     public <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> innerImpact(Score_ constraintWeight,
-            ToIntQuadFunction<A, B, C, D> matchWeigher, ScoreImpactType scoreImpactType) {
+            ToLongQuadFunction<A, B, C, D> matchWeigher, ScoreImpactType scoreImpactType) {
         var stream = shareAndAddChild(new BavetScoringQuadConstraintStream<>(constraintFactory, this, matchWeigher));
         return newTerminator(stream, constraintWeight, scoreImpactType);
     }
@@ -428,13 +427,6 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
                                 constraintDescription, constraintGroup, constraintWeight_, impactType_, justificationMapping,
                                 indictedObjectsMapping, stream),
                 impactType, constraintWeight);
-    }
-
-    @Override
-    public <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> innerImpact(Score_ constraintWeight,
-            ToLongQuadFunction<A, B, C, D> matchWeigher, ScoreImpactType scoreImpactType) {
-        var stream = shareAndAddChild(new BavetScoringQuadConstraintStream<>(constraintFactory, this, matchWeigher));
-        return newTerminator(stream, constraintWeight, scoreImpactType);
     }
 
     @Override

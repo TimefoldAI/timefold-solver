@@ -2,14 +2,14 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 final class SimpleScoreInliner extends AbstractScoreInliner<SimpleScore> {
 
-    int score;
+    long score;
 
     SimpleScoreInliner(Map<Constraint, SimpleScore> constraintWeightMap, ConstraintMatchPolicy constraintMatchPolicy) {
         super(constraintWeightMap, constraintMatchPolicy);

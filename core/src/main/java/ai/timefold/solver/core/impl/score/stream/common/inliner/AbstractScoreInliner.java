@@ -12,22 +12,18 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.impl.score.buildin.BendableBigDecimalScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.BendableLongScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.BendableScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardMediumSoftBigDecimalScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardMediumSoftLongScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardMediumSoftScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardSoftBigDecimalScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardSoftLongScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardSoftScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.SimpleBigDecimalScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.SimpleLongScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
+import ai.timefold.solver.core.impl.score.definition.BendableBigDecimalScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.BendableScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.HardMediumSoftBigDecimalScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.HardMediumSoftScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.HardSoftBigDecimalScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.HardSoftScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.SimpleBigDecimalScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
@@ -47,27 +43,18 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
         return (ScoreInliner_) switch (scoreDefinition) {
             case SimpleScoreDefinition simpleScoreDefinition ->
                 new SimpleScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-            case SimpleLongScoreDefinition simpleLongScoreDefinition ->
-                new SimpleLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
             case SimpleBigDecimalScoreDefinition simpleBigDecimalScoreDefinition ->
                 new SimpleBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
             case HardSoftScoreDefinition hardSoftScoreDefinition ->
                 new HardSoftScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-            case HardSoftLongScoreDefinition hardSoftLongScoreDefinition ->
-                new HardSoftLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
             case HardSoftBigDecimalScoreDefinition hardSoftBigDecimalScoreDefinition ->
                 new HardSoftBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
             case HardMediumSoftScoreDefinition hardMediumSoftScoreDefinition ->
                 new HardMediumSoftScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-            case HardMediumSoftLongScoreDefinition hardMediumSoftLongScoreDefinition ->
-                new HardMediumSoftLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
             case HardMediumSoftBigDecimalScoreDefinition hardMediumSoftBigDecimalScoreDefinition ->
                 new HardMediumSoftBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
             case BendableScoreDefinition bendableScoreDefinition ->
                 new BendableScoreInliner((Map) constraintWeightMap, constraintMatchPolicy,
-                        bendableScoreDefinition.getHardLevelsSize(), bendableScoreDefinition.getSoftLevelsSize());
-            case BendableLongScoreDefinition bendableScoreDefinition ->
-                new BendableLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy,
                         bendableScoreDefinition.getHardLevelsSize(), bendableScoreDefinition.getSoftLevelsSize());
             case BendableBigDecimalScoreDefinition bendableScoreDefinition ->
                 new BendableBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy,

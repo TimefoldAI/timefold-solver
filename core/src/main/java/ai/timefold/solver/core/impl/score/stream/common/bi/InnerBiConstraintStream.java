@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.BiFunction;
-import java.util.function.ToIntBiFunction;
 import java.util.function.ToLongBiFunction;
 
 import ai.timefold.solver.core.api.function.TriFunction;
@@ -96,13 +95,6 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
 
     @Override
     default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> penalize(@NonNull Score_ constraintWeight,
-            @NonNull ToIntBiFunction<A, B> matchWeigher) {
-        return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
-    }
-
-    @Override
-    default @NonNull <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeLong(
-            @NonNull Score_ constraintWeight,
             @NonNull ToLongBiFunction<A, B> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
@@ -116,13 +108,6 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
 
     @Override
     default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> reward(@NonNull Score_ constraintWeight,
-            @NonNull ToIntBiFunction<A, B> matchWeigher) {
-        return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
-    }
-
-    @Override
-    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> rewardLong(
-            @NonNull Score_ constraintWeight,
             @NonNull ToLongBiFunction<A, B> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
@@ -136,13 +121,6 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
 
     @Override
     default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> impact(@NonNull Score_ constraintWeight,
-            @NonNull ToIntBiFunction<A, B> matchWeigher) {
-        return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
-    }
-
-    @Override
-    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> impactLong(
-            @NonNull Score_ constraintWeight,
             @NonNull ToLongBiFunction<A, B> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
@@ -153,10 +131,6 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
             @NonNull BiFunction<A, B, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
-
-    <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> innerImpact(Score_ constraintWeight,
-            ToIntBiFunction<A, B> matchWeigher,
-            ScoreImpactType scoreImpactType);
 
     <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> innerImpact(Score_ constraintWeight,
             ToLongBiFunction<A, B> matchWeigher,

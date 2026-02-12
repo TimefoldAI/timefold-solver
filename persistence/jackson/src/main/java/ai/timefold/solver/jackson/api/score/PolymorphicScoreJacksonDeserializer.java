@@ -1,19 +1,15 @@
 package ai.timefold.solver.jackson.api.score;
 
+import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
+import ai.timefold.solver.core.api.score.BendableScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
+import ai.timefold.solver.core.api.score.HardSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
-import ai.timefold.solver.jackson.api.score.buildin.hardsoft.HardSoftScoreJacksonDeserializer;
+import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.jackson.api.score.buildin.HardSoftScoreJacksonDeserializer;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
@@ -42,31 +38,23 @@ public class PolymorphicScoreJacksonDeserializer extends ValueDeserializer<Score
         String scoreString = parser.getValueAsString();
         if (scoreClassSimpleName.equals(SimpleScore.class.getSimpleName())) {
             return SimpleScore.parseScore(scoreString);
-        } else if (scoreClassSimpleName.equals(SimpleLongScore.class.getSimpleName())) {
-            return SimpleLongScore.parseScore(scoreString);
         } else if (scoreClassSimpleName.equals(SimpleBigDecimalScore.class.getSimpleName())) {
             return SimpleBigDecimalScore.parseScore(scoreString);
         } else if (scoreClassSimpleName.equals(HardSoftScore.class.getSimpleName())) {
             return HardSoftScore.parseScore(scoreString);
-        } else if (scoreClassSimpleName.equals(HardSoftLongScore.class.getSimpleName())) {
-            return HardSoftLongScore.parseScore(scoreString);
         } else if (scoreClassSimpleName.equals(HardSoftBigDecimalScore.class.getSimpleName())) {
             return HardSoftBigDecimalScore.parseScore(scoreString);
         } else if (scoreClassSimpleName.equals(HardMediumSoftScore.class.getSimpleName())) {
             return HardMediumSoftScore.parseScore(scoreString);
-        } else if (scoreClassSimpleName.equals(HardMediumSoftLongScore.class.getSimpleName())) {
-            return HardMediumSoftLongScore.parseScore(scoreString);
         } else if (scoreClassSimpleName.equals(HardMediumSoftBigDecimalScore.class.getSimpleName())) {
             return HardMediumSoftBigDecimalScore.parseScore(scoreString);
         } else if (scoreClassSimpleName.equals(BendableScore.class.getSimpleName())) {
             return BendableScore.parseScore(scoreString);
-        } else if (scoreClassSimpleName.equals(BendableLongScore.class.getSimpleName())) {
-            return BendableLongScore.parseScore(scoreString);
         } else if (scoreClassSimpleName.equals(BendableBigDecimalScore.class.getSimpleName())) {
             return BendableBigDecimalScore.parseScore(scoreString);
         } else {
-            throw new IllegalArgumentException("Unrecognized scoreClassSimpleName (" + scoreClassSimpleName
-                    + ") for scoreString (" + scoreString + ").");
+            throw new IllegalArgumentException("Unrecognized scoreClassSimpleName (%s) for scoreString (%s)."
+                    .formatted(scoreClassSimpleName, scoreString));
         }
     }
 
