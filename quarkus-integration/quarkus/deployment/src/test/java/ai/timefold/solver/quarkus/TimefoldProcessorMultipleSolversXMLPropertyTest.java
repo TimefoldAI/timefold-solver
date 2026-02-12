@@ -8,7 +8,6 @@ import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusSolution;
 import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableConstraintProvider;
 import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableEntity;
-import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableListener;
 import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -35,7 +34,6 @@ class TimefoldProcessorMultipleSolversXMLPropertyTest {
                     .addClasses(TestdataQuarkusShadowVariableEntity.class,
                             TestdataQuarkusShadowVariableSolution.class,
                             TestdataQuarkusShadowVariableConstraintProvider.class,
-                            TestdataQuarkusShadowVariableListener.class,
                             TestdataQuarkusShadowSolutionConfigResource.class)
                     .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml")
                     .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml"));

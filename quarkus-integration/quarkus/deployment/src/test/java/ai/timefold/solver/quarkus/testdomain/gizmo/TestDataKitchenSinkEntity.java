@@ -6,10 +6,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.domain.variable.PlanningVariableReference;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
@@ -25,27 +22,11 @@ public class TestDataKitchenSinkEntity {
     private String groupId;
     private Integer intVariable;
 
-    @CustomShadowVariable(
-            variableListenerClass = DummyVariableListener.class,
-            sources = {
-                    @PlanningVariableReference(entityClass = TestDataKitchenSinkEntity.class,
-                            variableName = "stringVariable")
-            })
-    private String shadow1;
-
-    @ShadowVariable(
-            variableListenerClass = DummyVariableListener.class,
-            sourceEntityClass = TestDataKitchenSinkEntity.class, sourceVariableName = "stringVariable")
-    private String shadow2;
-
     @ShadowVariable(supplierName = "copyStringVariable")
     private String declarativeShadowVariable;
 
     @ShadowVariablesInconsistent
     private boolean inconsistent;
-
-    @PiggybackShadowVariable(shadowVariableName = "shadow2")
-    private String piggybackShadow;
 
     @PlanningVariable(valueRangeProviderRefs = { "names" })
     private String stringVariable;
@@ -77,22 +58,6 @@ public class TestDataKitchenSinkEntity {
         this.groupId = groupId;
     }
 
-    public String getShadow1() {
-        return shadow1;
-    }
-
-    public void setShadow1(String shadow1) {
-        this.shadow1 = shadow1;
-    }
-
-    public String getShadow2() {
-        return shadow2;
-    }
-
-    public void setShadow2(String shadow2) {
-        this.shadow2 = shadow2;
-    }
-
     public String getDeclarativeShadowVariable() {
         return declarativeShadowVariable;
     }
@@ -107,14 +72,6 @@ public class TestDataKitchenSinkEntity {
 
     public void setInconsistent(boolean inconsistent) {
         this.inconsistent = inconsistent;
-    }
-
-    public String getPiggybackShadow() {
-        return piggybackShadow;
-    }
-
-    public void setPiggybackShadow(String piggybackShadow) {
-        this.piggybackShadow = piggybackShadow;
     }
 
     public String getStringVariable() {

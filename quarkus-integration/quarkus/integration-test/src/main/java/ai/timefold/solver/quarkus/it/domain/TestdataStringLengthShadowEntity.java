@@ -1,6 +1,7 @@
 package ai.timefold.solver.quarkus.it.domain;
 
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
@@ -13,8 +14,7 @@ public class TestdataStringLengthShadowEntity implements TestdataStringLengthSha
 
     private List<String> valueList;
 
-    @ShadowVariable(variableListenerClass = StringLengthVariableListener.class,
-            sourceEntityClass = TestdataStringLengthShadowEntity.class, sourceVariableName = "value")
+    @ShadowVariable(supplierName = "updateLength")
     private Integer length;
 
     @ShadowVariable(supplierName = "processShadowVarWithParam")
@@ -43,6 +43,11 @@ public class TestdataStringLengthShadowEntity implements TestdataStringLengthSha
 
     public void setLength(Integer length) {
         this.length = length;
+    }
+
+    @ShadowSources("value")
+    public Integer updateLength() {
+        return Objects.requireNonNullElse(value, "").length();
     }
 
     @Override

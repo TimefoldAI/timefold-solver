@@ -126,7 +126,7 @@ class EnvironmentModeTest {
                                 "Variables that are different between before and undo",
                                 "Actual value (v2) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (v1)");
             }
-            case FULL_ASSERT, STEP_ASSERT, FAST_ASSERT -> {
+            case FULL_ASSERT, STEP_ASSERT -> {
                 // STEP_ASSERT does not create snapshots since it is not intrusive, and hence it can only
                 // detect the undo corruption and not what caused it
                 var e1 = new CorruptedUndoShadowEntity("e1");
@@ -147,7 +147,7 @@ class EnvironmentModeTest {
                                         List.of(v1, v2))))
                         .withMessageContainingAll("corrupted undoMove");
             }
-            case PHASE_ASSERT, NO_ASSERT, NON_REPRODUCIBLE, NON_INTRUSIVE_FULL_ASSERT, REPRODUCIBLE -> {
+            case PHASE_ASSERT, NO_ASSERT, NON_REPRODUCIBLE, NON_INTRUSIVE_FULL_ASSERT -> {
                 var e1 = new CorruptedUndoShadowEntity("e1");
                 var e2 = new CorruptedUndoShadowEntity("e2");
                 var v1 = new CorruptedUndoShadowValue("v1");

@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.listener;
 
-import ai.timefold.solver.core.impl.domain.variable.InnerListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ListElementsChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 
 import org.jspecify.annotations.NullMarked;
@@ -12,6 +12,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public non-sealed interface SourcedListVariableListener<Solution_, Entity_, Element_> extends
         SourcedVariableListener<Solution_, ListElementsChangeEvent<Entity_>>,
-        InnerListVariableListener<Solution_, Entity_, Element_>, Supply {
+        ListVariableListener<Solution_, Entity_, Element_>, Supply {
 
 }

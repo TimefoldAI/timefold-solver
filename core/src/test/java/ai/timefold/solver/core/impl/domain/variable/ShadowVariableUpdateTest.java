@@ -9,12 +9,10 @@ import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.testdomain.shadow.TestdataShadowedSolution;
 import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarEntity;
 import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarSolution;
 import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarValue;
-import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullEntity;
-import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullSolution;
-import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullValue;
 import ai.timefold.solver.core.testdomain.shadow.parameter.TestdataBasicVarParameterEntity;
 import ai.timefold.solver.core.testdomain.shadow.parameter.TestdataBasicVarParameterSolution;
 import ai.timefold.solver.core.testdomain.shadow.parameter.TestdataBasicVarParameterValue;
@@ -27,21 +25,8 @@ class ShadowVariableUpdateTest {
     @Test
     void emptyEntities() {
         Assertions
-                .assertThatCode(() -> SolutionManager.updateShadowVariables(TestdataShadowedFullSolution.class, new Object[0]))
+                .assertThatCode(() -> SolutionManager.updateShadowVariables(TestdataShadowedSolution.class, new Object[0]))
                 .hasMessageContaining("The entity array cannot be empty.");
-    }
-
-    @Test
-    void invalidCustomListener() {
-        var value = new TestdataShadowedFullValue("v1");
-        var entity = new TestdataShadowedFullEntity("e1");
-        var solution = new TestdataShadowedFullSolution();
-        solution.setEntityList(List.of(entity));
-        solution.setValueList(List.of(value));
-        Assertions
-                .assertThatCode(
-                        () -> SolutionManager.updateShadowVariables(TestdataShadowedFullSolution.class, entity, value))
-                .hasMessageContaining("Custom shadow variable descriptors are not supported");
     }
 
     @Test

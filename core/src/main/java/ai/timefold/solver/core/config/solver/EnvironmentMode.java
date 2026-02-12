@@ -65,11 +65,6 @@ public enum EnvironmentMode {
      */
     NON_INTRUSIVE_FULL_ASSERT(true),
     /**
-     * @deprecated Prefer {@link #STEP_ASSERT}.
-     */
-    @Deprecated(forRemoval = true, since = "1.20.0")
-    FAST_ASSERT(true),
-    /**
      * This mode turns on several assertions to fail-fast
      * on a bug in a {@link Move} implementation, a constraint rule, the engine itself or something else
      * at a reasonable performance cost (in development at least).
@@ -100,11 +95,6 @@ public enum EnvironmentMode {
      * and it also disables certain concurrency optimizations, such as work stealing.
      */
     PHASE_ASSERT(true),
-    /**
-     * @deprecated Prefer {@link #NO_ASSERT}.
-     */
-    @Deprecated(forRemoval = true, since = "1.20.0")
-    REPRODUCIBLE(false),
     /**
      * As defined by {@link #PHASE_ASSERT}, but disables every single bug detection mechanism.
      * This mode will run negligibly faster than {@link #PHASE_ASSERT},
@@ -145,7 +135,7 @@ public enum EnvironmentMode {
     public boolean isFullyAsserted() {
         return switch (this) {
             case TRACKED_FULL_ASSERT, FULL_ASSERT, NON_INTRUSIVE_FULL_ASSERT -> true;
-            case STEP_ASSERT, FAST_ASSERT, PHASE_ASSERT, REPRODUCIBLE, NO_ASSERT, NON_REPRODUCIBLE -> false;
+            case STEP_ASSERT, PHASE_ASSERT, NO_ASSERT, NON_REPRODUCIBLE -> false;
         };
     }
 
@@ -160,9 +150,9 @@ public enum EnvironmentMode {
     public boolean isIntrusivelyAsserted() {
         return switch (this) {
             // STEP_ASSERT = former FAST_ASSERT
-            case TRACKED_FULL_ASSERT, FULL_ASSERT, STEP_ASSERT, FAST_ASSERT -> true;
+            case TRACKED_FULL_ASSERT, FULL_ASSERT, STEP_ASSERT -> true;
             // NO_ASSERT = former REPRODUCIBLE
-            case NON_INTRUSIVE_FULL_ASSERT, PHASE_ASSERT, NO_ASSERT, NON_REPRODUCIBLE, REPRODUCIBLE -> false;
+            case NON_INTRUSIVE_FULL_ASSERT, PHASE_ASSERT, NO_ASSERT, NON_REPRODUCIBLE -> false;
         };
     }
 

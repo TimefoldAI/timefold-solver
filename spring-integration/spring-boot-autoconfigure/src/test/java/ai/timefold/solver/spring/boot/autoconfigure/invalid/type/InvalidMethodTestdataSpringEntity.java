@@ -3,16 +3,14 @@ package ai.timefold.solver.spring.boot.autoconfigure.invalid.type;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
-import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.spring.boot.autoconfigure.invalid.VariableListener;
 
 public class InvalidMethodTestdataSpringEntity {
 
@@ -22,17 +20,11 @@ public class InvalidMethodTestdataSpringEntity {
 
     private List<String> values;
 
-    private String anchorShadow;
-
-    private String custom;
-
     private int indexShadow;
 
     private String inverse;
 
     private String next;
-
-    private String piggy;
 
     private String previous;
 
@@ -68,15 +60,6 @@ public class InvalidMethodTestdataSpringEntity {
         this.values = values;
     }
 
-    @CustomShadowVariable
-    public String getCustom() {
-        return custom;
-    }
-
-    public void setCustom(String custom) {
-        this.custom = custom;
-    }
-
     @IndexShadowVariable(sourceVariableName = "source")
     public int getIndexShadow() {
         return indexShadow;
@@ -104,15 +87,6 @@ public class InvalidMethodTestdataSpringEntity {
         this.next = next;
     }
 
-    @PiggybackShadowVariable(shadowVariableName = "variable")
-    public String getPiggy() {
-        return piggy;
-    }
-
-    public void setPiggy(String piggy) {
-        this.piggy = piggy;
-    }
-
     @PreviousElementShadowVariable(sourceVariableName = "source")
     public String getPrevious() {
         return previous;
@@ -122,7 +96,7 @@ public class InvalidMethodTestdataSpringEntity {
         this.previous = previous;
     }
 
-    @ShadowVariable(sourceVariableName = "source", variableListenerClass = VariableListener.class)
+    @ShadowVariable(supplierName = "updateShadow")
     public String getShadow() {
         return shadow;
     }
@@ -130,4 +104,10 @@ public class InvalidMethodTestdataSpringEntity {
     public void setShadow(String shadow) {
         this.shadow = shadow;
     }
+
+    @ShadowSources("value")
+    public String updateShadow() {
+        return "shadow";
+    }
+
 }

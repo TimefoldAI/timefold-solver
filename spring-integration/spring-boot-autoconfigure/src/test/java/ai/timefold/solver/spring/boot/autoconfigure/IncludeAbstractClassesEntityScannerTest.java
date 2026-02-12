@@ -7,11 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
-import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
@@ -31,11 +29,9 @@ class IncludeAbstractClassesEntityScannerTest {
             PlanningPin.class,
             PlanningVariable.class,
             PlanningListVariable.class,
-            CustomShadowVariable.class,
             IndexShadowVariable.class,
             InverseRelationShadowVariable.class,
             NextElementShadowVariable.class,
-            PiggybackShadowVariable.class,
             PreviousElementShadowVariable.class,
             ShadowVariable.class
     };
@@ -55,15 +51,13 @@ class IncludeAbstractClassesEntityScannerTest {
                     // Each field
                     Arrays.stream(PLANNING_ENTITY_FIELD_ANNOTATIONS).forEach(annotation -> {
                         List<Class<?>> classes = scanner.findClassesWithAnnotation(annotation);
-                        assertThat(classes).hasSize(2);
-                        assertThat(classes).contains(InvalidFieldTestdataSpringEntity.class,
+                        assertThat(classes).containsOnly(InvalidFieldTestdataSpringEntity.class,
                                 InvalidMethodTestdataSpringEntity.class);
                     });
 
                     // All fields
                     List<Class<?>> classes = scanner.findClassesWithAnnotation(PLANNING_ENTITY_FIELD_ANNOTATIONS);
-                    assertThat(classes).hasSize(2);
-                    assertThat(classes).contains(InvalidFieldTestdataSpringEntity.class,
+                    assertThat(classes).containsOnly(InvalidFieldTestdataSpringEntity.class,
                             InvalidMethodTestdataSpringEntity.class);
                 });
     }

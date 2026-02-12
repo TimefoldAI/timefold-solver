@@ -1495,13 +1495,9 @@
             
       <xs:enumeration value="NON_INTRUSIVE_FULL_ASSERT"/>
             
-      <xs:enumeration value="FAST_ASSERT"/>
-            
       <xs:enumeration value="STEP_ASSERT"/>
             
       <xs:enumeration value="PHASE_ASSERT"/>
-            
-      <xs:enumeration value="REPRODUCIBLE"/>
             
       <xs:enumeration value="NO_ASSERT"/>
             

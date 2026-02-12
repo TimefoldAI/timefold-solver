@@ -14,7 +14,6 @@ import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
 import ai.timefold.solver.quarkus.testdomain.gizmo.DummyConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.gizmo.DummyVariableListener;
 import ai.timefold.solver.quarkus.testdomain.gizmo.TestDataKitchenSinkAutoDiscoverMethodSolution;
 import ai.timefold.solver.quarkus.testdomain.gizmo.TestDataKitchenSinkEntity;
 
@@ -33,8 +32,7 @@ class TimefoldProcessorGizmoKitchenSinkAutoDiscoverMethodTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestDataKitchenSinkAutoDiscoverMethodSolution.class,
                             TestDataKitchenSinkEntity.class,
-                            DummyConstraintProvider.class,
-                            DummyVariableListener.class))
+                            DummyConstraintProvider.class))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(UnsupportedOperationException.class)
                     .hasMessageContaining("autoDiscoverMemberType"));

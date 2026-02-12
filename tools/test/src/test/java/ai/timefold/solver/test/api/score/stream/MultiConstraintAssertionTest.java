@@ -44,7 +44,7 @@ class MultiConstraintAssertionTest {
         assertThatCode(() -> constraintVerifier.verifyThat()
                 .givenSolution(solution)
                 .settingAllShadowVariables()
-                .scores(SimpleScore.of(30))) // -10 + 20 - 20 + 40
+                .scores(SimpleScore.of(10))) // -10 + 20
                 .doesNotThrowAnyException();
     }
 

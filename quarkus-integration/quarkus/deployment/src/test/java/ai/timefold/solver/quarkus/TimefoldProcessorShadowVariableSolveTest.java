@@ -20,7 +20,6 @@ import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
 import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableConstraintProvider;
 import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableEntity;
-import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableListener;
 import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -38,8 +37,7 @@ class TimefoldProcessorShadowVariableSolveTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusShadowVariableEntity.class,
                             TestdataQuarkusShadowVariableSolution.class,
-                            TestdataQuarkusShadowVariableConstraintProvider.class,
-                            TestdataQuarkusShadowVariableListener.class));
+                            TestdataQuarkusShadowVariableConstraintProvider.class));
 
     @Inject
     SolverFactory<TestdataQuarkusShadowVariableSolution> solverFactory;
