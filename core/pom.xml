@@ -146,13 +146,32 @@
         <version>${version.antrun.plugin}</version>
         <executions>
           <execution>
-            <id>move-solver-xsd</id>
+            <id>check-solver-xsd-exists</id>
             <phase>process-resources</phase>
             <goals>
               <goal>run</goal>
             </goals>
             <configuration>
               <target>
+                <available file="${project.build.outputDirectory}/${schema.filename.solver.intermediary}" property="solverXSDExists"/>
+              </target>
+              <exportAntProperties>true</exportAntProperties>
+            </configuration>
+          </execution>
+          <execution>
+            <id>move-solver-xsd</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <!--
+                   Without executing the clean phase,
+                   this task may fail when switching between branches and running the default lifecycle.
+                   This failure can occur because the file ${schema.filename.solver.intermediary} might not exist
+                   due to previously existing compiled files.
+              -->
+              <target if="solverXSDExists">
                   <move file="${project.build.outputDirectory}/${schema.filename.solver.intermediary}" tofile="${project.basedir}/src/main/resources/${schema.filename.solver}"/>
               </target>
             </configuration>
