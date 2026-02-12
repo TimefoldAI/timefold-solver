@@ -14,11 +14,11 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g. 1.0.0)'
+        description: 'Release version (e.g. 1.31.0)'
         required: true
       sourceBranch:
         description: 'Branch to cut the release from'
-        default: main
+        default: 1.x
         required: true
       dryRun:
         description: 'Do a dry run? (true or false)'
