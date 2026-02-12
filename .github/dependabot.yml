@@ -1,5 +1,5 @@
 version: 2
-updates:
+updates: # uses the default branch by default
   - package-ecosystem: maven
     directory: "/"
     schedule:
@@ -34,6 +34,62 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+      day: "monday"
+      time: "01:00" # Otherwise it picks a random time.
+    open-pull-requests-limit: 99
+    commit-message:
+      prefix: "deps: "
+    labels: ["dependencies"] # Don't use any other labels.
+    groups:
+      # Everything can be grouped together to minimize the number of PRs.
+      # If any dependency ever breaks our code, it will be ungrouped.
+      regular:
+        patterns:
+          - "*"
+  - package-ecosystem: maven
+    target-branch: "1.x"
+    directory: "/"
+    schedule:
+      interval: monthly
+      day: "monday"
+      time: "01:00" # Otherwise it picks a random time.
+    open-pull-requests-limit: 99
+    commit-message:
+      prefix: "deps: "
+    labels: ["dependencies"] # Don't use any other labels.
+    groups:
+      # We want to control these upgrades separately.
+      # They've introduced changes in the past which required manual intervention.
+      quarkus:
+        update-types:
+          - "patch"
+        patterns:
+          - "io.quarkus:*"
+      spring:
+        update-types:
+          - "patch"
+        patterns:
+          - "org.springframework.boot:*"
+          - "org.springframework:*"
+          - "org.springdoc:*"
+      openrewrite:
+        update-types:
+          - "patch"
+        patterns:
+          - "org.openrewrite.maven:*"
+          - "org.openrewrite.recipe:*"
+      # Everything else can be grouped together to minimize the number of PRs.
+      # If any dependency ever breaks our code, it will be ungrouped.
+      regular:
+        update-types:
+          - "patch"
+        patterns:
+          - "*"
+  - package-ecosystem: "github-actions"
+    target-branch: "1.x"
+    directory: "/"
+    schedule:
+      interval: monthly
       day: "monday"
       time: "01:00" # Otherwise it picks a random time.
     open-pull-requests-limit: 99
