@@ -171,7 +171,7 @@
                    This failure can occur because the file ${schema.filename.solver.intermediary} might not exist
                    due to previously existing compiled files.
               -->
-              <target if="${solverXSDExists}">
+              <target if="solverXSDExists">
                   <move file="${project.build.outputDirectory}/${schema.filename.solver.intermediary}" tofile="${project.basedir}/src/main/resources/${schema.filename.solver}"/>
               </target>
             </configuration>
