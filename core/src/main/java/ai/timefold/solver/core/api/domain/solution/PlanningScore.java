@@ -10,7 +10,6 @@ import java.lang.annotation.Target;
 import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
 /**
  * Specifies that a property (or a field) on a {@link PlanningSolution} class holds the {@link Score} of that solution.
@@ -32,7 +31,7 @@ public @interface PlanningScore {
      *
      * @return 0 or higher if the {@link Score} is a {@link IBendableScore}, not used otherwise
      */
-    int bendableHardLevelsSize() default NO_LEVEL_SIZE;
+    int bendableHardLevelsSize() default -1;
 
     /**
      * Required for bendable scores.
@@ -41,26 +40,6 @@ public @interface PlanningScore {
      *
      * @return 0 or higher if the {@link Score} is a {@link IBendableScore}, not used otherwise
      */
-    int bendableSoftLevelsSize() default NO_LEVEL_SIZE;
-
-    /** Workaround for annotation limitation in {@link #bendableHardLevelsSize()} and {@link #bendableSoftLevelsSize()}. */
-    int NO_LEVEL_SIZE = -1;
-
-    /**
-     * Overrides the default determined {@link ScoreDefinition} to implement a custom one.
-     * <p>
-     * If this is not specified, the {@link ScoreDefinition} is automatically determined
-     * based on the return type of the annotated property (or field) on a {@link PlanningSolution}.
-     *
-     * @deprecated Support for custom scores is deprecated and will be removed in Timefold Solver 2.0.
-     * @return {@link NullScoreDefinition} when it is null (workaround for annotation limitation)
-     */
-    @Deprecated(forRemoval = true)
-    Class<? extends ScoreDefinition> scoreDefinitionClass() default NullScoreDefinition.class;
-
-    /** Workaround for annotation limitation in {@link #scoreDefinitionClass()}. */
-    @Deprecated(forRemoval = true)
-    interface NullScoreDefinition extends ScoreDefinition {
-    }
+    int bendableSoftLevelsSize() default -1;
 
 }

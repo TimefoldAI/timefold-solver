@@ -10,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
@@ -32,7 +31,6 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
-import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -62,6 +60,7 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class DescriptorPolicy {
+
     private Map<String, SolutionCloner> generatedSolutionClonerMap = new LinkedHashMap<>();
     private final Map<String, MemberAccessor> fromSolutionValueRangeProviderMap = new LinkedHashMap<>();
     private final Set<MemberAccessor> anonymousFromSolutionValueRangeProviderSet = new LinkedHashSet<>();
@@ -147,23 +146,10 @@ public class DescriptorPolicy {
     private static <Score_ extends Score<Score_>, ScoreDefinition_ extends ScoreDefinition<Score_>> ScoreDefinition_
             buildScoreDefinition(Class<?> solutionClass,
                     MemberAccessor scoreMemberAccessor, Class<Score_> scoreType, PlanningScore annotation) {
-        Class<ScoreDefinition_> scoreDefinitionClass = (Class<ScoreDefinition_>) annotation.scoreDefinitionClass();
         int bendableHardLevelsSize = annotation.bendableHardLevelsSize();
         int bendableSoftLevelsSize = annotation.bendableSoftLevelsSize();
-        if (!Objects.equals(scoreDefinitionClass, PlanningScore.NullScoreDefinition.class)) {
-            if (bendableHardLevelsSize != PlanningScore.NO_LEVEL_SIZE
-                    || bendableSoftLevelsSize != PlanningScore.NO_LEVEL_SIZE) {
-                throw new IllegalArgumentException(
-                        "The solutionClass (%s) has a @%s annotated member (%s) that has a scoreDefinition (%s) that must not have a bendableHardLevelsSize (%d) or a bendableSoftLevelsSize (%d)."
-                                .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor,
-                                        scoreDefinitionClass, bendableHardLevelsSize, bendableSoftLevelsSize));
-            }
-            return ConfigUtils.newInstance(() -> scoreMemberAccessor + " with @" + PlanningScore.class.getSimpleName(),
-                    "scoreDefinitionClass", scoreDefinitionClass);
-        }
         if (!IBendableScore.class.isAssignableFrom(scoreType)) {
-            if (bendableHardLevelsSize != PlanningScore.NO_LEVEL_SIZE
-                    || bendableSoftLevelsSize != PlanningScore.NO_LEVEL_SIZE) {
+            if (bendableHardLevelsSize != -1 || bendableSoftLevelsSize != -1) {
                 throw new IllegalArgumentException(
                         "The solutionClass (%s) has a @%s annotated member (%s) that returns a scoreType (%s) that must not have a bendableHardLevelsSize (%d) or a bendableSoftLevelsSize (%d)."
                                 .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor, scoreType,
@@ -196,8 +182,7 @@ public class DescriptorPolicy {
                                         Score.class.getSimpleName(), PlanningScore.class.getSimpleName()));
             }
         } else {
-            if (bendableHardLevelsSize == PlanningScore.NO_LEVEL_SIZE
-                    || bendableSoftLevelsSize == PlanningScore.NO_LEVEL_SIZE) {
+            if (bendableHardLevelsSize == -1 || bendableSoftLevelsSize == -1) {
                 throw new IllegalArgumentException(
                         "The solutionClass (%s) has a @%s annotated member (%s) that returns a scoreType (%s) that must have a bendableHardLevelsSize (%d) and a bendableSoftLevelsSize (%d)."
                                 .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor, scoreType,

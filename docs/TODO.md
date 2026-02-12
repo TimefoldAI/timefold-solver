@@ -15,5 +15,6 @@
 - [ ] Removal of old environment modes (Migration script?)
 - [ ] `ConstraintConfiguration` replaced by `ConstraintWeightOverrides` (copy from 1.x upgrade recipe).
 - [ ] `ConstraintRef.of()` now only accepts name, not package and name. (Migration script!)
+- [ ] Custom scores are no longer possible. (They weren't even before, really.)
 
 Remove this file when done.

@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -41,68 +40,41 @@ import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
  */
 public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
 
-    @Deprecated(forRemoval = true)
-    private static final String CUSTOM_SCORE_INLINER_CLASS_PROPERTY_NAME =
-            "ai.timefold.solver.score.stream.inliner";
-
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <Score_ extends Score<Score_>, ScoreInliner_ extends AbstractScoreInliner<Score_>> ScoreInliner_
             buildScoreInliner(ScoreDefinition<Score_> scoreDefinition, Map<Constraint, Score_> constraintWeightMap,
                     ConstraintMatchPolicy constraintMatchPolicy) {
-        if (scoreDefinition instanceof SimpleScoreDefinition) {
-            return (ScoreInliner_) new SimpleScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-        } else if (scoreDefinition instanceof SimpleLongScoreDefinition) {
-            return (ScoreInliner_) new SimpleLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-        } else if (scoreDefinition instanceof SimpleBigDecimalScoreDefinition) {
-            return (ScoreInliner_) new SimpleBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-        } else if (scoreDefinition instanceof HardSoftScoreDefinition) {
-            return (ScoreInliner_) new HardSoftScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-        } else if (scoreDefinition instanceof HardSoftLongScoreDefinition) {
-            return (ScoreInliner_) new HardSoftLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-        } else if (scoreDefinition instanceof HardSoftBigDecimalScoreDefinition) {
-            return (ScoreInliner_) new HardSoftBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-        } else if (scoreDefinition instanceof HardMediumSoftScoreDefinition) {
-            return (ScoreInliner_) new HardMediumSoftScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-        } else if (scoreDefinition instanceof HardMediumSoftLongScoreDefinition) {
-            return (ScoreInliner_) new HardMediumSoftLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-        } else if (scoreDefinition instanceof HardMediumSoftBigDecimalScoreDefinition) {
-            return (ScoreInliner_) new HardMediumSoftBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
-        } else if (scoreDefinition instanceof BendableScoreDefinition bendableScoreDefinition) {
-            return (ScoreInliner_) new BendableScoreInliner((Map) constraintWeightMap, constraintMatchPolicy,
-                    bendableScoreDefinition.getHardLevelsSize(), bendableScoreDefinition.getSoftLevelsSize());
-        } else if (scoreDefinition instanceof BendableLongScoreDefinition bendableScoreDefinition) {
-            return (ScoreInliner_) new BendableLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy,
-                    bendableScoreDefinition.getHardLevelsSize(),
-                    bendableScoreDefinition.getSoftLevelsSize());
-        } else if (scoreDefinition instanceof BendableBigDecimalScoreDefinition bendableScoreDefinition) {
-            return (ScoreInliner_) new BendableBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy,
-                    bendableScoreDefinition.getHardLevelsSize(), bendableScoreDefinition.getSoftLevelsSize());
-        } else {
-            var customScoreInlinerClassName = System.getProperty(CUSTOM_SCORE_INLINER_CLASS_PROPERTY_NAME);
-            if (customScoreInlinerClassName == null) {
-                throw new UnsupportedOperationException("Unknown score definition class (" +
-                        scoreDefinition.getClass().getCanonicalName() + ").\n" +
-                        "If you're attempting to use a custom score, " +
-                        "provide your " + AbstractScoreInliner.class.getSimpleName() + " implementation using the '" +
-                        CUSTOM_SCORE_INLINER_CLASS_PROPERTY_NAME + "' system property.\n" +
-                        "Note: support for custom scores will be removed in Timefold 2.0.");
-            }
-            try {
-                var customScoreInlinerClass = Class.forName(customScoreInlinerClassName);
-                if (!AbstractScoreInliner.class.isAssignableFrom(customScoreInlinerClass)) {
-                    throw new IllegalStateException("Custom score inliner class (" + customScoreInlinerClassName +
-                            ") does not extend " + AbstractScoreInliner.class.getCanonicalName() + ".\n" +
-                            "Note: support for custom scores will be removed in Timefold 2.0.");
-                }
-                return ((Class<ScoreInliner_>) customScoreInlinerClass).getConstructor()
-                        .newInstance();
-            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException
-                    | InvocationTargetException cause) {
-                throw new IllegalStateException("Custom score inliner class (" + customScoreInlinerClassName +
-                        ") can not be instantiated.\n" +
-                        "Maybe add a no-arg public constructor?\n" +
-                        "Note: support for custom scores will be removed in Timefold 2.0.", cause);
-            }
-        }
+        return (ScoreInliner_) switch (scoreDefinition) {
+            case SimpleScoreDefinition simpleScoreDefinition ->
+                new SimpleScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
+            case SimpleLongScoreDefinition simpleLongScoreDefinition ->
+                new SimpleLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
+            case SimpleBigDecimalScoreDefinition simpleBigDecimalScoreDefinition ->
+                new SimpleBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
+            case HardSoftScoreDefinition hardSoftScoreDefinition ->
+                new HardSoftScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
+            case HardSoftLongScoreDefinition hardSoftLongScoreDefinition ->
+                new HardSoftLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
+            case HardSoftBigDecimalScoreDefinition hardSoftBigDecimalScoreDefinition ->
+                new HardSoftBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
+            case HardMediumSoftScoreDefinition hardMediumSoftScoreDefinition ->
+                new HardMediumSoftScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
+            case HardMediumSoftLongScoreDefinition hardMediumSoftLongScoreDefinition ->
+                new HardMediumSoftLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
+            case HardMediumSoftBigDecimalScoreDefinition hardMediumSoftBigDecimalScoreDefinition ->
+                new HardMediumSoftBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy);
+            case BendableScoreDefinition bendableScoreDefinition ->
+                new BendableScoreInliner((Map) constraintWeightMap, constraintMatchPolicy,
+                        bendableScoreDefinition.getHardLevelsSize(), bendableScoreDefinition.getSoftLevelsSize());
+            case BendableLongScoreDefinition bendableScoreDefinition ->
+                new BendableLongScoreInliner((Map) constraintWeightMap, constraintMatchPolicy,
+                        bendableScoreDefinition.getHardLevelsSize(), bendableScoreDefinition.getSoftLevelsSize());
+            case BendableBigDecimalScoreDefinition bendableScoreDefinition ->
+                new BendableBigDecimalScoreInliner((Map) constraintWeightMap, constraintMatchPolicy,
+                        bendableScoreDefinition.getHardLevelsSize(), bendableScoreDefinition.getSoftLevelsSize());
+            default -> throw new UnsupportedOperationException("Impossible state: Unknown score definition class (%s)."
+                    .formatted(scoreDefinition.getClass().getCanonicalName()));
+        };
     }
 
     protected final ConstraintMatchPolicy constraintMatchPolicy;
@@ -240,8 +212,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                     if (indictedObject == null) { // Users may have sent null, or it came from the default mapping.
                         continue;
                     }
-                    var indictment =
-                            (DefaultIndictment<Score_>) getIndictment(workingIndictmentMap, constraintMatch, indictedObject);
+                    var indictment = getIndictment(workingIndictmentMap, constraintMatch, indictedObject);
                     /*
                      * Optimization: In order to not have to go over the indicted object list and remove duplicates,
                      * we use a method that will silently skip duplicate constraint matches.
