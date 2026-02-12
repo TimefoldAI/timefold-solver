@@ -1,5 +1,7 @@
 package ai.timefold.solver.quarkus.benchmark.it.domain;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
@@ -69,11 +71,7 @@ public class TestdataListValueShadowEntity {
     }
 
     private static int getLength(String value) {
-        if (value != null) {
-            return value.length();
-        } else {
-            return 0;
-        }
+        return Objects.requireNonNullElse(value, "").length();
     }
 
 }

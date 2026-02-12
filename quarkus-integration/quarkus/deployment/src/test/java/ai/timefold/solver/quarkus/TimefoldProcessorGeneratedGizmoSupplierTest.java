@@ -143,7 +143,7 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
         @PlanningVariable
         public abstract String getValue();
 
-        public abstract String setValue(String value);
+        public abstract void setValue(String value);
 
         @ShadowVariable(supplierName = "updateLength")
         public abstract Integer getLength();

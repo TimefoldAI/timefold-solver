@@ -134,8 +134,10 @@ your application might still not be fully reproducible because of:
 * Use of `HashSet` (or another `Collection` which has an undefined iteration order between JVM runs)
 for collections of planning entities or planning values (but not normal problem facts),
 especially in the solution implementation.
-Replace it with ``LinkedHashSet``.
-** This also applies to `HashMap`, which can be replaced by `LinkedHashMap`.
+Replace it with a `SequencedSet` or `SequencedCollection` implementation respectively,
+such as `LinkedHashSet` or `ArrayList`.
+** This also applies to `HashMap`,
+which can be replaced by a `SequencedMap` implementation such as `LinkedHashMap`.
 * Combining a time gradient-dependent algorithm (most notably xref:optimization-algorithms/local-search.adoc#simulatedAnnealing[Simulated Annealing]) together with
 xref:optimization-algorithms/overview.adoc#timeMillisSpentTermination[time spent termination].
 A large enough difference in allocated CPU time will influence the time gradient values.
@@ -182,13 +184,13 @@ This is to detect if the solution was corrupted before the move was evaluated du
 - Variables that are different between "from scratch" and "undo".
 This is to detect if recalculating the shadow variables from scratch is different from the incremental shadow variable calculation.
 
-- Missing events for the actual move.
-Any variable that changed between the "before move" solution and the "after move" solution without either a
-`beforeVariableChanged` or `afterVariableChanged` would be reported here.
+- Missing variable events for the actual move.
+Any variable that changed between the "before move" solution and the "after move" solution
+without the solver being notified of the change.
 
 - Missing events for undo move.
-Any variable that changed between the "after move" solution and "after undo move" solution without either a
-`beforeVariableChanged` or `afterVariableChanged` would be reported here.
+Any variable that changed between the "after move" solution and "after undo move" solution
+without the solver being notified of the change.
 
 This mode is <<environmentModeReproducibility,reproducible>> (see the reproducible mode).
 It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.

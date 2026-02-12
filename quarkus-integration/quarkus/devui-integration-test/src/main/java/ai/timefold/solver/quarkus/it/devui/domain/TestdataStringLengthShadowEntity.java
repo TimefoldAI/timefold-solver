@@ -1,5 +1,7 @@
 package ai.timefold.solver.quarkus.it.devui.domain;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
@@ -36,7 +38,7 @@ public class TestdataStringLengthShadowEntity {
 
     @ShadowSources("value")
     public Integer updateLength() {
-        return value == null ? null : value.length();
+        return Objects.requireNonNullElse(value, "").length();
     }
 
 }
