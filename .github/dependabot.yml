@@ -33,7 +33,9 @@ updates: # uses the default branch by default
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      cron: "0 1 * * 1#1" # First Monday of the month
+      interval: weekly
+      day: "monday"
+      time: "01:00" # Otherwise it picks a random time.
     open-pull-requests-limit: 99
     commit-message:
       prefix: "deps: "
@@ -65,9 +67,7 @@ updates: # uses the default branch by default
     target-branch: "1.x"
     directory: "/"
     schedule:
-      interval: monthly
-      day: "monday"
-      time: "01:00" # Otherwise it picks a random time.
+      cron: "0 1 * * 1#1" # First Monday of the month
     open-pull-requests-limit: 99
     commit-message:
       prefix: "deps: "
