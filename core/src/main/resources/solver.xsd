@@ -35,8 +35,6 @@
                     
           <xs:element maxOccurs="unbounded" minOccurs="0" name="entityClass" type="xs:string"/>
                     
-          <xs:element minOccurs="0" name="domainAccessType" type="tns:domainAccessType"/>
-                    
           <xs:element minOccurs="0" name="scoreDirectorFactory" type="tns:scoreDirectorFactoryConfig"/>
                     
           <xs:element minOccurs="0" name="termination" type="tns:terminationConfig"/>
@@ -1536,18 +1534,6 @@
       <xs:enumeration value="PICKED_MOVE_TYPE_BEST_SCORE_DIFF"/>
             
       <xs:enumeration value="PICKED_MOVE_TYPE_STEP_SCORE_DIFF"/>
-          
-    </xs:restriction>
-      
-  </xs:simpleType>
-    
-  <xs:simpleType name="domainAccessType">
-        
-    <xs:restriction base="xs:string">
-            
-      <xs:enumeration value="REFLECTION"/>
-            
-      <xs:enumeration value="GIZMO"/>
           
     </xs:restriction>
       

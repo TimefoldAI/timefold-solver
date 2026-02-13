@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberAccessorFactory;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterEntity;
@@ -19,6 +20,7 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.i
 import ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ReflectionMethodExtendedMemberAccessorTest {
 
@@ -74,28 +76,45 @@ class ReflectionMethodExtendedMemberAccessorTest {
 
     @Test
     void invalidEntityReadMethodWithParameter() {
-        assertThatCode(TestdataInvalidTypeEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
-                .hasMessageContaining("The parameter type (%s)".formatted(TestdataSolution.class.getCanonicalName()))
-                .hasMessageContaining(
-                        "of the method (getValueRange) must match the solution (%s)."
-                                .formatted(TestdataInvalidTypeEntityProvidingWithParameterSolution.class.getCanonicalName()));
-        assertThatCode(TestdataInvalidCountEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
-                .hasMessageContaining("The readMethod")
-                .hasMessageContaining("with a @%s annotation must have only one parameter"
-                        .formatted(ValueRangeProvider.class.getSimpleName()));
+        try (var gizmoMemberAccessorFactoryMock = Mockito.mockStatic(GizmoMemberAccessorFactory.class)) {
+            // Mock GizmoMemberAccessorFactory so MemberAccessorFactory think we are in a native image
+            gizmoMemberAccessorFactoryMock.when(() -> GizmoMemberAccessorFactory.isGizmoSupported(Mockito.any()))
+                    .thenReturn(false);
+            gizmoMemberAccessorFactoryMock.when(() -> GizmoMemberAccessorFactory.getGeneratedClassName(Mockito.any()))
+                    .thenCallRealMethod();
+
+            assertThatCode(TestdataInvalidTypeEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
+                    .hasMessageContaining("The parameter type (%s)".formatted(TestdataSolution.class.getCanonicalName()))
+                    .hasMessageContaining(
+                            "of the method (getValueRange) must match the solution (%s)."
+                                    .formatted(
+                                            TestdataInvalidTypeEntityProvidingWithParameterSolution.class.getCanonicalName()));
+            assertThatCode(TestdataInvalidCountEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
+                    .hasMessageContaining("The readMethod")
+                    .hasMessageContaining("with a @%s annotation must have only one parameter"
+                            .formatted(ValueRangeProvider.class.getSimpleName()));
+        }
     }
 
     @Test
     void invalidSolutionReadMethodWithParameter() {
-        assertThatCode(TestdataInvalidParameterSolution::buildSolutionDescriptor)
-                .hasMessageContainingAll(
-                        "The readMethod (public java.util.List %s.getValueList(%s))"
-                                .formatted(TestdataInvalidParameterSolution.class.getCanonicalName(),
-                                        TestdataInvalidParameterSolution.class.getCanonicalName()))
-                .hasMessageContainingAll(
-                        " with a @%s annotation must not have any parameters ([class %s])."
-                                .formatted(ValueRangeProvider.class.getSimpleName(),
-                                        TestdataInvalidParameterSolution.class.getCanonicalName()));
+        try (var gizmoMemberAccessorFactoryMock = Mockito.mockStatic(GizmoMemberAccessorFactory.class)) {
+            // Mock GizmoMemberAccessorFactory so MemberAccessorFactory think we are in a native image
+            gizmoMemberAccessorFactoryMock.when(() -> GizmoMemberAccessorFactory.isGizmoSupported(Mockito.any()))
+                    .thenReturn(false);
+            gizmoMemberAccessorFactoryMock.when(() -> GizmoMemberAccessorFactory.getGeneratedClassName(Mockito.any()))
+                    .thenCallRealMethod();
+
+            assertThatCode(TestdataInvalidParameterSolution::buildSolutionDescriptor)
+                    .hasMessageContainingAll(
+                            "The readMethod (public java.util.List %s.getValueList(%s))"
+                                    .formatted(TestdataInvalidParameterSolution.class.getCanonicalName(),
+                                            TestdataInvalidParameterSolution.class.getCanonicalName()))
+                    .hasMessageContainingAll(
+                            " with a @%s annotation must not have any parameters ([class %s])."
+                                    .formatted(ValueRangeProvider.class.getSimpleName(),
+                                            TestdataInvalidParameterSolution.class.getCanonicalName()));
+        }
     }
 
     @Test

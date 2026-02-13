@@ -9,7 +9,6 @@ import java.time.Duration;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -46,7 +45,6 @@ class TimefoldProcessorNearbySolverYamlTest {
         assertNotNull(solverConfig.getNearbyDistanceMeterClass());
         assertTrue(solverConfig.getDaemon());
         assertEquals("2", solverConfig.getMoveThreadCount());
-        assertEquals(DomainAccessType.REFLECTION, solverConfig.getDomainAccessType());
 
         assertNotNull(solverFactory);
     }

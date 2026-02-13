@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.gizmo.GizmoTestdataEntity;
@@ -132,7 +133,8 @@ class GizmoMemberAccessorImplementorTest {
     void testGeneratedMemberAccessorReturnVoid() throws NoSuchMethodException {
         var member = TestdataEntity.class.getMethod("updateValue");
         var memberAccessor =
-                GizmoMemberAccessorFactory.buildGizmoMemberAccessor(member, null, AccessorInfo.of(false, false),
+                GizmoMemberAccessorFactory.buildGizmoMemberAccessor(member, null, AccessorInfo.of(
+                        MemberAccessorFactory.MemberAccessorType.VOID_METHOD),
                         new GizmoClassLoader());
 
         var entity = new TestdataEntity();
@@ -169,7 +171,9 @@ class GizmoMemberAccessorImplementorTest {
             GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class,
                     AccessorInfo.withReturnValueAndNoArguments(),
                     new GizmoClassLoader());
-        }).hasMessage("The getterMethod (getVoid) with a PlanningVariable annotation must have a non-void return type.");
+        }).hasMessageContainingAll("The getterMethod (getVoid)",
+                "with a @%s annotation".formatted(PlanningVariable.class.getSimpleName()),
+                "must have a non-void return type.");
     }
 
     @Test
@@ -179,7 +183,9 @@ class GizmoMemberAccessorImplementorTest {
             GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class,
                     AccessorInfo.withReturnValueAndNoArguments(),
                     new GizmoClassLoader());
-        }).hasMessage("The readMethod (voidMethod) with a PlanningVariable annotation must have a non-void return type.");
+        }).hasMessageContainingAll("The readMethod (voidMethod)",
+                "with a @%s annotation".formatted(PlanningVariable.class.getSimpleName()),
+                "must have a non-void return type.");
     }
 
     @Test
@@ -208,13 +214,12 @@ class GizmoMemberAccessorImplementorTest {
         var member = GizmoTestdataEntity.class.getMethod("isAMethodThatHasABadName");
         assertThatCode(
                 () -> GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class,
-                        AccessorInfo.withReturnValueAndNoArguments(),
+                        AccessorInfo.of(MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD),
                         new GizmoClassLoader()))
-                .hasMessage("""
-                        The getterMethod (isAMethodThatHasABadName) with a PlanningVariable annotation \
-                        must have a primitive boolean return type but returns (L%s;).
-                        Maybe rename the method (getAMethodThatHasABadName)?"""
-                        .formatted(String.class.getName().replace('.', '/')));
+                .hasMessageContainingAll("The getterMethod (isAMethodThatHasABadName)",
+                        "with a @%s annotation".formatted(PlanningVariable.class.getSimpleName()),
+                        "must have a primitive boolean return type but returns (L%s;)".formatted(
+                                String.class.getName().replace('.', '/')));
     }
 
     @Test

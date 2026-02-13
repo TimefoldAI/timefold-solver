@@ -6,11 +6,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;

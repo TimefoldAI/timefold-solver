@@ -11,6 +11,7 @@ import java.util.Map;
 public final class GizmoClassLoader extends ClassLoader {
 
     private final Map<String, byte[]> classNameToBytecodeMap;
+    private GizmoSupportStatus gizmoSupportStatus;
 
     public GizmoClassLoader() {
         this(new HashMap<>());
@@ -24,6 +25,15 @@ public final class GizmoClassLoader extends ClassLoader {
          */
         super(GizmoClassLoader.class.getClassLoader());
         this.classNameToBytecodeMap = classNameToBytecodeMap;
+        this.gizmoSupportStatus = GizmoSupportStatus.UNKNOWN;
+    }
+
+    public GizmoSupportStatus getGizmoSupportStatus() {
+        return gizmoSupportStatus;
+    }
+
+    public void setGizmoSupportStatus(GizmoSupportStatus gizmoSupportStatus) {
+        this.gizmoSupportStatus = gizmoSupportStatus;
     }
 
     @Override

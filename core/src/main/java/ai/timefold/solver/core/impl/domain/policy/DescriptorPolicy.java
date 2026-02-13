@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
@@ -27,6 +26,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;

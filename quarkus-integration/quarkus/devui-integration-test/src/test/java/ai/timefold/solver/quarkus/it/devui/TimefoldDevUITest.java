@@ -79,7 +79,6 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
                         + "  <solutionClass>" + TestdataStringLengthShadowSolution.class.getCanonicalName()
                         + "</solutionClass>\n"
                         + "  <entityClass>" + TestdataStringLengthShadowEntity.class.getCanonicalName() + "</entityClass>\n"
-                        + "  <domainAccessType>GIZMO</domainAccessType>\n"
                         + "  <scoreDirectorFactory>\n"
                         + "    <constraintProviderClass>" + TestdataStringLengthConstraintProvider.class.getCanonicalName()
                         + "</constraintProviderClass>\n"

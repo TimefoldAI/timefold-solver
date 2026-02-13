@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
+import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.AccessorInfo;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoClassLoader;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.AbstractSolutionClonerTest;
@@ -99,7 +100,8 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                     var name = field.getName();
 
                     if (Modifier.isPublic(field.getModifiers())) {
-                        member = new GizmoMemberDescriptor(name, memberDescriptor, declaringClass);
+                        member = new GizmoMemberDescriptor(name, memberDescriptor, declaringClass,
+                                AccessorInfo.withReturnValueAndNoArguments());
                     } else {
                         var getter = ReflectionHelper.getGetterMethod(currentClass, field.getName());
                         var setter = ReflectionHelper.getSetterMethod(currentClass, field.getName());

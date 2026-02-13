@@ -4,12 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberAccessorFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.invalid.gettersetter.TestdataDifferentGetterSetterVisibilityEntity;
 import ai.timefold.solver.core.testdomain.invalid.gettersetter.TestdataInvalidGetterEntity;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ReflectionBeanPropertyMemberAccessorTest {
 
@@ -31,19 +33,27 @@ class ReflectionBeanPropertyMemberAccessorTest {
 
     @Test
     void getterSetterVisibilityDoesNotMatch() {
-        assertThatCode(() -> new ReflectionBeanPropertyMemberAccessor(
-                TestdataDifferentGetterSetterVisibilityEntity.class.getDeclaredMethod("getValue1")))
-                .hasMessageContainingAll("getterMethod (getValue1)",
-                        "has access modifier (public)",
-                        "not match the setterMethod (setValue1)",
-                        "access modifier (private)",
-                        "on class (ai.timefold.solver.core.testdomain.invalid.gettersetter.TestdataDifferentGetterSetterVisibilityEntity)");
-        assertThatCode(() -> new ReflectionBeanPropertyMemberAccessor(
-                TestdataDifferentGetterSetterVisibilityEntity.class.getDeclaredMethod("getValue2")))
-                .hasMessageContainingAll("getterMethod (getValue2)",
-                        "on class (%s)".formatted(TestdataDifferentGetterSetterVisibilityEntity.class.getCanonicalName()),
-                        "is not public",
-                        "having access modifier (package-private) instead.");
+        try (var gizmoMemberAccessorFactoryMock = Mockito.mockStatic(GizmoMemberAccessorFactory.class)) {
+            // Mock GizmoMemberAccessorFactory so MemberAccessorFactory think we are in a native image
+            gizmoMemberAccessorFactoryMock.when(() -> GizmoMemberAccessorFactory.isGizmoSupported(Mockito.any()))
+                    .thenReturn(false);
+            gizmoMemberAccessorFactoryMock.when(() -> GizmoMemberAccessorFactory.getGeneratedClassName(Mockito.any()))
+                    .thenCallRealMethod();
+
+            assertThatCode(() -> new ReflectionBeanPropertyMemberAccessor(
+                    TestdataDifferentGetterSetterVisibilityEntity.class.getDeclaredMethod("getValue1")))
+                    .hasMessageContainingAll("getterMethod (getValue1)",
+                            "has access modifier (public)",
+                            "not match the setterMethod (setValue1)",
+                            "access modifier (private)",
+                            "on class (ai.timefold.solver.core.testdomain.invalid.gettersetter.TestdataDifferentGetterSetterVisibilityEntity)");
+            assertThatCode(() -> new ReflectionBeanPropertyMemberAccessor(
+                    TestdataDifferentGetterSetterVisibilityEntity.class.getDeclaredMethod("getValue2")))
+                    .hasMessageContainingAll("getterMethod (getValue2)",
+                            "on class (%s)".formatted(TestdataDifferentGetterSetterVisibilityEntity.class.getCanonicalName()),
+                            "is not public",
+                            "having access modifier (package-private) instead.");
+        }
     }
 
     @Test

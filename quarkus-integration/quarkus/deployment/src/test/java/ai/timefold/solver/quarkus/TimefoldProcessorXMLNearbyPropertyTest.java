@@ -7,7 +7,6 @@ import java.util.Collections;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.testdomain.dummy.DummyDistanceMeter;
@@ -41,7 +40,6 @@ class TimefoldProcessorXMLNearbyPropertyTest {
     void solverConfigXml_property() {
         assertNotNull(solverConfig);
         assertNotNull(solverConfig.getNearbyDistanceMeterClass());
-        assertEquals(DomainAccessType.GIZMO, solverConfig.getDomainAccessType());
         assertEquals(TestdataQuarkusSolution.class, solverConfig.getSolutionClass());
         assertEquals(Collections.singletonList(TestdataQuarkusEntity.class), solverConfig.getEntityClassList());
         assertEquals(TestdataQuarkusConstraintProvider.class,

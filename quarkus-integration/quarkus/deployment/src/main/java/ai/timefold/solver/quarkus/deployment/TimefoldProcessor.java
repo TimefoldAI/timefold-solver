@@ -1,7 +1,6 @@
 package ai.timefold.solver.quarkus.deployment;
 
 import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
-import static java.lang.String.format;
 
 import java.lang.constant.ClassDesc;
 import java.lang.reflect.Field;
@@ -26,7 +25,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Singleton;
 
 import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
@@ -44,7 +42,9 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.AccessorInfo;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSource;
@@ -610,14 +610,9 @@ class TimefoldProcessor {
 
         var constraintMetaModelsBySolverNames = new HashMap<String, ConstraintMetaModel>();
         solverConfigBuildItem.getSolverConfigMap().forEach((solverName, solverConfig) -> {
-            // Gizmo-generated member accessors are not yet available at build time.
-            var originalDomainAccessType = solverConfig.getDomainAccessType();
-            solverConfig.setDomainAccessType(DomainAccessType.REFLECTION);
-
             var solverFactory = SolverFactory.create(solverConfig);
             var constraintMetaModel = BeanUtil.buildConstraintMetaModel(solverFactory);
             // Avoid changing the original solver config.
-            solverConfig.setDomainAccessType(originalDomainAccessType);
             constraintMetaModelsBySolverNames.put(solverName, constraintMetaModel);
         });
 
@@ -804,13 +799,6 @@ class TimefoldProcessor {
         applyScoreDirectorFactoryProperties(indexView, solverConfig);
 
         // Override the current configuration with values from the solver properties
-        timefoldBuildTimeConfig.getSolverConfig(solverName).flatMap(SolverBuildTimeConfig::domainAccessType)
-                .ifPresent(solverConfig::setDomainAccessType);
-
-        if (solverConfig.getDomainAccessType() == null) {
-            solverConfig.setDomainAccessType(DomainAccessType.GIZMO);
-        }
-
         timefoldBuildTimeConfig.getSolverConfig(solverName)
                 .flatMap(SolverBuildTimeConfig::enabledPreviewFeatures)
                 .ifPresent(solverConfig::setEnablePreviewFeatureSet);
@@ -981,155 +969,157 @@ class TimefoldProcessor {
          * "entity" in this context means both "planning solution",
          * "planning entity" and other things as well.
          */
-        assertSolverDomainAccessType(solverConfigMap);
         var entityEnhancer = new GizmoMemberAccessorEntityEnhancer();
-        if (solverConfigMap.values().stream().anyMatch(c -> c.getDomainAccessType() == DomainAccessType.GIZMO)) {
-            var membersToGeneratedAccessorsForCollection = new ArrayList<AnnotationInstance>();
+        var membersToGeneratedAccessorsForCollection = new ArrayList<AnnotationInstance>();
 
-            // Every entity and solution gets scanned for annotations.
-            // Annotated members get their accessors generated.
-            for (var dotName : DotNames.GIZMO_MEMBER_ACCESSOR_ANNOTATIONS) {
-                membersToGeneratedAccessorsForCollection.addAll(indexView.getAnnotationsWithRepeatable(dotName, indexView));
+        // Every entity and solution gets scanned for annotations.
+        // Annotated members get their accessors generated.
+        for (var dotName : DotNames.GIZMO_MEMBER_ACCESSOR_ANNOTATIONS) {
+            membersToGeneratedAccessorsForCollection.addAll(indexView.getAnnotationsWithRepeatable(dotName, indexView));
+        }
+        generateDomainAccessorsForShadowSources(indexView, membersToGeneratedAccessorsForCollection);
+        membersToGeneratedAccessorsForCollection.removeIf(this::shouldIgnoreMember);
+
+        // Fail fast on auto-discovery.
+        var planningSolutionAnnotationInstanceCollection = getAllConcreteSolutionClasses(indexView);
+        var unconfiguredSolverConfigList = solverConfigMap.entrySet().stream()
+                .filter(e -> e.getValue().getSolutionClass() == null)
+                .map(Map.Entry::getKey)
+                .toList();
+        var unusedSolutionClassList = planningSolutionAnnotationInstanceCollection.stream()
+                .map(planningClass -> planningClass.target().asClass().name().toString())
+                .filter(planningClassName -> reflectiveClassSet.stream()
+                        .noneMatch(clazz -> clazz.getName().equals(planningClassName)))
+                .toList();
+        if (planningSolutionAnnotationInstanceCollection.isEmpty()) {
+            throw new IllegalStateException(
+                    "No classes found with a @%s annotation.".formatted(PlanningSolution.class.getSimpleName()));
+        } else if (planningSolutionAnnotationInstanceCollection.size() > 1 && !unconfiguredSolverConfigList.isEmpty()
+                && !unusedSolutionClassList.isEmpty()) {
+            throw new IllegalStateException(
+                    "Unused classes (%s) found with a @%s annotation.".formatted(String.join(", ", unusedSolutionClassList),
+                            PlanningSolution.class.getSimpleName()));
+        }
+
+        planningSolutionAnnotationInstanceCollection.forEach(planningSolutionAnnotationInstance -> {
+            var autoDiscoverMemberType = planningSolutionAnnotationInstance.values().stream()
+                    .filter(v -> v.name().equals("autoDiscoverMemberType"))
+                    .findFirst()
+                    .map(AnnotationValue::asEnum)
+                    .map(AutoDiscoverMemberType::valueOf)
+                    .orElse(AutoDiscoverMemberType.NONE);
+
+            if (autoDiscoverMemberType != AutoDiscoverMemberType.NONE) {
+                throw new UnsupportedOperationException("""
+                        Auto-discovery of members using %s is not supported under Quarkus.
+                        Remove the autoDiscoverMemberType property from the @%s annotation
+                        and explicitly annotate the fields or getters with annotations such as @%s, @%s or @%s."""
+                        .strip()
+                        .formatted(
+                                AutoDiscoverMemberType.class.getSimpleName(),
+                                PlanningSolution.class.getSimpleName(),
+                                PlanningScore.class.getSimpleName(),
+                                PlanningEntityCollectionProperty.class.getSimpleName(),
+                                ProblemFactCollectionProperty.class.getSimpleName()));
             }
-            generateDomainAccessorsForShadowSources(indexView, membersToGeneratedAccessorsForCollection);
-            membersToGeneratedAccessorsForCollection.removeIf(this::shouldIgnoreMember);
-
-            // Fail fast on auto-discovery.
-            var planningSolutionAnnotationInstanceCollection = getAllConcreteSolutionClasses(indexView);
-            var unconfiguredSolverConfigList = solverConfigMap.entrySet().stream()
-                    .filter(e -> e.getValue().getSolutionClass() == null)
-                    .map(Map.Entry::getKey)
-                    .toList();
-            var unusedSolutionClassList = planningSolutionAnnotationInstanceCollection.stream()
-                    .map(planningClass -> planningClass.target().asClass().name().toString())
-                    .filter(planningClassName -> reflectiveClassSet.stream()
-                            .noneMatch(clazz -> clazz.getName().equals(planningClassName)))
-                    .toList();
-            if (planningSolutionAnnotationInstanceCollection.isEmpty()) {
-                throw new IllegalStateException(
-                        "No classes found with a @%s annotation.".formatted(PlanningSolution.class.getSimpleName()));
-            } else if (planningSolutionAnnotationInstanceCollection.size() > 1 && !unconfiguredSolverConfigList.isEmpty()
-                    && !unusedSolutionClassList.isEmpty()) {
-                throw new IllegalStateException(
-                        "Unused classes (%s) found with a @%s annotation.".formatted(String.join(", ", unusedSolutionClassList),
-                                PlanningSolution.class.getSimpleName()));
+        });
+        var solutionClassInstance = planningSolutionAnnotationInstanceCollection.iterator().next();
+        var solutionClassInfo = solutionClassInstance.target().asClass();
+        var visited = new HashSet<AnnotationTarget>();
+        for (var annotatedMember : membersToGeneratedAccessorsForCollection) {
+            ClassInfo classInfo = null;
+            String memberName = null;
+            if (!visited.add(annotatedMember.target())) {
+                continue;
             }
-
-            planningSolutionAnnotationInstanceCollection.forEach(planningSolutionAnnotationInstance -> {
-                var autoDiscoverMemberType = planningSolutionAnnotationInstance.values().stream()
-                        .filter(v -> v.name().equals("autoDiscoverMemberType"))
-                        .findFirst()
-                        .map(AnnotationValue::asEnum)
-                        .map(AutoDiscoverMemberType::valueOf)
-                        .orElse(AutoDiscoverMemberType.NONE);
-
-                if (autoDiscoverMemberType != AutoDiscoverMemberType.NONE) {
-                    throw new UnsupportedOperationException("""
-                            Auto-discovery of members using %s is not supported under Quarkus.
-                            Remove the autoDiscoverMemberType property from the @%s annotation
-                            and explicitly annotate the fields or getters with annotations such as @%s, @%s or @%s."""
-                            .strip()
-                            .formatted(
-                                    AutoDiscoverMemberType.class.getSimpleName(),
-                                    PlanningSolution.class.getSimpleName(),
-                                    PlanningScore.class.getSimpleName(),
-                                    PlanningEntityCollectionProperty.class.getSimpleName(),
-                                    ProblemFactCollectionProperty.class.getSimpleName()));
+            switch (annotatedMember.target().kind()) {
+                case FIELD -> {
+                    var fieldInfo = annotatedMember.target().asField();
+                    classInfo = fieldInfo.declaringClass();
+                    memberName = fieldInfo.name();
+                    buildFieldAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
+                            classInfo, fieldInfo, transformers);
                 }
-            });
-            var solutionClassInstance = planningSolutionAnnotationInstanceCollection.iterator().next();
-            var solutionClassInfo = solutionClassInstance.target().asClass();
-            var visited = new HashSet<AnnotationTarget>();
-            for (var annotatedMember : membersToGeneratedAccessorsForCollection) {
-                ClassInfo classInfo = null;
-                String memberName = null;
-                if (!visited.add(annotatedMember.target())) {
-                    continue;
-                }
-                switch (annotatedMember.target().kind()) {
-                    case FIELD -> {
-                        var fieldInfo = annotatedMember.target().asField();
-                        classInfo = fieldInfo.declaringClass();
-                        memberName = fieldInfo.name();
-                        buildFieldAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                                classInfo, fieldInfo, transformers);
-                    }
-                    case METHOD -> {
-                        var methodInfo = annotatedMember.target().asMethod();
-                        classInfo = methodInfo.declaringClass();
-                        memberName = methodInfo.name();
-                        buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                                classInfo, methodInfo,
-                                AccessorInfo.of(true, annotatedMember.name().equals(DotNames.VALUE_RANGE_PROVIDER)),
-                                transformers);
-                    }
-                    default -> throw new IllegalStateException(
-                            "The member (%s) is not on a field or method.".formatted(annotatedMember));
-                }
-                if (annotatedMember.name().equals(DotNames.CASCADING_UPDATE_SHADOW_VARIABLE)) {
-                    // The source method name also must be included
-                    // targetMethodName is a required field and is always present
-                    var targetMethodName = annotatedMember.value("targetMethodName").asString();
-                    var methodInfo = classInfo.method(targetMethodName);
-                    buildMethodAccessor(null, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput, classInfo,
-                            methodInfo, AccessorInfo.of(false, false), transformers);
-                } else if (annotatedMember.name().equals(DotNames.SHADOW_VARIABLE)
-                        && annotatedMember.value("supplierName") != null) {
-                    // The source method name also must be included
-                    var targetMethodName = annotatedMember.value("supplierName")
-                            .asString();
-                    var methodInfo = classInfo.method(targetMethodName);
-                    if (methodInfo == null) {
-                        // Retry with the solution class
-                        var solutionType = Type.create(solutionClassInfo.name(), Type.Kind.CLASS);
-                        methodInfo = classInfo.method(targetMethodName, solutionType);
-                    }
-                    if (methodInfo == null) {
-                        throw new IllegalArgumentException(
-                                """
-                                        @%s (%s) defines a supplierName (%s) that does not exist inside its declaring class (%s).
-                                        Maybe you included a parameter which is not a planning solution (%s)?
-                                        Maybe you misspelled the supplierName name?"""
-                                        .formatted(ShadowVariable.class.getSimpleName(), memberName, targetMethodName,
-                                                classInfo.name().toString(), solutionClassInfo.name().toString()));
-                    }
+                case METHOD -> {
+                    var methodInfo = annotatedMember.target().asMethod();
+                    classInfo = methodInfo.declaringClass();
+                    memberName = methodInfo.name();
                     buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                            classInfo, methodInfo, AccessorInfo.of(true, !methodInfo.parameterTypes().isEmpty()), transformers);
+                            classInfo, methodInfo,
+                            AccessorInfo.of((annotatedMember.name().equals(DotNames.VALUE_RANGE_PROVIDER))
+                                    ? MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER
+                                    : MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD),
+                            transformers);
                 }
+                default -> throw new IllegalStateException(
+                        "The member (%s) is not on a field or method.".formatted(annotatedMember));
             }
-            // The ConstraintWeightOverrides field is not annotated, but it needs a member accessor
-            var constraintFieldInfo = solutionClassInfo.fields().stream()
-                    .filter(f -> f.type().name().equals(DotNames.CONSTRAINT_WEIGHT_OVERRIDES))
+            if (annotatedMember.name().equals(DotNames.CASCADING_UPDATE_SHADOW_VARIABLE)) {
+                // The source method name also must be included
+                // targetMethodName is a required field and is always present
+                var targetMethodName = annotatedMember.value("targetMethodName").asString();
+                var methodInfo = classInfo.method(targetMethodName);
+                buildMethodAccessor(null, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput, classInfo,
+                        methodInfo, AccessorInfo.of(MemberAccessorFactory.MemberAccessorType.VOID_METHOD), transformers);
+            } else if (annotatedMember.name().equals(DotNames.SHADOW_VARIABLE)
+                    && annotatedMember.value("supplierName") != null) {
+                // The source method name also must be included
+                var targetMethodName = annotatedMember.value("supplierName")
+                        .asString();
+                var methodInfo = classInfo.method(targetMethodName);
+                if (methodInfo == null) {
+                    // Retry with the solution class
+                    var solutionType = Type.create(solutionClassInfo.name(), Type.Kind.CLASS);
+                    methodInfo = classInfo.method(targetMethodName, solutionType);
+                }
+                if (methodInfo == null) {
+                    throw new IllegalArgumentException(
+                            """
+                                    @%s (%s) defines a supplierName (%s) that does not exist inside its declaring class (%s).
+                                    Maybe you included a parameter which is not a planning solution (%s)?
+                                    Maybe you misspelled the supplierName name?"""
+                                    .formatted(ShadowVariable.class.getSimpleName(), memberName, targetMethodName,
+                                            classInfo.name().toString(), solutionClassInfo.name().toString()));
+                }
+                buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
+                        classInfo, methodInfo,
+                        AccessorInfo
+                                .of(MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER),
+                        transformers);
+            }
+        }
+        // The ConstraintWeightOverrides field is not annotated, but it needs a member accessor
+        var constraintFieldInfo = solutionClassInfo.fields().stream()
+                .filter(f -> f.type().name().equals(DotNames.CONSTRAINT_WEIGHT_OVERRIDES))
+                .findFirst()
+                .orElse(null);
+        if (constraintFieldInfo != null) {
+            // Prefer method to field
+            var solutionClass = convertClassInfoToClass(solutionClassInfo);
+            var constraintMethod =
+                    ReflectionHelper.getGetterMethod(solutionClass, constraintFieldInfo.name());
+            var constraintMethodInfo = solutionClassInfo.methods().stream()
+                    .filter(m -> constraintMethod != null && m.name().equals(constraintMethod.getName())
+                            && m.parametersCount() == 0)
                     .findFirst()
                     .orElse(null);
-            if (constraintFieldInfo != null) {
-                // Prefer method to field
-                var solutionClass = convertClassInfoToClass(solutionClassInfo);
-                var constraintMethod =
-                        ReflectionHelper.getGetterMethod(solutionClass, constraintFieldInfo.name());
-                var constraintMethodInfo = solutionClassInfo.methods().stream()
-                        .filter(m -> constraintMethod != null && m.name().equals(constraintMethod.getName())
-                                && m.parametersCount() == 0)
-                        .findFirst()
-                        .orElse(null);
-                if (constraintMethodInfo != null) {
-                    buildMethodAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer,
-                            classOutput, solutionClassInfo, constraintMethodInfo, AccessorInfo.withReturnValueAndNoArguments(),
-                            transformers);
-                } else {
-                    buildFieldAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                            solutionClassInfo, constraintFieldInfo, transformers);
-                }
+            if (constraintMethodInfo != null) {
+                buildMethodAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer,
+                        classOutput, solutionClassInfo, constraintMethodInfo, AccessorInfo.withReturnValueAndNoArguments(),
+                        transformers);
+            } else {
+                buildFieldAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
+                        solutionClassInfo, constraintFieldInfo, transformers);
             }
-            // Using REFLECTION domain access type so Timefold doesn't try to generate GIZMO code
-            solverConfigMap.values().forEach(c -> {
-                var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
-                        c.getEnablePreviewFeatureSet(), DomainAccessType.REFLECTION,
-                        c.getSolutionClass(), null, null, c.getEntityClassList());
-                gizmoSolutionClonerClassNameSet
-                        .add(entityEnhancer.generateSolutionCloner(solutionDescriptor, classOutput, indexView, transformers));
-            });
         }
+        // Using REFLECTION domain access type so Timefold doesn't try to generate GIZMO code
+        solverConfigMap.values().forEach(c -> {
+            var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+                    c.getEnablePreviewFeatureSet(), DomainAccessType.REFLECTION,
+                    c.getSolutionClass(), null, null, c.getEntityClassList());
+            gizmoSolutionClonerClassNameSet
+                    .add(entityEnhancer.generateSolutionCloner(solutionDescriptor, classOutput, indexView, transformers));
+        });
 
         entityEnhancer.generateGizmoBeanFactory(beanClassOutput, reflectiveClassSet, transformers);
         return new GeneratedGizmoClasses(generatedMemberAccessorsClassNameSet, gizmoSolutionClonerClassNameSet);
@@ -1207,19 +1197,6 @@ class TimefoldProcessor {
                     "Failed to generate member accessor for the method (%s) of the class (%s)."
                             .formatted(methodInfo.name(), classInfo.name()),
                     e);
-        }
-    }
-
-    private void assertSolverDomainAccessType(Map<String, SolverConfig> solverConfigMap) {
-        // All solver must use the same domain access type
-        if (solverConfigMap.values().stream().map(SolverConfig::getDomainAccessType).distinct().count() > 1) {
-            throw new ConfigurationException(
-                    """
-                            The domain access type must be unique across all Solver configurations.
-                            %s""".formatted(solverConfigMap.entrySet().stream()
-                            .map(e -> format("quarkus.timefold.\"%s\".domain-access-type=%s",
-                                    e.getKey(), e.getValue().getDomainAccessType()))
-                            .collect(Collectors.joining("\n"))));
         }
     }
 

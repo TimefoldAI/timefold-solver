@@ -26,7 +26,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -73,7 +72,6 @@ import org.jspecify.annotations.Nullable;
         "monitoringConfig",
         "solutionClass",
         "entityClassList",
-        "domainAccessType",
         "scoreDirectorFactoryConfig",
         "terminationConfig",
         "nearbyDistanceMeterClass",
@@ -228,7 +226,6 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
 
     @XmlElement(name = "entityClass")
     protected List<Class<?>> entityClassList = null;
-    protected DomainAccessType domainAccessType = null;
     @XmlTransient
     protected Map<String, MemberAccessor> gizmoMemberAccessorMap = null;
     @XmlTransient
@@ -399,14 +396,6 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         this.entityClassList = entityClassList;
     }
 
-    public @Nullable DomainAccessType getDomainAccessType() {
-        return domainAccessType;
-    }
-
-    public void setDomainAccessType(@Nullable DomainAccessType domainAccessType) {
-        this.domainAccessType = domainAccessType;
-    }
-
     public @Nullable Map<@NonNull String, @NonNull MemberAccessor> getGizmoMemberAccessorMap() {
         return gizmoMemberAccessorMap;
     }
@@ -524,11 +513,6 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
 
     public @NonNull SolverConfig withEntityClasses(@NonNull Class<?>... entityClasses) {
         this.entityClassList = Arrays.asList(entityClasses);
-        return this;
-    }
-
-    public @NonNull SolverConfig withDomainAccessType(@NonNull DomainAccessType domainAccessType) {
-        this.domainAccessType = domainAccessType;
         return this;
     }
 
@@ -651,10 +635,6 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         return Objects.requireNonNullElse(environmentMode, EnvironmentMode.PHASE_ASSERT);
     }
 
-    public @NonNull DomainAccessType determineDomainAccessType() {
-        return Objects.requireNonNullElse(domainAccessType, DomainAccessType.REFLECTION);
-    }
-
     public @NonNull MonitoringConfig determineMetricConfig() {
         return Objects.requireNonNullElse(monitoringConfig,
                 new MonitoringConfig().withSolverMetricList(Arrays.asList(SolverMetric.SOLVE_DURATION, SolverMetric.ERROR_COUNT,
@@ -698,7 +678,6 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         solutionClass = ConfigUtils.inheritOverwritableProperty(solutionClass, inheritedConfig.getSolutionClass());
         entityClassList = ConfigUtils.inheritMergeableListProperty(entityClassList,
                 inheritedConfig.getEntityClassList());
-        domainAccessType = ConfigUtils.inheritOverwritableProperty(domainAccessType, inheritedConfig.getDomainAccessType());
         gizmoMemberAccessorMap = ConfigUtils.inheritMergeableMapProperty(
                 gizmoMemberAccessorMap, inheritedConfig.getGizmoMemberAccessorMap());
         gizmoSolutionClonerMap = ConfigUtils.inheritMergeableMapProperty(

@@ -192,7 +192,7 @@ final class GizmoMemberAccessorEntityEnhancer {
                 GizmoMemberDescriptor.getMethodParameterType(methodMember, accessorInfo.readMethodWithParameter());
         if (Modifier.isPublic(methodInfo.flags())) {
             descriptor = new GizmoMemberDescriptor(name, memberDescriptor, methodParameterType, declaringClass,
-                    setterDescriptor.orElse(null));
+                    setterDescriptor.orElse(null), accessorInfo);
         } else {
             setterDescriptor = addVirtualMethodGetter(classInfo, methodInfo, name, setterDescriptor.orElse(null), transformers);
             var methodName = getVirtualGetterName(false, name);
@@ -201,7 +201,7 @@ final class GizmoMemberAccessorEntityEnhancer {
                             memberDescriptor.returnType());
             descriptor =
                     new GizmoMemberDescriptor(name, newMethodDescriptor, memberDescriptor, methodParameterType, declaringClass,
-                            setterDescriptor.orElse(null));
+                            setterDescriptor.orElse(null), accessorInfo);
         }
         Class<? extends Annotation> annotationClass = null;
         if (accessorInfo.returnTypeRequired() || annotationInstance != null) {
@@ -387,7 +387,8 @@ final class GizmoMemberAccessorEntityEnhancer {
         // Not being recorded, so can use Type and annotated element directly
         if ((ReflectionHelper.hasGetterMethod(declaringClass, name) || Modifier.isPublic(field.getModifiers()))
                 && !isForCloning) {
-            return new GizmoMemberDescriptor(name, memberDescriptor, declaringClass);
+            return new GizmoMemberDescriptor(name, memberDescriptor, declaringClass,
+                    AccessorInfo.withReturnValueAndNoArguments());
         } else {
             addVirtualFieldGetterAndSetter(declaringClass, field, transformers);
             var getterName = getVirtualGetterName(true, name);

@@ -7,7 +7,6 @@ import java.time.Duration;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.BendableScore;
 import ai.timefold.solver.core.api.score.HardMediumSoftBigDecimalScore;
@@ -89,7 +88,6 @@ class TimefoldProcessorSolverResourcesTest {
         assertThat((Object) solverConfig.getEnvironmentMode()).isEqualTo(EnvironmentMode.FULL_ASSERT);
         assertThat(solverConfig.getNearbyDistanceMeterClass()).isNull();
         assertThat(solverConfig.getDaemon()).isTrue();
-        assertThat(solverConfig.getDomainAccessType()).isEqualTo(DomainAccessType.REFLECTION);
         assertThat(solver1Factory).isNotNull();
         assertThat(solverConfig.getTerminationConfig().getSpentLimit()).isEqualTo(Duration.ofHours(4));
         assertThat(solverConfig.getTerminationConfig().getUnimprovedSpentLimit()).isEqualTo(Duration.ofHours(5));

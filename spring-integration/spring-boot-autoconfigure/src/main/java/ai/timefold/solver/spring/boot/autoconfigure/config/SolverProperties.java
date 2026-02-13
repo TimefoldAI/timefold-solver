@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -40,15 +39,6 @@ public class SolverProperties {
      * Other options include "AUTO", a number or formula based on the available processor count.
      */
     private String moveThreadCount;
-
-    /**
-     * Determines how to access the fields and methods of domain classes.
-     * Defaults to REFLECTION.
-     * <p>
-     * To use GIZMO, io.quarkus.gizmo:gizmo must be in your classpath,
-     * and all planning annotations must be on public members.
-     */
-    private DomainAccessType domainAccessType;
 
     private List<PreviewFeature> enabledPreviewFeatures;
 
@@ -113,14 +103,6 @@ public class SolverProperties {
 
     public void setMoveThreadCount(String moveThreadCount) {
         this.moveThreadCount = moveThreadCount;
-    }
-
-    public DomainAccessType getDomainAccessType() {
-        return domainAccessType;
-    }
-
-    public void setDomainAccessType(DomainAccessType domainAccessType) {
-        this.domainAccessType = domainAccessType;
     }
 
     public List<PreviewFeature> getEnabledPreviewFeatures() {

@@ -277,9 +277,6 @@ public class TimefoldSolverAutoConfiguration
         if (solverProperties.getEnvironmentMode() != null) {
             solverConfig.setEnvironmentMode(solverProperties.getEnvironmentMode());
         }
-        if (solverProperties.getDomainAccessType() != null) {
-            solverConfig.setDomainAccessType(solverProperties.getDomainAccessType());
-        }
         if (solverProperties.getEnabledPreviewFeatures() != null) {
             solverConfig.setEnablePreviewFeatureSet(new HashSet<>(solverProperties.getEnabledPreviewFeatures()));
         }

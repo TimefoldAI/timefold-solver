@@ -36,18 +36,20 @@ final class GizmoFieldHandler implements GizmoMemberHandler {
                         .formatted(fieldDescriptor.name(), declaringClass.getName()));
             }
             if (!ignoreChecks && !isFieldPublic) {
-                throw new IllegalStateException("""
-                        Member (%s) of class (%s) is not public."""
-                        .formatted(fieldDescriptor.name(), declaringClass.getName()));
+                throw new IllegalArgumentException(
+                        """
+                                Member (%s) of class (%s) is not public."""
+                                .formatted(fieldDescriptor.name(), declaringClass.getName()));
             }
             getterDescriptor = null;
             setterDescriptor = null;
             this.canBeWritten = canBeWritten;
         } else {
             if (!ignoreChecks && !Modifier.isPublic(getterMethod.getModifiers())) {
-                throw new IllegalStateException("""
-                        Member (%s) of class (%s) is not public."""
-                        .formatted(getterMethod.getName(), getterMethod.getDeclaringClass().getName()));
+                throw new IllegalArgumentException(
+                        """
+                                Member (%s) of class (%s) is not public."""
+                                .formatted(getterMethod.getName(), getterMethod.getDeclaringClass().getName()));
             }
             ReflectionHelper.assertGetterMethod(getterMethod);
             getterDescriptor = MethodDesc.of(getterMethod);

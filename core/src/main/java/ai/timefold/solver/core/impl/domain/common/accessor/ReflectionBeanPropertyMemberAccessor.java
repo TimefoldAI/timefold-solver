@@ -34,7 +34,7 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
         this.annotatedElement = annotatedElement;
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         try {
-            getterMethod.setAccessible(true);
+            this.getterMethod.setAccessible(true);
             this.getherMethodHandle = lookup.unreflect(getterMethod)
                     .asFixedArity();
         } catch (IllegalAccessException e) {
@@ -73,7 +73,7 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
                                         declaringClass.getCanonicalName()));
             }
             try {
-                setterMethod.setAccessible(true);
+                this.setterMethod.setAccessible(true);
                 this.setterMethodHandle = lookup.unreflect(setterMethod)
                         .asFixedArity();
             } catch (IllegalAccessException e) {

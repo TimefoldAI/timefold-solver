@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Duration;
 import java.util.Collections;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -233,7 +232,6 @@ class TimefoldSolverWithSolverConfigXmlAutoConfigurationTest {
                     assertEquals(EnvironmentMode.FULL_ASSERT, solverConfig.getEnvironmentMode());
                     assertTrue(solverConfig.getDaemon());
                     assertEquals("2", solverConfig.getMoveThreadCount());
-                    assertEquals(DomainAccessType.REFLECTION, solverConfig.getDomainAccessType());
                     assertEquals(Duration.ofHours(4), solverConfig.getTerminationConfig().getSpentLimit());
                     assertEquals(Duration.ofHours(5), solverConfig.getTerminationConfig().getUnimprovedSpentLimit());
                     assertEquals(SimpleScore.of(0).toString(), solverConfig.getTerminationConfig().getBestScoreLimit());
