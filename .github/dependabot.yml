@@ -59,6 +59,14 @@ updates: # uses the default branch by default
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+    groups:
+      # Everything else can be grouped together to minimize the number of PRs.
+      # If any dependency ever breaks our code, it will be ungrouped.
+      regular:
+        update-types:
+          - "patch"
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     target-branch: "1.x"
