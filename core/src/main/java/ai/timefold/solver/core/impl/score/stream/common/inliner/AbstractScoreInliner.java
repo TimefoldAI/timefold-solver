@@ -238,7 +238,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
         private final Constraint constraint;
         private final ConstraintMatchSupplier<Score_> constraintMatchSupplier;
         private final ScoreImpact<Score_> scoreImpact;
-        private ConstraintMatch<Score_> constraintMatch;
+        private @Nullable ConstraintMatch<Score_> constraintMatch;
 
         private ConstraintMatchCarrier(ConstraintMatchSupplier<Score_> constraintMatchSupplier, Constraint constraint,
                 ScoreImpact<Score_> scoreImpact) {
