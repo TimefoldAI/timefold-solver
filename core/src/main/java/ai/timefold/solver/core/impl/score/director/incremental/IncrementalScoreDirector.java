@@ -85,7 +85,7 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
         return ((ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score_>) incrementalScoreCalculator)
                 .getConstraintMatchTotals()
                 .stream()
-                .collect(toMap(c -> c.getConstraintRef().constraintId(), identity()));
+                .collect(toMap(c -> c.getConstraintRef().constraintName(), identity()));
     }
 
     @Override

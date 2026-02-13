@@ -3,21 +3,24 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 import java.util.Arrays;
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
+import ai.timefold.solver.core.api.score.BendableScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
-final class BendableScoreInliner extends AbstractScoreInliner<BendableScore> {
+import org.jspecify.annotations.NullMarked;
 
-    final int[] hardScores;
-    final int[] softScores;
+@NullMarked
+public final class BendableScoreInliner extends AbstractScoreInliner<BendableScore> {
 
-    BendableScoreInliner(Map<Constraint, BendableScore> constraintWeightMap, ConstraintMatchPolicy constraintMatchPolicy,
-            int hardLevelsSize, int softLevelsSize) {
+    final long[] hardScores;
+    final long[] softScores;
+
+    BendableScoreInliner(Map<Constraint, BendableScore> constraintWeightMap,
+            ConstraintMatchPolicy constraintMatchPolicy, int hardLevelsSize, int softLevelsSize) {
         super(constraintWeightMap, constraintMatchPolicy);
-        hardScores = new int[hardLevelsSize];
-        softScores = new int[softLevelsSize];
+        hardScores = new long[hardLevelsSize];
+        softScores = new long[softLevelsSize];
     }
 
     @Override
@@ -36,8 +39,8 @@ final class BendableScoreInliner extends AbstractScoreInliner<BendableScore> {
         if (singleLevel != null) {
             var isHardScore = singleLevel < constraintWeight.hardLevelsSize();
             var level = isHardScore ? singleLevel : singleLevel - constraintWeight.hardLevelsSize();
-            var context = new BendableScoreContext(this, constraint, constraintWeight, hardScores.length,
-                    softScores.length, level, constraintWeight.hardOrSoftScore(singleLevel));
+            var context = new BendableScoreContext(this, constraint, constraintWeight,
+                    hardScores.length, softScores.length, level, constraintWeight.hardOrSoftScore(singleLevel));
             if (isHardScore) {
                 return WeightedScoreImpacter.of(context, BendableScoreContext::changeHardScoreBy);
             } else {

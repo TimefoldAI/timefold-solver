@@ -11,8 +11,7 @@ import java.util.List;
 
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 
 import org.junit.jupiter.api.Test;
 
@@ -44,9 +43,9 @@ class StatisticUtilsTest {
         long[] subSingleBenchmarkScores = new long[] { -19289560268L, -19345935795L, -19715516752L, -19589259253L,
                 -19390707618L, -19641410518L };
         List<SubSingleBenchmarkResult> subSingleBenchmarkResultList = new ArrayList<>(6);
-        SimpleLongScore averageScore = SimpleLongScore.of(0);
+        SimpleScore averageScore = SimpleScore.of(0);
         for (int i = 0; i < subSingleBenchmarkScores.length; i++) {
-            SimpleLongScore current = SimpleLongScore.of(subSingleBenchmarkScores[i]);
+            SimpleScore current = SimpleScore.of(subSingleBenchmarkScores[i]);
             subSingleBenchmarkResultList.add(createSubSingleBenchmarkResult(current, i));
             averageScore = averageScore.add(current);
         }

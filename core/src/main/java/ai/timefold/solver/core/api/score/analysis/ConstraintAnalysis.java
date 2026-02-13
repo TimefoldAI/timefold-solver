@@ -11,14 +11,12 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
-import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -45,10 +43,11 @@ import org.jspecify.annotations.Nullable;
  *        Need not be equal to the size of the {@link #matches} list.</li>
  *        </ul>
  */
-public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull ConstraintRef constraintRef, @NonNull Score_ weight,
-        @NonNull Score_ score, @Nullable List<MatchAnalysis<Score_>> matches, int matchCount) {
+@NullMarked
+public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef constraintRef, Score_ weight, Score_ score,
+        @Nullable List<MatchAnalysis<Score_>> matches, int matchCount) {
 
-    public ConstraintAnalysis(@NonNull ConstraintRef constraintRef, @NonNull Score_ weight, @NonNull Score_ score,
+    public ConstraintAnalysis(ConstraintRef constraintRef, Score_ weight, Score_ score,
             @Nullable List<MatchAnalysis<Score_>> matches) {
         this(constraintRef, weight, score, matches, matches == null ? -1 : matches.size());
     }
@@ -60,15 +59,10 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
          * Easy doesn't support constraint analysis at all.
          * CS always provides constraint weights.
          */
-        Objects.requireNonNull(weight, () -> """
-                The constraint weight must be non-null.
-                Maybe use a non-deprecated %s constructor in your %s implementation?"""
-                .formatted(DefaultConstraintMatchTotal.class.getSimpleName(),
-                        ConstraintMatchAwareIncrementalScoreCalculator.class.getSimpleName()));
+        Objects.requireNonNull(weight);
         Objects.requireNonNull(score);
     }
 
-    @NonNull
     ConstraintAnalysis<Score_> negate() {
         // Only used to compute diff; use semantics for non-diff.
         // A negative match count is only allowed within these semantics when matches == null.
@@ -85,8 +79,8 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
         }
     }
 
-    static <Score_ extends Score<Score_>> @NonNull ConstraintAnalysis<Score_> diff(
-            @NonNull ConstraintRef constraintRef, @Nullable ConstraintAnalysis<Score_> constraintAnalysis,
+    static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> diff(
+            ConstraintRef constraintRef, @Nullable ConstraintAnalysis<Score_> constraintAnalysis,
             @Nullable ConstraintAnalysis<Score_> otherConstraintAnalysis) {
         if (constraintAnalysis == null) {
             if (otherConstraintAnalysis == null) {
@@ -175,22 +169,11 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
     }
 
     /**
-     * Return package name of the constraint that this analysis is for.
-     *
-     * @return equal to {@code constraintRef.packageName()}
-     * @deprecated Do not rely on constraint package in user code.
-     */
-    @Deprecated(forRemoval = true, since = "1.13.0")
-    public String constraintPackage() {
-        return constraintRef.packageName();
-    }
-
-    /**
      * Return name of the constraint that this analysis is for.
      *
      * @return equal to {@code constraintRef.constraintName()}
      */
-    public @NonNull String constraintName() {
+    public String constraintName() {
         return constraintRef.constraintName();
     }
 
@@ -199,13 +182,12 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
      * The string is built fresh every time the method is called.
      */
     @SuppressWarnings("java:S3457")
-    public @NonNull String summarize() {
+    public String summarize() {
         return buildSummary(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT);
     }
 
     /**
-     * Return a diagnostic text that explains part of the score quality using the {@link #summarize(int)} method
-     * in a similar way to {@link #summarize()}.
+     * Return a diagnostic text that explains part of the score quality in a similar way to {@link #summarize()}.
      * It is possible to specify the maximum number of constraint matches to display per constraint by passing
      * the desired limit as an argument.
      *
@@ -213,7 +195,7 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
      *        Use {@link Integer#MAX_VALUE} to show all matches.
      */
 
-    public @NonNull String summarize(int topLimit) {
+    public String summarize(int topLimit) {
         if (topLimit < 1) {
             throw new IllegalArgumentException("The topLimit (%d) must be at least 1.".formatted(topLimit));
         }
@@ -221,7 +203,7 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
     }
 
     @SuppressWarnings("java:S3457")
-    private @NonNull String buildSummary(int topLimit) {
+    private String buildSummary(int topLimit) {
         var summary = new StringBuilder();
         summary.append("""
                 Explanation of score (%s):

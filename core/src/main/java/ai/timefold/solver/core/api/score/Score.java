@@ -1,12 +1,6 @@
 package ai.timefold.solver.core.api.score;
 
-import java.io.Serializable;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -22,35 +16,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public interface Score<Score_ extends Score<Score_>>
-        extends Comparable<Score_>, Serializable {
-
-    /**
-     * @return Always zero.
-     * @deprecated No point in using this method anymore.
-     */
-    @Deprecated(forRemoval = true, since = "1.22.0")
-    default int initScore() {
-        return 0;
-    }
-
-    /**
-     * @return Always zero.
-     * @deprecated No point in using this method anymore.
-     */
-    @Deprecated(forRemoval = true)
-    default int getInitScore() {
-        return 0;
-    }
-
-    /**
-     * @return this, init score always zero.
-     * @deprecated No point in using this method anymore.
-     */
-    @Deprecated(forRemoval = true, since = "1.22.0")
-    @SuppressWarnings("unchecked")
-    default Score_ withInitScore(int newInitScore) {
-        return (Score_) this;
-    }
+        extends Comparable<Score_> {
 
     /**
      * Returns a Score whose value is (this + addend).
@@ -161,17 +127,8 @@ public interface Score<Score_ extends Score<Score_>>
     }
 
     /**
-     * @return always true
-     * @deprecated No point in using this method anymore.
-     */
-    @Deprecated(forRemoval = true, since = "1.22.0")
-    default boolean isSolutionInitialized() {
-        return true;
-    }
-
-    /**
      * A {@link PlanningSolution} is feasible if it has no broken hard constraints.
-     * Simple scores ({@link SimpleScore}, {@link SimpleLongScore}, {@link SimpleBigDecimalScore}) are always feasible.
+     * Simple scores ({@link SimpleScore}, {@link SimpleScore}, {@link SimpleBigDecimalScore}) are always feasible.
      *
      * @return true if the hard score is 0 or higher.
      */

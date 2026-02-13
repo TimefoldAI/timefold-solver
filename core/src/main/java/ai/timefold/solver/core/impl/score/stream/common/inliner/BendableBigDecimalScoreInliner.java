@@ -4,11 +4,14 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
+import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<BendableBigDecimalScore> {
 
     final BigDecimal[] hardScores;

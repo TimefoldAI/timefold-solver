@@ -6,10 +6,10 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.BendableScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.score.buildin.HardSoftScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.HardSoftScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -98,8 +98,8 @@ class BestScoreFeasibleTerminationTest {
         // Normal cases
         // Smack in the middle
         assertThat(termination.calculateFeasibilityTimeGradient(
-                InnerScore.fullyAssigned(BendableScore.of(new int[] { -10, -100 }, new int[] { -50, -60, -70 })),
-                BendableScore.of(new int[] { -4, -40 }, new int[] { -50, -60, -70 }))).isEqualTo(0.6, offset(0.0));
+                InnerScore.fullyAssigned(BendableScore.of(new long[] { -10, -100 }, new long[] { -50, -60, -70 })),
+                BendableScore.of(new long[] { -4, -40 }, new long[] { -50, -60, -70 }))).isEqualTo(0.6, offset(0.0));
     }
 
 }

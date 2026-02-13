@@ -6,15 +6,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Collections;
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.score.TestdataSimpleScoreSolution;
 
 import org.junit.jupiter.api.Test;
 
-class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, SimpleScore> {
+class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSimpleScoreSolution, SimpleScore> {
 
     @Test
     void defaultScore() {
@@ -49,13 +49,13 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, 
     void impactMatchWeightOverflow() {
         var constraintWeight = SimpleScore.of(10);
         var impacter = buildScoreImpacter(constraintWeight);
-        assertThatThrownBy(() -> impacter.impactScore(Integer.MAX_VALUE, ConstraintMatchSupplier.empty()))
+        assertThatThrownBy(() -> impacter.impactScore(Long.MAX_VALUE, ConstraintMatchSupplier.empty()))
                 .isInstanceOf(ArithmeticException.class);
     }
 
     @Test
     void impactTotalOverflow() {
-        var constraintWeight = SimpleScore.of(Integer.MAX_VALUE);
+        var constraintWeight = SimpleScore.of(Long.MAX_VALUE);
         var impacter = buildScoreImpacter(constraintWeight);
         impacter.impactScore(1, ConstraintMatchSupplier.empty()); // This will send the total right to the limit.
         assertThatThrownBy(() -> impacter.impactScore(1, ConstraintMatchSupplier.empty()))
@@ -63,8 +63,8 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, 
     }
 
     @Override
-    protected SolutionDescriptor<TestdataSolution> buildSolutionDescriptor() {
-        return TestdataSolution.buildSolutionDescriptor();
+    protected SolutionDescriptor<TestdataSimpleScoreSolution> buildSolutionDescriptor() {
+        return TestdataSimpleScoreSolution.buildSolutionDescriptor();
     }
 
     @Override
@@ -72,5 +72,4 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, 
             ConstraintMatchPolicy constraintMatchPolicy) {
         return new SimpleScoreInliner(constraintWeightMap, constraintMatchPolicy);
     }
-
 }

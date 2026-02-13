@@ -111,7 +111,7 @@ Create the `src/main/kotlin/org/acme/schooltimetabling/rest/TimetableResource.kt
 package org.acme.schooltimetabling.rest
 
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore
+import ai.timefold.solver.core.api.score.HardSoftScore
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy
 import ai.timefold.solver.core.api.solver.SolutionManager
 import ai.timefold.solver.core.api.solver.SolverManager
@@ -290,7 +290,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import jakarta.inject.Singleton;
 
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolverStatus;

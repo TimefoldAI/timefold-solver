@@ -7,9 +7,9 @@ import java.io.StringReader;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.io.jaxb.GenericJaxbIO;
 
 import org.junit.jupiter.api.Test;
@@ -29,13 +29,13 @@ class PolymorphicScoreJaxbAdapterTest {
     @Test
     void unmarshall() {
         String xmlString = "<dummy>"
-                + "<score class=\"ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore\">-1hard/-10soft</score>"
+                + "<score class=\"ai.timefold.solver.core.api.score.HardSoftScore\">-1hard/-10soft</score>"
                 + "</dummy>";
 
         GenericJaxbIO<DummyRootElement> xmlIO = new GenericJaxbIO<>(DummyRootElement.class);
         DummyRootElement dummyRootElement = xmlIO.read(new StringReader(xmlString));
 
-        assertThat(dummyRootElement.score).isEqualTo(HardSoftLongScore.of(-1L, -10L));
+        assertThat(dummyRootElement.score).isEqualTo(HardSoftScore.of(-1L, -10L));
     }
 
     @XmlRootElement(name = "dummy")

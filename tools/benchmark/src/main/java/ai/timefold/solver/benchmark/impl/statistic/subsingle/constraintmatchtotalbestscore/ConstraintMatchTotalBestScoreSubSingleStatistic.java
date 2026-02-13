@@ -47,9 +47,8 @@ public class ConstraintMatchTotalBestScoreSubSingleStatistic<Solution_>
     @Override
     protected ConstraintMatchTotalBestScoreStatisticPoint createPointFromCsvLine(ScoreDefinition<?> scoreDefinition,
             List<String> csvLine) {
-        return new ConstraintMatchTotalBestScoreStatisticPoint(Long.parseLong(csvLine.get(0)),
-                ConstraintRef.of(csvLine.get(1), csvLine.get(2)),
-                Integer.parseInt(csvLine.get(3)), scoreDefinition.parseScore(csvLine.get(4)));
+        return new ConstraintMatchTotalBestScoreStatisticPoint(Long.parseLong(csvLine.get(0)), ConstraintRef.of(csvLine.get(1)),
+                Integer.parseInt(csvLine.get(2)), scoreDefinition.parseScore(csvLine.get(3)));
     }
 
     @Override

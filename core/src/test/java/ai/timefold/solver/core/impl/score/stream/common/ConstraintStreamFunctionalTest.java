@@ -38,9 +38,6 @@ public interface ConstraintStreamFunctionalTest {
 
     void ifExistsDoesNotIncludeUnassigned();
 
-    @Deprecated(forRemoval = true)
-    void ifExistsIncludesNullVarsWithFrom();
-
     void ifNotExists_unknownClass();
 
     void ifNotExists_0Joiner0Filter();
@@ -52,9 +49,6 @@ public interface ConstraintStreamFunctionalTest {
     void ifNotExists_1Join1Filter();
 
     void ifNotExistsDoesNotIncludeUnassigned();
-
-    @Deprecated(forRemoval = true)
-    void ifNotExistsIncludesNullVarsWithFrom();
 
     void ifExistsAfterGroupBy();
 
@@ -180,13 +174,9 @@ public interface ConstraintStreamFunctionalTest {
 
     void penalizeUnweighted();
 
-    void penalizeUnweightedLong();
-
     void penalizeUnweightedBigDecimal();
 
     void penalize();
-
-    void penalizeLong();
 
     void penalizeBigDecimal();
 
@@ -194,21 +184,15 @@ public interface ConstraintStreamFunctionalTest {
 
     void reward();
 
-    void rewardLong();
-
     void rewardBigDecimal();
 
     void impactPositiveUnweighted();
 
     void impactPositive();
 
-    void impactPositiveLong();
-
     void impactPositiveBigDecimal();
 
     void impactNegative();
-
-    void impactNegativeLong();
 
     void impactNegativeBigDecimal();
 
@@ -216,15 +200,11 @@ public interface ConstraintStreamFunctionalTest {
 
     void penalizeCustomJustifications();
 
-    void penalizeLongCustomJustifications();
-
     void penalizeBigDecimalCustomJustifications();
 
     void rewardUnweightedCustomJustifications();
 
     void rewardCustomJustifications();
-
-    void rewardLongCustomJustifications();
 
     void rewardBigDecimalCustomJustifications();
 
@@ -232,13 +212,9 @@ public interface ConstraintStreamFunctionalTest {
 
     void impactPositiveCustomJustifications();
 
-    void impactPositiveLongCustomJustifications();
-
     void impactPositiveBigDecimalCustomJustifications();
 
     void impactNegativeCustomJustifications();
-
-    void impactNegativeLongCustomJustifications();
 
     void impactNegativeBigDecimalCustomJustifications();
 

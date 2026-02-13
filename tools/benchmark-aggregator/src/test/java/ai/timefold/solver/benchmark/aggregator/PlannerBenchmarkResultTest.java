@@ -10,7 +10,7 @@ import java.nio.file.Files;
 import ai.timefold.solver.benchmark.config.report.BenchmarkReportConfig;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReportFactory;
 import ai.timefold.solver.benchmark.impl.result.BenchmarkResultIO;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.testdomain.TestdataEntity;

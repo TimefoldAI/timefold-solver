@@ -34,7 +34,7 @@ Create a `src/main/java/org/acme/vehiclerouting/solver/VehicleRoutingConstraintP
 ----
 package org.acme.vehiclerouting.solver;
 
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -60,7 +60,7 @@ public class VehicleRoutingConstraintProvider implements ConstraintProvider {
     protected Constraint vehicleCapacity(ConstraintFactory factory) {
         return factory.forEach(Vehicle.class)
                 .filter(vehicle -> vehicle.getTotalDemand() > vehicle.getCapacity())
-                .penalizeLong(HardSoftLongScore.ONE_HARD,
+                .penalizeLong(HardSoftScore.ONE_HARD,
                         vehicle -> vehicle.getTotalDemand() - vehicle.getCapacity())
                 .asConstraint(VEHICLE_CAPACITY);
     }
@@ -68,14 +68,14 @@ public class VehicleRoutingConstraintProvider implements ConstraintProvider {
     protected Constraint serviceFinishedAfterMaxEndTime(ConstraintFactory factory) {
         return factory.forEach(Visit.class)
                 .filter(Visit::isServiceFinishedAfterMaxEndTime)
-                .penalizeLong(HardSoftLongScore.ONE_HARD,
+                .penalizeLong(HardSoftScore.ONE_HARD,
                         Visit::getServiceFinishedDelayInMinutes)
                 .asConstraint(SERVICE_FINISHED_AFTER_MAX_END_TIME);
     }
 
     protected Constraint minimizeTravelTime(ConstraintFactory factory) {
         return factory.forEach(Vehicle.class)
-                .penalizeLong(HardSoftLongScore.ONE_SOFT,
+                .penalizeLong(HardSoftScore.ONE_SOFT,
                         Vehicle::getTotalDrivingTimeSeconds)
                 .asConstraint(MINIMIZE_TRAVEL_TIME);
     }
@@ -93,7 +93,7 @@ Create a `src/main/kotlin/org/acme/vehiclerouting/solver/VehicleRoutingConstrain
 ----
 package org.acme.vehiclerouting.solver
 
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore
+import ai.timefold.solver.core.api.score.HardSoftScore
 import ai.timefold.solver.core.api.score.stream.Constraint
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider
@@ -114,7 +114,7 @@ class VehicleRoutingConstraintProvider : ConstraintProvider {
         return factory.forEach(Vehicle::class.java)
             .filter({ vehicle: Vehicle -> vehicle.totalDemand > vehicle.capacity })
             .penalizeLong(
-                HardSoftLongScore.ONE_HARD
+                HardSoftScore.ONE_HARD
             ) { vehicle: Vehicle -> vehicle.totalDemand - vehicle.capacity }
             .asConstraint(VEHICLE_CAPACITY)
     }
@@ -122,14 +122,14 @@ class VehicleRoutingConstraintProvider : ConstraintProvider {
     protected fun serviceFinishedAfterMaxEndTime(factory: ConstraintFactory): Constraint {
         return factory.forEach(Visit::class.java)
             .filter({ obj: Visit -> obj.isServiceFinishedAfterMaxEndTime })
-            .penalizeLong(HardSoftLongScore.ONE_HARD,
+            .penalizeLong(HardSoftScore.ONE_HARD,
                 { obj: Visit -> obj.serviceFinishedDelayInMinutes })
             .asConstraint(SERVICE_FINISHED_AFTER_MAX_END_TIME)
     }
 
     protected fun minimizeTravelTime(factory: ConstraintFactory): Constraint {
         return factory.forEach(Vehicle::class.java)
-            .penalizeLong(HardSoftLongScore.ONE_SOFT,
+            .penalizeLong(HardSoftScore.ONE_SOFT,
                 { obj: Vehicle -> obj.totalDrivingTimeSeconds })
             .asConstraint(MINIMIZE_TRAVEL_TIME)
     }

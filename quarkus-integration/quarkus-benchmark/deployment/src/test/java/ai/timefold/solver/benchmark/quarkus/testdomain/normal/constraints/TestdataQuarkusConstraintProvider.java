@@ -1,7 +1,7 @@
 package ai.timefold.solver.benchmark.quarkus.testdomain.normal.constraints;
 
 import ai.timefold.solver.benchmark.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;

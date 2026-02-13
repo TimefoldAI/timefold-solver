@@ -328,26 +328,16 @@ Notice how it defaults the _"Content conflict"_ constraint as ten times more imp
 Normally, a constraint weight only uses one score level,
 but it's possible to use multiple score levels (at a small performance cost).
 
-Each constraint has a constraint name, and optionally a constraint package; together they form the constraint id.
-These connect the constraint weight with the constraint implementation.
-*For each constraint weight, there must be a constraint implementation with the same constraint id.*
-
-[NOTE]
-====
-Constraint packages are optional, have been deprecated and will be removed in Timefold Solver 2.0.
-We recommend that you don't use them, and instead keep constraint names unique.
-If constraint package is not provided, the solver will transparently provide a default value.
-====
+Each constraint has a constraint name, serving as a unique identifier for the constraint.
+It connects the constraint weight with the constraint implementation.
+*For each constraint weight, there must be a constraint implementation with the same constraint name.*
 
 * The `@ConstraintConfiguration` annotation has a `constraintPackage` property that defaults to the package of the constraint configuration class.
 Cases with xref:constraints-and-score/score-calculation.adoc[Constraint Streams API] normally don't need to specify it.
 
 * The `@ConstraintWeight` annotation has a `value` which is the constraint name (for example "Speaker conflict").
-It inherits the constraint package from the `@ConstraintConfiguration`,
-but it can override that, for example `@ConstraintWeight(constraintPackage = "...region.france", ...)`
-to use a different constraint package than some other weights.
 
-So every constraint weight ends up with a constraint package and a constraint name.
+So every constraint weight ends up with a name.
 Each constraint weight links with a constraint implementation,
 for example, in xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]:
 

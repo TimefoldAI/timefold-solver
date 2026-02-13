@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.testdomain.valuerange.anonymous.TestdataAnonymousArraySolution;
 import ai.timefold.solver.core.testdomain.valuerange.anonymous.TestdataAnonymousListSolution;

@@ -2,11 +2,13 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
 import java.math.BigDecimal;
 
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftBigDecimalScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 final class HardMediumSoftBigDecimalScoreContext
         extends ScoreContext<HardMediumSoftBigDecimalScore, HardMediumSoftBigDecimalScoreInliner> {
 
@@ -16,7 +18,7 @@ final class HardMediumSoftBigDecimalScoreContext
     }
 
     public ScoreImpact<HardMediumSoftBigDecimalScore> changeSoftScoreBy(BigDecimal matchWeight,
-            ConstraintMatchSupplier<HardMediumSoftBigDecimalScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<HardMediumSoftBigDecimalScore> constraintMatchSupplier) {
         var softImpact = constraintWeight.softScore().multiply(matchWeight);
         inliner.softScore = inliner.softScore.add(softImpact);
         var scoreImpact = new SoftImpact(inliner, softImpact);
@@ -24,7 +26,7 @@ final class HardMediumSoftBigDecimalScoreContext
     }
 
     public ScoreImpact<HardMediumSoftBigDecimalScore> changeMediumScoreBy(BigDecimal matchWeight,
-            ConstraintMatchSupplier<HardMediumSoftBigDecimalScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<HardMediumSoftBigDecimalScore> constraintMatchSupplier) {
         var mediumImpact = constraintWeight.mediumScore().multiply(matchWeight);
         inliner.mediumScore = inliner.mediumScore.add(mediumImpact);
         var scoreImpact = new MediumImpact(inliner, mediumImpact);
@@ -32,7 +34,7 @@ final class HardMediumSoftBigDecimalScoreContext
     }
 
     public ScoreImpact<HardMediumSoftBigDecimalScore> changeHardScoreBy(BigDecimal matchWeight,
-            ConstraintMatchSupplier<HardMediumSoftBigDecimalScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<HardMediumSoftBigDecimalScore> constraintMatchSupplier) {
         var hardImpact = constraintWeight.hardScore().multiply(matchWeight);
         inliner.hardScore = inliner.hardScore.add(hardImpact);
         var scoreImpact = new HardImpact(inliner, hardImpact);
@@ -40,7 +42,7 @@ final class HardMediumSoftBigDecimalScoreContext
     }
 
     public ScoreImpact<HardMediumSoftBigDecimalScore> changeScoreBy(BigDecimal matchWeight,
-            ConstraintMatchSupplier<HardMediumSoftBigDecimalScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<HardMediumSoftBigDecimalScore> constraintMatchSupplier) {
         var hardImpact = constraintWeight.hardScore().multiply(matchWeight);
         var mediumImpact = constraintWeight.mediumScore().multiply(matchWeight);
         var softImpact = constraintWeight.softScore().multiply(matchWeight);
@@ -52,8 +54,9 @@ final class HardMediumSoftBigDecimalScoreContext
     }
 
     @NullMarked
-    private record SoftImpact(HardMediumSoftBigDecimalScoreInliner inliner,
-            BigDecimal impact) implements ScoreImpact<HardMediumSoftBigDecimalScore> {
+    private record SoftImpact(HardMediumSoftBigDecimalScoreInliner inliner, BigDecimal impact)
+            implements
+                ScoreImpact<HardMediumSoftBigDecimalScore> {
 
         @Override
         public void undo() {
@@ -68,8 +71,9 @@ final class HardMediumSoftBigDecimalScoreContext
     }
 
     @NullMarked
-    private record MediumImpact(HardMediumSoftBigDecimalScoreInliner inliner,
-            BigDecimal impact) implements ScoreImpact<HardMediumSoftBigDecimalScore> {
+    private record MediumImpact(HardMediumSoftBigDecimalScoreInliner inliner, BigDecimal impact)
+            implements
+                ScoreImpact<HardMediumSoftBigDecimalScore> {
 
         @Override
         public void undo() {
@@ -84,8 +88,9 @@ final class HardMediumSoftBigDecimalScoreContext
     }
 
     @NullMarked
-    private record HardImpact(HardMediumSoftBigDecimalScoreInliner inliner,
-            BigDecimal impact) implements ScoreImpact<HardMediumSoftBigDecimalScore> {
+    private record HardImpact(HardMediumSoftBigDecimalScoreInliner inliner, BigDecimal impact)
+            implements
+                ScoreImpact<HardMediumSoftBigDecimalScore> {
 
         @Override
         public void undo() {
@@ -100,9 +105,10 @@ final class HardMediumSoftBigDecimalScoreContext
     }
 
     @NullMarked
-    private record ComplexImpact(HardMediumSoftBigDecimalScoreInliner inliner, BigDecimal hardImpact,
-            BigDecimal mediumImpact,
-            BigDecimal softImpact) implements ScoreImpact<HardMediumSoftBigDecimalScore> {
+    private record ComplexImpact(HardMediumSoftBigDecimalScoreInliner inliner, BigDecimal hardImpact, BigDecimal mediumImpact,
+            BigDecimal softImpact)
+            implements
+                ScoreImpact<HardMediumSoftBigDecimalScore> {
 
         @Override
         public void undo() {

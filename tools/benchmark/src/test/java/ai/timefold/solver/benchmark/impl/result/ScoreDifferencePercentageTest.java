@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.data.Offset.offset;
 
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.BendableScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 
 import org.junit.jupiter.api.Test;
 
@@ -14,8 +14,8 @@ class ScoreDifferencePercentageTest {
 
     @Test
     void calculateScoreDifferencePercentageException() {
-        BendableScore score1 = BendableScore.of(new int[] { 1, 2, 3 }, new int[] { 4, 5 });
-        BendableScore score2 = BendableScore.of(new int[] { 1, 2 }, new int[] { 4, 5 });
+        BendableScore score1 = BendableScore.of(new long[] { 1, 2, 3 }, new long[] { 4, 5 });
+        BendableScore score2 = BendableScore.of(new long[] { 1, 2 }, new long[] { 4, 5 });
         assertThatIllegalStateException().isThrownBy(
                 () -> ScoreDifferencePercentage.calculateScoreDifferencePercentage(score1, score2));
     }

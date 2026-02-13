@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
-import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -24,16 +24,12 @@ import ai.timefold.solver.core.testdomain.immutable.enumeration.TestdataEnumSolu
 import ai.timefold.solver.core.testdomain.immutable.record.TestdataRecordSolution;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution;
-import ai.timefold.solver.core.testdomain.invalid.badconfiguration.TestdataBadConfigurationSolution;
 import ai.timefold.solver.core.testdomain.invalid.badfactcollection.TestdataBadFactCollectionSolution;
-import ai.timefold.solver.core.testdomain.invalid.constraintconfiguration.TestdataInvalidConfigurationSolution;
 import ai.timefold.solver.core.testdomain.invalid.constraintweightoverrides.TestdataInvalidConstraintWeightOverridesSolution;
-import ai.timefold.solver.core.testdomain.invalid.duplicateweightoverrides.TestdataDuplicateWeightConfigurationSolution;
 import ai.timefold.solver.core.testdomain.invalid.entityannotatedasproblemfact.TestdataEntityAnnotatedAsProblemFactArraySolution;
 import ai.timefold.solver.core.testdomain.invalid.entityannotatedasproblemfact.TestdataEntityAnnotatedAsProblemFactCollectionSolution;
 import ai.timefold.solver.core.testdomain.invalid.entityannotatedasproblemfact.TestdataEntityAnnotatedAsProblemFactSolution;
 import ai.timefold.solver.core.testdomain.invalid.nosolution.TestdataNoSolution;
-import ai.timefold.solver.core.testdomain.invalid.variablemap.TestdataMapConfigurationSolution;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
 import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericEntity;
 import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericSolution;
@@ -221,10 +217,7 @@ class SolutionDescriptorTest {
         var solutionDescriptor = TestdataAutoDiscoverFieldSolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getScoreDefinition()).isInstanceOf(SimpleScoreDefinition.class);
         assertThat(solutionDescriptor.getScoreDefinition().getScoreClass()).isEqualTo(SimpleScore.class);
-        assertThat(solutionDescriptor.getConstraintConfigurationMemberAccessor().getName())
-                .isEqualTo("constraintConfiguration");
-        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("constraintConfiguration",
-                "singleProblemFact");
+        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact");
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("problemFactList");
         assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
         assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
@@ -242,10 +235,7 @@ class SolutionDescriptorTest {
     @Test
     void autoDiscoverGetters() {
         var solutionDescriptor = TestdataAutoDiscoverGetterSolution.buildSolutionDescriptor();
-        assertThat(solutionDescriptor.getConstraintConfigurationMemberAccessor().getName())
-                .isEqualTo("constraintConfiguration");
-        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("constraintConfiguration",
-                "singleProblemFact");
+        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact");
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("problemFactList");
         assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
         assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
@@ -326,10 +316,8 @@ class SolutionDescriptorTest {
     @Test
     void autoDiscoverGettersOverriddenInSubclass() {
         var solutionDescriptor = TestdataExtendedAutoDiscoverGetterSolution.buildSubclassSolutionDescriptor();
-        assertThat(solutionDescriptor.getConstraintConfigurationMemberAccessor().getName())
-                .isEqualTo("constraintConfiguration");
-        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("constraintConfiguration",
-                "singleProblemFact", "problemFactList");
+        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact",
+                "problemFactList");
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).isEmpty();
         assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
         assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
@@ -366,41 +354,6 @@ class SolutionDescriptorTest {
     void testNoSolution() {
         assertThatCode(TestdataNoSolution::buildSolutionDescriptor)
                 .hasMessageContaining("is not annotated with @PlanningSolution but defines annotated members");
-    }
-
-    @Test
-    void testInvalidConfiguration() {
-        assertThatCode(TestdataInvalidConfigurationSolution::buildSolutionDescriptor)
-                .hasMessageContaining("The autoDiscoverMemberType ")
-                .hasMessageContaining("cannot accept a member")
-                .hasMessageContaining("with an elementType")
-                .hasMessageContaining("that has a @ConstraintConfiguration annotation.");
-    }
-
-    @Test
-    void testConfigurationMap() {
-        assertThatCode(TestdataMapConfigurationSolution::buildSolutionDescriptor)
-                .hasMessageContaining("The autoDiscoverMemberType ")
-                .hasMessageContaining("does not yet support the member")
-                .hasMessageContaining("which is an implementation of Map.");
-    }
-
-    @Test
-    void testDuplicateConfigurationWeights() {
-        assertThatCode(TestdataDuplicateWeightConfigurationSolution::buildSolutionDescriptor)
-                .hasMessageContaining(
-                        "has both a ConstraintWeightOverrides member and a ConstraintConfigurationProvider-annotated member")
-                .hasMessageContaining(
-                        "ConstraintConfigurationProvider is deprecated, please remove it from your codebase and keep ConstraintWeightOverrides only");
-    }
-
-    @Test
-    void testBadConfiguration() {
-        assertThatCode(TestdataBadConfigurationSolution::buildSolutionDescriptor)
-                .hasMessageContaining("The solutionClass")
-                .hasMessageContaining("has a @ConstraintConfigurationProvider annotated member")
-                .hasMessageContaining("that does not return a class")
-                .hasMessageContaining("that has a ConstraintConfiguration annotation.");
     }
 
     @Test

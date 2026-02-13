@@ -2,16 +2,10 @@ package ai.timefold.solver.core.api.score.stream;
 
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
-import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
@@ -77,133 +71,5 @@ public interface ConstraintStream {
      */
     @NonNull
     ConstraintFactory getConstraintFactory();
-
-    // ************************************************************************
-    // Penalize/reward
-    // ************************************************************************
-
-    /**
-     * Negatively impact the {@link Score}: subtract the constraintWeight for each match.
-     * <p>
-     * To avoid hard-coding the constraintWeight, to allow end-users to tweak it,
-     * use {@link #penalizeConfigurable(String)} and a {@link ConstraintConfiguration} instead.
-     * <p>
-     * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
-     *
-     * @deprecated Prefer {@link UniConstraintStream#penalize(Score)} and equivalent bi/tri/... overloads.
-     * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
-     */
-    @Deprecated(forRemoval = true)
-    @NonNull
-    Constraint penalize(@NonNull String constraintName, @NonNull Score<?> constraintWeight);
-
-    /**
-     * As defined by {@link #penalize(String, Score)}.
-     *
-     * @deprecated Prefer {@link UniConstraintStream#penalize(Score)} and equivalent bi/tri/... overloads.
-     */
-    @Deprecated(forRemoval = true)
-    @NonNull
-    Constraint penalize(@NonNull String constraintPackage, @NonNull String constraintName, @NonNull Score<?> constraintWeight);
-
-    /**
-     * Negatively impact the {@link Score}: subtract the {@link ConstraintWeight} for each match.
-     * <p>
-     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
-     * so end users can change the constraint weights dynamically.
-     * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
-     * <p>
-     * The {@link ConstraintRef#packageName() constraint package} defaults to
-     * {@link ConstraintConfiguration#constraintPackage()}.
-     *
-     * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
-     * @deprecated Prefer {@code penalize()} and {@link ConstraintWeightOverrides}.
-     */
-    @Deprecated(forRemoval = true)
-    @NonNull
-    Constraint penalizeConfigurable(@NonNull String constraintName);
-
-    /**
-     * As defined by {@link #penalizeConfigurable(String)}.
-     *
-     * @deprecated Prefer {@code penalize()} and {@link ConstraintWeightOverrides}.
-     */
-    @Deprecated(forRemoval = true)
-    @NonNull
-    Constraint penalizeConfigurable(@NonNull String constraintPackage, @NonNull String constraintName);
-
-    /**
-     * Positively impact the {@link Score}: add the constraintWeight for each match.
-     * <p>
-     * To avoid hard-coding the constraintWeight, to allow end-users to tweak it,
-     * use {@link #penalizeConfigurable(String)} and a {@link ConstraintConfiguration} instead.
-     * <p>
-     * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
-     *
-     * @deprecated Prefer {@link UniConstraintStream#reward(Score)} and equivalent bi/tri/... overloads.
-     * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
-     */
-    @Deprecated(forRemoval = true)
-    @NonNull
-    Constraint reward(@NonNull String constraintName, @NonNull Score<?> constraintWeight);
-
-    /**
-     * As defined by {@link #reward(String, Score)}.
-     *
-     * @deprecated Prefer {@link UniConstraintStream#reward(Score)} and equivalent bi/tri/... overloads.
-     */
-    @Deprecated(forRemoval = true)
-    @NonNull
-    Constraint reward(@NonNull String constraintPackage, @NonNull String constraintName, @NonNull Score<?> constraintWeight);
-
-    /**
-     * Positively impact the {@link Score}: add the {@link ConstraintWeight} for each match.
-     * <p>
-     * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
-     * so end users can change the constraint weights dynamically.
-     * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
-     * <p>
-     * The {@link ConstraintRef#packageName() constraint package} defaults to
-     * {@link ConstraintConfiguration#constraintPackage()}.
-     *
-     * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
-     * @deprecated Prefer {@code reward()} and {@link ConstraintWeightOverrides}.
-     */
-    @Deprecated(forRemoval = true)
-    @NonNull
-    Constraint rewardConfigurable(@NonNull String constraintName);
-
-    /**
-     * As defined by {@link #rewardConfigurable(String)}.
-     *
-     * @deprecated Prefer {@code reward()} and {@link ConstraintWeightOverrides}.
-     */
-    @Deprecated(forRemoval = true)
-    @NonNull
-    Constraint rewardConfigurable(@NonNull String constraintPackage, @NonNull String constraintName);
-
-    /**
-     * Positively or negatively impact the {@link Score} by the constraintWeight for each match.
-     * <p>
-     * Use {@code penalize(...)} or {@code reward(...)} instead, unless this constraint can both have positive and
-     * negative weights.
-     * <p>
-     * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
-     *
-     * @deprecated Prefer {@link UniConstraintStream#impact(Score)} and equivalent bi/tri/... overloads.
-     * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
-     */
-    @Deprecated(forRemoval = true)
-    @NonNull
-    Constraint impact(@NonNull String constraintName, @NonNull Score<?> constraintWeight);
-
-    /**
-     * As defined by {@link #impact(String, Score)}.
-     *
-     * @deprecated Prefer {@link UniConstraintStream#impact(Score)} and equivalent bi/tri/... overloads.
-     */
-    @Deprecated(forRemoval = true)
-    @NonNull
-    Constraint impact(@NonNull String constraintPackage, @NonNull String constraintName, @NonNull Score<?> constraintWeight);
 
 }

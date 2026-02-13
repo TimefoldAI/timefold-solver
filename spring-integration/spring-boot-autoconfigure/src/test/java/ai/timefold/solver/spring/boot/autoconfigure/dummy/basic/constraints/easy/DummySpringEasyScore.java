@@ -1,6 +1,6 @@
 package ai.timefold.solver.spring.boot.autoconfigure.dummy.basic.constraints.easy;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringSolution;
 

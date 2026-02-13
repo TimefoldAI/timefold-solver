@@ -70,7 +70,7 @@ public class TimefoldDevUIPropertiesRPCService {
         var out = new JsonObject();
         devUIProperties.forEach((key, value) -> out.put(key, JsonArray.of(value.getConstraintList()
                 .stream()
-                .map(ConstraintRef::constraintId)
+                .map(ConstraintRef::constraintName)
                 .toArray())));
         return out;
     }

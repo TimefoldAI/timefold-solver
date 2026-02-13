@@ -2,16 +2,19 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 final class HardMediumSoftScoreInliner extends AbstractScoreInliner<HardMediumSoftScore> {
 
-    int hardScore;
-    int mediumScore;
-    int softScore;
+    long hardScore;
+    long mediumScore;
+    long softScore;
 
     HardMediumSoftScoreInliner(Map<Constraint, HardMediumSoftScore> constraintWeightMap,
             ConstraintMatchPolicy constraintMatchPolicy) {
@@ -19,8 +22,7 @@ final class HardMediumSoftScoreInliner extends AbstractScoreInliner<HardMediumSo
     }
 
     @Override
-    public WeightedScoreImpacter<HardMediumSoftScore, ?>
-            buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
+    public WeightedScoreImpacter<HardMediumSoftScore, ?> buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
         var constraintWeight = constraintWeightMap.get(constraint);
         var softConstraintWeight = constraintWeight.softScore();
         var mediumConstraintWeight = constraintWeight.mediumScore();

@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
@@ -67,7 +67,7 @@ public class TestdataListWithShadowHistoryIncrementalScoreCalculator
     }
 
     private DefaultConstraintMatchTotal<SimpleScore> update(TestdataListSolutionWithShadowHistory workingSolution) {
-        var constraintRef = ConstraintRef.of(getClass().getPackageName(), "testConstraint");
+        var constraintRef = ConstraintRef.of("testConstraint");
         var constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraintRef, SimpleScore.ONE);
         for (var e : workingSolution.getEntityList()) {
             int value = (int) Math.pow(e.getValueList().size(), 2);

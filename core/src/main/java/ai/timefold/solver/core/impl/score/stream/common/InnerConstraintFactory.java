@@ -56,15 +56,6 @@ public abstract class InnerConstraintFactory<Solution_, Constraint_ extends Cons
         return (DefaultBiJoiner<A, A>) lessThan(planningIdGetter);
     }
 
-    @Override
-    public @NonNull <A> BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass,
-            @NonNull BiJoiner<A, A>... joiners) {
-        BiJoinerComber<A, A> joinerComber = BiJoinerComber.comb(joiners);
-        joinerComber.addJoiner(buildLessThanId(fromClass));
-        return ((InnerUniConstraintStream<A>) from(fromClass))
-                .join(from(fromClass), joinerComber);
-    }
-
     public <A> void assertValidFromType(Class<A> fromType) {
         SolutionDescriptor<Solution_> solutionDescriptor = getSolutionDescriptor();
         Set<Class<?>> problemFactOrEntityClassSet = solutionDescriptor.getProblemFactOrEntityClassSet();

@@ -21,12 +21,6 @@ final class BigDecimalWeightedScoreImpacter<Score_ extends Score<Score_>, Contex
     }
 
     @Override
-    public ScoreImpact<Score_> impactScore(int matchWeight, @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
-        context.getConstraint().assertCorrectImpact(matchWeight);
-        return impactFunction.impact(context, BigDecimal.valueOf(matchWeight), constraintMatchSupplier);
-    }
-
-    @Override
     public ScoreImpact<Score_> impactScore(long matchWeight,
             @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
         context.getConstraint().assertCorrectImpact(matchWeight);

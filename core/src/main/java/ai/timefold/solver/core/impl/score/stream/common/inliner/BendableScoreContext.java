@@ -3,21 +3,23 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 import java.util.Arrays;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
+import ai.timefold.solver.core.api.score.BendableScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 final class BendableScoreContext extends ScoreContext<BendableScore, BendableScoreInliner> {
 
     private final int hardScoreLevelCount;
     private final int softScoreLevelCount;
     private final int scoreLevel;
-    private final int scoreLevelWeight;
+    private final long scoreLevelWeight;
 
     public BendableScoreContext(BendableScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
             BendableScore constraintWeight, int hardScoreLevelCount, int softScoreLevelCount, int scoreLevel,
-            int scoreLevelWeight) {
+            long scoreLevelWeight) {
         super(parent, constraint, constraintWeight);
         this.hardScoreLevelCount = hardScoreLevelCount;
         this.softScoreLevelCount = softScoreLevelCount;
@@ -30,26 +32,26 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
         this(parent, constraint, constraintWeight, hardScoreLevelCount, softScoreLevelCount, -1, -1);
     }
 
-    public ScoreImpact<BendableScore> changeSoftScoreBy(int matchWeight,
-            ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
+    public ScoreImpact<BendableScore> changeSoftScoreBy(long matchWeight,
+            @Nullable ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
         var softImpact = Math.multiplyExact(scoreLevelWeight, matchWeight);
         inliner.softScores[scoreLevel] = Math.addExact(inliner.softScores[scoreLevel], softImpact);
         var scoreImpact = new SingleSoftImpact(this, softImpact);
         return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
-    public ScoreImpact<BendableScore> changeHardScoreBy(int matchWeight,
-            ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
+    public ScoreImpact<BendableScore> changeHardScoreBy(long matchWeight,
+            @Nullable ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
         var hardImpact = Math.multiplyExact(scoreLevelWeight, matchWeight);
         inliner.hardScores[scoreLevel] = Math.addExact(inliner.hardScores[scoreLevel], hardImpact);
         var scoreImpact = new SingleHardImpact(this, hardImpact);
         return possiblyAddConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
-    public ScoreImpact<BendableScore> changeScoreBy(int matchWeight,
-            ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
-        var hardImpacts = new int[hardScoreLevelCount];
-        var softImpacts = new int[softScoreLevelCount];
+    public ScoreImpact<BendableScore> changeScoreBy(long matchWeight,
+            @Nullable ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
+        var hardImpacts = new long[hardScoreLevelCount];
+        var softImpacts = new long[softScoreLevelCount];
         for (var hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
             var hardImpact = Math.multiplyExact(constraintWeight.hardScore(hardScoreLevel), matchWeight);
             hardImpacts[hardScoreLevel] = hardImpact;
@@ -65,7 +67,9 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
     }
 
     @NullMarked
-    private record SingleSoftImpact(BendableScoreContext ctx, int impact) implements ScoreImpact<BendableScore> {
+    private record SingleSoftImpact(BendableScoreContext ctx, long impact)
+            implements
+                ScoreImpact<BendableScore> {
 
         @Override
         public void undo() {
@@ -79,7 +83,9 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
     }
 
     @NullMarked
-    private record SingleHardImpact(BendableScoreContext ctx, int impact) implements ScoreImpact<BendableScore> {
+    private record SingleHardImpact(BendableScoreContext ctx, long impact)
+            implements
+                ScoreImpact<BendableScore> {
 
         @Override
         public void undo() {
@@ -93,8 +99,9 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
     }
 
     @NullMarked
-    private record ComplexImpact(BendableScoreContext ctx, int[] hardImpacts,
-            int[] softImpacts) implements ScoreImpact<BendableScore> {
+    private record ComplexImpact(BendableScoreContext ctx, long[] hardImpacts, long[] softImpacts)
+            implements
+                ScoreImpact<BendableScore> {
 
         @Override
         public void undo() {
@@ -119,12 +126,11 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
             if (this == o) {
                 return true;
             }
-            if (!(o instanceof ComplexImpact that)) {
+            if (!(o instanceof ComplexImpact(BendableScoreContext otherCtx, long[] otherHardImpacts, long[] otherSoftImpacts))) {
                 return false;
             }
-            return Objects.equals(ctx, that.ctx) &&
-                    Objects.deepEquals(hardImpacts, that.hardImpacts) &&
-                    Objects.deepEquals(softImpacts, that.softImpacts);
+            return Objects.equals(ctx, otherCtx) && Objects.deepEquals(hardImpacts, otherHardImpacts)
+                    && Objects.deepEquals(softImpacts, otherSoftImpacts);
         }
 
         @Override
@@ -138,8 +144,7 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
 
         @Override
         public String toString() {
-            return "Impact(hard: %s, soft: %s)"
-                    .formatted(Arrays.toString(hardImpacts), Arrays.toString(softImpacts));
+            return "Impact(hard: %s, soft: %s)".formatted(Arrays.toString(hardImpacts), Arrays.toString(softImpacts));
         }
 
     }

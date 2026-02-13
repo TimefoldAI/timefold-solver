@@ -112,9 +112,7 @@ public class TimefoldDevUIMultipleSolversTest extends DevUIJsonRPCTest {
 
     private void assertConstraintsPage(JsonNode constraintsResponse, String solverName) {
         assertThat(constraintsResponse.get(solverName)).containsExactly(
-                new TextNode(TestdataStringLengthShadowSolution.class.getPackage()
-                        .getName() + "/Don't assign 2 entities the same value."),
-                new TextNode(
-                        TestdataStringLengthShadowSolution.class.getPackage().getName() + "/Maximize value length"));
+                new TextNode("Don't assign 2 entities the same value."),
+                new TextNode("Maximize value length"));
     }
 }

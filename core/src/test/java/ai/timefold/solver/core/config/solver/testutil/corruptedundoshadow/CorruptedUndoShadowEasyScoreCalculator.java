@@ -2,7 +2,7 @@ package ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 
 import org.jspecify.annotations.NonNull;

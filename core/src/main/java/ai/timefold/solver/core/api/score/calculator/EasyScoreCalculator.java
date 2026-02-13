@@ -3,7 +3,7 @@ package ai.timefold.solver.core.api.score.calculator;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Used for easy java {@link Score} calculation. This is non-incremental calculation, which is slow.
@@ -13,6 +13,7 @@ import org.jspecify.annotations.NonNull;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the score type to go with the solution
  */
+@NullMarked
 public interface EasyScoreCalculator<Solution_, Score_ extends Score<Score_>> {
 
     /**
@@ -20,7 +21,6 @@ public interface EasyScoreCalculator<Solution_, Score_ extends Score<Score_>> {
      * The {@link Score} can be predicted for example after an undo move.
      *
      */
-    @NonNull
-    Score_ calculateScore(@NonNull Solution_ solution);
+    Score_ calculateScore(Solution_ solution);
 
 }

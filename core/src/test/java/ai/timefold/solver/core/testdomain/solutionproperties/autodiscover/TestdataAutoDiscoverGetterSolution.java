@@ -5,12 +5,11 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.constraintconfiguration.TestdataConstraintConfiguration;
 
 @PlanningSolution(autoDiscoverMemberType = AutoDiscoverMemberType.GETTER)
 public class TestdataAutoDiscoverGetterSolution extends TestdataObject {
@@ -19,7 +18,6 @@ public class TestdataAutoDiscoverGetterSolution extends TestdataObject {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataAutoDiscoverGetterSolution.class, TestdataEntity.class);
     }
 
-    private TestdataConstraintConfiguration constraintConfiguration;
     private TestdataObject singleProblemFactField;
     private List<TestdataValue> problemFactListField;
 
@@ -43,14 +41,6 @@ public class TestdataAutoDiscoverGetterSolution extends TestdataObject {
         this.problemFactListField = problemFactList;
         this.entityListField = entityList;
         this.otherEntityField = otherEntity;
-    }
-
-    public TestdataConstraintConfiguration getConstraintConfiguration() {
-        return constraintConfiguration;
-    }
-
-    public void setConstraintConfiguration(TestdataConstraintConfiguration constraintConfiguration) {
-        this.constraintConfiguration = constraintConfiguration;
     }
 
     public TestdataObject getSingleProblemFact() {

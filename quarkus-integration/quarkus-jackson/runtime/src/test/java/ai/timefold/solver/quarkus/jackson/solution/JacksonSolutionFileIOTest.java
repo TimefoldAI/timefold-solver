@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.quarkus.jackson.testdomain.JacksonTestdataEntity;
 import ai.timefold.solver.quarkus.jackson.testdomain.JacksonTestdataSolution;
 import ai.timefold.solver.quarkus.jackson.testdomain.JacksonTestdataValue;

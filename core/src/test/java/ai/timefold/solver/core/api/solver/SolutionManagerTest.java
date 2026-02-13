@@ -9,9 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
@@ -400,7 +400,7 @@ public class SolutionManagerTest {
             softly.assertThat(scoreExplanation.getScore()).isNotNull();
             softly.assertThat(scoreExplanation.getSummary()).isNotBlank();
             softly.assertThat(scoreExplanation.getConstraintMatchTotalMap())
-                    .containsOnlyKeys("ai.timefold.solver.core.testdomain.shadow/testConstraint");
+                    .containsOnlyKeys("testConstraint");
             softly.assertThat(scoreExplanation.getIndictmentMap())
                     .containsOnlyKeys(solution.getEntityList().toArray());
 

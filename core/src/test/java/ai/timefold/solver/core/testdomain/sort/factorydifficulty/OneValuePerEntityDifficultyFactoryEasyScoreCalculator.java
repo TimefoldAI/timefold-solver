@@ -2,7 +2,7 @@ package ai.timefold.solver.core.testdomain.sort.factorydifficulty;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 
 import org.jspecify.annotations.NonNull;

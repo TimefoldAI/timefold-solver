@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.solver.termination;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.junit.jupiter.api.Test;

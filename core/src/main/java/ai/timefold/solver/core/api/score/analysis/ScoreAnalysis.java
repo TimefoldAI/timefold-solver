@@ -21,7 +21,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -80,9 +80,9 @@ import org.jspecify.annotations.Nullable;
  *
  * @param <Score_>
  */
-public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
-        @NonNull Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap,
-        boolean isSolutionInitialized) {
+@NullMarked
+public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
+        Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap, boolean isSolutionInitialized) {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static final Comparator<ConstraintAnalysis<?>> REVERSED_WEIGHT_COMPARATOR =
@@ -97,7 +97,7 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
      * As defined by {@link #ScoreAnalysis(Score, Map, boolean)},
      * with the final argument set to true.
      */
-    public ScoreAnalysis(@NonNull Score_ score, @NonNull Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap) {
+    public ScoreAnalysis(Score_ score, Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap) {
         this(score, constraintMap, true);
     }
 
@@ -121,34 +121,16 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
      *
      * @return null if no constraint matches of such constraint are present
      */
-    public @Nullable ConstraintAnalysis<Score_> getConstraintAnalysis(@NonNull ConstraintRef constraintRef) {
+    public @Nullable ConstraintAnalysis<Score_> getConstraintAnalysis(ConstraintRef constraintRef) {
         return constraintMap.get(constraintRef);
-    }
-
-    /**
-     * As defined by {@link #getConstraintAnalysis(ConstraintRef)}
-     * where the arguments are first composed into a singular constraint ID.
-     *
-     * @return null if no constraint matches of such constraint are present
-     * @deprecated Use {@link #getConstraintAnalysis(String)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.13.0")
-    public @Nullable ConstraintAnalysis<Score_> getConstraintAnalysis(@NonNull String constraintPackage,
-            @NonNull String constraintName) {
-        return getConstraintAnalysis(ConstraintRef.of(constraintPackage, constraintName));
     }
 
     /**
      * As defined by {@link #getConstraintAnalysis(ConstraintRef)}.
      *
      * @return null if no constraint matches of such constraint are present
-     * @throws IllegalStateException if multiple constraints with the same name are present,
-     *         which is possible if they are in different constraint packages.
-     *         Constraint packages are deprecated, we recommend avoiding them and instead naming constraints uniquely.
-     *         If you must use constraint packages, see {@link #getConstraintAnalysis(String, String)}
-     *         (also deprecated) and reach out to us to discuss your use case.
      */
-    public @Nullable ConstraintAnalysis<Score_> getConstraintAnalysis(@NonNull String constraintName) {
+    public @Nullable ConstraintAnalysis<Score_> getConstraintAnalysis(String constraintName) {
         var constraintAnalysisList = constraintMap.entrySet()
                 .stream()
                 .filter(entry -> entry.getKey().constraintName().equals(constraintName))
@@ -156,12 +138,9 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
                 .toList();
         return switch (constraintAnalysisList.size()) {
             case 0 -> null;
-            case 1 -> constraintAnalysisList.get(0);
-            default -> throw new IllegalStateException("""
-                    Multiple constraints with the same name (%s) are present in the score analysis.
-                    This may be caused by the use of multiple constraint packages, a deprecated feature.
-                    Please avoid using constraint packages and keep constraint names unique."""
-                    .formatted(constraintName));
+            case 1 -> constraintAnalysisList.getFirst();
+            default -> throw new IllegalStateException(
+                    "Impossible state: Multiple constraints with the same name (%s) are present in the score analysis.");
         };
     }
 
@@ -190,7 +169,7 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
      * {@link #isSolutionInitialized} will be true.
      * False otherwise.
      */
-    public @NonNull ScoreAnalysis<Score_> diff(@NonNull ScoreAnalysis<Score_> other) {
+    public ScoreAnalysis<Score_> diff(ScoreAnalysis<Score_> other) {
         var result = Stream.concat(constraintMap.keySet().stream(),
                 other.constraintMap.keySet().stream())
                 .distinct()
@@ -258,13 +237,12 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
      * and convert those into a domain-specific API.
      */
     @SuppressWarnings("java:S3457")
-    public @NonNull String summarize() {
+    public String summarize() {
         return buildSummary(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT);
     }
 
     /**
-     * Provides a summary of the solution's score analysis using the {@link #summarize(int)} method
-     * in a similar way to {@link #summarize()}.
+     * Provides a summary of the solution's score analysis in a similar way to {@link #summarize()}.
      * It is possible to specify the maximum number of constraint matches to display per constraint by passing
      * the desired limit as an argument.
      *
@@ -272,7 +250,7 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
      *        Use {@link Integer#MAX_VALUE} to show all matches.
      */
     @SuppressWarnings("java:S3457")
-    public @NonNull String summarize(int topLimit) {
+    public String summarize(int topLimit) {
         if (topLimit < 1) {
             throw new IllegalArgumentException("The topLimit (%d) must be at least 1.".formatted(topLimit));
         }
@@ -280,7 +258,7 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
     }
 
     @SuppressWarnings("java:S3457")
-    private @NonNull String buildSummary(int topLimit) {
+    private String buildSummary(int topLimit) {
         StringBuilder summary = new StringBuilder();
         summary.append("""
                 Explanation of score (%s):

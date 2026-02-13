@@ -1,9 +1,5 @@
 package ai.timefold.solver.core.api.score;
 
-import java.io.Serializable;
-
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -20,7 +16,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public interface IBendableScore<Score_ extends IBendableScore<Score_>>
-        extends Score<Score_>, Serializable {
+        extends Score<Score_> {
 
     /**
      * The sum of this and {@link #softLevelsSize()} equals {@link #levelsSize()}.
@@ -30,16 +26,6 @@ public interface IBendableScore<Score_ extends IBendableScore<Score_>>
     int hardLevelsSize();
 
     /**
-     * As defined by {@link #hardLevelsSize()}.
-     *
-     * @deprecated Use {@link #hardLevelsSize()} instead.
-     */
-    @Deprecated(forRemoval = true)
-    default int getHardLevelsSize() {
-        return hardLevelsSize();
-    }
-
-    /**
      * The sum of {@link #hardLevelsSize()} and this equals {@link #levelsSize()}.
      *
      * @return {@code >= 0} and {@code <} {@link #levelsSize()}
@@ -47,30 +33,10 @@ public interface IBendableScore<Score_ extends IBendableScore<Score_>>
     int softLevelsSize();
 
     /**
-     * As defined by {@link #softLevelsSize()}.
-     *
-     * @deprecated Use {@link #softLevelsSize()} instead.
-     */
-    @Deprecated(forRemoval = true)
-    default int getSoftLevelsSize() {
-        return softLevelsSize();
-    }
-
-    /**
      * @return {@link #hardLevelsSize()} + {@link #softLevelsSize()}
      */
     default int levelsSize() {
         return hardLevelsSize() + softLevelsSize();
-    }
-
-    /**
-     * As defined by {@link #levelsSize()}.
-     *
-     * @deprecated Use {@link #levelsSize()} instead.
-     */
-    @Deprecated(forRemoval = true)
-    default int getLevelsSize() {
-        return levelsSize();
     }
 
 }

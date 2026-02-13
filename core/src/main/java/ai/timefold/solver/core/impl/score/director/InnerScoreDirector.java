@@ -140,8 +140,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * Call {@link #calculateScore()} before calling this method,
      * unless that method has already been called since the last {@link PlanningVariable} changes.
      *
-     * @return never null, the key is the constraintId
-     *         (to create one, use {@link ConstraintRef#composeConstraintId(String, String)}).
+     * @return never null, the key is the constraint name.
      *         If a constraint is present in the problem but resulted in no matches,
      *         it will still be in the map with a {@link ConstraintMatchTotal#getConstraintMatchSet()} size of 0.
      * @throws IllegalStateException if {@link #getConstraintMatchPolicy()} returns {@link ConstraintMatchPolicy#DISABLED}.

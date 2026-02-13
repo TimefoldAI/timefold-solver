@@ -2,22 +2,22 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="800"
    height="600"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.3.1 r9886"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
    sodipodi:docname="scoreClassDiagram.svg"
    inkscape:export-filename="scoreClassDiagram.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4">
     <inkscape:perspective
@@ -246,23 +246,26 @@
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
      inkscape:zoom="1.315"
-     inkscape:cx="446.76806"
-     inkscape:cy="300"
+     inkscape:cx="382.88973"
+     inkscape:cy="347.52852"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer3"
      showgrid="true"
      width="800px"
      borderlayer="true"
      gridtolerance="10"
-     inkscape:window-width="1680"
-     inkscape:window-height="991"
-     inkscape:window-x="1680"
-     inkscape:window-y="27"
-     inkscape:window-maximized="1"
+     inkscape:window-width="1496"
+     inkscape:window-height="905"
+     inkscape:window-x="7"
+     inkscape:window-y="41"
+     inkscape:window-maximized="0"
      inkscape:snap-grids="true"
      inkscape:snap-bbox="false"
      showguides="true"
-     inkscape:guide-bbox="true">
+     inkscape:guide-bbox="true"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
     <inkscape:grid
        empspacing="10"
        visible="true"
@@ -272,7 +275,10 @@
        spacingy="10px"
        dotted="true"
        type="xygrid"
-       id="grid2845" />
+       id="grid2845"
+       originx="0"
+       originy="0"
+       units="px" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -299,18 +305,21 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot4157"
-       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Sans;font-style:normal;font-weight:normal;font-size:40px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
-         id="flowRegion4159"><rect
+       style="font-style:normal;font-weight:normal;line-height:0.01%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><flowRegion
+         id="flowRegion4159"
+         style="font-family:sans-serif"><rect
            id="rect4161"
            width="10.955056"
            height="72.471909"
            x="16.011236"
            y="-53.932568" /></flowRegion><flowPara
-         id="flowPara4163" /></flowRoot>    <flowRoot
+         id="flowPara4163"
+         style="font-size:40px;line-height:1.25;font-family:sans-serif"> </flowPara></flowRoot>
+    <flowRoot
        transform="translate(-19.999998,382.36205)"
        xml:space="preserve"
        id="flowRoot4302-6"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"><flowRegion
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
          id="flowRegion4304-7"><rect
            id="rect4306-3"
            width="760"
@@ -318,10 +327,12 @@
            x="40"
            y="140.00014"
            style="font-size:16px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara3347">Choose a Score implementation or write a custom one</flowPara></flowRoot>    <flowRoot
+         id="flowPara3347"
+         style="font-size:16px;line-height:1.25">Choose a Score implementation or write a custom one</flowPara></flowRoot>
+    <flowRoot
        xml:space="preserve"
        id="flowRoot4302-2"
-       style="font-size:36px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"
        transform="translate(-19.999998,262.36198)"><flowRegion
          id="flowRegion4304-1"><rect
            id="rect4306-8"
@@ -330,7 +341,9 @@
            x="40"
            y="210.0002"
            style="font-size:36px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
-         id="flowPara3319">Score class diagram</flowPara></flowRoot>    <rect
+         id="flowPara3319"
+         style="font-size:36px;line-height:1.25">Score class diagram</flowPara></flowRoot>
+    <rect
        ry="5"
        rx="4.9999986"
        y="572.86218"
@@ -340,7 +353,7 @@
        id="rect3368"
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none" />
     <flowRoot
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot3370"
        xml:space="preserve"
        transform="translate(-309.99999,548.5851)"><flowRegion
@@ -351,11 +364,13 @@
            height="30"
            width="209.99998"
            id="rect3374" /></flowRegion><flowPara
-         id="flowPara3376">Score</flowPara></flowRoot>    <flowRoot
+         id="flowPara3376"
+         style="font-size:20px;line-height:1.25">Score</flowPara></flowRoot>
+    <flowRoot
        transform="translate(-309.99999,538.58526)"
        xml:space="preserve"
        id="flowRoot3432"
-       style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"><flowRegion
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
          id="flowRegion3434"><rect
            id="rect3436"
            width="209.99998"
@@ -363,7 +378,9 @@
            x="340"
            y="33.777069"
            style="font-size:12px" /></flowRegion><flowPara
-         id="flowPara3438">&lt;&lt;interface&gt;&gt;</flowPara></flowRoot>  </g>
+         id="flowPara3438"
+         style="font-size:12px;line-height:1.25">&lt;&lt;interface&gt;&gt;</flowPara></flowRoot>
+  </g>
   <g
      inkscape:groupmode="layer"
      id="layer2"
@@ -387,7 +404,7 @@
        transform="translate(-39.99999,96.222917)"
        xml:space="preserve"
        id="flowRoot3390"
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#888a85;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"><flowRegion
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#888a85;fill-opacity:1;stroke:none"><flowRegion
          id="flowRegion3392"><rect
            id="rect3394"
            width="209.99998"
@@ -395,8 +412,10 @@
            x="340"
            y="33.777069"
            style="font-size:20px;fill:#888a85" /></flowRegion><flowPara
-         id="flowPara3396">Comparable</flowPara></flowRoot>    <flowRoot
-       style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#888a85;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara3396"
+         style="font-size:20px;line-height:1.25">Comparable</flowPara></flowRoot>
+    <flowRoot
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#888a85;fill-opacity:1;stroke:none"
        id="flowRoot3440"
        xml:space="preserve"
        transform="translate(-39.99999,86.223207)"><flowRegion
@@ -407,7 +426,9 @@
            height="30"
            width="209.99998"
            id="rect3444" /></flowRegion><flowPara
-         id="flowPara3446">&lt;&lt;interface&gt;&gt;</flowPara></flowRoot>    <path
+         id="flowPara3446"
+         style="font-size:12px;line-height:1.25">&lt;&lt;interface&gt;&gt;</flowPara></flowRoot>
+    <path
        style="color:#000000;fill:none;stroke:#888a85;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 280,140 0,-10 20,10 -20,10 z"
        id="path4243"
@@ -430,7 +451,7 @@
        transform="translate(-269.99969,196.22292)"
        xml:space="preserve"
        id="flowRoot3985-1"
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"><flowRegion
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
          id="flowRegion3987-3"><rect
            id="rect3989-1"
            width="209.99998"
@@ -438,7 +459,9 @@
            x="340"
            y="33.777069"
            style="font-size:20px" /></flowRegion><flowPara
-         id="flowPara3991-1">SimpleScore</flowPara></flowRoot>    <path
+         id="flowPara3991-1"
+         style="font-size:20px;line-height:1.25">SimpleScore</flowPara></flowRoot>
+    <path
        sodipodi:nodetypes="cc"
        style="color:#000000;fill:none;stroke:#000000;stroke-width:0.99999988px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 70.5,259.49999 209,0"
@@ -448,7 +471,7 @@
        transform="translate(-259.9997,226.22292)"
        xml:space="preserve"
        id="flowRoot3985-1-9"
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"><flowRegion
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
          id="flowRegion3987-3-7"><rect
            id="rect3989-1-5"
            width="189.99969"
@@ -456,7 +479,9 @@
            x="340"
            y="33.777069"
            style="font-size:20px;text-align:start;text-anchor:start" /></flowRegion><flowPara
-         id="flowPara4342">score : int</flowPara></flowRoot>    <rect
+         id="flowPara4342"
+         style="font-size:20px;line-height:1.25">score : long</flowPara></flowRoot>
+    <rect
        ry="5"
        rx="4.9999986"
        y="330.5"
@@ -466,7 +491,7 @@
        id="rect3234"
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none" />
     <flowRoot
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot3236"
        xml:space="preserve"
        transform="translate(-269.99969,296.22292)"><flowRegion
@@ -477,17 +502,22 @@
            height="30"
            width="209.99998"
            id="rect3240" /></flowRegion><flowPara
-         id="flowPara3242">HardSoftScore</flowPara></flowRoot>    <path
+         id="flowPara3242"
+         style="font-size:20px;line-height:1.25">HardSoftScore</flowPara></flowRoot>
+    <path
        inkscape:connector-curvature="0"
        id="path3244"
        d="m 70.5,359.49999 209,0"
        style="color:#000000;fill:none;stroke:#000000;stroke-width:0.99999988px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        sodipodi:nodetypes="cc" />
     <flowRoot
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot3246"
        xml:space="preserve"
-       transform="translate(-259.9997,326.22292)"><flowRegion
+       transform="translate(-259.9997,326.22292)"
+       inkscape:export-filename="flowRoot3246.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"><flowRegion
          id="flowRegion3248"><rect
            style="font-size:20px;text-align:start;text-anchor:start"
            y="33.777069"
@@ -495,8 +525,11 @@
            height="50"
            width="189.99969"
            id="rect3250" /></flowRegion><flowPara
-         id="flowPara3252">hardScore : int</flowPara><flowPara
-         id="flowPara3294">softScore : int</flowPara></flowRoot>    <rect
+         id="flowPara3252"
+         style="font-size:20px;line-height:1.25">hardScore : long</flowPara><flowPara
+         id="flowPara3294"
+         style="font-size:20px;line-height:1.25">softScore : long</flowPara></flowRoot>
+    <rect
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect3300"
        width="209"
@@ -509,7 +542,7 @@
        transform="translate(-269.99969,426.22285)"
        xml:space="preserve"
        id="flowRoot3302"
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"><flowRegion
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
          id="flowRegion3304"><rect
            id="rect3306"
            width="209.99998"
@@ -517,7 +550,9 @@
            x="340"
            y="33.777069"
            style="font-size:20px" /></flowRegion><flowPara
-         id="flowPara3308">HardMediumSoftScore</flowPara></flowRoot>    <path
+         id="flowPara3308"
+         style="font-size:20px;line-height:1.25">HardMediumSoftScore</flowPara></flowRoot>
+    <path
        sodipodi:nodetypes="cc"
        style="color:#000000;fill:none;stroke:#000000;stroke-width:0.99999988px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 70.5,489.49992 209,0"
@@ -527,7 +562,7 @@
        transform="translate(-259.9997,456.22285)"
        xml:space="preserve"
        id="flowRoot3312"
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"><flowRegion
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
          id="flowRegion3314"><rect
            id="rect3316"
            width="189.99969"
@@ -535,9 +570,13 @@
            x="340"
            y="33.777069"
            style="font-size:20px;text-align:start;text-anchor:start" /></flowRegion><flowPara
-         id="flowPara3318">hardScore : int</flowPara><flowPara
-         id="flowPara3366">mediumScore: int</flowPara><flowPara
-         id="flowPara3320">softScore : int</flowPara></flowRoot>    <path
+         id="flowPara3318"
+         style="font-size:20px;line-height:1.25">hardScore : long</flowPara><flowPara
+         id="flowPara3366"
+         style="font-size:20px;line-height:1.25">mediumScore: long</flowPara><flowPara
+         id="flowPara3320"
+         style="font-size:20px;line-height:1.25">softScore : long</flowPara></flowRoot>
+    <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:4, 4;stroke-dashoffset:1.9;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="M 110,460 C 110,450 100,440 70,440 60,440 50,430 50,420 L 50,180"
        id="path3454"
@@ -568,39 +607,6 @@
      inkscape:label="long and BigDecimal"
      style="display:inline">
     <rect
-       ry="5"
-       rx="4.9999986"
-       y="230.5"
-       x="300.50031"
-       height="59"
-       width="209"
-       id="rect3190"
-       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none" />
-    <flowRoot
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
-       id="flowRoot3192"
-       xml:space="preserve"
-       transform="translate(-39.99969,196.22292)"><flowRegion
-         id="flowRegion3194"><rect
-           style="font-size:20px"
-           y="33.777069"
-           x="340"
-           height="30"
-           width="209.99998"
-           id="rect3196" /></flowRegion><flowPara
-         id="flowPara3198">SimpleLongScore</flowPara></flowRoot>    <flowRoot
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
-       id="flowRoot3202"
-       xml:space="preserve"
-       transform="translate(-29.999703,226.22292)"><flowRegion
-         id="flowRegion3204"><rect
-           style="font-size:20px;text-align:start;text-anchor:start"
-           y="33.777069"
-           x="340"
-           height="30"
-           width="189.99971"
-           id="rect3206" /></flowRegion><flowPara
-         id="flowPara3208">score : long</flowPara></flowRoot>    <rect
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect3210"
        width="239"
@@ -613,7 +619,7 @@
        transform="translate(190.00031,196.22292)"
        xml:space="preserve"
        id="flowRoot3212"
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"><flowRegion
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
          id="flowRegion3214"><rect
            id="rect3216"
            width="239.99998"
@@ -621,11 +627,13 @@
            x="340"
            y="33.777069"
            style="font-size:20px" /></flowRegion><flowPara
-         id="flowPara3218">SimpleBigDecimalScore</flowPara></flowRoot>    <flowRoot
+         id="flowPara3218"
+         style="font-size:20px;line-height:1.25">SimpleBigDecimalScore</flowPara></flowRoot>
+    <flowRoot
        transform="translate(200.0003,226.22292)"
        xml:space="preserve"
        id="flowRoot3222"
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"><flowRegion
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
          id="flowRegion3224"><rect
            id="rect3226"
            width="219.99969"
@@ -633,12 +641,8 @@
            x="340"
            y="33.777069"
            style="font-size:20px;text-align:start;text-anchor:start" /></flowRegion><flowPara
-         id="flowPara3228">score : BigDecimal</flowPara></flowRoot>    <path
-       inkscape:connector-curvature="0"
-       id="path3230"
-       d="m 300.5003,259.49999 209,0"
-       style="color:#000000;fill:none;stroke:#000000;stroke-width:0.99999988px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       sodipodi:nodetypes="cc" />
+         id="flowPara3228"
+         style="font-size:20px;line-height:1.25">score : BigDecimal</flowPara></flowRoot>
     <path
        sodipodi:nodetypes="cc"
        style="color:#000000;fill:none;stroke:#000000;stroke-width:0.99999988px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
@@ -646,40 +650,6 @@
        id="path3232"
        inkscape:connector-curvature="0" />
     <rect
-       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
-       id="rect3254"
-       width="209"
-       height="89"
-       x="300.50031"
-       y="330.5"
-       rx="4.9999986"
-       ry="5" />
-    <flowRoot
-       transform="translate(-39.99969,296.22292)"
-       xml:space="preserve"
-       id="flowRoot3256"
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"><flowRegion
-         id="flowRegion3258"><rect
-           id="rect3260"
-           width="209.99998"
-           height="30"
-           x="340"
-           y="33.777069"
-           style="font-size:20px" /></flowRegion><flowPara
-         id="flowPara3262">HardSoftLongScore</flowPara></flowRoot>    <flowRoot
-       transform="translate(-29.999703,326.22292)"
-       xml:space="preserve"
-       id="flowRoot3264"
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"><flowRegion
-         id="flowRegion3266"><rect
-           id="rect3268"
-           width="189.99971"
-           height="50"
-           x="340"
-           y="33.777069"
-           style="font-size:20px;text-align:start;text-anchor:start" /></flowRegion><flowPara
-         id="flowPara3270">hardScore : long</flowPara><flowPara
-         id="flowPara3296">softScore : long</flowPara></flowRoot>    <rect
        ry="5"
        rx="4.9999986"
        y="330.5"
@@ -689,7 +659,7 @@
        id="rect3272"
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none" />
     <flowRoot
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot3274"
        xml:space="preserve"
        transform="translate(190.00031,296.22292)"><flowRegion
@@ -700,8 +670,10 @@
            height="30"
            width="239.99998"
            id="rect3278" /></flowRegion><flowPara
-         id="flowPara3280">HardSoftBigDecimalScore</flowPara></flowRoot>    <flowRoot
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
+         id="flowPara3280"
+         style="font-size:20px;line-height:1.25">HardSoftBigDecimalScore</flowPara></flowRoot>
+    <flowRoot
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot3282"
        xml:space="preserve"
        transform="translate(200.0003,326.22292)"><flowRegion
@@ -712,24 +684,15 @@
            height="50"
            width="219.99969"
            id="rect3286" /></flowRegion><flowPara
-         id="flowPara3288">hardScore : BigDecimal</flowPara><flowPara
-         id="flowPara3298">softScore : BigDecimal</flowPara></flowRoot>    <path
-       sodipodi:nodetypes="cc"
-       style="color:#000000;fill:none;stroke:#000000;stroke-width:0.99999988px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       d="m 300.5003,359.49999 209,0"
-       id="path3290"
-       inkscape:connector-curvature="0" />
+         id="flowPara3288"
+         style="font-size:20px;line-height:1.25">hardScore : BigDecimal</flowPara><flowPara
+         id="flowPara3298"
+         style="font-size:20px;line-height:1.25">softScore : BigDecimal</flowPara></flowRoot>
     <path
        inkscape:connector-curvature="0"
        id="path3292"
        d="m 530.57171,359.49999 238.85713,0"
        style="color:#000000;fill:none;stroke:#000000;stroke-width:0.99999988px;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       sodipodi:nodetypes="cc" />
-    <path
-       style="color:#000000;fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:4, 4;stroke-dashoffset:6.1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       d="M 340,330 C 340,320 330,310 70,310"
-       id="path4226"
-       inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
        sodipodi:nodetypes="cc"
@@ -738,19 +701,13 @@
        d="M 570,330 C 570,320 560,310 70,310"
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:4, 4;stroke-dashoffset:1.1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
     <path
-       sodipodi:nodetypes="cc"
-       inkscape:connector-curvature="0"
-       id="path4232"
-       d="M 340,230 C 340,220 330,210 70,210"
-       style="color:#000000;fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:4, 4;stroke-dashoffset:6.1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-    <path
        style="color:#000000;fill:none;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:4, 4;stroke-dashoffset:1.1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="M 570,230 C 570,220 560,210 70,210"
        id="path4234"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <flowRoot
-       style="font-size:20px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal'"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot4247"
        xml:space="preserve"
        transform="translate(-39.99969,296.22292)"><flowRegion
@@ -761,5 +718,7 @@
            height="30.000019"
            width="219.99988"
            id="rect4251" /></flowRegion><flowPara
-         id="flowPara4253">...</flowPara></flowRoot>  </g>
+         id="flowPara4253"
+         style="font-size:20px;line-height:1.25">...</flowPara></flowRoot>
+  </g>
 </svg>

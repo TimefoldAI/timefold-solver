@@ -12,6 +12,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 sealed interface BiImpactHandler<A, B>
         extends ImpactHandler<BiTuple<A, B>>
-        permits BiBigDecimalImpactHandler, BiIntImpactHandler, BiLongImpactHandler {
+        permits BiBigDecimalImpactHandler, BiLongImpactHandler {
 
 }

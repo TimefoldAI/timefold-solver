@@ -9,8 +9,8 @@ import java.util.concurrent.ExecutionException;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
@@ -64,7 +64,7 @@ class TimefoldProcessorGizmoKitchenSinkTest {
                 Collections.emptyList(),
                 "Test",
                 Collections.emptyList(),
-                HardSoftLongScore.ZERO);
+                HardSoftScore.ZERO);
 
         SolverJob<TestDataKitchenSinkSolution, Long> solverJob = solverManager.solve(1L, problem);
         TestDataKitchenSinkSolution solution = solverJob.getFinalBestSolution();

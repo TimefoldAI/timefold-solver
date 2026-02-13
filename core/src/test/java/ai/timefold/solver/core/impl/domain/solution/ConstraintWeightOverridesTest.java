@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Map;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -23,10 +23,8 @@ class ConstraintWeightOverridesTest {
     private static final String SECOND_WEIGHT = "Second weight";
     private static final String THIRD_WEIGHT = "Third weight";
 
-    private static final ConstraintRef FIRST_WEIGHT_REF =
-            ConstraintRef.of(TestdataConstraintWeightOverridesSolution.class.getPackageName(), FIRST_WEIGHT);
-    private static final ConstraintRef SECOND_WEIGHT_REF =
-            ConstraintRef.of(TestdataConstraintWeightOverridesSolution.class.getPackageName(), SECOND_WEIGHT);
+    private static final ConstraintRef FIRST_WEIGHT_REF = ConstraintRef.of(FIRST_WEIGHT);
+    private static final ConstraintRef SECOND_WEIGHT_REF = ConstraintRef.of(SECOND_WEIGHT);
 
     @Test
     void consistentOrderOfConstraints() {
@@ -92,7 +90,7 @@ class ConstraintWeightOverridesTest {
                     SECOND_WEIGHT, SimpleScore.of(2))));
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.triggerVariableListeners();
-            assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(10));
+            assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-10));
 
             // Unknown constraint is present
             solution.setConstraintWeightOverrides(ConstraintWeightOverrides.of(Map.of(

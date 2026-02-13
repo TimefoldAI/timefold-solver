@@ -5,18 +5,14 @@ import jakarta.enterprise.inject.Produces;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
+import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
+import ai.timefold.solver.core.api.score.BendableScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
+import ai.timefold.solver.core.api.score.HardSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -53,13 +49,6 @@ public class UnavailableTimefoldBeanProvider {
     @DefaultBean
     @Dependent
     @Produces
-    <Solution_> SolutionManager<Solution_, SimpleLongScore> solutionManager_workaroundSimpleLongScore() {
-        throw createException(SolutionManager.class);
-    }
-
-    @DefaultBean
-    @Dependent
-    @Produces
     <Solution_> SolutionManager<Solution_, SimpleBigDecimalScore> solutionManager_workaroundSimpleBigDecimalScore() {
         throw createException(SolutionManager.class);
     }
@@ -68,13 +57,6 @@ public class UnavailableTimefoldBeanProvider {
     @Dependent
     @Produces
     <Solution_> SolutionManager<Solution_, HardSoftScore> solutionManager_workaroundHardSoftScore() {
-        throw createException(SolutionManager.class);
-    }
-
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> SolutionManager<Solution_, HardSoftLongScore> solutionManager_workaroundHardSoftLongScore() {
         throw createException(SolutionManager.class);
     }
 
@@ -95,13 +77,6 @@ public class UnavailableTimefoldBeanProvider {
     @DefaultBean
     @Dependent
     @Produces
-    <Solution_> SolutionManager<Solution_, HardMediumSoftLongScore> solutionManager_workaroundHardMediumSoftLongScore() {
-        throw createException(SolutionManager.class);
-    }
-
-    @DefaultBean
-    @Dependent
-    @Produces
     <Solution_> SolutionManager<Solution_, HardMediumSoftBigDecimalScore>
             solutionManager_workaroundHardMediumSoftBigDecimalScore() {
         throw createException(SolutionManager.class);
@@ -111,13 +86,6 @@ public class UnavailableTimefoldBeanProvider {
     @Dependent
     @Produces
     <Solution_> SolutionManager<Solution_, BendableScore> solutionManager_workaroundBendableScore() {
-        throw createException(SolutionManager.class);
-    }
-
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> SolutionManager<Solution_, BendableLongScore> solutionManager_workaroundBendableLongScore() {
         throw createException(SolutionManager.class);
     }
 

@@ -10,7 +10,7 @@ import tools.jackson.databind.ValueDeserializer;
 public final class ConstraintRefJacksonDeserializer extends ValueDeserializer<ConstraintRef> {
     @Override
     public ConstraintRef deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
-        return ConstraintRef.parseId(p.getValueAsString());
+        return ConstraintRef.of(p.getValueAsString());
     }
 
 }

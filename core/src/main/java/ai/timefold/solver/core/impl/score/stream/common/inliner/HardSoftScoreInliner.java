@@ -2,17 +2,21 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 final class HardSoftScoreInliner extends AbstractScoreInliner<HardSoftScore> {
 
-    int hardScore;
-    int softScore;
+    long hardScore;
+    long softScore;
 
-    HardSoftScoreInliner(Map<Constraint, HardSoftScore> constraintWeightMap, ConstraintMatchPolicy constraintMatchPolicy) {
+    HardSoftScoreInliner(Map<Constraint, HardSoftScore> constraintWeightMap,
+            ConstraintMatchPolicy constraintMatchPolicy) {
         super(constraintWeightMap, constraintMatchPolicy);
     }
 

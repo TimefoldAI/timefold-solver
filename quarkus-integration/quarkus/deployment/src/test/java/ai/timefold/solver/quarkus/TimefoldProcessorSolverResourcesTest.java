@@ -8,18 +8,14 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
+import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
+import ai.timefold.solver.core.api.score.BendableScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
+import ai.timefold.solver.core.api.score.HardSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -69,25 +65,17 @@ class TimefoldProcessorSolverResourcesTest {
     @Inject
     SolutionManager<TestdataQuarkusSolution, SimpleScore> simpleSolutionManager1;
     @Inject
-    SolutionManager<TestdataQuarkusSolution, SimpleLongScore> simpleLongSolutionManager1;
-    @Inject
     SolutionManager<TestdataQuarkusSolution, SimpleBigDecimalScore> simpleBigDecimalSolutionManager1;
     @Inject
     SolutionManager<TestdataQuarkusSolution, HardSoftScore> hardSoftSolutionManager1;
-    @Inject
-    SolutionManager<TestdataQuarkusSolution, HardSoftLongScore> hardSoftLongSolutionManager1;
     @Inject
     SolutionManager<TestdataQuarkusSolution, HardSoftBigDecimalScore> hardSoftBigDecimalSolutionManager1;
     @Inject
     SolutionManager<TestdataQuarkusSolution, HardMediumSoftScore> hardMediumSoftSolutionManager1;
     @Inject
-    SolutionManager<TestdataQuarkusSolution, HardMediumSoftLongScore> hardMediumSoftLongSolutionManager1;
-    @Inject
     SolutionManager<TestdataQuarkusSolution, HardMediumSoftBigDecimalScore> hardMediumSoftBigDecimalSolutionManager1;
     @Inject
     SolutionManager<TestdataQuarkusSolution, BendableScore> bendableSolutionManager1;
-    @Inject
-    SolutionManager<TestdataQuarkusSolution, BendableLongScore> bendableLongSolutionManager1;
     @Inject
     SolutionManager<TestdataQuarkusSolution, BendableBigDecimalScore> bendableBigDecimalSolutionManager1;
 
@@ -110,16 +98,12 @@ class TimefoldProcessorSolverResourcesTest {
         assertThat(solver1Manager).isNotNull();
         // SolutionManager
         assertThat(simpleSolutionManager1).isNotNull();
-        assertThat(simpleLongSolutionManager1).isNotNull();
         assertThat(simpleBigDecimalSolutionManager1).isNotNull();
         assertThat(hardSoftSolutionManager1).isNotNull();
-        assertThat(hardSoftLongSolutionManager1).isNotNull();
         assertThat(hardSoftBigDecimalSolutionManager1).isNotNull();
         assertThat(hardMediumSoftSolutionManager1).isNotNull();
-        assertThat(hardMediumSoftLongSolutionManager1).isNotNull();
         assertThat(hardMediumSoftBigDecimalSolutionManager1).isNotNull();
         assertThat(bendableSolutionManager1).isNotNull();
-        assertThat(bendableLongSolutionManager1).isNotNull();
         assertThat(bendableBigDecimalSolutionManager1).isNotNull();
     }
 }

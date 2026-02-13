@@ -1,18 +1,21 @@
 package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 final class SimpleScoreContext extends ScoreContext<SimpleScore, SimpleScoreInliner> {
 
-    public SimpleScoreContext(SimpleScoreInliner parent, AbstractConstraint<?, ?, ?> constraint, SimpleScore constraintWeight) {
+    public SimpleScoreContext(SimpleScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
+            SimpleScore constraintWeight) {
         super(parent, constraint, constraintWeight);
     }
 
-    public ScoreImpact<SimpleScore> changeScoreBy(int matchWeight,
-            ConstraintMatchSupplier<SimpleScore> constraintMatchSupplier) {
+    public ScoreImpact<SimpleScore> changeScoreBy(long matchWeight,
+            @Nullable ConstraintMatchSupplier<SimpleScore> constraintMatchSupplier) {
         var impact = Math.multiplyExact(constraintWeight.score(), matchWeight);
         inliner.score = Math.addExact(inliner.score, impact);
         var scoreImpact = new Impact(inliner, impact);
@@ -20,7 +23,9 @@ final class SimpleScoreContext extends ScoreContext<SimpleScore, SimpleScoreInli
     }
 
     @NullMarked
-    private record Impact(SimpleScoreInliner inliner, int impact) implements ScoreImpact<SimpleScore> {
+    private record Impact(SimpleScoreInliner inliner, long impact)
+            implements
+                ScoreImpact<SimpleScore> {
 
         @Override
         public void undo() {

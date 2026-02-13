@@ -10,29 +10,23 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
+import ai.timefold.solver.core.api.score.BendableScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
+import ai.timefold.solver.core.api.score.HardSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
-import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
-import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
+import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
-import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -43,25 +37,22 @@ import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPrope
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.score.buildin.BendableBigDecimalScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.BendableLongScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.BendableScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardMediumSoftBigDecimalScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardMediumSoftLongScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardMediumSoftScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardSoftBigDecimalScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardSoftLongScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.HardSoftScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.SimpleBigDecimalScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.SimpleLongScoreDefinition;
-import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.BendableBigDecimalScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.BendableScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.HardMediumSoftBigDecimalScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.HardMediumSoftScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.HardSoftBigDecimalScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.HardSoftScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.SimpleBigDecimalScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class DescriptorPolicy {
+
     private Map<String, SolutionCloner> generatedSolutionClonerMap = new LinkedHashMap<>();
     private final Map<String, MemberAccessor> fromSolutionValueRangeProviderMap = new LinkedHashMap<>();
     private final Set<MemberAccessor> anonymousFromSolutionValueRangeProviderSet = new LinkedHashSet<>();
@@ -147,23 +138,10 @@ public class DescriptorPolicy {
     private static <Score_ extends Score<Score_>, ScoreDefinition_ extends ScoreDefinition<Score_>> ScoreDefinition_
             buildScoreDefinition(Class<?> solutionClass,
                     MemberAccessor scoreMemberAccessor, Class<Score_> scoreType, PlanningScore annotation) {
-        Class<ScoreDefinition_> scoreDefinitionClass = (Class<ScoreDefinition_>) annotation.scoreDefinitionClass();
         int bendableHardLevelsSize = annotation.bendableHardLevelsSize();
         int bendableSoftLevelsSize = annotation.bendableSoftLevelsSize();
-        if (!Objects.equals(scoreDefinitionClass, PlanningScore.NullScoreDefinition.class)) {
-            if (bendableHardLevelsSize != PlanningScore.NO_LEVEL_SIZE
-                    || bendableSoftLevelsSize != PlanningScore.NO_LEVEL_SIZE) {
-                throw new IllegalArgumentException(
-                        "The solutionClass (%s) has a @%s annotated member (%s) that has a scoreDefinition (%s) that must not have a bendableHardLevelsSize (%d) or a bendableSoftLevelsSize (%d)."
-                                .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor,
-                                        scoreDefinitionClass, bendableHardLevelsSize, bendableSoftLevelsSize));
-            }
-            return ConfigUtils.newInstance(() -> scoreMemberAccessor + " with @" + PlanningScore.class.getSimpleName(),
-                    "scoreDefinitionClass", scoreDefinitionClass);
-        }
         if (!IBendableScore.class.isAssignableFrom(scoreType)) {
-            if (bendableHardLevelsSize != PlanningScore.NO_LEVEL_SIZE
-                    || bendableSoftLevelsSize != PlanningScore.NO_LEVEL_SIZE) {
+            if (bendableHardLevelsSize != -1 || bendableSoftLevelsSize != -1) {
                 throw new IllegalArgumentException(
                         "The solutionClass (%s) has a @%s annotated member (%s) that returns a scoreType (%s) that must not have a bendableHardLevelsSize (%d) or a bendableSoftLevelsSize (%d)."
                                 .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor, scoreType,
@@ -171,20 +149,14 @@ public class DescriptorPolicy {
             }
             if (scoreType.equals(SimpleScore.class)) {
                 return (ScoreDefinition_) new SimpleScoreDefinition();
-            } else if (scoreType.equals(SimpleLongScore.class)) {
-                return (ScoreDefinition_) new SimpleLongScoreDefinition();
             } else if (scoreType.equals(SimpleBigDecimalScore.class)) {
                 return (ScoreDefinition_) new SimpleBigDecimalScoreDefinition();
             } else if (scoreType.equals(HardSoftScore.class)) {
                 return (ScoreDefinition_) new HardSoftScoreDefinition();
-            } else if (scoreType.equals(HardSoftLongScore.class)) {
-                return (ScoreDefinition_) new HardSoftLongScoreDefinition();
             } else if (scoreType.equals(HardSoftBigDecimalScore.class)) {
                 return (ScoreDefinition_) new HardSoftBigDecimalScoreDefinition();
             } else if (scoreType.equals(HardMediumSoftScore.class)) {
                 return (ScoreDefinition_) new HardMediumSoftScoreDefinition();
-            } else if (scoreType.equals(HardMediumSoftLongScore.class)) {
-                return (ScoreDefinition_) new HardMediumSoftLongScoreDefinition();
             } else if (scoreType.equals(HardMediumSoftBigDecimalScore.class)) {
                 return (ScoreDefinition_) new HardMediumSoftBigDecimalScoreDefinition();
             } else {
@@ -196,8 +168,7 @@ public class DescriptorPolicy {
                                         Score.class.getSimpleName(), PlanningScore.class.getSimpleName()));
             }
         } else {
-            if (bendableHardLevelsSize == PlanningScore.NO_LEVEL_SIZE
-                    || bendableSoftLevelsSize == PlanningScore.NO_LEVEL_SIZE) {
+            if (bendableHardLevelsSize == -1 || bendableSoftLevelsSize == -1) {
                 throw new IllegalArgumentException(
                         "The solutionClass (%s) has a @%s annotated member (%s) that returns a scoreType (%s) that must have a bendableHardLevelsSize (%d) and a bendableSoftLevelsSize (%d)."
                                 .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor, scoreType,
@@ -205,9 +176,6 @@ public class DescriptorPolicy {
             }
             if (scoreType.equals(BendableScore.class)) {
                 return (ScoreDefinition_) new BendableScoreDefinition(bendableHardLevelsSize, bendableSoftLevelsSize);
-            } else if (scoreType.equals(BendableLongScore.class)) {
-                return (ScoreDefinition_) new BendableLongScoreDefinition(bendableHardLevelsSize,
-                        bendableSoftLevelsSize);
             } else if (scoreType.equals(BendableBigDecimalScore.class)) {
                 return (ScoreDefinition_) new BendableBigDecimalScoreDefinition(bendableHardLevelsSize,
                         bendableSoftLevelsSize);

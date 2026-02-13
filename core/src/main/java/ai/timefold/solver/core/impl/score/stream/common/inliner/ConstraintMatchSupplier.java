@@ -16,6 +16,8 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Allows creating {@link ConstraintMatch} instances lazily if and only if they are required by the end user.
  * <p>
@@ -28,6 +30,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
  * is only created when actually needed, and that is during score explanation.
  * Until that point, this thin wrapper serves as a placeholder which understands what to create when needed.
  */
+@NullMarked
 @FunctionalInterface
 public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         extends BiFunction<Constraint, Score_, ConstraintMatch<Score_>> {

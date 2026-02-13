@@ -7,7 +7,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 
 @PlanningSolution
 public class TestdataBothAnnotatedAbstractExtendedSolution extends TestdataBothAnnotatedAbstractSolution {

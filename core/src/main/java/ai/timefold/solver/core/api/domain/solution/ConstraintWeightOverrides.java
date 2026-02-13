@@ -6,7 +6,6 @@ import java.util.Set;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintBuilder;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.solution.DefaultConstraintWeightOverrides;
@@ -28,11 +27,6 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Zero-weight will be excluded from processing,
  * and the solver will behave as if it did not exist in the {@link ConstraintProvider}.
- * <p>
- * There is no support for user-defined packages, which is a deprecated feature in itself.
- * The constraint is assumed to be in the same package as the top-most class implementing this interface.
- * It is therefore required that the constraints be built using {@link UniConstraintBuilder#asConstraint(String)},
- * leaving the constraint package to its default value.
  *
  * @param <Score_>
  */

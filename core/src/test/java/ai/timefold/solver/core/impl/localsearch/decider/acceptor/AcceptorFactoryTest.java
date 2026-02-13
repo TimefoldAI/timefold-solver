@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingType;
@@ -26,7 +26,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghil
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.EntityTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.ValueTabuAcceptor;
-import ai.timefold.solver.core.impl.score.buildin.HardSoftScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.HardSoftScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
 import org.junit.jupiter.api.Test;

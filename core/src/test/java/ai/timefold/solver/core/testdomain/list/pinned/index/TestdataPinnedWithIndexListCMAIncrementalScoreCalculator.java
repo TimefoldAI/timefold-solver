@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
@@ -73,9 +73,7 @@ public class TestdataPinnedWithIndexListCMAIncrementalScoreCalculator
     }
 
     private DefaultConstraintMatchTotal<SimpleScore> update() {
-        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(
-                ConstraintRef.of(getClass().getPackageName(), "testConstraint"),
-                SimpleScore.ONE);
+        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(ConstraintRef.of("testConstraint"), SimpleScore.ONE);
         this.indictmentMap = new HashMap<>();
         for (TestdataPinnedWithIndexListValue left : workingSolution.getValueList()) {
             TestdataPinnedWithIndexListEntity entity = left.getEntity();

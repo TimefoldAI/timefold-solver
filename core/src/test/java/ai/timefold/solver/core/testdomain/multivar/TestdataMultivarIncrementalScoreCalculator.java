@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
@@ -70,9 +70,7 @@ public class TestdataMultivarIncrementalScoreCalculator
     }
 
     private DefaultConstraintMatchTotal<SimpleScore> update() {
-        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(
-                ConstraintRef.of(getClass().getPackageName(), "testConstraint"),
-                SimpleScore.ONE);
+        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(ConstraintRef.of("testConstraint"), SimpleScore.ONE);
         this.indictmentMap = new HashMap<>();
         for (TestdataMultiVarEntity left : workingSolution.getMultiVarEntityList()) {
             int count = left.getPrimaryValue() == left.getSecondaryValue() ? 0 : 1;
