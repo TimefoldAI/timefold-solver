@@ -24,9 +24,13 @@ public abstract class CompositeMoveSelector<Solution_> extends AbstractMoveSelec
         if (!randomSelection) {
             // Only the last childMoveSelector can be neverEnding
             if (!childMoveSelectorList.isEmpty()) {
-                for (MoveSelector<Solution_> childMoveSelector : childMoveSelectorList.subList(0, childMoveSelectorList.size() - 1)) {
+                for (MoveSelector<Solution_> childMoveSelector : childMoveSelectorList.subList(0,
+                        childMoveSelectorList.size() - 1)) {
                     if (childMoveSelector.isNeverEnding()) {
-                        throw new IllegalStateException("The selector (%s)'s non-last childMoveSelector (%s) has neverEnding (%s) with randomSelection (%s).".formatted(this, childMoveSelector, childMoveSelector.isNeverEnding(), randomSelection));
+                        throw new IllegalStateException(
+                                "The selector (%s)'s non-last childMoveSelector (%s) has neverEnding (%s) with randomSelection (%s)."
+                                        .formatted(this, childMoveSelector, childMoveSelector.isNeverEnding(),
+                                                randomSelection));
                     }
                 }
             }

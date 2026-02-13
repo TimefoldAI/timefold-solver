@@ -5,11 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.solver.ProblemFactChange;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
@@ -18,7 +16,6 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
-import ai.timefold.solver.core.impl.solver.change.ProblemChangeAdapter;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -127,20 +124,6 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     @Override
-    public boolean addProblemFactChange(@NonNull ProblemFactChange<Solution_> problemFactChange) {
-        return addProblemFactChanges(Collections.singletonList(problemFactChange));
-    }
-
-    @Override
-    public boolean addProblemFactChanges(@NonNull List<ProblemFactChange<Solution_>> problemFactChangeList) {
-        Objects.requireNonNull(problemFactChangeList,
-                () -> "The list of problem fact changes (" + problemFactChangeList + ") cannot be null.");
-        return basicPlumbingTermination.addProblemChanges(problemFactChangeList.stream()
-                .map(ProblemChangeAdapter::create)
-                .collect(Collectors.toList()));
-    }
-
-    @Override
     public void addProblemChange(@NonNull ProblemChange<Solution_> problemChange) {
         addProblemChanges(Collections.singletonList(problemChange));
     }
@@ -148,20 +131,14 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     @Override
     public void addProblemChanges(@NonNull List<ProblemChange<Solution_>> problemChangeList) {
         Objects.requireNonNull(problemChangeList,
-                () -> "The list of problem changes (" + problemChangeList + ") cannot be null.");
-        basicPlumbingTermination.addProblemChanges(problemChangeList.stream()
-                .map(ProblemChangeAdapter::create)
-                .toList());
+                () -> "The list of problem changes (%s) cannot be null."
+                        .formatted(problemChangeList));
+        basicPlumbingTermination.addProblemChanges(problemChangeList);
     }
 
     @Override
     public boolean isEveryProblemChangeProcessed() {
         return basicPlumbingTermination.isEveryProblemChangeProcessed();
-    }
-
-    @Override
-    public boolean isEveryProblemFactChangeProcessed() {
-        return isEveryProblemChangeProcessed();
     }
 
     public void setMonitorTagMap(Map<String, String> monitorTagMap) {
@@ -203,7 +180,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 sample.stop();
                 unregisterSolverSpecificMetrics();
             }
-            restartSolver = checkProblemFactChanges();
+            restartSolver = checkProblemChanges();
         }
         outerSolvingEnded(solverScope);
         return solverScope.getBestSolution();
@@ -326,22 +303,23 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         solving.set(false);
     }
 
-    private boolean checkProblemFactChanges() {
+    private boolean checkProblemChanges() {
         var restartSolver = basicPlumbingTermination.waitForRestartSolverDecision();
         if (!restartSolver) {
             return false;
         } else {
-            var problemFactChangeQueue = basicPlumbingTermination
+            var problemChangeQueue = basicPlumbingTermination
                     .startProblemChangesProcessing();
             solverScope.setWorkingSolutionFromBestSolution();
 
             var stepIndex = 0;
-            var problemChangeAdapter = problemFactChangeQueue.poll();
-            while (problemChangeAdapter != null) {
-                problemChangeAdapter.doProblemChange(solverScope);
+            var problemChange = problemChangeQueue.poll();
+            while (problemChange != null) {
+                problemChange.doChange(solverScope.getWorkingSolution(), solverScope.getProblemChangeDirector());
+                solverScope.getScoreDirector().triggerVariableListeners();
                 logger.debug("    Real-time problem change applied; step index ({}).", stepIndex);
                 stepIndex++;
-                problemChangeAdapter = problemFactChangeQueue.poll();
+                problemChange = problemChangeQueue.poll();
             }
             // All PFCs are processed, fail fast if any of the new facts have null planning IDs.
             InnerScoreDirector<Solution_, ?> scoreDirector = solverScope.getScoreDirector();

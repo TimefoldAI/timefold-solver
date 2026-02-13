@@ -53,8 +53,6 @@
                         
             <xs:element name="localSearch" type="tns:localSearchPhaseConfig"/>
                         
-            <xs:element name="noChangePhase" type="tns:noChangePhaseConfig"/>
-                        
             <xs:element name="partitionedSearch" type="tns:partitionedSearchPhaseConfig"/>
                       
           </xs:choice>
@@ -1413,20 +1411,6 @@
       
   </xs:complexType>
     
-  <xs:complexType name="noChangePhaseConfig">
-        
-    <xs:complexContent>
-            
-      <xs:extension base="tns:phaseConfig">
-                
-        <xs:sequence/>
-              
-      </xs:extension>
-          
-    </xs:complexContent>
-      
-  </xs:complexType>
-    
   <xs:complexType name="partitionedSearchPhaseConfig">
         
     <xs:complexContent>
@@ -1450,8 +1434,6 @@
             <xs:element name="exhaustiveSearch" type="tns:exhaustiveSearchPhaseConfig"/>
                         
             <xs:element name="localSearch" type="tns:localSearchPhaseConfig"/>
-                        
-            <xs:element name="noChangePhase" type="tns:noChangePhaseConfig"/>
                         
             <xs:element name="partitionedSearch" type="tns:partitionedSearchPhaseConfig"/>
                       

@@ -4,7 +4,6 @@ import java.util.OptionalInt;
 
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.phase.NoChangePhase;
 import ai.timefold.solver.core.impl.phase.PhaseType;
 import ai.timefold.solver.core.impl.phase.event.PhaseEventProducerId;
 import ai.timefold.solver.core.impl.solver.event.SolveEventProducerId;
@@ -46,24 +45,12 @@ public interface EventProducerId {
      */
     OptionalInt phaseIndex();
 
-    static EventProducerId unknown() {
-        return SolveEventProducerId.UNKNOWN;
-    }
-
     static EventProducerId solvingStarted() {
         return SolveEventProducerId.SOLVING_STARTED;
     }
 
     static EventProducerId problemChange() {
         return SolveEventProducerId.PROBLEM_CHANGE;
-    }
-
-    /**
-     * @deprecated Deprecated on account of {@link NoChangePhase} having no use.
-     */
-    @Deprecated(forRemoval = true, since = "1.28.0")
-    static EventProducerId noChange(int phaseIndex) {
-        return new PhaseEventProducerId(PhaseType.NO_CHANGE, phaseIndex);
     }
 
     static EventProducerId constructionHeuristic(int phaseIndex) {

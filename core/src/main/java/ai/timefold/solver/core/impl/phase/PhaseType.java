@@ -11,18 +11,11 @@ import ai.timefold.solver.core.impl.phase.custom.CustomPhase;
  * The type of phase (for example, a Construction Heuristic).
  */
 public enum PhaseType {
-    /**
-     * The type of phase associated with {@link NoChangePhase}.
-     * 
-     * @deprecated Deprecated on account of {@link NoChangePhase} having no use.
-     */
-    @Deprecated(forRemoval = true, since = "1.28.0")
-    NO_CHANGE("No Change Phase"),
+
     /**
      * The type of phase associated with {@link ConstructionHeuristicPhase}.
      */
     CONSTRUCTION_HEURISTIC("Construction Heuristic"),
-
     /**
      * The type of phase associated with {@link RuinRecreateConstructionHeuristicPhase}
      */

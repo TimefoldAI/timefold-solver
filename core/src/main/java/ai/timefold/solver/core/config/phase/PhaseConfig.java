@@ -21,7 +21,6 @@ import org.jspecify.annotations.Nullable;
         CustomPhaseConfig.class,
         ExhaustiveSearchPhaseConfig.class,
         LocalSearchPhaseConfig.class,
-        NoChangePhaseConfig.class,
         PartitionedSearchPhaseConfig.class
 })
 @XmlType(propOrder = {

@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.api.solver;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
@@ -11,7 +10,7 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.SolverEventListener;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * A Solver solves a planning problem and returns the best solution found.
@@ -28,6 +27,7 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
+@NullMarked
 public interface Solver<Solution_> {
 
     /**
@@ -42,8 +42,7 @@ public interface Solver<Solution_> {
      * @return can return the original, uninitialized {@link PlanningSolution} with a null {@link Score}.
      * @see #terminateEarly()
      */
-    @NonNull
-    Solution_ solve(@NonNull Solution_ problem);
+    Solution_ solve(Solution_ problem);
 
     /**
      * Notifies the solver that it should stop at its earliest convenience.
@@ -92,7 +91,7 @@ public interface Solver<Solution_> {
      * @see ProblemChange Learn more about problem change semantics.
      * @see #addProblemChanges(List) Submit multiple problem changes at once.
      */
-    void addProblemChange(@NonNull ProblemChange<Solution_> problemChange);
+    void addProblemChange(ProblemChange<Solution_> problemChange);
 
     /**
      * Schedules multiple {@link ProblemChange}s to be processed.
@@ -108,7 +107,7 @@ public interface Solver<Solution_> {
      *
      * @see ProblemChange Learn more about problem change semantics.
      */
-    void addProblemChanges(@NonNull List<ProblemChange<Solution_>> problemChangeList);
+    void addProblemChanges(List<ProblemChange<Solution_>> problemChangeList);
 
     /**
      * Checks if all scheduled {@link ProblemChange}s have been processed.
@@ -119,56 +118,8 @@ public interface Solver<Solution_> {
      */
     boolean isEveryProblemChangeProcessed();
 
-    /**
-     * This method is deprecated.
-     * Schedules a {@link ProblemFactChange} to be processed.
-     * <p>
-     * As a side-effect, this restarts the {@link Solver}, effectively resetting all terminations,
-     * but not {@link #terminateEarly()}.
-     * <p>
-     * This method is thread-safe.
-     * Follows specifications of {@link BlockingQueue#add(Object)} with by default
-     * a capacity of {@link Integer#MAX_VALUE}.
-     *
-     * @deprecated Prefer {@link #addProblemChange(ProblemChange)}.
-     * @return true (as specified by {@link Collection#add})
-     * @see #addProblemChanges(List)
-     */
-    @Deprecated(forRemoval = true)
-    boolean addProblemFactChange(@NonNull ProblemFactChange<Solution_> problemFactChange);
+    void addEventListener(SolverEventListener<Solution_> eventListener);
 
-    /**
-     * This method is deprecated.
-     * Schedules multiple {@link ProblemFactChange}s to be processed.
-     * <p>
-     * As a side-effect, this restarts the {@link Solver}, effectively resetting all terminations,
-     * but not {@link #terminateEarly()}.
-     * <p>
-     * This method is thread-safe.
-     * Follows specifications of {@link BlockingQueue#addAll(Collection)} with by default
-     * a capacity of {@link Integer#MAX_VALUE}.
-     *
-     * @deprecated Prefer {@link #addProblemChanges(List)}.
-     * @return true (as specified by {@link Collection#add})
-     * @see #addProblemChange(ProblemChange)
-     */
-    @Deprecated(forRemoval = true)
-    boolean addProblemFactChanges(@NonNull List<ProblemFactChange<Solution_>> problemFactChangeList);
-
-    /**
-     * This method is deprecated.
-     * Checks if all scheduled {@link ProblemFactChange}s have been processed.
-     * <p>
-     * This method is thread-safe.
-     *
-     * @deprecated Prefer {@link #isEveryProblemChangeProcessed()}.
-     * @return true if there are no {@link ProblemFactChange}s left to do
-     */
-    @Deprecated(forRemoval = true)
-    boolean isEveryProblemFactChangeProcessed();
-
-    void addEventListener(@NonNull SolverEventListener<Solution_> eventListener);
-
-    void removeEventListener(@NonNull SolverEventListener<Solution_> eventListener);
+    void removeEventListener(SolverEventListener<Solution_> eventListener);
 
 }

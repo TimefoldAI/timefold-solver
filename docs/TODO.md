@@ -24,5 +24,7 @@
 - [ ] penalizeLong/rewardLong/impactLong are no more.
 - [ ] Value ranges and move selectors (not public API) no longer have isCountable().
 - [ ] The solver now implicitly trusts equals() on objects, such as entities and values.
+- [ ] BestSolutionChangedEvent now an interface. (All constructors were deprecated anyway.)
+- [ ] ProblemFactChange -> ProblemChange, migration script?
 
 Remove this file when done.
