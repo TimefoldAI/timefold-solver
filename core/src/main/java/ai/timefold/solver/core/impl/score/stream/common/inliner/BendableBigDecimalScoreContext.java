@@ -8,9 +8,10 @@ import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-final class BendableBigDecimalScoreContext
-        extends ScoreContext<BendableBigDecimalScore, BendableBigDecimalScoreInliner> {
+@NullMarked
+final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecimalScore, BendableBigDecimalScoreInliner> {
 
     private final int hardScoreLevelCount;
     private final int softScoreLevelCount;
@@ -33,7 +34,7 @@ final class BendableBigDecimalScoreContext
     }
 
     public ScoreImpact<BendableBigDecimalScore> changeSoftScoreBy(BigDecimal matchWeight,
-            ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
         var softImpact = scoreLevelWeight.multiply(matchWeight);
         inliner.softScores[scoreLevel] = inliner.softScores[scoreLevel].add(softImpact);
         var scoreImpact = new SingleSoftImpact(this, softImpact);
@@ -41,7 +42,7 @@ final class BendableBigDecimalScoreContext
     }
 
     public ScoreImpact<BendableBigDecimalScore> changeHardScoreBy(BigDecimal matchWeight,
-            ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
         var hardImpact = scoreLevelWeight.multiply(matchWeight);
         inliner.hardScores[scoreLevel] = inliner.hardScores[scoreLevel].add(hardImpact);
         var scoreImpact = new SingleHardImpact(this, hardImpact);
@@ -49,7 +50,7 @@ final class BendableBigDecimalScoreContext
     }
 
     public ScoreImpact<BendableBigDecimalScore> changeScoreBy(BigDecimal matchWeight,
-            ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<BendableBigDecimalScore> constraintMatchSupplier) {
         var hardImpacts = new BigDecimal[hardScoreLevelCount];
         var softImpacts = new BigDecimal[softScoreLevelCount];
         for (var hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
@@ -67,8 +68,9 @@ final class BendableBigDecimalScoreContext
     }
 
     @NullMarked
-    private record SingleSoftImpact(BendableBigDecimalScoreContext ctx,
-            BigDecimal impact) implements ScoreImpact<BendableBigDecimalScore> {
+    private record SingleSoftImpact(BendableBigDecimalScoreContext ctx, BigDecimal impact)
+            implements
+                ScoreImpact<BendableBigDecimalScore> {
 
         @Override
         public void undo() {
@@ -84,8 +86,9 @@ final class BendableBigDecimalScoreContext
     }
 
     @NullMarked
-    private record SingleHardImpact(BendableBigDecimalScoreContext ctx,
-            BigDecimal impact) implements ScoreImpact<BendableBigDecimalScore> {
+    private record SingleHardImpact(BendableBigDecimalScoreContext ctx, BigDecimal impact)
+            implements
+                ScoreImpact<BendableBigDecimalScore> {
 
         @Override
         public void undo() {
@@ -101,8 +104,9 @@ final class BendableBigDecimalScoreContext
     }
 
     @NullMarked
-    private record ComplexImpact(BendableBigDecimalScoreContext ctx, BigDecimal[] hardImpacts,
-            BigDecimal[] softImpacts) implements ScoreImpact<BendableBigDecimalScore> {
+    private record ComplexImpact(BendableBigDecimalScoreContext ctx, BigDecimal[] hardImpacts, BigDecimal[] softImpacts)
+            implements
+                ScoreImpact<BendableBigDecimalScore> {
 
         @Override
         public void undo() {
@@ -125,12 +129,11 @@ final class BendableBigDecimalScoreContext
             if (this == o) {
                 return true;
             }
-            if (!(o instanceof ComplexImpact that)) {
+            if (!(o instanceof ComplexImpact(BendableBigDecimalScoreContext otherCtx, BigDecimal[] otherHardImpacts, BigDecimal[] otherSoftImpacts))) {
                 return false;
             }
-            return Objects.equals(ctx, that.ctx) &&
-                    Objects.deepEquals(hardImpacts, that.hardImpacts) &&
-                    Objects.deepEquals(softImpacts, that.softImpacts);
+            return Objects.equals(ctx, otherCtx) && Objects.deepEquals(hardImpacts, otherHardImpacts)
+                    && Objects.deepEquals(softImpacts, otherSoftImpacts);
         }
 
         @Override
@@ -144,8 +147,7 @@ final class BendableBigDecimalScoreContext
 
         @Override
         public String toString() {
-            return "Impact(hard: %s, soft: %s)"
-                    .formatted(Arrays.toString(hardImpacts), Arrays.toString(softImpacts));
+            return "Impact(hard: %s, soft: %s)".formatted(Arrays.toString(hardImpacts), Arrays.toString(softImpacts));
         }
 
     }

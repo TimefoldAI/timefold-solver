@@ -4,7 +4,9 @@ import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 final class SimpleScoreContext extends ScoreContext<SimpleScore, SimpleScoreInliner> {
 
     public SimpleScoreContext(SimpleScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
@@ -13,7 +15,7 @@ final class SimpleScoreContext extends ScoreContext<SimpleScore, SimpleScoreInli
     }
 
     public ScoreImpact<SimpleScore> changeScoreBy(long matchWeight,
-            ConstraintMatchSupplier<SimpleScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<SimpleScore> constraintMatchSupplier) {
         var impact = Math.multiplyExact(constraintWeight.score(), matchWeight);
         inliner.score = Math.addExact(inliner.score, impact);
         var scoreImpact = new Impact(inliner, impact);
@@ -21,7 +23,9 @@ final class SimpleScoreContext extends ScoreContext<SimpleScore, SimpleScoreInli
     }
 
     @NullMarked
-    private record Impact(SimpleScoreInliner inliner, long impact) implements ScoreImpact<SimpleScore> {
+    private record Impact(SimpleScoreInliner inliner, long impact)
+            implements
+                ScoreImpact<SimpleScore> {
 
         @Override
         public void undo() {

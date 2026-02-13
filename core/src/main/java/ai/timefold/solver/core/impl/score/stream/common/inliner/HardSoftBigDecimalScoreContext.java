@@ -6,7 +6,9 @@ import ai.timefold.solver.core.api.score.HardSoftBigDecimalScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 final class HardSoftBigDecimalScoreContext
         extends ScoreContext<HardSoftBigDecimalScore, HardSoftBigDecimalScoreInliner> {
 
@@ -16,7 +18,7 @@ final class HardSoftBigDecimalScoreContext
     }
 
     public ScoreImpact<HardSoftBigDecimalScore> changeSoftScoreBy(BigDecimal matchWeight,
-            ConstraintMatchSupplier<HardSoftBigDecimalScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<HardSoftBigDecimalScore> constraintMatchSupplier) {
         var softImpact = constraintWeight.softScore().multiply(matchWeight);
         inliner.softScore = inliner.softScore.add(softImpact);
         var scoreImpact = new SoftImpact(inliner, softImpact);
@@ -24,7 +26,7 @@ final class HardSoftBigDecimalScoreContext
     }
 
     public ScoreImpact<HardSoftBigDecimalScore> changeHardScoreBy(BigDecimal matchWeight,
-            ConstraintMatchSupplier<HardSoftBigDecimalScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<HardSoftBigDecimalScore> constraintMatchSupplier) {
         var hardImpact = constraintWeight.hardScore().multiply(matchWeight);
         inliner.hardScore = inliner.hardScore.add(hardImpact);
         var scoreImpact = new HardImpact(inliner, hardImpact);
@@ -32,7 +34,7 @@ final class HardSoftBigDecimalScoreContext
     }
 
     public ScoreImpact<HardSoftBigDecimalScore> changeScoreBy(BigDecimal matchWeight,
-            ConstraintMatchSupplier<HardSoftBigDecimalScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<HardSoftBigDecimalScore> constraintMatchSupplier) {
         var hardImpact = constraintWeight.hardScore().multiply(matchWeight);
         var softImpact = constraintWeight.softScore().multiply(matchWeight);
         inliner.hardScore = inliner.hardScore.add(hardImpact);
@@ -42,8 +44,9 @@ final class HardSoftBigDecimalScoreContext
     }
 
     @NullMarked
-    private record SoftImpact(HardSoftBigDecimalScoreInliner inliner,
-            BigDecimal impact) implements ScoreImpact<HardSoftBigDecimalScore> {
+    private record SoftImpact(HardSoftBigDecimalScoreInliner inliner, BigDecimal impact)
+            implements
+                ScoreImpact<HardSoftBigDecimalScore> {
 
         @Override
         public void undo() {
@@ -58,8 +61,9 @@ final class HardSoftBigDecimalScoreContext
     }
 
     @NullMarked
-    private record HardImpact(HardSoftBigDecimalScoreInliner inliner,
-            BigDecimal impact) implements ScoreImpact<HardSoftBigDecimalScore> {
+    private record HardImpact(HardSoftBigDecimalScoreInliner inliner, BigDecimal impact)
+            implements
+                ScoreImpact<HardSoftBigDecimalScore> {
 
         @Override
         public void undo() {
@@ -74,8 +78,9 @@ final class HardSoftBigDecimalScoreContext
     }
 
     @NullMarked
-    private record ComplexImpact(HardSoftBigDecimalScoreInliner inliner, BigDecimal hardImpact,
-            BigDecimal softImpact) implements ScoreImpact<HardSoftBigDecimalScore> {
+    private record ComplexImpact(HardSoftBigDecimalScoreInliner inliner, BigDecimal hardImpact, BigDecimal softImpact)
+            implements
+                ScoreImpact<HardSoftBigDecimalScore> {
 
         @Override
         public void undo() {

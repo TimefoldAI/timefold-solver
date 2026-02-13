@@ -31,7 +31,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
 
     private final ConstraintRef constraintRef;
     private final @Nullable ConstraintJustification justification;
-    private final List<Object> indictedObjectList;
+    private final List<@Nullable Object> indictedObjectList;
     private final Score_ score;
 
     /**
@@ -65,6 +65,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * <li>It may return null, if justification support was disabled altogether.</li>
      * </ul>
      */
+    @SuppressWarnings("unchecked")
     public <Justification_ extends ConstraintJustification> @Nullable Justification_ getJustification() {
         return (Justification_) justification;
     }
@@ -83,7 +84,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      *
      * @return may be empty or contain null
      */
-    public List<Object> getIndictedObjectList() {
+    public List<@Nullable Object> getIndictedObjectList() {
         return indictedObjectList;
     }
 

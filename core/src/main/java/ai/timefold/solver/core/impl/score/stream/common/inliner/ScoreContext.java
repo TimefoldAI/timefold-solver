@@ -1,8 +1,14 @@
 package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public abstract class ScoreContext<Score_ extends Score<Score_>, ScoreInliner_ extends AbstractScoreInliner<Score_>> {
 
     private final AbstractConstraint<?, ?, ?> constraint;
@@ -24,11 +30,11 @@ public abstract class ScoreContext<Score_ extends Score<Score_>, ScoreInliner_ e
     }
 
     protected final ScoreImpact<Score_> possiblyAddConstraintMatch(ScoreImpact<Score_> scoreImpact,
-            ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
         if (!inliner.constraintMatchPolicy.isEnabled()) {
             return scoreImpact;
         }
-        return inliner.addConstraintMatch(constraint, constraintMatchSupplier, scoreImpact);
+        return inliner.addConstraintMatch(constraint, Objects.requireNonNull(constraintMatchSupplier), scoreImpact);
     }
 
 }

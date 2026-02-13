@@ -321,7 +321,7 @@ public record BendableScore(long[] hardScores, long[] softScores) implements IBe
         return s.toString();
     }
 
-    public void validateCompatible(BendableScore other) {
+    private void validateCompatible(BendableScore other) {
         if (hardLevelsSize() != other.hardLevelsSize()) {
             throw new IllegalArgumentException("The score (" + this
                     + ") with hardScoreSize (" + hardLevelsSize()

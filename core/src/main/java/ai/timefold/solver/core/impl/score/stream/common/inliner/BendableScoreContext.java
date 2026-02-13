@@ -7,7 +7,9 @@ import ai.timefold.solver.core.api.score.BendableScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 final class BendableScoreContext extends ScoreContext<BendableScore, BendableScoreInliner> {
 
     private final int hardScoreLevelCount;
@@ -31,7 +33,7 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
     }
 
     public ScoreImpact<BendableScore> changeSoftScoreBy(long matchWeight,
-            ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
         var softImpact = Math.multiplyExact(scoreLevelWeight, matchWeight);
         inliner.softScores[scoreLevel] = Math.addExact(inliner.softScores[scoreLevel], softImpact);
         var scoreImpact = new SingleSoftImpact(this, softImpact);
@@ -39,7 +41,7 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
     }
 
     public ScoreImpact<BendableScore> changeHardScoreBy(long matchWeight,
-            ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
         var hardImpact = Math.multiplyExact(scoreLevelWeight, matchWeight);
         inliner.hardScores[scoreLevel] = Math.addExact(inliner.hardScores[scoreLevel], hardImpact);
         var scoreImpact = new SingleHardImpact(this, hardImpact);
@@ -47,7 +49,7 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
     }
 
     public ScoreImpact<BendableScore> changeScoreBy(long matchWeight,
-            ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<BendableScore> constraintMatchSupplier) {
         var hardImpacts = new long[hardScoreLevelCount];
         var softImpacts = new long[softScoreLevelCount];
         for (var hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
@@ -65,8 +67,9 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
     }
 
     @NullMarked
-    private record SingleSoftImpact(BendableScoreContext ctx,
-            long impact) implements ScoreImpact<BendableScore> {
+    private record SingleSoftImpact(BendableScoreContext ctx, long impact)
+            implements
+                ScoreImpact<BendableScore> {
 
         @Override
         public void undo() {
@@ -80,8 +83,9 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
     }
 
     @NullMarked
-    private record SingleHardImpact(BendableScoreContext ctx,
-            long impact) implements ScoreImpact<BendableScore> {
+    private record SingleHardImpact(BendableScoreContext ctx, long impact)
+            implements
+                ScoreImpact<BendableScore> {
 
         @Override
         public void undo() {
@@ -95,8 +99,9 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
     }
 
     @NullMarked
-    private record ComplexImpact(BendableScoreContext ctx, long[] hardImpacts,
-            long[] softImpacts) implements ScoreImpact<BendableScore> {
+    private record ComplexImpact(BendableScoreContext ctx, long[] hardImpacts, long[] softImpacts)
+            implements
+                ScoreImpact<BendableScore> {
 
         @Override
         public void undo() {
@@ -121,12 +126,11 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
             if (this == o) {
                 return true;
             }
-            if (!(o instanceof ComplexImpact that)) {
+            if (!(o instanceof ComplexImpact(BendableScoreContext otherCtx, long[] otherHardImpacts, long[] otherSoftImpacts))) {
                 return false;
             }
-            return Objects.equals(ctx, that.ctx) &&
-                    Objects.deepEquals(hardImpacts, that.hardImpacts) &&
-                    Objects.deepEquals(softImpacts, that.softImpacts);
+            return Objects.equals(ctx, otherCtx) && Objects.deepEquals(hardImpacts, otherHardImpacts)
+                    && Objects.deepEquals(softImpacts, otherSoftImpacts);
         }
 
         @Override
@@ -140,8 +144,7 @@ final class BendableScoreContext extends ScoreContext<BendableScore, BendableSco
 
         @Override
         public String toString() {
-            return "Impact(hard: %s, soft: %s)"
-                    .formatted(Arrays.toString(hardImpacts), Arrays.toString(softImpacts));
+            return "Impact(hard: %s, soft: %s)".formatted(Arrays.toString(hardImpacts), Arrays.toString(softImpacts));
         }
 
     }

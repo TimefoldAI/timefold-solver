@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -20,6 +20,7 @@ import org.jspecify.annotations.Nullable;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the {@link Score} type
  */
+@NullMarked
 public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score_ extends Score<Score_>>
         extends IncrementalScoreCalculator<Solution_, Score_> {
 
@@ -32,7 +33,7 @@ public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score
      * @param workingSolution to pass to {@link #resetWorkingSolution}.
      * @param constraintMatchEnabled true if {@link #getConstraintMatchTotals()} or {@link #getIndictmentMap()} might be called.
      */
-    void resetWorkingSolution(@NonNull Solution_ workingSolution, boolean constraintMatchEnabled);
+    void resetWorkingSolution(Solution_ workingSolution, boolean constraintMatchEnabled);
 
     /**
      * @return never null;
@@ -40,7 +41,6 @@ public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score
      *         it should still be present with a {@link ConstraintMatchTotal#getConstraintMatchSet()} size of 0.
      * @throws IllegalStateException if {@link #resetWorkingSolution}'s constraintMatchEnabled parameter was false
      */
-    @NonNull
     Collection<ConstraintMatchTotal<Score_>> getConstraintMatchTotals();
 
     /**

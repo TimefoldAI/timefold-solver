@@ -7,6 +7,9 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 final class HardSoftScoreInliner extends AbstractScoreInliner<HardSoftScore> {
 
     long hardScore;

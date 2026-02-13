@@ -4,7 +4,9 @@ import ai.timefold.solver.core.api.score.HardMediumSoftScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 final class HardMediumSoftScoreContext
         extends ScoreContext<HardMediumSoftScore, HardMediumSoftScoreInliner> {
 
@@ -14,7 +16,7 @@ final class HardMediumSoftScoreContext
     }
 
     public ScoreImpact<HardMediumSoftScore> changeSoftScoreBy(long matchWeight,
-            ConstraintMatchSupplier<HardMediumSoftScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<HardMediumSoftScore> constraintMatchSupplier) {
         var softImpact = Math.multiplyExact(constraintWeight.softScore(), matchWeight);
         inliner.softScore = Math.addExact(inliner.softScore, softImpact);
         var scoreImpact = new SoftImpact(inliner, softImpact);
@@ -22,7 +24,7 @@ final class HardMediumSoftScoreContext
     }
 
     public ScoreImpact<HardMediumSoftScore> changeMediumScoreBy(long matchWeight,
-            ConstraintMatchSupplier<HardMediumSoftScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<HardMediumSoftScore> constraintMatchSupplier) {
         var mediumImpact = Math.multiplyExact(constraintWeight.mediumScore(), matchWeight);
         inliner.mediumScore = Math.addExact(inliner.mediumScore, mediumImpact);
         var scoreImpact = new MediumImpact(inliner, mediumImpact);
@@ -30,7 +32,7 @@ final class HardMediumSoftScoreContext
     }
 
     public ScoreImpact<HardMediumSoftScore> changeHardScoreBy(long matchWeight,
-            ConstraintMatchSupplier<HardMediumSoftScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<HardMediumSoftScore> constraintMatchSupplier) {
         var hardImpact = Math.multiplyExact(constraintWeight.hardScore(), matchWeight);
         inliner.hardScore = Math.addExact(inliner.hardScore, hardImpact);
         var scoreImpact = new HardImpact(inliner, hardImpact);
@@ -38,7 +40,7 @@ final class HardMediumSoftScoreContext
     }
 
     public ScoreImpact<HardMediumSoftScore> changeScoreBy(long matchWeight,
-            ConstraintMatchSupplier<HardMediumSoftScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<HardMediumSoftScore> constraintMatchSupplier) {
         var hardImpact = Math.multiplyExact(constraintWeight.hardScore(), matchWeight);
         var mediumImpact = Math.multiplyExact(constraintWeight.mediumScore(), matchWeight);
         var softImpact = Math.multiplyExact(constraintWeight.softScore(), matchWeight);
@@ -50,8 +52,9 @@ final class HardMediumSoftScoreContext
     }
 
     @NullMarked
-    private record SoftImpact(HardMediumSoftScoreInliner inliner,
-            long softImpact) implements ScoreImpact<HardMediumSoftScore> {
+    private record SoftImpact(HardMediumSoftScoreInliner inliner, long softImpact)
+            implements
+                ScoreImpact<HardMediumSoftScore> {
 
         @Override
         public void undo() {
@@ -66,8 +69,9 @@ final class HardMediumSoftScoreContext
     }
 
     @NullMarked
-    private record MediumImpact(HardMediumSoftScoreInliner inliner,
-            long mediumImpact) implements ScoreImpact<HardMediumSoftScore> {
+    private record MediumImpact(HardMediumSoftScoreInliner inliner, long mediumImpact)
+            implements
+                ScoreImpact<HardMediumSoftScore> {
 
         @Override
         public void undo() {
@@ -82,8 +86,9 @@ final class HardMediumSoftScoreContext
     }
 
     @NullMarked
-    private record HardImpact(HardMediumSoftScoreInliner inliner,
-            long hardImpact) implements ScoreImpact<HardMediumSoftScore> {
+    private record HardImpact(HardMediumSoftScoreInliner inliner, long hardImpact)
+            implements
+                ScoreImpact<HardMediumSoftScore> {
 
         @Override
         public void undo() {
@@ -98,8 +103,9 @@ final class HardMediumSoftScoreContext
     }
 
     @NullMarked
-    private record ComplexImpact(HardMediumSoftScoreInliner inliner, long hardImpact, long mediumImpact,
-            long softImpact) implements ScoreImpact<HardMediumSoftScore> {
+    private record ComplexImpact(HardMediumSoftScoreInliner inliner, long hardImpact, long mediumImpact, long softImpact)
+            implements
+                ScoreImpact<HardMediumSoftScore> {
 
         @Override
         public void undo() {

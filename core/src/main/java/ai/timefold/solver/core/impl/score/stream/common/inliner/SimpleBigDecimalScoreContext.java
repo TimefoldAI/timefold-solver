@@ -6,7 +6,9 @@ import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalScore, SimpleBigDecimalScoreInliner> {
 
     public SimpleBigDecimalScoreContext(SimpleBigDecimalScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
@@ -15,7 +17,7 @@ final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalSc
     }
 
     public ScoreImpact<SimpleBigDecimalScore> changeScoreBy(BigDecimal matchWeight,
-            ConstraintMatchSupplier<SimpleBigDecimalScore> constraintMatchSupplier) {
+            @Nullable ConstraintMatchSupplier<SimpleBigDecimalScore> constraintMatchSupplier) {
         var impact = constraintWeight.score().multiply(matchWeight);
         inliner.score = inliner.score.add(impact);
         var scoreImpact = new Impact(inliner, impact);
@@ -23,8 +25,9 @@ final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalSc
     }
 
     @NullMarked
-    private record Impact(SimpleBigDecimalScoreInliner inliner,
-            BigDecimal impact) implements ScoreImpact<SimpleBigDecimalScore> {
+    private record Impact(SimpleBigDecimalScoreInliner inliner, BigDecimal impact)
+            implements
+                ScoreImpact<SimpleBigDecimalScore> {
 
         @Override
         public void undo() {

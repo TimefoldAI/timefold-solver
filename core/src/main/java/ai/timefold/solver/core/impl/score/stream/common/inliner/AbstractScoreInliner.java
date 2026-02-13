@@ -28,12 +28,16 @@ import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Keeps track of the working score and constraint matches for a single constraint session.
  * Every time constraint weights change, a new instance needs to be created.
  *
  * @param <Score_>
  */
+@NullMarked
 public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -67,8 +71,8 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
     protected final ConstraintMatchPolicy constraintMatchPolicy;
     protected final Map<Constraint, Score_> constraintWeightMap;
     private final Map<Constraint, ElementAwareLinkedList<ConstraintMatchCarrier<Score_>>> constraintMatchMap;
-    private Map<String, ConstraintMatchTotal<Score_>> constraintIdToConstraintMatchTotalMap = null;
-    private Map<Object, Indictment<Score_>> indictmentMap = null;
+    private @Nullable Map<String, ConstraintMatchTotal<Score_>> constraintIdToConstraintMatchTotalMap = null;
+    private @Nullable Map<Object, Indictment<Score_>> indictmentMap = null;
 
     protected AbstractScoreInliner(Map<Constraint, Score_> constraintWeightMap, ConstraintMatchPolicy constraintMatchPolicy) {
         this.constraintMatchPolicy = constraintMatchPolicy;

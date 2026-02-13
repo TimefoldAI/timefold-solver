@@ -348,7 +348,7 @@ public record BendableBigDecimalScore(BigDecimal[] hardScores,
         return s.toString();
     }
 
-    public void validateCompatible(BendableBigDecimalScore other) {
+    private void validateCompatible(BendableBigDecimalScore other) {
         if (hardLevelsSize() != other.hardLevelsSize()) {
             throw new IllegalArgumentException("The score (" + this
                     + ") with hardScoreSize (" + hardLevelsSize()

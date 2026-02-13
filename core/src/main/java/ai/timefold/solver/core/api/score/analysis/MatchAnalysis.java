@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Note: Users should never create instances of this type directly.
@@ -16,8 +16,9 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <Score_>
  */
-public record MatchAnalysis<Score_ extends Score<Score_>>(@NonNull ConstraintRef constraintRef, @NonNull Score_ score,
-        @NonNull ConstraintJustification justification) implements Comparable<MatchAnalysis<Score_>> {
+@NullMarked
+public record MatchAnalysis<Score_ extends Score<Score_>>(ConstraintRef constraintRef, Score_ score,
+        ConstraintJustification justification) implements Comparable<MatchAnalysis<Score_>> {
 
     public MatchAnalysis {
         Objects.requireNonNull(constraintRef);
