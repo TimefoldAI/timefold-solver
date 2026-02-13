@@ -56,14 +56,10 @@ updates: # uses the default branch by default
     commit-message:
       prefix: "deps: "
     labels: ["dependencies"] # Don't use any other labels.
-    groups:
-      # Everything else can be grouped together to minimize the number of PRs.
-      # If any dependency ever breaks our code, it will be ungrouped.
-      regular:
-        update-types:
-          - "patch"
-        patterns:
-          - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
   - package-ecosystem: "github-actions"
     target-branch: "1.x"
     directory: "/"
