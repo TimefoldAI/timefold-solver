@@ -20,7 +20,7 @@
         <cacheType>PHASE</cacheType>
         <selectionOrder>SORTED</selectionOrder>
         <filterClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyEntityFilter</filterClass>
-        <sorterManner>DECREASING_DIFFICULTY</sorterManner>
+        <sorterManner>DESCENDING</sorterManner>
       </entitySelector>
       <cartesianProductMoveSelector>
         <changeMoveSelector>
@@ -29,7 +29,7 @@
             <downcastEntityClass>ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedChildEntity</downcastEntityClass>
             <cacheType>PHASE</cacheType>
             <selectionOrder>SORTED</selectionOrder>
-            <sorterManner>INCREASING_STRENGTH</sorterManner>
+            <sorterManner>ASCENDING</sorterManner>
           </valueSelector>
         </changeMoveSelector>
         <changeMoveSelector>
@@ -39,7 +39,7 @@
             <cacheType>PHASE</cacheType>
             <selectionOrder>SORTED</selectionOrder>
             <filterClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyValueFilter</filterClass>
-            <sorterManner>INCREASING_STRENGTH</sorterManner>
+            <sorterManner>ASCENDING</sorterManner>
           </valueSelector>
         </changeMoveSelector>
       </cartesianProductMoveSelector>

@@ -49,14 +49,7 @@ public final class TerminationFactory<Solution_> {
     @SuppressWarnings("unchecked")
     public <Score_ extends Score<Score_>> @Nullable Termination<Solution_> buildTermination(
             HeuristicConfigPolicy<Solution_> configPolicy) {
-        List<Termination<Solution_>> terminationList = new ArrayList<>();
-        if (terminationConfig.getTerminationClass() != null) {
-            Termination<Solution_> termination =
-                    ConfigUtils.newInstance(terminationConfig, "terminationClass", terminationConfig.getTerminationClass());
-            terminationList.add(termination);
-        }
-
-        terminationList.addAll(buildTimeBasedTermination(configPolicy));
+        List<Termination<Solution_>> terminationList = new ArrayList<>(buildTimeBasedTermination(configPolicy));
 
         if (terminationConfig.getBestScoreLimit() != null) {
             ScoreDefinition<Score_> scoreDefinition = configPolicy.getScoreDefinition();
@@ -164,7 +157,7 @@ public final class TerminationFactory<Solution_> {
     @Nullable
     Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList) {
         if (terminationList.size() == 1) {
-            return terminationList.get(0);
+            return terminationList.getFirst();
         }
         var terminationArray = terminationList.toArray(new Termination[0]);
         var compositionStyle =

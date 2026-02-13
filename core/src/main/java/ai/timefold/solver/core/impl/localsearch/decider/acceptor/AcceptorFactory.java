@@ -133,36 +133,13 @@ public class AcceptorFactory<Solution_> {
 
     private Optional<ValueTabuAcceptor<Solution_>> buildValueTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.VALUE_TABU)
-                || acceptorConfig.getValueTabuSize() != null || acceptorConfig.getValueTabuRatio() != null
-                || acceptorConfig.getFadingValueTabuSize() != null || acceptorConfig.getFadingValueTabuRatio() != null) {
+                || acceptorConfig.getValueTabuSize() != null || acceptorConfig.getFadingValueTabuSize() != null) {
             var acceptor = new ValueTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
             if (acceptorConfig.getValueTabuSize() != null) {
-                if (acceptorConfig.getValueTabuRatio() != null) {
-                    throw new IllegalArgumentException("The acceptor cannot have both acceptorConfig.getValueTabuSize() ("
-                            + acceptorConfig.getValueTabuSize() + ") and acceptorConfig.getValueTabuRatio() ("
-                            + acceptorConfig.getValueTabuRatio() + ").");
-                }
                 acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getValueTabuSize()));
-            } else if (acceptorConfig.getValueTabuRatio() != null) {
-                /*
-                 * Although the strategy was implemented, it always threw UnsupportedOperationException.
-                 * Therefore the strategy was removed and exception thrown here directly.
-                 */
-                throw new UnsupportedOperationException();
             }
             if (acceptorConfig.getFadingValueTabuSize() != null) {
-                if (acceptorConfig.getFadingValueTabuRatio() != null) {
-                    throw new IllegalArgumentException("The acceptor cannot have both acceptorConfig.getFadingValueTabuSize() ("
-                            + acceptorConfig.getFadingValueTabuSize() + ") and acceptorConfig.getFadingValueTabuRatio() ("
-                            + acceptorConfig.getFadingValueTabuRatio() + ").");
-                }
                 acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getFadingValueTabuSize()));
-            } else if (acceptorConfig.getFadingValueTabuRatio() != null) {
-                /*
-                 * Although the strategy was implemented, it always threw UnsupportedOperationException.
-                 * Therefore the strategy was removed and exception thrown here directly.
-                 */
-                throw new UnsupportedOperationException();
             }
 
             if (acceptorConfig.getValueTabuSize() != null) {

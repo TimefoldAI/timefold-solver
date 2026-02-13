@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.solver;
 
-import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY;
-import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
@@ -1233,8 +1231,8 @@ class DefaultSolverTest {
     private static List<Pair<EntitySorterManner, ValueSorterManner>> getSortMannerList() {
         var sortMannerList = new ArrayList<Pair<EntitySorterManner, ValueSorterManner>>();
         for (var valueSortManner : ValueSorterManner.values()) {
-            sortMannerList.add(new Pair<>(DECREASING_DIFFICULTY, valueSortManner));
-            sortMannerList.add(new Pair<>(DECREASING_DIFFICULTY_IF_AVAILABLE, valueSortManner));
+            sortMannerList.add(new Pair<>(EntitySorterManner.DESCENDING, valueSortManner));
+            sortMannerList.add(new Pair<>(EntitySorterManner.DESCENDING_IF_AVAILABLE, valueSortManner));
         }
         return sortMannerList;
     }

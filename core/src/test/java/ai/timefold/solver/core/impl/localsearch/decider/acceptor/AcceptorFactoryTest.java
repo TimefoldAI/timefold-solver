@@ -41,7 +41,6 @@ class AcceptorFactoryTest {
                 .withFadingEntityTabuSize(1)
                 .withMoveTabuSize(1)
                 .withFadingMoveTabuSize(1)
-                .withUndoMoveTabuSize(1) // Has no effect anymore.
                 .withValueTabuSize(1)
                 .withFadingValueTabuSize(1)
                 .withLateAcceptanceSize(10)
