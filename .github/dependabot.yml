@@ -1,5 +1,5 @@
 version: 2
-updates:
+updates: # uses the default branch by default
   - package-ecosystem: maven
     directory: "/"
     schedule:
@@ -36,6 +36,40 @@ updates:
       interval: weekly
       day: "monday"
       time: "01:00" # Otherwise it picks a random time.
+    open-pull-requests-limit: 99
+    commit-message:
+      prefix: "deps: "
+    labels: ["dependencies"] # Don't use any other labels.
+    groups:
+      # Everything can be grouped together to minimize the number of PRs.
+      # If any dependency ever breaks our code, it will be ungrouped.
+      regular:
+        patterns:
+          - "*"
+  - package-ecosystem: maven
+    target-branch: "1.x"
+    directory: "/"
+    schedule:
+      interval: "cron"
+      cronjob: "0 1 * * 1#1" # First Monday of the month
+    open-pull-requests-limit: 99
+    commit-message:
+      prefix: "deps: "
+    labels: ["dependencies"] # Don't use any other labels.
+    groups:
+      # Everything else can be grouped together to minimize the number of PRs.
+      # If any dependency ever breaks our code, it will be ungrouped.
+      regular:
+        update-types:
+          - "patch"
+        patterns:
+          - "*"
+  - package-ecosystem: "github-actions"
+    target-branch: "1.x"
+    directory: "/"
+    schedule:
+      interval: "cron"
+      cronjob: "0 1 * * 1#1" # First Monday of the month
     open-pull-requests-limit: 99
     commit-message:
       prefix: "deps: "
