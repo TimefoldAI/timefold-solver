@@ -8,9 +8,9 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import java.util.Comparator;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
@@ -70,11 +70,11 @@ class ValueRangeManagerTest {
         // The value range manager will add the null value
         // 2 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(3);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
     }
 
@@ -99,11 +99,11 @@ class ValueRangeManagerTest {
         // valueRange1 [v1, v2] -> 2 distinct values
         // valueRange2 [v3, v4] -> 2 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(5);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(5);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
     }
 
@@ -128,11 +128,11 @@ class ValueRangeManagerTest {
         // The value range manager will not add the null value
         // 2 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(2);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
     }
 
@@ -158,11 +158,11 @@ class ValueRangeManagerTest {
         // valueRange1 [v0, v1] -> 2 distinct values
         // valueRange2 [v2, v3] -> 2 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(4);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
     }
 
@@ -189,22 +189,22 @@ class ValueRangeManagerTest {
         // The value range manager will add the null value
         // Two entities: e1(v1, v2) and e2(v1, v3) -> 3 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(4);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
 
         // The value range manager will add the null value
         // e1(v1, v2) -> 2 distinct values
         var entity = solution.getEntityList().get(0);
         assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
-        var entityValueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        var entityValueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
         assertThat(entityValueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
+        var otherEntityValueRange = (ValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
     }
 
@@ -235,22 +235,22 @@ class ValueRangeManagerTest {
         // e2([v1, v3], [v1, v5]) -> 3 distinct values
         // The composite range returns all distinct values from both ranges -> 6 values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(6);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(6);
 
         // Fetching from the descriptor does include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(5);
 
         // The value range manager will add the null value
         // e1([v1, v2], [v1, v3]) -> 4 distinct values
         var entity = solution.getEntityList().get(0);
         assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(4);
-        var entityValueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        var entityValueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
         assertThat(entityValueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
+        var otherEntityValueRange = (ValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(3);
     }
 
@@ -280,22 +280,22 @@ class ValueRangeManagerTest {
         // The value range manager will add the null value
         // Two entities: e1(v1, v2) and e2(v1, v3) -> 3 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(3);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
 
         // The value range manager will add the null value
         // e1(v1, v2) -> 2 distinct values
         var entity = solution.getEntityList().get(0);
         assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(2);
-        var entityValueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        var entityValueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
         assertThat(entityValueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
+        var otherEntityValueRange = (ValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
     }
 
@@ -325,11 +325,11 @@ class ValueRangeManagerTest {
         // e2([v1, v3], [v1, v5]) -> 3 distinct values
         // The composite range returns all distinct values from both ranges -> 5 values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(5);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(5);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(5);
 
         // The value range manager will not add the null value
@@ -337,11 +337,11 @@ class ValueRangeManagerTest {
         // The composite range returns all distinct values from both ranges -> 3 values
         var entity = solution.getEntityList().get(0);
         assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
-        var entityValueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        var entityValueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
         assertThat(entityValueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
+        var otherEntityValueRange = (ValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(3);
     }
 
@@ -371,11 +371,11 @@ class ValueRangeManagerTest {
         // The value range manager will not add the null value because it is a list variable
         // 2 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(2);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
     }
 
@@ -400,11 +400,11 @@ class ValueRangeManagerTest {
         // valueRange1 [v1, v2] -> 2 distinct values
         // valueRange2 [v3, v4] -> 2 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(4);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
     }
 
@@ -431,11 +431,11 @@ class ValueRangeManagerTest {
         // The value range manager will not add the null value
         // 2 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(2);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
     }
 
@@ -462,11 +462,11 @@ class ValueRangeManagerTest {
         // valueRange1 [v0, v1] -> 2 distinct values
         // valueRange2 [v2, v3] -> 2 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(4);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
     }
 
@@ -491,22 +491,22 @@ class ValueRangeManagerTest {
         // The value range manager will not add the null value because it is a list variable
         // Two entities: e1(v1, v2) and e2(v1, v3) -> 3 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(3);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
 
         // The value range manager will not add the null value because it is a list variable
         // e1(v1, v2) -> 2 distinct values
         var entity = solution.getEntityList().get(0);
         assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(2);
-        var entityValueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        var entityValueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
         assertThat(entityValueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
+        var otherEntityValueRange = (ValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
     }
 
@@ -536,11 +536,11 @@ class ValueRangeManagerTest {
         // e2([v1, v4], [v1, v5]) -> 3 distinct values
         // The composite range returns all distinct values -> 5 values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(5);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(5);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(5);
 
         // The value range manager will not add the null value because it is a list variable
@@ -548,11 +548,11 @@ class ValueRangeManagerTest {
         // The composite range returns all distinct values from both ranges -> 3 values
         var entity = solution.getEntityList().get(0);
         assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
-        var entityValueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        var entityValueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
         assertThat(entityValueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
+        var otherEntityValueRange = (ValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(3);
     }
 
@@ -582,22 +582,22 @@ class ValueRangeManagerTest {
         // The value range manager will not add the null value because it is a list variable
         // Two entities: e1(v1, v2) and e2(v1, v3) -> 3 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(3);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value because it is a list variable
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
 
         // The value range manager will not add the null value because it is a list variable
         // e1(v1, v2) -> 2 distinct values
         var entity = solution.getEntityList().get(0);
         assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(2);
-        var entityValueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        var entityValueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
         assertThat(entityValueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
+        var otherEntityValueRange = (ValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
     }
 
@@ -627,11 +627,11 @@ class ValueRangeManagerTest {
         // e2([v1, v4], [v1, v5]) -> 3 distinct values
         // The composite range returns all distinct values from both ranges -> 5 values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(5);
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertThat(valueRange.getSize()).isEqualTo(5);
 
         // Fetching from the descriptor does not include the null value because it is a list variable
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
+        var otherValueRange = (ValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(5);
 
         // The value range manager will add the null value because it is a list variable
@@ -639,11 +639,11 @@ class ValueRangeManagerTest {
         // The composite range returns all distinct values from both ranges -> 3 values
         var entity = solution.getEntityList().get(0);
         assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
-        var entityValueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        var entityValueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
         assertThat(entityValueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
+        var otherEntityValueRange = (ValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(3);
     }
 
@@ -935,14 +935,14 @@ class ValueRangeManagerTest {
         var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
 
         var valueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0));
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0));
         assertNonNullCodesOfIterator(valueRange.createOriginalIterator(),
                 solution.getValueList().stream().map(TestdataAllowsUnassignedValuesListValue::getCode).toArray(String[]::new));
         var otherValueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1));
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1));
         assertThat(valueRange).isSameAs(otherValueRange);
         var yetAnotherValueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2));
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2));
         assertThat(yetAnotherValueRange).isSameAs(otherValueRange);
     }
 
@@ -962,16 +962,16 @@ class ValueRangeManagerTest {
 
         // Entity 0 and Entity 1
         var valueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0));
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0));
         assertNonNullCodesOfIterator(valueRange.createOriginalIterator(),
                 solution.getValueList().stream().map(TestdataListEntityProvidingValue::getCode).toArray(String[]::new));
         var otherValueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1));
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1));
         assertThat(valueRange).isSameAs(otherValueRange);
 
         // Entity 2
         var yetAnotherValueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2));
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2));
         assertThat(yetAnotherValueRange).isNotSameAs(otherValueRange);
 
         // Sorting data
@@ -987,26 +987,25 @@ class ValueRangeManagerTest {
     }
 
     private <Solution_> void assertSolutionValueRangeSortingOrder(Solution_ solution,
-            ValueRangeDescriptor<Solution_> valueRangeDescriptor,
-            List<String> allValues) {
+            AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor, List<String> allValues) {
         var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
         var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
 
         // Default order
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertNonNullCodesOfIterator(valueRange.createOriginalIterator(), allValues.toArray(String[]::new));
 
         // Desc comparator
         SelectionSorter<Solution_, TestdataObject> sorterComparator =
                 new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
         var sortedValueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution, sorterComparator);
+                (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution, sorterComparator);
         assertReversedNonNullCodesOfIterator(sortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
         assertThat(valueRange).isNotSameAs(sortedValueRange);
 
         // Asc comparator
         // Default order is still desc
-        var otherValueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
+        var otherValueRange = (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
         assertReversedNonNullCodesOfIterator(otherValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
         assertThat(otherValueRange).isSameAs(sortedValueRange);
 
@@ -1015,39 +1014,38 @@ class ValueRangeManagerTest {
                 new ComparatorFactorySelectionSorter<>(sol -> Comparator.comparing(TestdataObject::getCode),
                         SelectionSorterOrder.ASCENDING);
         var otherSortedValueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution,
+                (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution,
                         sorterComparatorFactory);
         assertNonNullCodesOfIterator(otherSortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
         assertThat(otherSortedValueRange).isNotSameAs(otherValueRange);
 
         // Using the same sorter
         var anotherSortedValueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution,
+                (ValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution,
                         sorterComparatorFactory);
         assertThat(otherSortedValueRange).isSameAs(anotherSortedValueRange);
     }
 
     private <Solution_, Entity_> void assertEntityValueRangeSortingOrder(Solution_ solution, Entity_ entity,
-            ValueRangeDescriptor<Solution_> valueRangeDescriptor,
-            List<String> allValues) {
+            AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor, List<String> allValues) {
         var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
         var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
 
         // Default order
-        var valueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        var valueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
         assertNonNullCodesOfIterator(valueRange.createOriginalIterator(), allValues.toArray(String[]::new));
 
         // Desc comparator
         SelectionSorter<Solution_, TestdataObject> sorterComparator =
                 new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
         var sortedValueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity, sorterComparator);
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity, sorterComparator);
         assertReversedNonNullCodesOfIterator(sortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
         assertThat(valueRange).isNotSameAs(sortedValueRange);
 
         // Asc comparator
         // Default order is still desc
-        var otherValueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        var otherValueRange = (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
         assertReversedNonNullCodesOfIterator(otherValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
         assertThat(otherValueRange).isSameAs(sortedValueRange);
 
@@ -1056,14 +1054,14 @@ class ValueRangeManagerTest {
                 new ComparatorFactorySelectionSorter<>(sol -> Comparator.comparing(TestdataObject::getCode),
                         SelectionSorterOrder.ASCENDING);
         var otherSortedValueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity,
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity,
                         sorterComparatorFactory);
         assertNonNullCodesOfIterator(otherSortedValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
         assertThat(otherSortedValueRange).isNotSameAs(otherValueRange);
 
         // Using the same sorter
         var anotherSortedValueRange =
-                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity,
+                (ValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity,
                         sorterComparatorFactory);
         assertThat(otherSortedValueRange).isSameAs(anotherSortedValueRange);
     }

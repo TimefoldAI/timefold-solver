@@ -545,11 +545,6 @@ Shows the best score per problem scale for each solver configuration.
 
 Useful for visualizing the scalability of each solver configuration.
 
-[NOTE]
-====
-The problem scale will report `0` if any `@ValueRangeProvider` method signature returns ValueRange (instead of `CountableValueRange` or ``Collection``).
-====
-
 
 [#benchmarkReportBestScoreDistributionSummary]
 === Best score distribution summary (graph)

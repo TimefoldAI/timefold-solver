@@ -72,11 +72,6 @@ public class ProbabilityMoveSelector<Solution_> extends AbstractMoveSelector<Sol
     }
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return true;
     }

@@ -38,7 +38,6 @@ class SubListChangeMoveSelectorFactoryTest {
                 .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
                         false);
 
-        assertThat(selector.isCountable()).isTrue();
         assertThat(selector.isNeverEnding()).isTrue();
         assertThat(selector.isSelectReversingMoveToo()).isTrue();
     }
@@ -54,7 +53,6 @@ class SubListChangeMoveSelectorFactoryTest {
                 .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
                         false);
 
-        assertThat(selector.isCountable()).isTrue();
         assertThat(selector.isNeverEnding()).isTrue();
         assertThat(selector.isSelectReversingMoveToo()).isTrue();
     }

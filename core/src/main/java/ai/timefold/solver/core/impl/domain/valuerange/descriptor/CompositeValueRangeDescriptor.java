@@ -5,10 +5,8 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.CompositeCountableValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble.DoubleValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.AbstractValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.CompositeValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
 import org.jspecify.annotations.NullMarked;
@@ -20,33 +18,17 @@ import org.jspecify.annotations.NullMarked;
 public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRangeDescriptor<Solution_> {
 
     private final boolean canExtractValueRangeFromSolution;
-    private final List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList;
-    private final boolean isGenericTypeImmutable;
+    private final List<AbstractValueRangeDescriptor<Solution_>> childValueRangeDescriptorList;
 
     public CompositeValueRangeDescriptor(int ordinal, GenuineVariableDescriptor<Solution_> variableDescriptor,
-            List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList) {
+            List<AbstractValueRangeDescriptor<Solution_>> childValueRangeDescriptorList) {
         super(ordinal, variableDescriptor);
         this.childValueRangeDescriptorList = childValueRangeDescriptorList;
         var canExtractFromSolution = true;
-        var isImmutable = true;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            if (!valueRangeDescriptor.isCountable()) {
-                throw new IllegalStateException("""
-                        The valueRange (%s) has a childValueRange (%s) which is not countable.
-                        Maybe replace %s with %s?"""
-                        .formatted(this, valueRangeDescriptor, DoubleValueRange.class.getSimpleName(),
-                                BigDecimalValueRange.class.getSimpleName()));
-            }
             canExtractFromSolution = canExtractFromSolution && valueRangeDescriptor.canExtractValueRangeFromSolution();
-            isImmutable = isImmutable && valueRangeDescriptor.isGenericTypeImmutable();
         }
         this.canExtractValueRangeFromSolution = canExtractFromSolution;
-        this.isGenericTypeImmutable = isImmutable;
-    }
-
-    @Override
-    public boolean isGenericTypeImmutable() {
-        return isGenericTypeImmutable;
     }
 
     public int getValueRangeCount() {
@@ -59,27 +41,22 @@ public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValu
     }
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public <T> ValueRange<T> extractAllValues(Solution_ solution) {
-        var childValueRangeList = new ArrayList<AbstractCountableValueRange<T>>(childValueRangeDescriptorList.size());
+        var childValueRangeList = new ArrayList<AbstractValueRange<T>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            childValueRangeList.add((AbstractCountableValueRange<T>) valueRangeDescriptor.<T> extractAllValues(solution));
+            childValueRangeList.add((AbstractValueRange<T>) valueRangeDescriptor.<T> extractAllValues(solution));
         }
-        return new CompositeCountableValueRange<>(childValueRangeList);
+        return new CompositeValueRange<>(childValueRangeList);
     }
 
     @Override
     public <T> ValueRange<T> extractValuesFromEntity(Solution_ solution, Object entity) {
-        var childValueRangeList = new ArrayList<AbstractCountableValueRange<T>>(childValueRangeDescriptorList.size());
+        var childValueRangeList = new ArrayList<AbstractValueRange<T>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             childValueRangeList
-                    .add((AbstractCountableValueRange<T>) valueRangeDescriptor.<T> extractValuesFromEntity(solution, entity));
+                    .add((AbstractValueRange<T>) valueRangeDescriptor.<T> extractValuesFromEntity(solution, entity));
         }
-        return new CompositeCountableValueRange<>(childValueRangeList);
+        return new CompositeValueRange<>(childValueRangeList);
     }
 
 }

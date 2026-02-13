@@ -114,11 +114,6 @@ public final class DefaultPillarSelector<Solution_> extends AbstractSelector<Sol
     // ************************************************************************
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public boolean isNeverEnding() {
         // CachedListRandomIterator is neverEnding
         return randomSelection;

@@ -54,11 +54,6 @@ public class PillarSwapMoveSelector<Solution_> extends GenericMoveSelector<Solut
     // ************************************************************************
 
     @Override
-    public boolean isCountable() {
-        return leftPillarSelector.isCountable() && rightPillarSelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return randomSelection || leftPillarSelector.isNeverEnding() || rightPillarSelector.isNeverEnding();
     }

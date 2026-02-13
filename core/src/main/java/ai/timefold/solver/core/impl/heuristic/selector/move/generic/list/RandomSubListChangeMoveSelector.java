@@ -35,11 +35,6 @@ public class RandomSubListChangeMoveSelector<Solution_> extends GenericMoveSelec
     }
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return true;
     }

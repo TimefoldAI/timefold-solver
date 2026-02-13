@@ -77,11 +77,6 @@ public abstract class AbstractCachingEntitySelector<Solution_>
     }
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public long getSize() {
         return cachedEntityList.size();
     }

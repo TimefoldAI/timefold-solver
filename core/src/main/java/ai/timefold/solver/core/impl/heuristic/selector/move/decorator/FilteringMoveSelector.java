@@ -58,11 +58,6 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
     }
 
     @Override
-    public boolean isCountable() {
-        return childMoveSelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return childMoveSelector.isNeverEnding();
     }

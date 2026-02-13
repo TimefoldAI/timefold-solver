@@ -7,7 +7,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
@@ -56,23 +56,23 @@ public class TestdataAnonymousValueRangeSolution extends TestdataObject {
     // ************************************************************************
 
     @ValueRangeProvider
-    public CountableValueRange<Integer> createIntValueRange() {
+    public ValueRange<Integer> createIntValueRange() {
         return ValueRangeFactory.createIntValueRange(0, 3);
     }
 
     @ValueRangeProvider
-    public CountableValueRange<Long> createLongValueRange() {
+    public ValueRange<Long> createLongValueRange() {
         return ValueRangeFactory.createLongValueRange(1_000L, 1_003L);
     }
 
     @ValueRangeProvider
-    public CountableValueRange<BigInteger> createBigIntegerValueRange() {
+    public ValueRange<BigInteger> createBigIntegerValueRange() {
         return ValueRangeFactory.createBigIntegerValueRange(
                 BigInteger.valueOf(1_000_000L), BigInteger.valueOf(1_000_003L));
     }
 
     @ValueRangeProvider
-    public CountableValueRange<BigDecimal> createBigDecimalValueRange() {
+    public ValueRange<BigDecimal> createBigDecimalValueRange() {
         return ValueRangeFactory.createBigDecimalValueRange(new BigDecimal("0.00"), new BigDecimal("0.03"));
     }
 

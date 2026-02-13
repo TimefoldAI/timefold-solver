@@ -20,12 +20,6 @@ public interface ValueMimicRecorder<Solution_> {
     GenuineVariableDescriptor<Solution_> getVariableDescriptor();
 
     /**
-     * @return As defined by {@link ValueSelector#isCountable()}
-     * @see ValueSelector#isCountable()
-     */
-    boolean isCountable();
-
-    /**
      * @return As defined by {@link ValueSelector#isNeverEnding()}
      * @see ValueSelector#isNeverEnding()
      */

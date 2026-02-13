@@ -4,8 +4,8 @@ import java.util.Iterator;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
@@ -21,14 +21,14 @@ public final class FromEntityPropertyValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
         implements ValueSelector<Solution_> {
 
-    private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
+    private final AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor;
     private final SelectionSorter<Solution_, Object> selectionSorter;
     private final boolean randomSelection;
 
-    private CountableValueRange<Object> countableValueRange;
+    private ValueRange<Object> cachedValueRange;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
 
-    public FromEntityPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+    public FromEntityPropertyValueSelector(AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor,
             SelectionSorter<Solution_, Object> selectionSorter, boolean randomSelection) {
         this.valueRangeDescriptor = valueRangeDescriptor;
         this.selectionSorter = selectionSorter;
@@ -43,14 +43,14 @@ public final class FromEntityPropertyValueSelector<Solution_>
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         this.scoreDirector = phaseScope.getScoreDirector();
-        this.countableValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor, selectionSorter);
+        this.cachedValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor, selectionSorter);
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
         this.scoreDirector = null;
-        this.countableValueRange = null;
+        this.cachedValueRange = null;
     }
 
     // ************************************************************************
@@ -68,13 +68,8 @@ public final class FromEntityPropertyValueSelector<Solution_>
     }
 
     @Override
-    public boolean isCountable() {
-        return valueRangeDescriptor.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
-        return randomSelection || !isCountable();
+        return randomSelection;
     }
 
     @Override
@@ -82,7 +77,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
         if (entity == null) {
             // When the entity is null, the size of the complete list of values is returned
             // This logic aligns with the requirements for Nearby in the enterprise repository
-            return Objects.requireNonNull(countableValueRange).getSize();
+            return Objects.requireNonNull(cachedValueRange).getSize();
         } else {
             return scoreDirector.getValueRangeManager().countOnEntity(valueRangeDescriptor, entity);
         }
@@ -103,7 +98,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
         if (entity == null) {
             // When the entity is null, the complete list of values is returned
             // This logic aligns with the requirements for Nearby in the enterprise repository
-            return countableValueRange.createOriginalIterator();
+            return cachedValueRange.createOriginalIterator();
         } else {
             var valueRange = scoreDirector.getValueRangeManager().getFromEntity(valueRangeDescriptor, entity, selectionSorter);
             return valueRange.createOriginalIterator();

@@ -110,8 +110,6 @@ class MimicReplayingValueSelectorTest {
         // Duplicated call
         assertThat(replayingIterator).isExhausted();
 
-        assertThat(recordingValueSelector.isCountable()).isTrue();
-        assertThat(replayingValueSelector.isCountable()).isTrue();
         assertThat(recordingValueSelector.isNeverEnding()).isFalse();
         assertThat(replayingValueSelector.isNeverEnding()).isFalse();
         assertThat(recordingValueSelector.getSize()).isEqualTo(3L);

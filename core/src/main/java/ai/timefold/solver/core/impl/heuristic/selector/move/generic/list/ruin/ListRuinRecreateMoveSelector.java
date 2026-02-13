@@ -60,11 +60,6 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     }
 
     @Override
-    public boolean isCountable() {
-        return valueSelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return valueSelector.isNeverEnding();
     }

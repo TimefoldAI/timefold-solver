@@ -1,0 +1,89 @@
+package ai.timefold.solver.core.impl.domain.valuerange;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.random.RandomGenerator;
+
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Special range for empty value ranges.
+ */
+@NullMarked
+public final class EmptyValueRange<T> extends AbstractValueRange<T> {
+
+    private static final EmptyValueRange<Object> INSTANCE = new EmptyValueRange<>();
+
+    @SuppressWarnings("unchecked")
+    public static <T> EmptyValueRange<T> instance() {
+        return (EmptyValueRange<T>) INSTANCE;
+    }
+
+    private EmptyValueRange() {
+        // Intentionally empty
+    }
+
+    @Override
+    public long getSize() {
+        return 0;
+    }
+
+    @Override
+    public @Nullable T get(long index) {
+        throw new UnsupportedOperationException();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Iterator<T> createOriginalIterator() {
+        return (Iterator<T>) EmptyIterator.INSTANCE;
+    }
+
+    @Override
+    public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
+        // Sorting operation ignored
+        return this;
+    }
+
+    @Override
+    public boolean contains(@Nullable T value) {
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Iterator<T> createRandomIterator(RandomGenerator workingRandom) {
+        return (Iterator<T>) EmptyIterator.INSTANCE;
+    }
+
+    @Override
+    public int hashCode() {
+        return 0; // All instances are equal.
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof EmptyValueRange<?>;
+    }
+
+    private static final class EmptyIterator<T> implements Iterator<T> {
+
+        private static final EmptyIterator<Object> INSTANCE = new EmptyIterator<>();
+
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public T next() {
+            throw new NoSuchElementException();
+        }
+
+    }
+
+}

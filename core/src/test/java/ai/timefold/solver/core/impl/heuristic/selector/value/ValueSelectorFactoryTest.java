@@ -18,8 +18,8 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
@@ -254,7 +254,7 @@ class ValueSelectorFactoryTest {
         EntityDescriptor entityDescriptor = mock(EntityDescriptor.class);
         GenuineVariableDescriptor variableDescriptor = mock(GenuineVariableDescriptor.class);
         when(entityDescriptor.getGenuineVariableDescriptorList()).thenReturn(List.of(variableDescriptor));
-        ValueRangeDescriptor valueRangeDescriptor = mock(FromEntityPropertyValueRangeDescriptor.class);
+        AbstractValueRangeDescriptor valueRangeDescriptor = mock(FromEntityPropertyValueRangeDescriptor.class);
         when(variableDescriptor.getValueRangeDescriptor()).thenReturn(valueRangeDescriptor);
         when(valueRangeDescriptor.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(valueRangeDescriptor.canExtractValueRangeFromSolution()).thenReturn(canExtractValueRangeFromSolution);
@@ -403,11 +403,6 @@ class ValueSelectorFactoryTest {
 
         @Override
         public Iterator<Object> iterator() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean isCountable() {
             throw new UnsupportedOperationException();
         }
 

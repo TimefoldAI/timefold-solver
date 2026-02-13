@@ -71,7 +71,6 @@ public class SelectorTestUtils {
             when(entitySelector.listIterator(index)).thenAnswer(invocation -> entityList.listIterator(index));
         }
         when(entitySelector.endingIterator()).thenAnswer(invocation -> entityList.iterator());
-        when(entitySelector.isCountable()).thenReturn(true);
         when(entitySelector.isNeverEnding()).thenReturn(false);
         when(entitySelector.getSize()).thenReturn((long) entityList.size());
         return entitySelector;
@@ -89,7 +88,6 @@ public class SelectorTestUtils {
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         final List<Object> valueList = Arrays.asList(values);
         when(valueSelector.iterator(any())).thenAnswer(invocation -> valueList.iterator());
-        when(valueSelector.isCountable()).thenReturn(true);
         when(valueSelector.isNeverEnding()).thenReturn(false);
         when(valueSelector.getSize(any())).thenReturn((long) valueList.size());
         return valueSelector;
@@ -118,7 +116,6 @@ public class SelectorTestUtils {
             when(valueSelector.iterator(entity)).thenAnswer(invocation -> valueList.iterator());
             when(valueSelector.getSize(entity)).thenReturn((long) valueList.size());
         }
-        when(valueSelector.isCountable()).thenReturn(true);
         when(valueSelector.isNeverEnding()).thenReturn(false);
         return valueSelector;
     }
@@ -139,7 +136,6 @@ public class SelectorTestUtils {
         when(valueSelector.endingIterator(any())).thenAnswer(invocation -> valueList.iterator());
         when(valueSelector.iterator()).thenAnswer(invocation -> valueList.iterator());
         when(valueSelector.spliterator()).thenAnswer(invocation -> valueList.spliterator());
-        when(valueSelector.isCountable()).thenReturn(true);
         when(valueSelector.isNeverEnding()).thenReturn(false);
         when(valueSelector.getSize(any())).thenReturn((long) valueList.size());
         when(valueSelector.getSize()).thenReturn((long) valueList.size());
@@ -186,7 +182,6 @@ public class SelectorTestUtils {
         final List<Move<Solution_>> moveList = Arrays.asList(moves);
         when(moveSelector.iterator()).thenAnswer(invocation -> moveList.iterator());
         when(moveSelector.spliterator()).thenAnswer(invocation -> moveList.spliterator());
-        when(moveSelector.isCountable()).thenReturn(true);
         when(moveSelector.isNeverEnding()).thenReturn(false);
         when(moveSelector.getCacheType()).thenReturn(SelectionCacheType.JUST_IN_TIME);
         when(moveSelector.getSize()).thenReturn((long) moveList.size());

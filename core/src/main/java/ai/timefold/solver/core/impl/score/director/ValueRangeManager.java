@@ -4,13 +4,13 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
@@ -35,7 +35,7 @@ import org.jspecify.annotations.Nullable;
  * failing to follow this rule will result in score corruptions as the cached value ranges reference
  * objects from the original working solution pre-clone.
  *
- * @see CountableValueRange
+ * @see ValueRange
  * @see ValueRangeProvider
  */
 @NullMarked
@@ -113,7 +113,7 @@ public final class ValueRangeManager<Solution_> {
     }
 
     private <Entity_, Value_> ValueRangeState<Solution_, Entity_, Value_>
-            fromDescriptor(ValueRangeDescriptor<Solution_> descriptor) {
+            fromDescriptor(AbstractValueRangeDescriptor<Solution_> descriptor) {
         if (multipleValueRangeState == null) {
             // Null array means there are only one variable range descriptor
             if (singleValueRangeState == null) {
@@ -131,67 +131,65 @@ public final class ValueRangeManager<Solution_> {
     }
 
     /**
-     * As {@link #getFromSolution(ValueRangeDescriptor, Object)}, but the solution is taken from the cached working solution.
+     * As defined by {@link #getFromSolution(AbstractValueRangeDescriptor, Object)},
+     * but the solution is taken from the cached working solution.
      * This requires {@link #reset(Object)} to be called before the first call to this method,
      * and therefore this method will throw an exception if called before the score director is instantiated.
      *
      * @throws IllegalStateException if called before {@link #reset(Object)} is called
      */
-    public <Value_> CountableValueRange<Value_> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+    public <Value_> ValueRange<Value_> getFromSolution(AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor) {
         if (cachedWorkingSolution == null) {
-            throw new IllegalStateException(
-                    "Impossible state: value range (%s) requested before the working solution is known."
-                            .formatted(valueRangeDescriptor));
+            throw new IllegalStateException("Impossible state: value range (%s) requested before the working solution is known."
+                    .formatted(valueRangeDescriptor));
         }
         return getFromSolution(valueRangeDescriptor, cachedWorkingSolution);
     }
 
-    public <Value_> CountableValueRange<Value_> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+    public <Value_> ValueRange<Value_> getFromSolution(AbstractValueRangeDescriptor<Solution_> abstractValueRangeDescriptor,
             @Nullable SelectionSorter<Solution_, Value_> sorter) {
         if (cachedWorkingSolution == null) {
-            throw new IllegalStateException(
-                    "Impossible state: value range (%s) requested before the working solution is known."
-                            .formatted(valueRangeDescriptor));
+            throw new IllegalStateException("Impossible state: value range (%s) requested before the working solution is known."
+                    .formatted(abstractValueRangeDescriptor));
         }
-        return getFromSolution(valueRangeDescriptor, cachedWorkingSolution, sorter);
+        return getFromSolution(abstractValueRangeDescriptor, cachedWorkingSolution, sorter);
     }
 
-    public <Value_> CountableValueRange<Value_> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+    public <Value_> ValueRange<Value_> getFromSolution(AbstractValueRangeDescriptor<Solution_> abstractValueRangeDescriptor,
             Solution_ solution) {
-        return getFromSolution(valueRangeDescriptor, solution, null);
+        return getFromSolution(abstractValueRangeDescriptor, solution, null);
     }
 
-    public <Value_> CountableValueRange<Value_> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
-            Solution_ solution,
-            @Nullable SelectionSorter<Solution_, Value_> sorter) {
-        ValueRangeState<Solution_, ?, Value_> descriptor = fromDescriptor(valueRangeDescriptor);
+    public <Value_> ValueRange<Value_> getFromSolution(AbstractValueRangeDescriptor<Solution_> abstractValueRangeDescriptor,
+            Solution_ solution, @Nullable SelectionSorter<Solution_, Value_> sorter) {
+        ValueRangeState<Solution_, ?, Value_> descriptor = fromDescriptor(abstractValueRangeDescriptor);
         return descriptor.getFromSolution(solution, sorter);
     }
 
     /**
      * @throws IllegalStateException if called before {@link #reset(Object)} is called
      */
-    public <Entity_, Value_> CountableValueRange<Value_> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
-            Entity_ entity) {
-        return getFromEntity(valueRangeDescriptor, entity, null);
+    public <Entity_, Value_> ValueRange<Value_>
+            getFromEntity(AbstractValueRangeDescriptor<Solution_> abstractValueRangeDescriptor, Entity_ entity) {
+        return getFromEntity(abstractValueRangeDescriptor, entity, null);
     }
 
     /**
      * @throws IllegalStateException if called before {@link #reset(Object)} is called
      */
-    public <Entity_, Value_> CountableValueRange<Value_> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
-            Entity_ entity,
+    public <Entity_, Value_> ValueRange<Value_> getFromEntity(
+            AbstractValueRangeDescriptor<Solution_> abstractValueRangeDescriptor, Entity_ entity,
             @Nullable SelectionSorter<Solution_, Value_> sorter) {
-        ValueRangeState<Solution_, Entity_, Value_> descriptor = fromDescriptor(valueRangeDescriptor);
+        ValueRangeState<Solution_, Entity_, Value_> descriptor = fromDescriptor(abstractValueRangeDescriptor);
         return descriptor.getFromEntity(entity, getInitializationStatistics().genuineEntityCount(), sorter);
     }
 
-    public long countOnSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ solution) {
-        return getFromSolution(valueRangeDescriptor, solution).getSize();
+    public long countOnSolution(AbstractValueRangeDescriptor<Solution_> abstractValueRangeDescriptor, Solution_ solution) {
+        return getFromSolution(abstractValueRangeDescriptor, solution).getSize();
     }
 
-    public <Entity_> long countOnEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Entity_ entity) {
-        return getFromEntity(valueRangeDescriptor, entity).getSize();
+    public <Entity_> long countOnEntity(AbstractValueRangeDescriptor<Solution_> abstractValueRangeDescriptor, Entity_ entity) {
+        return getFromEntity(abstractValueRangeDescriptor, entity).getSize();
     }
 
     public <Entity_, Value_> ReachableValues<Entity_, Value_>
@@ -200,8 +198,7 @@ public final class ValueRangeManager<Solution_> {
     }
 
     public <Entity_, Value_> ReachableValues<Entity_, Value_> getReachableValues(
-            GenuineVariableDescriptor<Solution_> variableDescriptor,
-            @Nullable SelectionSorter<Solution_, Value_> sorter) {
+            GenuineVariableDescriptor<Solution_> variableDescriptor, @Nullable SelectionSorter<Solution_, Value_> sorter) {
         ValueRangeState<Solution_, Entity_, Value_> descriptor = fromDescriptor(variableDescriptor.getValueRangeDescriptor());
         return descriptor.getReachableValues(variableDescriptor, sorter);
     }

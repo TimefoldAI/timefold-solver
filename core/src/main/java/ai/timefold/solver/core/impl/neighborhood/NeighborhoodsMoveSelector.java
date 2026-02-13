@@ -24,11 +24,6 @@ public final class NeighborhoodsMoveSelector<Solution_> extends AbstractMoveSele
     }
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return moveRepository.isNeverEnding();
     }

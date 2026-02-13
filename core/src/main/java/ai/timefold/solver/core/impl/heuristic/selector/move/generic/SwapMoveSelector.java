@@ -61,11 +61,6 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
     // ************************************************************************
 
     @Override
-    public boolean isCountable() {
-        return leftEntitySelector.isCountable() && rightEntitySelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return randomSelection || leftEntitySelector.isNeverEnding() || rightEntitySelector.isNeverEnding();
     }

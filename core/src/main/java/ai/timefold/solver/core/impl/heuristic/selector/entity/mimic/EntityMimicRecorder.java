@@ -19,12 +19,6 @@ public interface EntityMimicRecorder<Solution_> {
     EntityDescriptor<Solution_> getEntityDescriptor();
 
     /**
-     * @return As defined by {@link EntitySelector#isCountable()}
-     * @see EntitySelector#isCountable()
-     */
-    boolean isCountable();
-
-    /**
      * @return As defined by {@link EntitySelector#isNeverEnding()}
      * @see EntitySelector#isNeverEnding()
      */

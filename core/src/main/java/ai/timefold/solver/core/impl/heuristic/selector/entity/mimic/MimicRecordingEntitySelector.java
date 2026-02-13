@@ -41,11 +41,6 @@ public final class MimicRecordingEntitySelector<Solution_>
     }
 
     @Override
-    public boolean isCountable() {
-        return childEntitySelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return childEntitySelector.isNeverEnding();
     }

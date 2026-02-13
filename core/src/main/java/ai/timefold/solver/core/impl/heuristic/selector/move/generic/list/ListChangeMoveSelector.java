@@ -95,11 +95,6 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     }
 
     @Override
-    public boolean isCountable() {
-        return sourceValueSelector.isCountable() && destinationSelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return randomSelection || sourceValueSelector.isNeverEnding() || destinationSelector.isNeverEnding();
     }

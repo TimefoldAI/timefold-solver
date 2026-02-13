@@ -16,7 +16,7 @@ import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelecto
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
@@ -112,7 +112,6 @@ public final class TestdataListUtils {
         var fromEntityValueSelector = mock(FromEntityPropertyValueSelector.class);
         doReturn(childMoveSelector.iterator()).when(fromEntityValueSelector).iterator(any());
         doReturn(childMoveSelector.getVariableDescriptor()).when(fromEntityValueSelector).getVariableDescriptor();
-        doReturn(childMoveSelector.isCountable()).when(fromEntityValueSelector).isCountable();
         return new IterableFromEntityPropertyValueSelector(fromEntityValueSelector, randomSelection);
     }
 
@@ -216,16 +215,9 @@ public final class TestdataListUtils {
         return mockNeverEndingDestinationSelector(locationsInList.length, locationsInList);
     }
 
-    public static DestinationSelector<TestdataListUnassignedEntityProvidingSolution>
-            mockAllowsUnassignedValuesEntityRangeNeverEndingDestinationSelector(
-                    ElementPosition... locationsInList) {
-        return mockNeverEndingDestinationSelector(locationsInList.length, locationsInList);
-    }
-
     public static <Solution_> DestinationSelector<Solution_> mockNeverEndingDestinationSelector(long size,
             ElementPosition... locationsInList) {
         var destinationSelector = mock(DestinationSelector.class);
-        when(destinationSelector.isCountable()).thenReturn(true);
         when(destinationSelector.isNeverEnding()).thenReturn(true);
         when(destinationSelector.getSize()).thenReturn(size);
         when(destinationSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(locationsInList)));
@@ -236,7 +228,6 @@ public final class TestdataListUtils {
             mockDestinationSelector(ElementPosition... locationsInList) {
         DestinationSelector<Solution_> destinationSelector = mock(DestinationSelector.class);
         var refList = Arrays.asList(locationsInList);
-        when(destinationSelector.isCountable()).thenReturn(true);
         when(destinationSelector.isNeverEnding()).thenReturn(false);
         when(destinationSelector.getSize()).thenReturn((long) refList.size());
         when(destinationSelector.iterator()).thenAnswer(invocation -> refList.iterator());
@@ -313,15 +304,14 @@ public final class TestdataListUtils {
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static <T> IterableFromEntityPropertyValueSelector<T>
-            getIterableFromEntityPropertyValueSelector(ValueRangeDescriptor<T> valueRangeDescriptor, boolean randomSelection) {
+    public static <T> IterableFromEntityPropertyValueSelector<T> getIterableFromEntityPropertyValueSelector(
+            AbstractValueRangeDescriptor<T> valueRangeDescriptor, boolean randomSelection) {
         var fromPropertySelector = new FromEntityPropertyValueSelector<>(valueRangeDescriptor, null, randomSelection);
         return new IterableFromEntityPropertyValueSelector<>(fromPropertySelector, randomSelection);
     }
 
-    public static <T> MimicRecordingValueSelector<T>
-            getMimicRecordingIterableValueSelector(ValueRangeDescriptor<T> valueRangeDescriptor,
-                    boolean randomSelection) {
+    public static <T> MimicRecordingValueSelector<T> getMimicRecordingIterableValueSelector(
+            AbstractValueRangeDescriptor<T> valueRangeDescriptor, boolean randomSelection) {
         var valueSelector = getIterableFromEntityPropertyValueSelector(valueRangeDescriptor, randomSelection);
         return new MimicRecordingValueSelector<>(valueSelector);
     }

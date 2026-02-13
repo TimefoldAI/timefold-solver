@@ -41,11 +41,6 @@ public class ManualEntityMimicRecorder<Solution_> implements EntityMimicRecorder
     }
 
     @Override
-    public boolean isCountable() {
-        return sourceEntitySelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return sourceEntitySelector.isNeverEnding();
     }

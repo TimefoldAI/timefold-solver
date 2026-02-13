@@ -22,5 +22,7 @@
 - [ ] ai.timefold.solver.jaxb.api.score.buildin.* -> ai.timefold.solver.jaxb.api.score
 - [ ] Bendable constructors now long[] instead of int[].
 - [ ] penalizeLong/rewardLong/impactLong are no more.
+- [ ] Value ranges and move selectors (not public API) no longer have isCountable().
+- [ ] The solver now implicitly trusts equals() on objects, such as entities and values.
 
-- Remove this file when done.
+Remove this file when done.

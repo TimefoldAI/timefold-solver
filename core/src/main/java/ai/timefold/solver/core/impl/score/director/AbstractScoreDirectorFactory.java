@@ -4,6 +4,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -111,11 +112,11 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
         }
     }
 
-    public void validateEntity(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public EntityDescriptor<Solution_> validateEntity(ScoreDirector<Solution_> scoreDirector, Object entity) {
         if (listVariableDescriptor == null) { // Only basic variables.
             var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isMovable(scoreDirector.getWorkingSolution(), entity)) {
-                return;
+                return entityDescriptor;
             }
             for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
                 var basicVariableDescriptor = (BasicVariableDescriptor<Solution_>) variableDescriptor;
@@ -129,7 +130,9 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
                                     .formatted(entity, basicVariableDescriptor.getVariableName()));
                 }
             }
+            return entityDescriptor;
         }
+        return listVariableDescriptor.getEntityDescriptor();
     }
 
 }

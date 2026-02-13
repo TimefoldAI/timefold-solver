@@ -32,10 +32,10 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.CompositeValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPropertyValueRangeDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.score.definition.BendableBigDecimalScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.BendableScoreDefinition;
@@ -83,7 +83,7 @@ public class DescriptorPolicy {
 
     public <Solution_> CompositeValueRangeDescriptor<Solution_> buildCompositeValueRangeDescriptor(
             GenuineVariableDescriptor<Solution_> variableDescriptor,
-            List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList) {
+            List<AbstractValueRangeDescriptor<Solution_>> childValueRangeDescriptorList) {
         return new CompositeValueRangeDescriptor<>(valueRangeDescriptorCount++, variableDescriptor,
                 childValueRangeDescriptorList);
     }

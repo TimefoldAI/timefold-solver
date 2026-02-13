@@ -1,11 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.composite;
 
-import java.util.Collection;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 
@@ -28,20 +24,9 @@ public abstract class CompositeMoveSelector<Solution_> extends AbstractMoveSelec
         if (!randomSelection) {
             // Only the last childMoveSelector can be neverEnding
             if (!childMoveSelectorList.isEmpty()) {
-                for (MoveSelector<Solution_> childMoveSelector : childMoveSelectorList.subList(0,
-                        childMoveSelectorList.size() - 1)) {
+                for (MoveSelector<Solution_> childMoveSelector : childMoveSelectorList.subList(0, childMoveSelectorList.size() - 1)) {
                     if (childMoveSelector.isNeverEnding()) {
-                        throw new IllegalStateException("The selector (" + this
-                                + ")'s non-last childMoveSelector (" + childMoveSelector
-                                + ") has neverEnding (" + childMoveSelector.isNeverEnding()
-                                + ") with randomSelection (" + randomSelection + ")."
-                                + (childMoveSelector.isCountable() ? ""
-                                        : "\nThe selector is not countable, check the "
-                                                + ValueRange.class.getSimpleName() + "s involved.\n"
-                                                + "Verify that a @" + ValueRangeProvider.class.getSimpleName()
-                                                + " does not return " + ValueRange.class.getSimpleName()
-                                                + " when it can return " + CountableValueRange.class.getSimpleName()
-                                                + " or " + Collection.class.getSimpleName() + "."));
+                        throw new IllegalStateException("The selector (%s)'s non-last childMoveSelector (%s) has neverEnding (%s) with randomSelection (%s).".formatted(this, childMoveSelector, childMoveSelector.isNeverEnding(), randomSelection));
                     }
                 }
             }
@@ -60,16 +45,6 @@ public abstract class CompositeMoveSelector<Solution_> extends AbstractMoveSelec
     // ************************************************************************
     // Worker methods
     // ************************************************************************
-
-    @Override
-    public boolean isCountable() {
-        for (MoveSelector<Solution_> moveSelector : childMoveSelectorList) {
-            if (!moveSelector.isCountable()) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     @Override
     public String toString() {

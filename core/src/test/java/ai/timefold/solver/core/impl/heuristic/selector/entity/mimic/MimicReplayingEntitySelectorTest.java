@@ -108,8 +108,6 @@ class MimicReplayingEntitySelectorTest {
         // Duplicated call
         assertThat(replayingIterator).isExhausted();
 
-        assertThat(recordingEntitySelector.isCountable()).isTrue();
-        assertThat(replayingEntitySelector.isCountable()).isTrue();
         assertThat(recordingEntitySelector.isNeverEnding()).isFalse();
         assertThat(replayingEntitySelector.isNeverEnding()).isFalse();
         assertThat(recordingEntitySelector.getSize()).isEqualTo(3L);

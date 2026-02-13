@@ -64,11 +64,6 @@ public class MoveListFactoryToMoveSelectorBridge<Solution_> extends AbstractMove
     }
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public boolean isNeverEnding() {
         // CachedListRandomIterator is neverEnding
         return randomSelection;

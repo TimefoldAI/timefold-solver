@@ -56,11 +56,6 @@ public class MimicReplayingSubListSelector<Solution_> extends AbstractSelector<S
     }
 
     @Override
-    public boolean isCountable() {
-        return subListMimicRecorder.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return subListMimicRecorder.isNeverEnding();
     }

@@ -41,11 +41,6 @@ public class ManualValueMimicRecorder<Solution_> implements ValueMimicRecorder<S
     }
 
     @Override
-    public boolean isCountable() {
-        return sourceValueSelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return sourceValueSelector.isNeverEnding();
     }

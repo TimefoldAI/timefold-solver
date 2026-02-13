@@ -153,11 +153,6 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     }
 
     @Override
-    public boolean isCountable() {
-        return nonReplayingValueSelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return nonReplayingValueSelector.isNeverEnding();
     }
