@@ -50,7 +50,8 @@ updates: # uses the default branch by default
     target-branch: "1.x"
     directory: "/"
     schedule:
-      cron: "0 1 * * 1#1" # First Monday of the month
+      interval: "cron"
+      cronjob: "0 1 * * 1#1" # First Monday of the month
     open-pull-requests-limit: 99
     commit-message:
       prefix: "deps: "
@@ -67,7 +68,8 @@ updates: # uses the default branch by default
     target-branch: "1.x"
     directory: "/"
     schedule:
-      cron: "0 1 * * 1#1" # First Monday of the month
+      interval: "cron"
+      cronjob: "0 1 * * 1#1" # First Monday of the month
     open-pull-requests-limit: 99
     commit-message:
       prefix: "deps: "
