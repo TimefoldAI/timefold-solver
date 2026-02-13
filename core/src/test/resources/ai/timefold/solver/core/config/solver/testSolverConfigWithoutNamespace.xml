@@ -121,7 +121,6 @@
       <breakTieRandomly>true</breakTieRandomly>
     </forager>
   </localSearch>
-  <noChangePhase/>
   <partitionedSearch>
     <solutionPartitionerClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummySolutionPartitioner</solutionPartitionerClass>
     <solutionPartitionerCustomProperties>

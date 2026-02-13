@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.solver.change.ProblemChangeAdapter;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
@@ -22,7 +22,7 @@ public final class BasicPlumbingTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final boolean daemon;
-    private final BlockingQueue<ProblemChangeAdapter<Solution_>> problemChangeQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<ProblemChange<Solution_>> problemChangeQueue = new LinkedBlockingQueue<>();
 
     private boolean terminatedEarly = false;
     private boolean problemChangesBeingProcessed = false;
@@ -88,13 +88,13 @@ public final class BasicPlumbingTermination<Solution_>
      * @param problemChangeList never null
      * @return as specified by {@link Collection#add}
      */
-    public synchronized boolean addProblemChanges(List<ProblemChangeAdapter<Solution_>> problemChangeList) {
+    public synchronized boolean addProblemChanges(List<ProblemChange<Solution_>> problemChangeList) {
         boolean added = problemChangeQueue.addAll(problemChangeList);
         notifyAll();
         return added;
     }
 
-    public synchronized BlockingQueue<ProblemChangeAdapter<Solution_>> startProblemChangesProcessing() {
+    public synchronized BlockingQueue<ProblemChange<Solution_>> startProblemChangesProcessing() {
         problemChangesBeingProcessed = true;
         return problemChangeQueue;
     }

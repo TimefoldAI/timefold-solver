@@ -8,7 +8,6 @@ import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityP
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
-import ai.timefold.solver.core.config.phase.NoChangePhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -34,8 +33,6 @@ public interface PhaseFactory<Solution_> {
             return new DefaultCustomPhaseFactory<>((CustomPhaseConfig) phaseConfig);
         } else if (ExhaustiveSearchPhaseConfig.class.isAssignableFrom(phaseConfig.getClass())) {
             return new DefaultExhaustiveSearchPhaseFactory<>((ExhaustiveSearchPhaseConfig) phaseConfig);
-        } else if (NoChangePhaseConfig.class.isAssignableFrom(phaseConfig.getClass())) {
-            return new NoChangePhaseFactory<>((NoChangePhaseConfig) phaseConfig);
         } else {
             throw new IllegalArgumentException(String.format("Unknown %s type: (%s).",
                     PhaseConfig.class.getSimpleName(), phaseConfig.getClass().getName()));

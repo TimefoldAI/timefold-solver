@@ -529,17 +529,6 @@
     ]
   },
   {
-    "name": "ai.timefold.solver.core.config.phase.NoChangePhaseConfig",
-    "allDeclaredFields": true,
-    "queryAllDeclaredMethods": true,
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
     "name": "ai.timefold.solver.core.config.phase.PhaseConfig",
     "allDeclaredFields": true,
     "queryAllDeclaredMethods": true,

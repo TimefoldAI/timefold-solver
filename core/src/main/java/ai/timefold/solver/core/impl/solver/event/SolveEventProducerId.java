@@ -13,15 +13,6 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public enum SolveEventProducerId implements EventProducerId {
-    /**
-     * The cause is unknown. This is the {@link EventProducerId}
-     * used when one of the deprecated {@link BestSolutionChangedEvent}
-     * constructors are used.
-     * 
-     * @deprecated Only used when Users manually construct instances of {@link BestSolutionChangedEvent}.
-     */
-    @Deprecated(forRemoval = true, since = "1.28.0")
-    UNKNOWN("Unknown"),
 
     /**
      * The solver was started with an initialized solution.
@@ -29,7 +20,7 @@ public enum SolveEventProducerId implements EventProducerId {
     SOLVING_STARTED("Solving started"),
 
     /**
-     * One or more problem changes occured that change the best solution.
+     * One or more problem changes occurred that change the best solution.
      */
     PROBLEM_CHANGE("Problem change");
 
