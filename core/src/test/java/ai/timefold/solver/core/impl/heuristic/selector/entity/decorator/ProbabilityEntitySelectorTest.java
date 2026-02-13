@@ -67,7 +67,6 @@ class ProbabilityEntitySelectorTest {
         AbstractStepScope stepScopeA1 = PlannerTestUtils.delegatingStepScope(phaseScopeA);
         entitySelector.stepStarted(stepScopeA1);
 
-        assertThat(entitySelector.isCountable()).isTrue();
         assertThat(entitySelector.isNeverEnding()).isTrue();
         assertThat(entitySelector.getSize()).isEqualTo(4L);
         Iterator<Object> iterator = entitySelector.iterator();
@@ -89,13 +88,6 @@ class ProbabilityEntitySelectorTest {
 
         verifyPhaseLifecycle(childEntitySelector, 1, 1, 1);
         verify(childEntitySelector, times(1)).iterator();
-    }
-
-    @Test
-    void isCountable() {
-        EntitySelector childEntitySelector = SelectorTestUtils.mockEntitySelector(TestdataEntity.class);
-        EntitySelector entitySelector = new ProbabilityEntitySelector(childEntitySelector, SelectionCacheType.STEP, null);
-        assertThat(entitySelector.isCountable()).isTrue();
     }
 
     @Test

@@ -48,11 +48,6 @@ public class MoveIteratorFactoryToMoveSelectorBridge<Solution_> extends Abstract
     }
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return randomSelection;
     }

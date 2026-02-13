@@ -48,11 +48,6 @@ final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solu
     }
 
     @Override
-    public boolean isCountable() {
-        return entitySelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return entitySelector.isNeverEnding();
     }

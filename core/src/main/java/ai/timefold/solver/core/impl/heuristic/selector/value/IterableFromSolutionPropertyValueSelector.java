@@ -3,11 +3,9 @@ package ai.timefold.solver.core.impl.heuristic.selector.value;
 import java.util.Iterator;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
@@ -21,7 +19,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
         implements IterableValueSelector<Solution_> {
 
-    private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
+    private final AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor;
     private final SelectionSorter<Solution_, Object> selectionSorter;
     private final SelectionCacheType minimumCacheType;
     private final boolean randomSelection;
@@ -31,7 +29,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
     private Long cachedEntityListRevision = null;
     private boolean cachedEntityListIsDirty = false;
 
-    public IterableFromSolutionPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+    public IterableFromSolutionPropertyValueSelector(AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor,
             SelectionSorter<Solution_, Object> selectionSorter, SelectionCacheType minimumCacheType, boolean randomSelection) {
         this.valueRangeDescriptor = valueRangeDescriptor;
         this.selectionSorter = selectionSorter;
@@ -104,13 +102,8 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
     // ************************************************************************
 
     @Override
-    public boolean isCountable() {
-        return valueRangeDescriptor.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
-        return randomSelection || !isCountable();
+        return randomSelection;
     }
 
     @Override
@@ -120,7 +113,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
 
     @Override
     public long getSize() {
-        return ((CountableValueRange<?>) cachedValueRange).getSize();
+        return cachedValueRange.getSize();
     }
 
     @Override
@@ -134,14 +127,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
         if (randomSelection) {
             return cachedValueRange.createRandomIterator(workingRandom);
         }
-        if (cachedValueRange instanceof CountableValueRange<Object> range) {
-            return range.createOriginalIterator();
-        }
-        throw new IllegalStateException("Value range's class (" + cachedValueRange.getClass().getCanonicalName() + ") " +
-                "does not implement " + CountableValueRange.class + ", " +
-                "yet selectionOrder is not " + SelectionOrder.RANDOM + ".\n" +
-                "Maybe switch selectors' selectionOrder to " + SelectionOrder.RANDOM + "?\n" +
-                "Maybe switch selectors' cacheType to " + SelectionCacheType.JUST_IN_TIME + "?");
+        return cachedValueRange.createOriginalIterator();
     }
 
     @Override
@@ -150,7 +136,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
     }
 
     public Iterator<Object> endingIterator() {
-        return ((CountableValueRange<Object>) cachedValueRange).createOriginalIterator();
+        return cachedValueRange.createOriginalIterator();
     }
 
     private void checkCachedEntityListIsDirty() {

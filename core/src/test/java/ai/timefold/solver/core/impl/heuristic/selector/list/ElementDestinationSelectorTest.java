@@ -331,7 +331,7 @@ class ElementDestinationSelectorTest {
 
         var solution = new TestdataPinnedUnassignedValuesListSolution();
         solution.setEntityList(List.of(a, b, c, d));
-        solution.setValueList(List.of(v1, v2, v3, v3, v4, v5, v6, unassignedValue));
+        solution.setValueList(List.of(v1, v2, v3, v4, v5, v6, unassignedValue));
         SolutionManager.updateShadowVariables(solution);
 
         var random = new TestRandom(

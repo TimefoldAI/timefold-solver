@@ -162,11 +162,6 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     }
 
     @Override
-    public boolean isCountable() {
-        return entitySelector.isCountable() && valueSelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return randomSelection || entitySelector.isNeverEnding() || valueSelector.isNeverEnding();
     }

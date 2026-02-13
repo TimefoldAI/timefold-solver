@@ -68,12 +68,6 @@ abstract class AbstractInverseEntityFilteringValueSelector<Solution_>
     }
 
     @Override
-    public boolean isCountable() {
-        // Because !neverEnding => countable.
-        return true;
-    }
-
-    @Override
     public boolean isNeverEnding() {
         // Because the childValueSelector is not never-ending.
         return false;

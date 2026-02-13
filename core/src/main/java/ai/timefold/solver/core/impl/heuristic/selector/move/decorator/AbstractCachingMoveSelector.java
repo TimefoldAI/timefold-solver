@@ -69,11 +69,6 @@ public abstract class AbstractCachingMoveSelector<Solution_> extends AbstractMov
     }
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public long getSize() {
         return cachedMoveList.size();
     }

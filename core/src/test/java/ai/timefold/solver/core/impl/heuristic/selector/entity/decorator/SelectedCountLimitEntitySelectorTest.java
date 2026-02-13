@@ -138,13 +138,6 @@ class SelectedCountLimitEntitySelectorTest {
     }
 
     @Test
-    void isCountable() {
-        EntitySelector childEntitySelector = SelectorTestUtils.mockEntitySelector(TestdataEntity.class);
-        EntitySelector entitySelector = new SelectedCountLimitEntitySelector(childEntitySelector, true, 5L);
-        assertThat(entitySelector.isCountable()).isTrue();
-    }
-
-    @Test
     void isNeverEnding() {
         EntitySelector childEntitySelector = SelectorTestUtils.mockEntitySelector(TestdataEntity.class);
         EntitySelector entitySelector = new SelectedCountLimitEntitySelector(childEntitySelector, true, 5L);

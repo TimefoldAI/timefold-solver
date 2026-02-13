@@ -18,8 +18,8 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPropertyValueRangeDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
@@ -29,7 +29,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
  */
 public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescriptor<Solution_> {
 
-    private ValueRangeDescriptor<Solution_> valueRangeDescriptor;
+    private AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor;
     private SelectionSorter<Solution_, Object> ascendingSorter;
     private SelectionSorter<Solution_, Object> descendingSorter;
 
@@ -70,7 +70,8 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
                     .map(ref -> findValueRangeMemberAccessor(descriptorPolicy, ref))
                     .toArray(MemberAccessor[]::new);
         }
-        var valueRangeDescriptorList = new ArrayList<ValueRangeDescriptor<Solution_>>(valueRangeProviderMemberAccessors.length);
+        var valueRangeDescriptorList =
+                new ArrayList<AbstractValueRangeDescriptor<Solution_>>(valueRangeProviderMemberAccessors.length);
         for (var valueRangeProviderMemberAccessor : valueRangeProviderMemberAccessors) {
             valueRangeDescriptorList.add(buildValueRangeDescriptor(descriptorPolicy, valueRangeProviderMemberAccessor));
         }
@@ -140,7 +141,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         }
     }
 
-    private ValueRangeDescriptor<Solution_> buildValueRangeDescriptor(DescriptorPolicy descriptorPolicy,
+    private AbstractValueRangeDescriptor<Solution_> buildValueRangeDescriptor(DescriptorPolicy descriptorPolicy,
             MemberAccessor valueRangeProviderMemberAccessor) {
         if (descriptorPolicy.isFromSolutionValueRangeProvider(valueRangeProviderMemberAccessor)) {
             return descriptorPolicy.buildFromSolutionPropertyValueRangeDescriptor(this, valueRangeProviderMemberAccessor);
@@ -194,7 +195,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
 
     public abstract boolean acceptsValueType(Class<?> valueType);
 
-    public ValueRangeDescriptor<Solution_> getValueRangeDescriptor() {
+    public AbstractValueRangeDescriptor<Solution_> getValueRangeDescriptor() {
         return valueRangeDescriptor;
     }
 

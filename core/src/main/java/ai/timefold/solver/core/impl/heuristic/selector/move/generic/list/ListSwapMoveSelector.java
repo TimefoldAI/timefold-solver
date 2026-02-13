@@ -61,11 +61,6 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
     }
 
     @Override
-    public boolean isCountable() {
-        return leftValueSelector.isCountable() && rightValueSelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return randomSelection || leftValueSelector.isNeverEnding() || rightValueSelector.isNeverEnding();
     }

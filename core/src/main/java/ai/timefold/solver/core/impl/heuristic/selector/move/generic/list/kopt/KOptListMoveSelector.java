@@ -98,11 +98,6 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
     }
 
     @Override
-    public boolean isCountable() {
-        return false;
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return true;
     }

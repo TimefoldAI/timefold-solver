@@ -56,11 +56,6 @@ public class MimicReplayingValueSelector<Solution_>
     }
 
     @Override
-    public boolean isCountable() {
-        return valueMimicRecorder.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return valueMimicRecorder.isNeverEnding();
     }

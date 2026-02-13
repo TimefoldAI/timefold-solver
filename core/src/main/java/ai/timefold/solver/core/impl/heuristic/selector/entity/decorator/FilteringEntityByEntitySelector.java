@@ -144,11 +144,6 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     }
 
     @Override
-    public boolean isCountable() {
-        return childEntitySelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return childEntitySelector.isNeverEnding();
     }

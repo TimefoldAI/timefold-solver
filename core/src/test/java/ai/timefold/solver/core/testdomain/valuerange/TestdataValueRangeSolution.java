@@ -12,7 +12,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
@@ -60,46 +60,46 @@ public class TestdataValueRangeSolution extends TestdataObject {
     // ************************************************************************
 
     @ValueRangeProvider(id = "integerValueRange")
-    public CountableValueRange<Integer> createIntValueRange() {
+    public ValueRange<Integer> createIntValueRange() {
         return ValueRangeFactory.createIntValueRange(0, 3);
     }
 
     @ValueRangeProvider(id = "longValueRange")
-    public CountableValueRange<Long> createLongValueRange() {
+    public ValueRange<Long> createLongValueRange() {
         return ValueRangeFactory.createLongValueRange(1_000L, 1_003L);
     }
 
     @ValueRangeProvider(id = "bigIntegerValueRange")
-    public CountableValueRange<BigInteger> createBigIntegerValueRange() {
+    public ValueRange<BigInteger> createBigIntegerValueRange() {
         return ValueRangeFactory.createBigIntegerValueRange(
                 BigInteger.valueOf(1_000_000L), BigInteger.valueOf(1_000_003L));
     }
 
     @ValueRangeProvider(id = "bigDecimalValueRange")
-    public CountableValueRange<BigDecimal> createBigDecimalValueRange() {
+    public ValueRange<BigDecimal> createBigDecimalValueRange() {
         return ValueRangeFactory.createBigDecimalValueRange(new BigDecimal("0.00"), new BigDecimal("0.03"));
     }
 
     @ValueRangeProvider(id = "localDateValueRange")
-    public CountableValueRange<LocalDate> createLocalDateValueRange() {
+    public ValueRange<LocalDate> createLocalDateValueRange() {
         return ValueRangeFactory.createLocalDateValueRange(
                 LocalDate.of(2000, 1, 1), LocalDate.of(2000, 1, 4), 1, ChronoUnit.DAYS);
     }
 
     @ValueRangeProvider(id = "localTimeValueRange")
-    public CountableValueRange<LocalTime> createLocaleTimeValueRange() {
+    public ValueRange<LocalTime> createLocaleTimeValueRange() {
         return ValueRangeFactory.createLocalTimeValueRange(
                 LocalTime.of(10, 0), LocalTime.of(10, 3), 1, ChronoUnit.MINUTES);
     }
 
     @ValueRangeProvider(id = "localDateTimeValueRange")
-    public CountableValueRange<LocalDateTime> createLocaleDateTimeValueRange() {
+    public ValueRange<LocalDateTime> createLocaleDateTimeValueRange() {
         return ValueRangeFactory.createLocalDateTimeValueRange(
                 LocalDateTime.of(2000, 1, 1, 10, 0), LocalDateTime.of(2000, 1, 1, 10, 3), 1, ChronoUnit.MINUTES);
     }
 
     @ValueRangeProvider(id = "yearValueRange")
-    public CountableValueRange<Year> createYearValueRange() {
+    public ValueRange<Year> createYearValueRange() {
         return ValueRangeFactory.createTemporalValueRange(
                 Year.of(2000), Year.of(2003), 1, ChronoUnit.YEARS);
     }

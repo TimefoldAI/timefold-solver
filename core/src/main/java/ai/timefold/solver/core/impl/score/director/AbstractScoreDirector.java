@@ -3,6 +3,8 @@ package ai.timefold.solver.core.impl.score.director;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -273,12 +275,25 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         entityAndFactVisitor = entityAndFactVisitor == null ? this::assertValueRangeForEntity
                 : entityAndFactVisitor.andThen(this::assertValueRangeForEntity);
         // This visits all the facts, applying the visitor if non-null.
-        if (entityAndFactVisitor != null) {
-            solutionDescriptor.visitAllProblemFacts(workingSolution, entityAndFactVisitor);
-        }
-        Consumer<Object> entityValidator = entity -> scoreDirectorFactory.validateEntity(this, entity);
-        entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
+        solutionDescriptor.visitAllProblemFacts(workingSolution, entityAndFactVisitor);
+
+        // No two entities in the same solution may be equal.
+        var entityClassToEntitySetMap = new HashMap<Class<?>, Set<Object>>();
+        Consumer<Object> entityValidator = entity -> {
+            var entityDescriptor = scoreDirectorFactory.validateEntity(this, entity);
+            var newEntity = entityClassToEntitySetMap.computeIfAbsent(entityDescriptor.getEntityClass(),
+                    k -> new HashSet<>())
+                    .add(entity);
+            if (!newEntity) {
+                throw new IllegalStateException("""
+                        The entity (%s) is present more than once in the solution.
+                        Maybe check the implementation of equals() and hashCode() of the entity's class (%s)?"""
+                        .formatted(entity, entity.getClass()));
+            }
+        };
+        entityAndFactVisitor = entityAndFactVisitor.andThen(entityValidator);
         setWorkingEntityListDirty(workingSolution);
+
         // This visits all the entities.
         var initializationStatistics = valueRangeManager.getInitializationStatistics(entityAndFactVisitor);
         workingInitScore =

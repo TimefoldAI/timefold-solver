@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -17,23 +16,21 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.EmptyValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.ListValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.SetValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.EmptyValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.ListValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.SetValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Solution_>
-        extends AbstractValueRangeDescriptor<Solution_> {
+public abstract sealed class AbstractFromPropertyValueRangeDescriptor<Solution_>
+        extends AbstractValueRangeDescriptor<Solution_>
+        permits FromEntityPropertyValueRangeDescriptor, FromSolutionPropertyValueRangeDescriptor {
 
     protected final MemberAccessor memberAccessor;
     protected boolean collectionWrapping;
     protected boolean arrayWrapping;
-    protected boolean countable;
-    // Field related to the generic type of the value range, e.g., List<String> -> String
-    private final boolean isGenericTypeImmutable;
 
     protected AbstractFromPropertyValueRangeDescriptor(int ordinalId, GenuineVariableDescriptor<Solution_> variableDescriptor,
             MemberAccessor memberAccessor) {
@@ -48,14 +45,6 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
         collectionWrapping = Collection.class.isAssignableFrom(type);
         arrayWrapping = type.isArray();
         processValueRangeProviderAnnotation(valueRangeProviderAnnotation);
-        if (collectionWrapping) {
-            var genericType = ConfigUtils.extractGenericTypeParameterOrFail("solutionClass or entityClass",
-                    memberAccessor.getDeclaringClass(), memberAccessor.getType(), memberAccessor.getGenericType(),
-                    ValueRangeProvider.class, memberAccessor.getName());
-            this.isGenericTypeImmutable = ConfigUtils.isGenericTypeImmutable(genericType);
-        } else {
-            this.isGenericTypeImmutable = true;
-        }
     }
 
     private void processValueRangeProviderAnnotation(ValueRangeProvider valueRangeProviderAnnotation) {
@@ -95,26 +84,14 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
                                         variableDescriptor.getVariablePropertyType()));
             }
         }
-        countable = collectionWrapping || arrayWrapping || CountableValueRange.class.isAssignableFrom(type);
     }
 
-    @Override
-    public boolean isGenericTypeImmutable() {
-        return isGenericTypeImmutable;
-    }
-
-    @Override
-    public boolean isCountable() {
-        return countable;
-    }
-
-    protected <Value_> CountableValueRange<Value_> readValueRangeForSolution(Solution_ solution) {
+    protected <Value_> ValueRange<Value_> readValueRangeForSolution(Solution_ solution) {
         Object valueRangeObject = memberAccessor.executeGetter(solution);
         return processValueRange(valueRangeObject, solution);
     }
 
-    @SuppressWarnings("unchecked")
-    protected <Value_> CountableValueRange<Value_> readValueRange(Object bean, Object parameter) {
+    protected <Value_> ValueRange<Value_> readValueRange(Object bean, Object parameter) {
         Object valueRangeObject;
         if (memberAccessor.acceptsParameter()) {
             valueRangeObject = memberAccessor.executeGetter(bean, parameter);
@@ -124,7 +101,7 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
         return processValueRange(valueRangeObject, bean);
     }
 
-    protected <Value_> CountableValueRange<Value_> processValueRange(Object valueRangeObject, Object bean) {
+    protected <Value_> ValueRange<Value_> processValueRange(Object valueRangeObject, Object bean) {
         if (valueRangeObject == null) {
             throw new IllegalStateException(
                     "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."
@@ -158,7 +135,7 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
                 return buildValueRange(list);
             }
         } else {
-            var valueRange = (CountableValueRange<Value_>) valueRangeObject;
+            var valueRange = (ValueRange<Value_>) valueRangeObject;
             return valueRange.isEmpty() ? EmptyValueRange.instance() : valueRange;
         }
     }
@@ -176,13 +153,13 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
         }
     }
 
-    private <T> CountableValueRange<T> buildValueRange(Collection<T> valueCollection) {
+    private static <T> ValueRange<T> buildValueRange(Collection<T> valueCollection) {
         if (valueCollection.isEmpty()) {
             return EmptyValueRange.instance();
         } else if (valueCollection instanceof Set<T> set) {
-            return new SetValueRange<>(set, isGenericTypeImmutable);
+            return new SetValueRange<>(set);
         } else if (valueCollection instanceof List<T> list) {
-            return new ListValueRange<>(list, isGenericTypeImmutable);
+            return new ListValueRange<>(list);
         } else {
             throw new IllegalArgumentException("Impossible state: The collection (%s) must be a Set or a List."
                     .formatted(valueCollection));

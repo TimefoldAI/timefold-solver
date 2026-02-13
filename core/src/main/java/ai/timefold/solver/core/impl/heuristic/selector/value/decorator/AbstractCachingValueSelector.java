@@ -80,11 +80,6 @@ public abstract class AbstractCachingValueSelector<Solution_>
     }
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public long getSize(Object entity) {
         return getSize();
     }

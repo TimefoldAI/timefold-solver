@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.SortedSet;
+import java.util.SequencedCollection;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -27,22 +27,20 @@ import org.jspecify.annotations.NonNull;
  * which returns a {@link Collection} or {@link ValueRange}.
  * A {@link Collection} is implicitly converted to a {@link ValueRange}.
  * For solver reproducibility, the collection must have a deterministic, stable iteration order.
- * It is recommended to use a {@link List}, {@link LinkedHashSet} or {@link SortedSet}.
- * 
- * <p>
- * Value ranges are not allowed to contain {@code null} values.
- * When {@link PlanningVariable#allowsUnassigned()} or {@link PlanningListVariable#allowsUnassignedValues()} is true,
- * the solver will handle {@code null} values on its own.
+ * It is recommended to use a {@link SequencedCollection},
+ * such as {@link List} or {@link LinkedHashSet}.
  *
  * <p>
  * Value ranges are not allowed to contain multiple copies of the same object,
- * as defined by {@code ==}.
- * It is recommended that the value range never contains two objects
- * that are equal according to {@link Object#equals(Object)},
- * but this is not enforced to not depend on user-defined {@link Object#equals(Object)} implementations.
+ * as defined by {@link Object#equals(Object)}.
  * Having duplicates in a value range can lead to unexpected behavior,
  * and skews selection probabilities in random selection algorithms.
  * 
+ * <p>
+ * Value ranges are also not allowed to contain {@code null}.
+ * When {@link PlanningVariable#allowsUnassigned()} or {@link PlanningListVariable#allowsUnassignedValues()} is true,
+ * the solver will handle {@code null} values on its own.
+ *
  * <p>
  * Value ranges are not allowed to change during solving.
  * This is especially important for value ranges defined on {@link PlanningEntity}-annotated classes;

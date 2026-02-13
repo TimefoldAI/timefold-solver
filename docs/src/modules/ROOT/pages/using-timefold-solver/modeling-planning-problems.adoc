@@ -1085,6 +1085,10 @@ Primitive types (such as ``int``) are not allowed.
 
 A planning value range is the set of possible planning values for a planning variable.
 Planning value ranges need to come from a finite collection.
+It must never contain duplicate values,
+as defined by the `equals()` method of the value's type.
+It must also not contain the value ``null``,
+not even for a <<planningVariableAllowingUnassigned,planning variable allowing unassigned values>>.
 
 
 [#planningValueRangeProvider]
@@ -1102,7 +1106,6 @@ This annotation can be located on two types of methods:
 * On the Solution: All planning entities share the same value range.
 * On the planning entity: The value range differs per planning entity. This is less common.
 
-
 [NOTE]
 ====
 A `@ValueRangeProvider` annotation needs to be on a member
@@ -1114,7 +1117,8 @@ The return type of that method can be three types:
 
 * ``Collection``: The value range is defined by a `Collection` (usually a ``List``) of its possible values.
 * Array: The value range is defined by an array of its possible values.
-* ``CountableValueRange``: The value range is defined by its bounds. This is less common.
+* ``ValueRange``: The value range is defined by its bounds. This is less common.
+
 
 [#valueRangeProviderOnSolution]
 ==== `ValueRangeProvider` on the solution
@@ -1122,7 +1126,7 @@ The return type of that method can be three types:
 All instances of the same planning entity class share the same set of possible planning values for that planning variable.
 This is the most common way to configure a value range.
 
-The `@PlanningSolution` implementation has a method that returns a `Collection` (or a ``CountableValueRange``).
+The `@PlanningSolution` implementation has a method that returns a `Collection` (or a ``ValueRange``).
 Any value from that `Collection` is a possible planning value for this planning variable.
 
 [tabs]
@@ -1152,12 +1156,6 @@ public class Timetable {
 ----
 ====
 
-[IMPORTANT]
-====
-That `Collection` (or ``CountableValueRange``) must not contain the value ``null``,
-not even for a <<planningVariableAllowingUnassigned,planning variable allowing unassigned values>>.
-====
-
 xref:using-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
 
 [tabs]
@@ -1175,8 +1173,6 @@ public class Timetable {
 
 }
 ----
-
-
 ====
 
 
@@ -1401,7 +1397,7 @@ Java::
 [#valueRangeFactory]
 ==== `ValueRangeFactory`
 
-Instead of a ``Collection``, you can also return ``CountableValueRange``, built by the ``ValueRangeFactory``:
+Instead of a ``Collection``, you can also return ``ValueRange``, built by the ``ValueRangeFactory``:
 
 [tabs]
 ====
@@ -1410,14 +1406,14 @@ Java::
 [source,java,options="nowrap"]
 ----
     @ValueRangeProvider
-    public CountableValueRange<Integer> getDelayRange() {
+    public ValueRange<Integer> getDelayRange() {
         return ValueRangeFactory.createIntValueRange(0, 5000);
     }
 ----
 
 
 ====
-A `CountableValueRange` uses far less memory, because it only holds the bounds.
+A `ValueRange` uses far less memory, because it only holds the bounds.
 In the example above, a `Collection` would need to hold all `5000` ints, instead of just the two bounds.
 
 Furthermore, an `incrementUnit` can be specified, for example if you have to buy stocks in units of 200 pieces:
@@ -1429,7 +1425,7 @@ Java::
 [source,java,options="nowrap"]
 ----
     @ValueRangeProvider
-    public CountableValueRange<Integer> getStockAmountRange() {
+    public ValueRange<Integer> getStockAmountRange() {
          // Range: 0, 200, 400, 600, ..., 9999600, 9999800, 10000000
         return ValueRangeFactory.createIntValueRange(0, 10000000, 200);
     }
@@ -2426,16 +2422,15 @@ public class Timetable {
 There can be multiple `@PlanningEntityCollectionProperty` annotated members.
 Those can even return a `Collection` with the same entity class type.
 Instead of `Collection`, it can also return an array.
-
-[NOTE]
-====
-A `@PlanningEntityCollectionProperty` annotation needs to be on a member in a class with a `@PlanningSolution` annotation.
-It is ignored on parent classes or subclasses without that annotation.
-====
-
 In rare cases, a planning entity might be a singleton: use `@PlanningEntityProperty` on its getter (or field) instead.
 
-Both annotations can also be <<autoDiscoverSolutionProperties,auto discovered>> if enabled.
+Both annotations need to be on a member in a class with a `@PlanningSolution` annotation,
+and are ignored on parent classes or subclasses without that annotation.
+They can also be <<autoDiscoverSolutionProperties,auto discovered>> if enabled.
+
+IMPORTANT: A planning solution must not contain duplicate entities,
+as defined by the `equals()` method of the entity class.
+If there are duplicate entities, the solver will fail-fast at startup.
 
 
 [#scoreOfASolution]

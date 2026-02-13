@@ -12,7 +12,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -380,7 +380,8 @@ class SolutionDescriptorTest {
         var allIds = new ArrayList<Integer>();
         assertThat(solutionDescriptor.getValueRangeDescriptorCount()).isEqualTo(3);
         allIds.addAll(solutionDescriptor.getBasicVariableDescriptorList().stream()
-                .map(BasicVariableDescriptor::getValueRangeDescriptor).mapToInt(ValueRangeDescriptor::getOrdinal).boxed()
+                .map(BasicVariableDescriptor::getValueRangeDescriptor).mapToInt(AbstractValueRangeDescriptor::getOrdinal)
+                .boxed()
                 .toList());
         allIds.add(solutionDescriptor.getListVariableDescriptor().getValueRangeDescriptor().getOrdinal());
         assertThat(allIds).containsExactlyInAnyOrder(0, 1, 2);

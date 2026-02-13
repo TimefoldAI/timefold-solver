@@ -1,0 +1,160 @@
+package ai.timefold.solver.core.impl.domain.valuerange;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.random.RandomGenerator;
+
+import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
+import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
+public final class IntValueRange extends AbstractValueRange<Integer> {
+
+    private final int from;
+    private final int to;
+    private final int incrementUnit;
+
+    /**
+     * @param from inclusive minimum
+     * @param to exclusive maximum, {@code >= from}
+     */
+    public IntValueRange(int from, int to) {
+        this(from, to, 1);
+    }
+
+    /**
+     * @param from inclusive minimum
+     * @param to exclusive maximum, {@code >= from}
+     * @param incrementUnit {@code > 0}
+     */
+    public IntValueRange(int from, int to, int incrementUnit) {
+        this.from = from;
+        this.to = to;
+        this.incrementUnit = incrementUnit;
+        if (to < from) {
+            throw new IllegalArgumentException("The " + getClass().getSimpleName()
+                    + " cannot have a from (" + from + ") which is strictly higher than its to (" + to + ").");
+        }
+        if (incrementUnit <= 0) {
+            throw new IllegalArgumentException("The " + getClass().getSimpleName()
+                    + " must have strictly positive incrementUnit (" + incrementUnit + ").");
+        }
+        if ((to - (long) from) % incrementUnit != 0L) {
+            throw new IllegalArgumentException("The " + getClass().getSimpleName()
+                    + "'s incrementUnit (" + incrementUnit
+                    + ") must fit an integer number of times between from (" + from + ") and to (" + to + ").");
+        }
+    }
+
+    @Override
+    public long getSize() {
+        return (to - (long) from) / incrementUnit;
+    }
+
+    @Override
+    public boolean contains(@Nullable Integer value) {
+        if (value == null || value < from || value >= to) {
+            return false;
+        }
+        if (incrementUnit == 1) {
+            return true;
+        }
+        return ((long) value - from) % incrementUnit == 0;
+    }
+
+    @Override
+    public Integer get(long index) {
+        if (index < 0L || index >= getSize()) {
+            throw new IndexOutOfBoundsException("The index (" + index + ") must be >= 0 and < size ("
+                    + getSize() + ").");
+        }
+        return (int) (index * incrementUnit + from);
+    }
+
+    @Override
+    public Iterator<Integer> createOriginalIterator() {
+        return new OriginalIntValueRangeIterator();
+    }
+
+    private class OriginalIntValueRangeIterator extends ValueRangeIterator<Integer> {
+
+        private int upcoming = from;
+
+        @Override
+        public boolean hasNext() {
+            return upcoming < to;
+        }
+
+        @Override
+        public Integer next() {
+            if (upcoming >= to) {
+                throw new NoSuchElementException();
+            }
+            int next = upcoming;
+            upcoming += incrementUnit;
+            return next;
+        }
+
+    }
+
+    @Override
+    public Iterator<Integer> createRandomIterator(RandomGenerator workingRandom) {
+        return new RandomIntValueRangeIterator(workingRandom);
+    }
+
+    private class RandomIntValueRangeIterator extends ValueRangeIterator<Integer> {
+
+        private final RandomGenerator workingRandom;
+        private final long size = getSize();
+
+        public RandomIntValueRangeIterator(RandomGenerator workingRandom) {
+            this.workingRandom = workingRandom;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return size > 0L;
+        }
+
+        @Override
+        public Integer next() {
+            if (size <= 0L) {
+                throw new NoSuchElementException();
+            }
+            long index = RandomUtils.nextLong(workingRandom, size);
+            return (int) (index * incrementUnit + from);
+        }
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        // We do not use Objects.equals(...) due to https://bugs.openjdk.org/browse/JDK-8015417.
+        if (this == o) {
+            return true;
+        }
+        return o instanceof IntValueRange that &&
+                from == that.from &&
+                to == that.to &&
+                incrementUnit == that.incrementUnit;
+    }
+
+    @Override
+    public int hashCode() {
+        // We do not use Objects.hash(...) because it creates an array each time.
+        // We do not use Objects.hashCode() due to https://bugs.openjdk.org/browse/JDK-8015417.
+        var hash = 1;
+        hash = 31 * hash + Integer.hashCode(from);
+        hash = 31 * hash + Integer.hashCode(to);
+        return 31 * hash + Integer.hashCode(incrementUnit);
+    }
+
+    @Override
+    public String toString() {
+        return "[" + from + "-" + to + ")"; // Formatting: interval (mathematics) ISO 31-11
+    }
+
+}

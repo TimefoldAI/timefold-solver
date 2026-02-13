@@ -28,11 +28,6 @@ public class SelectedCountLimitMoveSelector<Solution_> extends AbstractMoveSelec
     // ************************************************************************
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return false;
     }

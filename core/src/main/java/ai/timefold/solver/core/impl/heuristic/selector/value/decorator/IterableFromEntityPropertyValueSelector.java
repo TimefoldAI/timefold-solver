@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
@@ -32,7 +32,7 @@ public final class IterableFromEntityPropertyValueSelector<Solution_> extends Ab
     private final FromEntityPropertyValueSelector<Solution_> childValueSelector;
     private final SelectionCacheType minimumCacheType;
     private final boolean randomSelection;
-    private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
+    private final AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor;
     private InnerScoreDirector<Solution_, ?> innerScoreDirector = null;
 
     public IterableFromEntityPropertyValueSelector(FromEntityPropertyValueSelector<Solution_> childValueSelector,
@@ -117,13 +117,8 @@ public final class IterableFromEntityPropertyValueSelector<Solution_> extends Ab
     }
 
     @Override
-    public boolean isCountable() {
-        return valueRangeDescriptor.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
-        return randomSelection || !isCountable();
+        return randomSelection;
     }
 
     @Override

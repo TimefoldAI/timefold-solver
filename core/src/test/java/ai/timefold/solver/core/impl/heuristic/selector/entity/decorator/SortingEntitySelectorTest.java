@@ -117,11 +117,4 @@ class SortingEntitySelectorTest {
         assertThat(entitySelector.isNeverEnding()).isFalse();
     }
 
-    @Test
-    void isCountable() {
-        EntitySelector entitySelector = new SortingEntitySelector(mock(EntitySelector.class), SelectionCacheType.PHASE,
-                mock(SelectionSorter.class));
-        assertThat(entitySelector.isCountable()).isTrue();
-    }
-
 }

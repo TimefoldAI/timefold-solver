@@ -30,11 +30,6 @@ public class PillarChangeMoveSelector<Solution_> extends GenericMoveSelector<Sol
     // ************************************************************************
 
     @Override
-    public boolean isCountable() {
-        return pillarSelector.isCountable() && valueSelector.isCountable();
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return randomSelection || pillarSelector.isNeverEnding() || valueSelector.isNeverEnding();
     }

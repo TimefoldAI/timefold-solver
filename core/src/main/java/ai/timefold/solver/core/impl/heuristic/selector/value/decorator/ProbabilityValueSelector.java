@@ -80,11 +80,6 @@ public final class ProbabilityValueSelector<Solution_>
     }
 
     @Override
-    public boolean isCountable() {
-        return true;
-    }
-
-    @Override
     public boolean isNeverEnding() {
         return false;
     }
