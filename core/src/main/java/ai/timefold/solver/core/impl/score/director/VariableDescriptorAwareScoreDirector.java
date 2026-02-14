@@ -5,6 +5,9 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public interface VariableDescriptorAwareScoreDirector<Solution_>
         extends ScoreDirector<Solution_> {
 

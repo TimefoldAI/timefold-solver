@@ -41,12 +41,14 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the score type to go with the solution
  */
+@NullMarked
 public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends VariableDescriptorAwareScoreDirector<Solution_>, AutoCloseable {
 

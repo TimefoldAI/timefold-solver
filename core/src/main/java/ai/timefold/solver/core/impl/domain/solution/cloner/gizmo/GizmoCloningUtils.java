@@ -46,7 +46,7 @@ public final class GizmoCloningUtils {
                     }
                 }
 
-                // Ignore Collections, Maps, and PlanningCloneables, as there is collection/map/clonable logic to clone them.
+                // Ignore Collections and Maps, as there is collection/map/clonable logic to clone them.
                 if (DeepCloningUtils.isFieldDeepCloned(solutionDescriptor, field, clazz)
                         && !Collection.class.isAssignableFrom(field.getType())
                         && !Map.class.isAssignableFrom(field.getType())

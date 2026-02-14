@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.director.stream;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -18,6 +19,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * FP streams implementation of {@link ScoreDirector}, which only recalculates the {@link Score}
@@ -27,11 +29,12 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see ScoreDirector
  */
+@NullMarked
 public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirector<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>> {
 
     private final boolean derived;
-    private BavetConstraintSession<Score_> session;
+    private @Nullable BavetConstraintSession<Score_> session;
 
     private BavetConstraintStreamScoreDirector(Builder<Solution_, Score_> builder, boolean derived) {
         super(builder);
@@ -140,9 +143,6 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public void afterEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        if (entity == null) {
-            throw new IllegalArgumentException("The entity (%s) cannot be added to the ScoreDirector.".formatted(entity));
-        }
         if (!getSolutionDescriptor().hasEntityDescriptor(entity.getClass())) {
             throw new IllegalArgumentException("The entity (%s) of class (%s) is not a configured @%s.".formatted(entity,
                     entity.getClass(), PlanningEntity.class.getSimpleName()));
@@ -182,11 +182,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public void afterProblemFactAdded(Object problemFact) {
-        if (problemFact == null) {
-            throw new IllegalArgumentException(
-                    "The problemFact (%s) cannot be added to the ScoreDirector.".formatted(problemFact));
-        }
-        session.insert(problemFact);
+        session.insert(Objects.requireNonNull(problemFact));
         super.afterProblemFactAdded(problemFact);
     }
 
@@ -218,7 +214,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
      * @return null before first {@link #setWorkingSolutionWithoutUpdatingShadows(Object)} or after {@link #close()}.
      */
     @SuppressWarnings("unused")
-    public BavetConstraintSession<Score_> getSession() {
+    public @Nullable BavetConstraintSession<Score_> getSession() {
         return session;
     }
 

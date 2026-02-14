@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 final class MoveTesterScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirector<Solution_, Score_, MoveTesterScoreDirectorFactory<Solution_, Score_>> {
 
