@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
-@PlanningEntity(pinningFilter = TestdataAllowsUnassignedPinningFilter.class)
+@PlanningEntity
 public class TestdataPinnedAllowsUnassignedEntity extends TestdataObject {
 
     public static EntityDescriptor<TestdataPinnedAllowsUnassignedSolution> buildEntityDescriptor() {
@@ -16,7 +16,6 @@ public class TestdataPinnedAllowsUnassignedEntity extends TestdataObject {
     }
 
     private TestdataValue value;
-    private boolean locked;
     private boolean pinned;
 
     public TestdataPinnedAllowsUnassignedEntity() {
@@ -26,20 +25,13 @@ public class TestdataPinnedAllowsUnassignedEntity extends TestdataObject {
         super(code);
     }
 
-    public TestdataPinnedAllowsUnassignedEntity(String code, boolean locked, boolean pinned) {
-        this(code);
-        this.locked = locked;
-        this.pinned = pinned;
-    }
-
     public TestdataPinnedAllowsUnassignedEntity(String code, TestdataValue value) {
         this(code);
         this.value = value;
     }
 
-    public TestdataPinnedAllowsUnassignedEntity(String code, TestdataValue value, boolean locked, boolean pinned) {
+    public TestdataPinnedAllowsUnassignedEntity(String code, TestdataValue value, boolean pinned) {
         this(code, value);
-        this.locked = locked;
         this.pinned = pinned;
     }
 
@@ -50,14 +42,6 @@ public class TestdataPinnedAllowsUnassignedEntity extends TestdataObject {
 
     public void setValue(TestdataValue value) {
         this.value = value;
-    }
-
-    public boolean isLocked() {
-        return locked;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
     }
 
     @PlanningPin

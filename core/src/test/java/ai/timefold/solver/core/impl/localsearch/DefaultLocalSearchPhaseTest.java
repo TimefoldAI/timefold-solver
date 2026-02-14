@@ -1,9 +1,5 @@
 package ai.timefold.solver.core.impl.localsearch;
 
-import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -22,10 +18,13 @@ import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Execution(ExecutionMode.CONCURRENT)
 class DefaultLocalSearchPhaseTest {
@@ -73,18 +72,12 @@ class DefaultLocalSearchPhaseTest {
         var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Arrays.asList(
-                new TestdataPinnedEntity("e1", v1, false, false),
-                new TestdataPinnedEntity("e2", v2, true, false),
-                new TestdataPinnedEntity("e3", v3, false, true)));
+                new TestdataPinnedEntity("e1", v1, false),
+                new TestdataPinnedEntity("e2", v2, false),
+                new TestdataPinnedEntity("e3", v3, true)));
 
         solution = PlannerTestUtils.solve(solverConfig, solution, true); // TODO incentive it to change something
         assertThat(solution).isNotNull();
-        var solvedE1 = solution.getEntityList().get(0);
-        assertCode("e1", solvedE1);
-        assertThat(solvedE1.getValue()).isNotNull();
-        var solvedE2 = solution.getEntityList().get(1);
-        assertCode("e2", solvedE2);
-        assertThat(solvedE2.getValue()).isEqualTo(v2);
         var solvedE3 = solution.getEntityList().get(2);
         assertCode("e3", solvedE3);
         assertThat(solvedE3.getValue()).isEqualTo(v3);
@@ -103,9 +96,9 @@ class DefaultLocalSearchPhaseTest {
         var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Arrays.asList(
-                new TestdataPinnedAllowsUnassignedEntity("e1", null, false, false),
-                new TestdataPinnedAllowsUnassignedEntity("e2", v2, true, false),
-                new TestdataPinnedAllowsUnassignedEntity("e3", null, false, true)));
+                new TestdataPinnedAllowsUnassignedEntity("e1", null, false),
+                new TestdataPinnedAllowsUnassignedEntity("e2", v2, false),
+                new TestdataPinnedAllowsUnassignedEntity("e3", null, true)));
 
         solution = PlannerTestUtils.solve(solverConfig, solution, true); // No change will be made.
         assertThat(solution).isNotNull();
@@ -124,9 +117,9 @@ class DefaultLocalSearchPhaseTest {
         var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Arrays.asList(
-                new TestdataPinnedEntity("e1", null, false, false),
-                new TestdataPinnedEntity("e2", v2, true, false),
-                new TestdataPinnedEntity("e3", null, false, true)));
+                new TestdataPinnedEntity("e1", null, false),
+                new TestdataPinnedEntity("e2", v2, false),
+                new TestdataPinnedEntity("e3", null, true)));
 
         assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .hasMessageContaining("entity (e3)")
@@ -197,18 +190,12 @@ class DefaultLocalSearchPhaseTest {
         var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Arrays.asList(
-                new TestdataPinnedEntity("e1", v1, false, false),
-                new TestdataPinnedEntity("e2", v2, true, false),
-                new TestdataPinnedEntity("e3", v3, false, true)));
+                new TestdataPinnedEntity("e1", v1, false),
+                new TestdataPinnedEntity("e2", v2, false),
+                new TestdataPinnedEntity("e3", v3, true)));
 
         solution = PlannerTestUtils.solve(solverConfig, solution, true); // TODO incentive it to change something
         assertThat(solution).isNotNull();
-        var solvedE1 = solution.getEntityList().get(0);
-        assertCode("e1", solvedE1);
-        assertThat(solvedE1.getValue()).isNotNull();
-        var solvedE2 = solution.getEntityList().get(1);
-        assertCode("e2", solvedE2);
-        assertThat(solvedE2.getValue()).isEqualTo(v2);
         var solvedE3 = solution.getEntityList().get(2);
         assertCode("e3", solvedE3);
         assertThat(solvedE3.getValue()).isEqualTo(v3);

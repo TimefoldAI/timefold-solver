@@ -256,9 +256,9 @@ class DefaultExhaustiveSearchPhaseTest {
         var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Arrays.asList(
-                new TestdataPinnedEntity("e1", null, false, false),
-                new TestdataPinnedEntity("e2", v2, true, false),
-                new TestdataPinnedEntity("e3", v3, false, true)));
+                new TestdataPinnedEntity("e1", null, false),
+                new TestdataPinnedEntity("e2", v2, false),
+                new TestdataPinnedEntity("e3", v3, true)));
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
@@ -339,9 +339,9 @@ class DefaultExhaustiveSearchPhaseTest {
         var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Arrays.asList(
-                new TestdataPinnedAllowsUnassignedEntity("e1", null, false, false),
-                new TestdataPinnedAllowsUnassignedEntity("e2", v2, true, false),
-                new TestdataPinnedAllowsUnassignedEntity("e3", null, false, true)));
+                new TestdataPinnedAllowsUnassignedEntity("e1", null, false),
+                new TestdataPinnedAllowsUnassignedEntity("e2", v2, false),
+                new TestdataPinnedAllowsUnassignedEntity("e3", null, true)));
 
         solution = PlannerTestUtils.solve(solverConfig, solution, true); // No change will be made, but shadows will be updated.
         assertThat(solution).isNotNull();
@@ -359,9 +359,9 @@ class DefaultExhaustiveSearchPhaseTest {
         var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Arrays.asList(
-                new TestdataPinnedEntity("e1", null, false, false),
-                new TestdataPinnedEntity("e2", v2, true, false),
-                new TestdataPinnedEntity("e3", null, false, true)));
+                new TestdataPinnedEntity("e1", null, false),
+                new TestdataPinnedEntity("e2", v2, false),
+                new TestdataPinnedEntity("e3", null, true)));
 
         assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .hasMessageContaining("entity (e3)")

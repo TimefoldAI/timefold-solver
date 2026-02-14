@@ -26,5 +26,6 @@
 - [ ] The solver now implicitly trusts equals() on objects, such as entities and values.
 - [ ] BestSolutionChangedEvent now an interface. (All constructors were deprecated anyway.)
 - [ ] ProblemFactChange -> ProblemChange, migration script?
+- [ ] PinningFilter is gone, so is strengths and difficulties, and nullable.
 
 Remove this file when done.

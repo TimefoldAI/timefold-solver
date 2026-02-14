@@ -11,10 +11,10 @@ import ai.timefold.solver.core.testdomain.common.TestSortableComparator;
 import ai.timefold.solver.core.testdomain.common.TestSortableObject;
 import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
-@PlanningEntity(difficultyComparatorClass = TestSortableComparator.class)
+@PlanningEntity(comparatorClass = TestSortableComparator.class)
 public class TestdataComparatorSortableEntityProvidingEntity extends TestdataObject implements TestSortableObject {
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange", strengthComparatorClass = TestSortableComparator.class)
+    @PlanningVariable(valueRangeProviderRefs = "valueRange", comparatorClass = TestSortableComparator.class)
     private TestdataSortableValue value;
     @ValueRangeProvider(id = "valueRange")
     @PlanningEntityCollectionProperty

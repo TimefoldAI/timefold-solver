@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.sort.invalid.mixed.comparator;
+package ai.timefold.solver.core.testdomain.sort.invalid;
 
 import java.util.List;
 

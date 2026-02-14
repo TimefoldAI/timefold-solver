@@ -10,7 +10,6 @@ import java.util.Comparator;
 import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
 /**
  * Specifies that the class is a planning entity.
@@ -67,82 +66,6 @@ public @interface PlanningEntity {
     Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
     interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
-    }
-
-    /**
-     * A pinned planning entity is never changed during planning,
-     * this is useful in repeated planning use cases (such as continuous planning and real-time planning).
-     * This applies to all the planning variables of this planning entity.
-     * <p>
-     * The method {@link PinningFilter#accept(Object, Object)} returns false if the selection entity is pinned
-     * and it returns true if the selection entity is movable
-     *
-     * @return {@link NullPinningFilter} when it is null (workaround for annotation limitation)
-     * @deprecated Prefer using {@link PlanningPin}.
-     */
-    @Deprecated(forRemoval = true, since = "1.23.0")
-    Class<? extends PinningFilter> pinningFilter() default NullPinningFilter.class;
-
-    /**
-     * Workaround for annotation limitation in {@link #pinningFilter()}.
-     *
-     * @deprecated Prefer using {@link PlanningPin}.
-     */
-    @Deprecated(forRemoval = true, since = "1.23.0")
-    interface NullPinningFilter extends PinningFilter {
-    }
-
-    /**
-     * Allows a collection of planning entities to be sorted by difficulty.
-     * A difficultyWeight estimates how hard is to plan a certain PlanningEntity.
-     * Some algorithms benefit from planning on more difficult planning entities first/last or from focusing on them.
-     * <p>
-     * The {@link Comparator} should sort in ascending difficulty
-     * (even though many optimization algorithms will reverse it).
-     * For example: sorting 3 processes on difficultly based on their RAM usage requirement:
-     * Process B (1GB RAM), Process A (2GB RAM), Process C (7GB RAM),
-     * <p>
-     * Do not use together with {@link #difficultyWeightFactoryClass()}.
-     *
-     * @deprecated Deprecated in favor of {@link #comparatorClass()}.
-     *
-     * @return {@link NullDifficultyComparator} when it is null (workaround for annotation limitation)
-     * @see #difficultyWeightFactoryClass()
-     */
-    @Deprecated(forRemoval = true, since = "1.28.0")
-    Class<? extends Comparator> difficultyComparatorClass() default NullDifficultyComparator.class;
-
-    /**
-     * Workaround for annotation limitation in {@link #difficultyComparatorClass()}.
-     *
-     * @deprecated Deprecated in favor of {@link NullComparator}.
-     */
-    @Deprecated(forRemoval = true, since = "1.28.0")
-    interface NullDifficultyComparator<T> extends NullComparator<T> {
-    }
-
-    /**
-     * The {@link SelectionSorterWeightFactory} alternative for {@link #difficultyComparatorClass()}.
-     * <p>
-     * Do not use together with {@link #difficultyComparatorClass()}.
-     *
-     * @deprecated Deprecated in favor of {@link #comparatorFactoryClass()}.
-     *
-     * @return {@link NullDifficultyWeightFactory} when it is null (workaround for annotation limitation)
-     * @see #difficultyComparatorClass()
-     */
-    @Deprecated(forRemoval = true, since = "1.28.0")
-    Class<? extends SelectionSorterWeightFactory> difficultyWeightFactoryClass() default NullDifficultyWeightFactory.class;
-
-    /**
-     * Workaround for annotation limitation in {@link #difficultyWeightFactoryClass()}.
-     *
-     * @deprecated Deprecated in favor of {@link NullComparatorFactory}.
-     */
-    @Deprecated(forRemoval = true, since = "1.28.0")
-    interface NullDifficultyWeightFactory<Solution_, T>
-            extends SelectionSorterWeightFactory<Solution_, T>,
-            NullComparatorFactory<Solution_, T> {
     }
 
 }

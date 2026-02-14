@@ -495,8 +495,8 @@ class DefaultSolverTest {
         var v1 = new TestdataValue("v1");
         var v2 = new TestdataValue("v2");
         solution.setValueList(Arrays.asList(v1, v2));
-        solution.setEntityList(Arrays.asList(new TestdataPinnedEntity("e1", v1, true, false),
-                new TestdataPinnedEntity("e2", v2, false, true)));
+        solution.setEntityList(Arrays.asList(new TestdataPinnedEntity("e1", v1, true),
+                new TestdataPinnedEntity("e2", v2, true)));
 
         solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();

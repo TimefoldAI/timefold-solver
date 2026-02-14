@@ -21,8 +21,7 @@ public class TestdataComparatorSortableSolution {
     public static SolutionDescriptor<TestdataComparatorSortableSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(
                 TestdataComparatorSortableSolution.class,
-                TestdataComparatorSortableEntity.class,
-                TestdataSortableValue.class);
+                TestdataComparatorSortableEntity.class);
     }
 
     public static TestdataComparatorSortableSolution generateSolution(int valueCount, int entityCount, boolean shuffle) {
