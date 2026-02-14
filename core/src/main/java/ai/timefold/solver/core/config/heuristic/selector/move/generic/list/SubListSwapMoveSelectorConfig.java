@@ -13,8 +13,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
-        "minimumSubListSize",
-        "maximumSubListSize",
         "selectReversingMoveToo",
         "subListSelectorConfig",
         "secondarySubListSelectorConfig"
@@ -23,59 +21,11 @@ public class SubListSwapMoveSelectorConfig extends MoveSelectorConfig<SubListSwa
 
     public static final String XML_ELEMENT_NAME = "subListSwapMoveSelector";
 
-    /**
-     * @deprecated The minimumSubListSize on the SubListSwapMoveSelectorConfig is deprecated and will be removed in a future
-     *             major version of Timefold. Use {@link SubListSelectorConfig#getMinimumSubListSize()} instead.
-     */
-    @Deprecated(forRemoval = true)
-    protected Integer minimumSubListSize = null;
-    /**
-     * @deprecated The maximumSubListSize on the SubListSwapMoveSelectorConfig is deprecated and will be removed in a future
-     *             major version of Timefold. Use {@link SubListSelectorConfig#getMaximumSubListSize()} instead.
-     */
-    @Deprecated(forRemoval = true)
-    protected Integer maximumSubListSize = null;
     private Boolean selectReversingMoveToo = null;
     @XmlElement(name = "subListSelector")
     private SubListSelectorConfig subListSelectorConfig = null;
     @XmlElement(name = "secondarySubListSelector")
     private SubListSelectorConfig secondarySubListSelectorConfig = null;
-
-    /**
-     * @deprecated The minimumSubListSize on the SubListSwapMoveSelectorConfig is deprecated and will be removed in a future
-     *             major version of Timefold. Use {@link SubListSelectorConfig#getMinimumSubListSize()} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public Integer getMinimumSubListSize() {
-        return minimumSubListSize;
-    }
-
-    /**
-     * @deprecated The minimumSubListSize on the SubListSwapMoveSelectorConfig is deprecated and will be removed in a future
-     *             major version of Timefold. Use {@link SubListSelectorConfig#setMinimumSubListSize(Integer)} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public void setMinimumSubListSize(Integer minimumSubListSize) {
-        this.minimumSubListSize = minimumSubListSize;
-    }
-
-    /**
-     * @deprecated The maximumSubListSize on the SubListSwapMoveSelectorConfig is deprecated and will be removed in a future
-     *             major version of Timefold. Use {@link SubListSelectorConfig#getMaximumSubListSize()} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public Integer getMaximumSubListSize() {
-        return maximumSubListSize;
-    }
-
-    /**
-     * @deprecated The maximumSubListSize on the SubListSwapMoveSelectorConfig is deprecated and will be removed in a future
-     *             major version of Timefold. Use {@link SubListSelectorConfig#setMaximumSubListSize(Integer)} instead.
-     */
-    @Deprecated(forRemoval = true)
-    public void setMaximumSubListSize(Integer maximumSubListSize) {
-        this.maximumSubListSize = maximumSubListSize;
-    }
 
     public @Nullable Boolean getSelectReversingMoveToo() {
         return selectReversingMoveToo;
@@ -125,10 +75,6 @@ public class SubListSwapMoveSelectorConfig extends MoveSelectorConfig<SubListSwa
     @Override
     public @NonNull SubListSwapMoveSelectorConfig inherit(@NonNull SubListSwapMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
-        this.minimumSubListSize =
-                ConfigUtils.inheritOverwritableProperty(minimumSubListSize, inheritedConfig.minimumSubListSize);
-        this.maximumSubListSize =
-                ConfigUtils.inheritOverwritableProperty(maximumSubListSize, inheritedConfig.maximumSubListSize);
         this.selectReversingMoveToo =
                 ConfigUtils.inheritOverwritableProperty(selectReversingMoveToo, inheritedConfig.selectReversingMoveToo);
         this.subListSelectorConfig =

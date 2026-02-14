@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -157,8 +156,8 @@ public class ValueSelectorFactory<Solution_>
                 || config.getNearbySelectionConfig() != null
                 || config.getFilterClass() != null
                 || config.getSorterManner() != null
-                || determineComparatorClass(config) != null
-                || determineComparatorFactoryClass(config) != null
+                || config.getComparatorClass() != null
+                || config.getComparatorFactoryClass() != null
                 || config.getSorterOrder() != null
                 || config.getSorterClass() != null
                 || config.getProbabilityWeightFactoryClass() != null
@@ -214,48 +213,6 @@ public class ValueSelectorFactory<Solution_>
         };
     }
 
-    private static String determineComparatorPropertyName(ValueSelectorConfig valueSelectorConfig) {
-        var sorterComparatorClass = valueSelectorConfig.getSorterComparatorClass();
-        var comparatorClass = valueSelectorConfig.getComparatorClass();
-        if (sorterComparatorClass != null && comparatorClass != null) {
-            throw new IllegalArgumentException(
-                    "The valueSelectorConfig (%s) cannot have a %s (%s) and %s (%s) at the same time.".formatted(
-                            valueSelectorConfig, "sorterComparatorClass", sorterComparatorClass,
-                            "comparatorClass", comparatorClass));
-        }
-        return sorterComparatorClass != null ? "sorterComparatorClass" : "comparatorClass";
-    }
-
-    private static Class<? extends Comparator> determineComparatorClass(ValueSelectorConfig valueSelectorConfig) {
-        var propertyName = determineComparatorPropertyName(valueSelectorConfig);
-        if (propertyName.equals("sorterComparatorClass")) {
-            return valueSelectorConfig.getSorterComparatorClass();
-        } else {
-            return valueSelectorConfig.getComparatorClass();
-        }
-    }
-
-    private static String determineComparatorFactoryPropertyName(ValueSelectorConfig valueSelectorConfig) {
-        var weightFactoryClass = valueSelectorConfig.getSorterWeightFactoryClass();
-        var comparatorFactoryClass = valueSelectorConfig.getComparatorFactoryClass();
-        if (weightFactoryClass != null && comparatorFactoryClass != null) {
-            throw new IllegalArgumentException(
-                    "The valueSelectorConfig (%s) cannot have a %s (%s) and %s (%s) at the same time.".formatted(
-                            valueSelectorConfig, "sorterWeightFactoryClass", weightFactoryClass,
-                            "comparatorFactoryClass", comparatorFactoryClass));
-        }
-        return weightFactoryClass != null ? "sorterWeightFactoryClass" : "comparatorFactoryClass";
-    }
-
-    private static Class<? extends ComparatorFactory> determineComparatorFactoryClass(ValueSelectorConfig valueSelectorConfig) {
-        var propertyName = determineComparatorFactoryPropertyName(valueSelectorConfig);
-        if (propertyName.equals("sorterWeightFactoryClass")) {
-            return valueSelectorConfig.getSorterWeightFactoryClass();
-        } else {
-            return valueSelectorConfig.getComparatorFactoryClass();
-        }
-    }
-
     private SelectionSorter<Solution_, Object> determineSorter(GenuineVariableDescriptor<Solution_> variableDescriptor,
             SelectionOrder resolvedSelectionOrder, ClassInstanceCache instanceCache) {
         if (resolvedSelectionOrder != SORTED) {
@@ -263,8 +220,8 @@ public class ValueSelectorFactory<Solution_>
         }
         SelectionSorter<Solution_, Object> sorter;
         var sorterManner = config.getSorterManner();
-        var comparatorClass = determineComparatorClass(config);
-        var comparatorFactoryClass = determineComparatorFactoryClass(config);
+        var comparatorClass = config.getComparatorClass();
+        var comparatorFactoryClass = config.getComparatorFactoryClass();
         if (sorterManner != null) {
             if (!ValueSelectorConfig.hasSorter(sorterManner, variableDescriptor)) {
                 return null;
@@ -272,11 +229,11 @@ public class ValueSelectorFactory<Solution_>
             sorter = ValueSelectorConfig.determineSorter(sorterManner, variableDescriptor);
         } else if (comparatorClass != null) {
             Comparator<Object> sorterComparator =
-                    instanceCache.newInstance(config, determineComparatorPropertyName(config), comparatorClass);
+                    instanceCache.newInstance(config, "comparatorClass", comparatorClass);
             sorter = new ComparatorSelectionSorter<>(sorterComparator,
                     SelectionSorterOrder.resolve(config.getSorterOrder()));
         } else if (comparatorFactoryClass != null) {
-            var comparatorFactory = instanceCache.newInstance(config, determineComparatorFactoryPropertyName(config),
+            var comparatorFactory = instanceCache.newInstance(config, "comparatorFactoryClass",
                     comparatorFactoryClass);
             sorter = new ComparatorFactorySelectionSorter<>(comparatorFactory,
                     SelectionSorterOrder.resolve(config.getSorterOrder()));
@@ -285,10 +242,9 @@ public class ValueSelectorFactory<Solution_>
         } else {
             throw new IllegalArgumentException("""
                     The valueSelectorConfig (%s) with resolvedSelectionOrder (%s) needs \
-                    a sorterManner (%s) or a %s (%s) or a %s (%s) \
+                    a sorterManner (%s) or a comparatorClass (%s) or a comparatorFactoryClass (%s) \
                     or a sorterClass (%s)."""
-                    .formatted(config, resolvedSelectionOrder, sorterManner, determineComparatorPropertyName(config),
-                            comparatorClass, determineComparatorFactoryPropertyName(config), comparatorFactoryClass,
+                    .formatted(config, resolvedSelectionOrder, sorterManner, comparatorClass, comparatorFactoryClass,
                             config.getSorterClass()));
         }
         return sorter;
@@ -329,37 +285,34 @@ public class ValueSelectorFactory<Solution_>
 
     protected void validateSorting(SelectionOrder resolvedSelectionOrder) {
         var sorterManner = config.getSorterManner();
-        var comparatorPropertyName = determineComparatorPropertyName(config);
-        var comparatorClass = determineComparatorClass(config);
-        var comparatorFactoryPropertyName = determineComparatorFactoryPropertyName(config);
-        var comparatorFactoryClass = determineComparatorFactoryClass(config);
+        var comparatorClass = config.getComparatorClass();
+        var comparatorFactoryClass = config.getComparatorFactoryClass();
         var sorterOrder = config.getSorterOrder();
         var sorterClass = config.getSorterClass();
         if ((sorterManner != null || comparatorClass != null || comparatorFactoryClass != null
                 || sorterOrder != null || sorterClass != null) && resolvedSelectionOrder != SORTED) {
             throw new IllegalArgumentException("""
                     The valueSelectorConfig (%s) with sorterManner (%s) \
-                    and %s (%s) and %s (%s) and sorterOrder (%s) and sorterClass (%s) \
+                    and comparatorClass (%s) and comparatorFactoryClass (%s) and sorterOrder (%s) and sorterClass (%s) \
                     has a resolvedSelectionOrder (%s) that is not %s."""
-                    .formatted(config, sorterManner, comparatorPropertyName, comparatorClass, comparatorFactoryPropertyName,
-                            comparatorFactoryClass, sorterOrder, sorterClass, resolvedSelectionOrder,
-                            SORTED));
+                    .formatted(config, sorterManner, comparatorClass, comparatorFactoryClass, sorterOrder, sorterClass,
+                            resolvedSelectionOrder, SORTED));
         }
-        assertNotSorterMannerAnd(config, comparatorPropertyName, ValueSelectorFactory::determineComparatorClass);
-        assertNotSorterMannerAnd(config, comparatorFactoryPropertyName,
-                ValueSelectorFactory::determineComparatorFactoryClass);
+        assertNotSorterMannerOrClassAnd(config, "comparatorClass", ValueSelectorConfig::getComparatorClass);
+        assertNotSorterMannerOrClassAnd(config, "comparatorFactoryClass", ValueSelectorConfig::getComparatorFactoryClass);
         assertNotSorterMannerAnd(config, "sorterClass", ValueSelectorConfig::getSorterClass);
-        assertNotSorterMannerAnd(config, "sorterOrder", ValueSelectorConfig::getSorterOrder);
-        assertNotSorterClassAnd(config, comparatorPropertyName, ValueSelectorFactory::determineComparatorClass);
-        assertNotSorterClassAnd(config, comparatorFactoryPropertyName,
-                ValueSelectorFactory::determineComparatorFactoryClass);
-        assertNotSorterClassAnd(config, "sorterOrder", ValueSelectorConfig::getSorterOrder);
+        assertNotSorterMannerOrClassAnd(config, "sorterOrder", ValueSelectorConfig::getSorterOrder);
         if (comparatorClass != null && comparatorFactoryClass != null) {
             throw new IllegalArgumentException(
-                    "The valueSelectorConfig (%s) has both a %s (%s) and a %s (%s)."
-                            .formatted(config, comparatorPropertyName, comparatorClass, comparatorFactoryPropertyName,
-                                    comparatorFactoryClass));
+                    "The valueSelectorConfig (%s) has both a comparatorClass (%s) and a comparatorFactoryClass (%s)."
+                            .formatted(config, comparatorClass, comparatorFactoryClass));
         }
+    }
+
+    private static void assertNotSorterMannerOrClassAnd(ValueSelectorConfig config, String propertyName,
+            Function<ValueSelectorConfig, Object> propertyAccessor) {
+        assertNotSorterMannerAnd(config, propertyName, propertyAccessor);
+        assertNotSorterClassAnd(config, propertyName, propertyAccessor);
     }
 
     private static void assertNotSorterMannerAnd(ValueSelectorConfig config, String propertyName,

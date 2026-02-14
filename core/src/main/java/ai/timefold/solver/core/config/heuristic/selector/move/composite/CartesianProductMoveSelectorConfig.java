@@ -77,24 +77,6 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
         this.moveSelectorConfigList = moveSelectorConfigList;
     }
 
-    /**
-     * @deprecated Prefer {@link #getMoveSelectorList()}.
-     * @return sometimes null
-     */
-    @Deprecated
-    public List<MoveSelectorConfig> getMoveSelectorConfigList() {
-        return getMoveSelectorList();
-    }
-
-    /**
-     * @deprecated Prefer {@link #setMoveSelectorList(List)}.
-     * @param moveSelectorConfigList sometimes null
-     */
-    @Deprecated
-    public void setMoveSelectorConfigList(List<MoveSelectorConfig> moveSelectorConfigList) {
-        setMoveSelectorList(moveSelectorConfigList);
-    }
-
     public @Nullable List<@NonNull MoveSelectorConfig> getMoveSelectorList() {
         return moveSelectorConfigList;
     }

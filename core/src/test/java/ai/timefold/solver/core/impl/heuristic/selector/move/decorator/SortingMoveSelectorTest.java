@@ -64,10 +64,10 @@ class SortingMoveSelectorTest {
         return List.of(
                 new DummySorterMoveSelectorConfig()
                         .withSorterOrder(SelectionSorterOrder.ASCENDING)
-                        .withSorterWeightFactoryClass(TestCodeAssertableComparatorFactory.class),
+                        .withComparatorFactoryClass(TestCodeAssertableComparatorFactory.class),
                 new DummySorterMoveSelectorConfig()
                         .withSorterOrder(SelectionSorterOrder.ASCENDING)
-                        .withSorterComparatorClass(TestCodeAssertableComparator.class),
+                        .withComparatorClass(TestCodeAssertableComparator.class),
                 new DummySorterMoveSelectorConfig()
                         .withSorterOrder(SelectionSorterOrder.ASCENDING)
                         .withComparatorFactoryClass(TestCodeAssertableComparatorFactory.class),

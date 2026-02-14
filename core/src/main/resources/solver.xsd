@@ -153,8 +153,6 @@
                 
         <xs:sequence>
                     
-          <xs:element minOccurs="0" name="terminationClass" type="xs:string"/>
-                    
           <xs:element minOccurs="0" name="terminationCompositionStyle" type="tns:terminationCompositionStyle"/>
                     
           <xs:element minOccurs="0" name="diminishedReturns" type="tns:diminishedReturnsTerminationConfig"/>
@@ -381,11 +379,7 @@
                     
           <xs:element minOccurs="0" name="sorterManner" type="tns:entitySorterManner"/>
                     
-          <xs:element minOccurs="0" name="sorterComparatorClass" type="xs:string"/>
-                    
           <xs:element minOccurs="0" name="comparatorClass" type="xs:string"/>
-                    
-          <xs:element minOccurs="0" name="sorterWeightFactoryClass" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="comparatorFactoryClass" type="xs:string"/>
                     
@@ -513,11 +507,7 @@
                     
           <xs:element minOccurs="0" name="sorterManner" type="tns:valueSorterManner"/>
                     
-          <xs:element minOccurs="0" name="sorterComparatorClass" type="xs:string"/>
-                    
           <xs:element minOccurs="0" name="comparatorClass" type="xs:string"/>
-                    
-          <xs:element minOccurs="0" name="sorterWeightFactoryClass" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="comparatorFactoryClass" type="xs:string"/>
                     
@@ -613,11 +603,7 @@
                     
           <xs:element minOccurs="0" name="filterClass" type="xs:string"/>
                     
-          <xs:element minOccurs="0" name="sorterComparatorClass" type="xs:string"/>
-                    
           <xs:element minOccurs="0" name="comparatorClass" type="xs:string"/>
-                    
-          <xs:element minOccurs="0" name="sorterWeightFactoryClass" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="comparatorFactoryClass" type="xs:string"/>
                     
@@ -939,10 +925,6 @@
                 
         <xs:sequence>
                     
-          <xs:element minOccurs="0" name="minimumSubListSize" type="xs:int"/>
-                    
-          <xs:element minOccurs="0" name="maximumSubListSize" type="xs:int"/>
-                    
           <xs:element minOccurs="0" name="selectReversingMoveToo" type="xs:boolean"/>
                     
           <xs:element minOccurs="0" name="subListSelector" type="tns:subListSelectorConfig"/>
@@ -964,10 +946,6 @@
       <xs:extension base="tns:moveSelectorConfig">
                 
         <xs:sequence>
-                    
-          <xs:element minOccurs="0" name="minimumSubListSize" type="xs:int"/>
-                    
-          <xs:element minOccurs="0" name="maximumSubListSize" type="xs:int"/>
                     
           <xs:element minOccurs="0" name="selectReversingMoveToo" type="xs:boolean"/>
                     
@@ -1353,19 +1331,11 @@
                     
           <xs:element minOccurs="0" name="valueTabuSize" type="xs:int"/>
                     
-          <xs:element minOccurs="0" name="valueTabuRatio" type="xs:double"/>
-                    
           <xs:element minOccurs="0" name="fadingValueTabuSize" type="xs:int"/>
-                    
-          <xs:element minOccurs="0" name="fadingValueTabuRatio" type="xs:double"/>
                     
           <xs:element minOccurs="0" name="moveTabuSize" type="xs:int"/>
                     
           <xs:element minOccurs="0" name="fadingMoveTabuSize" type="xs:int"/>
-                    
-          <xs:element minOccurs="0" name="undoMoveTabuSize" type="xs:int"/>
-                    
-          <xs:element minOccurs="0" name="fadingUndoMoveTabuSize" type="xs:int"/>
                     
           <xs:element minOccurs="0" name="simulatedAnnealingStartingTemperature" type="xs:string"/>
                     
@@ -1629,10 +1599,6 @@
             
       <xs:enumeration value="NONE"/>
             
-      <xs:enumeration value="DECREASING_DIFFICULTY"/>
-            
-      <xs:enumeration value="DECREASING_DIFFICULTY_IF_AVAILABLE"/>
-            
       <xs:enumeration value="DESCENDING"/>
             
       <xs:enumeration value="DESCENDING_IF_AVAILABLE"/>
@@ -1646,14 +1612,6 @@
     <xs:restriction base="xs:string">
             
       <xs:enumeration value="NONE"/>
-            
-      <xs:enumeration value="INCREASING_STRENGTH"/>
-            
-      <xs:enumeration value="INCREASING_STRENGTH_IF_AVAILABLE"/>
-            
-      <xs:enumeration value="DECREASING_STRENGTH"/>
-            
-      <xs:enumeration value="DECREASING_STRENGTH_IF_AVAILABLE"/>
             
       <xs:enumeration value="ASCENDING"/>
             

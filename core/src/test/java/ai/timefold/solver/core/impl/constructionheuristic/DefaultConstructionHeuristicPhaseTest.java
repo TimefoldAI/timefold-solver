@@ -441,8 +441,8 @@ class DefaultConstructionHeuristicPhaseTest {
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
-                        .withEntitySorterManner(EntitySorterManner.DECREASING_DIFFICULTY)
-                        .withValueSorterManner(ValueSorterManner.DECREASING_STRENGTH)
+                        .withEntitySorterManner(EntitySorterManner.DESCENDING)
+                        .withValueSorterManner(ValueSorterManner.DESCENDING)
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // Since we are starting from decreasing strength
@@ -467,8 +467,8 @@ class DefaultConstructionHeuristicPhaseTest {
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
-                        .withEntitySorterManner(EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE)
-                        .withValueSorterManner(ValueSorterManner.DECREASING_STRENGTH_IF_AVAILABLE)
+                        .withEntitySorterManner(EntitySorterManner.DESCENDING_IF_AVAILABLE)
+                        .withValueSorterManner(ValueSorterManner.DESCENDING_IF_AVAILABLE)
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[1], e2[2], and e3[3]
@@ -490,7 +490,7 @@ class DefaultConstructionHeuristicPhaseTest {
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
                         .withEntitySorterManner(EntitySorterManner.NONE)
-                        .withValueSorterManner(ValueSorterManner.DECREASING_STRENGTH)
+                        .withValueSorterManner(ValueSorterManner.DESCENDING)
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[3], e2[2], and e3[1]
@@ -511,8 +511,8 @@ class DefaultConstructionHeuristicPhaseTest {
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
-                        .withEntitySorterManner(EntitySorterManner.DECREASING_DIFFICULTY)
-                        .withValueSorterManner(ValueSorterManner.INCREASING_STRENGTH)
+                        .withEntitySorterManner(EntitySorterManner.DESCENDING)
+                        .withValueSorterManner(ValueSorterManner.ASCENDING)
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[3], e2[2], and e3[1]
@@ -533,8 +533,8 @@ class DefaultConstructionHeuristicPhaseTest {
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
-                        .withEntitySorterManner(EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE)
-                        .withValueSorterManner(ValueSorterManner.INCREASING_STRENGTH_IF_AVAILABLE)
+                        .withEntitySorterManner(EntitySorterManner.DESCENDING_IF_AVAILABLE)
+                        .withValueSorterManner(ValueSorterManner.ASCENDING_IF_AVAILABLE)
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[3], e2[2], and e3[1]
@@ -556,7 +556,7 @@ class DefaultConstructionHeuristicPhaseTest {
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
                         .withEntitySorterManner(EntitySorterManner.NONE)
-                        .withValueSorterManner(ValueSorterManner.INCREASING_STRENGTH)
+                        .withValueSorterManner(ValueSorterManner.ASCENDING)
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[1], e2[2], and e3[3]
@@ -606,7 +606,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withId("sortedEntitySelector")
                                         .withSelectionOrder(SelectionOrder.SORTED)
                                         .withCacheType(SelectionCacheType.PHASE)
-                                        .withSorterManner(EntitySorterManner.DECREASING_DIFFICULTY))
+                                        .withSorterManner(EntitySorterManner.DESCENDING))
                                 .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
                                         .withEntitySelectorConfig(
                                                 new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
@@ -614,7 +614,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 new ValueSelectorConfig()
                                                         .withSelectionOrder(SelectionOrder.SORTED)
                                                         .withCacheType(entityDestinationCacheType)
-                                                        .withSorterManner(ValueSorterManner.DECREASING_STRENGTH))))
+                                                        .withSorterManner(ValueSorterManner.DESCENDING))))
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // Since we are starting from decreasing strength
@@ -654,7 +654,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withId("sortedEntitySelector")
                                         .withSelectionOrder(SelectionOrder.SORTED)
                                         .withCacheType(SelectionCacheType.PHASE)
-                                        .withSorterManner(EntitySorterManner.DECREASING_DIFFICULTY))
+                                        .withSorterManner(EntitySorterManner.DESCENDING))
                                 .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
                                         .withEntitySelectorConfig(
                                                 new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
@@ -662,7 +662,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 new ValueSelectorConfig()
                                                         .withSelectionOrder(SelectionOrder.SORTED)
                                                         .withCacheType(entityDestinationCacheType)
-                                                        .withSorterManner(ValueSorterManner.INCREASING_STRENGTH))))
+                                                        .withSorterManner(ValueSorterManner.ASCENDING))))
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // Since we are starting from increasing strength
@@ -925,7 +925,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withId("sortedValueSelector")
                                         .withSelectionOrder(SelectionOrder.SORTED)
                                         .withCacheType(SelectionCacheType.PHASE)
-                                        .withSorterManner(ValueSorterManner.DECREASING_STRENGTH))
+                                        .withSorterManner(ValueSorterManner.DESCENDING))
                                 .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
@@ -934,7 +934,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 .withEntitySelectorConfig(new EntitySelectorConfig()
                                                         .withSelectionOrder(SelectionOrder.SORTED)
                                                         .withCacheType(entityDestinationCacheType)
-                                                        .withSorterManner(EntitySorterManner.DECREASING_DIFFICULTY)))))
+                                                        .withSorterManner(EntitySorterManner.DESCENDING)))))
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // Since we are starting from decreasing strength
@@ -985,7 +985,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withId("sortedValueSelector")
                                         .withSelectionOrder(SelectionOrder.SORTED)
                                         .withCacheType(SelectionCacheType.PHASE)
-                                        .withSorterManner(ValueSorterManner.DECREASING_STRENGTH))
+                                        .withSorterManner(ValueSorterManner.DESCENDING))
                                 .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
@@ -1027,7 +1027,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withId("sortedValueSelector")
                                         .withSelectionOrder(SelectionOrder.SORTED)
                                         .withCacheType(SelectionCacheType.PHASE)
-                                        .withSorterManner(ValueSorterManner.INCREASING_STRENGTH))
+                                        .withSorterManner(ValueSorterManner.ASCENDING))
                                 .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
@@ -1036,7 +1036,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 .withEntitySelectorConfig(new EntitySelectorConfig()
                                                         .withSelectionOrder(SelectionOrder.SORTED)
                                                         .withCacheType(entityDestinationCacheType)
-                                                        .withSorterManner(EntitySorterManner.DECREASING_DIFFICULTY)))))
+                                                        .withSorterManner(EntitySorterManner.DESCENDING)))))
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[3], e2[2], and e3[1]
@@ -1073,7 +1073,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withId("sortedValueSelector")
                                         .withSelectionOrder(SelectionOrder.SORTED)
                                         .withCacheType(SelectionCacheType.PHASE)
-                                        .withSorterManner(ValueSorterManner.INCREASING_STRENGTH))
+                                        .withSorterManner(ValueSorterManner.ASCENDING))
                                 .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
@@ -1273,7 +1273,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 .withId("sortedEntitySelector")
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withSorterWeightFactoryClass(TestdataObjectSortableDescendingFactory.class))
+                                                .withComparatorFactoryClass(TestdataObjectSortableDescendingFactory.class))
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig()
                                                         .withMimicSelectorRef("sortedValueSelector"))
@@ -1307,7 +1307,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 .withId("sortedEntitySelector")
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withSorterComparatorClass(TestdataObjectSortableDescendingComparator.class))
+                                                .withComparatorClass(TestdataObjectSortableDescendingComparator.class))
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig()
                                                         .withMimicSelectorRef("sortedValueSelector"))
@@ -1374,7 +1374,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withValueSelectorConfig(new ValueSelectorConfig()
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withSorterWeightFactoryClass(TestdataObjectSortableDescendingFactory.class)))),
+                                                .withComparatorFactoryClass(TestdataObjectSortableDescendingFactory.class)))),
                 new int[] { 2, 1, 0 },
                 // Only values are sorted in descending order
                 false));
@@ -1402,7 +1402,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withValueSelectorConfig(new ValueSelectorConfig()
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withSorterComparatorClass(TestdataObjectSortableDescendingComparator.class)))),
+                                                .withComparatorClass(TestdataObjectSortableDescendingComparator.class)))),
                 new int[] { 2, 1, 0 },
                 // Only values are sorted in descending order
                 false));
@@ -1464,7 +1464,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                                         .withId("sortedValueSelector")
                                                         .withSelectionOrder(SelectionOrder.SORTED)
                                                         .withCacheType(SelectionCacheType.PHASE)
-                                                        .withSorterManner(ValueSorterManner.DECREASING_STRENGTH))
+                                                        .withSorterManner(ValueSorterManner.DESCENDING))
                                                 .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
                                                         .withValueSelectorConfig(
                                                                 new ValueSelectorConfig()
@@ -1475,7 +1475,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                                                         .withSelectionOrder(SelectionOrder.SORTED)
                                                                         .withCacheType(SelectionCacheType.PHASE)
                                                                         .withSorterManner(
-                                                                                EntitySorterManner.DECREASING_DIFFICULTY))))));
+                                                                                EntitySorterManner.DESCENDING))))));
         var solution = TestdataListSortableEntityProvidingSolution.generateSolution(3, 3, true);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .hasMessageContaining("resolvedSelectionOrder (SORTED) which does not support the resolvedCacheType (PHASE)")
