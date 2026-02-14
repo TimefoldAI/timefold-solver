@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectIntegerId;
 import ai.timefold.solver.core.testdomain.interfaces.TestdataInterfaceEntity;
 import ai.timefold.solver.core.testdomain.interfaces.TestdataInterfaceValue;

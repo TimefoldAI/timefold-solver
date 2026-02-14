@@ -1,5 +1,9 @@
 package ai.timefold.solver.core.impl.localsearch;
 
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -18,13 +22,10 @@ import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-
-import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Execution(ExecutionMode.CONCURRENT)
 class DefaultLocalSearchPhaseTest {

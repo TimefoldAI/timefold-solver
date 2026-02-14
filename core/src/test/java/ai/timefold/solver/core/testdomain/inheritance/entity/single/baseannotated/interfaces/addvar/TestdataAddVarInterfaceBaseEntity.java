@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.interfaces.addvar;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.entity.PlanningId;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 @PlanningEntity

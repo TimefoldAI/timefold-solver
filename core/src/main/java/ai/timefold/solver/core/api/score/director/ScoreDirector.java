@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.api.score.director;
 
-import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.entity.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
@@ -139,8 +138,7 @@ public interface ScoreDirector<Solution_> {
      * to this {@link ScoreDirector}'s internal working instance.
      * Useful for move rebasing and in a {@link ProblemChange}.
      * <p>
-     * Matching is determined by the {@link LookUpStrategyType} on {@link PlanningSolution}.
-     * Matching uses a {@link PlanningId} by default.
+     * Matching uses {@link PlanningId}.
      *
      * @return null if externalObject is null
      * @throws IllegalArgumentException if there is no workingObject for externalObject, if it cannot be looked up
@@ -156,7 +154,7 @@ public interface ScoreDirector<Solution_> {
      * It's recommended to use {@link #lookUpWorkingObject(Object)} instead,
      * especially in move rebasing code.
      *
-     * @return null if externalObject is null or if there is no workingObject for externalObject
+     * @return null if externalObject is null, or if there is no workingObject for externalObject
      * @throws IllegalArgumentException if it cannot be looked up or if the externalObject's class is not supported
      * @throws IllegalStateException if it cannot be looked up
      * @param <E> the object type

@@ -197,7 +197,7 @@ Create the `src/main/java/org/acme/schooltimetabling/domain/Lesson.java` class:
 package org.acme.schooltimetabling.domain;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.entity.PlanningId;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 @PlanningEntity
@@ -283,7 +283,7 @@ Create the `src/main/kotlin/org/acme/schooltimetabling/domain/Lesson.kt` class:
 package org.acme.schooltimetabling.domain
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity
-import ai.timefold.solver.core.api.domain.lookup.PlanningId
+import ai.timefold.solver.core.api.domain.entity.PlanningId
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable
 
 @PlanningEntity

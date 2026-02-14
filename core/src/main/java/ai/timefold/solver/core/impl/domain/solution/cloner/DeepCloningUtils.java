@@ -29,7 +29,7 @@ import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
 
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.entity.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.cloner.DeepPlanningClone;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.Score;
@@ -39,7 +39,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 public final class DeepCloningUtils {
 
     // Instances of these JDK classes will never be deep-cloned.
-    public static final Set<Class<?>> IMMUTABLE_CLASSES = Set.of(
+    private static final Set<Class<?>> VALUE_CLASSES = Set.of(
             // Numbers
             Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, BigInteger.class, BigDecimal.class,
             // Optional
@@ -112,7 +112,7 @@ public final class DeepCloningUtils {
             }
             return true;
         }
-        return IMMUTABLE_CLASSES.contains(clz);
+        return VALUE_CLASSES.contains(clz);
     }
 
     /**

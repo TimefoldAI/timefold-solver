@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.domain.lookup;
 
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
-import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectIntegerId;
 import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectMultipleIds;
 import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectNoId;

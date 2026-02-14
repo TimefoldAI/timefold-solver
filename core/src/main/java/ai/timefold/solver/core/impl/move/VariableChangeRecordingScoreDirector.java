@@ -17,6 +17,8 @@ import ai.timefold.solver.core.impl.score.director.RevertableScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 
+import org.jspecify.annotations.Nullable;
+
 public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extends Score<Score_>>
         implements RevertableScoreDirector<Solution_> {
 
@@ -220,7 +222,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
     }
 
     @Override
-    public <E> E lookUpWorkingObjectOrReturnNull(E externalObject) {
+    public <E> @Nullable E lookUpWorkingObjectOrReturnNull(E externalObject) {
         return Objects.requireNonNull(backingScoreDirector).lookUpWorkingObjectOrReturnNull(externalObject);
     }
 

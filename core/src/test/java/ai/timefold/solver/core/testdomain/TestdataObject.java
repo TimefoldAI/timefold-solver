@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.testdomain;
 
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.entity.PlanningId;
 import ai.timefold.solver.core.testutil.CodeAssertable;
 
 public class TestdataObject implements CodeAssertable {

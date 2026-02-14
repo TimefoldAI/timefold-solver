@@ -1,6 +1,7 @@
-package ai.timefold.solver.core.api.domain.lookup;
+package ai.timefold.solver.core.impl.domain.lookup;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.entity.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
@@ -8,11 +9,9 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * Determines how {@link ScoreDirector#lookUpWorkingObject(Object)} maps
  * a {@link ProblemFactCollectionProperty problem fact} or a {@link PlanningEntity planning entity}
  * from an external copy to the internal one.
- * 
- * @deprecated When multi-threaded solving, ensure your domain classes use {@link PlanningId} instead.
  */
-@Deprecated(forRemoval = true, since = "1.10.0")
-public enum LookUpStrategyType {
+enum LookUpStrategyType {
+
     /**
      * Map by the same {@link PlanningId} field or method.
      * If there is no such field or method,
@@ -28,14 +27,7 @@ public enum LookUpStrategyType {
      */
     PLANNING_ID_OR_FAIL_FAST,
     /**
-     * Map by {@link Object#equals(Object) equals(Object)} and {@link Object#hashCode() hashCode()}.
-     * If any of these two methods is not overridden by the working object's class or some of its superclasses,
-     * {@link ScoreDirector#lookUpWorkingObject(Object)} must not be used because it cannot work correctly with
-     * {@link Object}'s equals and hashCode implementations.
-     */
-    EQUALITY,
-    /**
-     * There is no mapping and {@link ScoreDirector#lookUpWorkingObject(Object)} must not be used.
+     * Only used in testing; do not use in production code.
      */
     NONE;
 

@@ -3,70 +3,70 @@ package ai.timefold.solver.core.impl.domain.lookup;
 import java.util.HashMap;
 import java.util.Map;
 
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.entity.PlanningId;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * @see PlanningId
  * @see ScoreDirector#lookUpWorkingObject(Object)
  */
-public class LookUpManager {
+@NullMarked
+public final class LookUpManager {
 
     private final LookUpStrategyResolver lookUpStrategyResolver;
-
-    private Map<Object, Object> idToWorkingObjectMap;
+    private final Map<Object, Object> idToWorkingObjectMap = new HashMap<>();
 
     public LookUpManager(LookUpStrategyResolver lookUpStrategyResolver) {
         this.lookUpStrategyResolver = lookUpStrategyResolver;
-        reset();
     }
 
     public void reset() {
-        idToWorkingObjectMap = new HashMap<>();
+        idToWorkingObjectMap.clear();
     }
 
     public void addWorkingObject(Object workingObject) {
-        LookUpStrategy lookUpStrategy = lookUpStrategyResolver.determineLookUpStrategy(workingObject);
+        var lookUpStrategy = lookUpStrategyResolver.determineLookUpStrategy(workingObject);
         lookUpStrategy.addWorkingObject(idToWorkingObjectMap, workingObject);
     }
 
     public void removeWorkingObject(Object workingObject) {
-        LookUpStrategy lookUpStrategy = lookUpStrategyResolver.determineLookUpStrategy(workingObject);
+        var lookUpStrategy = lookUpStrategyResolver.determineLookUpStrategy(workingObject);
         lookUpStrategy.removeWorkingObject(idToWorkingObjectMap, workingObject);
     }
 
     /**
      * As defined by {@link ScoreDirector#lookUpWorkingObject(Object)}.
      *
-     * @param externalObject sometimes null
      * @return null if externalObject is null
      * @throws IllegalArgumentException if there is no workingObject for externalObject, if it cannot be looked up
      *         or if the externalObject's class is not supported
      * @throws IllegalStateException if it cannot be looked up
      * @param <E> the object type
      */
-    public <E> E lookUpWorkingObject(E externalObject) {
+    public <E> @Nullable E lookUpWorkingObject(@Nullable E externalObject) {
         if (externalObject == null) {
             return null;
         }
-        LookUpStrategy lookUpStrategy = lookUpStrategyResolver.determineLookUpStrategy(externalObject);
+        var lookUpStrategy = lookUpStrategyResolver.determineLookUpStrategy(externalObject);
         return lookUpStrategy.lookUpWorkingObject(idToWorkingObjectMap, externalObject);
     }
 
     /**
      * As defined by {@link ScoreDirector#lookUpWorkingObjectOrReturnNull(Object)}.
      *
-     * @param externalObject sometimes null
-     * @return null if externalObject is null or if there is no workingObject for externalObject
+     * @return null if externalObject is null, or if there is no workingObject for externalObject
      * @throws IllegalArgumentException if it cannot be looked up or if the externalObject's class is not supported
      * @throws IllegalStateException if it cannot be looked up
      * @param <E> the object type
      */
-    public <E> E lookUpWorkingObjectOrReturnNull(E externalObject) {
+    public <E> @Nullable E lookUpWorkingObjectOrReturnNull(@Nullable E externalObject) {
         if (externalObject == null) {
             return null;
         }
-        LookUpStrategy lookUpStrategy = lookUpStrategyResolver.determineLookUpStrategy(externalObject);
+        var lookUpStrategy = lookUpStrategyResolver.determineLookUpStrategy(externalObject);
         return lookUpStrategy.lookUpWorkingObjectIfExists(idToWorkingObjectMap, externalObject);
     }
 

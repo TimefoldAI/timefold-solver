@@ -23,8 +23,6 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
-
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

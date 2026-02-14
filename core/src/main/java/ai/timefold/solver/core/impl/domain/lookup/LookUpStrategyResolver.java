@@ -1,91 +1,80 @@
 package ai.timefold.solver.core.impl.domain.lookup;
 
-import java.lang.reflect.Method;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
-import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
-import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.entity.PlanningId;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.cloner.DeepCloningUtils;
-import ai.timefold.solver.core.impl.util.ConcurrentMemoization;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * This class is thread-safe.
  */
+@NullMarked
 public final class LookUpStrategyResolver {
 
     private final LookUpStrategyType lookUpStrategyType;
     private final DomainAccessType domainAccessType;
     private final MemberAccessorFactory memberAccessorFactory;
-    private final ConcurrentMap<Class<?>, LookUpStrategy> decisionCache = new ConcurrentMemoization<>();
+    private final Map<Class<?>, LookUpStrategy> decisionCache = new ConcurrentHashMap<>();
 
-    public LookUpStrategyResolver(DescriptorPolicy descriptorPolicy, LookUpStrategyType lookUpStrategyType) {
+    public LookUpStrategyResolver(DescriptorPolicy descriptorPolicy) {
+        this(descriptorPolicy, LookUpStrategyType.PLANNING_ID_OR_NONE);
+    }
+
+    LookUpStrategyResolver(DescriptorPolicy descriptorPolicy, LookUpStrategyType lookUpStrategyType) {
         this.lookUpStrategyType = lookUpStrategyType;
         this.domainAccessType = descriptorPolicy.getDomainAccessType();
         this.memberAccessorFactory = descriptorPolicy.getMemberAccessorFactory();
     }
 
     /**
-     * This method is thread-safe.
+     * This method is thread-safe,
+     * in a sense that it can be called by multiple threads at the same time,
+     * and it will always return the same result for the same input.
      *
      * @param object never null
      * @return never null
      */
     public LookUpStrategy determineLookUpStrategy(Object object) {
-        return decisionCache.computeIfAbsent(object.getClass(), objectClass -> {
+        var objectClass = object.getClass();
+        var decision = decisionCache.get(objectClass);
+        if (decision == null) { // Simulate computeIfAbsent, avoiding creating a lambda on the hot path.
             if (DeepCloningUtils.isImmutable(objectClass)) {
-                return new ImmutableLookUpStrategy();
+                decision = new ImmutableLookUpStrategy();
+            } else {
+                decision = switch (lookUpStrategyType) {
+                    case NONE -> new NoneLookUpStrategy();
+                    case PLANNING_ID_OR_NONE -> {
+                        var memberAccessor =
+                                ConfigUtils.findPlanningIdMemberAccessor(objectClass, memberAccessorFactory, domainAccessType);
+                        if (memberAccessor == null) {
+                            yield new NoneLookUpStrategy();
+                        }
+                        yield new PlanningIdLookUpStrategy(memberAccessor);
+                    }
+                    case PLANNING_ID_OR_FAIL_FAST -> {
+                        var memberAccessor =
+                                ConfigUtils.findPlanningIdMemberAccessor(objectClass, memberAccessorFactory, domainAccessType);
+                        if (memberAccessor == null) {
+                            throw new IllegalArgumentException("""
+                                    The class (%s) does not have a @%s annotation, but the lookUpStrategyType (%s) requires it.
+                                    Maybe add a @%s annotation?"""
+                                    .formatted(objectClass, PlanningId.class.getSimpleName(), lookUpStrategyType,
+                                            PlanningId.class.getSimpleName()));
+                        }
+                        yield new PlanningIdLookUpStrategy(memberAccessor);
+                    }
+                };
+                decisionCache.put(objectClass, decision);
             }
-            return switch (lookUpStrategyType) {
-                case PLANNING_ID_OR_NONE -> {
-                    var memberAccessor =
-                            ConfigUtils.findPlanningIdMemberAccessor(objectClass, memberAccessorFactory, domainAccessType);
-                    if (memberAccessor == null) {
-                        yield new NoneLookUpStrategy();
-                    }
-                    yield new PlanningIdLookUpStrategy(memberAccessor);
-                }
-                case PLANNING_ID_OR_FAIL_FAST -> {
-                    var memberAccessor =
-                            ConfigUtils.findPlanningIdMemberAccessor(objectClass, memberAccessorFactory, domainAccessType);
-                    if (memberAccessor == null) {
-                        throw new IllegalArgumentException("The class (" + objectClass
-                                + ") does not have a @" + PlanningId.class.getSimpleName() + " annotation,"
-                                + " but the lookUpStrategyType (" + lookUpStrategyType + ") requires it.\n"
-                                + "Maybe add the @" + PlanningId.class.getSimpleName() + " annotation"
-                                + " or change the @" + PlanningSolution.class.getSimpleName() + " annotation's "
-                                + LookUpStrategyType.class.getSimpleName() + ".");
-                    }
-                    yield new PlanningIdLookUpStrategy(memberAccessor);
-                }
-                case EQUALITY -> {
-                    Method equalsMethod;
-                    Method hashCodeMethod;
-                    try {
-                        equalsMethod = objectClass.getMethod("equals", Object.class);
-                        hashCodeMethod = objectClass.getMethod("hashCode");
-                    } catch (NoSuchMethodException e) {
-                        throw new IllegalStateException(
-                                "Impossible state because equals() and hashCode() always exist.", e);
-                    }
-                    if (equalsMethod.getDeclaringClass().equals(Object.class)) {
-                        throw new IllegalArgumentException("The class (" + objectClass.getSimpleName()
-                                + ") doesn't override the equals() method, neither does any superclass.");
-                    }
-                    if (hashCodeMethod.getDeclaringClass().equals(Object.class)) {
-                        throw new IllegalArgumentException("The class (" + objectClass.getSimpleName()
-                                + ") overrides equals() but neither it nor any superclass"
-                                + " overrides the hashCode() method.");
-                    }
-                    yield new EqualsLookUpStrategy();
-                }
-                case NONE -> new NoneLookUpStrategy();
-            };
-        });
+        }
+        return decision;
     }
 
 }
