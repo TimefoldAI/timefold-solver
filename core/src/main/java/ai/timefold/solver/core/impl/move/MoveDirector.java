@@ -10,7 +10,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVa
 import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
@@ -276,7 +275,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      * Execute a given move and make sure shadow variables are up to date after that.
      */
     public final void execute(Move<Solution_> move) {
-        MoveAdapters.unadapt(move).execute(this);
+        move.execute(this);
         externalScoreDirector.triggerVariableListeners();
     }
 

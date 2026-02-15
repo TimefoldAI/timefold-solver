@@ -4,9 +4,9 @@
 :sectnums:
 :icons: font
 
-IMPORTANT: The Neighborhoods API is an active research project.
+IMPORTANT: The Neighborhoods API is a preview feature.
 It intends to simplify the creation of custom moves, eventually replacing xref:optimization-algorithms/move-selector-reference.adoc[move selectors].
-The component is under development and many key features are yet to be delivered.
+The component is under development and key features are yet to be delivered.
 While we believe that the basic building blocks of the API are already stable,
 we reserve the right to change the API or remove any part of it.
 Your feedback is highly appreciated and will be imperative in shaping the future of this component.
@@ -78,6 +78,11 @@ The `Move` interface specifies the following methods that must be implemented:
 `void execute(MutableSolutionView solutionView)`::
 This method makes changes to the given solution.
 `MutableSolutionView` provides methods to safely modify the planning variables of the working solution.
+
+NOTE: `MutableSolutionView` intends to be a rich API that provides all the necessary methods
+to modify the solution in a safe and efficient way.
+If you are missing an operation that you need to implement your move,
+please reach out to us so we can consider adding it to the API.
 
 For compatibility with xref:optimization-algorithms/local-search.adoc#tabuSearch[Tabu Search],
 it is also recommended to override the following methods:

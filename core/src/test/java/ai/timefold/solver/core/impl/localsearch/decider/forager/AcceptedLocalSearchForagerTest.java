@@ -10,7 +10,7 @@ import java.util.Random;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
-import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.finalist.HighestScoreFinalistPodium;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -231,7 +231,7 @@ class AcceptedLocalSearchForagerTest {
     private static LocalSearchMoveScope<TestdataSolution> createMoveScope(LocalSearchStepScope<TestdataSolution> stepScope,
             SimpleScore score, boolean accepted) {
         LocalSearchMoveScope<TestdataSolution> moveScope =
-                new LocalSearchMoveScope<>(stepScope, 0, new DummyMove());
+                new LocalSearchMoveScope<>(stepScope, 0, new SelectorBasedDummyMove());
         moveScope.setInitializedScore(score);
         moveScope.setAccepted(accepted);
         return moveScope;

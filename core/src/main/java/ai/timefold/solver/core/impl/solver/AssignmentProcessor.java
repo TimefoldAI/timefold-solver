@@ -14,8 +14,8 @@ import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListUnassignMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -61,7 +61,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
                 if (elementPosition instanceof PositionInList positionInList) { // Unassign the cloned element.
                     var entity = positionInList.entity();
                     var index = positionInList.index();
-                    moveDirector.execute(new ListUnassignMove<>(listVariableDescriptor, entity, index));
+                    moveDirector.execute(new SelectorBasedListUnassignMove<>(listVariableDescriptor, entity, index));
                 }
             }
         } else {
@@ -73,7 +73,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
                     continue;
                 }
                 // Uninitialize the basic variable.
-                moveDirector.execute(new ChangeMove<>(basicVariableDescriptor, clonedElement, null));
+                moveDirector.execute(new SelectorBasedChangeMove<>(basicVariableDescriptor, clonedElement, null));
             }
         }
         scoreDirector.triggerVariableListeners();

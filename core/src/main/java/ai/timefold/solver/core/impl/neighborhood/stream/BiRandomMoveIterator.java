@@ -8,6 +8,7 @@ import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
@@ -87,7 +88,7 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
                 leftTuple.setStore(rightIteratorStoreIndex, null);
             }
             if (nextMove != null) {
-                if (nextMove instanceof ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) {
+                if (nextMove instanceof AbstractSelectorBasedMove<Solution_> legacyMove) {
                     throw new UnsupportedOperationException("""
                             Neighborhoods do not support legacy moves.
                             Please refactor your code (%s) to use the new Move API."""

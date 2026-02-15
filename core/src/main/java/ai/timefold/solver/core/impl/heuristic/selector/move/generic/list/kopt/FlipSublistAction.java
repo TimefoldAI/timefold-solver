@@ -6,7 +6,8 @@ import java.util.List;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 
 /**
- * Flips a sublist of a list variable, (the same thing as a {@link TwoOptListMove}, but no shift to restore the original
+ * Flips a sublist of a list variable, (the same thing as a {@link SelectorBasedTwoOptListMove}, but no shift to restore the
+ * original
  * origin).
  * For instance, given [0, 1, 2, 3, 4], fromIndexInclusive = 1, toIndexExclusive = 3,
  * the list after the move would be [0, 3, 2, 1, 4].

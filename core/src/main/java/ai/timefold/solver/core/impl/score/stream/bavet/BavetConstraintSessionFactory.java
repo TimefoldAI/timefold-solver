@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,7 +26,6 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTrack
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -71,7 +71,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         var scoreDefinition = solutionDescriptor.<Score_> getScoreDefinition();
         var zeroScore = scoreDefinition.getZeroScore();
         var constraintStreamSet = new LinkedHashSet<BavetAbstractConstraintStream<Solution_>>();
-        var constraintWeightMap = CollectionUtils.<Constraint, Score_> newHashMap(constraints.size());
+        var constraintWeightMap = HashMap.<Constraint, Score_> newHashMap(constraints.size());
 
         // Only log constraint weights if logging is enabled; otherwise we don't need to build the string.
         var constraintWeightLoggingEnabled = !scoreDirectorDerived && LOGGER.isEnabledForLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL);

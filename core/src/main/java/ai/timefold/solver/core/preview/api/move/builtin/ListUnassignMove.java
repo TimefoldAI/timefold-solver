@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.SequencedCollection;
 
 import ai.timefold.solver.core.impl.move.AbstractMove;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -40,17 +40,17 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
 
     @Override
     public Move<Solution_> rebase(Rebaser rebaser) {
-        return new ListUnassignMove<>(variableMetaModel, rebaser.rebase(sourceEntity), sourceIndex);
+        return new ListUnassignMove<>(variableMetaModel, Objects.requireNonNull(rebaser.rebase(sourceEntity)), sourceIndex);
     }
 
     @Override
-    public Collection<Entity_> getPlanningEntities() {
-        return Collections.singleton(sourceEntity);
+    public SequencedCollection<Object> getPlanningEntities() {
+        return List.of(sourceEntity);
     }
 
     @Override
-    public Collection<Value_> getPlanningValues() {
-        return Collections.singleton(getUnassignedValue());
+    public SequencedCollection<Object> getPlanningValues() {
+        return List.of(getUnassignedValue());
     }
 
     private Value_ getUnassignedValue() {

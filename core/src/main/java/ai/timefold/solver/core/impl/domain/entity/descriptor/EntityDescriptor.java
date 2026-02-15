@@ -60,7 +60,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Comparat
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.move.MoveDirector;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
@@ -486,7 +485,8 @@ public class EntityDescriptor<Solution_> {
                     redefinedShadowVariables, redefinedShadowVariables, entityClass));
         }
         effectiveShadowVariableDescriptorMap.putAll(declaredShadowVariableDescriptorMap);
-        effectiveVariableDescriptorMap = CollectionUtils
+
+        effectiveVariableDescriptorMap = LinkedHashMap
                 .newLinkedHashMap(effectiveGenuineVariableDescriptorMap.size() + effectiveShadowVariableDescriptorMap.size());
         effectiveVariableDescriptorMap.putAll(effectiveGenuineVariableDescriptorMap);
         effectiveVariableDescriptorMap.putAll(effectiveShadowVariableDescriptorMap);

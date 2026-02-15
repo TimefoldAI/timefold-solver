@@ -9,10 +9,10 @@ import java.util.TreeMap;
 import java.util.function.ToDoubleFunction;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 final class BiasedRandomUnionMoveIterator<Solution_> extends SelectionIterator<Move<Solution_>> {
 

@@ -5,9 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 final class UniformRandomUnionMoveIterator<Solution_> extends SelectionIterator<Move<Solution_>> {
 

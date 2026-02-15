@@ -12,7 +12,6 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, FlattenedItem_>
         extends AbstractNode
@@ -124,7 +123,8 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
         }
 
         FlattenBagByItem(int size) {
-            this(CollectionUtils.newLinkedHashMap(size));
+
+            this(LinkedHashMap.newLinkedHashMap(size));
         }
 
         /**

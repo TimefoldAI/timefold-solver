@@ -22,13 +22,13 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove;
 import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartitioner;
+import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -236,26 +236,27 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
     }
 
     public static class DummyChangeMoveFilter
-            implements SelectionFilter<TestdataSolution, ChangeMove<TestdataSolution>> {
+            implements SelectionFilter<TestdataSolution, SelectorBasedChangeMove<TestdataSolution>> {
         @Override
-        public boolean accept(ScoreDirector<TestdataSolution> scoreDirector, ChangeMove<TestdataSolution> selection) {
+        public boolean accept(ScoreDirector<TestdataSolution> scoreDirector,
+                SelectorBasedChangeMove<TestdataSolution> selection) {
             return false;
         }
     }
 
-    public static class DummyMoveIteratorFactory implements MoveIteratorFactory<TestdataSolution, DummyMove> {
+    public static class DummyMoveIteratorFactory implements MoveIteratorFactory<TestdataSolution, SelectorBasedDummyMove> {
         @Override
         public long getSize(ScoreDirector<TestdataSolution> scoreDirector) {
             return 0;
         }
 
         @Override
-        public Iterator<DummyMove> createOriginalMoveIterator(ScoreDirector<TestdataSolution> scoreDirector) {
+        public Iterator<SelectorBasedDummyMove> createOriginalMoveIterator(ScoreDirector<TestdataSolution> scoreDirector) {
             return null;
         }
 
         @Override
-        public Iterator<DummyMove> createRandomMoveIterator(ScoreDirector<TestdataSolution> scoreDirector,
+        public Iterator<SelectorBasedDummyMove> createRandomMoveIterator(ScoreDirector<TestdataSolution> scoreDirector,
                 RandomGenerator workingRandom) {
             return null;
         }

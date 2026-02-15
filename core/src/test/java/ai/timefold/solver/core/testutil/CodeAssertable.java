@@ -3,22 +3,22 @@ package ai.timefold.solver.core.testutil;
 import java.util.List;
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedCompositeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.PillarChangeMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAssignMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListSwapMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListChangeMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListUnassignMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedPillarChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedSwapMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListAssignMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListSwapMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListUnassignMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedSubListChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedSubListSwapMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedSubListUnassignMove;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public interface CodeAssertable {
 
@@ -26,89 +26,109 @@ public interface CodeAssertable {
 
     static CodeAssertable convert(Object o) {
         Objects.requireNonNull(o);
-        if (o instanceof CodeAssertable assertable) {
-            return assertable;
-        } else if (o instanceof NoChangeMove<?>) {
-            return () -> "No change";
-        } else if (o instanceof ChangeMove<?> changeMove) {
-            final String code = convert(changeMove.getEntity()).getCode()
-                    + "->" + convert(changeMove.getToPlanningValue()).getCode();
-            return () -> code;
-        } else if (o instanceof SwapMove<?> swapMove) {
-            final String code = convert(swapMove.getLeftEntity()).getCode()
-                    + "<->" + convert(swapMove.getRightEntity()).getCode();
-            return () -> code;
-        } else if (o instanceof PillarChangeMove<?> pillarChangeMove) {
-            final String code = pillarChangeMove.getPillar() +
-                    "->" + convert(pillarChangeMove.getToPlanningValue()).getCode();
-            return () -> code;
-        } else if (o instanceof CompositeMove<?> compositeMove) {
-            StringBuilder codeBuilder = new StringBuilder(compositeMove.getMoves().length * 80);
-            for (Move<?> move : compositeMove.getMoves()) {
-                codeBuilder.append("+").append(convert(move).getCode());
+        switch (o) {
+            case CodeAssertable assertable -> {
+                return assertable;
             }
-            final String code = codeBuilder.substring(1);
-            return () -> code;
-        } else if (o instanceof ListAssignMove<?> listAssignMove) {
-            return () -> convert(listAssignMove.getMovedValue())
-                    + " {null->"
-                    + convert(listAssignMove.getDestinationEntity())
-                    + "[" + listAssignMove.getDestinationIndex() + "]}";
-        } else if (o instanceof ListUnassignMove<?> listUnassignMove) {
-            return () -> convert(listUnassignMove.getMovedValue())
-                    + " {" + convert(listUnassignMove.getSourceEntity())
-                    + "[" + listUnassignMove.getSourceIndex() + "]->null}";
-        } else if (o instanceof ListChangeMove<?> listChangeMove) {
-            return () -> convert(listChangeMove.getMovedValue())
-                    + " {" + convert(listChangeMove.getSourceEntity())
-                    + "[" + listChangeMove.getSourceIndex() + "]->"
-                    + convert(listChangeMove.getDestinationEntity())
-                    + "[" + listChangeMove.getDestinationIndex() + "]}";
-        } else if (o instanceof ListSwapMove<?> listSwapMove) {
-            return () -> convert(listSwapMove.getLeftValue())
-                    + " {" + convert(listSwapMove.getLeftEntity())
-                    + "[" + listSwapMove.getLeftIndex() + "]} <-> "
-                    + convert(listSwapMove.getRightValue())
-                    + " {" + convert(listSwapMove.getRightEntity())
-                    + "[" + listSwapMove.getRightIndex() + "]}";
-        } else if (o instanceof SubListChangeMove<?> subListChangeMove) {
-            return () -> "|" + subListChangeMove.getSubListSize()
-                    + "| {" + convert(subListChangeMove.getSourceEntity())
-                    + "[" + subListChangeMove.getFromIndex()
-                    + ".." + subListChangeMove.getToIndex()
-                    + "]-" + (subListChangeMove.isReversing() ? "reversing->" : ">")
-                    + convert(subListChangeMove.getDestinationEntity())
-                    + "[" + subListChangeMove.getDestinationIndex() + "]}";
-        } else if (o instanceof SubListUnassignMove<?> subListUnassignMove) {
-            return () -> "|" + subListUnassignMove.getSubListSize()
-                    + "| {" + convert(subListUnassignMove.getSourceEntity())
-                    + "[" + subListUnassignMove.getFromIndex()
-                    + ".." + subListUnassignMove.getToIndex()
-                    + "]->null}";
-        } else if (o instanceof SubListSwapMove<?> subListSwapMove) {
-            return () -> "{" + convert(subListSwapMove.getLeftSubList()).getCode()
-                    + "} <-" + (subListSwapMove.isReversing() ? "reversing-" : "")
-                    + "> {" + convert(subListSwapMove.getRightSubList()).getCode() + "}";
-        } else if (o instanceof List<?> list) {
-            StringBuilder codeBuilder = new StringBuilder("[");
-            boolean firstElement = true;
-            for (Object element : list) {
-                if (firstElement) {
-                    firstElement = false;
-                } else {
-                    codeBuilder.append(", ");
+            case SelectorBasedNoChangeMove<?> selectorBasedNoChangeMove -> {
+                return () -> "No change";
+            }
+            case SelectorBasedChangeMove<?> changeMove -> {
+                final String code = convert(changeMove.getEntity()).getCode()
+                        + "->" + convert(changeMove.getToPlanningValue()).getCode();
+                return () -> code;
+            }
+            case SelectorBasedSwapMove<?> swapMove -> {
+                final String code = convert(swapMove.getLeftEntity()).getCode()
+                        + "<->" + convert(swapMove.getRightEntity()).getCode();
+                return () -> code;
+            }
+            case SelectorBasedPillarChangeMove<?> pillarChangeMove -> {
+                final String code = pillarChangeMove.getPillar() +
+                        "->" + convert(pillarChangeMove.getToPlanningValue()).getCode();
+                return () -> code;
+            }
+            case SelectorBasedCompositeMove<?> compositeMove -> {
+                StringBuilder codeBuilder = new StringBuilder(compositeMove.getMoves().length * 80);
+                for (Move<?> move : compositeMove.getMoves()) {
+                    codeBuilder.append("+").append(convert(move).getCode());
                 }
-                codeBuilder.append(convert(element).getCode());
+                final String code = codeBuilder.substring(1);
+                return () -> code;
             }
-            codeBuilder.append("]");
-            final String code = codeBuilder.toString();
-            return () -> code;
-        } else if (o instanceof SubList subList) {
-            return () -> convert(subList.entity()) + "[" + subList.fromIndex() + "+" + subList.length() + "]";
-        } else if (o instanceof UnassignedElement unassignedLocation) {
-            return unassignedLocation::toString;
-        } else if (o instanceof PositionInList locationInList) {
-            return () -> convert(locationInList.entity()) + "[" + locationInList.index() + "]";
+            case SelectorBasedListAssignMove<?> listAssignMove -> {
+                return () -> convert(listAssignMove.getMovedValue())
+                        + " {null->"
+                        + convert(listAssignMove.getDestinationEntity())
+                        + "[" + listAssignMove.getDestinationIndex() + "]}";
+            }
+            case SelectorBasedListUnassignMove<?> listUnassignMove -> {
+                return () -> convert(listUnassignMove.getMovedValue())
+                        + " {" + convert(listUnassignMove.getSourceEntity())
+                        + "[" + listUnassignMove.getSourceIndex() + "]->null}";
+            }
+            case SelectorBasedListChangeMove<?> listChangeMove -> {
+                return () -> convert(listChangeMove.getMovedValue())
+                        + " {" + convert(listChangeMove.getSourceEntity())
+                        + "[" + listChangeMove.getSourceIndex() + "]->"
+                        + convert(listChangeMove.getDestinationEntity())
+                        + "[" + listChangeMove.getDestinationIndex() + "]}";
+            }
+            case SelectorBasedListSwapMove<?> listSwapMove -> {
+                return () -> convert(listSwapMove.getLeftValue())
+                        + " {" + convert(listSwapMove.getLeftEntity())
+                        + "[" + listSwapMove.getLeftIndex() + "]} <-> "
+                        + convert(listSwapMove.getRightValue())
+                        + " {" + convert(listSwapMove.getRightEntity())
+                        + "[" + listSwapMove.getRightIndex() + "]}";
+            }
+            case SelectorBasedSubListChangeMove<?> subListChangeMove -> {
+                return () -> "|" + subListChangeMove.getSubListSize()
+                        + "| {" + convert(subListChangeMove.getSourceEntity())
+                        + "[" + subListChangeMove.getFromIndex()
+                        + ".." + subListChangeMove.getToIndex()
+                        + "]-" + (subListChangeMove.isReversing() ? "reversing->" : ">")
+                        + convert(subListChangeMove.getDestinationEntity())
+                        + "[" + subListChangeMove.getDestinationIndex() + "]}";
+            }
+            case SelectorBasedSubListUnassignMove<?> subListUnassignMove -> {
+                return () -> "|" + subListUnassignMove.getSubListSize()
+                        + "| {" + convert(subListUnassignMove.getSourceEntity())
+                        + "[" + subListUnassignMove.getFromIndex()
+                        + ".." + subListUnassignMove.getToIndex()
+                        + "]->null}";
+            }
+            case SelectorBasedSubListSwapMove<?> subListSwapMove -> {
+                return () -> "{" + convert(subListSwapMove.getLeftSubList()).getCode()
+                        + "} <-" + (subListSwapMove.isReversing() ? "reversing-" : "")
+                        + "> {" + convert(subListSwapMove.getRightSubList()).getCode() + "}";
+            }
+            case List<?> list -> {
+                StringBuilder codeBuilder = new StringBuilder("[");
+                boolean firstElement = true;
+                for (Object element : list) {
+                    if (firstElement) {
+                        firstElement = false;
+                    } else {
+                        codeBuilder.append(", ");
+                    }
+                    codeBuilder.append(convert(element).getCode());
+                }
+                codeBuilder.append("]");
+                final String code = codeBuilder.toString();
+                return () -> code;
+            }
+            case SubList subList -> {
+                return () -> convert(subList.entity()) + "[" + subList.fromIndex() + "+" + subList.length() + "]";
+            }
+            case UnassignedElement unassignedLocation -> {
+                return unassignedLocation::toString;
+            }
+            case PositionInList locationInList -> {
+                return () -> convert(locationInList.entity()) + "[" + locationInList.index() + "]";
+            }
+            default -> {
+            }
         }
         throw new AssertionError(("o's class (" + o.getClass() + ") cannot be converted to CodeAssertable."));
     }

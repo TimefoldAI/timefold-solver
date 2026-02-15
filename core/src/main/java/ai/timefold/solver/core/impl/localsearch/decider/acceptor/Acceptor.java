@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor;
 
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.event.LocalSearchPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  * An Acceptor accepts or rejects a selected {@link Move}.

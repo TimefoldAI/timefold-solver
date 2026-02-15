@@ -11,7 +11,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.RevertableScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
@@ -130,7 +130,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
                         """
                                 The fromIndex of afterListVariableChanged (%d) must match the fromIndex of its beforeListVariableChanged counterpart (%d).
                                 Maybe check implementation of your %s."""
-                                .formatted(fromIndex, requiredFromIndex, AbstractMove.class.getSimpleName()));
+                                .formatted(fromIndex, requiredFromIndex, AbstractSelectorBasedMove.class.getSimpleName()));
             }
         }
         variableChanges.add(new ListVariableAfterChangeAction<>(entity, fromIndex, toIndex, variableDescriptor));

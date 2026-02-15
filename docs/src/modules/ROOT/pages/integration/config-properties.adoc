@@ -29,7 +29,7 @@ Enable xref:using-timefold-solver/running-the-solver.adoc#environmentMode[runtim
 implementation during development.
 
 {property_prefix}timefold.solver.{solver_name_prefix}constraint-stream-profiling-enabled::
-Enable xref:constraints-and-score/performance.adoc#constraintProfiling[constraint profiling] to identify the constraints taking the most time in score calculation and thus might be worth optimizing.
+Enable xref:enterprise-edition/enterprise-edition.adoc#constraintProfiling[constraint profiling] to identify the constraints taking the most time in score calculation and thus might be worth optimizing.
 
 {property_prefix}timefold.solver.{solver_name_prefix}daemon::
 Enable xref:responding-to-change/responding-to-change.adoc#daemon[daemon mode].

@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import java.util.Random;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -28,9 +28,10 @@ class ProbabilityMoveSelectorTest {
     @Test
     void randomSelection() {
         MoveSelector<TestdataSolution> childMoveSelector = SelectorTestUtils.mockMoveSelector(
-                new DummyMove("e1"), new DummyMove("e2"), new DummyMove("e3"), new DummyMove("e4"));
+                new SelectorBasedDummyMove("e1"), new SelectorBasedDummyMove("e2"), new SelectorBasedDummyMove("e3"),
+                new SelectorBasedDummyMove("e4"));
 
-        SelectionProbabilityWeightFactory<TestdataSolution, DummyMove> probabilityWeightFactory =
+        SelectionProbabilityWeightFactory<TestdataSolution, SelectorBasedDummyMove> probabilityWeightFactory =
                 (scoreDirector, move) -> {
                     switch (move.getCode()) {
                         case "e1":

@@ -2,16 +2,17 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
@@ -43,14 +44,14 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
         var valueIterator = valueSelector.iterator();
         var ruinedCount = workingRandom.nextInt(minimumRuinedCount, maximumRuinedCount + 1);
         var selectedValueList = new ArrayList<>(ruinedCount);
-        var affectedEntitySet = CollectionUtils.newLinkedHashSet(ruinedCount);
-        var selectedValueSet = Collections.newSetFromMap(CollectionUtils.newIdentityHashMap(ruinedCount));
+        var affectedEntitySet = LinkedHashSet.newLinkedHashSet(ruinedCount);
+        var selectedValueSet = Collections.newSetFromMap(new IdentityHashMap<>(ruinedCount));
         for (var i = 0; i < ruinedCount; i++) {
             var remainingAttempts = ruinedCount;
             while (true) {
                 if (!valueIterator.hasNext()) {
                     // Bail out; cannot select enough unique elements.
-                    return NoChangeMove.getInstance();
+                    return SelectorBasedNoChangeMove.getInstance();
                 }
                 var selectedValue = valueIterator.next();
                 if (selectedValueSet.add(selectedValue)) {
@@ -65,11 +66,11 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
                 }
                 if (remainingAttempts == 0) {
                     // Bail out; cannot select enough unique elements.
-                    return NoChangeMove.getInstance();
+                    return SelectorBasedNoChangeMove.getInstance();
                 }
             }
         }
-        return new ListRuinRecreateMove<>(listVariableStateSupply.getSourceVariableDescriptor(),
+        return new SelectorBasedListRuinRecreateMove<>(listVariableStateSupply.getSourceVariableDescriptor(),
                 constructionHeuristicPhaseBuilder, solverScope, selectedValueList, affectedEntitySet);
     }
 

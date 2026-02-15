@@ -9,8 +9,8 @@ import jakarta.xml.bind.annotation.XmlEnum;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  * The environment mode also allows you to detect common bugs in your implementation.

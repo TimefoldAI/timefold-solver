@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.constructionheuristic.placer;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringMoveSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public class PooledEntityPlacer<Solution_> extends AbstractEntityPlacer<Solution_> implements EntityPlacer<Solution_> {
 
@@ -41,7 +41,7 @@ public class PooledEntityPlacer<Solution_> extends AbstractEntityPlacer<Solution
             if (!moveIterator.hasNext()) {
                 return noUpcomingSelection();
             }
-            return new Placement<>(Placement.toNewMoveIterator(moveIterator));
+            return new Placement<>(moveIterator);
         }
 
     }

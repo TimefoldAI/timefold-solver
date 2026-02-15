@@ -4,10 +4,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractOriginalSwapIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractRandomSwapIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.pillar.PillarSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public class PillarSwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
@@ -69,14 +69,14 @@ public class PillarSwapMoveSelector<Solution_> extends GenericMoveSelector<Solut
             return new AbstractOriginalSwapIterator<>(leftPillarSelector, rightPillarSelector) {
                 @Override
                 protected Move<Solution_> newSwapSelection(List<Object> leftSubSelection, List<Object> rightSubSelection) {
-                    return new PillarSwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
+                    return new SelectorBasedPillarSwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
                 }
             };
         } else {
             return new AbstractRandomSwapIterator<>(leftPillarSelector, rightPillarSelector) {
                 @Override
                 protected Move<Solution_> newSwapSelection(List<Object> leftSubSelection, List<Object> rightSubSelection) {
-                    return new PillarSwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
+                    return new SelectorBasedPillarSwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
                 }
             };
         }

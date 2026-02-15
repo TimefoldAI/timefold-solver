@@ -650,16 +650,16 @@ This is where _Assignment Recommendation API_ comes in.
 
 The Assignment Recommendation API allows you to quickly respond to adhoc changes,
 while providing a selection of the best available options for fitting the change in the existing schedule.
-It doesn't use the full xref:optimization-algorithms/optimization-algorithms.adoc#localSearch[local search algorithm].
+It doesn't use the full xref:optimization-algorithms/local-search.adoc[local search algorithm].
 Instead,
-it uses a simple xref:optimization-algorithms/optimization-algorithms.adoc#constructionHeuristics[greedy algorithm]
+it uses a simple xref:optimization-algorithms/construction-heuristics.adoc[greedy algorithm]
 together with xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental calculation].
 This combination allows the API to find the best possible fit within the existing solution in a matter of milliseconds,
 even for large planning problems.
 
 Once the customer has accepted one of the available options
 and the change has been reflected in the solution,
-the full xref:optimization-algorithms/optimization-algorithms.adoc#localSearch[local search algorithm]
+the full xref:optimization-algorithms/local-search.adoc[local search algorithm]
 can be used to optimize the entire solution around this change.
 This would be an example of <<continuousPlanning,continuous planning>>.
 
@@ -714,7 +714,7 @@ If required, <<continuousPlanning,continuous planning>> can be used to optimize 
 [NOTE]
 ====
 Assignment Recommendation API requires the `SolutionManager` to be configured
-with a xref:optimization-algorithms/optimization-algorithms.adoc#constructionHeuristics[construction heuristic] as the first phase,
+with a xref:optimization-algorithms/construction-heuristics.adoc[construction heuristic] as the first phase,
 as it uses that construction heuristic to find the best fit.
 If there are multiple construction heuristics phases in the xref:using-timefold-solver/configuration.adoc#solverConfiguration[solver configuration],
 or if the first phase is not a construction heuristic
@@ -782,7 +782,7 @@ But problems with the same publication deadline, solved by different organizatio
 are also initially better off with multi-stage planning, because of Conway's law
 and the high risk associated with unifying such groups.
 
-Similarly to xref:optimization-algorithms/optimization-algorithms.adoc#partitionedSearch[Partitioned Search], multi-stage planning leads to suboptimal results.
+Similarly to xref:enterprise-edition/enterprise-edition.adoc#partitionedSearch[Partitioned Search], multi-stage planning leads to suboptimal results.
 Nevertheless, it might be beneficial in order to simplify the maintenance, ownership, and help to start a project.
 
 Do not confuse multi-stage planning with xref:optimization-algorithms/optimization-algorithms.adoc#solverPhase[multi-phase solving].

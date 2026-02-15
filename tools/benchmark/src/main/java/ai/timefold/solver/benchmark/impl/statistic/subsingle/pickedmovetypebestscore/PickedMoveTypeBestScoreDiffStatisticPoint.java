@@ -2,14 +2,14 @@ package ai.timefold.solver.benchmark.impl.statistic.subsingle.pickedmovetypebest
 
 import ai.timefold.solver.benchmark.impl.statistic.StatisticPoint;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedCompositeMove;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public class PickedMoveTypeBestScoreDiffStatisticPoint extends StatisticPoint {
 
     private final long timeMillisSpent;
     /**
-     * Not a {@link Class}{@code <}{@link Move}{@code >} because {@link CompositeMove}s need to be atomized
+     * Not a {@link Class}{@code <}{@link Move}{@code >} because {@link SelectorBasedCompositeMove}s need to be atomized
      * and because that {@link Class} might no longer exist when the benchmark aggregator runs.
      */
     private final String moveType;

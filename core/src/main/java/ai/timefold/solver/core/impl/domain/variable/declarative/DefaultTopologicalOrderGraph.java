@@ -3,13 +3,13 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PrimitiveIterator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
 public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
@@ -23,7 +23,8 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     @SuppressWarnings({ "unchecked" })
     public DefaultTopologicalOrderGraph(final int size) {
         this.nodeIdToTopologicalOrderMap = new int[size];
-        this.componentMap = CollectionUtils.newLinkedHashMap(size);
+
+        this.componentMap = LinkedHashMap.newLinkedHashMap(size);
         this.forwardEdges = new Set[size];
         this.backEdges = new Set[size];
         this.isNodeInLoopedComponent = new boolean[size];

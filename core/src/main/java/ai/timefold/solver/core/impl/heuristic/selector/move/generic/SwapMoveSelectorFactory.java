@@ -21,13 +21,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFact
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class SwapMoveSelectorFactory<Solution_>
         extends AbstractMoveSelectorFactory<Solution_, SwapMoveSelectorConfig> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SwapMoveSelectorFactory.class);
 
     public SwapMoveSelectorFactory(SwapMoveSelectorConfig moveSelectorConfig) {
         // We copy the configuration,
@@ -170,12 +165,6 @@ public class SwapMoveSelectorFactory<Solution_>
 
     private ListSwapMoveSelectorConfig buildListSwapMoveSelectorConfig(VariableDescriptor<?> variableDescriptor,
             boolean inheritFoldedConfig) {
-        LOGGER.warn(
-                """
-                        The swapMoveSelectorConfig ({}) is being used for a list variable.
-                        We are keeping this option through the 1.x release stream for backward compatibility reasons.
-                        Please update your solver config to use {} now.""",
-                config, ListSwapMoveSelectorConfig.class.getSimpleName());
         var listSwapMoveSelectorConfig = new ListSwapMoveSelectorConfig();
         var childValueSelectorConfig = new ValueSelectorConfig(
                 new ValueSelectorConfig(variableDescriptor.getVariableName()));

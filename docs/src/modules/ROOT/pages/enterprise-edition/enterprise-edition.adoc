@@ -239,7 +239,7 @@ and xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelect
 
 To customize the move selectors,
 add a `nearbySelection` element in the `destinationSelector`, `valueSelector` or `subListSelector`
-and use xref:optimization-algorithms/overview.adoc#mimicSelection[mimic selection]
+and use xref:optimization-algorithms/move-selector-reference.adoc#mimicSelection[mimic selection]
 to specify which destination, value, or subList should be nearby the selection.
 
 [source,xml,options="nowrap"]

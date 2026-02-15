@@ -3,15 +3,14 @@ package ai.timefold.solver.core.impl.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public final class CollectionUtils {
 
     /**
@@ -37,7 +36,7 @@ public final class CollectionUtils {
             }
             case 1 -> {
                 List<E> singletonList = new ArrayList<>(1);
-                singletonList.add(originalList.get(0));
+                singletonList.add(originalList.getFirst());
                 return singletonList;
             }
             case 2 -> {
@@ -83,7 +82,7 @@ public final class CollectionUtils {
                  * while still maintaining the original order of the collection.
                  */
                 var resultList = new ArrayList<T>(size);
-                var set = newHashSet(size);
+                var set = HashSet.newHashSet(size);
                 for (T element : collection) {
                     if (set.add(element)) {
                         resultList.add(element);
@@ -95,34 +94,8 @@ public final class CollectionUtils {
         }
     }
 
-    public static <T> Set<T> newHashSet(int size) {
-        return new HashSet<>(calculateCapacityForDefaultLoadFactor(size));
-    }
-
-    private static int calculateCapacityForDefaultLoadFactor(int numElements) {
-        // This guarantees the set/map will never need to grow.
-        return (int) Math.min(Math.ceil(numElements / 0.75d), Integer.MAX_VALUE);
-    }
-
     public static <T> Set<T> newIdentityHashSet(int size) {
-        return Collections.newSetFromMap(CollectionUtils.newIdentityHashMap(size));
-    }
-
-    public static <T> Set<T> newLinkedHashSet(int size) {
-        return new LinkedHashSet<>(calculateCapacityForDefaultLoadFactor(size));
-    }
-
-    public static <K, V> Map<K, V> newHashMap(int size) {
-        return new HashMap<>(calculateCapacityForDefaultLoadFactor(size));
-    }
-
-    public static <K, V> Map<K, V> newIdentityHashMap(int size) {
-        return new IdentityHashMap<>(calculateCapacityForDefaultLoadFactor(size));
-    }
-
-    public static <K, V> Map<K, V> newLinkedHashMap(int size) {
-        return new LinkedHashMap<>(calculateCapacityForDefaultLoadFactor(size));
-
+        return Collections.newSetFromMap(new IdentityHashMap<>(size));
     }
 
     private CollectionUtils() {

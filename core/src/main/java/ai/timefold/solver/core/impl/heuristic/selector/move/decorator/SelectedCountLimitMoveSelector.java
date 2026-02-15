@@ -3,10 +3,10 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.decorator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public class SelectedCountLimitMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
 

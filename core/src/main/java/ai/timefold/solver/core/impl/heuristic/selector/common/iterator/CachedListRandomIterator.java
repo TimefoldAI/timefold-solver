@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  * This {@link Iterator} does not shuffle and is never ending.

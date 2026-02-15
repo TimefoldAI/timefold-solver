@@ -4,13 +4,13 @@ import java.util.Iterator;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 class RandomSubListChangeMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
@@ -47,11 +47,11 @@ class RandomSubListChangeMoveIterator<Solution_> extends UpcomingSelectionIterat
             return noUpcomingSelection();
         } else if (destination instanceof PositionInList destinationElement) {
             var reversing = selectReversingMoveToo && workingRandom.nextBoolean();
-            return new SubListChangeMove<>(listVariableDescriptor, subList, destinationElement.entity(),
+            return new SelectorBasedSubListChangeMove<>(listVariableDescriptor, subList, destinationElement.entity(),
                     destinationElement.index(), reversing);
         } else {
             // TODO add SubListAssignMove
-            return new SubListUnassignMove<>(listVariableDescriptor, subList);
+            return new SelectorBasedSubListUnassignMove<>(listVariableDescriptor, subList);
         }
     }
 }

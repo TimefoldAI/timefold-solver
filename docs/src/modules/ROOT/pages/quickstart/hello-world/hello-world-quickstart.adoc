@@ -934,9 +934,9 @@ Also, create a new file in `src/assembly` directory called `jar-with-dependencie
 
 [source,xml,options="nowrap"]
 ----
-  <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0"
+  <assembly xmlns="https://maven.apache.org/ASSEMBLY/2.1.0"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
+            xsi:schemaLocation="https://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
     <id>jar-with-dependencies-and-services</id>
     <formats>
       <format>jar</format>

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -61,7 +62,7 @@ final class ListVariableState<Solution_> {
                 || externalizedPreviousElementProcessor == null || externalizedNextElementProcessor == null;
         if (requiresPositionMap) {
             if (elementPositionMap == null) {
-                elementPositionMap = CollectionUtils.newIdentityHashMap(unassignedCount);
+                elementPositionMap = new IdentityHashMap<>(unassignedCount);
             } else {
                 elementPositionMap.clear();
             }

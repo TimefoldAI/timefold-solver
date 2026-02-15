@@ -4,11 +4,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.pillar.PillarSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public class PillarChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
@@ -76,7 +76,7 @@ public class PillarChangeMoveSelector<Solution_> extends GenericMoveSelector<Sol
             }
             Object toValue = valueIterator.next();
 
-            return new PillarChangeMove<>(upcomingPillar, valueSelector.getVariableDescriptor(), toValue);
+            return new SelectorBasedPillarChangeMove<>(upcomingPillar, valueSelector.getVariableDescriptor(), toValue);
         }
 
     }
@@ -116,7 +116,7 @@ public class PillarChangeMoveSelector<Solution_> extends GenericMoveSelector<Sol
             }
             Object toValue = valueIterator.next();
 
-            return new PillarChangeMove<>(pillar, valueSelector.getVariableDescriptor(), toValue);
+            return new SelectorBasedPillarChangeMove<>(pillar, valueSelector.getVariableDescriptor(), toValue);
         }
 
     }

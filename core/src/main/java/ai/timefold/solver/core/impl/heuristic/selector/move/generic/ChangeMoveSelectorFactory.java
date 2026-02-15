@@ -24,13 +24,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class ChangeMoveSelectorFactory<Solution_>
         extends AbstractMoveSelectorFactory<Solution_, ChangeMoveSelectorConfig> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChangeMoveSelectorFactory.class);
 
     public ChangeMoveSelectorFactory(ChangeMoveSelectorConfig moveSelectorConfig) {
         super(moveSelectorConfig);
@@ -129,12 +124,6 @@ public class ChangeMoveSelectorFactory<Solution_>
 
     private ListChangeMoveSelectorConfig buildListChangeMoveSelectorConfig(ListVariableDescriptor<?> variableDescriptor,
             boolean inheritFoldedConfig) {
-        LOGGER.warn(
-                """
-                        The changeMoveSelectorConfig ({}) is being used for a list variable.
-                        We are keeping this option through the 1.x release stream for backward compatibility reasons.
-                        Please update your solver config to use {} now.""",
-                config, ListChangeMoveSelectorConfig.class.getSimpleName());
         var listChangeMoveSelectorConfig = ListChangeMoveSelectorFactory.buildChildMoveSelectorConfig(variableDescriptor,
                 config.getValueSelectorConfig(), createDestinationSelectorConfig());
         if (inheritFoldedConfig) {

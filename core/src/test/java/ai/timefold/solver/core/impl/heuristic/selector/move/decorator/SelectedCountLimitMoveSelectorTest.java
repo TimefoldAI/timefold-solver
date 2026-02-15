@@ -7,7 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -21,7 +21,8 @@ class SelectedCountLimitMoveSelectorTest {
     @Test
     void selectSizeLimitLowerThanSelectorSize() {
         MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
-                new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"), new DummyMove("a4"), new DummyMove("a5"));
+                new SelectorBasedDummyMove("a1"), new SelectorBasedDummyMove("a2"), new SelectorBasedDummyMove("a3"),
+                new SelectorBasedDummyMove("a4"), new SelectorBasedDummyMove("a5"));
         MoveSelector moveSelector = new SelectedCountLimitMoveSelector(childMoveSelector, 3L);
 
         SolverScope solverScope = mock(SolverScope.class);
@@ -79,7 +80,7 @@ class SelectedCountLimitMoveSelectorTest {
     @Test
     void selectSizeLimitHigherThanSelectorSize() {
         MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
-                new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"));
+                new SelectorBasedDummyMove("a1"), new SelectorBasedDummyMove("a2"), new SelectorBasedDummyMove("a3"));
         MoveSelector moveSelector = new SelectedCountLimitMoveSelector(childMoveSelector, 5L);
 
         SolverScope solverScope = mock(SolverScope.class);

@@ -4,6 +4,7 @@ import java.util.function.BooleanSupplier;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 public class MixedCustomPhaseCommand implements PhaseCommand<TestdataMixedSolution> {
 
@@ -12,7 +13,7 @@ public class MixedCustomPhaseCommand implements PhaseCommand<TestdataMixedSoluti
         var moveIteratorFactory = new MixedCustomMoveIteratorFactory();
         var moveIterator = moveIteratorFactory.createRandomMoveIterator(scoreDirector, null);
         var move = moveIterator.next();
-        move.doMoveOnly(scoreDirector);
+        move.execute(((InnerScoreDirector<TestdataMixedSolution, ?>) scoreDirector).getMoveDirector());
         scoreDirector.triggerVariableListeners();
     }
 }
