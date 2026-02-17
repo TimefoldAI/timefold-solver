@@ -367,7 +367,7 @@ This feature is a commercial feature of Timefold Solver Enterprise Edition.
 It is not available in the Community Edition.
 ====
 
-With this feature, the solver can run significantly faster, 
+With this feature, the solver can run significantly faster,
 getting you the right solution earlier.
 It has been designed to speed up the solver in cases where move evaluation is the bottleneck.
 This typically happens when the constraints are computationally expensive,
@@ -738,7 +738,7 @@ image::enterprise-edition/nodeSharingValueProposition.png[align="center"]
 
 [tabs]
 ====
-Plain Java::
+XML::
 
 * Add `<constraintStreamAutomaticNodeSharing>true</constraintStreamAutomaticNodeSharing>` in your `solverConfig.xml`:
 +
@@ -937,7 +937,7 @@ Unfortunately, traditional profiling tools only report the internal classes used
 
 [tabs]
 ====
-Plain Java::
+XML::
 
 * Add `<constraintStreamProfilingEnabled>true</constraintStreamProfilingEnabled>` in your `solverConfig.xml`:
 +
