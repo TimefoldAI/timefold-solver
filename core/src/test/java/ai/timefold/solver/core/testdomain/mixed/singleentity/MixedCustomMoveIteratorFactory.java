@@ -4,9 +4,9 @@ import java.util.Iterator;
 import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 
 public class MixedCustomMoveIteratorFactory
         implements MoveIteratorFactory<TestdataMixedSolution, SelectorBasedChangeMove<TestdataMixedSolution>> {

@@ -6,7 +6,7 @@
 
 IMPORTANT: The Neighborhoods API is a preview feature.
 It intends to simplify the creation of custom moves, eventually replacing xref:optimization-algorithms/move-selector-reference.adoc[move selectors].
-The component is under development and key features are yet to be delivered.
+The component is under development and many features are yet to be delivered.
 While we believe that the basic building blocks of the API are already stable,
 we reserve the right to change the API or remove any part of it.
 Your feedback is highly appreciated and will be imperative in shaping the future of this component.

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ai.timefold.solver.core.api.domain.common.PlanningId;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

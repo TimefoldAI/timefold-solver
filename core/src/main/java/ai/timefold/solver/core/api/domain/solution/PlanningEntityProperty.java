@@ -8,13 +8,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
 /**
  * Specifies that a property (or a field) on a {@link PlanningSolution} class is a planning entity.
  * <p>
  * The planning entity should have the {@link PlanningEntity} annotation.
- * The planning entity will be added to the {@link ScoreDirector}.
+ * The planning entity will be added registered with the solver.
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)

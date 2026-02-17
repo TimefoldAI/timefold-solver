@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.domain.lookup;
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 
 /**
  * Determines how {@link ScoreDirector#lookUpWorkingObject(Object)} maps

@@ -3,9 +3,9 @@ package ai.timefold.solver.core.testdomain.mixed.singleentity;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommandContext;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 
 public class MixedCustomPhaseCommand implements PhaseCommand<TestdataMixedSolution> {
 

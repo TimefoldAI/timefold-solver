@@ -32,6 +32,8 @@
 - [ ] lookups no longer accept null values.
 - [ ] `DomainAccessType` is gone, code uses GIZMO when possible
 - [ ] `PhaseCommand` was significantly refactored.
+- [ ] `ScoreDirector` no longer public API.
+- [ ] `SolutionPartitioner` no longer uses ScoreDirector, uses solution instead.
 - [ ] `AutoDiscoverMemberType` is gone
 
 Remove this file when done.

@@ -1,14 +1,13 @@
 package ai.timefold.solver.core.preview.api.move;
 
 import ai.timefold.solver.core.api.domain.common.PlanningId;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
 import org.jspecify.annotations.Nullable;
 
 /**
  * Allows to transfer an entity or fact instance (often from another {@link Thread})
- * to another {@link ScoreDirector}'s internal working instance.
+ * to another working solution.
  * <p>
  * <strong>This package and all of its contents are part of the Neighborhoods API,
  * which is under development and is only offered as a preview feature.</strong>
@@ -26,7 +25,7 @@ public interface Rebaser {
 
     /**
      * Translates an entity or fact instance (often from another {@link Thread})
-     * to another {@link ScoreDirector}'s internal working instance.
+     * to another working solution.
      * Useful for move rebasing and in a {@link ProblemChange} and for multi-threaded solving.
      * <p>
      * Matching uses {@link PlanningId}.

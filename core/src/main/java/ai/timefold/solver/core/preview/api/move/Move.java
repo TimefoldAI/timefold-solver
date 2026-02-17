@@ -8,7 +8,6 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -57,12 +56,12 @@ public interface Move<Solution_> {
     void execute(MutableSolutionView<Solution_> solutionView);
 
     /**
-     * Rebases a move from an origin {@link ScoreDirector} to another destination {@link ScoreDirector}
-     * which is usually on another {@link Thread}.
+     * Rebases a move from an origin working solution
+     * to another destination working solution which is usually on another {@link Thread}.
      * It is necessary for multithreaded solving to function.
      * <p>
      * The new move returned by this method translates the entities and problem facts
-     * to the destination {@link PlanningSolution} of the destination {@link ScoreDirector},
+     * to the destination {@link PlanningSolution} of the destination.
      * That destination {@link PlanningSolution} is a deep planning clone (or an even deeper clone)
      * of the origin {@link PlanningSolution} that this move has been generated from.
      * <p>
@@ -72,7 +71,7 @@ public interface Move<Solution_> {
      * as the original {@link PlanningSolution} to begin with.
      * <p>
      * An implementation of this method typically iterates through every entity and fact instance in this move,
-     * translates each one to the destination {@link ScoreDirector} with {@link Rebaser#rebase(Object)}
+     * translates each one to the destination with {@link Rebaser#rebase(Object)}
      * and creates a new move instance of the same move type, using those translated instances.
      * <p>
      * The destination {@link PlanningSolution} can be in a different state than the original {@link PlanningSolution}.

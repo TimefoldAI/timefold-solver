@@ -628,7 +628,7 @@ Implement the `SolutionPartitioner` interface:
 ----
 public interface SolutionPartitioner<Solution_> {
 
-    List<Solution_> splitWorkingSolution(ScoreDirector<Solution_> scoreDirector, Integer runnablePartThreadLimit);
+    List<Solution_> splitWorkingSolution(Solution_ workingSolution, Integer runnablePartThreadLimit);
 
 }
 ----

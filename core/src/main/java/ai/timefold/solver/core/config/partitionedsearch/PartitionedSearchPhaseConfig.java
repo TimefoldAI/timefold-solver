@@ -9,7 +9,6 @@ import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
@@ -81,7 +80,7 @@ public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchP
      *
      * <p>
      * The number of {@link Thread}s is always equal to the number of partitions returned by
-     * {@link SolutionPartitioner#splitWorkingSolution(ScoreDirector, Integer)},
+     * {@link SolutionPartitioner#splitWorkingSolution(Object, Integer)},
      * because otherwise some partitions would never run (especially with {@link Solver#terminateEarly() asynchronous
      * termination}).
      * If this limit (or {@link Runtime#availableProcessors()}) is lower than the number of partitions,

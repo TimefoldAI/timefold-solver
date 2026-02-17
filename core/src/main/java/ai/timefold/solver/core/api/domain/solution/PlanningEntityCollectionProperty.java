@@ -12,13 +12,12 @@ import java.util.List;
 import java.util.SortedSet;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
 /**
  * Specifies that a property (or a field) on a {@link PlanningSolution} class is a {@link Collection} of planning entities.
  * <p>
  * Every element in the planning entity collection should have the {@link PlanningEntity} annotation.
- * Every element in the planning entity collection will be added to the {@link ScoreDirector}.
+ * Every element in the planning entity collection will be registered with the solver.
  * <p>
  * For solver reproducibility, the collection must have a deterministic, stable iteration order.
  * It is recommended to use a {@link List}, {@link LinkedHashSet} or {@link SortedSet}.

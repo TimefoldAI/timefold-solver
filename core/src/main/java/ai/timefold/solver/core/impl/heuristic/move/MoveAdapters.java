@@ -2,8 +2,8 @@ package ai.timefold.solver.core.impl.heuristic.move;
 
 import java.util.function.Predicate;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.move.MoveDirector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;

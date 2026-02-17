@@ -3,10 +3,10 @@ package ai.timefold.solver.core.impl.exhaustivesearch.node.comparator;
 import java.util.Comparator;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.ScoreBounder;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 
 /**
  * Investigate nodes layer by layer: investigate shallower nodes first.

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.api.score.director;
+package ai.timefold.solver.core.impl.score.director;
 
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -11,6 +11,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * The ScoreDirector holds the {@link PlanningSolution working solution}
  * and calculates the {@link Score} for it.
+ * This is not public API and the users should refrain from using it or its implementations directly.
+ * There are no backward compatibility guarantees for this API, and it may change without warning.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
