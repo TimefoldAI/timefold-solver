@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.api.score.director;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningId;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;

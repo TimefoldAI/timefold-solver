@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
-import ai.timefold.solver.core.api.domain.entity.PlanningId;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.impl.domain.common.AlphabeticMemberComparator;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;

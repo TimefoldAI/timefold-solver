@@ -248,21 +248,17 @@ public class EntityDescriptor<Solution_> {
             comparatorFactoryClass = null;
         }
         // Selected settings
-        var selectedComparatorPropertyName = "comparatorClass";
-        var selectedComparatorClass = comparatorClass;
-        var selectedComparatorFactoryPropertyName = "comparatorFactoryClass";
-        var selectedComparatorFactoryClass = comparatorFactoryClass;
-        if (selectedComparatorClass != null && selectedComparatorFactoryClass != null) {
-            throw new IllegalStateException("The entityClass (%s) cannot have a %s (%s) and a %s (%s) at the same time."
-                    .formatted(entityClass, selectedComparatorPropertyName, selectedComparatorClass.getName(),
-                            selectedComparatorFactoryPropertyName, selectedComparatorFactoryClass.getName()));
+        if (comparatorClass != null && comparatorFactoryClass != null) {
+            throw new IllegalStateException(
+                    "The entityClass (%s) cannot have a comparatorClass (%s) and a comparatorFactoryClass (%s) at the same time."
+                            .formatted(entityClass, comparatorClass.getName(), comparatorFactoryClass.getName()));
         }
-        if (selectedComparatorClass != null) {
-            var comparator = ConfigUtils.newInstance(this::toString, selectedComparatorPropertyName, selectedComparatorClass);
+        if (comparatorClass != null) {
+            var comparator = ConfigUtils.newInstance(this::toString, "comparatorClass", comparatorClass);
             descendingSorter = new ComparatorSelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);
-        } else if (selectedComparatorFactoryClass != null) {
-            var comparator = ConfigUtils.newInstance(this::toString, selectedComparatorFactoryPropertyName,
-                    selectedComparatorFactoryClass);
+        } else if (comparatorFactoryClass != null) {
+            var comparator = ConfigUtils.newInstance(this::toString, "comparatorFactoryClass",
+                    comparatorFactoryClass);
             descendingSorter = new ComparatorFactorySelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);
         }
     }

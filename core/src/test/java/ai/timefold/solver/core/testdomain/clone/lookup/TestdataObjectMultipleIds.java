@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.testdomain.clone.lookup;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningId;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 
 public class TestdataObjectMultipleIds {
 

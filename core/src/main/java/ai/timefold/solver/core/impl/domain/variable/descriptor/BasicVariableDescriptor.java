@@ -53,12 +53,8 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
             comparatorFactoryClass = null;
         }
         // Selected settings
-        var selectedComparatorPropertyName = "comparatorClass";
-        var selectedComparatorClass = comparatorClass;
-        var selectedComparatorFactoryPropertyName = "comparatorFactoryClass";
-        var selectedComparatorFactoryClass = comparatorFactoryClass;
-        return new SortingProperties(selectedComparatorPropertyName, selectedComparatorClass,
-                selectedComparatorFactoryPropertyName, selectedComparatorFactoryClass);
+        return new SortingProperties("comparatorClass", comparatorClass,
+                "comparatorFactoryClass", comparatorFactoryClass);
     }
 
     private void processAllowsUnassigned(PlanningVariable planningVariableAnnotation) {

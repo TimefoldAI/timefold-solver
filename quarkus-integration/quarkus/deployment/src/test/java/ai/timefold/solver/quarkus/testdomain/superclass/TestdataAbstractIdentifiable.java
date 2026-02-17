@@ -1,6 +1,6 @@
 package ai.timefold.solver.quarkus.testdomain.superclass;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningId;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 
 abstract class TestdataAbstractIdentifiable {
 

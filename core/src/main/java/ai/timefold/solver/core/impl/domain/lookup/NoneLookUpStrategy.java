@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.lookup;
 
 import java.util.Map;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningId;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 
 import org.jspecify.annotations.NullMarked;
 

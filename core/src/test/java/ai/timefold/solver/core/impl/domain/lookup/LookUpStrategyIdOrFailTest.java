@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningId;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectEnum;
 import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectIntegerId;
 import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectMultipleIds;
