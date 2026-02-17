@@ -35,6 +35,7 @@ import org.jspecify.annotations.Nullable;
  * @param <Score_> the score type to go with the solution
  * @see ScoreDirector
  */
+@NullMarked
 public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirector<Solution_, Score_, IncrementalScoreDirectorFactory<Solution_, Score_>> {
 
@@ -142,13 +143,13 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void beforeVariableChanged(VariableDescriptor variableDescriptor, Object entity) {
+    public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
         incrementalScoreCalculator.beforeVariableChanged(entity, variableDescriptor.getVariableName());
         super.beforeVariableChanged(variableDescriptor, entity);
     }
 
     @Override
-    public void afterVariableChanged(VariableDescriptor variableDescriptor, Object entity) {
+    public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
         incrementalScoreCalculator.afterVariableChanged(entity, variableDescriptor.getVariableName());
         super.afterVariableChanged(variableDescriptor, entity);
     }
@@ -270,7 +271,7 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
         }
 
         private static ConstraintMatchPolicy determineCorrectPolicy(ConstraintMatchPolicy constraintMatchPolicy,
-                IncrementalScoreCalculator<?, ?> incrementalScoreCalculator) {
+                @Nullable IncrementalScoreCalculator<?, ?> incrementalScoreCalculator) {
             if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator<?, ?>) {
                 return constraintMatchPolicy;
             } else {

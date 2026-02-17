@@ -28,6 +28,7 @@ import org.jspecify.annotations.Nullable;
  * @param <Score_> the score type to go with the solution
  * @see ScoreDirector
  */
+@NullMarked
 public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirector<Solution_, Score_, EasyScoreDirectorFactory<Solution_, Score_>> {
 

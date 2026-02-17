@@ -74,27 +74,9 @@ import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAll
 import ai.timefold.solver.core.testdomain.sort.comparator.OneValuePerEntityComparatorEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableEntity;
 import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableSolution;
-import ai.timefold.solver.core.testdomain.sort.comparatordifficulty.OneValuePerEntityDifficultyEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.sort.comparatordifficulty.TestdataDifficultySortableEntity;
-import ai.timefold.solver.core.testdomain.sort.comparatordifficulty.TestdataDifficultySortableSolution;
 import ai.timefold.solver.core.testdomain.sort.factory.OneValuePerEntityFactoryEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.sort.factory.TestdataFactorySortableEntity;
 import ai.timefold.solver.core.testdomain.sort.factory.TestdataFactorySortableSolution;
-import ai.timefold.solver.core.testdomain.sort.factorydifficulty.OneValuePerEntityDifficultyFactoryEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.sort.factorydifficulty.TestdataDifficultyFactorySortableEntity;
-import ai.timefold.solver.core.testdomain.sort.factorydifficulty.TestdataDifficultyFactorySortableSolution;
-import ai.timefold.solver.core.testdomain.sort.invalid.mixed.comparator.TestdataInvalidMixedComparatorSortableEntity;
-import ai.timefold.solver.core.testdomain.sort.invalid.mixed.comparator.TestdataInvalidMixedComparatorSortableSolution;
-import ai.timefold.solver.core.testdomain.sort.invalid.mixed.strength.TestdataInvalidMixedStrengthSortableEntity;
-import ai.timefold.solver.core.testdomain.sort.invalid.mixed.strength.TestdataInvalidMixedStrengthSortableSolution;
-import ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.entity.TestdataInvalidTwoEntityComparatorSortableEntity;
-import ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.entity.TestdataInvalidTwoEntityComparatorSortableSolution;
-import ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.value.TestdataInvalidTwoValueComparatorSortableEntity;
-import ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.value.TestdataInvalidTwoValueComparatorSortableSolution;
-import ai.timefold.solver.core.testdomain.sort.invalid.twofactory.entity.TestdataInvalidTwoEntityFactorySortableEntity;
-import ai.timefold.solver.core.testdomain.sort.invalid.twofactory.entity.TestdataInvalidTwoEntityFactorySortableSolution;
-import ai.timefold.solver.core.testdomain.sort.invalid.twofactory.value.TestdataInvalidTwoValueFactorySortableEntity;
-import ai.timefold.solver.core.testdomain.sort.invalid.twofactory.value.TestdataInvalidTwoValueFactorySortableSolution;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
@@ -104,15 +86,9 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedv
 import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.OneValuePerEntityComparatorRangeEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.TestdataComparatorSortableEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.TestdataComparatorSortableEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.sort.comparatorstrength.OneValuePerEntityStrengthRangeEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.valuerange.sort.comparatorstrength.TestdataStrengthSortableEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.sort.comparatorstrength.TestdataStrengthSortableEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.sort.factory.OneValuePerEntityFactoryRangeEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.sort.factory.TestdataFactorySortableEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.sort.factory.TestdataFactorySortableEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.sort.factorystrength.OneValuePerEntityStrengthFactoryRangeEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.valuerange.sort.factorystrength.TestdataStrengthFactorySortableEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.sort.factorystrength.TestdataStrengthFactorySortableEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.jspecify.annotations.NonNull;
@@ -186,9 +162,9 @@ class DefaultConstructionHeuristicPhaseTest {
         var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Arrays.asList(
-                new TestdataPinnedEntity("e1", null, false, false),
-                new TestdataPinnedEntity("e2", v2, true, false),
-                new TestdataPinnedEntity("e3", v3, false, true)));
+                new TestdataPinnedEntity("e1", null, false),
+                new TestdataPinnedEntity("e2", v2, false),
+                new TestdataPinnedEntity("e3", v3, true)));
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
@@ -217,9 +193,9 @@ class DefaultConstructionHeuristicPhaseTest {
         var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Arrays.asList(
-                new TestdataPinnedAllowsUnassignedEntity("e1", null, false, false),
-                new TestdataPinnedAllowsUnassignedEntity("e2", v2, true, false),
-                new TestdataPinnedAllowsUnassignedEntity("e3", null, false, true)));
+                new TestdataPinnedAllowsUnassignedEntity("e1", null, false),
+                new TestdataPinnedAllowsUnassignedEntity("e2", v2, false),
+                new TestdataPinnedAllowsUnassignedEntity("e3", null, true)));
 
         solution = PlannerTestUtils.solve(solverConfig, solution, true); // No change will be made, but shadow variables will be updated.
         assertThat(solution).isNotNull();
@@ -238,9 +214,9 @@ class DefaultConstructionHeuristicPhaseTest {
         var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Arrays.asList(
-                new TestdataPinnedEntity("e1", null, false, false),
-                new TestdataPinnedEntity("e2", v2, true, false),
-                new TestdataPinnedEntity("e3", null, false, true)));
+                new TestdataPinnedEntity("e1", null, false),
+                new TestdataPinnedEntity("e2", v2, false),
+                new TestdataPinnedEntity("e3", null, true)));
 
         assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .hasMessageContaining("entity (e3)")
@@ -703,111 +679,6 @@ class DefaultConstructionHeuristicPhaseTest {
         values.addAll(generateCommonConfiguration());
         values.addAll(generateAdvancedBasicVariableConfiguration(SelectionCacheType.PHASE));
         return values;
-    }
-
-    @ParameterizedTest
-    @MethodSource("generateBasicVariableConfiguration")
-    void solveStrengthBasicVariableQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
-        var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataDifficultySortableSolution.class, TestdataDifficultySortableEntity.class);
-        solverConfig.withEasyScoreCalculatorClass(OneValuePerEntityDifficultyEasyScoreCalculator.class);
-        solverConfig.withPhases(phaseConfig.config());
-
-        var solution = TestdataDifficultySortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
-
-        solution = PlannerTestUtils.solve(solverConfig, solution);
-        assertThat(solution).isNotNull();
-        if (phaseConfig.expected() != null) {
-            for (var i = 0; i < 3; i++) {
-                var id = "Generated Entity %d".formatted(i);
-                var entity = solution.getEntityList().stream()
-                        .filter(e -> e.getCode().equals(id))
-                        .findFirst()
-                        .orElseThrow(IllegalArgumentException::new);
-                assertThat(entity.getValue()).isNotNull();
-                assertThat(entity.getValue().getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
-            }
-        }
-    }
-
-    @ParameterizedTest
-    @MethodSource("generateBasicVariableConfiguration")
-    void solveStrengthBasicVariableQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
-        var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataDifficultyFactorySortableSolution.class,
-                        TestdataDifficultyFactorySortableEntity.class);
-        solverConfig.withEasyScoreCalculatorClass(OneValuePerEntityDifficultyFactoryEasyScoreCalculator.class);
-        solverConfig.withPhases(phaseConfig.config());
-
-        var solution = TestdataDifficultyFactorySortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
-
-        solution = PlannerTestUtils.solve(solverConfig, solution);
-        assertThat(solution).isNotNull();
-        if (phaseConfig.expected() != null) {
-            for (var i = 0; i < 3; i++) {
-                var id = "Generated Entity %d".formatted(i);
-                var entity = solution.getEntityList().stream()
-                        .filter(e -> e.getCode().equals(id))
-                        .findFirst()
-                        .orElseThrow(IllegalArgumentException::new);
-                assertThat(entity.getValue()).isNotNull();
-                assertThat(entity.getValue().getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
-            }
-        }
-    }
-
-    @ParameterizedTest
-    @MethodSource("generateBasicVariableConfiguration")
-    void solveStrengthBasicVariableEntityRangeQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
-        var solverConfig =
-                PlannerTestUtils
-                        .buildSolverConfig(TestdataStrengthSortableEntityProvidingSolution.class,
-                                TestdataStrengthSortableEntityProvidingEntity.class)
-                        .withEasyScoreCalculatorClass(OneValuePerEntityStrengthRangeEasyScoreCalculator.class)
-                        .withPhases(phaseConfig.config());
-
-        var solution = TestdataStrengthSortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
-
-        solution = PlannerTestUtils.solve(solverConfig, solution);
-        assertThat(solution).isNotNull();
-        if (phaseConfig.expected() != null) {
-            for (var i = 0; i < 3; i++) {
-                var id = "Generated Entity %d".formatted(i);
-                var entity = solution.getEntityList().stream()
-                        .filter(e -> e.getCode().equals(id))
-                        .findFirst()
-                        .orElseThrow(IllegalArgumentException::new);
-                assertThat(entity.getValue()).isNotNull();
-                assertThat(entity.getValue().getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
-            }
-        }
-    }
-
-    @ParameterizedTest
-    @MethodSource("generateBasicVariableConfiguration")
-    void solveStrengthBasicVariableEntityRangeQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
-        var solverConfig =
-                PlannerTestUtils
-                        .buildSolverConfig(TestdataStrengthFactorySortableEntityProvidingSolution.class,
-                                TestdataStrengthFactorySortableEntityProvidingEntity.class)
-                        .withEasyScoreCalculatorClass(OneValuePerEntityStrengthFactoryRangeEasyScoreCalculator.class)
-                        .withPhases(phaseConfig.config());
-
-        var solution = TestdataStrengthFactorySortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
-
-        solution = PlannerTestUtils.solve(solverConfig, solution);
-        assertThat(solution).isNotNull();
-        if (phaseConfig.expected() != null) {
-            for (var i = 0; i < 3; i++) {
-                var id = "Generated Entity %d".formatted(i);
-                var entity = solution.getEntityList().stream()
-                        .filter(e -> e.getCode().equals(id))
-                        .findFirst()
-                        .orElseThrow(IllegalArgumentException::new);
-                assertThat(entity.getValue()).isNotNull();
-                assertThat(entity.getValue().getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
-            }
-        }
     }
 
     @ParameterizedTest
@@ -1528,107 +1399,6 @@ class DefaultConstructionHeuristicPhaseTest {
     }
 
     @Test
-    void failConstructionHeuristicMixedProperties() {
-        // Strength and Factory properties
-        var solverConfig =
-                PlannerTestUtils
-                        .buildSolverConfig(TestdataInvalidMixedStrengthSortableSolution.class,
-                                TestdataInvalidMixedStrengthSortableEntity.class)
-                        .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
-        var solution = new TestdataInvalidMixedStrengthSortableSolution();
-        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
-                .hasMessageContaining(
-                        "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.mixed.strength.TestdataInvalidMixedStrengthSortableEntity) property (value)")
-                .hasMessageContaining(
-                        "cannot have a strengthComparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator)")
-                .hasMessageContaining(
-                        "strengthWeightFactoryClass (ai.timefold.solver.core.testdomain.common.DummyWeightValueFactory) at the same time.");
-
-        // Comparator and Factory properties
-        var otherSolverConfig =
-                PlannerTestUtils
-                        .buildSolverConfig(TestdataInvalidMixedComparatorSortableSolution.class,
-                                TestdataInvalidMixedComparatorSortableEntity.class)
-                        .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
-        var otherSolution = new TestdataInvalidMixedComparatorSortableSolution();
-        assertThatCode(() -> PlannerTestUtils.solve(otherSolverConfig, otherSolution))
-                .hasMessageContaining(
-                        "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.mixed.comparator.TestdataInvalidMixedComparatorSortableEntity) property (value)")
-                .hasMessageContaining(
-                        "cannot have a comparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator)")
-                .hasMessageContaining(
-                        "comparatorFactoryClass (ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time.");
-    }
-
-    @Test
-    void failConstructionHeuristicBothProperties() {
-        // Value
-        {
-            // Two comparator properties
-            var solverConfig =
-                    PlannerTestUtils
-                            .buildSolverConfig(TestdataInvalidTwoValueComparatorSortableSolution.class,
-                                    TestdataInvalidTwoValueComparatorSortableEntity.class)
-                            .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
-            var solution = new TestdataInvalidTwoValueComparatorSortableSolution();
-            assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
-                    .hasMessageContaining(
-                            "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.value.TestdataInvalidTwoValueComparatorSortableEntity) property (value)")
-                    .hasMessageContaining(
-                            "cannot have a strengthComparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator)")
-                    .hasMessageContaining(
-                            "and a comparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator) at the same time.");
-
-            // Comparator and Factory properties
-            var otherSolverConfig =
-                    PlannerTestUtils
-                            .buildSolverConfig(TestdataInvalidTwoValueFactorySortableSolution.class,
-                                    TestdataInvalidTwoValueFactorySortableEntity.class)
-                            .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
-            var otherSolution = new TestdataInvalidTwoValueFactorySortableSolution();
-            assertThatCode(() -> PlannerTestUtils.solve(otherSolverConfig, otherSolution))
-                    .hasMessageContaining(
-                            "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.twofactory.value.TestdataInvalidTwoValueFactorySortableEntity) property (value)")
-                    .hasMessageContaining(
-                            "cannot have a strengthWeightFactoryClass (ai.timefold.solver.core.testdomain.common.DummyWeightValueFactory)")
-                    .hasMessageContaining(
-                            "comparatorFactoryClass (ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time.");
-        }
-        // Entity
-        {
-            // Two comparator properties
-            var solverConfig =
-                    PlannerTestUtils
-                            .buildSolverConfig(TestdataInvalidTwoEntityComparatorSortableSolution.class,
-                                    TestdataInvalidTwoEntityComparatorSortableEntity.class)
-                            .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
-            var solution = new TestdataInvalidTwoEntityComparatorSortableSolution();
-            assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
-                    .hasMessageContaining(
-                            "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.entity.TestdataInvalidTwoEntityComparatorSortableEntity)")
-                    .hasMessageContaining(
-                            "cannot have a difficultyComparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator)")
-                    .hasMessageContaining(
-                            "and a comparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator) at the same time.");
-
-            // Comparator and Factory properties
-            var otherSolverConfig =
-                    PlannerTestUtils
-                            .buildSolverConfig(TestdataInvalidTwoEntityFactorySortableSolution.class,
-                                    TestdataInvalidTwoEntityFactorySortableEntity.class)
-                            .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
-            var otherSolution = new TestdataInvalidTwoEntityFactorySortableSolution();
-            assertThatCode(() -> PlannerTestUtils.solve(otherSolverConfig, otherSolution))
-                    .hasMessageContaining(
-                            "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.twofactory.entity.TestdataInvalidTwoEntityFactorySortableEntity)")
-                    .hasMessageContaining(
-                            "cannot have a difficultyWeightFactoryClass (ai.timefold.solver.core.testdomain.common.DummyValueFactory)")
-                    .hasMessageContaining(
-                            "comparatorFactoryClass (ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time.");
-        }
-    }
-
-    @Test
     void failConstructionHeuristicBothNearbyAndSorting() {
         // Two comparator properties
         var solverConfig = PlannerTestUtils
@@ -1712,7 +1482,8 @@ class DefaultConstructionHeuristicPhaseTest {
         }
     }
 
-    private record ConstructionHeuristicTestConfig(ConstructionHeuristicPhaseConfig config, int[] expected, boolean shuffle) {
+    private record ConstructionHeuristicTestConfig(ConstructionHeuristicPhaseConfig config, int[] expected,
+            boolean shuffle) {
 
     }
 }

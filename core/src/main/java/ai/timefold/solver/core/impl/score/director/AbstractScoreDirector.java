@@ -48,7 +48,6 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -65,8 +64,9 @@ import org.slf4j.LoggerFactory;
  * <li>after* method: first statement should be a call to the super method</li>
  * </ul>
  */
+@NullMarked
 public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
-        implements InnerScoreDirector<Solution_, Score_>, Cloneable {
+        implements InnerScoreDirector<Solution_, Score_> {
 
     private static final int CONSTRAINT_MATCH_DISPLAY_LIMIT = 8;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -79,7 +79,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      */
     private final NeighborhoodNotifier<Solution_> neighborhoodsElementUpdateNotifier;
     private final boolean lookUpEnabled;
-    private final LookUpManager lookUpManager;
+    private final @Nullable LookUpManager lookUpManager;
     protected final ConstraintMatchPolicy constraintMatchPolicy;
     private boolean expectShadowVariablesInCorrectState;
     private final VariableDescriptorCache<Solution_> variableDescriptorCache;
@@ -93,14 +93,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * and operations which do not perform moves do not require them.
      */
     private final ValueRangeManager<Solution_> valueRangeManager;
-    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply; // Null when no list variable.
+    private final @Nullable ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply; // Null when no list variable.
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
 
     private long workingEntityListRevision = 0L;
     private int workingGenuineEntityCount = 0;
     private boolean allChangesWillBeUndoneBeforeStepEnds = false;
     private long calculationCount = 0L;
-    protected Solution_ workingSolution;
+    protected @Nullable Solution_ workingSolution;
     private int workingInitScore = 0;
 
     private final boolean isStepAssertOrMore;
@@ -178,7 +178,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public @NonNull Solution_ getWorkingSolution() {
+    public Solution_ getWorkingSolution() {
         return workingSolution;
     }
 
@@ -251,7 +251,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * @param workingSolution the working solution to set
      * @param entityAndFactVisitor maybe null; a function to apply to all problem facts and problem entities
      */
-    protected void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution, Consumer<Object> entityAndFactVisitor) {
+    protected void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution,
+            @Nullable Consumer<Object> entityAndFactVisitor) {
         this.workingSolution = requireNonNull(workingSolution);
         var solutionDescriptor = getSolutionDescriptor();
 
@@ -441,15 +442,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     protected void setCalculatedScore(Score_ score) {
         getSolutionDescriptor().setScore(workingSolution, score);
         calculationCount++;
-    }
-
-    /**
-     * @deprecated Unused, but kept for backward compatibility.
-     */
-    @Deprecated(forRemoval = true, since = "1.14.0")
-    @Override
-    public AbstractScoreDirector<Solution_, Score_, Factory_> clone() {
-        throw new UnsupportedOperationException("Cloning score directors is not supported.");
     }
 
     @Override
@@ -885,7 +877,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     private static <Solution_> void assertValueRangeForBasicVariables(InnerScoreDirector<Solution_, ?> scoreDirector,
-            List<BasicVariableDescriptor<Solution_>> basicVariableDescriptorList, Object entity) {
+            @Nullable List<BasicVariableDescriptor<Solution_>> basicVariableDescriptorList, Object entity) {
         if (basicVariableDescriptorList == null || basicVariableDescriptorList.isEmpty()) {
             return;
         }
@@ -905,7 +897,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     private static <Solution_> void assertValueRangeForListVariable(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ListVariableDescriptor<Solution_> variableDescriptor, Object entity, List<Object> valueList) {
+            ListVariableDescriptor<Solution_> variableDescriptor, Object entity, List<@Nullable Object> valueList) {
         if (valueList.isEmpty()) {
             return;
         }
@@ -921,36 +913,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                                 .formatted(value, variableDescriptor.getVariableName(), entity, valueRange));
             }
         }
-    }
-
-    public SolutionTracker.SolutionCorruptionResult getSolutionCorruptionAfterUndo(Move<Solution_> move,
-            InnerScore<Score_> undoInnerScore) {
-        var trackingWorkingSolution = solutionTracker != null;
-        if (trackingWorkingSolution) {
-            solutionTracker.setAfterUndoSolution(workingSolution);
-        }
-        // Precondition: assert that there are probably no corrupted constraints
-        var undoMoveToString = "Undo(%s)".formatted(move);
-        assertWorkingScoreFromScratch(undoInnerScore, undoMoveToString);
-        // Precondition: assert that shadow variables aren't stale after doing the undoMove
-        assertShadowVariablesAreNotStale(undoInnerScore, undoMoveToString);
-        if (trackingWorkingSolution) {
-            // Recalculate all shadow variables from scratch.
-            // We cannot set all shadow variables to null, since some variable listeners
-            // may expect them to be non-null.
-            // Instead, we just simulate a change to all genuine variables.
-            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution);
-            solutionTracker.setUndoFromScratchSolution(workingSolution);
-
-            // Also calculate from scratch for the before solution, since it might
-            // have been corrupted but was only detected now
-            solutionTracker.restoreBeforeSolution();
-            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution);
-            solutionTracker.setBeforeFromScratchSolution(workingSolution);
-
-            return solutionTracker.buildSolutionCorruptionResult();
-        }
-        return SolutionTracker.SolutionCorruptionResult.untracked();
     }
 
     /**
@@ -1028,11 +990,15 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     private static <Score_ extends Score<Score_>> List<MatchAnalysis<Score_>>
-            emptyMatchAnalysisIfNull(ConstraintAnalysis<Score_> constraintAnalysis) {
+            emptyMatchAnalysisIfNull(@Nullable ConstraintAnalysis<Score_> constraintAnalysis) {
         if (constraintAnalysis == null) {
             return Collections.emptyList();
         }
-        return Objects.requireNonNullElse(constraintAnalysis.matches(), Collections.emptyList());
+        var matches = constraintAnalysis.matches();
+        if (matches == null) {
+            return Collections.emptyList();
+        }
+        return matches;
     }
 
     private void appendAnalysis(StringBuilder analysis, String workingLabel, String suffix,

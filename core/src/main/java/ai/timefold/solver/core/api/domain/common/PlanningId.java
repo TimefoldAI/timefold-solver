@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.api.domain.lookup;
+package ai.timefold.solver.core.api.domain.common;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;

@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.preview.api.move;
 
-import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
-import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
@@ -31,8 +29,7 @@ public interface Rebaser {
      * to another {@link ScoreDirector}'s internal working instance.
      * Useful for move rebasing and in a {@link ProblemChange} and for multi-threaded solving.
      * <p>
-     * Matching is determined by the {@link LookUpStrategyType} on {@link PlanningSolution}.
-     * Matching uses a {@link PlanningId} by default.
+     * Matching uses {@link PlanningId}.
      *
      * @param problemFactOrPlanningEntity The fact or entity to rebase.
      * @return null if problemFactOrPlanningEntity is null

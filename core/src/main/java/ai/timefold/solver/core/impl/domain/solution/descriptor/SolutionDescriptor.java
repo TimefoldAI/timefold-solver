@@ -387,9 +387,7 @@ public final class SolutionDescriptor<Solution_> {
         if (solutionClonerClass != PlanningSolution.NullSolutionCloner.class) {
             solutionCloner = ConfigUtils.newInstance(this::toString, "solutionClonerClass", solutionClonerClass);
         }
-        var lookUpStrategyType = annotation.lookUpStrategyType();
-        lookUpStrategyResolver =
-                new LookUpStrategyResolver(descriptorPolicy, lookUpStrategyType);
+        lookUpStrategyResolver = new LookUpStrategyResolver(descriptorPolicy);
     }
 
     private @NonNull PlanningSolution extractMostRelevantPlanningSolutionAnnotation() {

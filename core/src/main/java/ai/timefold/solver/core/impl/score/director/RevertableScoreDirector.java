@@ -2,6 +2,9 @@ package ai.timefold.solver.core.impl.score.director;
 
 import java.util.List;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public interface RevertableScoreDirector<Solution_> extends VariableDescriptorAwareScoreDirector<Solution_> {
 
     /**

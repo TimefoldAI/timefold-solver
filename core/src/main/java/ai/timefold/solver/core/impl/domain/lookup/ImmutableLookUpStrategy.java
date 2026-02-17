@@ -2,7 +2,10 @@ package ai.timefold.solver.core.impl.domain.lookup;
 
 import java.util.Map;
 
-public final class ImmutableLookUpStrategy implements LookUpStrategy {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+final class ImmutableLookUpStrategy implements LookUpStrategy {
 
     @Override
     public void addWorkingObject(Map<Object, Object> idToWorkingObjectMap, Object workingObject) {

@@ -317,6 +317,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         }
     }
 
+    @NullMarked
     private static class InternalScoreDirector<Solution_, Score_ extends Score<Score_>>
             extends AbstractScoreDirector<Solution_, Score_, InternalScoreDirectorFactory<Solution_, Score_>> {
 

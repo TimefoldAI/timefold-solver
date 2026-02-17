@@ -116,7 +116,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     metricsRequiringConstraintMatchSet);
         }
         var castScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
-                .withLookUpEnabled(true)
+                .withLookUpEnabled(true) // Custom phases and problem changes may rely on lookups.
                 .withConstraintMatchPolicy(
                         constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED)
                 .build();

@@ -17,10 +17,14 @@ import ai.timefold.solver.core.impl.score.director.RevertableScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extends Score<Score_>>
         implements RevertableScoreDirector<Solution_> {
 
-    private final InnerScoreDirector<Solution_, Score_> backingScoreDirector;
+    private final @Nullable InnerScoreDirector<Solution_, Score_> backingScoreDirector;
     private final List<ChangeAction<Solution_>> variableChanges;
 
     /*
@@ -40,7 +44,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
      *
      * This map exists to ensure that this is the case.
      */
-    private final Map<Object, Integer> cache;
+    private final @Nullable Map<Object, Integer> cache;
 
     public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> backingScoreDirector) {
         this(backingScoreDirector, true);
@@ -54,8 +58,8 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
         this.variableChanges = new LinkedList<>();
     }
 
-    private VariableChangeRecordingScoreDirector(InnerScoreDirector<Solution_, Score_> backingScoreDirector,
-            List<ChangeAction<Solution_>> variableChanges, Map<Object, Integer> cache) {
+    private VariableChangeRecordingScoreDirector(@Nullable InnerScoreDirector<Solution_, Score_> backingScoreDirector,
+            List<ChangeAction<Solution_>> variableChanges, @Nullable Map<Object, Integer> cache) {
         this.backingScoreDirector = backingScoreDirector;
         this.variableChanges = variableChanges;
         this.cache = cache;
@@ -176,13 +180,13 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     @Override
     public ValueRangeManager<Solution_> getValueRangeManager() {
-        return getBacking().getValueRangeManager();
+        return Objects.requireNonNull(getBacking()).getValueRangeManager();
     }
 
     /**
      * Returns the score director to which events are delegated.
      */
-    public InnerScoreDirector<Solution_, Score_> getBacking() {
+    public @Nullable InnerScoreDirector<Solution_, Score_> getBacking() {
         return backingScoreDirector;
     }
 
@@ -215,12 +219,12 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
     }
 
     @Override
-    public <E> E lookUpWorkingObject(E externalObject) {
+    public <E> @Nullable E lookUpWorkingObject(@Nullable E externalObject) {
         return Objects.requireNonNull(backingScoreDirector).lookUpWorkingObject(externalObject);
     }
 
     @Override
-    public <E> E lookUpWorkingObjectOrReturnNull(E externalObject) {
+    public <E> @Nullable E lookUpWorkingObjectOrReturnNull(@Nullable E externalObject) {
         return Objects.requireNonNull(backingScoreDirector).lookUpWorkingObjectOrReturnNull(externalObject);
     }
 

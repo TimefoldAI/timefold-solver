@@ -12,11 +12,10 @@ import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
-@PlanningEntity(difficultyComparatorClass = TestdataMixedEntityComparator.class)
+@PlanningEntity(comparatorClass = TestdataMixedEntityComparator.class)
 public class TestdataMixedEntity extends TestdataObject {
 
-    @PlanningVariable(valueRangeProviderRefs = "otherValueRange",
-            strengthComparatorClass = TestdataMixedOtherValueComparator.class)
+    @PlanningVariable(valueRangeProviderRefs = "otherValueRange", comparatorClass = TestdataMixedOtherValueComparator.class)
     private TestdataMixedOtherValue basicValue;
 
     @PlanningVariable(valueRangeProviderRefs = "otherValueRange")

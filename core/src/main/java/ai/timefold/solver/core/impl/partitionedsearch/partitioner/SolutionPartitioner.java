@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.partitionedsearch.partitioner;
 
 import java.util.List;
 
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
@@ -9,7 +10,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
 /**
  * Splits one {@link PlanningSolution solution} into multiple partitions.
- * The partitions are solved and merged based on the {@link PlanningSolution#lookUpStrategyType()}.
+ * The partitions are solved and merged based on {@link PlanningId}.
  * <p>
  * To add custom properties, configure custom properties and add public setters for them.
  *

@@ -27,9 +27,9 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.difficultyweight.TestdataDifficultyWeightSolution;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
+import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -85,12 +85,12 @@ class QueuedEntityPlacerFactoryTest {
     void buildWithEntitySortManner() {
         ChangeMoveSelectorConfig primaryMoveSelectorConfig = new ChangeMoveSelectorConfig()
                 .withValueSelectorConfig(new ValueSelectorConfig("primaryValue"));
-        var configPolicy = buildHeuristicConfigPolicy(TestdataDifficultyWeightSolution.buildSolutionDescriptor(),
+        var configPolicy = buildHeuristicConfigPolicy(TestdataComparatorSortableSolution.buildSolutionDescriptor(),
                 EntitySorterManner.DESCENDING_IF_AVAILABLE);
         QueuedEntityPlacerConfig placerConfig =
                 QueuedEntityPlacerFactory.unfoldNew(configPolicy, List.of(primaryMoveSelectorConfig));
         var entityPlacer =
-                new QueuedEntityPlacerFactory<TestdataDifficultyWeightSolution>(placerConfig);
+                new QueuedEntityPlacerFactory<TestdataComparatorSortableSolution>(placerConfig);
         var entitySelectorConfig = entityPlacer.buildEntitySelectorConfig(configPolicy);
         assertThat(entitySelectorConfig.getSelectionOrder()).isEqualTo(SelectionOrder.SORTED);
         assertThat(entitySelectorConfig.getSorterManner()).isEqualTo(EntitySorterManner.DESCENDING_IF_AVAILABLE);

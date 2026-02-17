@@ -23,7 +23,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import ai.timefold.solver.core.api.domain.entity.PinningFilter;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
@@ -100,7 +99,6 @@ public class EntityDescriptor<Solution_> {
     private ShadowVariablesInconsistentVariableDescriptor<Solution_> shadowVariablesInconsistentDescriptor;
 
     // Only declared movable filter, excludes inherited and descending movable filters
-    private MovableFilter<Solution_> declaredMovableEntityFilter;
     private SelectionSorter<Solution_, Object> descendingSorter;
 
     // Only declared variable descriptors, excludes inherited variable descriptors
@@ -232,87 +230,35 @@ public class EntityDescriptor<Solution_> {
                     .orElseThrow(
                             () -> new IllegalStateException("Impossible state as the previous if block would fail first."));
         }
-        processMovable(entityAnnotation);
         processSorting(entityAnnotation);
-    }
-
-    /**
-     * @deprecated Remove in the next major version of Timefold Solver.
-     */
-    @Deprecated(forRemoval = true, since = "1.23.0")
-    private void processMovable(PlanningEntity entityAnnotation) {
-        if (entityAnnotation == null) {
-            return;
-        }
-        var pinningFilterClass = entityAnnotation.pinningFilter();
-        var hasPinningFilter = pinningFilterClass != PlanningEntity.NullPinningFilter.class;
-        if (hasPinningFilter) {
-            var pinningFilter = ConfigUtils.newInstance(this::toString, "pinningFilterClass",
-                    (Class<? extends PinningFilter<Solution_, Object>>) pinningFilterClass);
-            declaredMovableEntityFilter = (solution, selection) -> !pinningFilter.accept(solution, selection);
-        }
     }
 
     private void processSorting(PlanningEntity entityAnnotation) {
         if (entityAnnotation == null) {
             return;
         }
-        var difficultyComparatorClass = entityAnnotation.difficultyComparatorClass();
-        if (difficultyComparatorClass != null
-                && PlanningEntity.NullComparator.class.isAssignableFrom(difficultyComparatorClass)) {
-            difficultyComparatorClass = null;
-        }
         var comparatorClass = entityAnnotation.comparatorClass();
         if (comparatorClass != null
                 && PlanningEntity.NullComparator.class.isAssignableFrom(comparatorClass)) {
             comparatorClass = null;
-        }
-        if (difficultyComparatorClass != null && comparatorClass != null) {
-            throw new IllegalStateException(
-                    "The entityClass (%s) cannot have a %s (%s) and a %s (%s) at the same time.".formatted(getEntityClass(),
-                            "difficultyComparatorClass", difficultyComparatorClass.getName(), "comparatorClass",
-                            comparatorClass.getName()));
-        }
-        var difficultyWeightFactoryClass = entityAnnotation.difficultyWeightFactoryClass();
-        if (difficultyWeightFactoryClass != null
-                && PlanningEntity.NullComparatorFactory.class.isAssignableFrom(difficultyWeightFactoryClass)) {
-            difficultyWeightFactoryClass = null;
         }
         var comparatorFactoryClass = entityAnnotation.comparatorFactoryClass();
         if (comparatorFactoryClass != null
                 && PlanningEntity.NullComparatorFactory.class.isAssignableFrom(comparatorFactoryClass)) {
             comparatorFactoryClass = null;
         }
-        if (difficultyWeightFactoryClass != null && comparatorFactoryClass != null) {
-            throw new IllegalStateException(
-                    "The entityClass (%s) cannot have a %s (%s) and a %s (%s) at the same time.".formatted(getEntityClass(),
-                            "difficultyWeightFactoryClass", difficultyWeightFactoryClass.getName(), "comparatorFactoryClass",
-                            comparatorFactoryClass.getName()));
-        }
         // Selected settings
-        var selectedComparatorPropertyName = "comparatorClass";
-        var selectedComparatorClass = comparatorClass;
-        var selectedComparatorFactoryPropertyName = "comparatorFactoryClass";
-        var selectedComparatorFactoryClass = comparatorFactoryClass;
-        if (difficultyComparatorClass != null) {
-            selectedComparatorPropertyName = "difficultyComparatorClass";
-            selectedComparatorClass = difficultyComparatorClass;
+        if (comparatorClass != null && comparatorFactoryClass != null) {
+            throw new IllegalStateException(
+                    "The entityClass (%s) cannot have a comparatorClass (%s) and a comparatorFactoryClass (%s) at the same time."
+                            .formatted(entityClass, comparatorClass.getName(), comparatorFactoryClass.getName()));
         }
-        if (difficultyWeightFactoryClass != null) {
-            selectedComparatorFactoryPropertyName = "difficultyWeightFactoryClass";
-            selectedComparatorFactoryClass = difficultyWeightFactoryClass;
-        }
-        if (selectedComparatorClass != null && selectedComparatorFactoryClass != null) {
-            throw new IllegalStateException("The entityClass (%s) cannot have a %s (%s) and a %s (%s) at the same time."
-                    .formatted(entityClass, selectedComparatorPropertyName, selectedComparatorClass.getName(),
-                            selectedComparatorFactoryPropertyName, selectedComparatorFactoryClass.getName()));
-        }
-        if (selectedComparatorClass != null) {
-            var comparator = ConfigUtils.newInstance(this::toString, selectedComparatorPropertyName, selectedComparatorClass);
+        if (comparatorClass != null) {
+            var comparator = ConfigUtils.newInstance(this::toString, "comparatorClass", comparatorClass);
             descendingSorter = new ComparatorSelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);
-        } else if (selectedComparatorFactoryClass != null) {
-            var comparator = ConfigUtils.newInstance(this::toString, selectedComparatorFactoryPropertyName,
-                    selectedComparatorFactoryClass);
+        } else if (comparatorFactoryClass != null) {
+            var comparator = ConfigUtils.newInstance(this::toString, "comparatorFactoryClass",
+                    comparatorFactoryClass);
             descendingSorter = new ComparatorFactorySelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);
         }
     }
@@ -552,11 +498,6 @@ public class EntityDescriptor<Solution_> {
     }
 
     private void createEffectiveMovableEntitySelectionFilter() {
-        if (declaredMovableEntityFilter != null && !hasAnyDeclaredGenuineVariableDescriptor()) {
-            throw new IllegalStateException(
-                    "The entityClass (%s) has a movableEntitySelectionFilterClass (%s), but it has no declared genuine variables, only shadow variables."
-                            .formatted(entityClass, declaredMovableEntityFilter.getClass()));
-        }
         var movableFilterList = new ArrayList<MovableFilter<Solution_>>();
         // TODO Also add in child entity selectors
         for (var inheritedEntityDescriptor : effectiveInheritedEntityDescriptorList) {
@@ -564,9 +505,6 @@ public class EntityDescriptor<Solution_> {
                 // Includes movable and pinned
                 movableFilterList.add(inheritedEntityDescriptor.effectiveMovableEntityFilter);
             }
-        }
-        if (declaredMovableEntityFilter != null) {
-            movableFilterList.add(declaredMovableEntityFilter);
         }
         movableFilterList.addAll(declaredPinEntityFilterList);
         if (movableFilterList.isEmpty()) {
@@ -635,10 +573,6 @@ public class EntityDescriptor<Solution_> {
 
     public boolean matchesEntity(Object entity) {
         return entityClass.isAssignableFrom(entity.getClass());
-    }
-
-    public boolean hasPinningFilter() {
-        return declaredMovableEntityFilter != null;
     }
 
     public boolean hasEffectiveMovableEntityFilter() {

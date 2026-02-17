@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
-@PlanningEntity(pinningFilter = TestdataPinningFilter.class)
+@PlanningEntity
 public class TestdataPinnedEntity extends TestdataObject {
 
     public static EntityDescriptor<TestdataPinnedSolution> buildEntityDescriptor() {
@@ -16,7 +16,6 @@ public class TestdataPinnedEntity extends TestdataObject {
     }
 
     private TestdataValue value;
-    private boolean locked;
     private boolean pinned;
 
     public TestdataPinnedEntity() {
@@ -26,20 +25,13 @@ public class TestdataPinnedEntity extends TestdataObject {
         super(code);
     }
 
-    public TestdataPinnedEntity(String code, boolean locked, boolean pinned) {
-        this(code);
-        this.locked = locked;
-        this.pinned = pinned;
-    }
-
     public TestdataPinnedEntity(String code, TestdataValue value) {
         this(code);
         this.value = value;
     }
 
-    public TestdataPinnedEntity(String code, TestdataValue value, boolean locked, boolean pinned) {
+    public TestdataPinnedEntity(String code, TestdataValue value, boolean pinned) {
         this(code, value);
-        this.locked = locked;
         this.pinned = pinned;
     }
 
@@ -50,14 +42,6 @@ public class TestdataPinnedEntity extends TestdataObject {
 
     public void setValue(TestdataValue value) {
         this.value = value;
-    }
-
-    public boolean isLocked() {
-        return locked;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
     }
 
     @PlanningPin

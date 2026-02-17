@@ -1,12 +1,11 @@
 package ai.timefold.solver.core.api.score.director;
 
-import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -15,6 +14,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
+@NullMarked
 public interface ScoreDirector<Solution_> {
 
     /**
@@ -23,7 +23,6 @@ public interface ScoreDirector<Solution_> {
      * Because a {@link Score} is best calculated incrementally (by deltas),
      * the {@link ScoreDirector} needs to be notified when its {@link PlanningSolution working solution} changes.
      */
-    @NonNull
     Solution_ getWorkingSolution();
 
     void beforeVariableChanged(Object entity, String variableName);
@@ -45,102 +44,11 @@ public interface ScoreDirector<Solution_> {
     void triggerVariableListeners();
 
     /**
-     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
-     *             Use {@link ProblemChange} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void beforeEntityAdded(Object entity) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
-     *             Use {@link ProblemChange} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void afterEntityAdded(Object entity) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
-     *             Use {@link ProblemChange} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void beforeEntityRemoved(Object entity) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
-     *             Use {@link ProblemChange} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void afterEntityRemoved(Object entity) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
-     *             Use {@link ProblemChange} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void beforeProblemFactAdded(Object problemFact) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
-     *             Use {@link ProblemChange} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void afterProblemFactAdded(Object problemFact) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
-     *             Use {@link ProblemChange} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void beforeProblemPropertyChanged(Object problemFactOrEntity) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
-     *             Use {@link ProblemChange} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void afterProblemPropertyChanged(Object problemFactOrEntity) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
-     *             Use {@link ProblemChange} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void beforeProblemFactRemoved(Object problemFact) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Calling this method by user code is not recommended and will lead to unforeseen consequences.
-     *             Use {@link ProblemChange} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.8.0")
-    default void afterProblemFactRemoved(Object problemFact) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
      * Translates an entity or fact instance (often from another {@link Thread} or JVM)
      * to this {@link ScoreDirector}'s internal working instance.
      * Useful for move rebasing and in a {@link ProblemChange}.
      * <p>
-     * Matching is determined by the {@link LookUpStrategyType} on {@link PlanningSolution}.
-     * Matching uses a {@link PlanningId} by default.
+     * Matching uses {@link PlanningId}.
      *
      * @return null if externalObject is null
      * @throws IllegalArgumentException if there is no workingObject for externalObject, if it cannot be looked up
@@ -156,7 +64,7 @@ public interface ScoreDirector<Solution_> {
      * It's recommended to use {@link #lookUpWorkingObject(Object)} instead,
      * especially in move rebasing code.
      *
-     * @return null if externalObject is null or if there is no workingObject for externalObject
+     * @return null if externalObject is null, or if there is no workingObject for externalObject
      * @throws IllegalArgumentException if it cannot be looked up or if the externalObject's class is not supported
      * @throws IllegalStateException if it cannot be looked up
      * @param <E> the object type

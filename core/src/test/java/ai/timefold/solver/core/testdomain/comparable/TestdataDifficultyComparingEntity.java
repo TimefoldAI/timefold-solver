@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
-@PlanningEntity(difficultyComparatorClass = TestdataCodeComparator.class)
+@PlanningEntity(comparatorClass = TestdataCodeComparator.class)
 public class TestdataDifficultyComparingEntity extends TestdataObject {
 
     public static EntityDescriptor<TestdataDifficultyComparingSolution> buildEntityDescriptor() {
@@ -33,7 +33,7 @@ public class TestdataDifficultyComparingEntity extends TestdataObject {
         this.value = value;
     }
 
-    @PlanningVariable(valueRangeProviderRefs = { "valueRange" }, strengthComparatorClass = TestdataCodeComparator.class)
+    @PlanningVariable(valueRangeProviderRefs = { "valueRange" }, comparatorClass = TestdataCodeComparator.class)
     public TestdataValue getValue() {
         return value;
     }

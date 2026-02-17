@@ -3,8 +3,8 @@ package ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow;
 import java.util.ArrayList;
 import java.util.List;
 
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 
 @PlanningEntity

@@ -3,14 +3,13 @@ package ai.timefold.solver.core.api.solver.change;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -21,6 +20,7 @@ import org.jspecify.annotations.Nullable;
  * Should be used only from a {@link ProblemChange} implementation.
  * To see an example implementation, please refer to the {@link ProblemChange} Javadoc.
  */
+@NullMarked
 public interface ProblemChangeDirector {
 
     /**
@@ -30,7 +30,7 @@ public interface ProblemChangeDirector {
      * @param entityConsumer adds the entity to the {@link PlanningSolution working solution}
      * @param <Entity> the planning entity object type
      */
-    <Entity> void addEntity(@NonNull Entity entity, @NonNull Consumer<Entity> entityConsumer);
+    <Entity> void addEntity(Entity entity, Consumer<Entity> entityConsumer);
 
     /**
      * Remove an existing {@link PlanningEntity} instance from the {@link PlanningSolution working solution}.
@@ -41,7 +41,7 @@ public interface ProblemChangeDirector {
      * @param entityConsumer removes the working entity from the {@link PlanningSolution working solution}
      * @param <Entity> the planning entity object type
      */
-    <Entity> void removeEntity(@NonNull Entity entity, @NonNull Consumer<Entity> entityConsumer);
+    <Entity> void removeEntity(Entity entity, Consumer<Entity> entityConsumer);
 
     /**
      * Change a {@link PlanningVariable} value of a {@link PlanningEntity}. Translates the entity to a working
@@ -52,8 +52,7 @@ public interface ProblemChangeDirector {
      * @param entityConsumer updates the value of the {@link PlanningVariable} inside the {@link PlanningEntity}
      * @param <Entity> the planning entity object type
      */
-    <Entity> void changeVariable(@NonNull Entity entity, @NonNull String variableName,
-            @NonNull Consumer<Entity> entityConsumer);
+    <Entity> void changeVariable(Entity entity, String variableName, Consumer<Entity> entityConsumer);
 
     /**
      * Add a new problem fact into the {@link PlanningSolution working solution}.
@@ -63,7 +62,7 @@ public interface ProblemChangeDirector {
      *        {@link PlanningSolution working solution}
      * @param <ProblemFact> the problem fact object type
      */
-    <ProblemFact> void addProblemFact(@NonNull ProblemFact problemFact, @NonNull Consumer<ProblemFact> problemFactConsumer);
+    <ProblemFact> void addProblemFact(ProblemFact problemFact, Consumer<ProblemFact> problemFactConsumer);
 
     /**
      * Remove an existing problem fact from the {@link PlanningSolution working solution}. Translates the problem fact
@@ -74,7 +73,7 @@ public interface ProblemChangeDirector {
      *        {@link PlanningSolution working solution}
      * @param <ProblemFact> the problem fact object type
      */
-    <ProblemFact> void removeProblemFact(@NonNull ProblemFact problemFact, @NonNull Consumer<ProblemFact> problemFactConsumer);
+    <ProblemFact> void removeProblemFact(ProblemFact problemFact, Consumer<ProblemFact> problemFactConsumer);
 
     /**
      * Change a property of either a {@link PlanningEntity} or a problem fact. Translates the entity or the problem fact
@@ -86,15 +85,14 @@ public interface ProblemChangeDirector {
      *        or the problem fact
      * @param <EntityOrProblemFact> the planning entity or problem fact object type
      */
-    <EntityOrProblemFact> void changeProblemProperty(@NonNull EntityOrProblemFact problemFactOrEntity,
-            @NonNull Consumer<EntityOrProblemFact> problemFactOrEntityConsumer);
+    <EntityOrProblemFact> void changeProblemProperty(EntityOrProblemFact problemFactOrEntity,
+            Consumer<EntityOrProblemFact> problemFactOrEntityConsumer);
 
     /**
      * Translate an entity or fact instance (often from another {@link Thread} or JVM)
      * to this {@link ProblemChangeDirector}'s internal working instance.
      * <p>
-     * Matching is determined by the {@link LookUpStrategyType} on {@link PlanningSolution}.
-     * Matching uses a {@link PlanningId} by default.
+     * Matching uses {@link PlanningId}.
      *
      * @return null if externalObject is null
      * @throws IllegalArgumentException if there is no workingObject for externalObject, if it cannot be looked up
@@ -109,7 +107,7 @@ public interface ProblemChangeDirector {
      * but doesn't fail fast if no workingObject was ever added for the externalObject.
      * It's recommended to use {@link #lookUpWorkingObjectOrFail(Object)} instead.
      *
-     * @return {@link Optional#empty()} if externalObject is null or if there is no workingObject for externalObject
+     * @return {@link Optional#empty()} if there is no workingObject for externalObject, or if externalObject is null
      * @throws IllegalArgumentException if it cannot be looked up or if the externalObject's class is not supported
      * @throws IllegalStateException if it cannot be looked up
      * @param <EntityOrProblemFact> the object type

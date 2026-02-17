@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
-@PlanningEntity(difficultyComparatorClass = TestdataMixedMultiEntityFirstEntityComparator.class)
+@PlanningEntity(comparatorClass = TestdataMixedMultiEntityFirstEntityComparator.class)
 public class TestdataMixedMultiEntityFirstEntity extends TestdataObject {
 
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")

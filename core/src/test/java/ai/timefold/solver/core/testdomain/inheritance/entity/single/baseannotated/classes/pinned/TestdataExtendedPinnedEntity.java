@@ -6,11 +6,10 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 
-@PlanningEntity(pinningFilter = TestdataExtendedPinningFilter.class)
+@PlanningEntity
 public class TestdataExtendedPinnedEntity extends TestdataPinnedEntity {
 
     private TestdataValue subValue;
-    private boolean closed;
     private boolean pinnedByBoss;
 
     public TestdataExtendedPinnedEntity() {
@@ -25,11 +24,10 @@ public class TestdataExtendedPinnedEntity extends TestdataPinnedEntity {
         this.subValue = subValue;
     }
 
-    public TestdataExtendedPinnedEntity(String code, TestdataValue value, boolean locked, boolean pinned,
-            TestdataValue subValue, boolean closed, boolean pinnedByBoss) {
-        super(code, value, locked, pinned);
+    public TestdataExtendedPinnedEntity(String code, TestdataValue value, boolean pinned, TestdataValue subValue,
+            boolean pinnedByBoss) {
+        super(code, value, pinned);
         this.subValue = subValue;
-        this.closed = closed;
         this.pinnedByBoss = pinnedByBoss;
     }
 
@@ -40,14 +38,6 @@ public class TestdataExtendedPinnedEntity extends TestdataPinnedEntity {
 
     public void setSubValue(TestdataValue subValue) {
         this.subValue = subValue;
-    }
-
-    public boolean isClosed() {
-        return closed;
-    }
-
-    public void setClosed(boolean closed) {
-        this.closed = closed;
     }
 
     @PlanningPin

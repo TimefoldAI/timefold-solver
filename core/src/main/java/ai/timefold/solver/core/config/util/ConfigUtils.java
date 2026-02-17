@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.config.util;
 
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
-import static ai.timefold.solver.core.impl.domain.solution.cloner.DeepCloningUtils.IMMUTABLE_CLASSES;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -32,7 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.impl.domain.common.AlphabeticMemberComparator;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
@@ -449,17 +448,6 @@ public class ConfigUtils {
                                 annotationClass == null ? "auto discovered"
                                         : "@" + annotationClass.getSimpleName() + " annotated",
                                 memberName, type, memberName, type.getSimpleName())));
-    }
-
-    /**
-     * @param type the class type
-     * @return true if it is immutable; otherwise false
-     */
-    public static boolean isGenericTypeImmutable(Class<?> type) {
-        if (type == null) {
-            return false;
-        }
-        return type.isRecord() || IMMUTABLE_CLASSES.contains(type);
     }
 
     public static Optional<Class<?>> extractGenericTypeParameter(@NonNull String parentClassConcept,

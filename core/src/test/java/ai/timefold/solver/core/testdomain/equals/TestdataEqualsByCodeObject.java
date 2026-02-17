@@ -2,7 +2,7 @@ package ai.timefold.solver.core.testdomain.equals;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.testutil.CodeAssertable;
 
 public class TestdataEqualsByCodeObject implements CodeAssertable {

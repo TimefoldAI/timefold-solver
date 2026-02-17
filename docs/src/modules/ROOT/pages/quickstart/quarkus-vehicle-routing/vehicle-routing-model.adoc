@@ -121,7 +121,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.entity.PlanningId;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 
 @PlanningEntity
@@ -196,7 +196,7 @@ import java.time.LocalDateTime
 import java.util.ArrayList
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity
-import ai.timefold.solver.core.api.domain.lookup.PlanningId
+import ai.timefold.solver.core.api.domain.entity.PlanningId
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable
 
 @PlanningEntity
@@ -292,7 +292,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.entity.PlanningId;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
@@ -404,7 +404,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity
-import ai.timefold.solver.core.api.domain.lookup.PlanningId
+import ai.timefold.solver.core.api.domain.entity.PlanningId
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable
