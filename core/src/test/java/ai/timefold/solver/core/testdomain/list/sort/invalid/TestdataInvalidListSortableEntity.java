@@ -7,14 +7,14 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.common.DummyValueComparator;
-import ai.timefold.solver.core.testdomain.common.DummyValueFactory;
+import ai.timefold.solver.core.testdomain.common.DummyValueComparatorFactory;
 import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
 @PlanningEntity
 public class TestdataInvalidListSortableEntity extends TestdataObject {
 
     @PlanningListVariable(valueRangeProviderRefs = "valueRange", comparatorClass = DummyValueComparator.class,
-            comparatorFactoryClass = DummyValueFactory.class)
+            comparatorFactoryClass = DummyValueComparatorFactory.class)
     private List<TestdataSortableValue> valueList;
     private int difficulty;
 

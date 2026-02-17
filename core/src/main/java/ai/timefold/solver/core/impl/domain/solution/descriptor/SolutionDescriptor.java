@@ -47,12 +47,12 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
+import ai.timefold.solver.core.impl.domain.common.LookupStrategyResolver;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.common.accessor.ReflectionFieldMemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.lookup.LookUpStrategyResolver;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
@@ -257,7 +257,7 @@ public final class SolutionDescriptor<Solution_> {
     private final MemberAccessorFactory memberAccessorFactory;
 
     private DomainAccessType domainAccessType;
-    private LookUpStrategyResolver lookUpStrategyResolver;
+    private LookupStrategyResolver lookUpStrategyResolver;
 
     private final Map<String, MemberAccessor> problemFactMemberAccessorMap = new LinkedHashMap<>();
     private final Map<String, MemberAccessor> problemFactCollectionMemberAccessorMap = new LinkedHashMap<>();
@@ -383,7 +383,7 @@ public final class SolutionDescriptor<Solution_> {
         if (solutionClonerClass != PlanningSolution.NullSolutionCloner.class) {
             solutionCloner = ConfigUtils.newInstance(this::toString, "solutionClonerClass", solutionClonerClass);
         }
-        lookUpStrategyResolver = new LookUpStrategyResolver(descriptorPolicy);
+        lookUpStrategyResolver = new LookupStrategyResolver(descriptorPolicy);
     }
 
     private @NonNull PlanningSolution extractMostRelevantPlanningSolutionAnnotation() {
@@ -876,7 +876,7 @@ public final class SolutionDescriptor<Solution_> {
     // Look up methods
     // ************************************************************************
 
-    public LookUpStrategyResolver getLookUpStrategyResolver() {
+    public LookupStrategyResolver getLookUpStrategyResolver() {
         return lookUpStrategyResolver;
     }
 

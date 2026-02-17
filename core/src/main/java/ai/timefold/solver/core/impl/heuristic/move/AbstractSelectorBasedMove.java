@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.SequencedSet;
 import java.util.Set;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
@@ -16,7 +17,6 @@ import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
 
 import org.jspecify.annotations.NullMarked;
@@ -82,18 +82,18 @@ public abstract class AbstractSelectorBasedMove<Solution_> implements Move<Solut
     // Util methods
     // ************************************************************************
 
-    public static <E> List<E> rebaseList(List<E> externalObjectList, Rebaser rebaser) {
+    public static <E> List<E> rebaseList(List<E> externalObjectList, Lookup lookup) {
         var rebasedObjectList = new ArrayList<E>(externalObjectList.size());
         for (var entity : externalObjectList) {
-            rebasedObjectList.add(rebaser.rebase(entity));
+            rebasedObjectList.add(lookup.lookUpWorkingObject(entity));
         }
         return rebasedObjectList;
     }
 
-    public static <E> SequencedSet<E> rebaseSet(Set<E> externalObjectSet, Rebaser rebaser) {
+    public static <E> SequencedSet<E> rebaseSet(Set<E> externalObjectSet, Lookup lookup) {
         var rebasedObjectSet = LinkedHashSet.<E> newLinkedHashSet(externalObjectSet.size());
         for (var entity : externalObjectSet) {
-            rebasedObjectSet.add(rebaser.rebase(entity));
+            rebasedObjectSet.add(lookup.lookUpWorkingObject(entity));
         }
         return rebasedObjectSet;
     }

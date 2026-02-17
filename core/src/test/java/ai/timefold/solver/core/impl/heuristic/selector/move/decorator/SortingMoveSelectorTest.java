@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
@@ -23,7 +24,6 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.CodeAssertableSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -62,12 +62,6 @@ class SortingMoveSelectorTest {
 
     private static List<DummySorterMoveSelectorConfig> generateConfiguration() {
         return List.of(
-                new DummySorterMoveSelectorConfig()
-                        .withSorterOrder(SelectionSorterOrder.ASCENDING)
-                        .withComparatorFactoryClass(TestCodeAssertableComparatorFactory.class),
-                new DummySorterMoveSelectorConfig()
-                        .withSorterOrder(SelectionSorterOrder.ASCENDING)
-                        .withComparatorClass(TestCodeAssertableComparator.class),
                 new DummySorterMoveSelectorConfig()
                         .withSorterOrder(SelectionSorterOrder.ASCENDING)
                         .withComparatorFactoryClass(TestCodeAssertableComparatorFactory.class),
@@ -201,11 +195,11 @@ class SortingMoveSelectorTest {
         }
     }
 
-    public static class TestCodeAssertableComparatorFactory implements SelectionSorterWeightFactory<Object, CodeAssertable> {
+    public static class TestCodeAssertableComparatorFactory implements ComparatorFactory<Object, CodeAssertable> {
 
         @Override
-        public Comparable createSorterWeight(Object o, CodeAssertable selection) {
-            return selection.getCode();
+        public Comparator<CodeAssertable> createComparator(Object solution) {
+            return Comparator.comparing(CodeAssertable::getCode);
         }
     }
 

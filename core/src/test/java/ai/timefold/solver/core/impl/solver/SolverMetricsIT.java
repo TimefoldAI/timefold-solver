@@ -471,13 +471,13 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         @Override
         public void changeWorkingSolution(PhaseCommandContext<TestdataHardSoftScoreSolution> context) {
-            var workingEntity = context.lookupWorkingObject(entity);
-            var workingValue = context.lookupWorkingObject(value);
+            var workingEntity = context.lookUpWorkingObject(entity);
+            var workingValue = context.lookUpWorkingObject(value);
 
             var move = Moves.change(context.getSolutionMetaModel()
                     .genuineEntity(TestdataEntity.class)
                     .basicVariable("value", TestdataValue.class), workingEntity, workingValue);
-            context.execute(move);
+            context.executeAndCalculateScore(move);
         }
     }
 
@@ -526,7 +526,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         var step = new AtomicInteger(-1);
 
         ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
-                .addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataHardSoftScoreSolution>() {
+                .addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
                     @Override
                     public void stepEnded(AbstractStepScope<TestdataHardSoftScoreSolution> stepScope) {
                         super.stepEnded(stepScope);

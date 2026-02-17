@@ -401,13 +401,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         return new ScoreAnalysis<>(state.raw(), constraintAnalysisMap, state.isFullyAssigned());
     }
 
-    /*
-     * The following methods are copied here from ScoreDirector because they are deprecated there for removal.
-     * They will only be supported on this type, which serves for internal use only,
-     * as opposed to ScoreDirector, which is a public type.
-     * This way, we can ensure that these methods are used correctly and in a safe manner.
-     */
-
     default void beforeEntityAdded(Object entity) {
         beforeEntityAdded(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);
     }

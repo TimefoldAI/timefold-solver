@@ -3,14 +3,14 @@ package ai.timefold.solver.core.testdomain.sort.factory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
-import ai.timefold.solver.core.testdomain.common.TestSortableFactory;
 import ai.timefold.solver.core.testdomain.common.TestSortableObject;
+import ai.timefold.solver.core.testdomain.common.TestSortableObjectComparatorFactory;
 import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
-@PlanningEntity(comparatorFactoryClass = TestSortableFactory.class)
+@PlanningEntity(comparatorFactoryClass = TestSortableObjectComparatorFactory.class)
 public class TestdataFactorySortableEntity extends TestdataObject implements TestSortableObject {
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange", comparatorFactoryClass = TestSortableFactory.class)
+    @PlanningVariable(valueRangeProviderRefs = "valueRange", comparatorFactoryClass = TestSortableObjectComparatorFactory.class)
     private TestdataSortableValue value;
     private int difficulty;
 

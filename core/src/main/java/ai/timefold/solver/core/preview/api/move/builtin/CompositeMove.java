@@ -6,10 +6,10 @@ import java.util.Objects;
 import java.util.SequencedCollection;
 import java.util.stream.Collectors;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -54,10 +54,10 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Move<Solution_> rebase(Rebaser rebaser) {
+    public Move<Solution_> rebase(Lookup lookup) {
         Move<Solution_>[] rebasedMoves = new Move[moves.length];
         for (var i = 0; i < moves.length; i++) {
-            rebasedMoves[i] = moves[i].rebase(rebaser);
+            rebasedMoves[i] = moves[i].rebase(lookup);
         }
         return new CompositeMove<>(rebasedMoves);
     }

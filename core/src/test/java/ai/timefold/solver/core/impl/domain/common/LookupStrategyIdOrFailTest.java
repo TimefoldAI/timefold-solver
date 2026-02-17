@@ -1,8 +1,9 @@
-package ai.timefold.solver.core.impl.domain.lookup;
+package ai.timefold.solver.core.impl.domain.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectEnum;
@@ -13,64 +14,70 @@ import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectPrimitiveIn
 
 import org.junit.jupiter.api.Test;
 
-class LookUpStrategyIdOrFailTest extends AbstractLookupTest {
+class LookupStrategyIdOrFailTest extends AbstractLookupTest {
 
-    public LookUpStrategyIdOrFailTest() {
+    public LookupStrategyIdOrFailTest() {
         super(LookUpStrategyType.PLANNING_ID_OR_FAIL_FAST);
     }
 
     @Test
     void addRemoveWithIntegerId() {
-        TestdataObjectIntegerId object = new TestdataObjectIntegerId(0);
+        var object = new TestdataObjectIntegerId(0);
         lookUpManager.addWorkingObject(object);
         lookUpManager.removeWorkingObject(object);
         // The removed object cannot be looked up
-        assertThat(lookUpManager.lookUpWorkingObjectOrReturnNull(object)).isNull();
+        assertThatThrownBy(() -> lookUpManager.lookUpWorkingObject(object))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("externalObject")
+                .hasMessageContaining("no known workingObject");
     }
 
     @Test
     void addRemoveWithPrimitiveIntId() {
-        TestdataObjectPrimitiveIntId object = new TestdataObjectPrimitiveIntId(0);
+        var object = new TestdataObjectPrimitiveIntId(0);
         lookUpManager.addWorkingObject(object);
         lookUpManager.removeWorkingObject(object);
         // The removed object cannot be looked up
-        assertThat(lookUpManager.lookUpWorkingObjectOrReturnNull(object)).isNull();
+        assertThatThrownBy(() -> lookUpManager.lookUpWorkingObject(object))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("externalObject")
+                .hasMessageContaining("no known workingObject");
     }
 
     @Test
     void addRemoveEnum() {
-        TestdataObjectEnum object = TestdataObjectEnum.THIRD_VALUE;
+        var object = TestdataObjectEnum.THIRD_VALUE;
         lookUpManager.addWorkingObject(object);
         lookUpManager.removeWorkingObject(object);
     }
 
     @Test
     void addWithNullId() {
-        TestdataObjectIntegerId object = new TestdataObjectIntegerId(null);
+        var object = new TestdataObjectIntegerId(null);
         assertThatIllegalArgumentException().isThrownBy(() -> lookUpManager.addWorkingObject(object));
     }
 
     @Test
     void removeWithNullId() {
-        TestdataObjectIntegerId object = new TestdataObjectIntegerId(null);
+        var object = new TestdataObjectIntegerId(null);
         assertThatIllegalArgumentException().isThrownBy(() -> lookUpManager.removeWorkingObject(object));
     }
 
     @Test
     void addWithoutId() {
-        TestdataObjectNoId object = new TestdataObjectNoId();
+        var object = new TestdataObjectNoId();
         assertThatIllegalArgumentException().isThrownBy(() -> lookUpManager.addWorkingObject(object));
     }
 
     @Test
     void removeWithoutId() {
-        TestdataObjectNoId object = new TestdataObjectNoId();
+        var object = new TestdataObjectNoId();
         assertThatIllegalArgumentException().isThrownBy(() -> lookUpManager.removeWorkingObject(object));
     }
 
     @Test
     void addSameIdTwice() {
-        TestdataObjectIntegerId object = new TestdataObjectIntegerId(2);
+        var object = new TestdataObjectIntegerId(2);
         lookUpManager.addWorkingObject(object);
         assertThatIllegalStateException()
                 .isThrownBy(() -> lookUpManager.addWorkingObject(new TestdataObjectIntegerId(2)))
@@ -80,7 +87,7 @@ class LookUpStrategyIdOrFailTest extends AbstractLookupTest {
 
     @Test
     void removeWithoutAdding() {
-        TestdataObjectIntegerId object = new TestdataObjectIntegerId(0);
+        var object = new TestdataObjectIntegerId(0);
         assertThatIllegalStateException()
                 .isThrownBy(() -> lookUpManager.removeWorkingObject(object))
                 .withMessageContaining("differ");
@@ -88,14 +95,14 @@ class LookUpStrategyIdOrFailTest extends AbstractLookupTest {
 
     @Test
     void lookUpWithId() {
-        TestdataObjectIntegerId object = new TestdataObjectIntegerId(1);
+        var object = new TestdataObjectIntegerId(1);
         lookUpManager.addWorkingObject(object);
         assertThat(lookUpManager.lookUpWorkingObject(new TestdataObjectIntegerId(1))).isSameAs(object);
     }
 
     @Test
     void lookUpWithoutId() {
-        TestdataObjectNoId object = new TestdataObjectNoId();
+        var object = new TestdataObjectNoId();
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> lookUpManager.lookUpWorkingObject(object))
                 .withMessageContaining("does not have a @" + PlanningId.class.getSimpleName());
@@ -103,13 +110,16 @@ class LookUpStrategyIdOrFailTest extends AbstractLookupTest {
 
     @Test
     void lookUpWithoutAdding() {
-        TestdataObjectIntegerId object = new TestdataObjectIntegerId(0);
-        assertThat(lookUpManager.lookUpWorkingObjectOrReturnNull(object)).isNull();
+        var object = new TestdataObjectIntegerId(0);
+        assertThatThrownBy(() -> lookUpManager.lookUpWorkingObject(object))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("externalObject")
+                .hasMessageContaining("no known workingObject");
     }
 
     @Test
     void addWithTwoIds() {
-        TestdataObjectMultipleIds object = new TestdataObjectMultipleIds();
+        var object = new TestdataObjectMultipleIds();
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> lookUpManager.addWorkingObject(object))
                 .withMessageContaining("3 members")
@@ -118,7 +128,7 @@ class LookUpStrategyIdOrFailTest extends AbstractLookupTest {
 
     @Test
     void removeWithTwoIds() {
-        TestdataObjectMultipleIds object = new TestdataObjectMultipleIds();
+        var object = new TestdataObjectMultipleIds();
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> lookUpManager.removeWorkingObject(object))
                 .withMessageContaining("3 members")

@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
@@ -22,14 +23,13 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMeta
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
-        implements InnerMutableSolutionView<Solution_>, Rebaser permits EphemeralMoveDirector {
+        implements InnerMutableSolutionView<Solution_>, Lookup permits EphemeralMoveDirector {
 
     protected final VariableDescriptorAwareScoreDirector<Solution_> externalScoreDirector;
     private final InnerScoreDirector<Solution_, Score_> backingScoreDirector;
@@ -85,12 +85,15 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             }
             externalScoreDirector.beforeListVariableElementAssigned(variableDescriptor, value);
         }
-        externalScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, 0, 0);
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex);
         variableDescriptor.getValue(destinationEntity).addAll(destinationIndex, values);
-        externalScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, 0, values.size());
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex + values.size());
         for (var value : values) {
             externalScoreDirector.afterListVariableElementAssigned(variableDescriptor, value);
         }
+        externalScoreDirector.triggerVariableListeners();
     }
 
     @Override
@@ -408,7 +411,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public final <T> @Nullable T rebase(@Nullable T problemFactOrPlanningEntity) {
+    public final <T> @Nullable T lookUpWorkingObject(@Nullable T problemFactOrPlanningEntity) {
         return externalScoreDirector.lookUpWorkingObject(problemFactOrPlanningEntity);
     }
 

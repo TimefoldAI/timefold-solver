@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SequencedCollection;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -67,9 +67,9 @@ public final class SelectorBasedListAssignMove<Solution_> extends AbstractSelect
     }
 
     @Override
-    public SelectorBasedListAssignMove<Solution_> rebase(Rebaser rebaser) {
-        return new SelectorBasedListAssignMove<>(variableDescriptor, Objects.requireNonNull(rebaser.rebase(planningValue)),
-                Objects.requireNonNull(rebaser.rebase(destinationEntity)), destinationIndex);
+    public SelectorBasedListAssignMove<Solution_> rebase(Lookup lookup) {
+        return new SelectorBasedListAssignMove<>(variableDescriptor, lookup.lookUpWorkingObject(planningValue),
+                lookup.lookUpWorkingObject(destinationEntity), destinationIndex);
     }
 
     @Override

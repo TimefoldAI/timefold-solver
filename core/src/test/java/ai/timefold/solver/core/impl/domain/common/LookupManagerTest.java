@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.lookup;
+package ai.timefold.solver.core.impl.domain.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -10,9 +10,9 @@ import ai.timefold.solver.core.testdomain.interfaces.TestdataInterfaceValue;
 
 import org.junit.jupiter.api.Test;
 
-class LookUpManagerTest extends AbstractLookupTest {
+class LookupManagerTest extends AbstractLookupTest {
 
-    public LookUpManagerTest() {
+    public LookupManagerTest() {
         super(LookUpStrategyType.PLANNING_ID_OR_NONE);
     }
 

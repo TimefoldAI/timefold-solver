@@ -94,7 +94,7 @@ it is also recommended to override the following methods:
 Finally, the `Move` interface specifies the following methods
 that the user can optionally override to gain access to additional solver features:
 
-`Move rebase(Rebaser rebaser)`::
+`Move rebase(Lookup lookup)`::
 This method creates a copy of the move that is applicable to a different working solution.
 This is only necessary when the solver is configured to use xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving].
 `String describe()`::
@@ -228,10 +228,10 @@ public final class ChangeMove implements Move<Timetable> {
     }
 
     @Override
-    public ChangeMove rebase(Rebaser rebaser) {
+    public ChangeMove rebase(Lookup lookup) {
         return new ChangeMove(timeslotVariable,
-                rebaser.rebase(lesson),
-                rebaser.rebase(timeslot));
+                lookup.lookUpWorkingObject(lesson),
+                lookup.lookUpWorkingObject(timeslot));
     }
 
     @Override

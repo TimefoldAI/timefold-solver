@@ -2,7 +2,6 @@ package ai.timefold.solver.test.api.solver.change;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
@@ -34,36 +33,36 @@ public class MockProblemChangeDirector implements ProblemChangeDirector {
 
     @Override
     public <Entity> void addEntity(@NonNull Entity entity, @NonNull Consumer<Entity> entityConsumer) {
-        entityConsumer.accept(lookUpWorkingObjectOrFail(entity));
+        entityConsumer.accept(this.lookUpWorkingObject(entity));
     }
 
     @Override
     public <Entity> void removeEntity(@NonNull Entity entity, Consumer<Entity> entityConsumer) {
-        entityConsumer.accept(lookUpWorkingObjectOrFail(entity));
+        entityConsumer.accept(this.lookUpWorkingObject(entity));
     }
 
     @Override
     public <Entity> void changeVariable(@NonNull Entity entity, @NonNull String variableName,
             @NonNull Consumer<Entity> entityConsumer) {
-        entityConsumer.accept(lookUpWorkingObjectOrFail(entity));
+        entityConsumer.accept(this.lookUpWorkingObject(entity));
     }
 
     @Override
     public <ProblemFact> void addProblemFact(@NonNull ProblemFact problemFact,
             @NonNull Consumer<ProblemFact> problemFactConsumer) {
-        problemFactConsumer.accept(lookUpWorkingObjectOrFail(problemFact));
+        problemFactConsumer.accept(this.lookUpWorkingObject(problemFact));
     }
 
     @Override
     public <ProblemFact> void removeProblemFact(@NonNull ProblemFact problemFact,
             @NonNull Consumer<ProblemFact> problemFactConsumer) {
-        problemFactConsumer.accept(lookUpWorkingObjectOrFail(problemFact));
+        problemFactConsumer.accept(this.lookUpWorkingObject(problemFact));
     }
 
     @Override
     public <EntityOrProblemFact> void changeProblemProperty(@NonNull EntityOrProblemFact problemFactOrEntity,
             @NonNull Consumer<EntityOrProblemFact> problemFactOrEntityConsumer) {
-        problemFactOrEntityConsumer.accept(lookUpWorkingObjectOrFail(problemFactOrEntity));
+        problemFactOrEntityConsumer.accept(this.lookUpWorkingObject(problemFactOrEntity));
     }
 
     /**
@@ -74,21 +73,9 @@ public class MockProblemChangeDirector implements ProblemChangeDirector {
      */
     @Override
     public <EntityOrProblemFact> @Nullable EntityOrProblemFact
-            lookUpWorkingObjectOrFail(@Nullable EntityOrProblemFact externalObject) {
+            lookUpWorkingObject(@Nullable EntityOrProblemFact externalObject) {
         EntityOrProblemFact entityOrProblemFact = (EntityOrProblemFact) lookUpTable.get(externalObject);
         return entityOrProblemFact == null ? externalObject : entityOrProblemFact;
-    }
-
-    /**
-     * If the look-up result has been provided by a {@link #whenLookingUp(Object)} call, returns the defined object.
-     * Otherwise, returns null.
-     *
-     * @param externalObject entity or problem fact to look up
-     */
-    @Override
-    public <EntityOrProblemFact> Optional<EntityOrProblemFact>
-            lookUpWorkingObject(@Nullable EntityOrProblemFact externalObject) {
-        return Optional.ofNullable((EntityOrProblemFact) lookUpTable.get(externalObject));
     }
 
     @Override
@@ -97,7 +84,7 @@ public class MockProblemChangeDirector implements ProblemChangeDirector {
     }
 
     /**
-     * Defines what {@link #lookUpWorkingObjectOrFail(Object)} returns.
+     * Defines what {@link #lookUpWorkingObject(Object)} returns.
      */
     public @NonNull LookUpMockBuilder whenLookingUp(Object forObject) {
         return new LookUpMockBuilder(forObject);

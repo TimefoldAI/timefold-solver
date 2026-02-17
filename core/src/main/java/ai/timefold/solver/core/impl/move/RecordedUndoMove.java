@@ -3,9 +3,9 @@ package ai.timefold.solver.core.impl.move;
 import java.util.List;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -27,9 +27,9 @@ record RecordedUndoMove<Solution_>(List<ChangeAction<Solution_>> variableChangeA
     }
 
     @Override
-    public Move<Solution_> rebase(Rebaser rebaser) {
+    public Move<Solution_> rebase(Lookup lookup) {
         return new RecordedUndoMove<>(variableChangeActionList.stream()
-                .map(changeAction -> changeAction.rebase(rebaser))
+                .map(changeAction -> changeAction.rebase(lookup))
                 .toList());
     }
 

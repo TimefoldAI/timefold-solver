@@ -1,11 +1,10 @@
-package ai.timefold.solver.core.impl.domain.lookup;
+package ai.timefold.solver.core.impl.domain.common;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.cloner.DeepCloningUtils;
@@ -16,18 +15,18 @@ import org.jspecify.annotations.NullMarked;
  * This class is thread-safe.
  */
 @NullMarked
-public final class LookUpStrategyResolver {
+public final class LookupStrategyResolver {
 
     private final LookUpStrategyType lookUpStrategyType;
     private final DomainAccessType domainAccessType;
     private final MemberAccessorFactory memberAccessorFactory;
-    private final Map<Class<?>, LookUpStrategy> decisionCache = new ConcurrentHashMap<>();
+    private final Map<Class<?>, LookupStrategy> decisionCache = new ConcurrentHashMap<>();
 
-    public LookUpStrategyResolver(DescriptorPolicy descriptorPolicy) {
+    public LookupStrategyResolver(DescriptorPolicy descriptorPolicy) {
         this(descriptorPolicy, LookUpStrategyType.PLANNING_ID_OR_NONE);
     }
 
-    LookUpStrategyResolver(DescriptorPolicy descriptorPolicy, LookUpStrategyType lookUpStrategyType) {
+    LookupStrategyResolver(DescriptorPolicy descriptorPolicy, LookUpStrategyType lookUpStrategyType) {
         this.lookUpStrategyType = lookUpStrategyType;
         this.domainAccessType = descriptorPolicy.getDomainAccessType();
         this.memberAccessorFactory = descriptorPolicy.getMemberAccessorFactory();
@@ -41,22 +40,22 @@ public final class LookUpStrategyResolver {
      * @param object never null
      * @return never null
      */
-    public LookUpStrategy determineLookUpStrategy(Object object) {
+    public LookupStrategy determineLookUpStrategy(Object object) {
         var objectClass = object.getClass();
         var decision = decisionCache.get(objectClass);
         if (decision == null) { // Simulate computeIfAbsent, avoiding creating a lambda on the hot path.
             if (DeepCloningUtils.isImmutable(objectClass)) {
-                decision = new ImmutableLookUpStrategy();
+                decision = new ImmutableLookupStrategy();
             } else {
                 decision = switch (lookUpStrategyType) {
-                    case NONE -> new NoneLookUpStrategy();
+                    case NONE -> new NoneLookupStrategy();
                     case PLANNING_ID_OR_NONE -> {
                         var memberAccessor =
                                 ConfigUtils.findPlanningIdMemberAccessor(objectClass, memberAccessorFactory, domainAccessType);
                         if (memberAccessor == null) {
-                            yield new NoneLookUpStrategy();
+                            yield new NoneLookupStrategy();
                         }
-                        yield new PlanningIdLookUpStrategy(memberAccessor);
+                        yield new PlanningIdLookupStrategy(memberAccessor);
                     }
                     case PLANNING_ID_OR_FAIL_FAST -> {
                         var memberAccessor =
@@ -68,7 +67,7 @@ public final class LookUpStrategyResolver {
                                     .formatted(objectClass, PlanningId.class.getSimpleName(), lookUpStrategyType,
                                             PlanningId.class.getSimpleName()));
                         }
-                        yield new PlanningIdLookUpStrategy(memberAccessor);
+                        yield new PlanningIdLookupStrategy(memberAccessor);
                     }
                 };
                 decisionCache.put(objectClass, decision);

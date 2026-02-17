@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.move;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 public sealed interface ChangeAction<Solution_>
         permits ListVariableAfterAssignmentAction, ListVariableAfterChangeAction, ListVariableAfterUnassignmentAction,
@@ -10,6 +10,6 @@ public sealed interface ChangeAction<Solution_>
 
     void undo(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector);
 
-    ChangeAction<Solution_> rebase(Rebaser rebaser);
+    ChangeAction<Solution_> rebase(Lookup lookup);
 
 }

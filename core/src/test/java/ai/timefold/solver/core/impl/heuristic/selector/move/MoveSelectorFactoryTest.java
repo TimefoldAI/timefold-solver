@@ -23,7 +23,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.SortingMov
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
-import ai.timefold.solver.core.testdomain.common.DummyValueFactory;
+import ai.timefold.solver.core.testdomain.common.DummyValueComparatorFactory;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -218,7 +218,7 @@ class MoveSelectorFactoryTest {
         var baseMoveSelector = SelectorTestUtils.<TestdataSolution> mockMoveSelector();
         var moveSelectorConfig = new DummyMoveSelectorConfig();
         moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
-        moveSelectorConfig.setComparatorFactoryClass(DummyValueFactory.class);
+        moveSelectorConfig.setComparatorFactoryClass(DummyValueComparatorFactory.class);
 
         var moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
         var sortingMoveSelector =

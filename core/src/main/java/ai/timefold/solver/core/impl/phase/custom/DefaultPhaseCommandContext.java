@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommandContext;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
@@ -39,13 +40,19 @@ final class DefaultPhaseCommandContext<Solution_> implements PhaseCommandContext
     }
 
     @Override
-    public <T> T lookupWorkingObject(T original) {
-        return moveDirector.rebase(original);
+    public <T> @Nullable T lookUpWorkingObject(@Nullable T problemFactOrPlanningEntity) {
+        return moveDirector.lookUpWorkingObject(problemFactOrPlanningEntity);
     }
 
     @Override
-    public void execute(Move<Solution_> move, boolean guaranteeFreshScore) {
-        moveDirector.execute(move, guaranteeFreshScore);
+    public void execute(Move<Solution_> move) {
+        moveDirector.execute(move, false);
+    }
+
+    @Override
+    public <Score_ extends Score<Score_>> Score_ executeAndCalculateScore(Move<Solution_> move) {
+        moveDirector.execute(move, true);
+        return moveDirector.getScoreDirector().getSolutionDescriptor().getScore(getWorkingSolution());
     }
 
     @Override

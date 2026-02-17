@@ -34,6 +34,8 @@
 - [ ] `PhaseCommand` was significantly refactored.
 - [ ] `ScoreDirector` no longer public API.
 - [ ] `SolutionPartitioner` no longer uses ScoreDirector, uses solution instead.
+- [ ] `Rebaser` renamed to `Lookup` and made public.
+- [ ] `ProblemChangeDirector#lookUpWorkingObject()` no longer returns `Optional`.
 - [ ] `AutoDiscoverMemberType` is gone
 
 Remove this file when done.

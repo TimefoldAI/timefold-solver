@@ -2,9 +2,10 @@ package ai.timefold.solver.core.api.solver.phase;
 
 import java.util.function.Function;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -17,7 +18,8 @@ import org.jspecify.annotations.Nullable;
  * @see PhaseCommand
  */
 @NullMarked
-public interface PhaseCommandContext<Solution_> {
+public interface PhaseCommandContext<Solution_>
+        extends Lookup {
 
     /**
      * Returns the meta-model of the {@link #getWorkingSolution() working solution}.
@@ -29,7 +31,7 @@ public interface PhaseCommandContext<Solution_> {
     /**
      * Returns the current working solution.
      * It must not be modified directly,
-     * but only through {@link #execute(Move)} or {@link #executeTemporarily(Move, Function)}.
+     * but only through {@link #executeAndCalculateScore(Move)} or {@link #executeTemporarily(Move, Function)}.
      * Direct modifications will cause the solver to be in an inconsistent state and likely throw an exception later on.
      *
      * @return the current working solution
@@ -47,23 +49,21 @@ public interface PhaseCommandContext<Solution_> {
     boolean isPhaseTerminated();
 
     /**
-     * As defined by {@link #execute(Move, boolean)},
-     * but with the guarantee of a fresh score.
+     * Executes the given move and updates the working solution
+     * without recalculating the score for performance reasons.
+     *
+     * @param move the move to execute
      */
-    default void execute(Move<Solution_> move) {
-        execute(move, true);
-    }
+    void execute(Move<Solution_> move);
 
     /**
      * Executes the given move and updates the working solution,
-     * optionally without recalculating the score for performance reasons.
+     * and returns the new score of the working solution.
      *
      * @param move the move to execute
-     * @param guaranteeFreshScore if true, the score of {@link #getWorkingSolution()} after this method returns
-     *        is guaranteed to be up-to-date;
-     *        otherwise it may be stale as the solver will skip recalculating it for performance reasons.
+     * @return the new score of the working solution after executing the move
      */
-    void execute(Move<Solution_> move, boolean guaranteeFreshScore);
+    <Score_ extends Score<Score_>> Score_ executeAndCalculateScore(Move<Solution_> move);
 
     /**
      * As defined by {@link #executeTemporarily(Move, Function, boolean)},
@@ -90,9 +90,7 @@ public interface PhaseCommandContext<Solution_> {
     <Result_> @Nullable Result_ executeTemporarily(Move<Solution_> move,
             Function<Solution_, @Nullable Result_> temporarySolutionConsumer, boolean guaranteeFreshScore);
 
-    /**
-     * As defined by {@link Rebaser#rebase(Object)}, but for the working solution of this context.
-     */
-    <T> @Nullable T lookupWorkingObject(@Nullable T original);
+    @Override
+    <T> @Nullable T lookUpWorkingObject(@Nullable T problemFactOrPlanningEntity);
 
 }

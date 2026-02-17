@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SequencedCollection;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -11,7 +12,6 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.move.AbstractMove;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -134,10 +134,9 @@ public class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Sol
     }
 
     @Override
-    public ListChangeMove<Solution_, Entity_, Value_> rebase(Rebaser rebaser) {
-        return new ListChangeMove<>(variableMetaModel,
-                Objects.requireNonNull(rebaser.rebase(sourceEntity)), sourceIndex,
-                Objects.requireNonNull(rebaser.rebase(destinationEntity)), destinationIndex);
+    public ListChangeMove<Solution_, Entity_, Value_> rebase(Lookup lookup) {
+        return new ListChangeMove<>(variableMetaModel, lookup.lookUpWorkingObject(sourceEntity), sourceIndex,
+                lookup.lookUpWorkingObject(destinationEntity), destinationIndex);
     }
 
     @Override

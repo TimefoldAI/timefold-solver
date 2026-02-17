@@ -881,7 +881,7 @@ so that the user can perform arbitrary calculations on the working solution with
 The return value of the provided `Function` is returned by this method.
 `boolean isPhaseTerminated()`::
 Returns `true` if the `PhaseCommand` should terminate.
-`Object lookupWorkingObject(Object externalObject)`::
+`Object lookUpWorkingObject(Object externalObject)`::
 Returns the working object that corresponds to the given external object.
 This is useful when the `PhaseCommand` remembers an object from some previous working solution,
 and needs to find the corresponding object in the current working solution,
@@ -896,9 +896,9 @@ The solver will only terminate after the command returns.
 
 [WARNING]
 ====
-Do not change any of the problem facts in a `PhaseCommand`, and add or remove entities,
+Do not change any of the problem facts in a `PhaseCommand` or add or remove entities,
 it will corrupt the `Solver` because any previous score or solution was for a different problem.
-To change problem facts, and to add or remove entities,
+To change problem facts or to add or remove entities,
 read about xref:responding-to-change/responding-to-change.adoc[repeated planning]
 and use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange] instead.
 ====

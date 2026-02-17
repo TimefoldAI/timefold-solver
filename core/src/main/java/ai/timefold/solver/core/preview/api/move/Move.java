@@ -3,6 +3,7 @@ package ai.timefold.solver.core.preview.api.move;
 import java.util.Collection;
 import java.util.SequencedCollection;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -25,19 +26,7 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * For tabu search, a Move should implement {@link Object#equals(Object)} and {@link Object#hashCode()},
  * {@link #getPlanningEntities()} and {@link #getPlanningValues()}.
- * <p>
- * <strong>This package and all of its contents are part of the Neighborhoods API,
- * which is under development and is only offered as a preview feature.</strong>
- * There are no guarantees for backward compatibility;
- * any class, method, or field may change or be removed without prior notice,
- * although we will strive to avoid this as much as possible.
- * <p>
- * We encourage you to try the API and give us feedback on your experience with it,
- * before we finalize the API.
- * Please direct your feedback to
- * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
- * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
- * 
+ *
  * @param <Solution_>
  * @see MoveTester How to test {@link Move}s.
  */
@@ -71,8 +60,10 @@ public interface Move<Solution_> {
      * as the original {@link PlanningSolution} to begin with.
      * <p>
      * An implementation of this method typically iterates through every entity and fact instance in this move,
-     * translates each one to the destination with {@link Rebaser#rebase(Object)}
+     * translates each one to the destination with {@link Lookup#lookUpWorkingObject(Object)}
      * and creates a new move instance of the same move type, using those translated instances.
+     * If the working object isn't getting cloned, as many problem facts wouldn't be,
+     * it doesn't need to be translated and can be reused in the new move instance as is.
      * <p>
      * The destination {@link PlanningSolution} can be in a different state than the original {@link PlanningSolution}.
      * So, rebasing can only depend on the identity of {@link PlanningEntity planning entities}
@@ -84,10 +75,10 @@ public interface Move<Solution_> {
      * The default implementation throws an {@link UnsupportedOperationException},
      * making multithreaded solving impossible unless the move class implements this method.
      *
-     * @param rebaser Do not store this parameter in a field
+     * @param lookup Do not store this parameter in a field
      * @return New move that does the same change as this move on another solution instance
      */
-    default Move<Solution_> rebase(Rebaser rebaser) {
+    default Move<Solution_> rebase(Lookup lookup) {
         throw new UnsupportedOperationException(
                 "Move class (%s) doesn't implement the rebase() method, so multithreaded solving is impossible."
                         .formatted(getClass()));

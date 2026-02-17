@@ -20,7 +20,7 @@ public interface PhaseCommand<Solution_> {
     /**
      * Changes the current {@link PhaseCommandContext#getWorkingSolution() working solution}.
      * The solver is notified of the changes through {@link PhaseCommandContext},
-     * specifically through {@link PhaseCommandContext#execute(Move)}.
+     * specifically through {@link PhaseCommandContext#executeAndCalculateScore(Move)}.
      * Any other modifications to the working solution are strictly forbidden
      * and will likely cause the solver to be in an inconsistent state and throw an exception later on.
      * <p>

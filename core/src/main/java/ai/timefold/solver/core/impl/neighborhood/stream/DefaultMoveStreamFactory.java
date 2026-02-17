@@ -23,7 +23,6 @@ import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEn
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.sampling.UniSamplingStream;
 
 import org.jspecify.annotations.NullMarked;
@@ -162,28 +161,6 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {
         return enumeratingStreamFactory.getSolutionDescriptor();
-    }
-
-    @Override
-    public <Entity_, Value_> UniEnumeratingStream<Solution_, ElementPosition>
-            forEachAssignablePosition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        // Stream with unpinned entities;
-        // includes null if the variable allows unassigned values.
-        var unpinnedEntities =
-                forEach(variableMetaModel.entity().type(), variableMetaModel.allowsUnassignedValues());
-        // Stream with unpinned values, which are assigned to any list variable;
-        // always includes null so that we can later create a position at the end of the list,
-        // i.e. with no value after it.
-        var nodeSharingSupportFunctions = getNodeSharingSupportFunctions(variableMetaModel);
-        var unpinnedValues = forEach(variableMetaModel.type(), true)
-                .filter(nodeSharingSupportFunctions.assignedValueOrNullFilter);
-        // Joins the two previous streams to create pairs of (entity, value),
-        // eliminating values which do not match that entity's value range.
-        // It maps these pairs to expected target positions in that entity's list variable.
-        return unpinnedEntities.join(unpinnedValues,
-                NeighborhoodsJoiners.filtering(nodeSharingSupportFunctions.valueInRangeFilter))
-                .map(nodeSharingSupportFunctions.toElementPositionMapper)
-                .distinct();
     }
 
     public record NodeSharingSupportFunctions<Solution_, Entity_, Value_>(

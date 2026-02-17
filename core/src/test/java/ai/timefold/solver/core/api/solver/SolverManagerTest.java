@@ -879,7 +879,7 @@ class SolverManagerTest {
                             var solution = context.getWorkingSolution();
                             var entity = solution.getEntityList().getFirst();
                             var move = Moves.change(variableMetaModel, entity, solution.getValueList().getFirst());
-                            context.execute(move);
+                            context.executeAndCalculateScore(move);
                         }, (PhaseCommandContext<TestdataSolution> context) -> {
                             var variableMetaModel = context.getSolutionMetaModel()
                                     .genuineEntity(TestdataEntity.class)
@@ -887,7 +887,7 @@ class SolverManagerTest {
                             var solution = context.getWorkingSolution();
                             var entity = solution.getEntityList().get(1);
                             var move = Moves.change(variableMetaModel, entity, solution.getValueList().get(1));
-                            context.execute(move);
+                            context.executeAndCalculateScore(move);
                         }, (PhaseCommandContext<TestdataSolution> context) -> {
                             var variableMetaModel = context.getSolutionMetaModel()
                                     .genuineEntity(TestdataEntity.class)
@@ -895,7 +895,7 @@ class SolverManagerTest {
                             var solution = context.getWorkingSolution();
                             var entity = solution.getEntityList().get(2);
                             var move = Moves.change(variableMetaModel, entity, solution.getValueList().get(2));
-                            context.execute(move);
+                            context.executeAndCalculateScore(move);
                         }, (PhaseCommandContext<TestdataSolution> context) -> {
                             // In the next best solution event, both e1 and e2 are definitely not null (but e3 might be).
                             latch.countDown();
@@ -905,7 +905,7 @@ class SolverManagerTest {
                             var solution = context.getWorkingSolution();
                             var entity = solution.getEntityList().get(3);
                             var move = Moves.change(variableMetaModel, entity, solution.getValueList().get(3));
-                            context.execute(move);
+                            context.executeAndCalculateScore(move);
                         }));
         try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
             var bestSolutionCount = new AtomicInteger();
@@ -1034,7 +1034,7 @@ class SolverManagerTest {
                                     var solution = context.getWorkingSolution();
                                     var entity = solution.getEntityList().get(x);
                                     var move = Moves.change(variableMetaModel, entity, solution.getValueList().get(x));
-                                    context.execute(move);
+                                    context.executeAndCalculateScore(move);
                                 }))
                         .toArray(PhaseConfig[]::new));
         return createDefaultSolverManager(solverConfig);

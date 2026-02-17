@@ -10,6 +10,7 @@ import java.util.SequencedCollection;
 import java.util.SequencedSet;
 import java.util.TreeSet;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase;
@@ -19,7 +20,6 @@ import ai.timefold.solver.core.impl.move.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -162,10 +162,10 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
     }
 
     @Override
-    public Move<Solution_> rebase(Rebaser rebaser) {
-        var rebasedRuinedValueList = AbstractSelectorBasedMove.rebaseList(ruinedValueList, rebaser);
-        var rebasedAffectedEntitySet = AbstractSelectorBasedMove.rebaseSet(affectedEntitySet, rebaser);
-        var rebasedListVariableDescriptor = ((MoveDirector<Solution_, ?>) rebaser)
+    public Move<Solution_> rebase(Lookup lookup) {
+        var rebasedRuinedValueList = AbstractSelectorBasedMove.rebaseList(ruinedValueList, lookup);
+        var rebasedAffectedEntitySet = AbstractSelectorBasedMove.rebaseSet(affectedEntitySet, lookup);
+        var rebasedListVariableDescriptor = ((MoveDirector<Solution_, ?>) lookup)
                 .getScoreDirector()
                 .getSolutionDescriptor()
                 .getListVariableDescriptor();

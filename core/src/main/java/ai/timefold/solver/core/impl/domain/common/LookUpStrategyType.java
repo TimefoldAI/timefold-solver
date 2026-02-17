@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.lookup;
+package ai.timefold.solver.core.impl.domain.common;
 
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;

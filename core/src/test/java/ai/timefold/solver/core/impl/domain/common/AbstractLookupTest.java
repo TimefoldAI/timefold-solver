@@ -1,6 +1,5 @@
-package ai.timefold.solver.core.impl.domain.lookup;
+package ai.timefold.solver.core.impl.domain.common;
 
-import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 
@@ -9,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 abstract class AbstractLookupTest {
 
     private final LookUpStrategyType lookUpStrategyType;
-    protected LookUpManager lookUpManager;
+    protected LookupManager lookUpManager;
 
     protected AbstractLookupTest(LookUpStrategyType lookUpStrategyType) {
         this.lookUpStrategyType = lookUpStrategyType;
@@ -17,13 +16,13 @@ abstract class AbstractLookupTest {
 
     @BeforeEach
     void setUpLookUpManager() {
-        lookUpManager = new LookUpManager(createLookupStrategyResolver(lookUpStrategyType));
+        lookUpManager = new LookupManager(createLookupStrategyResolver(lookUpStrategyType));
     }
 
-    protected LookUpStrategyResolver createLookupStrategyResolver(LookUpStrategyType lookUpStrategyType) {
+    protected LookupStrategyResolver createLookupStrategyResolver(LookUpStrategyType lookUpStrategyType) {
         DescriptorPolicy descriptorPolicy = new DescriptorPolicy();
         descriptorPolicy.setMemberAccessorFactory(new MemberAccessorFactory());
         descriptorPolicy.setDomainAccessType(DomainAccessType.FORCE_REFLECTION);
-        return new LookUpStrategyResolver(descriptorPolicy, lookUpStrategyType);
+        return new LookupStrategyResolver(descriptorPolicy, lookUpStrategyType);
     }
 }

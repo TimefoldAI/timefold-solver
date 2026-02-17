@@ -136,9 +136,6 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
 
     @Override
     public <Score_ extends Score<Score_>> Score_ getConstraintWeight() {
-        if (defaultConstraintWeight == null) { // Configurable weights (deprecated) have no default.
-            return null;
-        }
         return adjustConstraintWeight((Score_) defaultConstraintWeight);
     }
 

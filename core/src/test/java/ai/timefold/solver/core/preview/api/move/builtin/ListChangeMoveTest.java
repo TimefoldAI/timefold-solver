@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.preview.api.move.MoveTester;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -458,11 +458,11 @@ class ListChangeMoveTest {
                             variableMetaModel,
                             entity1, 0, entity2, 1);
 
-            // Rebase with a rebaser that maps to new entities
-            var rebasedMove = originalMove.rebase(new Rebaser() {
+            // Look up new entities
+            var rebasedMove = originalMove.rebase(new Lookup() {
                 @Override
                 @SuppressWarnings("unchecked")
-                public <T> T rebase(T object) {
+                public <T> T lookUpWorkingObject(T object) {
                     if (object == entity1) {
                         return (T) rebasedEntity1;
                     } else if (object == entity2) {
@@ -470,6 +470,7 @@ class ListChangeMoveTest {
                     }
                     return object;
                 }
+
             });
 
             // Verify the rebased move has the new entities
@@ -495,15 +496,16 @@ class ListChangeMoveTest {
                             variableMetaModel,
                             entity, 0, entity, 0);
 
-            var rebasedMove = originalMove.rebase(new Rebaser() {
+            var rebasedMove = originalMove.rebase(new Lookup() {
                 @Override
                 @SuppressWarnings("unchecked")
-                public <T> T rebase(T object) {
+                public <T> T lookUpWorkingObject(T object) {
                     if (object == entity) {
                         return (T) rebasedEntity;
                     }
                     return object;
                 }
+
             });
 
             // Both source and destination should be rebased to the same entity

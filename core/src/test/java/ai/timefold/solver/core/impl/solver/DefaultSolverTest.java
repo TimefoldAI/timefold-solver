@@ -2275,7 +2275,7 @@ class DefaultSolverTest {
                     .listVariable("valueList", TestdataListValue.class);
             var entity = context.getWorkingSolution().getEntityList().getFirst();
             var move = Moves.assign(variableMetaModel, new TestdataListValue("bad value"), entity, 0);
-            context.execute(move);
+            context.executeAndCalculateScore(move);
         }
     }
 

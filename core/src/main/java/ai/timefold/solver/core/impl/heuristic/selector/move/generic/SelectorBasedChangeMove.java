@@ -4,12 +4,12 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.SequencedCollection;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -60,9 +60,9 @@ public class SelectorBasedChangeMove<Solution_> extends AbstractSelectorBasedMov
     }
 
     @Override
-    public SelectorBasedChangeMove<Solution_> rebase(Rebaser rebaser) {
-        return new SelectorBasedChangeMove<>(variableDescriptor, Objects.requireNonNull(rebaser.rebase(entity)),
-                rebaser.rebase(toPlanningValue));
+    public SelectorBasedChangeMove<Solution_> rebase(Lookup lookup) {
+        return new SelectorBasedChangeMove<>(variableDescriptor, lookup.lookUpWorkingObject(entity),
+                lookup.lookUpWorkingObject(toPlanningValue));
     }
 
     @Override

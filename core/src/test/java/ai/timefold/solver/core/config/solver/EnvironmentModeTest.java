@@ -282,7 +282,7 @@ class EnvironmentModeTest {
                     .basicVariable("value", TestdataValue.class);
             for (var entity : solution.getEntityList()) {
                 var move = Moves.change(variable, entity, firstValue);
-                context.execute(move);
+                context.executeAndCalculateScore(move);
             }
         }
     }

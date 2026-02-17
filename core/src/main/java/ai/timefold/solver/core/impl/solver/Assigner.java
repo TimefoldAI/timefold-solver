@@ -45,7 +45,7 @@ final class Assigner<Solution_, Score_ extends Score<Score_>, Recommendation_, I
                     .formatted(originalSolution, uninitializedCount));
         }
         var originalScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy);
-        var clonedElement = Objects.requireNonNull(scoreDirector.lookUpWorkingObject(originalElement));
+        var clonedElement = scoreDirector.lookUpWorkingObject(originalElement);
         var processor = new AssignmentProcessor<>(solverFactory, propositionFunction, recommendationConstructor, fetchPolicy,
                 clonedElement, originalScoreAnalysis);
         return processor.apply(scoreDirector);

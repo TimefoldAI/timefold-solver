@@ -17,7 +17,7 @@ public class MixedCustomPhaseCommand implements PhaseCommand<TestdataMixedSoluti
         var moveIteratorFactory = new MixedCustomMoveIteratorFactory();
         var moveIterator = moveIteratorFactory.createRandomMoveIterator(scoreDirector, null);
         var move = moveIterator.next();
-        context.execute(move);
+        context.executeAndCalculateScore(move);
     }
 
 }

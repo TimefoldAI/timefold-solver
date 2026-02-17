@@ -11,23 +11,30 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public enum ForEachFilteringCriteria {
+
     ASSIGNED_AND_CONSISTENT((consistencyTracker, entityDescriptor) -> entityDescriptor.getEntityForEachFilter()
             .getAssignedAndConsistentPredicate(consistencyTracker)),
     CONSISTENT((consistencyTracker, entityDescriptor) -> entityDescriptor.getEntityForEachFilter()
             .getConsistentPredicate(consistencyTracker)),
     ALL((ignored1, ignored2) -> null);
 
-    private final BiFunction<ConsistencyTracker<?>, EntityDescriptor<?>, @Nullable Predicate<Object>> entityDescriptorToPredicateFunction;
+    private final CriteriaFunction<Object, Object> criteriaFunction;
 
-    ForEachFilteringCriteria(
-            BiFunction<ConsistencyTracker<?>, EntityDescriptor<?>, Predicate<Object>> entityDescriptorToPredicateFunction) {
-        this.entityDescriptorToPredicateFunction = entityDescriptorToPredicateFunction;
+    ForEachFilteringCriteria(CriteriaFunction<Object, Object> criteriaFunction) {
+        this.criteriaFunction = criteriaFunction;
     }
 
-    @Nullable
     @SuppressWarnings("unchecked")
-    public <A> Predicate<A> getFilterForEntityDescriptor(ConsistencyTracker<?> consistencyTracker,
-            EntityDescriptor<?> entityDescriptor) {
-        return (Predicate<A>) entityDescriptorToPredicateFunction.apply(consistencyTracker, entityDescriptor);
+    @Nullable
+    public <Solution_, A> Predicate<A> getFilterForEntityDescriptor(ConsistencyTracker<Solution_> consistencyTracker,
+            EntityDescriptor<Solution_> entityDescriptor) {
+        return (Predicate<A>) criteriaFunction.apply((ConsistencyTracker<Object>) consistencyTracker,
+                (EntityDescriptor<Object>) entityDescriptor);
     }
+
+    @FunctionalInterface
+    private interface CriteriaFunction<Solution_, A>
+            extends BiFunction<ConsistencyTracker<Solution_>, EntityDescriptor<Solution_>, @Nullable Predicate<A>> {
+    }
+
 }

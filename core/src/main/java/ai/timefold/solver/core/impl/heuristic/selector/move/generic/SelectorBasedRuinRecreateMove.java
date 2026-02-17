@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.SequencedCollection;
 import java.util.SequencedSet;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.move.VariableChangeRecordingScoreDirector;
@@ -13,7 +14,6 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -86,9 +86,9 @@ public final class SelectorBasedRuinRecreateMove<Solution_> extends AbstractSele
     }
 
     @Override
-    public Move<Solution_> rebase(Rebaser rebaser) {
-        var rebasedRuinedEntityList = rebaseList(ruinedEntityList, rebaser);
-        var rebasedAffectedValueSet = rebaseSet(affectedValueSet, rebaser);
+    public Move<Solution_> rebase(Lookup lookup) {
+        var rebasedRuinedEntityList = rebaseList(ruinedEntityList, lookup);
+        var rebasedAffectedValueSet = rebaseSet(affectedValueSet, lookup);
         return new SelectorBasedRuinRecreateMove<>(genuineVariableDescriptor, constructionHeuristicPhaseBuilder, solverScope,
                 rebasedRuinedEntityList, rebasedAffectedValueSet);
     }

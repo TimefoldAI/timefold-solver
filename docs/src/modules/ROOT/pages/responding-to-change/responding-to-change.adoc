@@ -303,40 +303,6 @@ NOTE: Value of the index must never change during planning.
 To change how far the list is pinned,
 use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange].
 
-[#configureAPinningFilter]
-==== Configure a `PinningFilter`
-
-WARNING: `PinningFilter` is deprecated and will be removed in Timefold Solver 2.0.
-Use `@PlanningPin` as described above.
-
-Alternatively, to pin some planning entities down,
-add a `PinningFilter` that returns `true` if an entity is pinned,
-and `false` if it is movable.
-
-For example, on the employee scheduling quickstart:
-
-[source,java,options="nowrap"]
-----
-public class ShiftPinningFilter implements PinningFilter<EmployeeSchedule, Shift> {
-
-    @Override
-    public boolean accept(EmployeeSchedule employeeSchedule, Shift shift) {
-        ScheduleState scheduleState = employeeSchedule.getScheduleState();
-        return !scheduleState.isDraft(shift);
-    }
-}
-----
-
-Configure the `PinningFilter`:
-
-[source,java,options="nowrap"]
-----
-@PlanningEntity(pinningFilter = ShiftPinningFilter.class)
-public class Shift {
-    ...
-}
-----
-
 
 [#nonvolatileReplanning]
 === Nonvolatile replanning to minimize disruption (semi-movable planning entities)

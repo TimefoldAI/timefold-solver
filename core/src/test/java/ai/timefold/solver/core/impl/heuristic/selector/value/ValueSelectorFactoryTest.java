@@ -23,7 +23,6 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.IterableFromEntityPropertyValueSelector;
@@ -38,6 +37,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.common.DummyValueComparatorFactory;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 
@@ -223,7 +223,7 @@ class ValueSelectorFactoryTest {
     void applySorting_withComparatorFactoryClass() {
         ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
                 .withCacheType(SelectionCacheType.PHASE)
-                .withComparatorFactoryClass(DummySelectionComparatorFactory.class);
+                .withComparatorFactoryClass(DummyValueComparatorFactory.class);
         applySorting(valueSelectorConfig, true);
         applySorting(valueSelectorConfig, false);
     }
@@ -316,15 +316,6 @@ class ValueSelectorFactoryTest {
         @Override
         public double createProbabilityWeight(ScoreDirector<TestdataSolution> scoreDirector, TestdataValue selection) {
             return 0.0;
-        }
-    }
-
-    public static class DummySelectionComparatorFactory
-            implements SelectionSorterWeightFactory<TestdataSolution, TestdataValue> {
-
-        @Override
-        public Comparable createSorterWeight(TestdataSolution solution, TestdataValue selection) {
-            return 0;
         }
     }
 

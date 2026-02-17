@@ -223,9 +223,4 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
         return Objects.requireNonNull(backingScoreDirector).lookUpWorkingObject(externalObject);
     }
 
-    @Override
-    public <E> @Nullable E lookUpWorkingObjectOrReturnNull(@Nullable E externalObject) {
-        return Objects.requireNonNull(backingScoreDirector).lookUpWorkingObjectOrReturnNull(externalObject);
-    }
-
 }
