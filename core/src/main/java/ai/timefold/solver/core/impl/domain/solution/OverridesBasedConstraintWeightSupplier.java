@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
@@ -37,7 +38,7 @@ public final class OverridesBasedConstraintWeightSupplier<Score_ extends Score<S
             overridesClass = (Class<? extends ConstraintWeightOverrides<Score_>>) method.getReturnType();
         }
         var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
-                MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER,
+                MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER,
                 descriptorPolicy.getDomainAccessType());
         return new OverridesBasedConstraintWeightSupplier<>(solutionDescriptor, memberAccessor, overridesClass);
     }

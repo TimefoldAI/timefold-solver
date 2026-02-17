@@ -44,7 +44,7 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.AccessorInfo;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSource;
@@ -1047,8 +1047,8 @@ class TimefoldProcessor {
                     buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                             classInfo, methodInfo,
                             AccessorInfo.of((annotatedMember.name().equals(DotNames.VALUE_RANGE_PROVIDER))
-                                    ? MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER
-                                    : MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD),
+                                    ? MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER
+                                    : MemberAccessorType.FIELD_OR_READ_METHOD),
                             transformers);
                 }
                 default -> throw new IllegalStateException(
@@ -1060,7 +1060,7 @@ class TimefoldProcessor {
                 var targetMethodName = annotatedMember.value("targetMethodName").asString();
                 var methodInfo = classInfo.method(targetMethodName);
                 buildMethodAccessor(null, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput, classInfo,
-                        methodInfo, AccessorInfo.of(MemberAccessorFactory.MemberAccessorType.VOID_METHOD), transformers);
+                        methodInfo, AccessorInfo.of(MemberAccessorType.VOID_METHOD), transformers);
             } else if (annotatedMember.name().equals(DotNames.SHADOW_VARIABLE)
                     && annotatedMember.value("supplierName") != null) {
                 // The source method name also must be included
@@ -1073,18 +1073,17 @@ class TimefoldProcessor {
                     methodInfo = classInfo.method(targetMethodName, solutionType);
                 }
                 if (methodInfo == null) {
-                    throw new IllegalArgumentException(
-                            """
-                                    @%s (%s) defines a supplierName (%s) that does not exist inside its declaring class (%s).
-                                    Maybe you included a parameter which is not a planning solution (%s)?
-                                    Maybe you misspelled the supplierName name?"""
-                                    .formatted(ShadowVariable.class.getSimpleName(), memberName, targetMethodName,
-                                            classInfo.name().toString(), solutionClassInfo.name().toString()));
+                    throw new IllegalArgumentException("""
+                            @%s (%s) defines a supplierName (%s) that does not exist inside its declaring class (%s).
+                            Maybe you included a parameter which is not a planning solution (%s)?
+                            Maybe you misspelled the supplierName name?"""
+                            .formatted(ShadowVariable.class.getSimpleName(), memberName, targetMethodName,
+                                    classInfo.name().toString(), solutionClassInfo.name().toString()));
                 }
                 buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                         classInfo, methodInfo,
                         AccessorInfo
-                                .of(MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER),
+                                .of(MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER),
                         transformers);
             }
         }
@@ -1115,7 +1114,7 @@ class TimefoldProcessor {
         // Using REFLECTION domain access type so Timefold doesn't try to generate GIZMO code
         solverConfigMap.values().forEach(c -> {
             var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
-                    c.getEnablePreviewFeatureSet(), DomainAccessType.REFLECTION,
+                    c.getEnablePreviewFeatureSet(), DomainAccessType.FORCE_REFLECTION,
                     c.getSolutionClass(), null, null, c.getEntityClassList());
             gizmoSolutionClonerClassNameSet
                     .add(entityEnhancer.generateSolutionCloner(solutionDescriptor, classOutput, indexView, transformers));

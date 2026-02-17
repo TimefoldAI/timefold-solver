@@ -9,11 +9,7 @@ public final class ReflectionMethodExtendedMemberAccessor extends ReflectionMeth
     private final Type getterMethodParameterType;
 
     public ReflectionMethodExtendedMemberAccessor(Method readMethod) {
-        this(readMethod, true);
-    }
-
-    public ReflectionMethodExtendedMemberAccessor(Method readMethod, boolean returnTypeRequired) {
-        super(readMethod, returnTypeRequired, true);
+        super(readMethod);
         this.getterMethodParameterType = readMethod.getGenericParameterTypes()[0];
     }
 

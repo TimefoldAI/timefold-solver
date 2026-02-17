@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
-import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD;
-import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
+import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_GETTER_METHOD;
+import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_READ_METHOD;
 import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor.extractInheritedClasses;
 import static java.util.stream.Stream.concat;
 
@@ -116,7 +116,7 @@ public final class SolutionDescriptor<Solution_> {
             Set<PreviewFeature> enabledPreviewFeaturesSet,
             Class<Solution_> solutionClass,
             List<Class<?>> entityClassList) {
-        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.REFLECTION, solutionClass, null,
+        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.FORCE_REFLECTION, solutionClass, null,
                 null, entityClassList);
     }
 
@@ -724,9 +724,9 @@ public final class SolutionDescriptor<Solution_> {
         }
         if (solutionCloner == null) {
             solutionCloner = switch (descriptorPolicy.getDomainAccessType()) {
-                case GIZMO -> GizmoSolutionClonerFactory.build(this, memberAccessorFactory.getGizmoClassLoader());
+                case FORCE_GIZMO -> GizmoSolutionClonerFactory.build(this, memberAccessorFactory.getGizmoClassLoader());
                 // AUTO means we are probably in plain Java, so we need to use reflection so we can clone final fields
-                case AUTO, REFLECTION -> new FieldAccessingSolutionCloner<>(this);
+                case AUTO, FORCE_REFLECTION -> new FieldAccessingSolutionCloner<>(this);
             };
         }
     }

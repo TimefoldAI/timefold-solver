@@ -44,18 +44,6 @@ Note that this is a feature of the xref:enterprise-edition/enterprise-edition.ad
 which is Timefold's commercial offering.
 See xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multithreaded incremental solving].
 
-{property_prefix}timefold.solver.{solver_name_prefix}domain-access-type::
-How Timefold Solver should access the domain model.
-See xref:using-timefold-solver/configuration.adoc#domainAccess[the domain access section] for more details.
-ifeval::["{property_prefix}" == "quarkus."]
-Defaults to `GIZMO`.
-The other possible value is `REFLECTION`.
-endif::[]
-ifeval::["{property_prefix}" == ""]
-Defaults to `REFLECTION`.
-The other possible value is `GIZMO`.
-endif::[]
-
 {property_prefix}timefold.solver.{solver_name_prefix}nearby-distance-meter-class::
 Enable the xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby Selection] quick configuration.
 If the Nearby Selection distance meter class is specified,

@@ -2,21 +2,16 @@ package ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
 
 import java.lang.annotation.Annotation;
 import java.lang.constant.ClassDesc;
-import java.lang.constant.ConstantDescs;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.util.MutableReference;
-
-import org.jspecify.annotations.NonNull;
 
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Const;
@@ -95,8 +90,8 @@ public final class GizmoMemberAccessorImplementor {
     }
 
     private static Class<? extends AbstractGizmoMemberAccessor> getCorrectSuperclass(GizmoMemberInfo memberInfo) {
-        AtomicBoolean supportsSetter = new AtomicBoolean();
-        AtomicBoolean methodWithParameter = new AtomicBoolean();
+        var supportsSetter = new AtomicBoolean();
+        var methodWithParameter = new AtomicBoolean();
         memberInfo.descriptor().whenIsMethod(method -> {
             supportsSetter.set(memberInfo.descriptor().getSetter().isPresent());
             methodWithParameter.set(memberInfo.readMethodWithParameter());
@@ -130,17 +125,17 @@ public final class GizmoMemberAccessorImplementor {
      */
     static MemberAccessor createAccessorFor(Member member, Class<? extends Annotation> annotationClass,
             AccessorInfo accessorInfo, GizmoClassLoader gizmoClassLoader) {
-        String className = GizmoMemberAccessorFactory.getGeneratedClassName(member);
+        var className = GizmoMemberAccessorFactory.getGeneratedClassName(member);
         if (gizmoClassLoader.hasBytecodeFor(className)) {
             return createInstance(className, gizmoClassLoader);
         }
-        final MutableReference<byte @NonNull []> classBytecodeHolder = new MutableReference<>(null);
+        var classBytecodeHolder = new MutableReference<byte[]>(null);
         ClassOutput classOutput = (path, byteCode) -> classBytecodeHolder.setValue(byteCode);
         var descriptor = new GizmoMemberDescriptor(member, accessorInfo);
-        GizmoMemberInfo memberInfo = new GizmoMemberInfo(descriptor, accessorInfo.returnTypeRequired(),
+        var memberInfo = new GizmoMemberInfo(descriptor, accessorInfo.returnTypeRequired(),
                 descriptor.getMethodParameterType() != null, annotationClass);
         defineAccessorFor(className, classOutput, memberInfo);
-        byte[] classBytecode = classBytecodeHolder.getValue();
+        var classBytecode = classBytecodeHolder.getValue();
 
         gizmoClassLoader.storeBytecode(className, classBytecode);
         return createInstance(className, gizmoClassLoader);
@@ -233,103 +228,6 @@ public final class GizmoMemberAccessorImplementor {
     }
 
     /**
-     * Asserts method is a getter or read method
-     *
-     * @param method Method to assert is getter or read
-     * @param accessorInfo What kind of {@link MemberAccessor} is being generated
-     */
-    private static void assertIsGoodMethod(MethodDesc method, AccessorInfo accessorInfo) {
-        // V = void return type
-        // Z = primitive boolean return type
-        String methodName = method.name();
-        if (!accessorInfo.readMethodWithParameter() && method.parameterCount() != 0) {
-            // not read or getter method
-            throw new IllegalStateException("The getterMethod (%s) must not have any parameters, but has parameters (%s)."
-                    .formatted(methodName, Arrays.toString(method.parameterTypes().toArray())));
-        }
-
-        var memberAccessorType = accessorInfo.memberAccessorType();
-
-        var methodType = (methodName.startsWith("get") || methodName.startsWith("is")) ? "getterMethod" : "readMethod";
-        if (memberAccessorType == MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD ||
-                memberAccessorType == MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER) {
-            // Only enforce getters/setters naming rules for getters/setters
-            // we don't want to enforce them on @ShadowSources suppliers
-            if (methodName.startsWith("get")) {
-                if (method.returnType().equals(ConstantDescs.CD_void)) {
-                    throw new IllegalStateException("The getterMethod (%s) must have a non-void return type."
-                            .formatted(methodName));
-                }
-            } else if (methodName.startsWith("is")) {
-                if (!method.returnType().equals(ConstantDescs.CD_boolean)) {
-                    throw new IllegalStateException("""
-                            The getterMethod (%s) must have a primitive boolean return type but returns (%s).
-                            Maybe rename the method (get%s)?"""
-                            .formatted(methodName, method.returnType(), methodName.substring(2)));
-                }
-            }
-        }
-        if (memberAccessorType != MemberAccessorFactory.MemberAccessorType.VOID_METHOD) {
-            // must have a return type
-            if (method.returnType().equals(ConstantDescs.CD_void)) {
-                throw new IllegalStateException("The %s (%s) must have a non-void return type."
-                        .formatted(methodType, methodName));
-            }
-        }
-    }
-
-    /**
-     * Asserts method is a getter or read method
-     *
-     * @param method Method to assert is getter or read method
-     * @param accessorInfo What kind of {@link MemberAccessor} is being generated
-     */
-    private static void assertIsGoodMethod(MethodDesc method, AccessorInfo accessorInfo,
-            Class<? extends Annotation> annotationClass) {
-        // V = void return type
-        // Z = primitive boolean return type
-        String methodName = method.name();
-        if (!accessorInfo.readMethodWithParameter() && method.parameterCount() != 0) {
-            // not read or getter method
-            throw new IllegalStateException(
-                    "The getterMethod (%s) with a %s annotation must not have any parameters, but has parameters (%s)."
-                            .formatted(methodName, annotationClass.getSimpleName(),
-                                    method.parameterTypes().stream().map(ClassDesc::descriptorString).toList()));
-        }
-
-        var memberAccessorType = accessorInfo.memberAccessorType();
-        var methodType = (methodName.startsWith("get") || methodName.startsWith("is")) ? "getterMethod" : "readMethod";
-
-        if (memberAccessorType == MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD ||
-                memberAccessorType == MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER) {
-            if (methodName.startsWith("get")) {
-                if (method.returnType().equals(ConstantDescs.CD_void)) {
-                    throw new IllegalStateException(
-                            "The getterMethod (%s) with a @%s annotation must have a non-void return type."
-                                    .formatted(methodName, annotationClass.getSimpleName()));
-                }
-            } else if (methodName.startsWith("is")) {
-                if (!method.returnType().equals(ConstantDescs.CD_boolean)) {
-                    throw new IllegalStateException(
-                            """
-                                    The %s (%s) with a @%s annotation must have a primitive boolean return type but returns (%s).
-                                    Maybe rename the method (get%s)?"""
-                                    .formatted(methodType, methodName, annotationClass.getSimpleName(), method.returnType()
-                                            .descriptorString(),
-                                            methodName.substring(2)));
-                }
-            }
-        }
-        if (memberAccessorType != MemberAccessorFactory.MemberAccessorType.VOID_METHOD) {
-            // must be a read method
-            if (accessorInfo.returnTypeRequired() && method.returnType().equals(ConstantDescs.CD_void)) {
-                throw new IllegalStateException("The %s (%s) with a @%s annotation must have a non-void return type."
-                        .formatted(methodType, methodName, annotationClass.getSimpleName()));
-            }
-        }
-    }
-
-    /**
      * Generates the following code:
      *
      * <pre>
@@ -349,18 +247,6 @@ public final class GizmoMemberAccessorImplementor {
             builder.public_();
             builder.returning(String.class);
             builder.body(blockCreator -> {
-                // If it is a method, assert that it has the required
-                // properties
-                memberInfo.descriptor().whenIsMethod(method -> {
-                    var annotationClass = memberInfo.annotationClass();
-                    if (annotationClass == null) {
-                        assertIsGoodMethod(method, memberInfo.descriptor().getAccessorInfo());
-                    } else {
-                        assertIsGoodMethod(method, memberInfo.descriptor().getAccessorInfo(),
-                                annotationClass);
-                    }
-                });
-
                 String fieldName = memberInfo.descriptor().getName();
                 blockCreator.return_(Const.of(fieldName));
             });
@@ -525,8 +411,6 @@ public final class GizmoMemberAccessorImplementor {
             builder.returning(Object.class);
             var bean = builder.parameter("bean", Object.class);
             var value = builder.parameter("value", Object.class);
-            memberInfo.descriptor().whenIsMethod(
-                    md -> assertIsGoodMethod(md, memberInfo.descriptor().getAccessorInfo()));
             builder.body(blockCreator -> {
                 var castedBean =
                         blockCreator.localVar("castedBean", ClassDesc.of(memberInfo.descriptor().getDeclaringClassName()),

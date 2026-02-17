@@ -28,10 +28,9 @@ interface GizmoMemberHandler {
         try {
             Field field = declaringClass.getField(name);
             return new GizmoFieldHandler(declaringClass, fieldDescriptor,
-                    ignoreFinalChecks, ignoreFinalChecks || !Modifier.isFinal(field.getModifiers()),
-                    Modifier.isPublic(field.getModifiers()));
+                    ignoreFinalChecks, ignoreFinalChecks || !Modifier.isFinal(field.getModifiers()));
         } catch (NoSuchFieldException e) { // The field is only used for its metadata and never actually called.
-            return new GizmoFieldHandler(declaringClass, fieldDescriptor, ignoreFinalChecks, false, false);
+            return new GizmoFieldHandler(declaringClass, fieldDescriptor, ignoreFinalChecks, false);
         }
     }
 

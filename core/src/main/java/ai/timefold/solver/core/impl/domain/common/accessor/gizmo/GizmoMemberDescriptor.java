@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -126,7 +126,7 @@ public final class GizmoMemberDescriptor {
         this.metadataHandler = GizmoMemberHandler.of(declaringClass, name, metadataDescriptor, true);
         this.methodParameterType = methodParameterType;
         this.setter = setterDescriptor;
-        this.accessorInfo = AccessorInfo.of(MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD);
+        this.accessorInfo = AccessorInfo.of(MemberAccessorType.FIELD_OR_READ_METHOD);
     }
 
     @Nullable

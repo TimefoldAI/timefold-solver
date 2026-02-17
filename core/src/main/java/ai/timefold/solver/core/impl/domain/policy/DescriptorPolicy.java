@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.domain.policy;
 
-import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
+import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
 
 import java.lang.reflect.Member;
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class DescriptorPolicy {
     private final Set<MemberAccessor> anonymousFromSolutionValueRangeProviderSet = new LinkedHashSet<>();
     private final Map<String, MemberAccessor> fromEntityValueRangeProviderMap = new LinkedHashMap<>();
     private final Set<MemberAccessor> anonymousFromEntityValueRangeProviderSet = new LinkedHashSet<>();
-    private DomainAccessType domainAccessType = DomainAccessType.REFLECTION;
+    private DomainAccessType domainAccessType = DomainAccessType.FORCE_REFLECTION;
     private Set<PreviewFeature> enabledPreviewFeatureSet = EnumSet.noneOf(PreviewFeature.class);
     @Nullable
     private MemberAccessorFactory memberAccessorFactory;

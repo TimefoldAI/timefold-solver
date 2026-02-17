@@ -19,6 +19,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
@@ -363,7 +364,7 @@ public record RootVariableSource<Entity_, Value_>(
     private static MemberAccessor getMemberAccessor(Member member, MemberAccessorFactory memberAccessorFactory,
             DescriptorPolicy descriptorPolicy) {
         return memberAccessorFactory.buildAndCacheMemberAccessor(member,
-                MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD,
+                MemberAccessorType.FIELD_OR_GETTER_METHOD,
                 descriptorPolicy.getDomainAccessType());
     }
 

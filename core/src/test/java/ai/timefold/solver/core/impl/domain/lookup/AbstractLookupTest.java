@@ -23,7 +23,7 @@ abstract class AbstractLookupTest {
     protected LookUpStrategyResolver createLookupStrategyResolver(LookUpStrategyType lookUpStrategyType) {
         DescriptorPolicy descriptorPolicy = new DescriptorPolicy();
         descriptorPolicy.setMemberAccessorFactory(new MemberAccessorFactory());
-        descriptorPolicy.setDomainAccessType(DomainAccessType.REFLECTION);
+        descriptorPolicy.setDomainAccessType(DomainAccessType.FORCE_REFLECTION);
         return new LookUpStrategyResolver(descriptorPolicy, lookUpStrategyType);
     }
 }

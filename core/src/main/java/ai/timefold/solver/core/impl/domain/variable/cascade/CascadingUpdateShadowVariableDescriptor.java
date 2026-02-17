@@ -14,7 +14,7 @@ import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
@@ -130,7 +130,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                                     targetMethodName));
         }
         targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(allSourceMethodMembers.get(0),
-                MemberAccessorFactory.MemberAccessorType.VOID_METHOD, null, descriptorPolicy.getDomainAccessType());
+                MemberAccessorType.VOID_METHOD, null, descriptorPolicy.getDomainAccessType());
         firstTargetVariableDescriptor = targetVariableDescriptorList.get(0);
     }
 
