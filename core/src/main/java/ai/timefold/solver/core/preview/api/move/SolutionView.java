@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -28,15 +29,22 @@ import org.jspecify.annotations.Nullable;
  * Please direct your feedback to
  * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver GitHub</a>
  * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
- * 
+ *
  * @param <Solution_>
  */
 @NullMarked
 public interface SolutionView<Solution_> {
 
     /**
+     * Gets the meta-model of the solution, which provides access to the structure of the solution and its variables.
+     *
+     * @return the meta-model of the solution
+     */
+    PlanningSolutionMetaModel<Solution_> getSolutionMetaModel();
+
+    /**
      * Reads the value of a {@link PlanningVariable basic planning variable} of a given entity.
-     * 
+     *
      * @param variableMetaModel Describes the variable whose value is to be read.
      * @param entity The entity whose variable is to be read.
      * @return The value of the variable on the entity.

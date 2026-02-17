@@ -84,9 +84,9 @@ public final class DefaultCustomPhase<Solution_>
     }
 
     private void doStep(CustomStepScope<Solution_> stepScope, PhaseCommand<Solution_> customPhaseCommand) {
-        var scoreDirector = stepScope.getScoreDirector();
-        customPhaseCommand.changeWorkingSolution(scoreDirector,
+        var commandContext = new DefaultPhaseCommandContext<>(stepScope.getMoveDirector(),
                 () -> phaseTermination.isPhaseTerminated(stepScope.getPhaseScope()));
+        customPhaseCommand.changeWorkingSolution(commandContext);
         calculateWorkingStepScore(stepScope, customPhaseCommand);
         var solver = stepScope.getPhaseScope().getSolverScope().getSolver();
         solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope);

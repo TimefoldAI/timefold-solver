@@ -27,7 +27,7 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
         var metaModels = variableMetaModels();
         var substring = switch (metaModels.size()) {
             case 0 -> "";
-            case 1 -> OPENING_PARENTHESES + getVariableDescriptor(metaModels.get(0)).getSimpleEntityAndVariableName()
+            case 1 -> OPENING_PARENTHESES + getVariableDescriptor(metaModels.getFirst()).getSimpleEntityAndVariableName()
                     + CLOSING_PARENTHESES;
             default -> {
                 var stringBuilder = new StringBuilder()
@@ -37,7 +37,7 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
                     if (first) {
                         first = false;
                     } else {
-                        stringBuilder.append(", ");
+                        stringBuilder.append(",");
                     }
                     stringBuilder.append(getVariableDescriptor(variableMetaModel).getSimpleEntityAndVariableName());
                 }
@@ -47,8 +47,6 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
         };
         return getClass().getSimpleName() + substring;
     }
-
-    public abstract String toString();
 
     public abstract List<? extends GenuineVariableMetaModel<Solution_, ?, ?>> variableMetaModels();
 
