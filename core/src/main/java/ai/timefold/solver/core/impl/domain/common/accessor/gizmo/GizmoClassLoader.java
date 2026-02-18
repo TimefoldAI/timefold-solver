@@ -46,7 +46,7 @@ public final class GizmoClassLoader extends ClassLoader {
 
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
-        byte[] byteCode = getBytecodeFor(name);
+        var byteCode = getBytecodeFor(name);
         if (byteCode == null) { // Not a Gizmo generated class; load from context class loader.
             return Thread.currentThread().getContextClassLoader().loadClass(name);
         } else { // Gizmo generated class.
@@ -54,7 +54,7 @@ public final class GizmoClassLoader extends ClassLoader {
         }
     }
 
-    public synchronized byte[] getBytecodeFor(String className) {
+    public synchronized byte @Nullable [] getBytecodeFor(String className) {
         return classNameToBytecodeMap.get(className);
     }
 

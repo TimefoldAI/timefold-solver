@@ -23,7 +23,7 @@ final class GizmoFieldHandler implements GizmoMemberHandler {
     private final @Nullable MethodDesc setterDescriptor;
     private final boolean canBeWritten;
 
-    GizmoFieldHandler(Class<?> declaringClass, FieldDesc fieldDescriptor, boolean ignoreChecks, boolean canBeWritten) {
+    GizmoFieldHandler(Class<?> declaringClass, FieldDesc fieldDescriptor, boolean canBeWritten) {
         this.declaringClass = declaringClass;
         this.fieldDescriptor = fieldDescriptor;
         var getterMethod = ReflectionHelper.getGetterMethod(declaringClass, fieldDescriptor.name());

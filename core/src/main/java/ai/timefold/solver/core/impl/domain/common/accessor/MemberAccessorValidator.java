@@ -69,29 +69,29 @@ final class MemberAccessorValidator {
                 .startsWith("is"))) {
             throw new IllegalArgumentException("""
                     %s is suppose to be a public getter method, but its name (%s) does not start with "get"%s.
-                    Maybe add a "get" prefix to the method?
-                    """.formatted(messagePrefix, method.getName(),
-                    method.getReturnType().equals(boolean.class) ? " or \"is\"" : ""));
+                    Maybe add a "get" prefix to the method?"""
+                    .formatted(messagePrefix, method.getName(),
+                            method.getReturnType().equals(boolean.class) ? " or \"is\"" : ""));
         }
     }
 
     private static void verifyFieldOrGetter(Member member, String messagePrefix) {
-        if (member instanceof Field field) {
-            verifyIsPublicFieldOrHasPublicGetter(field, messagePrefix);
-        } else if (member instanceof Method method) {
-            verifyGetterName(method, messagePrefix);
-            if (!Modifier.isPublic(method.getModifiers())) {
-                throw new IllegalArgumentException(
-                        "%s is a getter method, but it is not public. Maybe make the method (%s) public?"
-                                .formatted(messagePrefix, method.getName()));
+        switch (member) {
+            case Field field -> verifyIsPublicFieldOrHasPublicGetter(field, messagePrefix);
+            case Method method -> {
+                verifyGetterName(method, messagePrefix);
+                if (!Modifier.isPublic(method.getModifiers())) {
+                    throw new IllegalArgumentException(
+                            "%s is a getter method, but it is not public. Maybe make the method (%s) public?"
+                                    .formatted(messagePrefix, method.getName()));
+                }
+                if (method.getReturnType().equals(void.class)) {
+                    throw new IllegalArgumentException(
+                            "%s has a public getter method that returns void. Maybe make the method (%s) return a value instead?"
+                                    .formatted(messagePrefix, method.getName()));
+                }
             }
-            if (method.getReturnType().equals(void.class)) {
-                throw new IllegalArgumentException(
-                        "%s has a public getter method that returns void. Maybe make the method (%s) return a value instead?"
-                                .formatted(messagePrefix, method.getName()));
-            }
-        } else {
-            throw new IllegalArgumentException("Unhandled member type (%s)."
+            default -> throw new IllegalArgumentException("Unhandled member type (%s)."
                     .formatted(member.getClass().getCanonicalName()));
         }
     }
@@ -120,72 +120,73 @@ final class MemberAccessorValidator {
 
     private static void verifyIsPublicFieldOrHasReadMethod(Member member, String messagePrefix,
             boolean acceptOptionalParameter) {
-        if (member instanceof Field field) {
-            verifyIsPublicFieldOrHasPublicGetter(field, messagePrefix);
-        } else if (member instanceof Method method) {
-            if (!Modifier.isPublic(method.getModifiers())) {
-                throw new IllegalArgumentException(
-                        "%s is a read method, but it is not public. Maybe make the method (%s) public?"
-                                .formatted(messagePrefix, method.getName()));
-            }
-            if (method.getReturnType().equals(void.class)) {
-                throw new IllegalArgumentException(
-                        "%s is a public read method, but it returns void. Maybe make the method (%s) return a value instead?"
-                                .formatted(messagePrefix, method.getName()));
-            }
-
-            if (acceptOptionalParameter) {
-                if (method.getParameterCount() > 1) {
-                    throw new IllegalArgumentException("""
-                            %s is a public read method, but takes (%d) parameters instead of zero or one.
-                            Maybe make the method (%s) take zero or one parameter(s)?
-                            """.formatted(messagePrefix, method.getParameterCount(), method.getName()));
+        switch (member) {
+            case Field field -> verifyIsPublicFieldOrHasPublicGetter(field, messagePrefix);
+            case Method method -> {
+                if (!Modifier.isPublic(method.getModifiers())) {
+                    throw new IllegalArgumentException(
+                            "%s is a read method, but it is not public. Maybe make the method (%s) public?"
+                                    .formatted(messagePrefix, method.getName()));
                 }
-            } else if (method.getParameterCount() != 0) {
-                throw new IllegalArgumentException("""
-                        %s is a public read method, but takes (%d) parameters instead of none.
-                        Maybe make the method (%s) take no parameters?
-                        """.formatted(messagePrefix, method.getParameterCount(), method.getName()));
+                if (method.getReturnType().equals(void.class)) {
+                    throw new IllegalArgumentException(
+                            "%s is a public read method, but it returns void. Maybe make the method (%s) return a value instead?"
+                                    .formatted(messagePrefix, method.getName()));
+                }
+
+                if (acceptOptionalParameter) {
+                    if (method.getParameterCount() > 1) {
+                        throw new IllegalArgumentException("""
+                                %s is a public read method, but takes (%d) parameters instead of zero or one.
+                                Maybe make the method (%s) take zero or one parameter(s)?"""
+                                .formatted(messagePrefix, method.getParameterCount(), method.getName()));
+                    }
+                } else if (method.getParameterCount() != 0) {
+                    throw new IllegalArgumentException("""
+                            %s is a public read method, but takes (%d) parameters instead of none.
+                            Maybe make the method (%s) take no parameters?"""
+                            .formatted(messagePrefix, method.getParameterCount(), method.getName()));
+                }
             }
-        } else {
-            throw new IllegalArgumentException("Unhandled member type (%s)."
+            default -> throw new IllegalArgumentException("Unhandled member type (%s)."
                     .formatted(member.getClass().getCanonicalName()));
         }
     }
 
-    private static void verifyIsPublicFieldOrHasPublicSetter(Member member,
-            String messagePrefix) {
-        if (member instanceof Field field) {
-            var getterMethod = ReflectionHelper.getGetterMethod(field.getDeclaringClass(), field.getName());
-            var setterMethod = ReflectionHelper.getSetterMethod(field.getDeclaringClass(), field.getName());
-            if (setterMethod == null) {
-                if (!Modifier.isPublic(field.getModifiers())) {
-                    throw new IllegalArgumentException(
-                            "%s does not have a setter method and is not public. Maybe add a public setter method?"
-                                    .formatted(messagePrefix));
+    private static void verifyIsPublicFieldOrHasPublicSetter(Member member, String messagePrefix) {
+        switch (member) {
+            case Field field -> {
+                var getterMethod = ReflectionHelper.getGetterMethod(field.getDeclaringClass(), field.getName());
+                var setterMethod = ReflectionHelper.getSetterMethod(field.getDeclaringClass(), field.getName());
+                if (setterMethod == null) {
+                    if (!Modifier.isPublic(field.getModifiers())) {
+                        throw new IllegalArgumentException(
+                                "%s does not have a setter method and is not public. Maybe add a public setter method?"
+                                        .formatted(messagePrefix));
+                    }
+                } else {
+                    if (getterMethod == null) {
+                        throw new IllegalArgumentException(
+                                "%s has a setter method (%s) without a getter method. Maybe add a public getter method?"
+                                        .formatted(member, setterMethod.getName()));
+                    }
+                    verifyGetterSetterProperties(getterMethod, setterMethod, messagePrefix);
                 }
-            } else {
-                if (getterMethod == null) {
-                    throw new IllegalArgumentException(
-                            "%s has a setter method (%s) without a getter method. Maybe add a public getter method?"
-                                    .formatted(member, setterMethod.getName()));
+            }
+            case Method getterMethod -> {
+                verifyGetterName(getterMethod, messagePrefix);
+                var memberName = ReflectionHelper.getGetterPropertyName(getterMethod);
+                var setterMethod = ReflectionHelper.getSetterMethod(getterMethod.getDeclaringClass(),
+                        memberName);
+                if (setterMethod == null) {
+                    throw new IllegalArgumentException("""
+                            %s requires both a public getter and a public setter but only have a public getter.
+                            Maybe add a public setter for the member (%s)?"""
+                            .formatted(messagePrefix, memberName));
                 }
                 verifyGetterSetterProperties(getterMethod, setterMethod, messagePrefix);
             }
-        } else if (member instanceof Method getterMethod) {
-            verifyGetterName(getterMethod, messagePrefix);
-            var memberName = ReflectionHelper.getGetterPropertyName(getterMethod);
-            var setterMethod = ReflectionHelper.getSetterMethod(getterMethod.getDeclaringClass(),
-                    memberName);
-            if (setterMethod == null) {
-                throw new IllegalArgumentException("""
-                        %s requires both a public getter and a public setter but only have a public getter.
-                        Maybe add a public setter for the member (%s)?
-                        """.formatted(messagePrefix, memberName));
-            }
-            verifyGetterSetterProperties(getterMethod, setterMethod, messagePrefix);
-        } else {
-            throw new IllegalArgumentException("Unhandled member type (%s)."
+            default -> throw new IllegalArgumentException("Unhandled member type (%s)."
                     .formatted(member.getClass().getCanonicalName()));
         }
     }
