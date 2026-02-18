@@ -11,14 +11,15 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-public final class TriConstraintBuilderImpl<A, B, C, Score_ extends Score<Score_>>
-        extends AbstractConstraintBuilder<Score_>
+@NullMarked
+public final class TriConstraintBuilderImpl<A, B, C, Score_ extends Score<Score_>> extends AbstractConstraintBuilder<Score_>
         implements TriConstraintBuilder<A, B, C, Score_> {
 
-    private QuadFunction<A, B, C, Score_, ConstraintJustification> justificationMapping;
-    private TriFunction<A, B, C, Collection<Object>> indictedObjectsMapping;
+    private @Nullable QuadFunction<A, B, C, Score_, ConstraintJustification> justificationMapping;
+    private @Nullable TriFunction<A, B, C, Collection<Object>> indictedObjectsMapping;
 
     public TriConstraintBuilderImpl(TriConstraintConstructor<A, B, C, Score_> constraintConstructor, ScoreImpactType impactType,
             Score_ constraintWeight) {
@@ -26,19 +27,17 @@ public final class TriConstraintBuilderImpl<A, B, C, Score_ extends Score<Score_
     }
 
     @Override
-    protected QuadFunction<A, B, C, Score_, ConstraintJustification> getJustificationMapping() {
+    protected @Nullable QuadFunction<A, B, C, Score_, ConstraintJustification> getJustificationMapping() {
         return justificationMapping;
     }
 
     @Override
-    public @NonNull <ConstraintJustification_ extends ConstraintJustification> TriConstraintBuilder<A, B, C, Score_>
-            justifyWith(
-                    @NonNull QuadFunction<A, B, C, Score_, ConstraintJustification_> justificationMapping) {
+    public <ConstraintJustification_ extends ConstraintJustification> TriConstraintBuilder<A, B, C, Score_>
+            justifyWith(QuadFunction<A, B, C, Score_, ConstraintJustification_> justificationMapping) {
         if (this.justificationMapping != null) {
             throw new IllegalStateException("""
                     Justification mapping already set (%s).
-                    Maybe the constraint calls justifyWith() twice?"""
-                    .formatted(justificationMapping));
+                    Maybe the constraint calls justifyWith() twice?""".formatted(justificationMapping));
         }
         this.justificationMapping =
                 (QuadFunction<A, B, C, Score_, ConstraintJustification>) Objects.requireNonNull(justificationMapping);
@@ -46,18 +45,16 @@ public final class TriConstraintBuilderImpl<A, B, C, Score_ extends Score<Score_
     }
 
     @Override
-    protected TriFunction<A, B, C, Collection<Object>> getIndictedObjectsMapping() {
+    protected @Nullable TriFunction<A, B, C, Collection<Object>> getIndictedObjectsMapping() {
         return indictedObjectsMapping;
     }
 
     @Override
-    public @NonNull TriConstraintBuilder<A, B, C, Score_>
-            indictWith(@NonNull TriFunction<A, B, C, Collection<Object>> indictedObjectsMapping) {
+    public TriConstraintBuilder<A, B, C, Score_> indictWith(TriFunction<A, B, C, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
             throw new IllegalStateException("""
                     Indicted objects' mapping already set (%s).
-                    Maybe the constraint calls indictWith() twice?"""
-                    .formatted(indictedObjectsMapping));
+                    Maybe the constraint calls indictWith() twice?""".formatted(indictedObjectsMapping));
         }
         this.indictedObjectsMapping = Objects.requireNonNull(indictedObjectsMapping);
         return this;

@@ -11,14 +11,15 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-public final class BiConstraintBuilderImpl<A, B, Score_ extends Score<Score_>>
-        extends AbstractConstraintBuilder<Score_>
+@NullMarked
+public final class BiConstraintBuilderImpl<A, B, Score_ extends Score<Score_>> extends AbstractConstraintBuilder<Score_>
         implements BiConstraintBuilder<A, B, Score_> {
 
-    private TriFunction<A, B, Score_, ConstraintJustification> justificationMapping;
-    private BiFunction<A, B, Collection<Object>> indictedObjectsMapping;
+    private @Nullable TriFunction<A, B, Score_, ConstraintJustification> justificationMapping;
+    private @Nullable BiFunction<A, B, Collection<Object>> indictedObjectsMapping;
 
     public BiConstraintBuilderImpl(BiConstraintConstructor<A, B, Score_> constraintConstructor, ScoreImpactType impactType,
             Score_ constraintWeight) {
@@ -26,18 +27,17 @@ public final class BiConstraintBuilderImpl<A, B, Score_ extends Score<Score_>>
     }
 
     @Override
-    protected TriFunction<A, B, Score_, ConstraintJustification> getJustificationMapping() {
+    protected @Nullable TriFunction<A, B, Score_, ConstraintJustification> getJustificationMapping() {
         return justificationMapping;
     }
 
     @Override
-    public <ConstraintJustification_ extends ConstraintJustification> @NonNull BiConstraintBuilder<A, B, Score_> justifyWith(
-            @NonNull TriFunction<A, B, Score_, ConstraintJustification_> justificationMapping) {
+    public <ConstraintJustification_ extends ConstraintJustification> BiConstraintBuilder<A, B, Score_>
+            justifyWith(TriFunction<A, B, Score_, ConstraintJustification_> justificationMapping) {
         if (this.justificationMapping != null) {
             throw new IllegalStateException("""
                     Justification mapping already set (%s).
-                    Maybe the constraint calls justifyWith() twice?"""
-                    .formatted(justificationMapping));
+                    Maybe the constraint calls justifyWith() twice?""".formatted(justificationMapping));
         }
         this.justificationMapping =
                 (TriFunction<A, B, Score_, ConstraintJustification>) Objects.requireNonNull(justificationMapping);
@@ -45,18 +45,16 @@ public final class BiConstraintBuilderImpl<A, B, Score_ extends Score<Score_>>
     }
 
     @Override
-    protected BiFunction<A, B, Collection<Object>> getIndictedObjectsMapping() {
+    protected @Nullable BiFunction<A, B, Collection<Object>> getIndictedObjectsMapping() {
         return indictedObjectsMapping;
     }
 
     @Override
-    public @NonNull BiConstraintBuilder<A, B, Score_>
-            indictWith(@NonNull BiFunction<A, B, Collection<Object>> indictedObjectsMapping) {
+    public BiConstraintBuilder<A, B, Score_> indictWith(BiFunction<A, B, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
             throw new IllegalStateException("""
                     Indicted objects' mapping already set (%s).
-                    Maybe the constraint calls indictWith() twice?"""
-                    .formatted(indictedObjectsMapping));
+                    Maybe the constraint calls indictWith() twice?""".formatted(indictedObjectsMapping));
         }
         this.indictedObjectsMapping = Objects.requireNonNull(indictedObjectsMapping);
         return this;
