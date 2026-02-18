@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintBuilder;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Used to build a {@link Constraint} out of a {@link UniConstraintStream}, applying optional configuration.
@@ -24,6 +24,7 @@ import org.jspecify.annotations.NonNull;
  * Unless {@link #indictWith(Function)} is called, the default indicted objects' mapping will be used.
  * The function takes the input arguments and converts them into a {@link java.util.List}.
  */
+@NullMarked
 public interface UniConstraintBuilder<A, Score_ extends Score<Score_>> extends ConstraintBuilder {
 
     /**
@@ -34,8 +35,8 @@ public interface UniConstraintBuilder<A, Score_ extends Score<Score_>> extends C
      * @return this
      * @see ConstraintMatch
      */
-    <ConstraintJustification_ extends ConstraintJustification> @NonNull UniConstraintBuilder<A, Score_> justifyWith(
-            @NonNull BiFunction<A, Score_, ConstraintJustification_> justificationMapping);
+    <ConstraintJustification_ extends ConstraintJustification> UniConstraintBuilder<A, Score_> justifyWith(
+            BiFunction<A, Score_, ConstraintJustification_> justificationMapping);
 
     /**
      * Sets a custom function to mark any object returned by it as responsible for causing the constraint to match.
@@ -44,7 +45,6 @@ public interface UniConstraintBuilder<A, Score_ extends Score<Score_>> extends C
      *
      * @return this
      */
-    @NonNull
-    UniConstraintBuilder<A, Score_> indictWith(@NonNull Function<A, Collection<Object>> indictedObjectsMapping);
+    UniConstraintBuilder<A, Score_> indictWith(Function<A, Collection<Object>> indictedObjectsMapping);
 
 }

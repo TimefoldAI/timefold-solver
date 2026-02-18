@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintBuilder;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Used to build a {@link Constraint} out of a {@link BiConstraintStream}, applying optional configuration.
@@ -25,6 +25,7 @@ import org.jspecify.annotations.NonNull;
  * Unless {@link #indictWith(BiFunction)} is called, the default indicted objects' mapping will be used.
  * The function takes the input arguments and converts them into a {@link java.util.List}.
  */
+@NullMarked
 public interface BiConstraintBuilder<A, B, Score_ extends Score<Score_>> extends ConstraintBuilder {
 
     /**
@@ -33,9 +34,8 @@ public interface BiConstraintBuilder<A, B, Score_ extends Score<Score_>> extends
      * @see ConstraintMatch
      * @return this
      */
-    @NonNull
     <ConstraintJustification_ extends ConstraintJustification> BiConstraintBuilder<A, B, Score_> justifyWith(
-            @NonNull TriFunction<A, B, Score_, ConstraintJustification_> justificationMapping);
+            TriFunction<A, B, Score_, ConstraintJustification_> justificationMapping);
 
     /**
      * Sets a custom function to mark any object returned by it as responsible for causing the constraint to match.
@@ -44,7 +44,6 @@ public interface BiConstraintBuilder<A, B, Score_ extends Score<Score_>> extends
      *
      * @return this
      */
-    @NonNull
-    BiConstraintBuilder<A, B, Score_> indictWith(@NonNull BiFunction<A, B, Collection<Object>> indictedObjectsMapping);
+    BiConstraintBuilder<A, B, Score_> indictWith(BiFunction<A, B, Collection<Object>> indictedObjectsMapping);
 
 }

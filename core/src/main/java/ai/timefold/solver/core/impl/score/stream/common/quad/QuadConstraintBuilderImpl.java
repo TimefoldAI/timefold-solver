@@ -11,14 +11,15 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Score_>>
-        extends AbstractConstraintBuilder<Score_>
+@NullMarked
+public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Score_>> extends AbstractConstraintBuilder<Score_>
         implements QuadConstraintBuilder<A, B, C, D, Score_> {
 
-    private PentaFunction<A, B, C, D, Score_, ConstraintJustification> justificationMapping;
-    private QuadFunction<A, B, C, D, Collection<Object>> indictedObjectsMapping;
+    private @Nullable PentaFunction<A, B, C, D, Score_, ConstraintJustification> justificationMapping;
+    private @Nullable QuadFunction<A, B, C, D, Collection<Object>> indictedObjectsMapping;
 
     public QuadConstraintBuilderImpl(QuadConstraintConstructor<A, B, C, D, Score_> constraintConstructor,
             ScoreImpactType impactType, Score_ constraintWeight) {
@@ -26,19 +27,17 @@ public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Sc
     }
 
     @Override
-    protected PentaFunction<A, B, C, D, Score_, ConstraintJustification> getJustificationMapping() {
+    protected @Nullable PentaFunction<A, B, C, D, Score_, ConstraintJustification> getJustificationMapping() {
         return justificationMapping;
     }
 
     @Override
-    public @NonNull <ConstraintJustification_ extends ConstraintJustification> QuadConstraintBuilder<A, B, C, D, Score_>
-            justifyWith(
-                    @NonNull PentaFunction<A, B, C, D, Score_, ConstraintJustification_> justificationMapping) {
+    public <ConstraintJustification_ extends ConstraintJustification> QuadConstraintBuilder<A, B, C, D, Score_>
+            justifyWith(PentaFunction<A, B, C, D, Score_, ConstraintJustification_> justificationMapping) {
         if (this.justificationMapping != null) {
             throw new IllegalStateException("""
                     Justification mapping already set (%s).
-                    Maybe the constraint calls justifyWith() twice?"""
-                    .formatted(justificationMapping));
+                    Maybe the constraint calls justifyWith() twice?""".formatted(justificationMapping));
         }
         this.justificationMapping =
                 (PentaFunction<A, B, C, D, Score_, ConstraintJustification>) Objects.requireNonNull(justificationMapping);
@@ -46,18 +45,17 @@ public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Sc
     }
 
     @Override
-    protected QuadFunction<A, B, C, D, Collection<Object>> getIndictedObjectsMapping() {
+    protected @Nullable QuadFunction<A, B, C, D, Collection<Object>> getIndictedObjectsMapping() {
         return indictedObjectsMapping;
     }
 
     @Override
-    public @NonNull QuadConstraintBuilder<A, B, C, D, Score_>
-            indictWith(@NonNull QuadFunction<A, B, C, D, Collection<Object>> indictedObjectsMapping) {
+    public QuadConstraintBuilder<A, B, C, D, Score_>
+            indictWith(QuadFunction<A, B, C, D, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
             throw new IllegalStateException("""
                     Indicted objects' mapping already set (%s).
-                    Maybe the constraint calls indictWith() twice?"""
-                    .formatted(indictedObjectsMapping));
+                    Maybe the constraint calls indictWith() twice?""".formatted(indictedObjectsMapping));
         }
         this.indictedObjectsMapping = Objects.requireNonNull(indictedObjectsMapping);
         return this;

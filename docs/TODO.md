@@ -37,5 +37,6 @@
 - [ ] `Rebaser` renamed to `Lookup` and made public.
 - [ ] `ProblemChangeDirector#lookUpWorkingObject()` no longer returns `Optional`.
 - [ ] `AutoDiscoverMemberType` is gone
+- [ ] Constraint name and group now forces strict validation.
 
 Remove this file when done.

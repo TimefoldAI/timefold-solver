@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.api.score.constraint;
 
-import java.util.Objects;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintBuilder;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -24,7 +24,7 @@ public record ConstraintRef(String constraintName)
     }
 
     public ConstraintRef {
-        var sanitized = Objects.requireNonNull(constraintName).trim();
+        var sanitized = AbstractConstraintBuilder.sanitize("constraintName", constraintName);
         if (sanitized.isEmpty()) {
             throw new IllegalArgumentException("The %s cannot be empty."
                     .formatted("constraint name"));
