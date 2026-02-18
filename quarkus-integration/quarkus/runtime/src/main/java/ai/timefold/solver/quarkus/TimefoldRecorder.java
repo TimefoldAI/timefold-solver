@@ -88,7 +88,7 @@ public class TimefoldRecorder {
         };
     }
 
-    public <Solution_, ProblemId_> Supplier<SolverManager<Solution_, ProblemId_>> solverManager(final String solverName,
+    public <Solution_> Supplier<SolverManager<Solution_>> solverManager(final String solverName,
             final SolverConfig solverConfig,
             Map<String, RuntimeValue<MemberAccessor>> generatedGizmoMemberAccessorMap,
             Map<String, RuntimeValue<SolutionCloner<Solution_>>> generatedGizmoSolutionClonerMap) {
@@ -109,7 +109,7 @@ public class TimefoldRecorder {
 
             var solverFactory = SolverFactory.create(solverConfig);
 
-            return (SolverManager<Solution_, ProblemId_>) SolverManager.create(solverFactory, solverManagerConfig);
+            return (SolverManager<Solution_>) SolverManager.create(solverFactory, solverManagerConfig);
         };
     }
 

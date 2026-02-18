@@ -94,7 +94,7 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
     @Bean
     @Lazy
     @ConditionalOnMissingBean
-    public <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManager(SolverFactory solverFactory) {
+    public <Solution_, ProblemId_> SolverManager<Solution_> solverManager(SolverFactory solverFactory) {
         // TODO supply ThreadFactory
         if (solverFactory == null) {
             return null;

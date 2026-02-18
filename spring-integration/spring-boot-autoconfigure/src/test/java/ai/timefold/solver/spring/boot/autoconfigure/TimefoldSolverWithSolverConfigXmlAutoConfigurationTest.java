@@ -368,7 +368,7 @@ class TimefoldSolverWithSolverConfigXmlAutoConfigurationTest {
                     var solverManager = context.getBean(SolverManager.class);
                     assertThat(solverManager).isNotNull();
                     // There is only one SolverFactory instance
-                    assertThat(((DefaultSolverManager<TestdataSpringSolution, Long>) solverManager).getSolverFactory())
+                    assertThat(((DefaultSolverManager<TestdataSpringSolution>) solverManager).getSolverFactory())
                             .isSameAs(solverFactory);
                 });
     }

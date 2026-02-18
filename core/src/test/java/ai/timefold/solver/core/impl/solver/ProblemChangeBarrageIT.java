@@ -38,15 +38,13 @@ class ProblemChangeBarrageIT {
                 .withEasyScoreCalculatorClass(TestdataEasyScoreCalculator.class);
 
         var futureList = new ArrayList<RecordedFuture>();
-        try (var solverManager = SolverManager.<TestdataSolution, UUID> create(solverConfig, new SolverManagerConfig())) {
+        try (var solverManager = SolverManager.<TestdataSolution> create(solverConfig, new SolverManagerConfig())) {
             var solverStartedLatch = new CountDownLatch(1);
             var solution = TestdataSolution.generateSolution();
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(UUID.randomUUID())
                     .withProblem(solution)
-                    .withFirstInitializedSolutionEventConsumer(event -> {
-                        solverStartedLatch.countDown();
-                    })
+                    .withFirstInitializedSolutionEventConsumer(event -> solverStartedLatch.countDown())
                     .withBestSolutionEventConsumer(event -> {
                         // No need to do anything.
                     })

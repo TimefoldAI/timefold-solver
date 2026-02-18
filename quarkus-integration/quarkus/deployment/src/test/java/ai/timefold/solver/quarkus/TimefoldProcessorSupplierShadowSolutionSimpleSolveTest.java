@@ -31,7 +31,7 @@ class TimefoldProcessorSupplierShadowSolutionSimpleSolveTest {
                             TestdataQuarkusSupplierVariableSimpleEntity.class,
                             TestdataQuarkusSupplierVariableSimpleConstraintProvider.class));
     @Inject
-    SolverManager<TestdataQuarkusSupplierVariableSimpleSolution, Long> solverManager;
+    SolverManager<TestdataQuarkusSupplierVariableSimpleSolution> solverManager;
 
     @Test
     void solve() throws ExecutionException, InterruptedException {

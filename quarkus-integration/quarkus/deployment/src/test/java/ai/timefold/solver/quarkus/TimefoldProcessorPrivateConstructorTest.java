@@ -30,7 +30,7 @@ class TimefoldProcessorPrivateConstructorTest {
                             PrivateNoArgsConstructorEntity.class));
 
     @Inject
-    SolverManager<PrivateNoArgsConstructorSolution, Long> solverManager;
+    SolverManager<PrivateNoArgsConstructorSolution> solverManager;
 
     @Test
     void canConstructBeansWithPrivateConstructors() throws ExecutionException, InterruptedException {

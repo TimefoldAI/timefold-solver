@@ -50,7 +50,7 @@ class TimefoldProcessorInvalidTest {
     @Inject
     SolverFactory<TestdataInvalidInverseRelationSolution> solverFactory;
     @Inject
-    SolverManager<TestdataInvalidInverseRelationSolution, Long> solverManager;
+    SolverManager<TestdataInvalidInverseRelationSolution> solverManager;
     @Inject
     SolutionManager<TestdataInvalidInverseRelationSolution, SimpleScore> solutionManager;
 

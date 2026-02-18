@@ -235,11 +235,11 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
 
     @Inject
     @Named("solver1")
-    SolverManager<?, ?> solverManager1;
+    SolverManager<?> solverManager1;
 
     @Inject
     @Named("solver2")
-    SolverManager<?, ?> solverManager2;
+    SolverManager<?> solverManager2;
 
     @Test
     void test() {

@@ -36,11 +36,11 @@ public class TimefoldDevUIMultipleSolversTest extends DevUIJsonRPCTest {
 
         @Inject
         @Named("solver1")
-        SolverManager<TestdataStringLengthShadowSolution, Long> solverManager;
+        SolverManager<TestdataStringLengthShadowSolution> solverManager;
 
         @Inject
         @Named("solver2")
-        SolverManager<TestdataStringLengthShadowSolution, String> solverManager2;
+        SolverManager<TestdataStringLengthShadowSolution> solverManager2;
     }
 
     public TimefoldDevUIMultipleSolversTest() {

@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.api.solver;
 
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -11,7 +10,7 @@ import ai.timefold.solver.core.api.solver.event.FirstInitializedSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.SolverJobStartedEvent;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Provides a fluent contract that allows customization and submission of planning problems to solve.
@@ -27,9 +26,9 @@ import org.jspecify.annotations.NonNull;
  * Then solve it by calling {@link #run()}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
- * @param <ProblemId_> the ID type of submitted problem, such as {@link Long} or {@link UUID}.
  */
-public interface SolverJobBuilder<Solution_, ProblemId_> {
+@NullMarked
+public interface SolverJobBuilder<Solution_> {
 
     /**
      * Sets the problem id.
@@ -37,8 +36,7 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      * @param problemId a ID for each planning problem. This must be unique.
      * @return this
      */
-    @NonNull
-    SolverJobBuilder<Solution_, ProblemId_> withProblemId(@NonNull ProblemId_ problemId);
+    SolverJobBuilder<Solution_> withProblemId(Object problemId);
 
     /**
      * Sets the problem definition.
@@ -46,7 +44,7 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      * @param problem a {@link PlanningSolution} usually with uninitialized planning variables
      * @return this
      */
-    default @NonNull SolverJobBuilder<Solution_, ProblemId_> withProblem(@NonNull Solution_ problem) {
+    default SolverJobBuilder<Solution_> withProblem(Solution_ problem) {
         return withProblemFinder(id -> problem);
     }
 
@@ -56,9 +54,7 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      * @param problemFinder a function that returns a {@link PlanningSolution}, usually with uninitialized planning variables
      * @return this
      */
-    @NonNull
-    SolverJobBuilder<Solution_, ProblemId_>
-            withProblemFinder(@NonNull Function<? super ProblemId_, ? extends Solution_> problemFinder);
+    SolverJobBuilder<Solution_> withProblemFinder(Function<? super Object, ? extends Solution_> problemFinder);
 
     /**
      * Sets the best solution consumer, which may be called multiple times during the solving process.
@@ -70,9 +66,8 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      * @param bestSolutionEventConsumer called multiple times for each new best solution on a consumer thread
      * @return this
      */
-    @NonNull
-    SolverJobBuilder<Solution_, ProblemId_>
-            withBestSolutionEventConsumer(@NonNull Consumer<NewBestSolutionEvent<Solution_>> bestSolutionEventConsumer);
+    SolverJobBuilder<Solution_>
+            withBestSolutionEventConsumer(Consumer<NewBestSolutionEvent<Solution_>> bestSolutionEventConsumer);
 
     /**
      * Sets the final best solution consumer, which is called at the end of the solving process and returns the final
@@ -81,10 +76,8 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      * @param finalBestSolutionEventConsumer called only once at the end of the solving process on a consumer thread
      * @return this
      */
-    @NonNull
-    SolverJobBuilder<Solution_, ProblemId_>
-            withFinalBestSolutionEventConsumer(
-                    @NonNull Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionEventConsumer);
+    SolverJobBuilder<Solution_>
+            withFinalBestSolutionEventConsumer(Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionEventConsumer);
 
     /**
      * Sets the consumer of the first initialized solution,
@@ -95,8 +88,8 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      * @param firstInitializedSolutionEventConsumer called only once before starting the first Local Search phase
      * @return this
      */
-    SolverJobBuilder<Solution_, ProblemId_> withFirstInitializedSolutionEventConsumer(
-            @NonNull Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionEventConsumer);
+    SolverJobBuilder<Solution_> withFirstInitializedSolutionEventConsumer(
+            Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionEventConsumer);
 
     /**
      * Sets the consumer for when the solver starts its solving process.
@@ -104,7 +97,7 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      * @param solverJobStartedConsumer never null, called only once when the solver is starting the solving process
      * @return this, never null
      */
-    SolverJobBuilder<Solution_, ProblemId_>
+    SolverJobBuilder<Solution_>
             withSolverJobStartedEventConsumer(Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer);
 
     /**
@@ -114,9 +107,7 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      *        exception as an error.
      * @return this
      */
-    @NonNull
-    SolverJobBuilder<Solution_, ProblemId_>
-            withExceptionHandler(@NonNull BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler);
+    SolverJobBuilder<Solution_> withExceptionHandler(BiConsumer<? super Object, ? super Throwable> exceptionHandler);
 
     /**
      * Sets the solver config override.
@@ -124,14 +115,12 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      * @param solverConfigOverride allows overriding the default behavior of {@link Solver}
      * @return this
      */
-    @NonNull
-    SolverJobBuilder<Solution_, ProblemId_> withConfigOverride(@NonNull SolverConfigOverride<Solution_> solverConfigOverride);
+    SolverJobBuilder<Solution_> withConfigOverride(SolverConfigOverride<Solution_> solverConfigOverride);
 
     /**
      * Submits a planning problem to solve and returns immediately. The planning problem is solved on a solver {@link Thread},
      * as soon as one is available.
      */
-    @NonNull
-    SolverJob<Solution_, ProblemId_> run();
+    SolverJob<Solution_> run();
 
 }

@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.solver;
 
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,69 +14,70 @@ import ai.timefold.solver.core.api.solver.event.FirstInitializedSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.SolverJobStartedEvent;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
- * @param <ProblemId_> the ID type of submitted problem, such as {@link Long} or {@link UUID}.
  */
-public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements SolverJobBuilder<Solution_, ProblemId_> {
+@NullMarked
+public final class DefaultSolverJobBuilder<Solution_> implements SolverJobBuilder<Solution_> {
 
-    private final DefaultSolverManager<Solution_, ProblemId_> solverManager;
-    private ProblemId_ problemId;
-    private Function<? super ProblemId_, ? extends Solution_> problemFinder;
-    private Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer;
-    private Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer;
-    private Consumer<FirstInitializedSolutionEvent<Solution_>> initializedSolutionConsumer;
-    private Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer;
-    private BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
-    private SolverConfigOverride<Solution_> solverConfigOverride;
+    private final DefaultSolverManager<Solution_> solverManager;
+    private @Nullable Object problemId;
+    private @Nullable Function<? super Object, ? extends Solution_> problemFinder;
+    private @Nullable Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer;
+    private @Nullable Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer;
+    private @Nullable Consumer<FirstInitializedSolutionEvent<Solution_>> initializedSolutionConsumer;
+    private @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer;
+    private @Nullable BiConsumer<? super Object, ? super Throwable> exceptionHandler;
+    private @Nullable SolverConfigOverride<Solution_> solverConfigOverride;
 
-    public DefaultSolverJobBuilder(DefaultSolverManager<Solution_, ProblemId_> solverManager) {
+    public DefaultSolverJobBuilder(DefaultSolverManager<Solution_> solverManager) {
         this.solverManager = Objects.requireNonNull(solverManager, "The SolverManager (" + solverManager + ") cannot be null.");
     }
 
     @Override
-    public @NonNull SolverJobBuilder<Solution_, ProblemId_> withProblemId(@NonNull ProblemId_ problemId) {
+    public SolverJobBuilder<Solution_> withProblemId(Object problemId) {
         this.problemId = Objects.requireNonNull(problemId, "Invalid problemId (null) given to SolverJobBuilder.");
         return this;
     }
 
     @Override
-    public @NonNull SolverJobBuilder<Solution_, ProblemId_>
-            withProblemFinder(@NonNull Function<? super ProblemId_, ? extends Solution_> problemFinder) {
+    public SolverJobBuilder<Solution_>
+            withProblemFinder(Function<? super Object, ? extends Solution_> problemFinder) {
         this.problemFinder = Objects.requireNonNull(problemFinder, "Invalid problemFinder (null) given to SolverJobBuilder.");
         return this;
     }
 
     @Override
-    public @NonNull SolverJobBuilder<Solution_, ProblemId_>
-            withBestSolutionEventConsumer(@NonNull Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer) {
+    public SolverJobBuilder<Solution_>
+            withBestSolutionEventConsumer(Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer) {
         this.bestSolutionConsumer =
                 Objects.requireNonNull(bestSolutionConsumer, "Invalid bestSolutionConsumer (null) given to SolverJobBuilder.");
         return this;
     }
 
     @Override
-    public @NonNull SolverJobBuilder<Solution_, ProblemId_>
+    public SolverJobBuilder<Solution_>
             withFinalBestSolutionEventConsumer(
-                    @NonNull Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer) {
+                    Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer) {
         this.finalBestSolutionConsumer = Objects.requireNonNull(finalBestSolutionConsumer,
                 "Invalid finalBestSolutionConsumer (null) given to SolverJobBuilder.");
         return this;
     }
 
     @Override
-    public @NonNull SolverJobBuilder<Solution_, ProblemId_>
+    public SolverJobBuilder<Solution_>
             withFirstInitializedSolutionEventConsumer(
-                    @NonNull Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer) {
+                    Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer) {
         this.initializedSolutionConsumer = Objects.requireNonNull(firstInitializedSolutionConsumer,
                 "Invalid initializedSolutionConsumer (null) given to SolverJobBuilder.");
         return this;
     }
 
     @Override
-    public SolverJobBuilder<Solution_, ProblemId_>
+    public SolverJobBuilder<Solution_>
             withSolverJobStartedEventConsumer(Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer) {
         this.solverJobStartedConsumer = Objects.requireNonNull(solverJobStartedConsumer,
                 "Invalid startSolverJobHandler (null) given to SolverJobBuilder.");
@@ -85,23 +85,29 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
     }
 
     @Override
-    public @NonNull SolverJobBuilder<Solution_, ProblemId_>
-            withExceptionHandler(@NonNull BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
+    public SolverJobBuilder<Solution_>
+            withExceptionHandler(BiConsumer<? super Object, ? super Throwable> exceptionHandler) {
         this.exceptionHandler =
                 Objects.requireNonNull(exceptionHandler, "Invalid exceptionHandler (null) given to SolverJobBuilder.");
         return this;
     }
 
     @Override
-    public @NonNull SolverJobBuilder<Solution_, ProblemId_>
-            withConfigOverride(@NonNull SolverConfigOverride<Solution_> solverConfigOverride) {
+    public SolverJobBuilder<Solution_>
+            withConfigOverride(SolverConfigOverride<Solution_> solverConfigOverride) {
         this.solverConfigOverride =
                 Objects.requireNonNull(solverConfigOverride, "Invalid solverConfigOverride (null) given to SolverJobBuilder.");
         return this;
     }
 
     @Override
-    public @NonNull SolverJob<Solution_, ProblemId_> run() {
+    public SolverJob<Solution_> run() {
+        if (problemId == null) {
+            throw new IllegalStateException("The problemId is required.");
+        }
+        if (problemFinder == null) {
+            throw new IllegalStateException("The problemFinder function is required.");
+        }
         if (solverConfigOverride == null) {
             // The config is required by SolverFactory and it must be initialized
             this.solverConfigOverride = new SolverConfigOverride<>();

@@ -76,7 +76,7 @@ import org.mockito.Mockito;
 
 class SolverManagerTest {
 
-    private static final Function<Long, TestdataSolution> DEFAULT_PROBLEM_FINDER =
+    private static final Function<Object, TestdataSolution> DEFAULT_PROBLEM_FINDER =
             problemId -> PlannerTestUtils.generateTestdataSolution("Generated solution " + problemId);
     private static final SolverManagerConfig SOLVER_MANAGER_CONFIG_WITH_1_PARALLEL_SOLVER =
             new SolverManagerConfig().withParallelSolverCount("1");
@@ -107,15 +107,15 @@ class SolverManagerTest {
         }
     }
 
-    private static SolverManager<TestdataSolution, Long> createDefaultSolverManager(SolverConfig solverConfig) {
+    private static SolverManager<TestdataSolution> createDefaultSolverManager(SolverConfig solverConfig) {
         return SolverManager.create(solverConfig);
     }
 
-    private static SolverManager<TestdataSolution, Long> createSolverManagerWithOneSolver(SolverConfig solverConfig) {
+    private static SolverManager<TestdataSolution> createSolverManagerWithOneSolver(SolverConfig solverConfig) {
         return createSolverManager(solverConfig, SOLVER_MANAGER_CONFIG_WITH_1_PARALLEL_SOLVER);
     }
 
-    private static SolverManager<TestdataSolution, Long> createSolverManager(SolverConfig solverConfig,
+    private static SolverManager<TestdataSolution> createSolverManager(SolverConfig solverConfig,
             SolverManagerConfig solverManagerConfig) {
         return SolverManager.create(solverConfig, solverManagerConfig);
     }
@@ -421,7 +421,7 @@ class SolverManagerTest {
                         .withTerminationConfig(new TerminationConfig().withStepCountLimit(1)),
                         new LocalSearchPhaseConfig()
                                 .withTerminationConfig(new TerminationConfig().withStepCountLimit(0)));
-        try (var solverManager = SolverManager.<TestdataAllowsUnassignedValuesListSolution, Long> create(solverConfig)) {
+        try (var solverManager = SolverManager.<TestdataAllowsUnassignedValuesListSolution> create(solverConfig)) {
             // The solution will produce a CH that takes 2 steps.
             // The CH is configured to terminate after 1 step, guaranteeing early termination.
             Function<Object, TestdataAllowsUnassignedValuesListSolution> problemFinder = o -> {
@@ -587,13 +587,13 @@ class SolverManagerTest {
             SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
             doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
 
-            var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(1L, problem);
+            var solverJob = (DefaultSolverJob<TestdataSolution>) solverManager.solve(1L, problem);
             assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.05);
 
             // Spent limit overridden by 100L
             var configOverride = new SolverConfigOverride<TestdataSolution>()
                     .withTerminationConfig(new TerminationConfig().withSpentLimit(Duration.ofMillis(100L)));
-            solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
+            solverJob = (DefaultSolverJob<TestdataSolution>) solverManager.solveBuilder()
                     .withProblemId(2L)
                     .withProblem(problem)
                     .withConfigOverride(configOverride)
@@ -619,7 +619,7 @@ class SolverManagerTest {
             // Override spent limit to 100 milliseconds
             var configOverride = new SolverConfigOverride<TestdataSolution>()
                     .withTerminationSpentLimit(Duration.ofMillis(100L));
-            var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
+            var solverJob = (DefaultSolverJob<TestdataSolution>) solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblem(problem)
                     .withConfigOverride(configOverride)
@@ -770,8 +770,8 @@ class SolverManagerTest {
 
     @Test
     void testSolveBuilderForExistingSolvingMethods() {
-        SolverJobBuilder<TestdataSolution, Long> solverJobBuilder = mock(SolverJobBuilder.class);
-        SolverManager<TestdataSolution, Long> solverManager = mock(SolverManager.class);
+        SolverJobBuilder<TestdataSolution> solverJobBuilder = mock(SolverJobBuilder.class);
+        SolverManager<TestdataSolution> solverManager = mock(SolverManager.class);
 
         doReturn(solverJobBuilder).when(solverManager).solveBuilder();
         doReturn(solverJobBuilder).when(solverJobBuilder).withProblemId(anyLong());
@@ -1003,7 +1003,7 @@ class SolverManagerTest {
         }
     }
 
-    private void assertInitializedJobs(List<SolverJob<TestdataSolution, Long>> jobs)
+    private void assertInitializedJobs(List<SolverJob<TestdataSolution>> jobs)
             throws InterruptedException, ExecutionException {
         for (var job : jobs) {
             // Method getFinalBestSolution() waits for the solving to finish, therefore it ensures synchronization.
@@ -1023,7 +1023,7 @@ class SolverManagerTest {
         }
     }
 
-    private SolverManager<TestdataSolution, Long> createSolverManagerTestableByDifferentConsumers() {
+    private SolverManager<TestdataSolution> createSolverManagerTestableByDifferentConsumers() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(IntStream.of(0, 1)
                         .mapToObj(x -> new CustomPhaseConfig().withCustomPhaseCommands(
@@ -1040,23 +1040,23 @@ class SolverManagerTest {
         return createDefaultSolverManager(solverConfig);
     }
 
-    private void assertSolveWithoutConsumer(int problemCount, SolverManager<TestdataSolution, Long> solverManager)
+    private void assertSolveWithoutConsumer(int problemCount, SolverManager<TestdataSolution> solverManager)
             throws InterruptedException, ExecutionException {
-        var jobs = new ArrayList<SolverJob<TestdataSolution, Long>>(problemCount);
+        var jobs = new ArrayList<SolverJob<TestdataSolution>>(problemCount);
         for (long id = 0; id < problemCount; id++) {
             jobs.add(solverManager.solve(id, PlannerTestUtils.generateTestdataSolution(String.format("s%d", id))));
         }
         assertInitializedJobs(jobs);
     }
 
-    private void assertSolveWithConsumer(int problemCount, SolverManager<TestdataSolution, Long> solverManager,
+    private void assertSolveWithConsumer(int problemCount, SolverManager<TestdataSolution> solverManager,
             boolean listenWhileSolving)
             throws ExecutionException, InterruptedException {
 
         // Two solutions should be created for every problem.
         var solutionMap = new HashMap<Long, List<TestdataSolution>>(problemCount * 2);
         var finalBestSolutionConsumed = new CountDownLatch(problemCount);
-        var jobs = new ArrayList<SolverJob<TestdataSolution, Long>>(problemCount);
+        var jobs = new ArrayList<SolverJob<TestdataSolution>>(problemCount);
 
         for (var id = 0L; id < problemCount; id++) {
             var consumedBestSolutions = Collections.synchronizedList(new ArrayList<TestdataSolution>());

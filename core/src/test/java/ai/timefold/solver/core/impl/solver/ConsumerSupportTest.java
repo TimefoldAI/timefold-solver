@@ -101,12 +101,13 @@ class ConsumerSupportTest {
         Consumer<NewBestSolutionEvent<TestdataSolution>> errorneousConsumer = bestSolution -> {
             throw new RuntimeException(errorMessage);
         };
-        consumerSupport = new ConsumerSupport<>(1L, errorneousConsumer, null, null, null, null, bestSolutionHolder);
+        consumerSupport = new ConsumerSupport<>(1L, errorneousConsumer, null, null, null, (id, ex) -> {
+        }, bestSolutionHolder);
 
         CompletableFuture<Void> futureProblemChange = addProblemChange(bestSolutionHolder);
         consumeIntermediateBestSolution(TestdataSolution.generateSolution());
 
-        assertThatExceptionOfType(ExecutionException.class).isThrownBy(() -> futureProblemChange.get())
+        assertThatExceptionOfType(ExecutionException.class).isThrownBy(futureProblemChange::get)
                 .havingRootCause()
                 .isInstanceOf(RuntimeException.class)
                 .withMessage(errorMessage);
@@ -130,7 +131,7 @@ class ConsumerSupportTest {
         futureProblemChange.get();
         assertThat(futureProblemChange).isCompleted();
 
-        assertThatExceptionOfType(CancellationException.class).isThrownBy(() -> pendingProblemChange.get());
+        assertThatExceptionOfType(CancellationException.class).isThrownBy(pendingProblemChange::get);
     }
 
     private CompletableFuture<Void> addProblemChange(BestSolutionHolder<TestdataSolution> bestSolutionHolder) {

@@ -101,9 +101,9 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .withClassLoader(allDefaultsFilteredClassLoader)
                 .run(context -> {
                     var solver1 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver1");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver1");
                     var solver2 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver2");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver2");
                     assertThat(solver1).isNotNull();
                     assertThat(solver2).isNotNull();
                     var problem = new TestdataSpringSolution();
@@ -124,11 +124,11 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     customScope.setStartingInitializedScore(HardSoftScore.of(-1, -1));
                     customScope.setInitializedBestScore(HardSoftScore.of(-1, -1));
                     var gradientTimeDefaultSolver1 =
-                            ((DefaultSolverJob<TestdataSpringSolution, Long>) solver1.solve(1L, problem)).getSolverTermination()
+                            ((DefaultSolverJob<TestdataSpringSolution>) solver1.solve(1L, problem)).getSolverTermination()
                                     .calculateSolverTimeGradient(customScope);
                     assertThat(gradientTimeDefaultSolver1).isEqualTo(0.5);
                     var gradientTimeSolver2 =
-                            ((DefaultSolverJob<TestdataSpringSolution, Long>) solver2.solve(1L, problem)).getSolverTermination()
+                            ((DefaultSolverJob<TestdataSpringSolution>) solver2.solve(1L, problem)).getSolverTermination()
                                     .calculateSolverTimeGradient(customScope);
                     assertThat(gradientTimeSolver2).isEqualTo(0.25);
                 });
@@ -143,9 +143,9 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                         "timefold.solver.solver2.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/customSolver2Config.xml")
                 .run(context -> {
                     var solver1 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver1");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver1");
                     var solver2 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver2");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver2");
                     assertThat(solver1).isNotNull();
                     assertThat(solver2).isNotNull();
                     var problem = new TestdataSpringSolution();
@@ -166,11 +166,11 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     customScope.setStartingInitializedScore(HardSoftScore.of(-1, -1));
                     customScope.setInitializedBestScore(HardSoftScore.of(-1, -1));
                     var gradientTimeDefaultSolver1 =
-                            ((DefaultSolverJob<TestdataSpringSolution, Long>) solver1.solve(1L, problem)).getSolverTermination()
+                            ((DefaultSolverJob<TestdataSpringSolution>) solver1.solve(1L, problem)).getSolverTermination()
                                     .calculateSolverTimeGradient(customScope);
                     assertThat(gradientTimeDefaultSolver1).isEqualTo(0.5);
                     var gradientTimeSolver2 =
-                            ((DefaultSolverJob<TestdataSpringSolution, Long>) solver2.solve(1L, problem)).getSolverTermination()
+                            ((DefaultSolverJob<TestdataSpringSolution>) solver2.solve(1L, problem)).getSolverTermination()
                                     .calculateSolverTimeGradient(customScope);
                     assertThat(gradientTimeSolver2).isEqualTo(0.25);
                 });
@@ -185,9 +185,9 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                         "timefold.solver.solver2.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/solverConfigWithoutGlobalTermination.xml")
                 .run(context -> {
                     var solver1 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver1");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver1");
                     var solver2 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver2");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver2");
                     assertThat(solver1).isNotNull();
                     assertThat(solver2).isNotNull();
                 });
@@ -200,9 +200,9 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .withPropertyValues("timefold.solver.solver2.environment-mode=TRACKED_FULL_ASSERT")
                 .run(context -> {
                     var solver1 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver1");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver1");
                     var solver2 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver2");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver2");
                     assertThat(solver1).isNotNull();
                     assertThat(solver2).isNotNull();
                 });
@@ -211,9 +211,9 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .withPropertyValues("timefold.solver.solver2.daemon=false")
                 .run(context -> {
                     var solver1 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver1");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver1");
                     var solver2 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver2");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver2");
                     assertThat(solver1).isNotNull();
                     assertThat(solver2).isNotNull();
                 });
@@ -257,9 +257,9 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .withUserConfiguration(TimefoldBenchmarkAutoConfiguration.class) // We load the configuration, but get no bean
                 .run(context -> {
                     var solver1 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver1");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver1");
                     var solver2 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver2");
+                            (SolverManager<TestdataSpringSolution>) context.getBean("solver2");
                     assertThat(solver1).isNotNull();
                     assertThat(solver2).isNotNull();
                 });
@@ -282,7 +282,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
 
                     for (var solverName : List.of("solver1", "solver2")) {
                         var solver =
-                                (SolverManager<TestdataSpringSolution, Long>) context.getBean(solverName);
+                                (SolverManager<TestdataSpringSolution>) context.getBean(solverName);
                         var solverJob = solver.solve(1L, problem);
                         var solution = solverJob.getFinalBestSolution();
                         assertThat(solution).isNotNull();
@@ -308,7 +308,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
 
                     for (var solverName : List.of("solver1", "solver2")) {
                         var solver =
-                                (SolverManager<TestdataSpringSolution, Long>) context.getBean(solverName);
+                                (SolverManager<TestdataSpringSolution>) context.getBean(solverName);
                         var solverJob = solver.solve(1L, problem);
                         var solution = solverJob.getFinalBestSolution();
                         assertThat(solution).isNotNull();
@@ -350,9 +350,9 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                             .toList());
                     for (var solverName : List.of("solver1", "solver2")) {
                         var solverManager =
-                                (SolverManager<TestdataSpringSolution, Long>) context.getBean(solverName);
+                                (SolverManager<TestdataSpringSolution>) context.getBean(solverName);
                         var solverJob =
-                                (DefaultSolverJob<TestdataSpringSolution, Long>) solverManager.solveBuilder()
+                                (DefaultSolverJob<TestdataSpringSolution>) solverManager.solveBuilder()
                                         .withProblemId(1L)
                                         .withProblem(problem)
                                         .withConfigOverride(
@@ -389,7 +389,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> {
                     for (var solverName : List.of("solver1", "solver2")) {
                         var solverManager =
-                                (SolverManager<TestdataSpringSolution, Long>) context.getBean(solverName);
+                                (SolverManager<TestdataSpringSolution>) context.getBean(solverName);
                         var problem = new TestdataSpringSolution();
                         problem.setValueList(IntStream.range(1, 3)
                                 .mapToObj(i -> "v" + i)
