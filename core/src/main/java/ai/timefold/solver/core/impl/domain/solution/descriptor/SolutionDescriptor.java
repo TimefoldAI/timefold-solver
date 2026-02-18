@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
-import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD;
-import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
+import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_GETTER_METHOD;
+import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_READ_METHOD;
 import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor.extractInheritedClasses;
 import static java.util.stream.Stream.concat;
 
@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -50,6 +49,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
@@ -116,7 +116,7 @@ public final class SolutionDescriptor<Solution_> {
             Set<PreviewFeature> enabledPreviewFeaturesSet,
             Class<Solution_> solutionClass,
             List<Class<?>> entityClassList) {
-        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.REFLECTION, solutionClass, null,
+        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.FORCE_REFLECTION, solutionClass, null,
                 null, entityClassList);
     }
 
@@ -723,17 +723,11 @@ public final class SolutionDescriptor<Solution_> {
             gizmoSolutionCloner.setSolutionDescriptor(this);
         }
         if (solutionCloner == null) {
-            switch (descriptorPolicy.getDomainAccessType()) {
-                case GIZMO:
-                    solutionCloner = GizmoSolutionClonerFactory.build(this, memberAccessorFactory.getGizmoClassLoader());
-                    break;
-                case REFLECTION:
-                    solutionCloner = new FieldAccessingSolutionCloner<>(this);
-                    break;
-                default:
-                    throw new IllegalStateException("The domainAccessType (" + domainAccessType
-                            + ") is not implemented.");
-            }
+            solutionCloner = switch (descriptorPolicy.getDomainAccessType()) {
+                case FORCE_GIZMO -> GizmoSolutionClonerFactory.build(this, memberAccessorFactory.getGizmoClassLoader());
+                // AUTO means we are probably in plain Java, so we need to use reflection so we can clone final fields
+                case AUTO, FORCE_REFLECTION -> new FieldAccessingSolutionCloner<>(this);
+            };
         }
     }
 

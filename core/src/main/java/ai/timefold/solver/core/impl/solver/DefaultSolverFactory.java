@@ -26,6 +26,7 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.AbstractFromConfigFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhaseFactory;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -189,7 +190,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                             .formatted(solverConfig.getEntityClassList()));
         }
         return SolutionDescriptor.buildSolutionDescriptor(solverConfig.getEnablePreviewFeatureSet(),
-                solverConfig.determineDomainAccessType(),
+                DomainAccessType.AUTO,
                 (Class<Solution_>) solverConfig.getSolutionClass(),
                 solverConfig.getGizmoMemberAccessorMap(),
                 solverConfig.getGizmoSolutionClonerMap(),

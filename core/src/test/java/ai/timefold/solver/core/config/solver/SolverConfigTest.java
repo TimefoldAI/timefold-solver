@@ -299,7 +299,7 @@ class SolverConfigTest {
     }
 
     @PlanningSolution
-    private static class DummySolutionWithRecordEntity {
+    public static class DummySolutionWithRecordEntity {
 
         @PlanningEntityCollectionProperty
         List<DummyRecordEntity> entities;
@@ -358,7 +358,7 @@ class SolverConfigTest {
     }
 
     @PlanningSolution
-    private static class DummySolutionWithTwoListVariablesEntity {
+    public static class DummySolutionWithTwoListVariablesEntity {
 
         @PlanningEntityCollectionProperty
         List<DummyEntityWithTwoListVariables> entities;
@@ -409,7 +409,7 @@ class SolverConfigTest {
     }
 
     @PlanningEntity
-    private static class DummyEntityWithTwoListVariables {
+    public static class DummyEntityWithTwoListVariables {
 
         @PlanningListVariable(valueRangeProviderRefs = "firstListValueRange")
         private List<DummyEntityForListVariable> firstListVariable;

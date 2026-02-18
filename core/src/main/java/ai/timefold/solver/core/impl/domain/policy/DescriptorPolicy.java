@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.domain.policy;
 
-import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
+import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
 
 import java.lang.reflect.Member;
 import java.util.ArrayList;
@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
@@ -27,6 +26,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -58,7 +58,7 @@ public class DescriptorPolicy {
     private final Set<MemberAccessor> anonymousFromSolutionValueRangeProviderSet = new LinkedHashSet<>();
     private final Map<String, MemberAccessor> fromEntityValueRangeProviderMap = new LinkedHashMap<>();
     private final Set<MemberAccessor> anonymousFromEntityValueRangeProviderSet = new LinkedHashSet<>();
-    private DomainAccessType domainAccessType = DomainAccessType.REFLECTION;
+    private DomainAccessType domainAccessType = DomainAccessType.FORCE_REFLECTION;
     private Set<PreviewFeature> enabledPreviewFeatureSet = EnumSet.noneOf(PreviewFeature.class);
     @Nullable
     private MemberAccessorFactory memberAccessorFactory;

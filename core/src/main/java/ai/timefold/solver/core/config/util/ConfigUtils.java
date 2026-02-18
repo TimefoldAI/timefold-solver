@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.config.util;
 
-import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
+import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_READ_METHOD;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -30,10 +30,10 @@ import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.impl.domain.common.AlphabeticMemberComparator;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;

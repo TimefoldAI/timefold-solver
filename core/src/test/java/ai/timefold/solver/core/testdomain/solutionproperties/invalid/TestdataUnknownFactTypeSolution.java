@@ -38,6 +38,10 @@ public class TestdataUnknownFactTypeSolution extends TestdataObject {
         return valueList;
     }
 
+    public MyStringCollection getFacts() {
+        return facts;
+    }
+
     public static interface MyStringCollection extends Collection<String> {
 
     }

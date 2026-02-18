@@ -10,7 +10,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -21,8 +20,6 @@ public enum SolverProperty {
             value -> EnvironmentMode.valueOf(value.toString())),
     DAEMON("daemon", SolverProperties::setDaemon, value -> Boolean.valueOf(value.toString())),
     MOVE_THREAD_COUNT("move-thread-count", SolverProperties::setMoveThreadCount, Object::toString),
-    DOMAIN_ACCESS_TYPE("domain-access-type", SolverProperties::setDomainAccessType,
-            value -> DomainAccessType.valueOf(value.toString())),
     ENABLED_PREVIEW_FEATURES("enabled-preview-features", SolverProperties::setEnabledPreviewFeatures,
             value -> Arrays.stream(value.toString().split(",")).map(PreviewFeature::valueOf).toList()),
     NEARBY_DISTANCE_METER_CLASS("nearby-distance-meter-class", SolverProperties::setNearbyDistanceMeterClass,

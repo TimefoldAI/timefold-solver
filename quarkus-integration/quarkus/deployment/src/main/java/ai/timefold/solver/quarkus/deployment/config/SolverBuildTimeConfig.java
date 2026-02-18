@@ -3,7 +3,6 @@ package ai.timefold.solver.quarkus.deployment.config;
 import java.util.Optional;
 import java.util.Set;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
@@ -26,14 +25,6 @@ public interface SolverBuildTimeConfig {
     // Build time - classes in the SolverConfig are visited by SolverConfig.visitReferencedClasses
     // which generates the constructor of classes used by Quarkus
     Optional<String> solverConfigXml();
-
-    /**
-     * Determines how to access the fields and methods of domain classes.
-     * Defaults to {@link DomainAccessType#GIZMO}.
-     */
-    // Build time - GIZMO classes are only generated if at least one solver
-    // has domain access type GIZMO
-    Optional<DomainAccessType> domainAccessType();
 
     /**
      * Enable the Nearby Selection quick configuration.

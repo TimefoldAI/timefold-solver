@@ -23,15 +23,13 @@ interface GizmoMemberHandler {
      * @param ignoreFinalChecks true if Quarkus will make the field non-final for us
      * @return never null
      */
-    static GizmoMemberHandler of(Class<?> declaringClass, String name, FieldDesc fieldDescriptor,
-            boolean ignoreFinalChecks) {
+    static GizmoMemberHandler of(Class<?> declaringClass, String name, FieldDesc fieldDescriptor, boolean ignoreFinalChecks) {
         try {
             Field field = declaringClass.getField(name);
             return new GizmoFieldHandler(declaringClass, fieldDescriptor,
-                    ignoreFinalChecks, ignoreFinalChecks || !Modifier.isFinal(field.getModifiers()),
-                    Modifier.isPublic(field.getModifiers()));
+                    ignoreFinalChecks || !Modifier.isFinal(field.getModifiers()));
         } catch (NoSuchFieldException e) { // The field is only used for its metadata and never actually called.
-            return new GizmoFieldHandler(declaringClass, fieldDescriptor, ignoreFinalChecks, false, false);
+            return new GizmoFieldHandler(declaringClass, fieldDescriptor, false);
         }
     }
 

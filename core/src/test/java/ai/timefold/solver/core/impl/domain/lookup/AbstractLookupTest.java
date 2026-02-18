@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.domain.lookup;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 
@@ -23,7 +23,7 @@ abstract class AbstractLookupTest {
     protected LookUpStrategyResolver createLookupStrategyResolver(LookUpStrategyType lookUpStrategyType) {
         DescriptorPolicy descriptorPolicy = new DescriptorPolicy();
         descriptorPolicy.setMemberAccessorFactory(new MemberAccessorFactory());
-        descriptorPolicy.setDomainAccessType(DomainAccessType.REFLECTION);
+        descriptorPolicy.setDomainAccessType(DomainAccessType.FORCE_REFLECTION);
         return new LookUpStrategyResolver(descriptorPolicy, lookUpStrategyType);
     }
 }

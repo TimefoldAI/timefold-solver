@@ -6,17 +6,12 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingOnlyBaseAnnotatedSolution;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidCountEntityProvidingWithParameterEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidTypeEntityProvidingWithParameterEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidTypeEntityProvidingWithParameterSolution;
-import ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -47,16 +42,17 @@ class ReflectionMethodExtendedMemberAccessorTest {
         var member = new ReflectionMethodExtendedMemberAccessor(
                 TestdataEntityProvidingOnlyBaseAnnotatedChildEntity.class.getMethod("getValueList",
                         TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution.class));
-        assertMemberWithInheritance(member, TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution.class);
+        assertMemberWithInheritance(member, TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution.class,
+                "getValueList");
         var otherMember = new ReflectionMethodExtendedMemberAccessor(
                 TestdataEntityProvidingOnlyBaseAnnotatedChildEntity.class.getMethod("getOtherValueList",
                         TestdataEntityProvidingOnlyBaseAnnotatedSolution.class));
-        assertMemberWithInheritance(otherMember, TestdataEntityProvidingOnlyBaseAnnotatedSolution.class);
+        assertMemberWithInheritance(otherMember, TestdataEntityProvidingOnlyBaseAnnotatedSolution.class, "getOtherValueList");
     }
 
-    void assertMemberWithInheritance(ReflectionMethodExtendedMemberAccessor member, Class<?> solutionClass) {
+    void assertMemberWithInheritance(ReflectionMethodExtendedMemberAccessor member, Class<?> solutionClass, String memberName) {
 
-        assertThat(member.getName()).isEqualTo(member.getName());
+        assertThat(member.getName()).isEqualTo(memberName);
         assertThat(member.getType()).isEqualTo(List.class);
         assertThat(member.getAnnotation(ValueRangeProvider.class)).isNotNull();
         assertThat(member.getGetterMethodParameterType()).isEqualTo(solutionClass);
@@ -73,43 +69,18 @@ class ReflectionMethodExtendedMemberAccessorTest {
     }
 
     @Test
-    void invalidEntityReadMethodWithParameter() {
-        assertThatCode(TestdataInvalidTypeEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
-                .hasMessageContaining("The parameter type (%s)".formatted(TestdataSolution.class.getCanonicalName()))
-                .hasMessageContaining(
-                        "of the method (getValueRange) must match the solution (%s)."
-                                .formatted(TestdataInvalidTypeEntityProvidingWithParameterSolution.class.getCanonicalName()));
-        assertThatCode(TestdataInvalidCountEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
-                .hasMessageContaining("The readMethod")
-                .hasMessageContaining("with a @%s annotation must have only one parameter"
-                        .formatted(ValueRangeProvider.class.getSimpleName()));
-    }
-
-    @Test
-    void invalidSolutionReadMethodWithParameter() {
-        assertThatCode(TestdataInvalidParameterSolution::buildSolutionDescriptor)
-                .hasMessageContainingAll(
-                        "The readMethod (public java.util.List %s.getValueList(%s))"
-                                .formatted(TestdataInvalidParameterSolution.class.getCanonicalName(),
-                                        TestdataInvalidParameterSolution.class.getCanonicalName()))
-                .hasMessageContainingAll(
-                        " with a @%s annotation must not have any parameters ([class %s])."
-                                .formatted(ValueRangeProvider.class.getSimpleName(),
-                                        TestdataInvalidParameterSolution.class.getCanonicalName()));
-    }
-
-    @Test
     void forbiddenEntityReadWithoutParameter() {
         assertThatCode(() -> new ReflectionMethodExtendedMemberAccessor(
                 TestdataEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
-                        TestdataEntityProvidingWithParameterSolution.class),
-                true).executeGetter(new TestdataEntityProvidingWithParameterEntity()))
+                        TestdataEntityProvidingWithParameterSolution.class))
+                .executeGetter(
+                        new TestdataEntityProvidingWithParameterEntity()))
                 .hasMessageContainingAll(
                         "Impossible state: the method executeGetter(Object) without parameter is not supported.");
         assertThatCode(() -> new ReflectionMethodExtendedMemberAccessor(
                 TestdataEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
-                        TestdataEntityProvidingWithParameterSolution.class),
-                true).getGetterFunction())
+                        TestdataEntityProvidingWithParameterSolution.class))
+                .getGetterFunction())
                 .hasMessageContainingAll(
                         "Impossible state: the method getGetterFunction() is not supported.");
     }

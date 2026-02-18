@@ -11,7 +11,7 @@ import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
@@ -71,7 +71,7 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
         }
         this.calculator =
                 entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory().buildAndCacheMemberAccessor(method,
-                        MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER,
+                        MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER,
                         ShadowSources.class,
                         descriptorPolicy.getDomainAccessType());
 
@@ -134,7 +134,7 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                 alignmentKey);
         if (alignmentKeyMember != null) {
             alignmentKeyMap = memberAccessorFactory.buildAndCacheMemberAccessor(alignmentKeyMember,
-                    MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD, ShadowSources.class,
+                    MemberAccessorType.FIELD_OR_GETTER_METHOD, ShadowSources.class,
                     descriptorPolicy.getDomainAccessType())::executeGetter;
         } else {
             alignmentKeyMap = null;

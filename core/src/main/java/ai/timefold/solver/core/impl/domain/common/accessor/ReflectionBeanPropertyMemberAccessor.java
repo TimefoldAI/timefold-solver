@@ -5,10 +5,8 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.Objects;
-import java.util.function.IntPredicate;
 
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 
@@ -34,7 +32,7 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
         this.annotatedElement = annotatedElement;
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         try {
-            getterMethod.setAccessible(true);
+            this.getterMethod.setAccessible(true);
             this.getherMethodHandle = lookup.unreflect(getterMethod)
                     .asFixedArity();
         } catch (IllegalAccessException e) {
@@ -44,10 +42,6 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
                     .formatted(getterMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
         }
         Class<?> declaringClass = getterMethod.getDeclaringClass();
-        if (!ReflectionHelper.isGetterMethod(getterMethod)) {
-            throw new IllegalArgumentException("The getterMethod (%s) is not a valid getter."
-                    .formatted(getterMethod));
-        }
         propertyType = getterMethod.getReturnType();
         propertyName = ReflectionHelper.getGetterPropertyName(getterMethod);
         if (getterOnly) {
@@ -55,25 +49,8 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
             setterMethodHandle = null;
         } else {
             setterMethod = ReflectionHelper.getDeclaredSetterMethod(declaringClass, getterMethod.getReturnType(), propertyName);
-            if (setterMethod == null) {
-                throw new IllegalArgumentException("The getterMethod (%s) does not have a matching setterMethod on class (%s)."
-                        .formatted(getterMethod.getName(), declaringClass.getCanonicalName()));
-            }
-            var getterAccess = AccessModifier.forMethod(getterMethod);
-            var setterAccess = AccessModifier.forMethod(setterMethod);
-            if (getterAccess != AccessModifier.PUBLIC) {
-                throw new IllegalArgumentException(
-                        "The getterMethod (%s) on class (%s) is not public, having access modifier (%s) instead."
-                                .formatted(getterMethod.getName(), declaringClass.getCanonicalName(), getterAccess));
-            }
-            if (getterAccess != setterAccess) {
-                throw new IllegalArgumentException(
-                        "The getterMethod (%s) has access modifier (%s) which does not match the setterMethod (%s) access modifier (%s) on class (%s)."
-                                .formatted(getterMethod.getName(), getterAccess, setterMethod.getName(), setterAccess,
-                                        declaringClass.getCanonicalName()));
-            }
             try {
-                setterMethod.setAccessible(true);
+                this.setterMethod.setAccessible(true);
                 this.setterMethodHandle = lookup.unreflect(setterMethod)
                         .asFixedArity();
             } catch (IllegalAccessException e) {
@@ -82,36 +59,6 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
                         %s"""
                         .formatted(setterMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
             }
-        }
-    }
-
-    private enum AccessModifier {
-        PUBLIC("public", Modifier::isPublic),
-        PROTECTED("protected", Modifier::isProtected),
-        PACKAGE_PRIVATE("package-private", modifier -> false),
-        PRIVATE("private", Modifier::isPrivate);
-
-        final String name;
-        final IntPredicate predicate;
-
-        AccessModifier(String name, IntPredicate predicate) {
-            this.name = name;
-            this.predicate = predicate;
-        }
-
-        public static AccessModifier forMethod(Method method) {
-            var modifiers = method.getModifiers();
-            for (var accessModifier : AccessModifier.values()) {
-                if (accessModifier.predicate.test(modifiers)) {
-                    return accessModifier;
-                }
-            }
-            return PACKAGE_PRIVATE;
-        }
-
-        @Override
-        public String toString() {
-            return name;
         }
     }
 

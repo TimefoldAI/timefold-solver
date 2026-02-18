@@ -23,12 +23,8 @@ public class TimefoldSolverAotContribution implements BeanFactoryInitializationA
      */
     private static void registerType(ReflectionHints reflectionHints, Class<?> type) {
         reflectionHints.registerType(type,
-                MemberCategory.INTROSPECT_PUBLIC_METHODS,
-                MemberCategory.INTROSPECT_DECLARED_METHODS,
-                MemberCategory.INTROSPECT_DECLARED_CONSTRUCTORS,
-                MemberCategory.INTROSPECT_PUBLIC_CONSTRUCTORS,
-                MemberCategory.PUBLIC_FIELDS,
-                MemberCategory.DECLARED_FIELDS,
+                MemberCategory.ACCESS_PUBLIC_FIELDS,
+                MemberCategory.ACCESS_DECLARED_FIELDS,
                 MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                 MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS,
                 MemberCategory.INVOKE_DECLARED_METHODS,

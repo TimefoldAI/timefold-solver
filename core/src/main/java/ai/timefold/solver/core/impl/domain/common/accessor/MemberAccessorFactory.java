@@ -10,15 +10,22 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.AccessorInfo;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoClassLoader;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberAccessorFactory;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@NullMarked
 public final class MemberAccessorFactory {
 
+    static final Logger LOGGER = LoggerFactory.getLogger(MemberAccessorFactory.class);
     // exists only so that the various member accessors can share the same text in their exception messages
     static final String CLASSLOADER_NUDGE_MESSAGE =
             "Maybe add getClass().getClassLoader() as a parameter to the %s.create...() method call."
@@ -30,10 +37,10 @@ public final class MemberAccessorFactory {
      * @param member never null, method or field to access
      * @param memberAccessorType never null
      * @param domainAccessType never null
-     * @param classLoader null or {@link GizmoClassLoader} if domainAccessType is {@link DomainAccessType#GIZMO}.
+     * @param classLoader null or {@link GizmoClassLoader} if domainAccessType is {@link DomainAccessType#FORCE_GIZMO}.
      * @return never null, new instance of the member accessor
      */
-    public static MemberAccessor buildMemberAccessor(Member member, MemberAccessorType memberAccessorType,
+    private static MemberAccessor buildMemberAccessor(Member member, MemberAccessorType memberAccessorType,
             DomainAccessType domainAccessType, ClassLoader classLoader) {
         return buildMemberAccessor(member, memberAccessorType, null, domainAccessType, classLoader);
     }
@@ -45,28 +52,31 @@ public final class MemberAccessorFactory {
      * @param memberAccessorType never null
      * @param annotationClass the annotation the member was annotated with (used for error reporting)
      * @param domainAccessType never null
-     * @param classLoader null or {@link GizmoClassLoader} if domainAccessType is {@link DomainAccessType#GIZMO}.
+     * @param classLoader null or {@link GizmoClassLoader} if domainAccessType is {@link DomainAccessType#FORCE_GIZMO}.
      * @return never null, new instance of the member accessor
      */
-    public static MemberAccessor buildMemberAccessor(Member member, MemberAccessorType memberAccessorType,
-            Class<? extends Annotation> annotationClass, DomainAccessType domainAccessType, ClassLoader classLoader) {
+    static MemberAccessor buildMemberAccessor(Member member, MemberAccessorType memberAccessorType,
+            @Nullable Class<? extends Annotation> annotationClass, DomainAccessType domainAccessType, ClassLoader classLoader) {
+        MemberAccessorValidator.verifyIsValidMember(annotationClass, member, memberAccessorType);
         return switch (domainAccessType) {
-            case GIZMO -> GizmoMemberAccessorFactory.buildGizmoMemberAccessor(member, annotationClass,
-                    AccessorInfo.of(memberAccessorType != MemberAccessorType.VOID_METHOD,
-                            memberAccessorType == MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER),
+            case AUTO -> throw new IllegalStateException(
+                    "Impossible state: called with %s (AUTO) instead of a resolved domain access type"
+                            .formatted(DomainAccessType.class.getSimpleName()));
+            case FORCE_GIZMO -> GizmoMemberAccessorFactory.buildGizmoMemberAccessor(member, annotationClass,
+                    AccessorInfo.of(memberAccessorType),
                     (GizmoClassLoader) Objects.requireNonNull(classLoader));
-            case REFLECTION -> buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass);
+            case FORCE_REFLECTION -> buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass);
         };
     }
 
     private static MemberAccessor buildReflectiveMemberAccessor(Member member, MemberAccessorType memberAccessorType,
-            Class<? extends Annotation> annotationClass) {
+            @Nullable Class<? extends Annotation> annotationClass) {
         return buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass,
                 (AnnotatedElement) member);
     }
 
     private static MemberAccessor buildReflectiveMemberAccessor(Member member, MemberAccessorType memberAccessorType,
-            Class<? extends Annotation> annotationClass, AnnotatedElement annotatedElement) {
+            @Nullable Class<? extends Annotation> annotationClass, AnnotatedElement annotatedElement) {
         var messagePrefix = (annotationClass == null) ? "The" : "The @%s annotated".formatted(annotationClass.getSimpleName());
         if (member instanceof Field field) {
             var getter = ReflectionHelper.getGetterMethod(field.getDeclaringClass(), field.getName());
@@ -126,7 +136,7 @@ public final class MemberAccessorFactory {
                     memberAccessor = new ReflectionBeanPropertyMemberAccessor(method, annotatedElement, getterOnly);
                     break;
                 case VOID_METHOD:
-                    memberAccessor = new ReflectionMethodMemberAccessor(method, false, false);
+                    memberAccessor = new ReflectionMethodMemberAccessor(method);
                     break;
                 default:
                     throw new IllegalStateException("The memberAccessorType (%s) is not implemented."
@@ -154,6 +164,7 @@ public final class MemberAccessorFactory {
 
     private final Map<String, MemberAccessor> memberAccessorCache;
     private final GizmoClassLoader gizmoClassLoader = new GizmoClassLoader();
+    private final boolean isGizmoSupported;
 
     public MemberAccessorFactory() {
         this(null);
@@ -162,12 +173,19 @@ public final class MemberAccessorFactory {
     /**
      * Prefills the member accessor cache.
      *
-     * @param memberAccessorMap key is the fully qualified member name
+     * @param memberAccessorMap key is the fully qualified member name, value is a pregenerated {@link MemberAccessor}.
+     *        Used by Quarkus since the {@link MemberAccessor} are generated at build time.
+     *        If null, it is treated as an empty map.
      */
-    public MemberAccessorFactory(Map<String, MemberAccessor> memberAccessorMap) {
+    public MemberAccessorFactory(@Nullable Map<String, MemberAccessor> memberAccessorMap) {
         // The MemberAccessorFactory may be accessed, and this cache both read and updated, by multiple threads.
         this.memberAccessorCache =
                 memberAccessorMap == null ? new ConcurrentHashMap<>() : new ConcurrentHashMap<>(memberAccessorMap);
+        // If the memberAccessorMap is not empty, we are in Quarkus using pregenerated member accessors
+        this.isGizmoSupported =
+                (memberAccessorMap != null && !memberAccessorMap.isEmpty()) || gizmoClassLoader.isGizmoSupported();
+        LOGGER.trace("Using domain access type {} for member accessors.",
+                isGizmoSupported ? DomainAccessType.FORCE_GIZMO : DomainAccessType.FORCE_REFLECTION);
     }
 
     /**
@@ -180,10 +198,16 @@ public final class MemberAccessorFactory {
      * @return never null, new {@link MemberAccessor} instance unless already found in memberAccessorMap
      */
     public MemberAccessor buildAndCacheMemberAccessor(Member member, MemberAccessorType memberAccessorType,
-            Class<? extends Annotation> annotationClass, DomainAccessType domainAccessType) {
+            @Nullable Class<? extends Annotation> annotationClass, DomainAccessType domainAccessType) {
         String generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(member);
+        if (domainAccessType == DomainAccessType.AUTO) {
+            domainAccessType = isGizmoSupported ? DomainAccessType.FORCE_GIZMO : DomainAccessType.FORCE_REFLECTION;
+        }
+
+        var finalDomainAccessType = domainAccessType;
         return memberAccessorCache.computeIfAbsent(generatedClassName,
-                k -> MemberAccessorFactory.buildMemberAccessor(member, memberAccessorType, annotationClass, domainAccessType,
+                k -> MemberAccessorFactory.buildMemberAccessor(member, memberAccessorType, annotationClass,
+                        finalDomainAccessType,
                         gizmoClassLoader));
     }
 
@@ -198,33 +222,18 @@ public final class MemberAccessorFactory {
     public MemberAccessor buildAndCacheMemberAccessor(Member member, MemberAccessorType memberAccessorType,
             DomainAccessType domainAccessType) {
         String generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(member);
+        if (domainAccessType == DomainAccessType.AUTO) {
+            domainAccessType = isGizmoSupported ? DomainAccessType.FORCE_GIZMO : DomainAccessType.FORCE_REFLECTION;
+        }
+
+        var finalDomainAccessType = domainAccessType;
         return memberAccessorCache.computeIfAbsent(generatedClassName,
-                k -> MemberAccessorFactory.buildMemberAccessor(member, memberAccessorType, domainAccessType, gizmoClassLoader));
+                k -> MemberAccessorFactory.buildMemberAccessor(member, memberAccessorType, finalDomainAccessType,
+                        gizmoClassLoader));
     }
 
     public GizmoClassLoader getGizmoClassLoader() {
         return gizmoClassLoader;
     }
 
-    public enum MemberAccessorType {
-        FIELD_OR_READ_METHOD,
-        FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER,
-        FIELD_OR_GETTER_METHOD,
-        FIELD_OR_GETTER_METHOD_WITH_SETTER(true),
-        VOID_METHOD;
-
-        private final boolean setterRequired;
-
-        MemberAccessorType() {
-            setterRequired = false;
-        }
-
-        MemberAccessorType(boolean setterRequired) {
-            this.setterRequired = setterRequired;
-        }
-
-        public boolean isSetterRequired() {
-            return setterRequired;
-        }
-    }
 }

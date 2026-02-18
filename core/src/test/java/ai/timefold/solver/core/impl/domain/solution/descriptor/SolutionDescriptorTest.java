@@ -81,7 +81,7 @@ class SolutionDescriptorTest {
 
     @Test
     void problemFactCollectionPropertyWithArgument() {
-        assertThatIllegalStateException().isThrownBy(
+        assertThatIllegalArgumentException().isThrownBy(
                 TestdataProblemFactCollectionPropertyWithArgumentSolution::buildSolutionDescriptor);
     }
 

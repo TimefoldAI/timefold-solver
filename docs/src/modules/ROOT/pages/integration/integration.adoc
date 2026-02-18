@@ -289,8 +289,8 @@ include::config-properties.adoc[]
 The Quarkus integration allows the injection of several managed resources, including `SolverConfig`, `SolverFactory`,
 `SolverManager`, `SolutionManager`, `ConstraintVerifier` and `ConstraintMetaModel`.
 
-The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath. Therefore, Domain entities
-(solution, entities, and constraint classes) and customized properties (`spent-limit`, `domain-access-type`, etc.) for the
+The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath.
+Therefore, Domain entities (solution, entities, and constraint classes) and customized properties (`spent-limit`, etc.) for the
 planning problem are identified and loaded into the solver configuration.
 
 The available resouses can be injected as follows:
@@ -647,8 +647,7 @@ include::config-properties.adoc[]
 The Spring Boot integration allows the injection of several managed resources, including `SolverConfig`, `SolverFactory`,
 `SolverManager`, `SolutionManager`,  `ConstraintMetaModel` and `ConstraintVerifier`.
 
-The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath. Therefore, Domain entities
-(solution, entities, and constraint classes) and customized properties (`spent-limit`, `domain-access-type`, etc.) for the
+The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath. Therefore, Domain entities (solution, entities, and constraint classes) and customized properties (`spent-limit`, etc.) for the
 planning problem are identified and loaded into the solver configuration.
 
 The available resouses can be injected as follows:

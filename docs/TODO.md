@@ -27,8 +27,9 @@
 - [ ] BestSolutionChangedEvent now an interface. (All constructors were deprecated anyway.)
 - [ ] ProblemFactChange -> ProblemChange, migration script?
 - [ ] PinningFilter is gone, so is strengths and difficulties, and nullable.
-- [ ] PlanningId moves from domain.lookup to domain.entity.
+- [ ] PlanningId moves from domain.lookup to domain.common.
 - [ ] domain.lookup package is gone, so is lookup from PlanningSolution.
 - [ ] lookups no longer accept null values.
+- [ ] `DomainAccessType` is gone, code uses GIZMO when possible
 
 Remove this file when done.
