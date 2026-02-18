@@ -17,10 +17,10 @@ import ai.timefold.solver.quarkus.it.reflection.domain.TestdataReflectionSolutio
 @Path("/timefold/test")
 public class TimefoldTestResource {
 
-    private final SolverManager<TestdataReflectionSolution, Long> solverManager;
+    private final SolverManager<TestdataReflectionSolution> solverManager;
 
     @Inject
-    public TimefoldTestResource(SolverManager<TestdataReflectionSolution, Long> solverManager) {
+    public TimefoldTestResource(SolverManager<TestdataReflectionSolution> solverManager) {
         this.solverManager = solverManager;
     }
 
@@ -34,7 +34,7 @@ public class TimefoldTestResource {
                 new TestdataReflectionEntity()));
         planningProblem.setFieldValueList(Arrays.asList("a", "bb", "ccc"));
         planningProblem.setMethodValueList(Arrays.asList("a", "bb", "ccc", "ddd"));
-        SolverJob<TestdataReflectionSolution, Long> solverJob = solverManager.solve(1L, planningProblem);
+        SolverJob<TestdataReflectionSolution> solverJob = solverManager.solve(1L, planningProblem);
         try {
             return solverJob.getFinalBestSolution().getScore().toString();
         } catch (InterruptedException e) {

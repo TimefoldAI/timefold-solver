@@ -35,7 +35,7 @@ public class UnavailableTimefoldBeanProvider {
     @DefaultBean
     @Dependent
     @Produces
-    <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManager() {
+    <Solution_, ProblemId_> SolverManager<Solution_> solverManager() {
         throw createException(SolverManager.class);
     }
 

@@ -41,7 +41,7 @@ class TimefoldProcessorSolveTest {
     @Inject
     SolverFactory<TestdataQuarkusSolution> solverFactory;
     @Inject
-    SolverManager<TestdataQuarkusSolution, Long> solverManager;
+    SolverManager<TestdataQuarkusSolution> solverManager;
     @Inject
     SolutionManager<TestdataQuarkusSolution, SimpleScore> solutionManager;
 
@@ -52,7 +52,7 @@ class TimefoldProcessorSolveTest {
                 ((DefaultSolutionManager<TestdataQuarkusSolution, SimpleScore>) solutionManager).getScoreDirectorFactory());
         assertNotNull(solverManager);
         // There is only one SolverFactory instance
-        assertSame(solverFactory, ((DefaultSolverManager<TestdataQuarkusSolution, Long>) solverManager).getSolverFactory());
+        assertSame(solverFactory, ((DefaultSolverManager<TestdataQuarkusSolution>) solverManager).getSolverFactory());
         assertNotNull(solutionManager);
     }
 
@@ -65,7 +65,7 @@ class TimefoldProcessorSolveTest {
         problem.setEntityList(IntStream.range(1, 3)
                 .mapToObj(i -> new TestdataQuarkusEntity())
                 .collect(Collectors.toList()));
-        SolverJob<TestdataQuarkusSolution, Long> solverJob = solverManager.solve(1L, problem);
+        SolverJob<TestdataQuarkusSolution> solverJob = solverManager.solve(1L, problem);
         TestdataQuarkusSolution solution = solverJob.getFinalBestSolution();
         assertNotNull(solution);
         assertTrue(solution.getScore().score() >= 0);

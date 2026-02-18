@@ -77,7 +77,7 @@ class TimefoldProcessorSolverUnusedPropertiesTest {
 
     @Inject
     @Named("solver1")
-    SolverManager<TestdataQuarkusSolution, ?> solverManager;
+    SolverManager<TestdataQuarkusSolution> solverManager;
 
     @Test
     void solve() {

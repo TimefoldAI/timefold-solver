@@ -2,7 +2,6 @@ package ai.timefold.solver.core.api.solver;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -32,10 +31,9 @@ import org.jspecify.annotations.Nullable;
  * To learn more about problem change semantics, please refer to the {@link ProblemChange} Javadoc.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
- * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}.
  */
 @NullMarked
-public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
+public interface SolverManager<Solution_> extends AutoCloseable {
 
     // ************************************************************************
     // Static creation methods: SolverConfig and SolverFactory
@@ -48,9 +46,8 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * so they reuse the same {@link SolverFactory} instance.
      *
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
-     * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}
      */
-    static <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> create(SolverConfig solverConfig) {
+    static <Solution_> SolverManager<Solution_> create(SolverConfig solverConfig) {
         return create(solverConfig, new SolverManagerConfig());
     }
 
@@ -61,10 +58,8 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * so they reuse the same {@link SolverFactory} instance.
      *
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
-     * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}.
      */
-    static <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> create(SolverConfig solverConfig,
-            SolverManagerConfig solverManagerConfig) {
+    static <Solution_> SolverManager<Solution_> create(SolverConfig solverConfig, SolverManagerConfig solverManagerConfig) {
         return create(SolverFactory.create(solverConfig), solverManagerConfig);
     }
 
@@ -72,9 +67,8 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * Use a {@link SolverFactory} to build a {@link SolverManager}.
      *
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
-     * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}
      */
-    static <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> create(SolverFactory<Solution_> solverFactory) {
+    static <Solution_> SolverManager<Solution_> create(SolverFactory<Solution_> solverFactory) {
         return create(solverFactory, new SolverManagerConfig());
     }
 
@@ -82,9 +76,8 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * Use a {@link SolverFactory} and a {@link SolverManagerConfig} to build a {@link SolverManager}.
      *
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
-     * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}.
      */
-    static <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> create(SolverFactory<Solution_> solverFactory,
+    static <Solution_> SolverManager<Solution_> create(SolverFactory<Solution_> solverFactory,
             SolverManagerConfig solverManagerConfig) {
         return new DefaultSolverManager<>(solverFactory, solverManagerConfig);
     }
@@ -97,7 +90,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * Creates a Builder that allows to customize and submit a planning problem to solve.
      *
      */
-    SolverJobBuilder<Solution_, ProblemId_> solveBuilder();
+    SolverJobBuilder<Solution_> solveBuilder();
 
     // ************************************************************************
     // Interface methods
@@ -120,11 +113,8 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      *        Use this problemId to {@link #terminateEarly(Object) terminate} the solver early,
      * @param problem a {@link PlanningSolution} usually with uninitialized planning variables
      */
-    default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId, Solution_ problem) {
-        return solveBuilder()
-                .withProblemId(problemId)
-                .withProblem(problem)
-                .run();
+    default SolverJob<Solution_> solve(Object problemId, Solution_ problem) {
+        return solveBuilder().withProblemId(problemId).withProblem(problem).run();
     }
 
     /**
@@ -136,11 +126,9 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param problem a {@link PlanningSolution} usually with uninitialized planning variables
      * @param finalBestSolutionConsumer called only once, at the end, on a consumer thread
      */
-    default SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId, Solution_ problem,
+    default SolverJob<Solution_> solve(Object problemId, Solution_ problem,
             @Nullable Consumer<? super Solution_> finalBestSolutionConsumer) {
-        SolverJobBuilder<Solution_, ProblemId_> builder = solveBuilder()
-                .withProblemId(problemId)
-                .withProblem(problem);
+        var builder = solveBuilder().withProblemId(problemId).withProblem(problem);
         if (finalBestSolutionConsumer != null) {
             builder.withFinalBestSolutionEventConsumer(event -> finalBestSolutionConsumer.accept(event.solution()));
         }
@@ -165,13 +153,10 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param problem a {@link PlanningSolution} usually with uninitialized planning variables
      * @param bestSolutionConsumer called multiple times, on a consumer thread
      */
-    default SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId, Solution_ problem,
+    default SolverJob<Solution_> solveAndListen(Object problemId, Solution_ problem,
             Consumer<? super Solution_> bestSolutionConsumer) {
-        return solveBuilder()
-                .withProblemId(problemId)
-                .withProblem(problem)
-                .withBestSolutionEventConsumer(event -> bestSolutionConsumer.accept(event.solution()))
-                .run();
+        return solveBuilder().withProblemId(problemId).withProblem(problem)
+                .withBestSolutionEventConsumer(event -> bestSolutionConsumer.accept(event.solution())).run();
     }
 
     /**
@@ -184,13 +169,13 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param problemId a value given to {@link #solve(Object, Object, Consumer)}
      *        or {@link #solveAndListen(Object, Object, Consumer)}
      */
-    SolverStatus getSolverStatus(ProblemId_ problemId);
+    SolverStatus getSolverStatus(Object problemId);
 
     /**
      * As defined by {@link #addProblemChanges(Object, List)}, only with a single {@link ProblemChange}.
      * Prefer to submit multiple {@link ProblemChange}s at once to reduce the considerable overhead of multiple calls.
      */
-    default CompletableFuture<Void> addProblemChange(ProblemId_ problemId, ProblemChange<Solution_> problemChange) {
+    default CompletableFuture<Void> addProblemChange(Object problemId, ProblemChange<Solution_> problemChange) {
         return addProblemChanges(problemId, Collections.singletonList(problemChange));
     }
 
@@ -207,7 +192,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @throws IllegalStateException if there is no solver actively solving the problem associated with the problemId
      * @see ProblemChange Learn more about problem change semantics.
      */
-    CompletableFuture<Void> addProblemChanges(ProblemId_ problemId, List<ProblemChange<Solution_>> problemChangeList);
+    CompletableFuture<Void> addProblemChanges(Object problemId, List<ProblemChange<Solution_>> problemChangeList);
 
     /**
      * Terminates the solver or cancels the solver job if it hasn't (re)started yet.
@@ -225,7 +210,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
      * @param problemId a value given to {@link #solve(Object, Object, Consumer)}
      *        or {@link #solveAndListen(Object, Object, Consumer)}
      */
-    void terminateEarly(ProblemId_ problemId);
+    void terminateEarly(Object problemId);
 
     /**
      * Terminates all solvers, cancels all solver jobs that haven't (re)started yet

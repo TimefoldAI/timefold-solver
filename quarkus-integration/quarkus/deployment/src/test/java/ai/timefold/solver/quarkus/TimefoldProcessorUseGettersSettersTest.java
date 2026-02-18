@@ -32,7 +32,7 @@ class TimefoldProcessorUseGettersSettersTest {
                             TestdataQuarkusUseGetterSetterConstraintProvider.class));
 
     @Inject
-    SolverManager<TestdataQuarkusUseGetterSetterSolution, Long> solverManager;
+    SolverManager<TestdataQuarkusUseGetterSetterSolution> solverManager;
 
     @Test
     void solve() throws ExecutionException, InterruptedException {

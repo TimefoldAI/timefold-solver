@@ -3,7 +3,6 @@ package ai.timefold.solver.core.api.solver;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -11,22 +10,21 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Represents a {@link PlanningSolution problem} that has been submitted to solve on the {@link SolverManager}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
- * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}.
  */
-public interface SolverJob<Solution_, ProblemId_> {
+@NullMarked
+public interface SolverJob<Solution_> {
 
     /**
      * @return a value given to {@link SolverManager#solve(Object, Object, Consumer)}
      *         or {@link SolverManager#solveAndListen(Object, Object, Consumer)}
      */
-    @NonNull
-    ProblemId_ getProblemId();
+    Object getProblemId();
 
     /**
      * Returns whether the {@link Solver} is scheduled to solve, actively solving or not.
@@ -34,15 +32,13 @@ public interface SolverJob<Solution_, ProblemId_> {
      * Returns {@link SolverStatus#NOT_SOLVING} if the solver already terminated.
      *
      */
-    @NonNull
     SolverStatus getSolverStatus();
 
     /**
      * As defined by {@link #addProblemChanges(List)}, only for a single problem change.
      * Prefer to submit multiple {@link ProblemChange}s at once to reduce the considerable overhead of multiple calls.
      */
-    @NonNull
-    default CompletableFuture<Void> addProblemChange(@NonNull ProblemChange<Solution_> problemChange) {
+    default CompletableFuture<Void> addProblemChange(ProblemChange<Solution_> problemChange) {
         return addProblemChanges(Collections.singletonList(problemChange));
     }
 
@@ -56,8 +52,7 @@ public interface SolverJob<Solution_, ProblemId_> {
      *         state
      * @see ProblemChange Learn more about problem change semantics.
      */
-    @NonNull
-    CompletableFuture<Void> addProblemChanges(@NonNull List<ProblemChange<Solution_>> problemChangeList);
+    CompletableFuture<Void> addProblemChanges(List<ProblemChange<Solution_>> problemChangeList);
 
     /**
      * Terminates the solver or cancels the solver job if it hasn't (re)started yet.
@@ -85,7 +80,6 @@ public interface SolverJob<Solution_, ProblemId_> {
      * @throws InterruptedException if the current thread was interrupted while waiting
      * @throws ExecutionException if the computation threw an exception
      */
-    @NonNull
     Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException;
 
     /**
@@ -96,7 +90,6 @@ public interface SolverJob<Solution_, ProblemId_> {
      *
      * @return the {@link Duration} spent solving since the last (re)start, at least 0
      */
-    @NonNull
     Duration getSolvingDuration();
 
     /**
@@ -124,7 +117,6 @@ public interface SolverJob<Solution_, ProblemId_> {
      * {@link SolverManager}.
      *
      */
-    @NonNull
     ProblemSizeStatistics getProblemSizeStatistics();
 
     /**

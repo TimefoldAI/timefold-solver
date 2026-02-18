@@ -27,10 +27,10 @@ import ai.timefold.solver.quarkus.it.domain.TestdataStringLengthShadowSolution;
 @Path("/timefold/test")
 public class TimefoldTestResource {
 
-    private final SolverManager<TestdataStringLengthShadowSolution, Long> solverManager;
+    private final SolverManager<TestdataStringLengthShadowSolution> solverManager;
 
     @Inject
-    public TimefoldTestResource(SolverManager<TestdataStringLengthShadowSolution, Long> solverManager) {
+    public TimefoldTestResource(SolverManager<TestdataStringLengthShadowSolution> solverManager) {
         this.solverManager = solverManager;
     }
 
@@ -72,7 +72,7 @@ public class TimefoldTestResource {
                         new SolverConfigOverride<TestdataStringLengthShadowSolution>()
                                 .withTerminationConfig(new TerminationConfig()
                                         .withSpentLimit(Duration.ofSeconds(seconds))));
-        var solverJob = (DefaultSolverJob<TestdataStringLengthShadowSolution, Long>) solverJobBuilder.run();
+        var solverJob = (DefaultSolverJob<TestdataStringLengthShadowSolution>) solverJobBuilder.run();
         SolverScope<TestdataStringLengthShadowSolution> customScope = new SolverScope<>() {
             @Override
             public long calculateTimeMillisSpentUpToNow() {

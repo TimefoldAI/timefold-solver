@@ -71,19 +71,16 @@ public class SolverManagerConfig extends AbstractConfig<SolverManagerConfig> {
     // Builder methods
     // ************************************************************************
 
-    public @NonNull Integer resolveParallelSolverCount() {
-        int availableProcessorCount = getAvailableProcessors();
-        Integer resolvedParallelSolverCount;
-        if (parallelSolverCount == null || parallelSolverCount.equals(PARALLEL_SOLVER_COUNT_AUTO)) {
-            resolvedParallelSolverCount = resolveParallelSolverCountAutomatically(availableProcessorCount);
-        } else {
-            resolvedParallelSolverCount = ConfigUtils.resolvePoolSize("parallelSolverCount",
-                    parallelSolverCount, PARALLEL_SOLVER_COUNT_AUTO);
-        }
+    public int resolveParallelSolverCount() {
+        var availableProcessorCount = getAvailableProcessors();
+        var resolvedParallelSolverCount =
+                (parallelSolverCount == null || parallelSolverCount.equals(PARALLEL_SOLVER_COUNT_AUTO))
+                        ? resolveParallelSolverCountAutomatically(availableProcessorCount)
+                        : ConfigUtils.resolvePoolSize("parallelSolverCount", parallelSolverCount, PARALLEL_SOLVER_COUNT_AUTO);
         if (resolvedParallelSolverCount < 1) {
-            throw new IllegalArgumentException("The parallelSolverCount (" + parallelSolverCount
-                    + ") resulted in a resolvedParallelSolverCount (" + resolvedParallelSolverCount
-                    + ") that is lower than 1.");
+            throw new IllegalArgumentException(
+                    "The parallelSolverCount (%s) resulted in a resolvedParallelSolverCount (%d) that is lower than 1."
+                            .formatted(parallelSolverCount, resolvedParallelSolverCount));
         }
         if (resolvedParallelSolverCount > availableProcessorCount) {
             LOGGER.warn("The resolvedParallelSolverCount ({}) is higher "

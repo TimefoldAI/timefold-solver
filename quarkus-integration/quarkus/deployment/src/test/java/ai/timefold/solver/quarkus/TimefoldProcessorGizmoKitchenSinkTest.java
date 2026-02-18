@@ -42,7 +42,7 @@ class TimefoldProcessorGizmoKitchenSinkTest {
     @Inject
     SolverFactory<TestDataKitchenSinkSolution> solverFactory;
     @Inject
-    SolverManager<TestDataKitchenSinkSolution, Long> solverManager;
+    SolverManager<TestDataKitchenSinkSolution> solverManager;
     @Inject
     SolutionManager<TestDataKitchenSinkSolution, SimpleScore> solutionManager;
 
@@ -54,7 +54,7 @@ class TimefoldProcessorGizmoKitchenSinkTest {
                 ((DefaultSolutionManager<?, ?>) solutionManager).getScoreDirectorFactory());
         assertNotNull(solverManager);
         // There is only one SolverFactory instance
-        assertSame(solverFactory, ((DefaultSolverManager<TestDataKitchenSinkSolution, Long>) solverManager).getSolverFactory());
+        assertSame(solverFactory, ((DefaultSolverManager<TestDataKitchenSinkSolution>) solverManager).getSolverFactory());
     }
 
     @Test
@@ -66,7 +66,7 @@ class TimefoldProcessorGizmoKitchenSinkTest {
                 Collections.emptyList(),
                 HardSoftScore.ZERO);
 
-        SolverJob<TestDataKitchenSinkSolution, Long> solverJob = solverManager.solve(1L, problem);
+        SolverJob<TestDataKitchenSinkSolution> solverJob = solverManager.solve(1L, problem);
         TestDataKitchenSinkSolution solution = solverJob.getFinalBestSolution();
         assertNotNull(solution);
         assertEquals(1, solution.getPlanningEntityProperty().testGetIntVariable());

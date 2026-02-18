@@ -68,7 +68,6 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.ParameterizedType;
 import org.jboss.jandex.Type;
-import org.jboss.jandex.TypeVariable;
 import org.jboss.logging.Logger;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -661,8 +660,7 @@ class TimefoldProcessor {
                                 .scope(Singleton.class)
                                 .addType(ParameterizedType.create(DotName.createSimple(SolverManager.class.getName()),
                                         Type.create(DotName.createSimple(value.getSolutionClass().getName()),
-                                                Type.Kind.CLASS),
-                                        TypeVariable.create(Object.class.getName())))
+                                                Type.Kind.CLASS)))
                                 .supplier(recorder.solverManager(key, value,
                                         GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
                                                 solverConfigBuildItem

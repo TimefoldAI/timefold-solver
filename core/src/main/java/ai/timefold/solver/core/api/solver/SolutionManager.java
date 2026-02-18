@@ -5,7 +5,6 @@ import static ai.timefold.solver.core.api.solver.SolutionUpdatePolicy.UPDATE_ALL
 
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -57,10 +56,9 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      *
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      * @param <Score_> the actual score type
-     * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}
      */
-    static <Solution_, Score_ extends Score<Score_>, ProblemId_> SolutionManager<Solution_, Score_>
-            create(SolverManager<Solution_, ProblemId_> solverManager) {
+    static <Solution_, Score_ extends Score<Score_>> SolutionManager<Solution_, Score_>
+            create(SolverManager<Solution_> solverManager) {
         return new DefaultSolutionManager<>(solverManager);
     }
 

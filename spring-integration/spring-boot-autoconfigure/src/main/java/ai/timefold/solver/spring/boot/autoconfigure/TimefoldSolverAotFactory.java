@@ -25,7 +25,7 @@ public class TimefoldSolverAotFactory implements EnvironmentAware {
         this.timefoldProperties = result.orElseGet(TimefoldProperties::new);
     }
 
-    public <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManagerSupplier(String solverConfigXml) {
+    public <Solution_, ProblemId_> SolverManager<Solution_> solverManagerSupplier(String solverConfigXml) {
         SolverFactory<Solution_> solverFactory = SolverFactory.create(solverConfigSupplier(solverConfigXml));
         SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
         SolverManagerProperties solverManagerProperties = timefoldProperties.getSolverManager();

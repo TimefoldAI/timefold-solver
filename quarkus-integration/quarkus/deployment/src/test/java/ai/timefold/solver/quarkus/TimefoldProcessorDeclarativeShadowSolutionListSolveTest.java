@@ -33,7 +33,7 @@ class TimefoldProcessorDeclarativeShadowSolutionListSolveTest {
                             TestdataQuarkusDeclarativeShadowVariableListValue.class,
                             TestdataQuarkusDeclarativeShadowVariableListConstraintProvider.class));
     @Inject
-    SolverManager<TestdataQuarkusDeclarativeShadowVariableListSolution, Long> solverManager;
+    SolverManager<TestdataQuarkusDeclarativeShadowVariableListSolution> solverManager;
 
     @Test
     void solve() throws ExecutionException, InterruptedException {

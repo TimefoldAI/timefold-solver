@@ -39,8 +39,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     private final DefaultSolverFactory<Solution_> solverFactory;
     private final ScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory;
 
-    public <ProblemId_> DefaultSolutionManager(SolverManager<Solution_, ProblemId_> solverManager) {
-        this(((DefaultSolverManager<Solution_, ProblemId_>) solverManager).getSolverFactory());
+    public DefaultSolutionManager(SolverManager<Solution_> solverManager) {
+        this(((DefaultSolverManager<Solution_>) solverManager).getSolverFactory());
     }
 
     public DefaultSolutionManager(SolverFactory<Solution_> solverFactory) {

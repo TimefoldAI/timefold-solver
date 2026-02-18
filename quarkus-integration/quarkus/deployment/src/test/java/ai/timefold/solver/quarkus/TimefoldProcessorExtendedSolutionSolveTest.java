@@ -42,7 +42,7 @@ class TimefoldProcessorExtendedSolutionSolveTest {
     @Inject
     SolverFactory<TestdataQuarkusSolution> solverFactory;
     @Inject
-    SolverManager<TestdataQuarkusSolution, Long> solverManager;
+    SolverManager<TestdataQuarkusSolution> solverManager;
     @Inject
     SolutionManager<TestdataQuarkusSolution, SimpleScore> solutionManager;
 
@@ -54,7 +54,7 @@ class TimefoldProcessorExtendedSolutionSolveTest {
                 ((DefaultSolutionManager<TestdataQuarkusSolution, SimpleScore>) solutionManager).getScoreDirectorFactory());
         assertNotNull(solverManager);
         // There is only one SolverFactory instance
-        assertSame(solverFactory, ((DefaultSolverManager<TestdataQuarkusSolution, Long>) solverManager).getSolverFactory());
+        assertSame(solverFactory, ((DefaultSolverManager<TestdataQuarkusSolution>) solverManager).getSolverFactory());
     }
 
     @Test

@@ -103,7 +103,7 @@ class TimefoldSolverSingleSolverAutoConfigurationTest {
                 .withClassLoader(allDefaultsFilteredClassLoader)
                 .withPropertyValues("timefold.solver.termination.best-score-limit=0")
                 .run(context -> {
-                    SolverManager<TestdataSpringSolution, Long> solverManager = context.getBean(SolverManager.class);
+                    SolverManager<TestdataSpringSolution> solverManager = context.getBean(SolverManager.class);
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
@@ -158,7 +158,7 @@ class TimefoldSolverSingleSolverAutoConfigurationTest {
                             .mapToObj(i -> new TestdataSpringEntity())
                             .toList());
                     var solverJob =
-                            (DefaultSolverJob<TestdataSpringSolution, Long>) solverManager.solveBuilder()
+                            (DefaultSolverJob<TestdataSpringSolution>) solverManager.solveBuilder()
                                     .withProblemId(1L)
                                     .withProblem(problem)
                                     .withConfigOverride(
@@ -191,7 +191,7 @@ class TimefoldSolverSingleSolverAutoConfigurationTest {
                 .withClassLoader(allDefaultsFilteredClassLoader)
                 .withPropertyValues("timefold.solver.termination.best-score-limit=0")
                 .run(context -> {
-                    SolverManager<TestdataSpringSolution, Long> solverManager = context.getBean(SolverManager.class);
+                    SolverManager<TestdataSpringSolution> solverManager = context.getBean(SolverManager.class);
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
@@ -213,7 +213,7 @@ class TimefoldSolverSingleSolverAutoConfigurationTest {
                 .withPropertyValues(
                         "timefold.solver.termination.best-score-limit=0")
                 .run(context -> {
-                    SolverManager<TestdataSpringSupplierVariableSolution, Long> solverManager =
+                    SolverManager<TestdataSpringSupplierVariableSolution> solverManager =
                             context.getBean(SolverManager.class);
                     var problem = new TestdataSpringSupplierVariableSolution();
                     problem.setValueList(List.of("a", "b"));

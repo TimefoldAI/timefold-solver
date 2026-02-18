@@ -41,7 +41,7 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
     public static class TimefoldTestResource {
 
         @Inject
-        SolverManager<TestdataStringLengthShadowSolution, Long> solverManager;
+        SolverManager<TestdataStringLengthShadowSolution> solverManager;
 
         @POST
         @Path("/solver-factory")
@@ -52,7 +52,7 @@ public class TimefoldDevUITest extends DevUIJsonRPCTest {
                     new TestdataStringLengthShadowEntity(),
                     new TestdataStringLengthShadowEntity()));
             planningProblem.setValueList(Arrays.asList("a", "bb", "ccc"));
-            SolverJob<TestdataStringLengthShadowSolution, Long> solverJob = solverManager.solve(1L, planningProblem);
+            SolverJob<TestdataStringLengthShadowSolution> solverJob = solverManager.solve(1L, planningProblem);
             try {
                 return solverJob.getFinalBestSolution().getScore().toString();
             } catch (InterruptedException e) {

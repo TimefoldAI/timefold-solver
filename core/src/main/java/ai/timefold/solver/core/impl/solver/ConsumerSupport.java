@@ -14,36 +14,38 @@ import ai.timefold.solver.core.api.solver.event.FirstInitializedSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.SolverJobStartedEvent;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     private final ProblemId_ problemId;
-    private final Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer;
+    private final @Nullable Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer;
     private final Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer;
     private final Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer;
-    private final Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer;
+    private final @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private final Semaphore activeConsumption = new Semaphore(1);
     private final Semaphore firstSolutionConsumption = new Semaphore(1);
     private final Semaphore startSolverJobConsumption = new Semaphore(1);
     private final BestSolutionHolder<Solution_> bestSolutionHolder;
     private final ExecutorService consumerExecutor = Executors.newSingleThreadExecutor();
-    private Solution_ firstInitializedSolution;
-    private Solution_ initialSolution;
+    private @Nullable Solution_ firstInitializedSolution;
+    private @Nullable Solution_ initialSolution;
 
-    public ConsumerSupport(ProblemId_ problemId,
-            Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer,
-            Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer,
-            Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer,
-            Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer,
+    public ConsumerSupport(ProblemId_ problemId, @Nullable Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer,
+            @Nullable Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer,
+            @Nullable Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer,
+            @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             BestSolutionHolder<Solution_> bestSolutionHolder) {
         this.problemId = problemId;
         this.bestSolutionConsumer = bestSolutionConsumer;
         this.finalBestSolutionConsumer = finalBestSolutionConsumer == null ? finalBestSolution -> {
         } : finalBestSolutionConsumer;
-        this.firstInitializedSolutionConsumer =
-                firstInitializedSolutionConsumer == null ? event -> {
-                } : firstInitializedSolutionConsumer;
+        this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer == null ? event -> {
+        } : firstInitializedSolutionConsumer;
         this.solverJobStartedConsumer = solverJobStartedConsumer;
         this.exceptionHandler = exceptionHandler;
         this.bestSolutionHolder = bestSolutionHolder;
@@ -77,9 +79,8 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         }
         // called on the Consumer thread
         this.firstInitializedSolution = firstInitializedSolution;
-        scheduleFirstInitializedSolutionConsumption(
-                solution -> firstInitializedSolutionConsumer
-                        .accept(new FirstInitializedSolutionEventImpl<>(solution, producerId, isTerminatedEarly)));
+        scheduleFirstInitializedSolutionConsumption(solution -> firstInitializedSolutionConsumer
+                .accept(new FirstInitializedSolutionEventImpl<>(solution, producerId, isTerminatedEarly)));
     }
 
     // Called on the consumer thread
@@ -152,14 +153,14 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
             BestSolutionContainingProblemChanges<Solution_> bestSolutionContainingProblemChanges = bestSolutionHolder.take();
             if (bestSolutionContainingProblemChanges != null) {
                 try {
-                    bestSolutionConsumer
-                            .accept(new NewBestSolutionEventImpl<>(bestSolutionContainingProblemChanges.getBestSolution(),
-                                    bestSolutionContainingProblemChanges.getProducerId()));
+                    if (bestSolutionConsumer != null) {
+                        bestSolutionConsumer
+                                .accept(new NewBestSolutionEventImpl<>(bestSolutionContainingProblemChanges.getBestSolution(),
+                                        bestSolutionContainingProblemChanges.getProducerId()));
+                    }
                     bestSolutionContainingProblemChanges.completeProblemChanges();
                 } catch (Throwable throwable) {
-                    if (exceptionHandler != null) {
-                        exceptionHandler.accept(problemId, throwable);
-                    }
+                    exceptionHandler.accept(problemId, throwable);
                     bestSolutionContainingProblemChanges.completeProblemChangesExceptionally(throwable);
                 } finally {
                     activeConsumption.release();
@@ -173,8 +174,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
      * Don't call without locking firstSolutionConsumption,
      * because the consumption may not be executed before the final best solution is executed.
      */
-    private void scheduleFirstInitializedSolutionConsumption(
-            Consumer<? super Solution_> solutionConsumer) {
+    private void scheduleFirstInitializedSolutionConsumption(Consumer<? super Solution_> solutionConsumer) {
         scheduleConsumption(firstSolutionConsumption, solutionConsumer, firstInitializedSolution);
     }
 
@@ -190,17 +190,15 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
                 initialSolution);
     }
 
-    private void scheduleConsumption(Semaphore semaphore, Consumer<? super Solution_> consumer,
-            Solution_ solution) {
+    private void scheduleConsumption(Semaphore semaphore, @Nullable Consumer<? super Solution_> consumer,
+            @Nullable Solution_ solution) {
         CompletableFuture.runAsync(() -> {
             try {
                 if (consumer != null && solution != null) {
                     consumer.accept(solution);
                 }
             } catch (Throwable throwable) {
-                if (exceptionHandler != null) {
-                    exceptionHandler.accept(problemId, throwable);
-                }
+                exceptionHandler.accept(problemId, throwable);
             } finally {
                 semaphore.release();
             }

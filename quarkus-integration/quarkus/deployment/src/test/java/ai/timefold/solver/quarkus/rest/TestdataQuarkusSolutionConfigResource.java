@@ -26,11 +26,11 @@ import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusSolution;
 public class TestdataQuarkusSolutionConfigResource {
     @Inject
     @Named("solver1")
-    SolverManager<TestdataQuarkusSolution, Long> solver1;
+    SolverManager<TestdataQuarkusSolution> solver1;
 
     @Inject
     @Named("solver2")
-    SolverManager<TestdataQuarkusSolution, Long> solver2;
+    SolverManager<TestdataQuarkusSolution> solver2;
 
     @GET
     @Path("/seconds-spent-limit")
@@ -48,13 +48,13 @@ public class TestdataQuarkusSolutionConfigResource {
         problem.setEntityList(List.of(new TestdataQuarkusEntity()));
 
         // Solver 1
-        DefaultSolverJob<TestdataQuarkusSolution, Long> jobSolver1 =
-                (DefaultSolverJob<TestdataQuarkusSolution, Long>) solver1.solve(1L, problem);
+        DefaultSolverJob<TestdataQuarkusSolution> jobSolver1 =
+                (DefaultSolverJob<TestdataQuarkusSolution>) solver1.solve(1L, problem);
         double gradientTimeSolver1 = jobSolver1.getSolverTermination().calculateSolverTimeGradient(solverScope);
 
         // Solver 2
-        DefaultSolverJob<TestdataQuarkusSolution, Long> jobSolver2 =
-                (DefaultSolverJob<TestdataQuarkusSolution, Long>) solver2.solve(2L, problem);
+        DefaultSolverJob<TestdataQuarkusSolution> jobSolver2 =
+                (DefaultSolverJob<TestdataQuarkusSolution>) solver2.solve(2L, problem);
         double gradientTimeSolver2 = jobSolver2.getSolverTermination().calculateSolverTimeGradient(solverScope);
 
         return String.format("secondsSpentLimit=%s;secondsSpentLimit=%s", decimalFormat.format(gradientTimeSolver1),

@@ -47,10 +47,6 @@ class TimefoldProcessorSolverResourcesTest {
                             TestdataQuarkusConstraintProvider.class));
 
     @Inject
-    @Named("solver1")
-    SolverManager<?, ?> solverManager1;
-
-    @Inject
     ConstraintMetaModel constraintMetaModel;
 
     @Inject
@@ -58,7 +54,8 @@ class TimefoldProcessorSolverResourcesTest {
     @Inject
     SolverFactory<TestdataQuarkusSolution> solver1Factory;
     @Inject
-    SolverManager<TestdataQuarkusSolution, String> solver1Manager;
+    @Named("solver1")
+    SolverManager<TestdataQuarkusSolution> solver1Manager;
 
     // SolutionManager per score type
     @Inject

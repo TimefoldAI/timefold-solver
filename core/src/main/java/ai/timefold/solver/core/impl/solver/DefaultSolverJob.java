@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.solver;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
@@ -36,46 +35,46 @@ import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
- * @param <ProblemId_> the ID type of submitted problem, such as {@link Long} or {@link UUID}.
  */
-public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<Solution_, ProblemId_>, Callable<Solution_> {
+@NullMarked
+public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, Callable<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolverJob.class);
 
-    private final DefaultSolverManager<Solution_, ProblemId_> solverManager;
+    private final DefaultSolverManager<Solution_> solverManager;
     private final DefaultSolver<Solution_> solver;
-    private final ProblemId_ problemId;
-    private final Function<? super ProblemId_, ? extends Solution_> problemFinder;
-    private final Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer;
-    private final Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer;
-    private final Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer;
-    private final Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer;
-    private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
+    private final Object problemId;
+    private final Function<? super Object, ? extends Solution_> problemFinder;
+    private final @Nullable Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer;
+    private final @Nullable Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer;
+    private final @Nullable Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer;
+    private final @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer;
+    private final BiConsumer<? super Object, ? super Throwable> exceptionHandler;
 
     private volatile SolverStatus solverStatus;
     private final CountDownLatch terminatedLatch;
     private final ReentrantLock solverStatusModifyingLock;
-    private Future<Solution_> finalBestSolutionFuture;
-    private ConsumerSupport<Solution_, ProblemId_> consumerSupport;
     private final AtomicBoolean terminatedEarly = new AtomicBoolean(false);
     private final BestSolutionHolder<Solution_> bestSolutionHolder = new BestSolutionHolder<>();
-    private final AtomicReference<ProblemSizeStatistics> temporaryProblemSizeStatistics = new AtomicReference<>();
+    private final AtomicReference<@Nullable ProblemSizeStatistics> temporaryProblemSizeStatistics = new AtomicReference<>();
 
-    public DefaultSolverJob(
-            DefaultSolverManager<Solution_, ProblemId_> solverManager,
-            Solver<Solution_> solver, ProblemId_ problemId,
-            Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer,
-            Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer,
-            Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer,
-            Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
+    private @Nullable Future<Solution_> finalBestSolutionFuture;
+    private @Nullable ConsumerSupport<Solution_, Object> consumerSupport;
+
+    public DefaultSolverJob(DefaultSolverManager<Solution_> solverManager, Solver<Solution_> solver, Object problemId,
+            Function<? super Object, ? extends Solution_> problemFinder,
+            @Nullable Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer,
+            @Nullable Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer,
+            @Nullable Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer,
+            @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer,
+            BiConsumer<? super Object, ? super Throwable> exceptionHandler) {
         this.solverManager = solverManager;
         this.problemId = problemId;
         if (!(solver instanceof DefaultSolver)) {
@@ -99,12 +98,12 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public @NonNull ProblemId_ getProblemId() {
+    public Object getProblemId() {
         return problemId;
     }
 
     @Override
-    public @NonNull SolverStatus getSolverStatus() {
+    public SolverStatus getSolverStatus() {
         return solverStatus;
     }
 
@@ -154,8 +153,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
 
     private void onBestSolutionChangedEvent(BestSolutionChangedEvent<Solution_> bestSolutionChangedEvent) {
         consumerSupport.consumeIntermediateBestSolution(bestSolutionChangedEvent.getNewBestSolution(),
-                bestSolutionChangedEvent.getProducerId(),
-                bestSolutionChangedEvent::isEveryProblemChangeProcessed);
+                bestSolutionChangedEvent.getProducerId(), bestSolutionChangedEvent::isEveryProblemChangeProcessed);
     }
 
     private void solvingTerminated() {
@@ -166,12 +164,12 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public @NonNull CompletableFuture<Void> addProblemChanges(@NonNull List<ProblemChange<Solution_>> problemChangeList) {
-        Objects.requireNonNull(problemChangeList, () -> "A problem change list for problem (%s) must not be null."
-                .formatted(problemId));
+    public CompletableFuture<Void> addProblemChanges(List<ProblemChange<Solution_>> problemChangeList) {
+        Objects.requireNonNull(problemChangeList,
+                () -> "A problem change list for problem (%s) must not be null.".formatted(problemId));
         if (problemChangeList.isEmpty()) {
-            throw new IllegalArgumentException("The problem change list for problem (%s) must not be empty."
-                    .formatted(problemId));
+            throw new IllegalArgumentException(
+                    "The problem change list for problem (%s) must not be empty.".formatted(problemId));
         } else if (solverStatus == SolverStatus.NOT_SOLVING) {
             throw new IllegalStateException("Cannot add the problem changes (%s) because the solver job (%s) is not solving."
                     .formatted(problemChangeList, solverStatus));
@@ -219,7 +217,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public @NonNull Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException {
+    public Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException {
         try {
             return finalBestSolutionFuture.get();
         } catch (CancellationException cancellationException) {
@@ -230,7 +228,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public @NonNull Duration getSolvingDuration() {
+    public Duration getSolvingDuration() {
         return Duration.ofMillis(solver.getTimeMillisSpent());
     }
 
@@ -255,7 +253,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public @NonNull ProblemSizeStatistics getProblemSizeStatistics() {
+    public ProblemSizeStatistics getProblemSizeStatistics() {
         var solverScope = solver.getSolverScope();
         var problemSizeStatistics = solverScope.getProblemSizeStatistics();
         if (problemSizeStatistics != null) {
@@ -329,9 +327,9 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
      */
     private final class FirstInitializedSolutionPhaseLifecycleListener extends PhaseLifecycleListenerAdapter<Solution_> {
 
-        private final ConsumerSupport<Solution_, ProblemId_> consumerSupport;
+        private final ConsumerSupport<Solution_, Object> consumerSupport;
 
-        public FirstInitializedSolutionPhaseLifecycleListener(ConsumerSupport<Solution_, ProblemId_> consumerSupport) {
+        public FirstInitializedSolutionPhaseLifecycleListener(ConsumerSupport<Solution_, Object> consumerSupport) {
             this.consumerSupport = consumerSupport;
         }
 
@@ -348,8 +346,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
                 // The Solver thread calls the method,
                 // but the consumption is done asynchronously by the Consumer thread.
                 // Only happens if the phase initializes the solution.
-                consumerSupport.consumeFirstInitializedSolution(phaseScope.getWorkingSolution(),
-                        phaseScope.getPhaseId(),
+                consumerSupport.consumeFirstInitializedSolution(phaseScope.getWorkingSolution(), phaseScope.getPhaseId(),
                         possiblyInitializingPhase.getTerminationStatus().early());
             }
         }
@@ -360,9 +357,9 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
      */
     private final class StartSolverJobPhaseLifecycleListener extends PhaseLifecycleListenerAdapter<Solution_> {
 
-        private final ConsumerSupport<Solution_, ProblemId_> consumerSupport;
+        private final ConsumerSupport<Solution_, Object> consumerSupport;
 
-        public StartSolverJobPhaseLifecycleListener(ConsumerSupport<Solution_, ProblemId_> consumerSupport) {
+        public StartSolverJobPhaseLifecycleListener(ConsumerSupport<Solution_, Object> consumerSupport) {
             this.consumerSupport = consumerSupport;
         }
 

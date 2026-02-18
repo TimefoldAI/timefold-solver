@@ -34,7 +34,7 @@ public class DefaultTimefoldBeanProvider {
 
     private ConstraintMetaModel constraintMetaModel;
 
-    private SolverManager<?, ?> solverManager;
+    private SolverManager<?> solverManager;
 
     private SolutionManager<?, ?> solutionManager;
 
@@ -64,12 +64,12 @@ public class DefaultTimefoldBeanProvider {
     @DefaultBean
     @Dependent
     @Produces
-    <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManager(SolverFactory<Solution_> solverFactory,
+    <Solution_> SolverManager<Solution_> solverManager(SolverFactory<Solution_> solverFactory,
             SolverManagerConfig solverManagerConfig) {
         if (solverManager == null) {
             solverManager = SolverManager.create(solverFactory, solverManagerConfig);
         }
-        return (SolverManager<Solution_, ProblemId_>) solverManager;
+        return (SolverManager<Solution_>) solverManager;
     }
 
     // Quarkus-ARC-Weld can't deal with enum pattern generics such as Score<S extends Score<S>>.

@@ -32,7 +32,7 @@ class TimefoldProcessorOnlyMultiConstructorTest {
                     ") must have a no-args constructor so it can be constructed by Timefold."));
 
     @Inject
-    SolverManager<PrivateNoArgsConstructorSolution, Long> solverManager;
+    SolverManager<PrivateNoArgsConstructorSolution> solverManager;
 
     @Test
     void canConstructBeansWithPrivateConstructors() {

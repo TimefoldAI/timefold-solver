@@ -42,7 +42,7 @@ class TimefoldProcessorShadowVariableSolveTest {
     @Inject
     SolverFactory<TestdataQuarkusShadowVariableSolution> solverFactory;
     @Inject
-    SolverManager<TestdataQuarkusShadowVariableSolution, Long> solverManager;
+    SolverManager<TestdataQuarkusShadowVariableSolution> solverManager;
     @Inject
     SolutionManager<TestdataQuarkusShadowVariableSolution, SimpleScore> solutionManager;
 
@@ -55,7 +55,7 @@ class TimefoldProcessorShadowVariableSolveTest {
         assertNotNull(solverManager);
         // There is only one SolverFactory instance
         assertSame(solverFactory,
-                ((DefaultSolverManager<TestdataQuarkusShadowVariableSolution, Long>) solverManager).getSolverFactory());
+                ((DefaultSolverManager<TestdataQuarkusShadowVariableSolution>) solverManager).getSolverFactory());
         assertNotNull(solutionManager);
     }
 
@@ -68,7 +68,7 @@ class TimefoldProcessorShadowVariableSolveTest {
         problem.setEntityList(IntStream.range(1, 3)
                 .mapToObj(i -> new TestdataQuarkusShadowVariableEntity())
                 .collect(Collectors.toList()));
-        SolverJob<TestdataQuarkusShadowVariableSolution, Long> solverJob = solverManager.solve(1L, problem);
+        SolverJob<TestdataQuarkusShadowVariableSolution> solverJob = solverManager.solve(1L, problem);
         TestdataQuarkusShadowVariableSolution solution = solverJob.getFinalBestSolution();
         assertNotNull(solution);
         assertTrue(solution.getScore().score() >= 0);
