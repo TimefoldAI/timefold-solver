@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.solution.cloner;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.time.Duration;
@@ -40,6 +41,7 @@ import ai.timefold.solver.core.testdomain.clone.deepcloning.TestdataDeepCloningS
 import ai.timefold.solver.core.testdomain.clone.deepcloning.TestdataVariousTypes;
 import ai.timefold.solver.core.testdomain.clone.deepcloning.field.TestdataFieldAnnotatedDeepCloningEntity;
 import ai.timefold.solver.core.testdomain.clone.deepcloning.field.TestdataFieldAnnotatedDeepCloningSolution;
+import ai.timefold.solver.core.testdomain.clone.deepcloning.field.invalid.TestdataInvalidEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.collection.TestdataArrayBasedEntity;
 import ai.timefold.solver.core.testdomain.collection.TestdataArrayBasedSolution;
 import ai.timefold.solver.core.testdomain.collection.TestdataEntityCollectionPropertyEntity;
@@ -1206,6 +1208,21 @@ public abstract class AbstractSolutionClonerTest {
 
         assertThat(clone.shadowEntityList.get(0))
                 .isNotSameAs(original.shadowEntityList.get(0));
+    }
+
+    @Test
+    void failDeepCloneRequiredTypeAnnotation() {
+        var solutionDescriptor = TestdataInvalidEntityProvidingSolution.buildSolutionDescriptor();
+        var original = TestdataInvalidEntityProvidingSolution.generateSolution();
+        assertThatThrownBy(() -> {
+            var cloner = createSolutionCloner(solutionDescriptor);
+            cloner.cloneSolution(original);
+        }).hasMessageContaining(
+                "The field (value) of class (ai.timefold.solver.core.testdomain.clone.deepcloning.field.invalid.TestdataInvalidEntityProvidingEntity) is configured to be deep-cloned")
+                .hasMessageContaining("but its type (ai.timefold.solver.core.testdomain.TestdataValue) is not deep-cloned")
+                .hasMessageContaining("Maybe remove the @DeepPlanningClone annotation from the field?")
+                .hasMessageContaining(
+                        "Maybe annotate the type (ai.timefold.solver.core.testdomain.TestdataValue) with @DeepPlanningClone?");
     }
 
     private static class MaxStackFrameFinder {
