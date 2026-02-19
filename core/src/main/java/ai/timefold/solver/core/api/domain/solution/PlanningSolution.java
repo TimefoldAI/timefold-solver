@@ -6,11 +6,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-
-import org.jspecify.annotations.NonNull;
 
 /**
  * Specifies that the class is a planning solution.
@@ -42,21 +39,6 @@ import org.jspecify.annotations.NonNull;
 @Target({ TYPE })
 @Retention(RUNTIME)
 public @interface PlanningSolution {
-
-    /**
-     * Enable reflection through the members of the class
-     * to automatically assume {@link PlanningScore}, {@link PlanningEntityCollectionProperty},
-     * {@link PlanningEntityProperty}, {@link ProblemFactCollectionProperty}, {@link ProblemFactProperty}
-     * and {@link ConstraintWeightOverrides} annotations based on the member type.
-     *
-     * <p>
-     * This feature is not supported under Quarkus.
-     * When using Quarkus,
-     * setting this to anything other than {@link AutoDiscoverMemberType#NONE} will result in a build-time exception.
-     */
-    @NonNull
-    AutoDiscoverMemberType autoDiscoverMemberType() default AutoDiscoverMemberType.NONE;
-
     /**
      * Overrides the default {@link SolutionCloner} to implement a custom {@link PlanningSolution} cloning implementation.
      * <p>
