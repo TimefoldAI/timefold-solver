@@ -3,9 +3,9 @@ package ai.timefold.solver.core.impl.heuristic.selector.common.iterator;
 import java.util.Collections;
 import java.util.Iterator;
 
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public abstract class AbstractOriginalChangeIterator<Solution_, Move_ extends Move<Solution_>>
         extends UpcomingSelectionIterator<Move_> {

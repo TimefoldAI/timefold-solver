@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.decorator;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.CachingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingValueSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  * A {@link MoveSelector} that caches the result of its child {@link MoveSelector}.

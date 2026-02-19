@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.SequencedCollection;
 
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
@@ -45,12 +45,12 @@ public final class DummyMove implements Move<TestdataSolution>, CodeAssertable {
     }
 
     @Override
-    public Collection<? extends TestdataSolution> getPlanningEntities() {
+    public SequencedCollection<Object> getPlanningEntities() {
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<? extends TestdataSolution> getPlanningValues() {
+    public SequencedCollection<Object> getPlanningValues() {
         return Collections.emptyList();
     }
 

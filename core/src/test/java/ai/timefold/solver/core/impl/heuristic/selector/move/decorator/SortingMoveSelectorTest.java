@@ -20,7 +20,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
-import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.CodeAssertableSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
@@ -80,8 +80,8 @@ class SortingMoveSelectorTest {
     @MethodSource("generateConfiguration")
     void applySorting(DummySorterMoveSelectorConfig moveSelectorConfig) {
         var baseMoveSelector = SelectorTestUtils.mockMoveSelector(
-                new DummyMove("jan"), new DummyMove("feb"), new DummyMove("mar"),
-                new DummyMove("apr"), new DummyMove("may"), new DummyMove("jun"));
+                new SelectorBasedDummyMove("jan"), new SelectorBasedDummyMove("feb"), new SelectorBasedDummyMove("mar"),
+                new SelectorBasedDummyMove("apr"), new SelectorBasedDummyMove("may"), new SelectorBasedDummyMove("jun"));
         var moveSelectorFactory = new DummySorterMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
         var moveSelector =
                 moveSelectorFactory.buildBaseMoveSelector(buildHeuristicConfigPolicy(), SelectionCacheType.PHASE, false);
@@ -103,11 +103,11 @@ class SortingMoveSelectorTest {
 
     public void runCacheType(SelectionCacheType cacheType, int timesCalled) {
         MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
-                new DummyMove("jan"), new DummyMove("feb"), new DummyMove("mar"),
-                new DummyMove("apr"), new DummyMove("may"), new DummyMove("jun"));
+                new SelectorBasedDummyMove("jan"), new SelectorBasedDummyMove("feb"), new SelectorBasedDummyMove("mar"),
+                new SelectorBasedDummyMove("apr"), new SelectorBasedDummyMove("may"), new SelectorBasedDummyMove("jun"));
 
         MoveSelector moveSelector =
-                new SortingMoveSelector(childMoveSelector, cacheType, new CodeAssertableSorter<DummyMove>());
+                new SortingMoveSelector(childMoveSelector, cacheType, new CodeAssertableSorter<SelectorBasedDummyMove>());
 
         SolverScope solverScope = mock(SolverScope.class);
         InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);

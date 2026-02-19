@@ -1,12 +1,12 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.SequencedCollection;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
@@ -63,8 +63,8 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public Collection<?> getPlanningEntities() {
-        var entities = CollectionUtils.newLinkedHashSet(moves.length * 2);
+    public SequencedCollection<Object> getPlanningEntities() {
+        var entities = LinkedHashSet.newLinkedHashSet(moves.length * 2);
         for (var move : moves) {
             entities.addAll(move.getPlanningEntities());
         }
@@ -72,8 +72,8 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public Collection<?> getPlanningValues() {
-        var values = CollectionUtils.newLinkedHashSet(moves.length * 2);
+    public SequencedCollection<Object> getPlanningValues() {
+        var values = LinkedHashSet.newLinkedHashSet(moves.length * 2);
         for (var move : moves) {
             values.addAll(move.getPlanningValues());
         }

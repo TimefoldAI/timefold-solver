@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
-import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
@@ -577,6 +577,6 @@ class ListSwapMoveSelectorTest {
         // The iterator is not able to find a reachable entity, but the random iterator will return has next as true
         var iterator = moveSelector.iterator();
         assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isSameAs(NoChangeMove.getInstance());
+        assertThat(iterator.next()).isSameAs(SelectorBasedNoChangeMove.getInstance());
     }
 }

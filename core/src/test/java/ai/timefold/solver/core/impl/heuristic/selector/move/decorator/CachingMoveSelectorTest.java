@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -39,7 +39,7 @@ class CachingMoveSelectorTest {
 
     public void runOriginalSelection(SelectionCacheType cacheType, int timesCalled) {
         MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
-                new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"));
+                new SelectorBasedDummyMove("a1"), new SelectorBasedDummyMove("a2"), new SelectorBasedDummyMove("a3"));
 
         CachingMoveSelector moveSelector = new CachingMoveSelector(childMoveSelector, cacheType, false);
         verify(childMoveSelector, times(1)).isNeverEnding();
@@ -113,7 +113,7 @@ class CachingMoveSelectorTest {
 
     public void runRandomSelection(SelectionCacheType cacheType, int timesCalled) {
         MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
-                new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"));
+                new SelectorBasedDummyMove("a1"), new SelectorBasedDummyMove("a2"), new SelectorBasedDummyMove("a3"));
 
         CachingMoveSelector moveSelector = new CachingMoveSelector(childMoveSelector, cacheType, true);
         verify(childMoveSelector, times(1)).isNeverEnding();

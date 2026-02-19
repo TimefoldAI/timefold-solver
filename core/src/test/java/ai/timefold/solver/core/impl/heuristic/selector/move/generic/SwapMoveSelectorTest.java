@@ -614,7 +614,7 @@ class SwapMoveSelectorTest {
         // The iterator is not able to find a reachable entity, but the random iterator will return has next as true
         var iterator = moveSelector.iterator();
         assertThat(iterator.hasNext()).isTrue();
-        var swapMove = (SwapMove<TestdataEntityProvidingSolution>) iterator.next();
+        var swapMove = (SelectorBasedSwapMove<TestdataEntityProvidingSolution>) iterator.next();
         assertThat(swapMove.getLeftEntity()).isSameAs(swapMove.getRightEntity());
     }
 

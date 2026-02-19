@@ -25,7 +25,7 @@ If instead you are looking for guidance on how to create a good domain model, re
 
 [NOTE]
 ====
-If you have never tried Timefold Solver before, we recommend following our xref:quickStartOverview[Getting Started guides] for a practical introduction.
+If you have never tried Timefold Solver before, we recommend following our xref:quickstart/overview.adoc[Getting Started guides] for a practical introduction.
 ====
 
 A planning domain model typically consist of the following elements:
@@ -416,7 +416,7 @@ public class VisitComparator implements Comparator<Visit> {
 Alternatively, you can also set a `comparatorFactoryClass` to the `@PlanningEntity` annotation,
 so that you have access to the rest of the problem facts from the solution too.
 
-See xref:optimization-algorithms/overview.adoc#sortedSelection[sorted selection] for more information.
+See xref:optimization-algorithms/move-selector-reference.adoc#sortedSelection[sorted selection] for more information.
 
 [IMPORTANT]
 ====
@@ -1519,7 +1519,7 @@ Alternatively,
 you can also set a `comparatorFactoryClass` to the `@PlanningVariable` or `@PlanningListVariable` annotations,
 so you have access to the rest of the problem facts from the solution too.
 
-See xref:optimization-algorithms/overview.adoc#sortedSelection[sorted selection] for more information.
+See xref:optimization-algorithms/move-selector-reference.adoc#sortedSelection[sorted selection] for more information.
 
 [IMPORTANT]
 ====

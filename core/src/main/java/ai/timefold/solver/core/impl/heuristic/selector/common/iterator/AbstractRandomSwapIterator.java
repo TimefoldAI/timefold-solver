@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.common.iterator;
 
 import java.util.Iterator;
 
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public abstract class AbstractRandomSwapIterator<Solution_, Move_ extends Move<Solution_>, SubSelection_>
         extends UpcomingSelectionIterator<Move_> {

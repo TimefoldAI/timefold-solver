@@ -6,10 +6,10 @@ import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -61,7 +61,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         var descriptor = pickKOptMove(k);
         if (descriptor == null) {
             // Was unable to find a K-Opt move
-            return NoChangeMove.getInstance();
+            return SelectorBasedNoChangeMove.getInstance();
         }
         return descriptor.getKOptListMove(listVariableStateSupply);
     }
@@ -70,21 +70,22 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         @SuppressWarnings("unchecked")
         var originIterator = (Iterator<Node_>) originSelector.iterator();
         if (!originIterator.hasNext()) {
-            return NoChangeMove.getInstance();
+            return SelectorBasedNoChangeMove.getInstance();
         }
         // The inner node may need the outer iterator to select the next value first
         Object firstValue = originIterator.next();
         @SuppressWarnings("unchecked")
         var valueIterator = (Iterator<Node_>) valueSelector.iterator();
         if (!valueIterator.hasNext()) {
-            return NoChangeMove.getInstance();
+            return SelectorBasedNoChangeMove.getInstance();
         }
         Object secondValue = valueIterator.next();
         var firstElementPosition = listVariableStateSupply.getElementPosition(firstValue)
                 .ensureAssigned();
         var secondElementPosition = listVariableStateSupply.getElementPosition(secondValue)
                 .ensureAssigned();
-        return new TwoOptListMove<>(listVariableDescriptor, firstElementPosition.entity(), secondElementPosition.entity(),
+        return new SelectorBasedTwoOptListMove<>(listVariableDescriptor, firstElementPosition.entity(),
+                secondElementPosition.entity(),
                 firstElementPosition.index(), secondElementPosition.index());
     }
 

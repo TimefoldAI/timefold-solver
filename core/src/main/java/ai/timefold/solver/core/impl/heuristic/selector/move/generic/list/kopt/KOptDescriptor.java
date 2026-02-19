@@ -121,7 +121,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
     // ****************************************************
 
     /**
-     * This return a {@link KOptListMove} that corresponds to this {@link KOptDescriptor}. <br />
+     * This returns a {@link SelectorBasedKOptListMove} that corresponds to this {@link KOptDescriptor}. <br />
      * <br />
      * It implements the algorithm described in the paper
      * <a href="https://dl.acm.org/doi/pdf/10.1145/300515.300516">"Transforming Cabbage into Turnip: Polynomial
@@ -129,7 +129,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      * <a href="http://webhotel4.ruc.dk/~keld/research/LKH/KoptReport.pdf">"An Effective Implementation of K-opt Moves
      * for the Lin-Kernighan TSP Heuristic"</a> (Section 5.4 "Execution of a feasible move") to perform a K-opt move
      * by performing the minimal number of list reversals to transform the current route into the new route after the
-     * K-opt. We use it here to calculate the {@link FlipSublistAction} list for the {@link KOptListMove} that is
+     * K-opt. We use it here to calculate the {@link FlipSublistAction} list for the {@link SelectorBasedKOptListMove} that is
      * described by this {@link KOptDescriptor}.<br />
      * <br />
      * The algorithm goal is to convert a signed permutation (p_1, p_2, ..., p_(2k)) into the identify permutation
@@ -157,12 +157,13 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      * </li>
      * </ul>
      */
-    public <Solution_> KOptListMove<Solution_>
+    public <Solution_> SelectorBasedKOptListMove<Solution_>
             getKOptListMove(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         if (!isFeasible()) {
             // A KOptListMove move with an empty flip move list is not feasible, since if executed, it's a no-op.
-            return new KOptListMove<>(listVariableDescriptor, this, new MultipleDelegateList<>(), List.of(), 0, new int[] {});
+            return new SelectorBasedKOptListMove<>(listVariableDescriptor, this, new MultipleDelegateList<>(), List.of(), 0,
+                    new int[] {});
         }
 
         var combinedList = computeCombinedList(listVariableDescriptor, listVariableStateSupply);
@@ -274,7 +275,8 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
                 .toArray();
 
         newEndIndices[newEndIndices.length - 1] = originalToCurrentIndexList.length - 1;
-        return new KOptListMove<>(listVariableDescriptor, this, combinedList, out, startElementShift, newEndIndices);
+        return new SelectorBasedKOptListMove<>(listVariableDescriptor, this, combinedList, out, startElementShift,
+                newEndIndices);
     }
 
     /**

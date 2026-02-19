@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleBridge;
 import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleListener;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public abstract class AbstractCachingMoveSelector<Solution_> extends AbstractMoveSelector<Solution_>
         implements SelectionCacheLifecycleListener<Solution_> {

@@ -5,13 +5,13 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  *
@@ -62,18 +62,19 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
         var upcomingSource = listVariableStateSupply.getElementPosition(upcomingLeftValue);
         if (upcomingSource instanceof PositionInList sourceElement) {
             if (upcomingDestination instanceof PositionInList destinationElement) {
-                return new ListChangeMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index(),
+                return new SelectorBasedListChangeMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index(),
                         destinationElement.entity(), destinationElement.index());
             } else {
-                return new ListUnassignMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index());
+                return new SelectorBasedListUnassignMove<>(listVariableDescriptor, sourceElement.entity(),
+                        sourceElement.index());
             }
         } else {
             if (upcomingDestination instanceof PositionInList destinationElement) {
-                return new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, destinationElement.entity(),
+                return new SelectorBasedListAssignMove<>(listVariableDescriptor, upcomingLeftValue, destinationElement.entity(),
                         destinationElement.index());
             } else {
                 // Only used in construction heuristics to give the CH an option to leave the element unassigned.
-                return NoChangeMove.getInstance();
+                return SelectorBasedNoChangeMove.getInstance();
             }
         }
     }

@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +26,6 @@ import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.SimpleBigDecimalScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
 
 import org.jspecify.annotations.NullMarked;
@@ -79,7 +79,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
         constraintWeightMap.forEach(this::validateConstraintWeight);
         this.constraintWeightMap = constraintWeightMap;
         if (constraintMatchPolicy.isEnabled()) {
-            this.constraintMatchMap = CollectionUtils.newIdentityHashMap(constraintWeightMap.size());
+            this.constraintMatchMap = new IdentityHashMap<>(constraintWeightMap.size());
             for (var constraint : constraintWeightMap.keySet()) {
                 // Ensure that even constraints without matches have their entry.
                 this.constraintMatchMap.put(constraint, new ElementAwareLinkedList<>());

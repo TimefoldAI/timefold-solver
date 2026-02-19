@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.director.stream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +12,6 @@ import java.util.TreeMap;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -23,7 +23,8 @@ record DefaultConstraintMetaModel(
     public static ConstraintMetaModel of(List<? extends Constraint> constraints) {
         var constraintCount = constraints.size();
         // Preserve iteration order by using LinkedHashMap.
-        var perRefMap = CollectionUtils.<ConstraintRef, Constraint> newLinkedHashMap(constraintCount);
+
+        var perRefMap = LinkedHashMap.<ConstraintRef, Constraint> newLinkedHashMap(constraintCount);
         var perGroupMap = new TreeMap<String, List<Constraint>>();
         for (var constraint : constraints) {
             perRefMap.put(constraint.getConstraintRef(), constraint);

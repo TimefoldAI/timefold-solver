@@ -5,12 +5,12 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedCompositeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  *
@@ -49,7 +49,7 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
     static <Solution_> Move<Solution_> buildSwapMove(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             Object upcomingLeftValue, Object upcomingRightValue) {
         if (upcomingLeftValue == upcomingRightValue) {
-            return NoChangeMove.getInstance();
+            return SelectorBasedNoChangeMove.getInstance();
         }
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var upcomingLeft = listVariableStateSupply.getElementPosition(upcomingLeftValue);
@@ -57,25 +57,29 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
         var leftUnassigned = upcomingLeft instanceof UnassignedElement;
         var rightUnassigned = upcomingRight instanceof UnassignedElement;
         if (leftUnassigned && rightUnassigned) { // No need to swap two unassigned elements.
-            return NoChangeMove.getInstance();
+            return SelectorBasedNoChangeMove.getInstance();
         } else if (leftUnassigned) { // Unassign right, put left where right used to be.
             var rightDestination = upcomingRight.ensureAssigned();
             var unassignMove =
-                    new ListUnassignMove<>(listVariableDescriptor, rightDestination.entity(), rightDestination.index());
-            var assignMove = new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, rightDestination.entity(),
-                    rightDestination.index());
-            return CompositeMove.buildMove(unassignMove, assignMove);
+                    new SelectorBasedListUnassignMove<>(listVariableDescriptor, rightDestination.entity(),
+                            rightDestination.index());
+            var assignMove =
+                    new SelectorBasedListAssignMove<>(listVariableDescriptor, upcomingLeftValue, rightDestination.entity(),
+                            rightDestination.index());
+            return SelectorBasedCompositeMove.buildMove(unassignMove, assignMove);
         } else if (rightUnassigned) { // Unassign left, put right where left used to be.
             var leftDestination = upcomingLeft.ensureAssigned();
             var unassignMove =
-                    new ListUnassignMove<>(listVariableDescriptor, leftDestination.entity(), leftDestination.index());
-            var assignMove = new ListAssignMove<>(listVariableDescriptor, upcomingRightValue, leftDestination.entity(),
-                    leftDestination.index());
-            return CompositeMove.buildMove(unassignMove, assignMove);
+                    new SelectorBasedListUnassignMove<>(listVariableDescriptor, leftDestination.entity(),
+                            leftDestination.index());
+            var assignMove =
+                    new SelectorBasedListAssignMove<>(listVariableDescriptor, upcomingRightValue, leftDestination.entity(),
+                            leftDestination.index());
+            return SelectorBasedCompositeMove.buildMove(unassignMove, assignMove);
         } else {
             var leftDestination = upcomingLeft.ensureAssigned();
             var rightDestination = upcomingRight.ensureAssigned();
-            return new ListSwapMove<>(listVariableDescriptor, leftDestination.entity(), leftDestination.index(),
+            return new SelectorBasedListSwapMove<>(listVariableDescriptor, leftDestination.entity(), leftDestination.index(),
                     rightDestination.entity(), rightDestination.index());
         }
     }

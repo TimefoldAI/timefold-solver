@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAssignMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListSwapMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListChangeMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListAssignMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListSwapMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListUnassignMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedSubListChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedSubListSwapMove;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListEntityWithShadowHistory;
@@ -86,35 +86,35 @@ class ListVariableListenerTest {
 
     void doChangeMove(TestdataListEntityWithShadowHistory sourceEntity, int sourceIndex,
             TestdataListEntityWithShadowHistory destinationEntity, int destinationIndex) {
-        new ListChangeMove<>(variableDescriptor, sourceEntity, sourceIndex, destinationEntity, destinationIndex)
-                .doMoveOnly(scoreDirector);
+        new SelectorBasedListChangeMove<>(variableDescriptor, sourceEntity, sourceIndex, destinationEntity, destinationIndex)
+                .execute(scoreDirector.getMoveDirector());
     }
 
     void doSwapMove(TestdataListEntityWithShadowHistory leftEntity, int leftIndex,
             TestdataListEntityWithShadowHistory rightEntity, int rightIndex) {
-        new ListSwapMove<>(variableDescriptor, leftEntity, leftIndex, rightEntity, rightIndex)
-                .doMoveOnly(scoreDirector);
+        new SelectorBasedListSwapMove<>(variableDescriptor, leftEntity, leftIndex, rightEntity, rightIndex)
+                .execute(scoreDirector.getMoveDirector());
     }
 
     void doSubListChangeMove(TestdataListEntityWithShadowHistory sourceEntity, int fromIndex, int toIndex,
             TestdataListEntityWithShadowHistory destinationEntity, int destinationIndex, boolean reversing) {
-        new SubListChangeMove<>(
+        new SelectorBasedSubListChangeMove<>(
                 variableDescriptor,
                 sourceEntity, fromIndex, toIndex - fromIndex,
                 destinationEntity, destinationIndex,
                 reversing)
-                .doMoveOnly(scoreDirector);
+                .execute(scoreDirector.getMoveDirector());
     }
 
     void doSubListSwapMove(
             TestdataListEntityWithShadowHistory leftEntity, int leftFromIndex, int leftToIndex,
             TestdataListEntityWithShadowHistory rightEntity, int rightFromIndex, int rightToIndex, boolean reversing) {
-        new SubListSwapMove<>(
+        new SelectorBasedSubListSwapMove<>(
                 variableDescriptor,
                 leftEntity, leftFromIndex, leftToIndex,
                 rightEntity, rightFromIndex, rightToIndex,
                 reversing)
-                .doMoveOnly(scoreDirector);
+                .execute(scoreDirector.getMoveDirector());
     }
 
     @Test
@@ -186,7 +186,7 @@ class ListVariableListenerTest {
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore()).isEqualTo(InnerScore.withUnassignedCount(SimpleScore.ZERO, 1));
 
-        new ListAssignMove<>(variableDescriptor, x, ann, 2).doMoveOnly(scoreDirector);
+        new SelectorBasedListAssignMove<>(variableDescriptor, x, ann, 2).execute(scoreDirector.getMoveDirector());
 
         assertThat(ann.getValueList()).containsExactly(a, b, x, c);
 
@@ -210,7 +210,7 @@ class ListVariableListenerTest {
         assertNextHistory(x, c);
         assertEmptyNextHistory(c);
 
-        new ListUnassignMove<>(variableDescriptor, ann, 1).doMoveOnly(scoreDirector);
+        new SelectorBasedListUnassignMove<>(variableDescriptor, ann, 1).execute(scoreDirector.getMoveDirector());
 
         assertThat(ann.getValueList()).containsExactly(a, x, c);
 
@@ -330,7 +330,7 @@ class ListVariableListenerTest {
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
-        new ListChangeMove<>(variableDescriptor, ann, 0, bob, 1).doMoveOnly(scoreDirector);
+        new SelectorBasedListChangeMove<>(variableDescriptor, ann, 0, bob, 1).execute(scoreDirector.getMoveDirector());
 
         assertThat(ann.getValueList()).containsExactly(b, c);
         assertThat(bob.getValueList()).containsExactly(x, a, y);

@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.heuristic.selector;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  * General interface for {@link MoveSelector}, {@link EntitySelector} and {@link ValueSelector}

@@ -10,12 +10,6 @@ import ai.timefold.solver.core.preview.api.move.Move;
  */
 public class Placement<Solution_> implements Iterable<Move<Solution_>> {
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static <Solution_> Iterator<ai.timefold.solver.core.preview.api.move.Move<Solution_>>
-            toNewMoveIterator(Iterator<ai.timefold.solver.core.impl.heuristic.move.Move<Solution_>> legacyIterator) {
-        return (Iterator) legacyIterator;
-    }
-
     private final Iterator<Move<Solution_>> moveIterator;
 
     public Placement(Iterator<Move<Solution_>> moveIterator) {

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,9 +27,9 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAssignMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedRuinRecreateMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListAssignMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.SelectorBasedListRuinRecreateMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
@@ -915,17 +916,17 @@ class MoveDirectorTest {
         when(constructionHeuristicPhase.getMissingUpdatedElementsMap()).thenReturn(Map.of(e2, List.of(v2)));
 
         var ephemeralMoveDirector = moveDirector.ephemeral();
-        var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-        var move = new ListRuinRecreateMove<TestdataListSolution>(listVariableDescriptor,
-                ruinRecreateConstructionHeuristicPhaseBuilder, new SolverScope<>(), List.of(v1), Set.of(e1));
-        move.doMoveOnly(scoreDirector);
+        var move = new SelectorBasedListRuinRecreateMove<TestdataListSolution>(listVariableDescriptor,
+                ruinRecreateConstructionHeuristicPhaseBuilder, new SolverScope<>(), List.of(v1),
+                new LinkedHashSet<>(Set.of(e1)));
+        move.execute(ephemeralMoveDirector);
         var undoMove = (RecordedUndoMove<TestdataListSolution>) ephemeralMoveDirector.createUndoMove();
         // e1 must be analyzed at the beginning of the move execution
         assertThat(undoMove.variableChangeActionList().stream().anyMatch(action -> {
             if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
                 return beforeChangeAction.entity() == e1 && beforeChangeAction.fromIndex() == 0
                         && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
-                        && beforeChangeAction.oldValue().get(0).equals(v1);
+                        && beforeChangeAction.oldValue().getFirst().equals(v1);
             }
             return false;
         })).isTrue();
@@ -935,7 +936,7 @@ class MoveDirectorTest {
             if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
                 return beforeChangeAction.entity() == e2 && beforeChangeAction.fromIndex() == 0
                         && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
-                        && beforeChangeAction.oldValue().get(0).equals(v2);
+                        && beforeChangeAction.oldValue().getFirst().equals(v2);
             }
             return false;
         })).isTrue();
@@ -968,11 +969,9 @@ class MoveDirectorTest {
                 .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
         when(ruinRecreateConstructionHeuristicPhaseBuilder.build()).thenReturn(constructionHeuristicPhase);
         var ephemeralMoveDirector = moveDirector.ephemeral();
-        var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-
-        var move = new RuinRecreateMove<TestdataSolution>(genuineVariableDescriptor,
-                ruinRecreateConstructionHeuristicPhaseBuilder, mainSolverScope, List.of(v1), Set.of(e1));
-        move.doMoveOnly(scoreDirector);
+        var move = new SelectorBasedRuinRecreateMove<TestdataSolution>(genuineVariableDescriptor,
+                ruinRecreateConstructionHeuristicPhaseBuilder, mainSolverScope, List.of(v1), new LinkedHashSet<>(Set.of(e1)));
+        move.execute(ephemeralMoveDirector);
         // Not using the main solver scope
         verify(constructionHeuristicPhase, times(0)).solve(mainSolverScope);
         // Uses a new instance of SolverScope
@@ -1000,10 +999,9 @@ class MoveDirectorTest {
         assertThat(workingSolution.getValueList()).map(TestdataSingleCascadingValue::getCascadeValue).allMatch(Objects::isNull);
 
         var ephemeralMoveDirector = moveDirector.ephemeral();
-        var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-        var move =
-                new ListAssignMove<>(TestdataSingleCascadingEntity.buildVariableDescriptorForValueList(), valueA, entityA, 0);
-        move.doMoveOnly(scoreDirector);
+        var move = new SelectorBasedListAssignMove<>(TestdataSingleCascadingEntity.buildVariableDescriptorForValueList(),
+                valueA, entityA, 0);
+        move.execute(ephemeralMoveDirector);
         assertThat(valueA.getCascadeValue()).isNotNull();
         ephemeralMoveDirector.close();
 

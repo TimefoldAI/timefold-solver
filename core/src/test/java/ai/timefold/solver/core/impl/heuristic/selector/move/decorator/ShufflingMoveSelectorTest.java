@@ -8,7 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -38,7 +38,7 @@ class ShufflingMoveSelectorTest {
 
     public void run(SelectionCacheType cacheType, int timesCalled) {
         MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
-                new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"));
+                new SelectorBasedDummyMove("a1"), new SelectorBasedDummyMove("a2"), new SelectorBasedDummyMove("a3"));
 
         ShufflingMoveSelector moveSelector = new ShufflingMoveSelector(childMoveSelector, cacheType);
         verify(childMoveSelector, times(1)).isNeverEnding();

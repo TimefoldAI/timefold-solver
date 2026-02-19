@@ -6,12 +6,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedCompositeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  * A {@link CompositeMoveSelector} that Cartesian products 2 or more {@link MoveSelector}s.
@@ -24,7 +24,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
  */
 public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelector<Solution_> {
 
-    private static final Move<?> EMPTY_MARK = NoChangeMove.getInstance();
+    private static final Move<?> EMPTY_MARK = SelectorBasedNoChangeMove.getInstance();
 
     private final boolean ignoreEmptyChildIterators;
 
@@ -98,7 +98,7 @@ public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelect
         protected Move<Solution_> createUpcomingSelection() {
             var childSize = moveIteratorList.size();
             int startingIndex;
-            Move<Solution_>[] moveList = new Move[childSize];
+            var moveList = new Move[childSize];
             if (subSelections == null) {
                 startingIndex = -1;
             } else {
@@ -115,7 +115,7 @@ public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelect
                 moveIteratorList.set(i, moveIterator);
                 if (!moveIterator.hasNext()) { // in case a moveIterator is empty
                     if (ignoreEmptyChildIterators) {
-                        moveList[i] = (Move<Solution_>) EMPTY_MARK;
+                        moveList[i] = EMPTY_MARK;
                     } else {
                         return noUpcomingSelection();
                     }
@@ -142,7 +142,7 @@ public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelect
 
         private Move<Solution_> buildMove(Move<Solution_>[] moveList, int childSize) {
             if (!ignoreEmptyChildIterators) {
-                return CompositeMove.buildMove(moveList);
+                return SelectorBasedCompositeMove.buildMove(moveList);
             }
             // Clone because EMPTY_MARK should survive in subSelections
             Move<Solution_>[] newMoveList = new Move[childSize];
@@ -156,7 +156,7 @@ public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelect
             return switch (newSize) {
                 case 0 -> noUpcomingSelection();
                 case 1 -> newMoveList[0];
-                default -> CompositeMove.buildMove(Arrays.copyOfRange(newMoveList, 0, newSize));
+                default -> SelectorBasedCompositeMove.buildMove(Arrays.copyOfRange(newMoveList, 0, newSize));
             };
         }
 
@@ -223,7 +223,7 @@ public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelect
                     return moveList.get(0);
                 }
             }
-            return CompositeMove.buildMove(moveList.toArray(new Move[0]));
+            return SelectorBasedCompositeMove.buildMove(moveList.toArray(new Move[0]));
         }
 
     }

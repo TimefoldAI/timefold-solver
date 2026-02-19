@@ -9,7 +9,8 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
-import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -130,8 +131,8 @@ public class ConstructionHeuristicDecider<Solution_> {
     }
 
     private static <Solution_> boolean isAllowedNonDoableMove(Move<Solution_> move) {
-        return MoveAdapters.testWhenLegacyMove(move, legacyMove -> legacyMove instanceof NoChangeMove<Solution_>
-                || legacyMove instanceof ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove<Solution_>);
+        return MoveAdapters.testWhenLegacyMove(move, legacyMove -> legacyMove instanceof SelectorBasedNoChangeMove<Solution_>
+                || legacyMove instanceof SelectorBasedChangeMove<Solution_>);
     }
 
     protected void pickMove(ConstructionHeuristicStepScope<Solution_> stepScope) {

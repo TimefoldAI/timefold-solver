@@ -5,10 +5,10 @@ import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractOriginalSwapIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractRandomSwapIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
@@ -76,14 +76,14 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
             return new AbstractOriginalSwapIterator<>(leftEntitySelector, rightEntitySelector) {
                 @Override
                 protected Move<Solution_> newSwapSelection(Object leftSubSelection, Object rightSubSelection) {
-                    return new SwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
+                    return new SelectorBasedSwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
                 }
             };
         } else {
             return new AbstractRandomSwapIterator<>(leftEntitySelector, rightEntitySelector) {
                 @Override
                 protected Move<Solution_> newSwapSelection(Object leftSubSelection, Object rightSubSelection) {
-                    return new SwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
+                    return new SelectorBasedSwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
                 }
             };
         }

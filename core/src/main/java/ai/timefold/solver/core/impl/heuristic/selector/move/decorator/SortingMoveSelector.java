@@ -3,10 +3,10 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.decorator;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public class SortingMoveSelector<Solution_> extends AbstractCachingMoveSelector<Solution_> {
 

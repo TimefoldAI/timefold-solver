@@ -3,12 +3,11 @@ package ai.timefold.solver.core.impl.neighborhood;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public final class NeighborhoodsMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
 
@@ -71,6 +70,7 @@ public final class NeighborhoodsMoveSelector<Solution_> extends AbstractMoveSele
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        return MoveAdapters.toLegacyMoveIterator(moveRepository.iterator());
+        return moveRepository.iterator();
     }
+
 }

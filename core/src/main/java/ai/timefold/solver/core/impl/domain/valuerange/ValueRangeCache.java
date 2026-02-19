@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.valuerange;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -9,7 +10,6 @@ import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -19,11 +19,11 @@ public final class ValueRangeCache<Value_>
         implements Iterable<Value_> {
 
     public static <Value_> ValueRangeCache<Value_> of(int size) {
-        return new ValueRangeCache<>(size, CollectionUtils.newHashSet(size));
+        return new ValueRangeCache<>(size, HashSet.newHashSet(size));
     }
 
     public static <Value_> ValueRangeCache<Value_> of(Collection<Value_> collection) {
-        return new ValueRangeCache<>(collection, CollectionUtils.newHashSet(collection.size()));
+        return new ValueRangeCache<>(collection, HashSet.newHashSet(collection.size()));
     }
 
     public static <Value_> ValueRangeCache<Value_> of(List<Value_> valuesWithFastRandomAccess,

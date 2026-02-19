@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  * Specifies that a bean property (or a field) is the id to match

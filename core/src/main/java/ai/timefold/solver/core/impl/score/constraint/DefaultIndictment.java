@@ -53,7 +53,7 @@ public final class DefaultIndictment<Score_ extends Score<Score_>> implements In
                 return Collections.singletonList(constraintMatchSet.iterator().next().getJustification());
             }
             default -> {
-                Set<ConstraintJustification> justificationSet = CollectionUtils.newLinkedHashSet(constraintMatchSetSize);
+                Set<ConstraintJustification> justificationSet = LinkedHashSet.newLinkedHashSet(constraintMatchSetSize);
                 for (ConstraintMatch<Score_> constraintMatch : constraintMatchSet) {
                     justificationSet.add(constraintMatch.getJustification());
                 }

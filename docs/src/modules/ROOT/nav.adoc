@@ -24,6 +24,7 @@
 ** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
 ** xref:optimization-algorithms/local-search.adoc[leveloffset=+1]
 ** xref:optimization-algorithms/exhaustive-search.adoc[leveloffset=+1]
+** xref:optimization-algorithms/neighborhoods.adoc[leveloffset=+1]
 ** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
 * xref:integration/integration.adoc[leveloffset=+1]

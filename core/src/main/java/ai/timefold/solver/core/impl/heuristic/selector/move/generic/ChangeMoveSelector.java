@@ -3,12 +3,12 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.IterableSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractOriginalChangeIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractRandomChangeIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public class ChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
@@ -60,14 +60,14 @@ public class ChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_
             return new AbstractOriginalChangeIterator<>(entitySelector, valueSelector) {
                 @Override
                 protected Move<Solution_> newChangeSelection(Object entity, Object toValue) {
-                    return new ChangeMove<>(variableDescriptor, entity, toValue);
+                    return new SelectorBasedChangeMove<>(variableDescriptor, entity, toValue);
                 }
             };
         } else {
             return new AbstractRandomChangeIterator<>(entitySelector, valueSelector) {
                 @Override
                 protected Move<Solution_> newChangeSelection(Object entity, Object toValue) {
-                    return new ChangeMove<>(variableDescriptor, entity, toValue);
+                    return new SelectorBasedChangeMove<>(variableDescriptor, entity, toValue);
                 }
             };
         }

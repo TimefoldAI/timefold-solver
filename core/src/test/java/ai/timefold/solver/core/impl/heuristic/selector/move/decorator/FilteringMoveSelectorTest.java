@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -67,9 +67,11 @@ class FilteringMoveSelectorTest {
 
     public void filter(SelectionCacheType cacheType, int timesCalled) {
         MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
-                new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"), new DummyMove("a4"));
+                new SelectorBasedDummyMove("a1"), new SelectorBasedDummyMove("a2"), new SelectorBasedDummyMove("a3"),
+                new SelectorBasedDummyMove("a4"));
 
-        SelectionFilter<TestdataSolution, DummyMove> filter = (scoreDirector, move) -> !move.getCode().equals("a3");
+        SelectionFilter<TestdataSolution, SelectorBasedDummyMove> filter =
+                (scoreDirector, move) -> !move.getCode().equals("a3");
         MoveSelector moveSelector = FilteringMoveSelector.of(childMoveSelector, (SelectionFilter) filter);
         if (cacheType.isCached()) {
             moveSelector = new CachingMoveSelector(moveSelector, cacheType, false);

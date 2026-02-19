@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move;
 
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.IterableSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  * Generates {@link Move}s.

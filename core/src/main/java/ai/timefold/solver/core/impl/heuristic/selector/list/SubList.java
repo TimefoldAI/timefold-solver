@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 public record SubList(Object entity, int fromIndex, int length) {
 
@@ -8,8 +8,8 @@ public record SubList(Object entity, int fromIndex, int length) {
         return fromIndex + length;
     }
 
-    public SubList rebase(ScoreDirector<?> destinationScoreDirector) {
-        return new SubList(destinationScoreDirector.lookUpWorkingObject(entity), fromIndex, length);
+    public SubList rebase(Rebaser rebaser) {
+        return new SubList(rebaser.rebase(entity), fromIndex, length);
     }
 
     @Override

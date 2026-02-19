@@ -11,6 +11,9 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -28,7 +31,6 @@ import ai.timefold.solver.core.api.domain.solution.cloner.DeepPlanningClone;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.ConcurrentMemoization;
 
 import org.jspecify.annotations.NonNull;
@@ -59,7 +61,7 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
     @Override
     public @NonNull Solution_ cloneSolution(@NonNull Solution_ originalSolution) {
         var expectedObjectCount = expectedObjectCountRef.get();
-        var originalToCloneMap = CollectionUtils.newIdentityHashMap(expectedObjectCount);
+        var originalToCloneMap = new IdentityHashMap<>(expectedObjectCount);
         var unprocessedQueue = new ArrayDeque<Unprocessed>(expectedObjectCount);
         var cloneSolution = clone(originalSolution, originalToCloneMap, unprocessedQueue,
                 retrieveClassMetadata(originalSolution.getClass()));
@@ -235,9 +237,9 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
             } else if (!(originalCollection instanceof LinkedHashSet)) {
                 // Set is explicitly not ordered, so we can use a HashSet.
                 // Can be replaced by checking for SequencedSet, but that is Java 21+.
-                return CollectionUtils.newHashSet(size);
+                return HashSet.newHashSet(size);
             } else { // Default to a LinkedHashSet to respect order.
-                return CollectionUtils.newLinkedHashSet(size);
+                return LinkedHashSet.newLinkedHashSet(size);
             }
         } else if (originalCollection instanceof Deque) {
             return new ArrayDeque<>(size);
@@ -298,9 +300,10 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
         if (!(originalMap instanceof LinkedHashMap<?, ?>)) {
             // Map is explicitly not ordered, so we can use a HashMap.
             // Can be replaced by checking for SequencedMap, but that is Java 21+.
-            return CollectionUtils.newHashMap(originalMapSize);
+            return HashMap.newHashMap(originalMapSize);
         } else { // Default to a LinkedHashMap to respect order.
-            return CollectionUtils.newLinkedHashMap(originalMapSize);
+
+            return LinkedHashMap.newLinkedHashMap(originalMapSize);
         }
     }
 

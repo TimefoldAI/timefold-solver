@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -46,13 +45,13 @@ public class KOptListMoveIteratorTest {
 
     @SuppressWarnings("unchecked")
     private KOptListMoveIteratorMockData createMockKOptListMoveIterator(int minK, int maxK, int[] pickedKDistribution) {
-        KOptListMoveIteratorMockData result = new KOptListMoveIteratorMockData();
+        var result = new KOptListMoveIteratorMockData();
         result.minK = minK;
         result.maxK = maxK;
         result.pickedKDistribution = pickedKDistribution;
         result.distributionSum = 0;
-        for (int i = 0; i < pickedKDistribution.length; i++) {
-            result.distributionSum += pickedKDistribution[i];
+        for (var j : pickedKDistribution) {
+            result.distributionSum += j;
         }
         result.workingRandom = mock(Random.class);
         result.listVariableDescriptor = mock(ListVariableDescriptor.class);
@@ -82,10 +81,10 @@ public class KOptListMoveIteratorTest {
         int[] addedEdgeIndexToOtherEndpoint;
         List<Object> entityList;
 
-        public void verify(KOptListMove<?> kOptListMove) {
-            KOptDescriptor<?> descriptor = kOptListMove.getDescriptor();
+        public void verify(SelectorBasedKOptListMove<?> kOptListMove) {
+            var descriptor = kOptListMove.getDescriptor();
             assertThat(descriptor.k()).isEqualTo(removedEdgeList.size() / 2);
-            List<Object> expectedRemoveEdges = new ArrayList<>(descriptor.k() * 2 + 1);
+            var expectedRemoveEdges = new ArrayList<>(descriptor.k() * 2 + 1);
             expectedRemoveEdges.add(null);
             expectedRemoveEdges.addAll(removedEdgeList);
             assertThat((Object[]) descriptor.removedEdges()).containsExactly(expectedRemoveEdges.toArray());
@@ -104,33 +103,33 @@ public class KOptListMoveIteratorTest {
         if (k % 2 != 1) {
             throw new IllegalArgumentException("Function can only be used for odd k (" + k + " is not odd).");
         }
-        int randomValue = 0;
-        for (int i = mocks.minK; i < k; i++) {
+        var randomValue = 0;
+        for (var i = mocks.minK; i < k; i++) {
             randomValue += mocks.pickedKDistribution[i - mocks.minK];
         }
         when(mocks.workingRandom.nextInt(mocks.distributionSum)).thenReturn(randomValue);
 
-        Object[] data = new Object[2 * k];
-        for (int i = 0; i < data.length; i++) {
+        var data = new Object[2 * k];
+        for (var i = 0; i < data.length; i++) {
             data[i] = "v" + i;
         }
 
-        Map<Object, Integer> entityToListSize = Arrays.stream(entities)
+        var entityToListSize = Arrays.stream(entities)
                 .collect(Collectors.toMap(Function.identity(),
                         entity -> 2,
                         Integer::sum));
-        Map<Object, List<Object>> entityToList = new HashMap<>();
-        Map<Object, Integer> entityToOffset = new HashMap<>();
+        var entityToList = new HashMap<Object, List<Object>>();
+        var entityToOffset = new HashMap<Object, Integer>();
 
-        int offset = 0;
-        for (Map.Entry<Object, Integer> entityAndListSize : entityToListSize.entrySet()) {
-            Object entity = entityAndListSize.getKey();
+        var offset = 0;
+        for (var entityAndListSize : entityToListSize.entrySet()) {
+            var entity = entityAndListSize.getKey();
             int listSize = entityAndListSize.getValue();
             List<Object> entityList = new ArrayList<>(Arrays.asList(data).subList(offset, offset + listSize));
-            for (int i = 0; i < listSize; i++) {
+            for (var i = 0; i < listSize; i++) {
                 entityList.add(2 * i + 1, entity + "-extra-" + i);
             }
-            entityList.add(0, entity + "-start");
+            entityList.addFirst(entity + "-start");
             entityList.add(entity + "-end");
             // No pinning.
             when(mocks.listVariableDescriptor.getValue(entity)).thenReturn(entityList);
@@ -143,7 +142,7 @@ public class KOptListMoveIteratorTest {
             entityToList.put(entity, entityList);
             entityToOffset.put(entity, 1);
 
-            for (int i = 0; i < entityList.size(); i++) {
+            for (var i = 0; i < entityList.size(); i++) {
                 when(mocks.listVariableStateSupply.getElementPosition(entityList.get(i)))
                         .thenReturn(ElementPosition.of(entity, i));
                 when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
@@ -156,41 +155,41 @@ public class KOptListMoveIteratorTest {
 
         when(mocks.workingRandom.nextBoolean()).thenReturn(true);
 
-        Object firstPicked = entityToList.get(entities[0]).get(1);
-        Object firstSuccessor = entityToList.get(entities[0]).get(2);
+        var firstPicked = entityToList.get(entities[0]).get(1);
+        var firstSuccessor = entityToList.get(entities[0]).get(2);
         entityToOffset.merge(entities[0], 3, Integer::sum);
 
         when(mocks.originSelector.iterator()).thenReturn(iteratorForValues(firstPicked));
-        Object[] remainingPicked = new Object[k - 1];
-        Object[] remainingPickedSuccessor = new Object[k - 1];
+        var remainingPicked = new Object[k - 1];
+        var remainingPickedSuccessor = new Object[k - 1];
 
-        List<Object> pickedValueList = new ArrayList<>();
-        for (int i = 1; i < k; i++) {
+        var pickedValueList = new ArrayList<>();
+        for (var i = 1; i < k; i++) {
             int index = entityToOffset.get(entities[i]);
-            Object value = entityToList.get(entities[i]).get(index);
-            Object valueSuccessor = entityToList.get(entities[i]).get(index + 1);
+            var value = entityToList.get(entities[i]).get(index);
+            var valueSuccessor = entityToList.get(entities[i]).get(index + 1);
             entityToOffset.merge(entities[i], 3, Integer::sum);
-            pickedValueList.add(0, value);
+            pickedValueList.addFirst(value);
 
             remainingPicked[remainingPicked.length - i] = value;
             remainingPickedSuccessor[remainingPicked.length - i] = valueSuccessor;
         }
         when(mocks.valueSelector.iterator()).thenReturn(pickedValueList.iterator());
 
-        KOptMoveInfo out = new KOptMoveInfo();
+        var out = new KOptMoveInfo();
 
         out.removedEdgeList = new ArrayList<>(2 * k);
         out.entityList = Arrays.stream(entities).distinct().collect(Collectors.toList());
         out.removedEdgeList.add(firstPicked);
         out.removedEdgeList.add(firstSuccessor);
 
-        for (int i = 0; i < remainingPicked.length; i++) {
+        for (var i = 0; i < remainingPicked.length; i++) {
             out.removedEdgeList.add(remainingPicked[i]);
             out.removedEdgeList.add(remainingPickedSuccessor[i]);
         }
 
-        Object[] tourData = new Object[out.removedEdgeList.size() + 1];
-        for (int i = 0; i < out.removedEdgeList.size(); i++) {
+        var tourData = new Object[out.removedEdgeList.size() + 1];
+        for (var i = 0; i < out.removedEdgeList.size(); i++) {
             tourData[i + 1] = out.removedEdgeList.get(i);
         }
         out.addedEdgeIndexToOtherEndpoint = KOptDescriptor.computeInEdgesForSequentialMove(tourData);
@@ -201,37 +200,37 @@ public class KOptListMoveIteratorTest {
      * @return The expected KOptMoveInfo
      */
     private KOptMoveInfo setupValidNonsequential4OptMove(KOptListMoveIteratorMockData mocks, Object... entities) {
-        int k = 4;
+        var k = 4;
         if (entities.length != (k + 1)) {
             throw new IllegalArgumentException("Expected (" + (k + 1) + ") arguments");
         }
-        int randomValue = 0;
-        for (int i = mocks.minK; i < k; i++) {
+        var randomValue = 0;
+        for (var i = mocks.minK; i < k; i++) {
             randomValue += mocks.pickedKDistribution[i - mocks.minK];
         }
         when(mocks.workingRandom.nextInt(mocks.distributionSum)).thenReturn(randomValue);
 
-        Object[] data = new Object[2 * k + 8];
-        for (int i = 0; i < data.length; i++) {
+        var data = new Object[2 * k + 8];
+        for (var i = 0; i < data.length; i++) {
             data[i] = "v" + i;
         }
 
-        Map<Object, Integer> entityToListSize = Arrays.stream(entities)
+        var entityToListSize = Arrays.stream(entities)
                 .collect(Collectors.toMap(Function.identity(),
                         entity -> 2,
                         Integer::sum));
-        Map<Object, List<Object>> entityToList = new HashMap<>();
-        Map<Object, Integer> entityToOffset = new HashMap<>();
+        var entityToList = new HashMap<Object, List<Object>>();
+        var entityToOffset = new HashMap<Object, Integer>();
 
-        int offset = 0;
-        for (Map.Entry<Object, Integer> entityAndListSize : entityToListSize.entrySet()) {
-            Object entity = entityAndListSize.getKey();
+        var offset = 0;
+        for (var entityAndListSize : entityToListSize.entrySet()) {
+            var entity = entityAndListSize.getKey();
             int listSize = entityAndListSize.getValue();
-            List<Object> entityList = new ArrayList<>(Arrays.asList(data).subList(offset, offset + listSize));
-            for (int i = 0; i < listSize; i++) {
+            var entityList = new ArrayList<>(Arrays.asList(data).subList(offset, offset + listSize));
+            for (var i = 0; i < listSize; i++) {
                 entityList.add(2 * i + 1, entity + "-extra-" + i);
             }
-            entityList.add(0, entity + "-start");
+            entityList.addFirst(entity + "-start");
             entityList.add(entity + "-end");
             // No pinning.
             when(mocks.listVariableDescriptor.getValue(entity)).thenReturn(entityList);
@@ -248,7 +247,7 @@ public class KOptListMoveIteratorTest {
             entityToList.put(entity, entityList);
             entityToOffset.put(entity, 1);
 
-            for (int i = 0; i < entityList.size(); i++) {
+            for (var i = 0; i < entityList.size(); i++) {
                 when(mocks.listVariableStateSupply.getElementPosition(entityList.get(i)))
                         .thenReturn(ElementPosition.of(entity, i));
                 when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
@@ -261,21 +260,21 @@ public class KOptListMoveIteratorTest {
 
         when(mocks.workingRandom.nextBoolean()).thenReturn(true);
 
-        Object firstPicked = entityToList.get(entities[0]).get(1);
-        Object firstSuccessor = entityToList.get(entities[0]).get(2);
+        var firstPicked = entityToList.get(entities[0]).get(1);
+        var firstSuccessor = entityToList.get(entities[0]).get(2);
         entityToOffset.merge(entities[0], 3, Integer::sum);
 
         when(mocks.originSelector.iterator()).thenReturn(iteratorForValues(firstPicked));
-        Object[] remainingPicked = new Object[k];
-        Object[] remainingPickedSuccessor = new Object[k];
+        var remainingPicked = new Object[k];
+        var remainingPickedSuccessor = new Object[k];
 
-        List<Object> pickedValueList = new ArrayList<>();
-        for (int i = 1; i < k + 1; i++) {
+        var pickedValueList = new ArrayList<>();
+        for (var i = 1; i < k + 1; i++) {
             int index = entityToOffset.get(entities[i]);
-            Object value = entityToList.get(entities[i]).get(index);
-            Object valueSuccessor = entityToList.get(entities[i]).get(index + 1);
+            var value = entityToList.get(entities[i]).get(index);
+            var valueSuccessor = entityToList.get(entities[i]).get(index + 1);
             entityToOffset.merge(entities[i], 3, Integer::sum);
-            pickedValueList.add(0, value);
+            pickedValueList.addFirst(value);
 
             if (i != 1) {
                 remainingPicked[remainingPicked.length - i] = value;
@@ -286,16 +285,16 @@ public class KOptListMoveIteratorTest {
             }
         }
 
-        int finalValueIndex = entityToOffset.get(entities[k]);
-        List<Object> distinctEntityList = Arrays.stream(entities).distinct().collect(Collectors.toList());
-        int entityListIndex = distinctEntityList.indexOf(entities[k]);
+        var finalValueIndex = entityToOffset.get(entities[k]);
+        var distinctEntityList = Arrays.stream(entities).distinct().toList();
+        var entityListIndex = distinctEntityList.indexOf(entities[k]);
         when(mocks.workingRandom.ints(0, distinctEntityList.size()))
                 .thenReturn(IntStream.iterate(entityListIndex, value -> value));
         when(mocks.workingRandom.nextInt(entityToList.get(distinctEntityList.get(entityListIndex)).size()))
                 .thenReturn(finalValueIndex);
         when(mocks.valueSelector.iterator()).thenReturn(pickedValueList.iterator());
 
-        KOptMoveInfo out = new KOptMoveInfo();
+        var out = new KOptMoveInfo();
 
         out.removedEdgeList = new ArrayList<>(2 * k);
         out.entityList = Arrays.stream(entities).distinct().collect(Collectors.toList());
@@ -303,7 +302,7 @@ public class KOptListMoveIteratorTest {
         out.removedEdgeList.add(firstPicked);
         out.removedEdgeList.add(firstSuccessor);
 
-        for (int i = 0; i < remainingPicked.length; i++) {
+        for (var i = 0; i < remainingPicked.length; i++) {
             out.removedEdgeList.add(remainingPicked[i]);
             out.removedEdgeList.add(remainingPickedSuccessor[i]);
         }
@@ -336,41 +335,45 @@ public class KOptListMoveIteratorTest {
 
     @Test
     void testSequentialKOptOnSameEntity() {
-        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 5, new int[] { 1, 1, 1, 1 });
+        var mocks = createMockKOptListMoveIterator(2, 5, new int[] { 1, 1, 1, 1 });
 
-        KOptMoveInfo kOptMoveInfo = setupValidOddSequentialKOptMove(mocks, 3, "e1", "e1", "e1");
-        KOptListMove<?> kOptListMove = (KOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
+        var kOptMoveInfo = setupValidOddSequentialKOptMove(mocks, 3, "e1", "e1", "e1");
+        var kOptListMove =
+                (SelectorBasedKOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
         kOptMoveInfo.verify(kOptListMove);
 
         kOptMoveInfo = setupValidOddSequentialKOptMove(mocks, 5, "e1", "e1", "e1", "e1", "e1");
-        kOptListMove = (KOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
+        kOptListMove = (SelectorBasedKOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
         kOptMoveInfo.verify(kOptListMove);
     }
 
     @Test
     void testSequentialKOptOnDifferentEntities() {
-        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 5, new int[] { 1, 1, 1, 1 });
+        var mocks = createMockKOptListMoveIterator(2, 5, new int[] { 1, 1, 1, 1 });
 
-        KOptMoveInfo kOptMoveInfo = setupValidOddSequentialKOptMove(mocks, 5, "e1", "e2", "e1", "e2", "e1");
-        KOptListMove<?> kOptListMove = (KOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
+        var kOptMoveInfo = setupValidOddSequentialKOptMove(mocks, 5, "e1", "e2", "e1", "e2", "e1");
+        var kOptListMove =
+                (SelectorBasedKOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
         kOptMoveInfo.verify(kOptListMove);
     }
 
     @Test
     void testNonsequentialKOptOnSameEntity() {
-        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 6, new int[] { 1, 1, 1, 1 });
+        var mocks = createMockKOptListMoveIterator(2, 6, new int[] { 1, 1, 1, 1 });
 
-        KOptMoveInfo kOptMoveInfo = setupValidNonsequential4OptMove(mocks, "e1", "e1", "e1", "e1", "e1");
-        KOptListMove<?> kOptListMove = (KOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
+        var kOptMoveInfo = setupValidNonsequential4OptMove(mocks, "e1", "e1", "e1", "e1", "e1");
+        var kOptListMove =
+                (SelectorBasedKOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
         kOptMoveInfo.verify(kOptListMove);
     }
 
     @Test
     void testNonsequentialKOptOnDifferentEntity() {
-        KOptListMoveIteratorMockData mocks = createMockKOptListMoveIterator(2, 6, new int[] { 1, 1, 1, 1 });
+        var mocks = createMockKOptListMoveIterator(2, 6, new int[] { 1, 1, 1, 1 });
 
-        KOptMoveInfo kOptMoveInfo = setupValidNonsequential4OptMove(mocks, "e1", "e2", "e1", "e2", "e1");
-        KOptListMove<?> kOptListMove = (KOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
+        var kOptMoveInfo = setupValidNonsequential4OptMove(mocks, "e1", "e2", "e1", "e2", "e1");
+        var kOptListMove =
+                (SelectorBasedKOptListMove<?>) mocks.kOptListMoveIterator.createUpcomingSelection();
         kOptMoveInfo.verify(kOptListMove);
     }
 

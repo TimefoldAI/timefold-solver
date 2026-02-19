@@ -50,7 +50,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Pr
             UnaryOperator<Tuple_> internalTupleToOutputTupleMapper, TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
         this.precomputeBuildHelperSupplier = precomputeBuildHelperSupplier;
         this.internalTupleToOutputTupleMapper = internalTupleToOutputTupleMapper;
-        this.objectToOutputTuplesMap = CollectionUtils.newIdentityHashMap(size);
+        this.objectToOutputTuplesMap = new IdentityHashMap<>(size);
 
         // Guesstimate that updates are dominant.
         this.retractQueue = CollectionUtils.newIdentityHashSet(size / 20);

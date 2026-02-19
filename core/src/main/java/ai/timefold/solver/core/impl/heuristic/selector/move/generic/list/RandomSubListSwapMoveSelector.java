@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractRandomSwapIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 public class RandomSubListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
@@ -42,7 +42,8 @@ public class RandomSubListSwapMoveSelector<Solution_> extends GenericMoveSelecto
             @Override
             protected Move<Solution_> newSwapSelection(SubList leftSubSelection, SubList rightSubSelection) {
                 boolean reversing = selectReversingMoveToo && workingRandom.nextBoolean();
-                return new SubListSwapMove<>(listVariableDescriptor, leftSubSelection, rightSubSelection, reversing);
+                return new SelectorBasedSubListSwapMove<>(listVariableDescriptor, leftSubSelection, rightSubSelection,
+                        reversing);
             }
         };
     }

@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.SequencedCollection;
 
 import ai.timefold.solver.core.impl.move.AbstractMove;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -43,12 +43,12 @@ public class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMove<Sol
     }
 
     @Override
-    public Collection<Entity_> getPlanningEntities() {
+    public SequencedCollection<Object> getPlanningEntities() {
         return List.of(destinationEntity);
     }
 
     @Override
-    public Collection<Value_> getPlanningValues() {
+    public SequencedCollection<Object> getPlanningValues() {
         return List.of(planningValue);
     }
 

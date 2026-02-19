@@ -5,7 +5,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  * A simple interface to generate a {@link List} of custom {@link Move}s.

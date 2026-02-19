@@ -34,12 +34,12 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
-import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartitioner;
@@ -472,10 +472,11 @@ class SolverConfigTest {
     }
 
     public abstract static class DummyChangeMoveFilter
-            implements SelectionFilter<TestdataSolution, ChangeMove<TestdataSolution>> {
+            implements SelectionFilter<TestdataSolution, SelectorBasedChangeMove<TestdataSolution>> {
     }
 
-    public abstract static class DummyMoveIteratorFactory implements MoveIteratorFactory<TestdataSolution, DummyMove> {
+    public abstract static class DummyMoveIteratorFactory
+            implements MoveIteratorFactory<TestdataSolution, SelectorBasedDummyMove> {
     }
 
     public abstract static class DummyMoveListFactory implements MoveListFactory<TestdataSolution> {

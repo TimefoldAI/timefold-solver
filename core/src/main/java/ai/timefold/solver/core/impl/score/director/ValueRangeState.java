@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.score.director;
 
 import java.util.BitSet;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +22,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues.ReachableItemValue;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues.ReachableValuesIndex;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.jspecify.annotations.NullMarked;
@@ -178,8 +179,8 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
     private Map<Entity_, ValueRangeItem<Solution_, Entity_, ValueRange<Value_>, Value_>>
             ensureEntityMapIsInitialized(int entityCount) {
         if (fromEntityMap == null) {
-            fromEntityMap = CollectionUtils.newIdentityHashMap(entityCount);
-            valueRangeDeduplicationCache = CollectionUtils.newHashMap(entityCount);
+            fromEntityMap = new IdentityHashMap<>(entityCount);
+            valueRangeDeduplicationCache = HashMap.newHashMap(entityCount);
         }
         return fromEntityMap;
     }
@@ -292,7 +293,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
     }
 
     private static <Type_> Map<Type_, Integer> buildIndexMap(Iterator<@Nullable Type_> allValues, int size) {
-        Map<Type_, Integer> indexMap = CollectionUtils.newHashMap(size);
+        Map<Type_, Integer> indexMap = HashMap.newHashMap(size);
         var idx = 0;
         while (allValues.hasNext()) {
             var value = allValues.next();

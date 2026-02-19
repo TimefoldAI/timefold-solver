@@ -29,6 +29,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
@@ -154,8 +155,9 @@ public final class PlannerTestUtils {
     public static <Solution_, Score_ extends Score<Score_>> InnerScoreDirector<Solution_, Score_>
             mockRebasingScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor, Object[][] lookUpMappings) {
         InnerScoreDirector<Solution_, Score_> scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
-        when(scoreDirector.lookUpWorkingObject(any())).thenAnswer(invocation -> {
+        MoveDirector<Solution_, Score_> moveDirector = mock(MoveDirector.class);
+        when(moveDirector.getScoreDirector()).thenReturn(scoreDirector);
+        when(moveDirector.rebase(any())).thenAnswer(invocation -> {
             var externalObject = invocation.getArguments()[0];
             if (externalObject == null) {
                 return null;
@@ -167,6 +169,8 @@ public final class PlannerTestUtils {
             }
             throw new IllegalStateException("No method mocked for parameter (" + externalObject + ").");
         });
+        when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
+        when(scoreDirector.getMoveDirector()).thenReturn(moveDirector);
         return scoreDirector;
     }
 

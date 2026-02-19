@@ -40,7 +40,7 @@ import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -379,10 +379,10 @@ class SolverMetricsIT extends AbstractMeterTest {
     }
 
     public static class NoneValueSelectionFilter
-            implements SelectionFilter<TestdataHardSoftScoreSolution, ChangeMove<TestdataHardSoftScoreSolution>> {
+            implements SelectionFilter<TestdataHardSoftScoreSolution, SelectorBasedChangeMove<TestdataHardSoftScoreSolution>> {
         @Override
         public boolean accept(ScoreDirector<TestdataHardSoftScoreSolution> scoreDirector,
-                ChangeMove<TestdataHardSoftScoreSolution> selection) {
+                SelectorBasedChangeMove<TestdataHardSoftScoreSolution> selection) {
             return ((TestdataValue) (selection.getToPlanningValue())).getCode().equals("none");
         }
     }

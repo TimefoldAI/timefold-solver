@@ -2,15 +2,16 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedNoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 final class RuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
@@ -40,14 +41,14 @@ final class RuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIterato
         var entityIterator = entitySelector.iterator();
         var ruinedCount = workingRandom.nextInt(minimumRuinedCount, maximumRuinedCount + 1);
         var selectedEntityList = new ArrayList<>(ruinedCount);
-        var affectedValueSet = CollectionUtils.newLinkedHashSet(ruinedCount);
-        var selectedEntitySet = Collections.newSetFromMap(CollectionUtils.newIdentityHashMap(ruinedCount));
+        var affectedValueSet = LinkedHashSet.newLinkedHashSet(ruinedCount);
+        var selectedEntitySet = Collections.newSetFromMap(new IdentityHashMap<>(ruinedCount));
         for (var i = 0; i < ruinedCount; i++) {
             var remainingAttempts = ruinedCount;
             while (true) {
                 if (!entityIterator.hasNext()) {
                     // Bail out; cannot select enough unique elements.
-                    return NoChangeMove.getInstance();
+                    return SelectorBasedNoChangeMove.getInstance();
                 }
                 var selectedEntity = entityIterator.next();
                 if (selectedEntitySet.add(selectedEntity)) {
@@ -62,12 +63,12 @@ final class RuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIterato
                 }
                 if (remainingAttempts == 0) {
                     // Bail out; cannot select enough unique elements.
-                    return NoChangeMove.getInstance();
+                    return SelectorBasedNoChangeMove.getInstance();
                 }
             }
         }
-        return new RuinRecreateMove<>(variableDescriptor, constructionHeuristicPhaseBuilder, solverScope, selectedEntityList,
-                affectedValueSet);
+        return new SelectorBasedRuinRecreateMove<>(variableDescriptor, constructionHeuristicPhaseBuilder, solverScope,
+                selectedEntityList, affectedValueSet);
     }
 
 }

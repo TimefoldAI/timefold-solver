@@ -6,6 +6,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public interface VariableDescriptorAwareScoreDirector<Solution_>
@@ -21,7 +22,8 @@ public interface VariableDescriptorAwareScoreDirector<Solution_>
 
     void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity);
 
-    default void changeVariableFacade(VariableDescriptor<Solution_> variableDescriptor, Object entity, Object newValue) {
+    default void changeVariableFacade(VariableDescriptor<Solution_> variableDescriptor, Object entity,
+            @Nullable Object newValue) {
         beforeVariableChanged(variableDescriptor, entity);
         variableDescriptor.setValue(entity, newValue);
         afterVariableChanged(variableDescriptor, entity);

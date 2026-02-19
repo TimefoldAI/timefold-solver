@@ -5,6 +5,7 @@ import static java.util.Comparator.comparing;
 
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -14,7 +15,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -154,8 +154,9 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
 
     private static <Score_ extends Score<Score_>> Map<ConstraintJustification, MatchAnalysis<Score_>>
             mapMatchesToJustifications(List<MatchAnalysis<Score_>> matchAnalyses) {
+
         Map<ConstraintJustification, MatchAnalysis<Score_>> matchAnalysisMap =
-                CollectionUtils.newLinkedHashMap(matchAnalyses.size());
+                LinkedHashMap.newLinkedHashMap(matchAnalyses.size());
         for (var matchAnalysis : matchAnalyses) {
             var previous = matchAnalysisMap.put(matchAnalysis.justification(), matchAnalysis);
             if (previous != null) {

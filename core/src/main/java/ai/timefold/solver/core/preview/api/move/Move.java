@@ -1,9 +1,7 @@
 package ai.timefold.solver.core.preview.api.move;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.SequencedCollection;
 
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -13,6 +11,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A Move represents a change of 1 or more {@link PlanningVariable}s of 1 or more {@link PlanningEntity}s
@@ -100,17 +99,13 @@ public interface Move<Solution_> {
      * Required for entity tabu.
      * <p>
      * This method is only called after {@link #execute(MutableSolutionView)}, which might affect the return values.
-     * <p>
      * Duplicate entries in the returned {@link Collection} are best avoided.
-     * The returned {@link Collection} is recommended to be in a stable order.
-     * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
-     * <p>
      * The default implementation throws an {@link UnsupportedOperationException},
      * making tabu search impossible unless the move class implements this method.
      *
      * @return Each entity only once.
      */
-    default Collection<?> getPlanningEntities() {
+    default SequencedCollection<Object> getPlanningEntities() {
         throw new UnsupportedOperationException(
                 "Move class (%s) doesn't implement the getPlanningEntities() method, so Entity Tabu Search is impossible."
                         .formatted(getClass()));
@@ -121,17 +116,13 @@ public interface Move<Solution_> {
      * Required for value tabu.
      * <p>
      * This method is only called after {@link #execute(MutableSolutionView)}, which might affect the return values.
-     * <p>
      * Duplicate entries in the returned {@link Collection} are best avoided.
-     * The returned {@link Collection} is recommended to be in a stable order.
-     * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
-     * <p>
      * The default implementation throws an {@link UnsupportedOperationException},
      * making tabu search impossible unless the move class implements this method.
      *
      * @return Each value only once. May contain null.
      */
-    default Collection<?> getPlanningValues() {
+    default SequencedCollection<@Nullable Object> getPlanningValues() {
         throw new UnsupportedOperationException(
                 "Move class (%s) doesn't implement the getPlanningValues() method, so Value Tabu Search is impossible."
                         .formatted(getClass()));
