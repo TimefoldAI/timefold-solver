@@ -32,6 +32,7 @@ import java.util.UUID;
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.cloner.DeepPlanningClone;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -83,6 +84,22 @@ public final class DeepCloningUtils {
         if (isImmutable(fieldType)) {
             return false;
         } else {
+            // Problem facts
+            // assigned to basic variables that enable deep cloning must also enable deep cloning for the fact type.
+            // Otherwise, the solver might fail to recognize that an assigned value belongs to a value range.
+            if (isFieldAPlanningBasicVariable(field, owningClass) && isFieldADeepCloneProperty(field, owningClass)
+                    && !isClassDeepCloned(solutionDescriptor, field.getType())) {
+                throw new IllegalStateException("""
+                        The field (%s) of class (%s) is configured to be deep-cloned,
+                        but its type (%s) is not deep-cloned.
+                        Maybe remove the @%s annotation from the field?
+                        Maybe annotate the type (%s) with @%s?"""
+                        .formatted(field.getName(), owningClass.getCanonicalName(),
+                                field.getType().getCanonicalName(),
+                                DeepPlanningClone.class.getSimpleName(),
+                                field.getType().getCanonicalName(),
+                                DeepPlanningClone.class.getSimpleName()));
+            }
             return needsDeepClone(solutionDescriptor, field, owningClass);
         }
 
@@ -202,6 +219,15 @@ public final class DeepCloningUtils {
         if (!field.isAnnotationPresent(PlanningListVariable.class)) {
             Method getterMethod = ReflectionHelper.getGetterMethod(owningClass, field.getName());
             return getterMethod != null && getterMethod.isAnnotationPresent(PlanningListVariable.class);
+        } else {
+            return true;
+        }
+    }
+
+    private static boolean isFieldAPlanningBasicVariable(Field field, Class<?> owningClass) {
+        if (!field.isAnnotationPresent(PlanningVariable.class)) {
+            Method getterMethod = ReflectionHelper.getGetterMethod(owningClass, field.getName());
+            return getterMethod != null && getterMethod.isAnnotationPresent(PlanningVariable.class);
         } else {
             return true;
         }
