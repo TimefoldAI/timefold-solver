@@ -1218,7 +1218,7 @@ public abstract class AbstractSolutionClonerTest {
             var cloner = createSolutionCloner(solutionDescriptor);
             cloner.cloneSolution(original);
         }).hasMessageContaining(
-                "The field (value) of class (ai.timefold.solver.core.testdomain.clone.deepcloning.field.invalid.TestdataInvalidEntityProvidingEntity) is configured to be deep-clonedadsf")
+                "The field (value) of class (ai.timefold.solver.core.testdomain.clone.deepcloning.field.invalid.TestdataInvalidEntityProvidingEntity) is configured to be deep-cloned")
                 .hasMessageContaining("but its type (ai.timefold.solver.core.testdomain.TestdataValue) is not deep-cloned")
                 .hasMessageContaining("Maybe remove the @DeepPlanningClone annotation from the field?")
                 .hasMessageContaining(
