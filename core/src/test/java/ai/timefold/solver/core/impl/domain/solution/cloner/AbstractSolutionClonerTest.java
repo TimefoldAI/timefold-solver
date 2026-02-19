@@ -66,6 +66,7 @@ import ai.timefold.solver.core.testdomain.reflect.field.TestdataFieldAnnotatedSo
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyEntity;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencySolution;
 import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyValue;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.deepclone.TestdataDeepCloneEntityProvidingSolution;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -376,6 +377,19 @@ public abstract class AbstractSolutionClonerTest {
         assertThat(cloneValue).isNotNull()
                 .isNotSameAs(solutionValue);
         assertThat(cloneValue.getId()).isEqualTo(originalValue.getId());
+    }
+
+    @Test
+    void deepCloneWithEntityValueRange() {
+        var solutionDescriptor = TestdataDeepCloneEntityProvidingSolution.buildSolutionDescriptor();
+        var cloner = createSolutionCloner(solutionDescriptor);
+        var original = TestdataDeepCloneEntityProvidingSolution.generateSolution();
+        var clone = cloner.cloneSolution(original);
+
+        var firstEntity = clone.getEntityList().get(0);
+        assertThat(firstEntity.getValueRange()).contains(firstEntity.getValue());
+        var secondEntity = clone.getEntityList().get(1);
+        assertThat(secondEntity.getValueRange()).contains(secondEntity.getValue());
     }
 
     @Test
