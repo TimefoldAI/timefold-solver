@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.entityproviding.deepclone;
+package ai.timefold.solver.core.testdomain.clone.deepcloning.field.invalid;
 
 import java.util.List;
 
@@ -12,31 +12,32 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningEntity
-public class TestdataDeepCloneEntityProvidingEntity extends TestdataObject {
+public class TestdataInvalidEntityProvidingEntity extends TestdataObject {
 
-    public static EntityDescriptor<TestdataDeepCloneEntityProvidingSolution> buildEntityDescriptor() {
-        return TestdataDeepCloneEntityProvidingSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataDeepCloneEntityProvidingEntity.class);
+    public static EntityDescriptor<TestdataInvalidEntityProvidingSolution> buildEntityDescriptor() {
+        return TestdataInvalidEntityProvidingSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataInvalidEntityProvidingEntity.class);
     }
 
-    public static GenuineVariableDescriptor<TestdataDeepCloneEntityProvidingSolution> buildVariableDescriptorForValue() {
+    public static GenuineVariableDescriptor<TestdataInvalidEntityProvidingSolution> buildVariableDescriptorForValue() {
         return buildEntityDescriptor().getGenuineVariableDescriptor("value");
     }
 
+    @ValueRangeProvider(id = "valueRange")
     private List<TestdataValue> valueRange;
 
     @DeepPlanningClone
-    private TestdataValue value;
+    private TestdataValue value; // TestdataValue is not deep-cloned, and the cloning logic should fail-fast
 
-    public TestdataDeepCloneEntityProvidingEntity() {
+    public TestdataInvalidEntityProvidingEntity() {
         // Required for cloning
     }
 
-    public TestdataDeepCloneEntityProvidingEntity(String code, List<TestdataValue> valueRange) {
+    public TestdataInvalidEntityProvidingEntity(String code, List<TestdataValue> valueRange) {
         this(code, valueRange, null);
     }
 
-    public TestdataDeepCloneEntityProvidingEntity(String code, List<TestdataValue> valueRange, TestdataValue value) {
+    public TestdataInvalidEntityProvidingEntity(String code, List<TestdataValue> valueRange, TestdataValue value) {
         super(code);
         this.valueRange = valueRange;
         this.value = value;
@@ -51,7 +52,6 @@ public class TestdataDeepCloneEntityProvidingEntity extends TestdataObject {
         this.value = value;
     }
 
-    @ValueRangeProvider(id = "valueRange")
     public List<TestdataValue> getValueRange() {
         return valueRange;
     }

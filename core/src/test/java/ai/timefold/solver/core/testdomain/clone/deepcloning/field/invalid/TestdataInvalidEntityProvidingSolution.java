@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.entityproviding.deepclone;
+package ai.timefold.solver.core.testdomain.clone.deepcloning.field.invalid;
 
 import java.util.List;
 
@@ -12,47 +12,47 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningSolution
-public class TestdataDeepCloneEntityProvidingSolution extends TestdataObject {
+public class TestdataInvalidEntityProvidingSolution extends TestdataObject {
 
-    public static SolutionDescriptor<TestdataDeepCloneEntityProvidingSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataDeepCloneEntityProvidingSolution.class,
-                TestdataDeepCloneEntityProvidingEntity.class);
+    public static SolutionDescriptor<TestdataInvalidEntityProvidingSolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataInvalidEntityProvidingSolution.class,
+                TestdataInvalidEntityProvidingEntity.class);
     }
 
-    public static PlanningSolutionMetaModel<TestdataDeepCloneEntityProvidingSolution> buildMetaModel() {
+    public static PlanningSolutionMetaModel<TestdataInvalidEntityProvidingSolution> buildMetaModel() {
         return buildSolutionDescriptor().getMetaModel();
     }
 
-    public static TestdataDeepCloneEntityProvidingSolution generateSolution() {
-        var solution = new TestdataDeepCloneEntityProvidingSolution("s1");
+    public static TestdataInvalidEntityProvidingSolution generateSolution() {
+        var solution = new TestdataInvalidEntityProvidingSolution("s1");
         var value1 = new TestdataValue("1");
         var value2 = new TestdataValue("2");
-        var entity1 = new TestdataDeepCloneEntityProvidingEntity("1", List.of(value1, value2));
+        var entity1 = new TestdataInvalidEntityProvidingEntity("1", List.of(value1, value2));
         entity1.setValue(value1);
-        var entity2 = new TestdataDeepCloneEntityProvidingEntity("2", List.of(value1, value2));
+        var entity2 = new TestdataInvalidEntityProvidingEntity("2", List.of(value1, value2));
         entity2.setValue(value2);
         solution.setEntityList(List.of(entity1, entity2));
         return solution;
     }
 
-    private List<TestdataDeepCloneEntityProvidingEntity> entityList;
+    private List<TestdataInvalidEntityProvidingEntity> entityList;
 
     private SimpleScore score;
 
-    public TestdataDeepCloneEntityProvidingSolution() {
+    public TestdataInvalidEntityProvidingSolution() {
         // Required for cloning
     }
 
-    public TestdataDeepCloneEntityProvidingSolution(String code) {
+    public TestdataInvalidEntityProvidingSolution(String code) {
         super(code);
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataDeepCloneEntityProvidingEntity> getEntityList() {
+    public List<TestdataInvalidEntityProvidingEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataDeepCloneEntityProvidingEntity> entityList) {
+    public void setEntityList(List<TestdataInvalidEntityProvidingEntity> entityList) {
         this.entityList = entityList;
     }
 
