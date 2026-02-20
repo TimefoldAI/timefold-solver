@@ -137,7 +137,7 @@ public final class SolutionDescriptor<Solution_> {
         descriptorPolicy.setMemberAccessorFactory(solutionDescriptor.getMemberAccessorFactory());
 
         solutionDescriptor.processUnannotatedFieldsAndMethods(descriptorPolicy);
-        solutionDescriptor.processAnnotations(descriptorPolicy, entityClassList);
+        solutionDescriptor.processAnnotations(descriptorPolicy);
         // Before iterating over the entity classes, we need to read the inheritance chain,
         // add all parent and child classes, and sort them.
         var updatedEntityClassList = new ArrayList<>(entityClassList);
@@ -334,7 +334,7 @@ public final class SolutionDescriptor<Solution_> {
         }
     }
 
-    public void processAnnotations(DescriptorPolicy descriptorPolicy, List<Class<?>> entityClassList) {
+    public void processAnnotations(DescriptorPolicy descriptorPolicy) {
         domainAccessType = descriptorPolicy.getDomainAccessType();
         processSolutionAnnotations(descriptorPolicy);
         var potentiallyOverwritingMethodList = new ArrayList<Method>();
@@ -440,7 +440,7 @@ public final class SolutionDescriptor<Solution_> {
         }
     }
 
-    private Class<? extends Annotation> extractFactEntityOrScoreAnnotationClass(Member member) {
+    private static Class<? extends Annotation> extractFactEntityOrScoreAnnotationClass(Member member) {
         return ConfigUtils.extractAnnotationClass(member,
                 ProblemFactProperty.class,
                 ProblemFactCollectionProperty.class,

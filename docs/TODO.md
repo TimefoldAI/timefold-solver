@@ -31,5 +31,6 @@
 - [ ] domain.lookup package is gone, so is lookup from PlanningSolution.
 - [ ] lookups no longer accept null values.
 - [ ] `DomainAccessType` is gone, code uses GIZMO when possible
+- [ ] `AutoDiscoverMemberType` is gone
 
 Remove this file when done.
