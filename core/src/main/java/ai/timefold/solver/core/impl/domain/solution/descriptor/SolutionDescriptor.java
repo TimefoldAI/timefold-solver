@@ -10,7 +10,6 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,7 +33,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -139,7 +137,7 @@ public final class SolutionDescriptor<Solution_> {
         descriptorPolicy.setMemberAccessorFactory(solutionDescriptor.getMemberAccessorFactory());
 
         solutionDescriptor.processUnannotatedFieldsAndMethods(descriptorPolicy);
-        solutionDescriptor.processAnnotations(descriptorPolicy, entityClassList);
+        solutionDescriptor.processAnnotations(descriptorPolicy);
         // Before iterating over the entity classes, we need to read the inheritance chain,
         // add all parent and child classes, and sort them.
         var updatedEntityClassList = new ArrayList<>(entityClassList);
@@ -259,7 +257,6 @@ public final class SolutionDescriptor<Solution_> {
     private final MemberAccessorFactory memberAccessorFactory;
 
     private DomainAccessType domainAccessType;
-    private AutoDiscoverMemberType autoDiscoverMemberType;
     private LookUpStrategyResolver lookUpStrategyResolver;
 
     private final Map<String, MemberAccessor> problemFactMemberAccessorMap = new LinkedHashMap<>();
@@ -337,7 +334,7 @@ public final class SolutionDescriptor<Solution_> {
         }
     }
 
-    public void processAnnotations(DescriptorPolicy descriptorPolicy, List<Class<?>> entityClassList) {
+    public void processAnnotations(DescriptorPolicy descriptorPolicy) {
         domainAccessType = descriptorPolicy.getDomainAccessType();
         processSolutionAnnotations(descriptorPolicy);
         var potentiallyOverwritingMethodList = new ArrayList<Method>();
@@ -356,7 +353,7 @@ public final class SolutionDescriptor<Solution_> {
                     continue;
                 }
                 processValueRangeProviderAnnotation(descriptorPolicy, member);
-                processFactEntityOrScoreAnnotation(descriptorPolicy, member, entityClassList);
+                processFactEntityOrScoreAnnotation(descriptorPolicy, member);
             }
             potentiallyOverwritingMethodList.ensureCapacity(potentiallyOverwritingMethodList.size() + memberList.size());
             memberList.stream().filter(Method.class::isInstance)
@@ -382,7 +379,6 @@ public final class SolutionDescriptor<Solution_> {
 
     private void processSolutionAnnotations(DescriptorPolicy descriptorPolicy) {
         var annotation = extractMostRelevantPlanningSolutionAnnotation();
-        autoDiscoverMemberType = annotation.autoDiscoverMemberType();
         var solutionClonerClass = annotation.solutionCloner();
         if (solutionClonerClass != PlanningSolution.NullSolutionCloner.class) {
             solutionCloner = ConfigUtils.newInstance(this::toString, "solutionClonerClass", solutionClonerClass);
@@ -422,9 +418,9 @@ public final class SolutionDescriptor<Solution_> {
     }
 
     private void processFactEntityOrScoreAnnotation(DescriptorPolicy descriptorPolicy,
-            Member member, List<Class<?>> entityClassList) {
-        var annotationClass = extractFactEntityOrScoreAnnotationClassOrAutoDiscover(
-                member, entityClassList);
+            Member member) {
+        var annotationClass = extractFactEntityOrScoreAnnotationClass(
+                member);
         if (annotationClass == null) {
             return;
         }
@@ -444,63 +440,12 @@ public final class SolutionDescriptor<Solution_> {
         }
     }
 
-    private Class<? extends Annotation> extractFactEntityOrScoreAnnotationClassOrAutoDiscover(
-            Member member, List<Class<?>> entityClassList) {
-        var annotationClass = ConfigUtils.extractAnnotationClass(member,
+    private static Class<? extends Annotation> extractFactEntityOrScoreAnnotationClass(Member member) {
+        return ConfigUtils.extractAnnotationClass(member,
                 ProblemFactProperty.class,
                 ProblemFactCollectionProperty.class,
                 PlanningEntityProperty.class, PlanningEntityCollectionProperty.class,
                 PlanningScore.class);
-        if (annotationClass == null) {
-            Class<?> type;
-            if (autoDiscoverMemberType == AutoDiscoverMemberType.FIELD
-                    && member instanceof Field field) {
-                type = field.getType();
-            } else if (autoDiscoverMemberType == AutoDiscoverMemberType.GETTER
-                    && (member instanceof Method method) && ReflectionHelper.isGetterMethod(method)) {
-                type = method.getReturnType();
-            } else {
-                type = null;
-            }
-            if (type != null) {
-                if (Score.class.isAssignableFrom(type)) {
-                    annotationClass = PlanningScore.class;
-                } else if (Collection.class.isAssignableFrom(type) || type.isArray()) {
-                    Class<?> elementType;
-                    if (Collection.class.isAssignableFrom(type)) {
-                        var genericType = (member instanceof Field f) ? f.getGenericType()
-                                : ((Method) member).getGenericReturnType();
-                        var memberName = member.getName();
-                        if (!(genericType instanceof ParameterizedType)) {
-                            throw new IllegalArgumentException(
-                                    """
-                                            The solutionClass (%s) has a auto discovered member (%s) with a member type (%s) that returns a %s which has no generic parameters.
-                                            Maybe the member (%s) should return a typed %s."""
-                                            .formatted(solutionClass, memberName, type, Collection.class.getSimpleName(),
-                                                    memberName, Collection.class.getSimpleName()));
-                        }
-                        elementType = ConfigUtils.extractGenericTypeParameter("solutionClass", solutionClass, type, genericType,
-                                null, member.getName()).orElse(Object.class);
-                    } else {
-                        elementType = type.getComponentType();
-                    }
-                    if (entityClassList.stream().anyMatch(entityClass -> entityClass.isAssignableFrom(elementType))) {
-                        annotationClass = PlanningEntityCollectionProperty.class;
-                    } else {
-                        annotationClass = ProblemFactCollectionProperty.class;
-                    }
-                } else if (Map.class.isAssignableFrom(type)) {
-                    throw new IllegalStateException(
-                            "The autoDiscoverMemberType (%s) does not yet support the member (%s) of type (%s) which is an implementation of %s."
-                                    .formatted(autoDiscoverMemberType, member, type, Map.class.getSimpleName()));
-                } else if (entityClassList.stream().anyMatch(entityClass -> entityClass.isAssignableFrom(type))) {
-                    annotationClass = PlanningEntityProperty.class;
-                } else {
-                    annotationClass = ProblemFactProperty.class;
-                }
-            }
-        }
-        return annotationClass;
     }
 
     private void processProblemFactPropertyAnnotation(DescriptorPolicy descriptorPolicy, Member member,

@@ -2426,7 +2426,6 @@ In rare cases, a planning entity might be a singleton: use `@PlanningEntityPrope
 
 Both annotations need to be on a member in a class with a `@PlanningSolution` annotation,
 and are ignored on parent classes or subclasses without that annotation.
-They can also be <<autoDiscoverSolutionProperties,auto discovered>> if enabled.
 
 IMPORTANT: A planning solution must not contain duplicate entities,
 as defined by the `equals()` method of the entity class.
@@ -2473,8 +2472,6 @@ public class Timetable {
 ====
 
 Some use cases use xref:constraints-and-score/overview.adoc#scoreType[other score types].
-
-This annotation can also be <<autoDiscoverSolutionProperties,auto discovered>> if enabled.
 
 
 [#problemFacts]
@@ -2531,8 +2528,6 @@ It is ignored on parent classes or subclasses without that annotation.
 
 In rare cases, a problem fact might be a singleton: use `@ProblemFactProperty` on its method (or field) instead.
 
-Both annotations can also be <<autoDiscoverSolutionProperties,auto discovered>> if enabled.
-
 
 [#cachedProblemFact]
 ==== Cached problem fact
@@ -2578,41 +2573,6 @@ Java::
 Where a score constraint needs to check that no two exams with a topic that shares a student are scheduled close together
 (depending on the constraint: at the same time, in a row, or in the same day),
 the `TopicConflict` instance can be used as a problem fact, rather than having to combine every two `Student` instances.
-
-
-[#autoDiscoverSolutionProperties]
-=== Auto discover solution properties
-
-Instead of configuring each property (or field) annotation explicitly,
-some can also be deduced automatically by Timefold Solver:
-
-[source,java,options="nowrap"]
-----
-@PlanningSolution(autoDiscoverMemberType = AutoDiscoverMemberType.FIELD)
-public class VehicleRoutePlan {
-
-        ...
-
-}
-----
-
-The `AutoDiscoverMemberType` can be:
-
-* `NONE`: No auto discovery.
-* `FIELD`: Auto discover all fields on the `@PlanningSolution` class
-* `GETTER`: Auto discover all getters on the `@PlanningSolution` class
-
-The automatic annotation is based on the field type (or getter return type):
-
-* `@ProblemFactProperty`: when it isn't a `Collection`, an array, a `@PlanningEntity` class or a `Score`
-* `@ProblemFactCollectionProperty`: when it's a `Collection` (or array) of a type that isn't a `@PlanningEntity` class
-* `@PlanningEntityProperty`: when it is a configured `@PlanningEntity` class or subclass
-* `@PlanningEntityCollectionProperty`: when it's a `Collection` (or array) of a type that is a configured `@PlanningEntity` class or subclass
-* `@PlanningScore`: when it is a `Score` or subclass
-
-These automatic annotations can still be overwritten per field (or getter).
-Specifically, a xref:constraints-and-score/overview.adoc#bendableScore[BendableScore] always needs to override
-with an explicit `@PlanningScore` annotation to define the number of hard and soft levels.
 
 
 [#cloningASolution]

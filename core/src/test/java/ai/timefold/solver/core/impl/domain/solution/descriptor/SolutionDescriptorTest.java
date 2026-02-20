@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
-import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfCollection;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
@@ -10,19 +9,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.AbstractValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
-import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
-import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.collection.TestdataArrayBasedSolution;
 import ai.timefold.solver.core.testdomain.collection.TestdataSetBasedSolution;
 import ai.timefold.solver.core.testdomain.immutable.enumeration.TestdataEnumSolution;
 import ai.timefold.solver.core.testdomain.immutable.record.TestdataRecordSolution;
-import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution;
 import ai.timefold.solver.core.testdomain.invalid.badfactcollection.TestdataBadFactCollectionSolution;
 import ai.timefold.solver.core.testdomain.invalid.constraintweightoverrides.TestdataInvalidConstraintWeightOverridesSolution;
@@ -38,21 +33,13 @@ import ai.timefold.solver.core.testdomain.solutionproperties.TestdataNoProblemFa
 import ai.timefold.solver.core.testdomain.solutionproperties.TestdataProblemFactPropertySolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.TestdataReadMethodProblemFactCollectionPropertySolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.TestdataWildcardSolution;
-import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataAutoDiscoverFieldOverrideSolution;
-import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataAutoDiscoverFieldSolution;
-import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataAutoDiscoverGetterOverrideSolution;
-import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataAutoDiscoverGetterSolution;
-import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataAutoDiscoverUnannotatedEntitySolution;
-import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataExtendedAutoDiscoverGetterSolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataDuplicatePlanningEntityCollectionPropertySolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataDuplicatePlanningScorePropertySolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataDuplicateProblemFactCollectionPropertySolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataMissingScorePropertySolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataProblemFactCollectionPropertyWithArgumentSolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataProblemFactIsPlanningEntityCollectionPropertySolution;
-import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataUnknownFactTypeSolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataUnsupportedWildcardSolution;
-import ai.timefold.solver.core.testutil.CodeAssertableArrayList;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
@@ -201,137 +188,6 @@ class SolutionDescriptorTest {
 
         assertThat(solutionDescriptor.findEntityDescriptor(TestdataGenericEntity.class).getVariableDescriptorMap())
                 .containsOnlyKeys("value", "subTypeValue", "complexGenericValue");
-    }
-
-    // ************************************************************************
-    // Autodiscovery
-    // ************************************************************************
-
-    @Test
-    void autoDiscoverProblemFactCollectionPropertyElementTypeUnknown() {
-        assertThatIllegalArgumentException().isThrownBy(TestdataUnknownFactTypeSolution::buildSolutionDescriptor);
-    }
-
-    @Test
-    void autoDiscoverFields() {
-        var solutionDescriptor = TestdataAutoDiscoverFieldSolution.buildSolutionDescriptor();
-        assertThat(solutionDescriptor.getScoreDefinition()).isInstanceOf(SimpleScoreDefinition.class);
-        assertThat(solutionDescriptor.getScoreDefinition().getScoreClass()).isEqualTo(SimpleScore.class);
-        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact");
-        assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("problemFactList");
-        assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
-        assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
-
-        var singleProblemFact = new TestdataObject("p1");
-        var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
-        var entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
-        var otherEntity = new TestdataEntity("otherE1");
-        var solution = new TestdataAutoDiscoverFieldSolution("s1", singleProblemFact, valueList, entityList, otherEntity);
-
-        assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution), "otherE1", "p1", "e1", "e2",
-                "v1", "v2");
-    }
-
-    @Test
-    void autoDiscoverGetters() {
-        var solutionDescriptor = TestdataAutoDiscoverGetterSolution.buildSolutionDescriptor();
-        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact");
-        assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("problemFactList");
-        assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
-        assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
-
-        var singleProblemFact = new TestdataObject("p1");
-        var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
-        var entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
-        var otherEntity = new TestdataEntity("otherE1");
-        var solution = new TestdataAutoDiscoverGetterSolution("s1", singleProblemFact, valueList, entityList, otherEntity);
-
-        assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution), "otherE1", "p1", "e1", "e2",
-                "v1", "v2");
-    }
-
-    @Test
-    void autoDiscoverFieldsFactCollectionOverriddenToSingleProperty() {
-        var solutionDescriptor = TestdataAutoDiscoverFieldOverrideSolution.buildSolutionDescriptor();
-        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact",
-                "listProblemFact");
-        assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("problemFactList");
-        assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
-        assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
-
-        var singleProblemFact = new TestdataObject("p1");
-        var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
-        var entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
-        var otherEntity = new TestdataEntity("otherE1");
-        var listFact = new CodeAssertableArrayList<>("list1", Arrays.asList("x", "y"));
-        var solution = new TestdataAutoDiscoverFieldOverrideSolution("s1", singleProblemFact, valueList, entityList,
-                otherEntity, listFact);
-
-        assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution),
-                "otherE1", "list1", "p1", "e1", "e2", "v1", "v2");
-    }
-
-    @Test
-    void autoDiscoverGettersFactCollectionOverriddenToSingleProperty() {
-        var solutionDescriptor = TestdataAutoDiscoverGetterOverrideSolution.buildSolutionDescriptor();
-        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact",
-                "listProblemFact");
-        assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("problemFactList");
-        assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
-        assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
-
-        var singleProblemFact = new TestdataObject("p1");
-        var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
-        var entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
-        var otherEntity = new TestdataEntity("otherE1");
-        var listFact = new CodeAssertableArrayList<>("list1", Arrays.asList("x", "y"));
-        var solution = new TestdataAutoDiscoverGetterOverrideSolution("s1", singleProblemFact, valueList, entityList,
-                otherEntity, listFact);
-
-        assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution),
-                "otherE1", "list1", "p1", "e1", "e2", "v1", "v2");
-    }
-
-    @Test
-    void autoDiscoverUnannotatedEntitySubclass() {
-        var solutionDescriptor = TestdataAutoDiscoverUnannotatedEntitySolution.buildSolutionDescriptor();
-        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact");
-        assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("problemFactList");
-        assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
-        assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
-
-        var singleProblemFact = new TestdataObject("p1");
-        var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
-        var entityList = Arrays.asList(
-                new TestdataOnlyBaseAnnotatedChildEntity("u1"),
-                new TestdataOnlyBaseAnnotatedChildEntity("u2"));
-        var otherEntity = new TestdataOnlyBaseAnnotatedChildEntity("otherU1");
-        var solution =
-                new TestdataAutoDiscoverUnannotatedEntitySolution("s1", singleProblemFact, valueList, entityList, otherEntity);
-
-        assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution), "otherU1", "p1", "u1", "u2",
-                "v1", "v2");
-    }
-
-    @Test
-    void autoDiscoverGettersOverriddenInSubclass() {
-        var solutionDescriptor = TestdataExtendedAutoDiscoverGetterSolution.buildSubclassSolutionDescriptor();
-        assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact",
-                "problemFactList");
-        assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).isEmpty();
-        assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
-        assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
-
-        var singleProblemFact = new TestdataObject("p1");
-        var listAsSingleProblemFact =
-                new CodeAssertableArrayList<>("f1", Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        var entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
-        var otherEntity = new TestdataEntity("otherE1");
-        var solution = new TestdataExtendedAutoDiscoverGetterSolution("s1", singleProblemFact, listAsSingleProblemFact,
-                entityList, otherEntity);
-
-        assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution), "otherE1", "f1", "p1", "e1",
-                "e2");
     }
 
     @Test

@@ -24,12 +24,8 @@ import java.util.stream.Collectors;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Singleton;
 
-import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
-import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
@@ -65,7 +61,6 @@ import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
@@ -1001,28 +996,6 @@ class TimefoldProcessor {
                             PlanningSolution.class.getSimpleName()));
         }
 
-        planningSolutionAnnotationInstanceCollection.forEach(planningSolutionAnnotationInstance -> {
-            var autoDiscoverMemberType = planningSolutionAnnotationInstance.values().stream()
-                    .filter(v -> v.name().equals("autoDiscoverMemberType"))
-                    .findFirst()
-                    .map(AnnotationValue::asEnum)
-                    .map(AutoDiscoverMemberType::valueOf)
-                    .orElse(AutoDiscoverMemberType.NONE);
-
-            if (autoDiscoverMemberType != AutoDiscoverMemberType.NONE) {
-                throw new UnsupportedOperationException("""
-                        Auto-discovery of members using %s is not supported under Quarkus.
-                        Remove the autoDiscoverMemberType property from the @%s annotation
-                        and explicitly annotate the fields or getters with annotations such as @%s, @%s or @%s."""
-                        .strip()
-                        .formatted(
-                                AutoDiscoverMemberType.class.getSimpleName(),
-                                PlanningSolution.class.getSimpleName(),
-                                PlanningScore.class.getSimpleName(),
-                                PlanningEntityCollectionProperty.class.getSimpleName(),
-                                ProblemFactCollectionProperty.class.getSimpleName()));
-            }
-        });
         var solutionClassInstance = planningSolutionAnnotationInstanceCollection.iterator().next();
         var solutionClassInfo = solutionClassInstance.target().asClass();
         var visited = new HashSet<AnnotationTarget>();
