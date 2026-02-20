@@ -3,22 +3,9 @@ name: ai.timefold.solver.migration.ToLatest
 displayName: Upgrade to the latest Timefold Solver
 description: 'Replace all your calls to deleted/deprecated types and methods of Timefold Solver with their proper alternatives.'
 recipeList:
-  - org.openrewrite.properties.ChangePropertyKey:
-      oldPropertyKey: timefold.solver.solve-length
-      newPropertyKey: timefold.solver.solve.duration
-      fileMatcher: '**/application.properties'
-  - org.openrewrite.properties.ChangePropertyKey:
-      oldPropertyKey: quarkus.timefold.solver.solve-length
-      newPropertyKey: quarkus.timefold.solver.solve.duration
-      fileMatcher: '**/application.properties'
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.ConstraintFactory from(Class)
-      newMethodName: forEach
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.ConstraintFactory fromUnfiltered(Class)
-      newMethodName: forEachIncludingUnassigned
-  - org.openrewrite.java.ChangeMethodName:
-      methodPattern: ai.timefold.solver.core.api.score.stream.ConstraintFactory fromUniquePair(..)
-      newMethodName: forEachUniquePair
   - ai.timefold.solver.migration.GeneralChangeTypeMigrationRecipe
+  - ai.timefold.solver.migration.ConstraintStreamMigrationRecipe
+  - org.openrewrite.java.DeleteMethodArgument:
+      methodPattern: ai.timefold.solver.core.api.score.constraint.ConstraintRef of(String, String)
+      argumentIndex: 0
   - org.openrewrite.java.RemoveUnusedImports
