@@ -55,7 +55,7 @@ public class GeneralChangeTypeMigrationRecipe extends AbstractRecipe {
                 // Problem fact
                 new ChangeType("ai.timefold.solver.core.api.solver.ProblemFactChange",
                         "ai.timefold.solver.core.api.solver.change.ProblemChange", true),
-                // Replace ENVIRONMENT values
+                // ENVIRONMENT values
                 new ReplaceConstantWithAnotherConstant("ai.timefold.solver.core.config.solver.EnvironmentMode.FAST_ASSERT",
                         "ai.timefold.solver.core.config.solver.EnvironmentMode.STEP_ASSERT"),
                 new ReplaceConstantWithAnotherConstant("ai.timefold.solver.core.config.solver.EnvironmentMode.REPRODUCIBLE",
