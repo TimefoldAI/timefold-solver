@@ -17,7 +17,7 @@ import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
 
 @Execution(ExecutionMode.CONCURRENT)
-class ScoreClassesMigrationRecipeTest implements RewriteTest {
+class GeneralChangeTypeMigrationRecipeTest implements RewriteTest {
 
     private static final class NoWildCardImportStyle extends NamedStyles {
 
@@ -30,12 +30,13 @@ class ScoreClassesMigrationRecipeTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipes(new ScoreClassesMigrationRecipe())
+        spec.recipes(new GeneralChangeTypeMigrationRecipe())
                 .typeValidationOptions(TypeValidation.builder().allowMissingType(ignore -> true).build())
                 .parser(JavaParser.fromJavaVersion()
                         .styles(List.of(new NoWildCardImportStyle()))
                         // We must add all old classes as stubs to the JavaTemplate
-                        .dependsOn("package ai.timefold.solver.core.api.score.buildin.simple; public class SimpleScore {}",
+                        .dependsOn("package ai.timefold.solver.core.api.domain.lookup; public class PlanningId {}",
+                                "package ai.timefold.solver.core.api.score.buildin.simple; public class SimpleScore {}",
                                 "package ai.timefold.solver.core.api.score.buildin.simplelong; public class SimpleLongScore {}",
                                 "package ai.timefold.solver.core.api.score.buildin.simplebigdecimal; public class SimpleBigDecimalScore {}",
                                 "package ai.timefold.solver.core.api.score.buildin.hardsoft; public class HardSoftScore {}",
@@ -55,6 +56,7 @@ class ScoreClassesMigrationRecipeTest implements RewriteTest {
                 """
                         package timefold;
 
+                        import ai.timefold.solver.core.api.domain.lookup.PlanningId;
                         import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
                         import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
                         import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
@@ -69,6 +71,7 @@ class ScoreClassesMigrationRecipeTest implements RewriteTest {
                         import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 
                         public class Test {
+                                @PlanningId
                                 SimpleScore simpleScore;
                                 SimpleLongScore simpleLongScore;
                                 SimpleBigDecimalScore simpleBigDecimalScore;
@@ -85,6 +88,7 @@ class ScoreClassesMigrationRecipeTest implements RewriteTest {
                 """
                         package timefold;
 
+                        import ai.timefold.solver.core.api.domain.common.PlanningId;
                         import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
                         import ai.timefold.solver.core.api.score.BendableScore;
                         import ai.timefold.solver.core.api.score.HardMediumSoftBigDecimalScore;
@@ -95,6 +99,7 @@ class ScoreClassesMigrationRecipeTest implements RewriteTest {
                         import ai.timefold.solver.core.api.score.SimpleScore;
 
                         public class Test {
+                                @PlanningId
                                 SimpleScore simpleScore;
                                 SimpleScore simpleLongScore;
                                 SimpleBigDecimalScore simpleBigDecimalScore;

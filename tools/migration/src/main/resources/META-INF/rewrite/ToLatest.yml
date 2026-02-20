@@ -20,5 +20,5 @@ recipeList:
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: ai.timefold.solver.core.api.score.stream.ConstraintFactory fromUniquePair(..)
       newMethodName: forEachUniquePair
-  - ai.timefold.solver.migration.ScoreClassesMigrationRecipe
+  - ai.timefold.solver.migration.GeneralChangeTypeMigrationRecipe
   - org.openrewrite.java.RemoveUnusedImports

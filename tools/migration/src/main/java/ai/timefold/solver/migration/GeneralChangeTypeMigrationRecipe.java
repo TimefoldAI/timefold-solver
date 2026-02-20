@@ -5,20 +5,24 @@ import java.util.List;
 import org.openrewrite.Recipe;
 import org.openrewrite.java.ChangeType;
 
-public class ScoreClassesMigrationRecipe extends AbstractRecipe {
+public class GeneralChangeTypeMigrationRecipe extends AbstractRecipe {
     @Override
     public String getDisplayName() {
-        return "Migrate to the new score class structure";
+        return "Migrate legacy code to the new class structure";
     }
 
     @Override
     public String getDescription() {
-        return "Migrate all legacy score classes to the new class structure.";
+        return "Migrate all legacy classes to the new class structure.";
     }
 
     @Override
     public List<Recipe> getRecipeList() {
         return List.of(
+                // Planning Id
+                new ChangeType("ai.timefold.solver.core.api.domain.lookup.PlanningId",
+                        "ai.timefold.solver.core.api.domain.common.PlanningId", true),
+                // Score classes
                 new ChangeType("ai.timefold.solver.core.api.score.buildin.simple.SimpleScore",
                         "ai.timefold.solver.core.api.score.SimpleScore", true),
                 new ChangeType("ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore",
