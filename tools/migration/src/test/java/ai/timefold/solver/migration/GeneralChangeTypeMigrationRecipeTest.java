@@ -47,7 +47,8 @@ class GeneralChangeTypeMigrationRecipeTest implements RewriteTest {
                                 "package ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal; public class HardMediumSoftBigDecimalScore {}",
                                 "package ai.timefold.solver.core.api.score.buildin.bendable; public class BendableScore {}",
                                 "package ai.timefold.solver.core.api.score.buildin.bendablelong; public class BendableLongScore {}",
-                                "package ai.timefold.solver.core.api.score.buildin.bendablebigdecimal; public class BendableBigDecimalScore {}"));
+                                "package ai.timefold.solver.core.api.score.buildin.bendablebigdecimal; public class BendableBigDecimalScore {}",
+                                "package ai.timefold.solver.core.api.solver; public class ProblemFactChange {}"));
     }
 
     @Test
@@ -57,6 +58,7 @@ class GeneralChangeTypeMigrationRecipeTest implements RewriteTest {
                         package timefold;
 
                         import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+                        import ai.timefold.solver.core.api.solver.ProblemFactChange;
                         import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
                         import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
                         import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
@@ -73,6 +75,7 @@ class GeneralChangeTypeMigrationRecipeTest implements RewriteTest {
                         public class Test {
                                 @PlanningId
                                 SimpleScore simpleScore;
+                                ProblemFactChange  problemFactChange;
                                 SimpleLongScore simpleLongScore;
                                 SimpleBigDecimalScore simpleBigDecimalScore;
                                 HardSoftScore hardSoftScore;
@@ -97,10 +100,12 @@ class GeneralChangeTypeMigrationRecipeTest implements RewriteTest {
                         import ai.timefold.solver.core.api.score.HardSoftScore;
                         import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
                         import ai.timefold.solver.core.api.score.SimpleScore;
+                        import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
                         public class Test {
                                 @PlanningId
                                 SimpleScore simpleScore;
+                                ProblemChange  problemFactChange;
                                 SimpleScore simpleLongScore;
                                 SimpleBigDecimalScore simpleBigDecimalScore;
                                 HardSoftScore hardSoftScore;
