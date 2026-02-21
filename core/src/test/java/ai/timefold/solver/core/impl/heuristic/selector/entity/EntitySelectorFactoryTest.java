@@ -5,22 +5,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.mock;
 
-import java.util.Comparator;
-
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ProbabilityEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ShufflingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.SortingEntitySelector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.common.DummyEntityComparator;
+import ai.timefold.solver.core.testdomain.common.DummyEntityComparatorFactory;
 
 import org.junit.jupiter.api.Test;
 
@@ -152,7 +151,7 @@ class EntitySelectorFactoryTest {
     @Test
     void applySorting_withComparatorFactoryClass() {
         EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig()
-                .withComparatorFactoryClass(DummySelectionComparatorFactory.class);
+                .withComparatorFactoryClass(DummyEntityComparatorFactory.class);
         applySorting(entitySelectorConfig);
     }
 
@@ -203,19 +202,4 @@ class EntitySelectorFactoryTest {
         }
     }
 
-    public static class DummySelectionComparatorFactory
-            implements SelectionSorterWeightFactory<TestdataSolution, TestdataEntity> {
-
-        @Override
-        public Comparable createSorterWeight(TestdataSolution solution, TestdataEntity selection) {
-            return 0;
-        }
-    }
-
-    public static class DummyEntityComparator implements Comparator<TestdataEntity> {
-        @Override
-        public int compare(TestdataEntity testdataEntity, TestdataEntity testdataEntity2) {
-            return 0;
-        }
-    }
 }

@@ -8,15 +8,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
+import ai.timefold.solver.core.api.solver.phase.PhaseCommandContext;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
@@ -29,9 +28,9 @@ import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.Corrup
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowValue;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -274,25 +273,16 @@ class EnvironmentModeTest {
     public static class TestdataFirstValueInitializer implements PhaseCommand<TestdataSolution> {
 
         @Override
-        public void changeWorkingSolution(ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier isPhaseTerminated) {
-            var solution = scoreDirector.getWorkingSolution();
+        public void changeWorkingSolution(PhaseCommandContext<TestdataSolution> context) {
+            var solution = context.getWorkingSolution();
             var firstValue = solution.getValueList().get(0);
 
+            var variable = context.getSolutionMetaModel()
+                    .genuineEntity(TestdataEntity.class)
+                    .basicVariable("value", TestdataValue.class);
             for (var entity : solution.getEntityList()) {
-                scoreDirector.beforeVariableChanged(entity, "value");
-                entity.setValue(firstValue);
-                scoreDirector.afterVariableChanged(entity, "value");
-            }
-
-            scoreDirector.triggerVariableListeners();
-            var innerScoreDirector =
-                    (InnerScoreDirector<TestdataSolution, ?>) scoreDirector;
-            var score = innerScoreDirector.calculateScore();
-
-            if (!score.isFullyAssigned()) {
-                throw new IllegalStateException("The solution (" + TestdataEntity.class.getSimpleName()
-                        + ") was not fully initialized by CustomSolverPhase: ("
-                        + this.getClass().getCanonicalName() + ")");
+                var move = Moves.change(variable, entity, firstValue);
+                context.executeAndCalculateScore(move);
             }
         }
     }

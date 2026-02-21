@@ -1,8 +1,11 @@
 package ai.timefold.solver.core.impl.move;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
@@ -16,17 +19,17 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
-        implements InnerMutableSolutionView<Solution_>, Rebaser permits EphemeralMoveDirector {
+        implements InnerMutableSolutionView<Solution_>, Lookup permits EphemeralMoveDirector {
 
     protected final VariableDescriptorAwareScoreDirector<Solution_> externalScoreDirector;
     private final InnerScoreDirector<Solution_, Score_> backingScoreDirector;
@@ -47,6 +50,11 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
+    public PlanningSolutionMetaModel<Solution_> getSolutionMetaModel() {
+        return backingScoreDirector.getSolutionDescriptor().getMetaModel();
+    }
+
+    @Override
     public final <Entity_, Value_> void assignValueAndAdd(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ planningValue,
             Entity_ destinationEntity, int destinationIndex) {
@@ -62,6 +70,29 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         externalScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
                 destinationIndex + 1);
         externalScoreDirector.afterListVariableElementAssigned(variableDescriptor, planningValue);
+        externalScoreDirector.triggerVariableListeners();
+    }
+
+    @Override
+    public <Entity_, Value_> void assignValuesAndAdd(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, List<Value_> values,
+            Entity_ destinationEntity, int destinationIndex) {
+        var variableDescriptor =
+                ((DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
+        for (var value : values) {
+            if (!(getPositionOf(variableMetaModel, value) instanceof UnassignedElement)) {
+                throw new IllegalStateException("Cannot assign an already assigned value (%s).".formatted(value));
+            }
+            externalScoreDirector.beforeListVariableElementAssigned(variableDescriptor, value);
+        }
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex);
+        variableDescriptor.getValue(destinationEntity).addAll(destinationIndex, values);
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex + values.size());
+        for (var value : values) {
+            externalScoreDirector.afterListVariableElementAssigned(variableDescriptor, value);
+        }
         externalScoreDirector.triggerVariableListeners();
     }
 
@@ -273,10 +304,24 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
 
     /**
      * Execute a given move and make sure shadow variables are up to date after that.
+     * Does not run a score calculation.
      */
     public final void execute(Move<Solution_> move) {
+        execute(move, false);
+    }
+
+    /**
+     * Execute a given move and make sure shadow variables are up to date after that.
+     *
+     * @param guaranteeFreshScore if true, a score calculation is forced after executing the move,
+     *        to ensure the score is up to date.
+     */
+    public final void execute(Move<Solution_> move, boolean guaranteeFreshScore) {
         move.execute(this);
         externalScoreDirector.triggerVariableListeners();
+        if (guaranteeFreshScore) {
+            backingScoreDirector.calculateScore();
+        }
     }
 
     public final InnerScore<Score_> executeTemporary(Move<Solution_> move) {
@@ -289,11 +334,22 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
 
     public <Result_> Result_ executeTemporary(Move<Solution_> move,
             TemporaryMovePostprocessor<Solution_, Score_, Result_> postprocessor) {
+        try (var ephemeralMoveDirector = ephemeral()) {
+            ephemeralMoveDirector.execute(move);
+            var score = backingScoreDirector.calculateScore();
+            return postprocessor.apply(score, ephemeralMoveDirector.createUndoMove());
+        }
+    }
+
+    public <Result_> @Nullable Result_ executeTemporary(Move<Solution_> move,
+            Function<Solution_, @Nullable Result_> postprocessor, boolean guaranteeFreshScore) {
         var ephemeralMoveDirector = ephemeral();
-        ephemeralMoveDirector.execute(move);
-        var score = backingScoreDirector.calculateScore();
-        var result = postprocessor.apply(score, ephemeralMoveDirector.createUndoMove());
+        ephemeralMoveDirector.execute(move, true);
+        var result = postprocessor.apply(backingScoreDirector.getWorkingSolution());
         ephemeralMoveDirector.close(); // This undoes the move.
+        if (guaranteeFreshScore) {
+            backingScoreDirector.calculateScore();
+        }
         return result;
     }
 
@@ -355,7 +411,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public final <T> @Nullable T rebase(@Nullable T problemFactOrPlanningEntity) {
+    public final <T> @Nullable T lookUpWorkingObject(@Nullable T problemFactOrPlanningEntity) {
         return externalScoreDirector.lookUpWorkingObject(problemFactOrPlanningEntity);
     }
 

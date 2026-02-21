@@ -14,14 +14,16 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTrack
 import ai.timefold.solver.core.impl.score.stream.common.ForEachFilteringCriteria;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Score_>>
         extends AbstractNodeBuildHelper<BavetAbstractConstraintStream<Solution_>> {
 
     private final AbstractScoreInliner<Score_> scoreInliner;
     private final ConsistencyTracker<Solution_> consistencyTracker;
-    private final Map<EntityDescriptor<?>, Map<ForEachFilteringCriteria, Predicate<Object>>> entityDescriptorToForEachCriteriaToPredicateMap;
+    private final Map<EntityDescriptor<Solution_>, Map<ForEachFilteringCriteria, @Nullable Predicate<Object>>> entityDescriptorToForEachCriteriaToPredicateMap;
 
     public ConstraintNodeBuildHelper(ConsistencyTracker<Solution_> consistencyTracker,
             Set<BavetAbstractConstraintStream<Solution_>> activeStreamSet,
@@ -37,8 +39,9 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
         return scoreInliner;
     }
 
-    public <A> Predicate<A> getForEachPredicateForEntityDescriptorAndCriteria(EntityDescriptor<?> entityDescriptor,
-            ForEachFilteringCriteria criteria) {
+    @SuppressWarnings("unchecked")
+    public <A> @Nullable Predicate<A> getForEachPredicateForEntityDescriptorAndCriteria(
+            EntityDescriptor<Solution_> entityDescriptor, ForEachFilteringCriteria criteria) {
         var predicateMap =
                 entityDescriptorToForEachCriteriaToPredicateMap.computeIfAbsent(entityDescriptor, ignored -> new HashMap<>());
         return (Predicate<A>) predicateMap.computeIfAbsent(criteria,

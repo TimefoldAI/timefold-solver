@@ -32,17 +32,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.event.FinalBestSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.FirstInitializedSolutionEvent;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
+import ai.timefold.solver.core.api.solver.phase.PhaseCommandContext;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
@@ -55,6 +54,7 @@ import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 import ai.timefold.solver.core.impl.util.MutableReference;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -125,7 +125,7 @@ class SolverManagerTest {
         var barrier = new CyclicBarrier(barrierPartiesCount);
         return new CustomPhaseConfig()
                 .withCustomPhaseCommands(
-                        (PhaseCommand<TestdataSolution>) (scoreDirector, isPhaseTerminated) -> {
+                        (PhaseCommand<TestdataSolution>) context -> {
                             try {
                                 barrier.await();
                             } catch (InterruptedException | BrokenBarrierException e) {
@@ -141,7 +141,7 @@ class SolverManagerTest {
         var mainThreadReadyBarrier = new CyclicBarrier(2);
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
-                        (scoreDirector, isPhaseTerminated) -> {
+                        context -> {
                             try {
                                 solverThreadReadyBarrier.await();
                             } catch (InterruptedException | BrokenBarrierException e) {
@@ -183,7 +183,7 @@ class SolverManagerTest {
     void exceptionInSolver() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
-                        (scoreDirector, isPhaseTerminated) -> {
+                        context -> {
                             throw new IllegalStateException("exceptionInSolver");
                         }));
         try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
@@ -207,7 +207,7 @@ class SolverManagerTest {
     void errorThrowableInSolver() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
-                        (scoreDirector, isPhaseTerminated) -> {
+                        context -> {
                             throw new OutOfMemoryError("exceptionInSolver");
                         }));
         try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
@@ -335,7 +335,7 @@ class SolverManagerTest {
                         .withBestScoreLimit("0"));
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
             var initializedSolution = PlannerTestUtils.generateTestdataSolution("s1");
-            initializedSolution.getEntityList().forEach(e -> e.setValue(initializedSolution.getValueList().get(0)));
+            initializedSolution.getEntityList().forEach(e -> e.setValue(initializedSolution.getValueList().getFirst()));
 
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
@@ -483,8 +483,7 @@ class SolverManagerTest {
         // CS - CH - LS
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig()
-                        .withCustomPhaseCommands((scoreDirector,
-                                isPhaseTerminated) -> assertThat(initialSolutionEvent.isInitialized()).isFalse()),
+                        .withCustomPhaseCommands(context -> assertThat(initialSolutionEvent.isInitialized()).isFalse()),
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig())
                 .withTerminationConfig(new TerminationConfig()
@@ -512,11 +511,8 @@ class SolverManagerTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(
                         new ConstructionHeuristicPhaseConfig(),
-                        new CustomPhaseConfig()
-                                .withCustomPhaseCommands(
-                                        (scoreDirector, isPhaseTerminated) -> {
-                                            assertThat(initialSolutionEvent.isInitialized()).isFalse();
-                                        }),
+                        new CustomPhaseConfig().withCustomPhaseCommands(
+                                context -> assertThat(initialSolutionEvent.isInitialized()).isFalse()),
                         new LocalSearchPhaseConfig())
                 .withTerminationConfig(new TerminationConfig()
                         .withUnimprovedMillisecondsSpentLimit(1L));
@@ -542,10 +538,10 @@ class SolverManagerTest {
         // CS (CH) - CS (LS)
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(
-                        new CustomPhaseConfig().withCustomPhaseCommands((scoreDirector,
-                                isPhaseTerminated) -> assertThat(initialSolutionEvent.isInitialized()).isFalse()),
-                        new CustomPhaseConfig().withCustomPhaseCommands((scoreDirector,
-                                isPhaseTerminated) -> assertThat(initialSolutionEvent.isInitialized()).isFalse()))
+                        new CustomPhaseConfig()
+                                .withCustomPhaseCommands(context -> assertThat(initialSolutionEvent.isInitialized()).isFalse()),
+                        new CustomPhaseConfig()
+                                .withCustomPhaseCommands(context -> assertThat(initialSolutionEvent.isInitialized()).isFalse()))
                 .withTerminationConfig(new TerminationConfig()
                         .withUnimprovedMillisecondsSpentLimit(1L));
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
@@ -722,7 +718,7 @@ class SolverManagerTest {
     void testProblemSizeStatisticsForWaitingJob() throws InterruptedException, ExecutionException {
         var solvingPausedLatch = new CountDownLatch(1);
         var pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
-                (scoreDirector, isPhaseTerminated) -> {
+                context -> {
                     try {
                         solvingPausedLatch.await();
                     } catch (InterruptedException e) {
@@ -754,10 +750,10 @@ class SolverManagerTest {
             assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("256");
 
             var futureChange = solverManager
-                    .addProblemChange(secondProblemId, (workingSolution, problemChangeDirector) -> {
-                        problemChangeDirector.addProblemFact(new TestdataValue("addedValue"),
-                                workingSolution.getValueList()::add);
-                    });
+                    .addProblemChange(secondProblemId,
+                            (workingSolution, problemChangeDirector) -> problemChangeDirector.addProblemFact(
+                                    new TestdataValue("addedValue"),
+                                    workingSolution.getValueList()::add));
 
             // The first solver can proceed. When it finishes, the second solver starts solving and picks up the change.
             solvingPausedLatch.countDown();
@@ -876,36 +872,40 @@ class SolverManagerTest {
         var latch = new CountDownLatch(1);
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
-                        (ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier booleanSupplier) -> {
-                            var solution = scoreDirector.getWorkingSolution();
-                            var entity = solution.getEntityList().get(0);
-                            scoreDirector.beforeVariableChanged(entity, "value");
-                            entity.setValue(solution.getValueList().get(0));
-                            scoreDirector.afterVariableChanged(entity, "value");
-                            scoreDirector.triggerVariableListeners();
-                        }, (ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier booleanSupplier) -> {
-                            var solution = scoreDirector.getWorkingSolution();
+                        (PhaseCommandContext<TestdataSolution> context) -> {
+                            var variableMetaModel = context.getSolutionMetaModel()
+                                    .genuineEntity(TestdataEntity.class)
+                                    .basicVariable("value", TestdataValue.class);
+                            var solution = context.getWorkingSolution();
+                            var entity = solution.getEntityList().getFirst();
+                            var move = Moves.change(variableMetaModel, entity, solution.getValueList().getFirst());
+                            context.executeAndCalculateScore(move);
+                        }, (PhaseCommandContext<TestdataSolution> context) -> {
+                            var variableMetaModel = context.getSolutionMetaModel()
+                                    .genuineEntity(TestdataEntity.class)
+                                    .basicVariable("value", TestdataValue.class);
+                            var solution = context.getWorkingSolution();
                             var entity = solution.getEntityList().get(1);
-                            scoreDirector.beforeVariableChanged(entity, "value");
-                            entity.setValue(solution.getValueList().get(1));
-                            scoreDirector.afterVariableChanged(entity, "value");
-                            scoreDirector.triggerVariableListeners();
-                        }, (ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier booleanSupplier) -> {
-                            var solution = scoreDirector.getWorkingSolution();
+                            var move = Moves.change(variableMetaModel, entity, solution.getValueList().get(1));
+                            context.executeAndCalculateScore(move);
+                        }, (PhaseCommandContext<TestdataSolution> context) -> {
+                            var variableMetaModel = context.getSolutionMetaModel()
+                                    .genuineEntity(TestdataEntity.class)
+                                    .basicVariable("value", TestdataValue.class);
+                            var solution = context.getWorkingSolution();
                             var entity = solution.getEntityList().get(2);
-                            scoreDirector.beforeVariableChanged(entity, "value");
-                            entity.setValue(solution.getValueList().get(2));
-                            scoreDirector.afterVariableChanged(entity, "value");
-                            scoreDirector.triggerVariableListeners();
-                        }, (ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier booleanSupplier) -> {
+                            var move = Moves.change(variableMetaModel, entity, solution.getValueList().get(2));
+                            context.executeAndCalculateScore(move);
+                        }, (PhaseCommandContext<TestdataSolution> context) -> {
                             // In the next best solution event, both e1 and e2 are definitely not null (but e3 might be).
                             latch.countDown();
-                            var solution = scoreDirector.getWorkingSolution();
+                            var variableMetaModel = context.getSolutionMetaModel()
+                                    .genuineEntity(TestdataEntity.class)
+                                    .basicVariable("value", TestdataValue.class);
+                            var solution = context.getWorkingSolution();
                             var entity = solution.getEntityList().get(3);
-                            scoreDirector.beforeVariableChanged(entity, "value");
-                            entity.setValue(solution.getValueList().get(3));
-                            scoreDirector.afterVariableChanged(entity, "value");
-                            scoreDirector.triggerVariableListeners();
+                            var move = Moves.change(variableMetaModel, entity, solution.getValueList().get(3));
+                            context.executeAndCalculateScore(move);
                         }));
         try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
             var bestSolutionCount = new AtomicInteger();
@@ -951,7 +951,7 @@ class SolverManagerTest {
         var startedBarrier = new CyclicBarrier(2);
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withTerminationConfig(new TerminationConfig())
-                .withPhases(new CustomPhaseConfig().withCustomPhaseCommands((scoreDirector, isPhaseTerminated) -> {
+                .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(context -> {
                     try {
                         startedBarrier.await();
                     } catch (InterruptedException | BrokenBarrierException e) {
@@ -1027,13 +1027,14 @@ class SolverManagerTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(IntStream.of(0, 1)
                         .mapToObj(x -> new CustomPhaseConfig().withCustomPhaseCommands(
-                                (ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier booleanSupplier) -> {
-                                    var solution = scoreDirector.getWorkingSolution();
+                                (PhaseCommandContext<TestdataSolution> context) -> {
+                                    var variableMetaModel = context.getSolutionMetaModel()
+                                            .genuineEntity(TestdataEntity.class)
+                                            .basicVariable("value", TestdataValue.class);
+                                    var solution = context.getWorkingSolution();
                                     var entity = solution.getEntityList().get(x);
-                                    scoreDirector.beforeVariableChanged(entity, "value");
-                                    entity.setValue(solution.getValueList().get(x));
-                                    scoreDirector.afterVariableChanged(entity, "value");
-                                    scoreDirector.triggerVariableListeners();
+                                    var move = Moves.change(variableMetaModel, entity, solution.getValueList().get(x));
+                                    context.executeAndCalculateScore(move);
                                 }))
                         .toArray(PhaseConfig[]::new));
         return createDefaultSolverManager(solverConfig);
@@ -1092,7 +1093,7 @@ class SolverManagerTest {
     private void assertConsumedSolutions(Map<Long, List<TestdataSolution>> consumedSolutions) {
         for (var consumedSolution : consumedSolutions.values()) {
             assertThat(consumedSolution).hasSize(1);
-            assertConsumedFinalBestSolution(consumedSolution.get(0));
+            assertConsumedFinalBestSolution(consumedSolution.getFirst());
         }
     }
 
@@ -1102,7 +1103,7 @@ class SolverManagerTest {
                 assertConsumedFirstBestSolution(bestSolutions.get(0));
                 assertConsumedFinalBestSolution(bestSolutions.get(1));
             } else if (bestSolutions.size() == 1) { // The fist best solution has been skipped.
-                assertConsumedFinalBestSolution(bestSolutions.get(0));
+                assertConsumedFinalBestSolution(bestSolutions.getFirst());
             } else {
                 fail("Unexpected number of received best solutions ("
                         + bestSolutions.size() + "). Should be either 1 or 2.");
@@ -1111,7 +1112,7 @@ class SolverManagerTest {
     }
 
     private void assertConsumedFinalBestSolution(TestdataSolution solution) {
-        var entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().getFirst();
         assertThat(entity.getCode()).isEqualTo("e1");
         assertThat(entity.getValue().getCode()).isEqualTo("v1");
         entity = solution.getEntityList().get(1);
@@ -1120,7 +1121,7 @@ class SolverManagerTest {
     }
 
     private void assertConsumedFirstBestSolution(TestdataSolution solution) {
-        var entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().getFirst();
         assertThat(entity.getCode()).isEqualTo("e1");
         assertThat(entity.getValue().getCode()).isEqualTo("v1");
         entity = solution.getEntityList().get(1);
@@ -1157,10 +1158,10 @@ class SolverManagerTest {
                     .run();
 
             var futureChange = solverManager
-                    .addProblemChange(problemId, (workingSolution, problemChangeDirector) -> {
-                        problemChangeDirector.addProblemFact(new TestdataValue("addedValue"),
-                                workingSolution.getValueList()::add);
-                    });
+                    .addProblemChange(problemId,
+                            (workingSolution, problemChangeDirector) -> problemChangeDirector.addProblemFact(
+                                    new TestdataValue("addedValue"),
+                                    workingSolution.getValueList()::add));
 
             futureChange.get();
             assertThat(futureChange).isCompleted();
@@ -1195,7 +1196,7 @@ class SolverManagerTest {
     void addProblemChangeToWaitingSolver() throws InterruptedException, ExecutionException {
         var solvingPausedLatch = new CountDownLatch(1);
         var pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
-                (ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier booleanSupplier) -> {
+                context -> {
                     try {
                         solvingPausedLatch.await();
                     } catch (InterruptedException e) {
@@ -1221,10 +1222,10 @@ class SolverManagerTest {
                     .run();
 
             var futureChange = solverManager
-                    .addProblemChange(secondProblemId, (workingSolution, problemChangeDirector) -> {
-                        problemChangeDirector.addProblemFact(new TestdataValue("addedValue"),
-                                workingSolution.getValueList()::add);
-                    });
+                    .addProblemChange(secondProblemId,
+                            (workingSolution, problemChangeDirector) -> problemChangeDirector.addProblemFact(
+                                    new TestdataValue("addedValue"),
+                                    workingSolution.getValueList()::add));
 
             // The first solver can proceed. When it finishes, the second solver starts solving and picks up the change.
             solvingPausedLatch.countDown();
@@ -1239,8 +1240,7 @@ class SolverManagerTest {
     void terminateSolverJobEarly_stillReturnsBestSolution() throws ExecutionException, InterruptedException {
         var solvingStartedLatch = new CountDownLatch(1);
         var pausedPhaseConfig = new CustomPhaseConfig()
-                .withCustomPhaseCommands((ScoreDirector<TestdataSolution> scoreDirector,
-                        BooleanSupplier booleanSupplier) -> solvingStartedLatch.countDown());
+                .withCustomPhaseCommands(context -> solvingStartedLatch.countDown());
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(pausedPhaseConfig, new ConstructionHeuristicPhaseConfig());
@@ -1259,7 +1259,7 @@ class SolverManagerTest {
     void terminateScheduledSolverJobEarly_returnsInputProblem() throws ExecutionException, InterruptedException {
         var solvingPausedLatch = new CountDownLatch(1);
         var pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
-                (ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier booleanSupplier) -> {
+                context -> {
                     try {
                         solvingPausedLatch.await();
                     } catch (InterruptedException e) {
@@ -1296,7 +1296,7 @@ class SolverManagerTest {
     @Timeout(60)
     void threadFactoryIsUsed() throws ExecutionException, InterruptedException {
         var threadCheckingPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
-                (ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier booleanSupplier) -> {
+                context -> {
                     if (!Thread.currentThread().getName().equals(CustomThreadFactory.CUSTOM_THREAD_NAME)) {
                         fail("Custom thread factory not used");
                     }

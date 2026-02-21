@@ -19,15 +19,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BooleanSupplier;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
+import ai.timefold.solver.core.api.solver.phase.PhaseCommandContext;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
@@ -43,7 +42,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -464,25 +465,19 @@ class SolverMetricsIT extends AbstractMeterTest {
                 .isEqualTo(2);
     }
 
-    private static class SetTestdataEntityValueCustomPhaseCommand implements PhaseCommand<TestdataHardSoftScoreSolution> {
-        final TestdataEntity entity;
-        final TestdataValue value;
-
-        public SetTestdataEntityValueCustomPhaseCommand(TestdataEntity entity, TestdataValue value) {
-            this.entity = entity;
-            this.value = value;
-        }
+    private record SetTestdataEntityValueCustomPhaseCommand(TestdataEntity entity, TestdataValue value)
+            implements
+                PhaseCommand<TestdataHardSoftScoreSolution> {
 
         @Override
-        public void changeWorkingSolution(ScoreDirector<TestdataHardSoftScoreSolution> scoreDirector,
-                BooleanSupplier isPhaseTerminated) {
-            var workingEntity = scoreDirector.lookUpWorkingObject(entity);
-            var workingValue = scoreDirector.lookUpWorkingObject(value);
+        public void changeWorkingSolution(PhaseCommandContext<TestdataHardSoftScoreSolution> context) {
+            var workingEntity = context.lookUpWorkingObject(entity);
+            var workingValue = context.lookUpWorkingObject(value);
 
-            scoreDirector.beforeVariableChanged(workingEntity, "value");
-            workingEntity.setValue(workingValue);
-            scoreDirector.afterVariableChanged(workingEntity, "value");
-            scoreDirector.triggerVariableListeners();
+            var move = Moves.change(context.getSolutionMetaModel()
+                    .genuineEntity(TestdataEntity.class)
+                    .basicVariable("value", TestdataValue.class), workingEntity, workingValue);
+            context.executeAndCalculateScore(move);
         }
     }
 
@@ -531,7 +526,7 @@ class SolverMetricsIT extends AbstractMeterTest {
         var step = new AtomicInteger(-1);
 
         ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
-                .addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataHardSoftScoreSolution>() {
+                .addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
                     @Override
                     public void stepEnded(AbstractStepScope<TestdataHardSoftScoreSolution> stepScope) {
                         super.stepEnded(stepScope);

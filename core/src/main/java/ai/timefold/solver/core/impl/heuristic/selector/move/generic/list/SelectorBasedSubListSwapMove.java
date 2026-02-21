@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SequencedCollection;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -130,8 +130,8 @@ public class SelectorBasedSubListSwapMove<Solution_> extends AbstractSelectorBas
     }
 
     @Override
-    public SelectorBasedSubListSwapMove<Solution_> rebase(Rebaser rebaser) {
-        return new SelectorBasedSubListSwapMove<>(variableDescriptor, leftSubList.rebase(rebaser), rightSubList.rebase(rebaser),
+    public SelectorBasedSubListSwapMove<Solution_> rebase(Lookup lookup) {
+        return new SelectorBasedSubListSwapMove<>(variableDescriptor, leftSubList.rebase(lookup), rightSubList.rebase(lookup),
                 reversing);
     }
 

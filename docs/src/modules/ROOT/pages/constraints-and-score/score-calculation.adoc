@@ -306,17 +306,6 @@ you may want
 to include an xref:using-timefold-solver/modeling-planning-problems.adoc#listVariableShadowVariablesInverseRelation[inverse relation shadow variable]
 to maximize performance of your constraints.
 
-[NOTE]
-====
-The `forEach()` building block has a legacy counterpart, `from()`.
-This alternative approach included instances based on the initialization status of their genuine planning variables.
-As an unwanted consequence,
-`from()`
-behaves unexpectedly for xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[variables with unassigned values].
-These are considered initialized even when `null`,
-and therefore this legacy method could still return entities with `null` variables.
-`from()`, `fromUnfiltered()` and `fromUniquePair()` are now deprecated and will be removed in Timefold Solver 2.0
-====
 
 [#constraintStreamsPenaltiesRewards]
 === Penalties and rewards

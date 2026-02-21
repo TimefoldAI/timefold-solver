@@ -18,7 +18,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.function.BooleanSupplier;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
@@ -29,10 +28,10 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
+import ai.timefold.solver.core.api.solver.phase.PhaseCommandContext;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
@@ -71,8 +70,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIterator
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.Pair;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
@@ -462,12 +463,14 @@ class DefaultSolverTest {
                 .filter(e -> e.getValue() == null)).isEmpty();
     }
 
+    @NullMarked
     private static final class FailCommand implements PhaseCommand<Object> {
 
         @Override
-        public void changeWorkingSolution(ScoreDirector<Object> scoreDirector, BooleanSupplier isPhaseTerminated) {
+        public void changeWorkingSolution(PhaseCommandContext<Object> context) {
             fail("All phases should be skipped because there are no movable entities.");
         }
+
     }
 
     @Test
@@ -2266,12 +2269,13 @@ class DefaultSolverTest {
     public static final class InvalidCustomPhaseCommand implements PhaseCommand<TestdataListSolution> {
 
         @Override
-        public void changeWorkingSolution(ScoreDirector<TestdataListSolution> scoreDirector,
-                BooleanSupplier isPhaseTerminated) {
-            var entity = scoreDirector.getWorkingSolution().getEntityList().getFirst();
-            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
-            entity.getValueList().add(new TestdataListValue("bad value"));
-            scoreDirector.afterListVariableChanged(entity, "valueList", 0, entity.getValueList().size());
+        public void changeWorkingSolution(PhaseCommandContext<TestdataListSolution> context) {
+            var variableMetaModel = context.getSolutionMetaModel()
+                    .genuineEntity(TestdataListEntity.class)
+                    .listVariable("valueList", TestdataListValue.class);
+            var entity = context.getWorkingSolution().getEntityList().getFirst();
+            var move = Moves.assign(variableMetaModel, new TestdataListValue("bad value"), entity, 0);
+            context.executeAndCalculateScore(move);
         }
     }
 

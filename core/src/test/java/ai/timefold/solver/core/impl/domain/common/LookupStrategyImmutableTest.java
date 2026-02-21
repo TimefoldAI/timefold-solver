@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.lookup;
+package ai.timefold.solver.core.impl.domain.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -27,9 +27,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class LookUpStrategyImmutableTest extends AbstractLookupTest {
+class LookupStrategyImmutableTest extends AbstractLookupTest {
 
-    public LookUpStrategyImmutableTest() {
+    public LookupStrategyImmutableTest() {
         super(LookUpStrategyType.PLANNING_ID_OR_NONE);
     }
 

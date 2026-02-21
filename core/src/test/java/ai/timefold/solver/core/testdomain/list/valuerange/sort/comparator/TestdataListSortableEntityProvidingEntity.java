@@ -8,14 +8,14 @@ import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionPrope
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
-import ai.timefold.solver.core.testdomain.common.TestSortableComparator;
 import ai.timefold.solver.core.testdomain.common.TestSortableObject;
+import ai.timefold.solver.core.testdomain.common.TestSortableObjectComparator;
 import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
-@PlanningEntity(comparatorClass = TestSortableComparator.class)
+@PlanningEntity(comparatorClass = TestSortableObjectComparator.class)
 public class TestdataListSortableEntityProvidingEntity extends TestdataObject implements TestSortableObject {
 
-    @PlanningListVariable(valueRangeProviderRefs = "valueRange", comparatorClass = TestSortableComparator.class)
+    @PlanningListVariable(valueRangeProviderRefs = "valueRange", comparatorClass = TestSortableObjectComparator.class)
     private List<TestdataSortableValue> valueList;
     @ValueRangeProvider(id = "valueRange")
     @PlanningEntityCollectionProperty

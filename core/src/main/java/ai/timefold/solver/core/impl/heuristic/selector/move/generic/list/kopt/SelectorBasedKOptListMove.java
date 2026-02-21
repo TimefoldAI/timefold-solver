@@ -5,13 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SequencedCollection;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -119,12 +119,12 @@ public final class SelectorBasedKOptListMove<Solution_> extends AbstractSelector
     }
 
     @Override
-    public SelectorBasedKOptListMove<Solution_> rebase(Rebaser rebaser) {
+    public SelectorBasedKOptListMove<Solution_> rebase(Lookup lookup) {
         var rebasedEquivalent2Opts = new ArrayList<FlipSublistAction>(equivalent2Opts.size());
         var newEntities = new Object[originalEntities.length];
 
         for (var i = 0; i < newEntities.length; i++) {
-            newEntities[i] = rebaser.rebase(originalEntities[i]);
+            newEntities[i] = lookup.lookUpWorkingObject(originalEntities[i]);
         }
         for (var twoOpt : equivalent2Opts) {
             rebasedEquivalent2Opts.add(twoOpt.rebase());

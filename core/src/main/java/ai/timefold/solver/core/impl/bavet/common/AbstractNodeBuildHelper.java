@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import static ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId.*;
+import static ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId.Qualifier;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
         addNode(node, creator, creator);
     }
 
-    public void addNode(AbstractNode node, Stream_ creator, Stream_ parent) {
+    public void addNode(AbstractNode node, Stream_ creator, @Nullable Stream_ parent) {
         reversedNodeList.add(node);
         node.addLocationSet(creator.getLocationSet());
         nodeCreatorMap.put(node, creator);

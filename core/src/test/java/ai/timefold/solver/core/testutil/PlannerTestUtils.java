@@ -157,7 +157,7 @@ public final class PlannerTestUtils {
         InnerScoreDirector<Solution_, Score_> scoreDirector = mock(InnerScoreDirector.class);
         MoveDirector<Solution_, Score_> moveDirector = mock(MoveDirector.class);
         when(moveDirector.getScoreDirector()).thenReturn(scoreDirector);
-        when(moveDirector.rebase(any())).thenAnswer(invocation -> {
+        when(moveDirector.lookUpWorkingObject(any())).thenAnswer(invocation -> {
             var externalObject = invocation.getArguments()[0];
             if (externalObject == null) {
                 return null;

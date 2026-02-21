@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SequencedCollection;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -103,9 +103,9 @@ public class SelectorBasedPillarSwapMove<Solution_> extends AbstractSelectorBase
     }
 
     @Override
-    public SelectorBasedPillarSwapMove<Solution_> rebase(Rebaser rebaser) {
-        return new SelectorBasedPillarSwapMove<>(variableDescriptorList, rebaseList(leftPillar, rebaser),
-                rebaseList(rightPillar, rebaser));
+    public SelectorBasedPillarSwapMove<Solution_> rebase(Lookup lookup) {
+        return new SelectorBasedPillarSwapMove<>(variableDescriptorList, rebaseList(leftPillar, lookup),
+                rebaseList(rightPillar, lookup));
     }
 
     @Override

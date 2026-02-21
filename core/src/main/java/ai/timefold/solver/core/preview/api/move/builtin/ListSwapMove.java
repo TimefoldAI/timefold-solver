@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SequencedCollection;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -13,7 +14,6 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.move.AbstractMove;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -134,8 +134,9 @@ public class ListSwapMove<Solution_, Entity_, Value_> extends AbstractMove<Solut
     }
 
     @Override
-    public ListSwapMove<Solution_, Entity_, Value_> rebase(Rebaser rebaser) {
-        return new ListSwapMove<>(variableMetaModel, rebaser.rebase(leftEntity), leftIndex, rebaser.rebase(rightEntity),
+    public ListSwapMove<Solution_, Entity_, Value_> rebase(Lookup lookup) {
+        return new ListSwapMove<>(variableMetaModel, lookup.lookUpWorkingObject(leftEntity), leftIndex,
+                lookup.lookUpWorkingObject(rightEntity),
                 rightIndex);
     }
 

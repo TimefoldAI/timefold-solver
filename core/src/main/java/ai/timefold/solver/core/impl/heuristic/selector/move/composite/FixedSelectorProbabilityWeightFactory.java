@@ -2,9 +2,9 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.composite;
 
 import java.util.Map;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.heuristic.selector.Selector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 
 final class FixedSelectorProbabilityWeightFactory<Solution_, Selector_ extends Selector>
         implements SelectionProbabilityWeightFactory<Solution_, Selector_> {

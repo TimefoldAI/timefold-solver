@@ -10,13 +10,12 @@ import java.lang.annotation.Target;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
  * Specifies that a bean property (or a field) is the id to match
- * when {@link ScoreDirector#lookUpWorkingObject(Object) locating}
+ * when {@link Lookup#lookUpWorkingObject(Object) looking up}
  * an externalObject (often from another {@link Thread} or JVM).
  * Used during {@link Move} rebasing and in a {@link ProblemChange}.
  * <p>

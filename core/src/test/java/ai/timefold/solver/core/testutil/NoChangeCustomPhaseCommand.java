@@ -1,9 +1,7 @@
 package ai.timefold.solver.core.testutil;
 
-import java.util.function.BooleanSupplier;
-
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
+import ai.timefold.solver.core.api.solver.phase.PhaseCommandContext;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -11,8 +9,8 @@ import org.jspecify.annotations.NullMarked;
 public final class NoChangeCustomPhaseCommand implements PhaseCommand<Object> {
 
     @Override
-    public void changeWorkingSolution(ScoreDirector<Object> scoreDirector, BooleanSupplier isPhaseTerminated) {
-        // Do nothing
+    public void changeWorkingSolution(PhaseCommandContext<Object> context) {
+
     }
 
 }

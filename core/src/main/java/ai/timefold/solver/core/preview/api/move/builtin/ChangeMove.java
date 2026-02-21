@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SequencedCollection;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.move.AbstractMove;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -51,9 +51,9 @@ public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solutio
     }
 
     @Override
-    public ChangeMove<Solution_, Entity_, Value_> rebase(Rebaser rebaser) {
-        return new ChangeMove<>(variableMetaModel, Objects.requireNonNull(rebaser.rebase(entity)),
-                rebaser.rebase(toPlanningValue));
+    public ChangeMove<Solution_, Entity_, Value_> rebase(Lookup lookup) {
+        return new ChangeMove<>(variableMetaModel, lookup.lookUpWorkingObject(entity),
+                lookup.lookUpWorkingObject(toPlanningValue));
     }
 
     @Override

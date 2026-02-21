@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.move;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 record ListVariableBeforeUnassignmentAction<Solution_>(Object element,
         ListVariableDescriptor<Solution_> variableDescriptor) implements ChangeAction<Solution_> {
@@ -13,8 +13,8 @@ record ListVariableBeforeUnassignmentAction<Solution_>(Object element,
     }
 
     @Override
-    public ChangeAction<Solution_> rebase(Rebaser rebaser) {
-        return new ListVariableBeforeUnassignmentAction<>(rebaser.rebase(element), variableDescriptor);
+    public ChangeAction<Solution_> rebase(Lookup lookup) {
+        return new ListVariableBeforeUnassignmentAction<>(lookup.lookUpWorkingObject(element), variableDescriptor);
     }
 
 }

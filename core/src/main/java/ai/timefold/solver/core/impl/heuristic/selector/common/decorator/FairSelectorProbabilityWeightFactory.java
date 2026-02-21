@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common.decorator;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.heuristic.selector.IterableSelector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 
 public class FairSelectorProbabilityWeightFactory<Solution_>
         implements SelectionProbabilityWeightFactory<Solution_, IterableSelector> {

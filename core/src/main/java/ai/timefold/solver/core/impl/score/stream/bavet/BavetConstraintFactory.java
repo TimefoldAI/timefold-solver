@@ -36,6 +36,7 @@ import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class BavetConstraintFactory<Solution_>
@@ -89,8 +90,10 @@ public final class BavetConstraintFactory<Solution_>
     // ************************************************************************
     // Required for node sharing, since using a lambda will create different instances
     private record ForEachFilteringCriteriaPredicateFunction<Solution_, A>(EntityDescriptor<Solution_> entityDescriptor,
-            ForEachFilteringCriteria criteria) implements Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> {
-        public Predicate<A> apply(ConstraintNodeBuildHelper<Solution_, ?> helper) {
+            ForEachFilteringCriteria criteria)
+            implements
+                Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> {
+        public @Nullable Predicate<A> apply(ConstraintNodeBuildHelper<Solution_, ?> helper) {
             return helper.getForEachPredicateForEntityDescriptorAndCriteria(entityDescriptor, criteria);
         }
     }
@@ -155,42 +158,37 @@ public final class BavetConstraintFactory<Solution_>
         return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL, RetrievalSemantics.PRECOMPUTE);
     }
 
-    // Required for node sharing, since using a lambda will create different instances
-    private record PredicateSupplier<Solution_, A>(
-            Predicate<A> suppliedPredicate) implements Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> {
-        public Predicate<A> apply(ConstraintNodeBuildHelper<Solution_, ?> helper) {
-            return suppliedPredicate;
-        }
-    }
-
     @Override
     @SuppressWarnings("unchecked")
     public <Stream_ extends ConstraintStream> Stream_
             precompute(Function<PrecomputeFactory, Stream_> precomputeSupplier) {
         var bavetStream = Objects.requireNonNull(precomputeSupplier.apply(new BavetStaticDataFactory<>(this)));
-        // TODO: Use switch here in JDK 21
-        if (bavetStream instanceof BavetAbstractUniConstraintStream<?, ?> uniStream) {
-            var out = new BavetPrecomputeUniConstraintStream<>(this,
-                    (BavetAbstractUniConstraintStream<Solution_, ?>) uniStream);
-            return (Stream_) share(new BavetAftBridgeUniConstraintStream<>(this, out),
-                    out::setAftBridge);
-        } else if (bavetStream instanceof BavetAbstractBiConstraintStream<?, ?, ?> biStream) {
-            var out = new BavetPrecomputeBiConstraintStream<>(this,
-                    (BavetAbstractBiConstraintStream<Solution_, ?, ?>) biStream);
-            return (Stream_) share(new BavetAftBridgeBiConstraintStream<>(this, out),
-                    out::setAftBridge);
-        } else if (bavetStream instanceof BavetAbstractTriConstraintStream<?, ?, ?, ?> triStream) {
-            var out = new BavetPrecomputeTriConstraintStream<>(this,
-                    (BavetAbstractTriConstraintStream<Solution_, ?, ?, ?>) triStream);
-            return (Stream_) share(new BavetAftBridgeTriConstraintStream<>(this, out),
-                    out::setAftBridge);
-        } else if (bavetStream instanceof BavetAbstractQuadConstraintStream<?, ?, ?, ?, ?> quadStream) {
-            var out = new BavetPrecomputeQuadConstraintStream<>(this,
-                    (BavetAbstractQuadConstraintStream<Solution_, ?, ?, ?, ?>) quadStream);
-            return (Stream_) share(new BavetAftBridgeQuadConstraintStream<>(this, out),
-                    out::setAftBridge);
-        } else {
-            throw new IllegalStateException(
+        switch (bavetStream) {
+            case BavetAbstractUniConstraintStream<?, ?> uniStream -> {
+                var out = new BavetPrecomputeUniConstraintStream<>(this,
+                        (BavetAbstractUniConstraintStream<Solution_, ?>) uniStream);
+                return (Stream_) share(new BavetAftBridgeUniConstraintStream<>(this, out),
+                        out::setAftBridge);
+            }
+            case BavetAbstractBiConstraintStream<?, ?, ?> biStream -> {
+                var out = new BavetPrecomputeBiConstraintStream<>(this,
+                        (BavetAbstractBiConstraintStream<Solution_, ?, ?>) biStream);
+                return (Stream_) share(new BavetAftBridgeBiConstraintStream<>(this, out),
+                        out::setAftBridge);
+            }
+            case BavetAbstractTriConstraintStream<?, ?, ?, ?> triStream -> {
+                var out = new BavetPrecomputeTriConstraintStream<>(this,
+                        (BavetAbstractTriConstraintStream<Solution_, ?, ?, ?>) triStream);
+                return (Stream_) share(new BavetAftBridgeTriConstraintStream<>(this, out),
+                        out::setAftBridge);
+            }
+            case BavetAbstractQuadConstraintStream<?, ?, ?, ?, ?> quadStream -> {
+                var out = new BavetPrecomputeQuadConstraintStream<>(this,
+                        (BavetAbstractQuadConstraintStream<Solution_, ?, ?, ?, ?>) quadStream);
+                return (Stream_) share(new BavetAftBridgeQuadConstraintStream<>(this, out),
+                        out::setAftBridge);
+            }
+            default -> throw new IllegalStateException(
                     "impossible state: the supplier (%s) returned a stream (%s) that not an instance of any Bavet ConstraintStream"
                             .formatted(precomputeSupplier, bavetStream));
         }

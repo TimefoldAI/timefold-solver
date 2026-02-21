@@ -3,16 +3,15 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.SequencedCollection;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -225,10 +224,10 @@ public final class SelectorBasedTwoOptListMove<Solution_> extends AbstractSelect
     }
 
     @Override
-    public SelectorBasedTwoOptListMove<Solution_> rebase(Rebaser rebaser) {
-        return new SelectorBasedTwoOptListMove<>(variableDescriptor, Objects.requireNonNull(rebaser.rebase(firstEntity)),
-                Objects.requireNonNull(rebaser.rebase(secondEntity)), firstEdgeEndpoint, secondEdgeEndpoint,
-                entityFirstUnpinnedIndex, shift);
+    public SelectorBasedTwoOptListMove<Solution_> rebase(Lookup lookup) {
+        return new SelectorBasedTwoOptListMove<>(variableDescriptor, lookup.lookUpWorkingObject(firstEntity),
+                lookup.lookUpWorkingObject(secondEntity), firstEdgeEndpoint, secondEdgeEndpoint, entityFirstUnpinnedIndex,
+                shift);
     }
 
     @Override

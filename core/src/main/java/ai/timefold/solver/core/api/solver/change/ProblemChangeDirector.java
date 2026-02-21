@@ -1,16 +1,14 @@
 package ai.timefold.solver.core.api.solver.change;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.api.domain.common.PlanningId;
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Allows external changes to the {@link PlanningSolution working solution}. If the changes are not applied through
@@ -19,9 +17,12 @@ import org.jspecify.annotations.Nullable;
  * never notified about them, resulting to inconsistencies in the {@link PlanningSolution working solution}.
  * Should be used only from a {@link ProblemChange} implementation.
  * To see an example implementation, please refer to the {@link ProblemChange} Javadoc.
+ *
+ * @see Lookup You may need to perform lookups of working objects from external objects.
  */
 @NullMarked
-public interface ProblemChangeDirector {
+public interface ProblemChangeDirector
+        extends Lookup {
 
     /**
      * Add a new {@link PlanningEntity} instance into the {@link PlanningSolution working solution}.
@@ -35,7 +36,7 @@ public interface ProblemChangeDirector {
     /**
      * Remove an existing {@link PlanningEntity} instance from the {@link PlanningSolution working solution}.
      * Translates the entity to a working planning entity by performing a lookup as defined by
-     * {@link #lookUpWorkingObjectOrFail(Object)}.
+     * {@link #lookUpWorkingObject(Object)}.
      *
      * @param entity the {@link PlanningEntity} instance
      * @param entityConsumer removes the working entity from the {@link PlanningSolution working solution}
@@ -45,7 +46,7 @@ public interface ProblemChangeDirector {
 
     /**
      * Change a {@link PlanningVariable} value of a {@link PlanningEntity}. Translates the entity to a working
-     * planning entity by performing a lookup as defined by {@link #lookUpWorkingObjectOrFail(Object)}.
+     * planning entity by performing a lookup as defined by {@link #lookUpWorkingObject(Object)}.
      *
      * @param entity the {@link PlanningEntity} instance
      * @param variableName name of the {@link PlanningVariable}
@@ -66,7 +67,7 @@ public interface ProblemChangeDirector {
 
     /**
      * Remove an existing problem fact from the {@link PlanningSolution working solution}. Translates the problem fact
-     * to a working problem fact by performing a lookup as defined by {@link #lookUpWorkingObjectOrFail(Object)}.
+     * to a working problem fact by performing a lookup as defined by {@link #lookUpWorkingObject(Object)}.
      *
      * @param problemFact the problem fact instance
      * @param problemFactConsumer removes the working problem fact from the
@@ -78,7 +79,7 @@ public interface ProblemChangeDirector {
     /**
      * Change a property of either a {@link PlanningEntity} or a problem fact. Translates the entity or the problem fact
      * to its {@link PlanningSolution working solution} counterpart by performing a lookup as defined by
-     * {@link #lookUpWorkingObjectOrFail(Object)}.
+     * {@link #lookUpWorkingObject(Object)}.
      *
      * @param problemFactOrEntity the {@link PlanningEntity} or the problem fact instance
      * @param problemFactOrEntityConsumer updates the property of the {@link PlanningEntity}
@@ -87,32 +88,6 @@ public interface ProblemChangeDirector {
      */
     <EntityOrProblemFact> void changeProblemProperty(EntityOrProblemFact problemFactOrEntity,
             Consumer<EntityOrProblemFact> problemFactOrEntityConsumer);
-
-    /**
-     * Translate an entity or fact instance (often from another {@link Thread} or JVM)
-     * to this {@link ProblemChangeDirector}'s internal working instance.
-     * <p>
-     * Matching uses {@link PlanningId}.
-     *
-     * @return null if externalObject is null
-     * @throws IllegalArgumentException if there is no workingObject for externalObject, if it cannot be looked up
-     *         or if the externalObject's class is not supported
-     * @throws IllegalStateException if it cannot be looked up
-     * @param <EntityOrProblemFact> the object type
-     */
-    <EntityOrProblemFact> @Nullable EntityOrProblemFact lookUpWorkingObjectOrFail(@Nullable EntityOrProblemFact externalObject);
-
-    /**
-     * As defined by {@link #lookUpWorkingObjectOrFail(Object)},
-     * but doesn't fail fast if no workingObject was ever added for the externalObject.
-     * It's recommended to use {@link #lookUpWorkingObjectOrFail(Object)} instead.
-     *
-     * @return {@link Optional#empty()} if there is no workingObject for externalObject, or if externalObject is null
-     * @throws IllegalArgumentException if it cannot be looked up or if the externalObject's class is not supported
-     * @throws IllegalStateException if it cannot be looked up
-     * @param <EntityOrProblemFact> the object type
-     */
-    <EntityOrProblemFact> Optional<EntityOrProblemFact> lookUpWorkingObject(@Nullable EntityOrProblemFact externalObject);
 
     /**
      * Calls variable listeners on the external changes submitted so far.

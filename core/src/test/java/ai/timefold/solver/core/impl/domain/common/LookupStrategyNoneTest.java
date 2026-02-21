@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.lookup;
+package ai.timefold.solver.core.impl.domain.common;
 
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
@@ -9,9 +9,9 @@ import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectPrimitiveIn
 
 import org.junit.jupiter.api.Test;
 
-class LookUpStrategyNoneTest extends AbstractLookupTest {
+class LookupStrategyNoneTest extends AbstractLookupTest {
 
-    public LookUpStrategyNoneTest() {
+    public LookupStrategyNoneTest() {
         super(LookUpStrategyType.NONE);
     }
 

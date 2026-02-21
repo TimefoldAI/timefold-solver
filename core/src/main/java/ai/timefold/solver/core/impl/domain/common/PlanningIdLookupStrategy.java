@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.lookup;
+package ai.timefold.solver.core.impl.domain.common;
 
 import java.util.Map;
 
@@ -7,14 +7,13 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class PlanningIdLookUpStrategy implements LookUpStrategy {
+final class PlanningIdLookupStrategy implements LookupStrategy {
 
     private final MemberAccessor planningIdMemberAccessor;
 
-    public PlanningIdLookUpStrategy(MemberAccessor planningIdMemberAccessor) {
+    public PlanningIdLookupStrategy(MemberAccessor planningIdMemberAccessor) {
         this.planningIdMemberAccessor = planningIdMemberAccessor;
     }
 
@@ -54,13 +53,6 @@ final class PlanningIdLookUpStrategy implements LookUpStrategy {
                             externalObject.getClass()));
         }
         return (E) workingObject;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <E> @Nullable E lookUpWorkingObjectIfExists(Map<Object, Object> idToWorkingObjectMap, E externalObject) {
-        var planningId = extractPlanningId(externalObject);
-        return (E) idToWorkingObjectMap.get(planningId);
     }
 
     private Pair<Class<?>, Object> extractPlanningId(Object externalObject) {

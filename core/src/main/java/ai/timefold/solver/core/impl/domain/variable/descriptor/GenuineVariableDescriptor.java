@@ -60,7 +60,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
                 throw new IllegalArgumentException("""
                         The entityClass (%s) has a @%s annotated property (%s) that has no valueRangeProviderRefs (%s) \
                         and no matching anonymous value range providers were found."""
-                        .formatted(entityDescriptor.getEntityClass().getSimpleName(),
+                        .formatted(entityDescriptor.getEntityClass().getCanonicalName(),
                                 PlanningVariable.class.getSimpleName(),
                                 variableMemberAccessor.getName(),
                                 Arrays.toString(valueRangeProviderRefs)));

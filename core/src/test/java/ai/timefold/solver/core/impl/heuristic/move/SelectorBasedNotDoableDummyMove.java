@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.move;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.jspecify.annotations.NullMarked;

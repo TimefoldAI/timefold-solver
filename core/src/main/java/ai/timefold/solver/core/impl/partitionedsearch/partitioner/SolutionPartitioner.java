@@ -6,7 +6,6 @@ import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
 /**
  * Splits one {@link PlanningSolution solution} into multiple partitions.
@@ -27,11 +26,10 @@ public interface SolutionPartitioner<Solution_> {
      * Any class that is {@link SolutionCloner solution cloned} must also be partitioned cloned.
      * A class can be partition cloned without being solution cloned.
      *
-     * @param scoreDirector never null, the {@link ScoreDirector}
-     *        which has the {@link ScoreDirector#getWorkingSolution()} that needs to be split up
+     * @param workingSolution the original solution to split; must not be modified by this method.
      * @param runnablePartThreadLimit null if unlimited, never negative
      * @return never null, {@link List#size()} of at least 1.
      */
-    List<Solution_> splitWorkingSolution(ScoreDirector<Solution_> scoreDirector, Integer runnablePartThreadLimit);
+    List<Solution_> splitWorkingSolution(Solution_ workingSolution, Integer runnablePartThreadLimit);
 
 }

@@ -15,7 +15,7 @@
   <name>Timefold Solver Migration</name>
   <description>
     Upgrade your code with a single command.
-    This migration replace all your calls to deleted/deprecated methods of Timefold with their proper alternatives.
+    This migration replaces all your calls to deleted/deprecated methods of Timefold with their proper alternatives.
   </description>
   <url>https://solver.timefold.ai</url>
 

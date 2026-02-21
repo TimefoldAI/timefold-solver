@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.lookup;
+package ai.timefold.solver.core.impl.domain.common;
 
 import java.util.Map;
 
@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.domain.common.PlanningId;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class NoneLookUpStrategy implements LookUpStrategy {
+final class NoneLookupStrategy implements LookupStrategy {
 
     @Override
     public void addWorkingObject(Map<Object, Object> idToWorkingObjectMap, Object workingObject) {
@@ -26,11 +26,6 @@ final class NoneLookUpStrategy implements LookUpStrategy {
                 Some functionality, such as multithreaded solving, requires this ability.
                 Maybe add a @%s annotation on an identifier property of the class (%s)."""
                 .formatted(externalObject, PlanningId.class.getSimpleName(), externalObject.getClass()));
-    }
-
-    @Override
-    public <E> E lookUpWorkingObjectIfExists(Map<Object, Object> idToWorkingObjectMap, E externalObject) {
-        return lookUpWorkingObject(idToWorkingObjectMap, externalObject);
     }
 
 }

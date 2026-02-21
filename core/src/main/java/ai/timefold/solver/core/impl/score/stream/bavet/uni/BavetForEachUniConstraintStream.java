@@ -32,10 +32,7 @@ public final class BavetForEachUniConstraintStream<Solution_, A>
             @Nullable Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> filterFunction,
             RetrievalSemantics retrievalSemantics) {
         super(constraintFactory, retrievalSemantics);
-        this.forEachClass = forEachClass;
-        if (forEachClass == null) {
-            throw new IllegalArgumentException("The forEachClass (null) cannot be null.");
-        }
+        this.forEachClass = Objects.requireNonNull(forEachClass);
         this.filterFunction = filterFunction;
     }
 

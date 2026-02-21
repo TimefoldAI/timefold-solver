@@ -36,7 +36,6 @@ abstract class AbstractIndexerTest {
         return assertThat(result);
     }
 
-    @Deprecated
     protected static <T> List<T> forEachToTuples(Indexer<T> indexer, Object... objectProperties) {
         var properties = switch (objectProperties.length) {
             case 0 -> CompositeKey.none();

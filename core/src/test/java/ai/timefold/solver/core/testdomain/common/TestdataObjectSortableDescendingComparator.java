@@ -4,6 +4,9 @@ import java.util.Comparator;
 
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public class TestdataObjectSortableDescendingComparator implements Comparator<TestdataObject> {
 
     @Override

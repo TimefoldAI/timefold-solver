@@ -35,8 +35,10 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.common.DummyHardSoftEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.common.DummyValueComparator;
+import ai.timefold.solver.core.testdomain.common.DummyValueComparatorFactory;
 import ai.timefold.solver.core.testdomain.common.TestdataObjectSortableDescendingComparator;
-import ai.timefold.solver.core.testdomain.common.TestdataObjectSortableDescendingFactory;
+import ai.timefold.solver.core.testdomain.common.TestdataObjectSortableDescendingComparatorFactory;
 import ai.timefold.solver.core.testdomain.list.TestDistanceMeter;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
@@ -118,7 +120,7 @@ class DefaultConstructionHeuristicPhaseTest {
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
-        var solvedE1 = solution.getEntityList().get(0);
+        var solvedE1 = solution.getEntityList().getFirst();
         assertCode("e1", solvedE1);
         assertThat(solvedE1.getValue()).isNotNull();
         var solvedE2 = solution.getEntityList().get(1);
@@ -168,7 +170,7 @@ class DefaultConstructionHeuristicPhaseTest {
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
-        var solvedE1 = solution.getEntityList().get(0);
+        var solvedE1 = solution.getEntityList().getFirst();
         assertCode("e1", solvedE1);
         assertThat(solvedE1.getValue()).isNotNull();
         var solvedE2 = solution.getEntityList().get(1);
@@ -262,8 +264,8 @@ class DefaultConstructionHeuristicPhaseTest {
         assertSoftly(softly -> {
             softly.assertThat(bestSolution.getScore())
                     .isEqualTo(SimpleScore.of(-1)); // No value assigned twice, null once.
-            var firstEntity = bestSolution.getEntityList().get(0);
-            var firstValue = bestSolution.getValueList().get(0);
+            var firstEntity = bestSolution.getEntityList().getFirst();
+            var firstValue = bestSolution.getValueList().getFirst();
             softly.assertThat(firstEntity.getValue())
                     .isEqualTo(firstValue);
             var secondEntity = bestSolution.getEntityList().get(1);
@@ -299,7 +301,7 @@ class DefaultConstructionHeuristicPhaseTest {
         assertSoftly(softly -> {
             softly.assertThat(bestSolution.getScore())
                     .isEqualTo(SimpleScore.of(-2)); // Length of the entity's value list.
-            var firstEntity = bestSolution.getEntityList().get(0);
+            var firstEntity = bestSolution.getEntityList().getFirst();
             var firstValue = bestSolution.getValueList().get(0);
             var secondValue = bestSolution.getValueList().get(1);
             softly.assertThat(firstEntity.getValueList())
@@ -1010,7 +1012,7 @@ class DefaultConstructionHeuristicPhaseTest {
                         .findFirst()
                         .orElseThrow(IllegalArgumentException::new);
                 assertThat(entity.getValueList()).hasSize(1);
-                assertThat(entity.getValueList().get(0).getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
+                assertThat(entity.getValueList().getFirst().getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
             }
         }
     }
@@ -1036,7 +1038,7 @@ class DefaultConstructionHeuristicPhaseTest {
                         .findFirst()
                         .orElseThrow(IllegalArgumentException::new);
                 assertThat(entity.getValueList()).hasSize(1);
-                assertThat(entity.getValueList().get(0).getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
+                assertThat(entity.getValueList().getFirst().getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
             }
         }
     }
@@ -1100,7 +1102,7 @@ class DefaultConstructionHeuristicPhaseTest {
                         .findFirst()
                         .orElseThrow(IllegalArgumentException::new);
                 assertThat(entity.getValueList()).hasSize(1);
-                assertThat(entity.getValueList().get(0).getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
+                assertThat(entity.getValueList().getFirst().getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
             }
         }
     }
@@ -1128,7 +1130,7 @@ class DefaultConstructionHeuristicPhaseTest {
                         .findFirst()
                         .orElseThrow(IllegalArgumentException::new);
                 assertThat(entity.getValueList()).hasSize(1);
-                assertThat(entity.getValueList().get(0).getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
+                assertThat(entity.getValueList().getFirst().getComparatorValue()).isEqualTo(phaseConfig.expected[i]);
             }
         }
     }
@@ -1144,7 +1146,8 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 .withId("sortedEntitySelector")
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withComparatorFactoryClass(TestdataObjectSortableDescendingFactory.class))
+                                                .withComparatorFactoryClass(
+                                                        TestdataObjectSortableDescendingComparatorFactory.class))
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig()
                                                         .withMimicSelectorRef("sortedValueSelector"))
@@ -1161,7 +1164,8 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 .withId("sortedEntitySelector")
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withComparatorFactoryClass(TestdataObjectSortableDescendingFactory.class))
+                                                .withComparatorFactoryClass(
+                                                        TestdataObjectSortableDescendingComparatorFactory.class))
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig()
                                                         .withMimicSelectorRef("sortedValueSelector"))
@@ -1227,7 +1231,8 @@ class DefaultConstructionHeuristicPhaseTest {
                         .findFirst()
                         .orElseThrow(IllegalArgumentException::new);
                 assertThat(entity.getValueList()).hasSize(1);
-                assertThat(TestdataObjectSortableDescendingFactory.extractCode(entity.getValueList().get(0).getCode()))
+                assertThat(
+                        TestdataObjectSortableDescendingComparator.extractCode(entity.getValueList().getFirst().getCode()))
                         .isEqualTo(phaseConfig.expected[i]);
             }
         }
@@ -1245,7 +1250,8 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withValueSelectorConfig(new ValueSelectorConfig()
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withComparatorFactoryClass(TestdataObjectSortableDescendingFactory.class)))),
+                                                .withComparatorFactoryClass(
+                                                        TestdataObjectSortableDescendingComparatorFactory.class)))),
                 new int[] { 2, 1, 0 },
                 // Only values are sorted in descending order
                 false));
@@ -1259,7 +1265,8 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withValueSelectorConfig(new ValueSelectorConfig()
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withComparatorFactoryClass(TestdataObjectSortableDescendingFactory.class)))),
+                                                .withComparatorFactoryClass(
+                                                        TestdataObjectSortableDescendingComparatorFactory.class)))),
                 new int[] { 2, 1, 0 },
                 // Only values are sorted in descending order
                 false));
@@ -1315,7 +1322,7 @@ class DefaultConstructionHeuristicPhaseTest {
                         .findFirst()
                         .orElseThrow(IllegalArgumentException::new);
                 assertThat(entity.getValue()).isNotNull();
-                assertThat(TestdataObjectSortableDescendingFactory.extractCode(entity.getValue().getCode()))
+                assertThat(TestdataObjectSortableDescendingComparator.extractCode(entity.getValue().getCode()))
                         .isEqualTo(phaseConfig.expected[i]);
             }
         }
@@ -1391,11 +1398,14 @@ class DefaultConstructionHeuristicPhaseTest {
         var solution = new TestdataInvalidListSortableSolution();
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .hasMessageContaining(
-                        "The entityClass (class ai.timefold.solver.core.testdomain.list.sort.invalid.TestdataInvalidListSortableEntity) property (valueList)")
+                        "The entityClass (class %s) property (valueList)"
+                                .formatted(TestdataInvalidListSortableEntity.class.getName()))
                 .hasMessageContaining(
-                        "cannot have a comparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator)")
+                        "cannot have a comparatorClass (%s)"
+                                .formatted(DummyValueComparator.class.getName()))
                 .hasMessageContaining(
-                        "comparatorFactoryClass (ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time.");
+                        "comparatorFactoryClass (%s) at the same time."
+                                .formatted(DummyValueComparatorFactory.class.getName()));
     }
 
     @Test
@@ -1414,7 +1424,7 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
                                                 .withComparatorFactoryClass(
-                                                        TestdataObjectSortableDescendingFactory.class)
+                                                        TestdataObjectSortableDescendingComparatorFactory.class)
                                                 .withNearbySelectionConfig(new NearbySelectionConfig()
                                                         .withOriginValueSelectorConfig(new ValueSelectorConfig()
                                                                 .withMimicSelectorRef("sortedEntitySelector"))

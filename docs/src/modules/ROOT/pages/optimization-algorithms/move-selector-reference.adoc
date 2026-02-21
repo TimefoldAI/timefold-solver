@@ -7,6 +7,8 @@
 This chapter describes the move selectors that can be used to select moves for the optimization algorithms.
 
 NOTE: Move Selectors are not public API and even though they are not yet deprecated, we encourage you to check out the xref:optimization-algorithms/neighborhoods.adoc[the Neighborhoods API], which will eventually entirely replace the Move Selectors API.
+While the Move Selectors API will continue to be supported throughout the lifetime of Timefold Solver 2.0,
+it will only receive critical bug fixes and no new features.
 
 [#whatIsAMoveSelector]
 == What is a `MoveSelector`?

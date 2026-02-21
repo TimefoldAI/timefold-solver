@@ -857,12 +857,38 @@ The `PhaseCommand` interface appears as follows:
 ----
 public interface PhaseCommand<Solution_> {
 
-    void changeWorkingSolution(ScoreDirector<Solution_> scoreDirector, BooleanSupplier isPhaseTerminated);
+    void changeWorkingSolution(PhaseCommandContext<Solution_> commandContext);
 
 }
 ----
 
-Any change on the planning entities in a `PhaseCommand` must be notified to the ``ScoreDirector``.
+The `PhaseCommandContext` interface offers the following methods:
+
+`Object getWorkingSolution()`::
+Returns the working solution of the `Solver` that is being solved.
+This must not be directly modified, as that would corrupt the `Solver`.
+`void execute(Move)`::
+Executes a `Move` on the working solution.
+This is the only way to change the working solution without corrupting the `Solver`.
+Users can either provide a custom `Move` implementation,
+or choose from the `Move` implementations xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsBuiltInMoves[provided out-of-the-box].
+`getSolutionMetaModel()` method of `PhaseCommandContext` can be used to get the `SolutionMetaModel` of the working solution,
+which will help with creating these `Move` instances.
+`Object executeTemporarily(Move, Function)`::
+As defined above, but the executed move is immediately undone.
+The provided `Function` is executed while the move is still applied,
+so that the user can perform arbitrary calculations on the working solution with the move applied.
+The return value of the provided `Function` is returned by this method.
+`boolean isPhaseTerminated()`::
+Returns `true` if the `PhaseCommand` should terminate.
+`Object lookUpWorkingObject(Object externalObject)`::
+Returns the working object that corresponds to the given external object.
+This is useful when the `PhaseCommand` remembers an object from some previous working solution,
+and needs to find the corresponding object in the current working solution,
+which may have been xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning-cloned] since.
+
+Any change on the planning entities in a `PhaseCommand` must be done through the `execute(Move)` method,
+to avoid corrupting the `Solver`.
 
 Long-running commands may want to periodically check `isPhaseTerminated` and when it returns `true`,
 terminate the command by returning.
@@ -870,9 +896,9 @@ The solver will only terminate after the command returns.
 
 [WARNING]
 ====
-Do not change any of the problem facts in a `PhaseCommand`,
+Do not change any of the problem facts in a `PhaseCommand` or add or remove entities,
 it will corrupt the `Solver` because any previous score or solution was for a different problem.
-To change problem facts,
+To change problem facts or to add or remove entities,
 read about xref:responding-to-change/responding-to-change.adoc[repeated planning]
 and use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange] instead.
 ====

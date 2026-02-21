@@ -18,13 +18,12 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.domain.common.LookupManager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.VariableListener;
@@ -79,7 +78,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      */
     private final NeighborhoodNotifier<Solution_> neighborhoodsElementUpdateNotifier;
     private final boolean lookUpEnabled;
-    private final @Nullable LookUpManager lookUpManager;
+    private final @Nullable LookupManager lookUpManager;
     protected final ConstraintMatchPolicy constraintMatchPolicy;
     private boolean expectShadowVariablesInCorrectState;
     private final VariableDescriptorCache<Solution_> variableDescriptorCache;
@@ -113,7 +112,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.neighborhoodsElementUpdateNotifier = new NeighborhoodNotifier<>();
         var solutionDescriptor = this.scoreDirectorFactory.getSolutionDescriptor();
         this.lookUpEnabled = builder.lookUpEnabled;
-        this.lookUpManager = lookUpEnabled ? new LookUpManager(solutionDescriptor.getLookUpStrategyResolver()) : null;
+        this.lookUpManager = lookUpEnabled ? new LookupManager(solutionDescriptor.getLookUpStrategyResolver()) : null;
         this.constraintMatchPolicy = builder.constraintMatchPolicy;
         this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
@@ -668,16 +667,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                             .formatted(lookUpEnabled));
         }
         return lookUpManager.lookUpWorkingObject(externalObject);
-    }
-
-    @Override
-    public <E> @Nullable E lookUpWorkingObjectOrReturnNull(@Nullable E externalObject) {
-        if (!lookUpEnabled) {
-            throw new IllegalStateException(
-                    "When lookUpEnabled (%s) is disabled in the constructor, this method should not be called."
-                            .formatted(lookUpEnabled));
-        }
-        return lookUpManager.lookUpWorkingObjectOrReturnNull(externalObject);
     }
 
     // ************************************************************************

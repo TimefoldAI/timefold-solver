@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import java.util.Comparator;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
@@ -21,9 +20,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringM
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.ProbabilityMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.ShufflingMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.SortingMoveSelector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
-import ai.timefold.solver.core.testdomain.common.DummyValueFactory;
+import ai.timefold.solver.core.testdomain.common.DummyValueComparatorFactory;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -218,7 +218,7 @@ class MoveSelectorFactoryTest {
         var baseMoveSelector = SelectorTestUtils.<TestdataSolution> mockMoveSelector();
         var moveSelectorConfig = new DummyMoveSelectorConfig();
         moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
-        moveSelectorConfig.setComparatorFactoryClass(DummyValueFactory.class);
+        moveSelectorConfig.setComparatorFactoryClass(DummyValueComparatorFactory.class);
 
         var moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
         var sortingMoveSelector =

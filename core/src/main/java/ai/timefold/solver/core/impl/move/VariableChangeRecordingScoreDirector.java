@@ -7,13 +7,13 @@ import java.util.Map;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.RevertableScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 
@@ -221,11 +221,6 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
     @Override
     public <E> @Nullable E lookUpWorkingObject(@Nullable E externalObject) {
         return Objects.requireNonNull(backingScoreDirector).lookUpWorkingObject(externalObject);
-    }
-
-    @Override
-    public <E> @Nullable E lookUpWorkingObjectOrReturnNull(@Nullable E externalObject) {
-        return Objects.requireNonNull(backingScoreDirector).lookUpWorkingObjectOrReturnNull(externalObject);
     }
 
 }

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.preview.api.move;
 
+import java.util.Collection;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -34,18 +35,6 @@ import org.jspecify.annotations.Nullable;
 public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> {
 
     /**
-     * As defined by {@link #assignValueAndAdd(PlanningListVariableMetaModel, Object, Object, int)}.
-     * Will be removed right before this API is moved out of preview.
-     *
-     * @deprecated Use {@link #assignValueAndAdd(PlanningListVariableMetaModel, Object, Object, int)} instead.
-     */
-    @Deprecated(forRemoval = true)
-    default <Entity_, Value_> void assignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Value_ value, Entity_ destinationEntity, int destinationIndex) {
-        assignValueAndAdd(variableMetaModel, value, destinationEntity, destinationIndex);
-    }
-
-    /**
      * Puts a given value at a particular index in a given entity's {@link PlanningListVariable planning list variable}.
      * Moves all values at or after the index to the right, much like {@link List#add(int, Object)}.
      *
@@ -67,6 +56,31 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value,
             PositionInList destination) {
         assignValueAndAdd(variableMetaModel, value, destination.entity(), destination.index());
+    }
+
+    /**
+     * Puts given sequence of values at a particular index in a given entity's {@link PlanningListVariable planning list
+     * variable}.
+     * Moves all values at or after the index to the right, much like {@link List#addAll(int, Collection)}.
+     *
+     * @param variableMetaModel Describes the variable to be changed.
+     * @param values The sequence of values to be assigned to a list variable.
+     * @param destinationEntity The entity whose list variable is to be changed.
+     * @param destinationIndex The index in the list variable at which the value is to be assigned,
+     *        moving the pre-existing value at that index and all subsequent values to the right.
+     * @throws IllegalStateException if any of the values is already assigned to a list variable
+     */
+    <Entity_, Value_> void assignValuesAndAdd(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            List<Value_> values, Entity_ destinationEntity, int destinationIndex);
+
+    /**
+     * As defined by {@link #assignValuesAndAdd(PlanningListVariableMetaModel, List, Object, int)},
+     * but using {@link PositionInList} to specify the position.
+     */
+    default <Entity_, Value_> void assignValuesAndAdd(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, List<Value_> values,
+            PositionInList destination) {
+        assignValuesAndAdd(variableMetaModel, values, destination.entity(), destination.index());
     }
 
     /**

@@ -20,7 +20,6 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
@@ -401,13 +400,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         }
         return new ScoreAnalysis<>(state.raw(), constraintAnalysisMap, state.isFullyAssigned());
     }
-
-    /*
-     * The following methods are copied here from ScoreDirector because they are deprecated there for removal.
-     * They will only be supported on this type, which serves for internal use only,
-     * as opposed to ScoreDirector, which is a public type.
-     * This way, we can ensure that these methods are used correctly and in a safe manner.
-     */
 
     default void beforeEntityAdded(Object entity) {
         beforeEntityAdded(getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass()), entity);

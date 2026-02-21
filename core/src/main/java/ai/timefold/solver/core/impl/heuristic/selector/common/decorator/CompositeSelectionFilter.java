@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.common.decorator;
 
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 
 /**
  * Combines several {@link SelectionFilter}s into one.

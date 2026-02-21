@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.move;
 
+import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 public final class TriggerVariableListenersAction<Solution_> implements ChangeAction<Solution_> {
     @Override
@@ -10,7 +10,7 @@ public final class TriggerVariableListenersAction<Solution_> implements ChangeAc
     }
 
     @Override
-    public TriggerVariableListenersAction<Solution_> rebase(Rebaser rebaser) {
+    public TriggerVariableListenersAction<Solution_> rebase(Lookup lookup) {
         return this;
     }
 }
