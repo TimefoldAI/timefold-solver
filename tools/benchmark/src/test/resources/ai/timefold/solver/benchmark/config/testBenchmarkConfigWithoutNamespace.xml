@@ -4,7 +4,7 @@
   <parallelBenchmarkCount>AUTO</parallelBenchmarkCount>
   <warmUpSecondsSpentLimit>0</warmUpSecondsSpentLimit>
   <benchmarkReport>
-    <locale>cs_cz</locale>
+    <locale>cs-CZ</locale>
     <solverRankingType>TOTAL_SCORE</solverRankingType>
   </benchmarkReport>
   <inheritedSolverBenchmark>

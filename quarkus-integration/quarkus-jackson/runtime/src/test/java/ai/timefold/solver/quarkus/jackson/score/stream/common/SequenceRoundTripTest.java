@@ -55,7 +55,8 @@ class SequenceRoundTripTest {
 
         ObjectMapper objectMapper = JsonMapper.builder()
                 .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
-                .serializationInclusion(JsonInclude.Include.NON_NULL)
+                .defaultPropertyInclusion(
+                        JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL))
                 .addModule(TimefoldJacksonModule.createModule())
                 .build();
 

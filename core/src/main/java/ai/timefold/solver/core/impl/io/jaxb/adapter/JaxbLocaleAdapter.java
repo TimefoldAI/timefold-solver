@@ -11,7 +11,7 @@ public class JaxbLocaleAdapter extends XmlAdapter<String, Locale> {
         if (localeString == null) {
             return null;
         }
-        return new Locale(localeString);
+        return Locale.forLanguageTag(localeString);
     }
 
     @Override
@@ -19,6 +19,6 @@ public class JaxbLocaleAdapter extends XmlAdapter<String, Locale> {
         if (locale == null) {
             return null;
         }
-        return locale.toString();
+        return locale.toLanguageTag();
     }
 }

@@ -441,7 +441,7 @@ final class GizmoMemberAccessorEntityEnhancer {
                         }
                         makeConstructorAccessible(beanClass, transformers);
                         var beanClassHandle = Const.of(beanClass);
-                        blockCreator.if_(blockCreator.objEquals(beanClassHandle, query),
+                        blockCreator.if_(blockCreator.exprEquals(beanClassHandle, query),
                                 isQueryBranch -> isQueryBranch.return_(isQueryBranch.new_(beanClass)));
                     }
                     blockCreator.returnNull();

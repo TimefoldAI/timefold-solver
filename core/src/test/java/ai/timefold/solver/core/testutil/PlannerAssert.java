@@ -135,7 +135,7 @@ public final class PlannerAssert {
     // PhaseLifecycleListener methods
     // ************************************************************************
 
-    public static void verifyPhaseLifecycle(PhaseLifecycleListener phaseLifecycleListener,
+    public static <Solution_> void verifyPhaseLifecycle(PhaseLifecycleListener<Solution_> phaseLifecycleListener,
             int solvingCount, int phaseCount, int stepCount) {
         verify(phaseLifecycleListener, times(solvingCount)).solvingStarted(any(SolverScope.class));
         verify(phaseLifecycleListener, times(phaseCount)).phaseStarted(any(AbstractPhaseScope.class));
@@ -145,7 +145,8 @@ public final class PlannerAssert {
         verify(phaseLifecycleListener, times(solvingCount)).solvingEnded(any(SolverScope.class));
     }
 
-    public static void verifyPhaseLifecycle(ConstructionHeuristicPhaseLifecycleListener phaseLifecycleListener,
+    public static <Solution_> void verifyPhaseLifecycle(
+            ConstructionHeuristicPhaseLifecycleListener<Solution_> phaseLifecycleListener,
             int solvingCount, int phaseCount, int stepCount) {
         verify(phaseLifecycleListener, times(solvingCount)).solvingStarted(any(SolverScope.class));
         verify(phaseLifecycleListener, times(phaseCount)).phaseStarted(any(ConstructionHeuristicPhaseScope.class));
@@ -155,7 +156,7 @@ public final class PlannerAssert {
         verify(phaseLifecycleListener, times(solvingCount)).solvingEnded(any(SolverScope.class));
     }
 
-    public static void verifyPhaseLifecycle(LocalSearchPhaseLifecycleListener phaseLifecycleListener,
+    public static <Solution_> void verifyPhaseLifecycle(LocalSearchPhaseLifecycleListener<Solution_> phaseLifecycleListener,
             int solvingCount, int phaseCount, int stepCount) {
         verify(phaseLifecycleListener, times(solvingCount)).solvingStarted(any(SolverScope.class));
         verify(phaseLifecycleListener, times(phaseCount)).phaseStarted(any(LocalSearchPhaseScope.class));
@@ -444,7 +445,7 @@ public final class PlannerAssert {
 
     public static <E> E extractSingleton(List<E> singletonList) {
         assertThat(singletonList).hasSize(1);
-        return singletonList.get(0);
+        return singletonList.getFirst();
     }
 
     private PlannerAssert() {
