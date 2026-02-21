@@ -42,6 +42,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -350,7 +351,8 @@ class TerminationTest {
     static class TerminationArgumentSource implements ArgumentsProvider {
 
         @Override
-        public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+        public Stream<? extends Arguments> provideArguments(ParameterDeclarations declarations, ExtensionContext context)
+                throws Exception {
             return Stream.of(
                     Arguments.of(new TerminationConfig().withStepCountLimit(10000)),
                     Arguments.of(new TerminationConfig().withScoreCalculationCountLimit(10000L)),

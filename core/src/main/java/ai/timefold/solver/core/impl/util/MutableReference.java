@@ -10,6 +10,10 @@ public final class MutableReference<Value_> {
 
     private @Nullable Value_ value;
 
+    public MutableReference() {
+        this(null);
+    }
+
     public MutableReference(@Nullable Value_ value) {
         this.value = value;
     }

@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -67,9 +66,12 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
     @Test
     void scoreAnalysisWithoutMatches() throws JsonProcessingException {
-        var objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+        var objectMapper = JsonMapper.builder()
+                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .defaultPropertyInclusion(
+                        JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL))
+                .addModule(TimefoldJacksonModule.createModule())
+                .build();
 
         var constraintRef1 = ConstraintRef.of("constraint1");
         var constraintRef2 = ConstraintRef.of("constraint2");
@@ -107,9 +109,12 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
     @Test
     void scoreAnalysisWithMatches() throws JsonProcessingException {
-        var objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+        var objectMapper = JsonMapper.builder()
+                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .defaultPropertyInclusion(
+                        JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL))
+                .addModule(TimefoldJacksonModule.createModule())
+                .build();
 
         var originalScoreAnalysis = getScoreAnalysis();
         var serialized = objectMapper.writeValueAsString(originalScoreAnalysis);
@@ -179,9 +184,12 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
     @Test
     void recommendedAssignment() throws JsonProcessingException {
-        var objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+        var objectMapper = JsonMapper.builder()
+                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .defaultPropertyInclusion(
+                        JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL))
+                .addModule(TimefoldJacksonModule.createModule())
+                .build();
 
         var proposition = new Pair<>("A", "1");
         var originalScoreAnalysis = getScoreAnalysis();
@@ -211,9 +219,12 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
     @Test
     void constraintWeightOverrides() throws JsonProcessingException {
-        var objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+        var objectMapper = JsonMapper.builder()
+                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .defaultPropertyInclusion(
+                        JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL))
+                .addModule(TimefoldJacksonModule.createModule())
+                .build();
 
         var constraintWeightOverrides = ConstraintWeightOverrides.of(
                 Map.of(

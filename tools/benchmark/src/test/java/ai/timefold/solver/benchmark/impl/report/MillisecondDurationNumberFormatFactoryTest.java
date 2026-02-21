@@ -21,13 +21,13 @@ class MillisecondDurationNumberFormatFactoryTest {
 
     private static final Locale DEFAULT_LOCALE = Locale.getDefault();
     private static final TemplateNumberFormat NUMBER_FORMAT =
-            new MillisecondDurationNumberFormat(Locale.forLanguageTag("en_US"));
+            new MillisecondDurationNumberFormat(Locale.forLanguageTag("en-US"));
 
     private final TemplateNumberModel templateNumberModel = mock(TemplateNumberModel.class);
 
     @BeforeAll
     static void setExpectedLocale() {
-        Locale.setDefault(Locale.forLanguageTag("cs_CZ"));
+        Locale.setDefault(Locale.forLanguageTag("cs-CZ"));
     }
 
     @AfterAll

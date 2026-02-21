@@ -568,7 +568,7 @@ class SolverManagerTest {
                     .withSolverJobStartedEventConsumer(event -> started.increment())
                     .run();
             solverJob.getFinalBestSolution();
-            assertThat(started.getValue()).isOne();
+            assertThat(started.intValue()).isOne();
         }
     }
 
@@ -825,7 +825,7 @@ class SolverManagerTest {
                     .run();
 
             startedBarrier.await();
-            assertThat(finalBestSolution.getValue()).isNotNull();
+            assertThat(finalBestSolution.get()).isNotNull();
         }
     }
 
@@ -860,9 +860,9 @@ class SolverManagerTest {
                     .run();
 
             startedBarrier.await();
-            assertThat(finalBestSolution.getValue()).isNotNull();
-            assertThat(bestSolution.getValue()).isNotNull();
-            assertThat(producerId.getValue()).isNotNull();
+            assertThat(finalBestSolution.get()).isNotNull();
+            assertThat(bestSolution.get()).isNotNull();
+            assertThat(producerId.get()).isNotNull();
         }
     }
 
@@ -1325,7 +1325,7 @@ class SolverManagerTest {
         }
 
         boolean isInitialized() {
-            return isInitializedRef.getValue();
+            return isInitializedRef.get();
         }
 
         EventProducerId producerId() {

@@ -272,7 +272,7 @@ public class GizmoSolutionClonerImplementor {
                                 blockCreator.withObject(thisObj).getClass_());
                 for (Class<?> solutionSubclass : sortedSolutionClassList) {
                     var solutionSubclassConst = Const.of(solutionSubclass);
-                    var isSubclass = blockCreator.objEquals(solutionSubclassConst, thisObjClass);
+                    var isSubclass = blockCreator.exprEquals(solutionSubclassConst, thisObjClass);
                     blockCreator.if_(isSubclass, isExactMatchBranch -> {
                         // Note: it appears Gizmo2 does not have a way to cast expressions, so we need to
                         //       use an ifInstanceOf to get a casted version

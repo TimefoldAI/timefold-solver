@@ -33,7 +33,7 @@ public class PolymorphicScoreJacksonDeserializer extends JsonDeserializer<Score>
     @Override
     public Score deserialize(JsonParser parser, DeserializationContext context) throws IOException {
         parser.nextToken();
-        String scoreClassSimpleName = parser.getCurrentName();
+        String scoreClassSimpleName = parser.currentName();
         parser.nextToken();
         String scoreString = parser.getValueAsString();
         if (scoreClassSimpleName.equals(SimpleScore.class.getSimpleName())) {

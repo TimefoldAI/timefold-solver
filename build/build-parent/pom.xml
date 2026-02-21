@@ -447,14 +447,11 @@
             <target>${maven.compiler.release}</target>
             <encoding>${project.build.sourceEncoding}</encoding>
             <compilerArgs>
-              <!-- Visit https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html
-                   to learn more about javac warnings -->
-              <arg>-Xmaxwarns</arg>
-              <arg>100</arg>
-              <arg>-Xlint</arg>
-              <arg>-Xlint:-rawtypes</arg>
-              <arg>-Xlint:-serial</arg>
-              <arg>-Xlint:-unchecked</arg>
+              <!--
+                Suppress warnings about generated code to reduce log length.
+                Warnings are primarily dealt with during development in the IDE.
+              -->
+              <compilerArgument>-Xlint:none</compilerArgument>
             </compilerArgs>
           </configuration>
         </plugin>
