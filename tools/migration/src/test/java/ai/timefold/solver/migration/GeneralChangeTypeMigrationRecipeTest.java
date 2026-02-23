@@ -49,7 +49,7 @@ class GeneralChangeTypeMigrationRecipeTest implements RewriteTest {
                                 "package ai.timefold.solver.core.api.score.buildin.bendablelong; public class BendableLongScore {}",
                                 "package ai.timefold.solver.core.api.score.buildin.bendablebigdecimal; public class BendableBigDecimalScore {}",
                                 "package ai.timefold.solver.core.api.solver; public class ProblemFactChange {}",
-                                "package ai.timefold.solver.core.config.solver; public enum EnvironmentMode {FAST_ASSERT, REPRODUCIBLE}"));
+                                "package ai.timefold.solver.core.config.solver; public enum EnvironmentMode {FAST_ASSERT, STEP_ASSERT, NO_ASSERT, REPRODUCIBLE}"));
     }
 
     @Test
