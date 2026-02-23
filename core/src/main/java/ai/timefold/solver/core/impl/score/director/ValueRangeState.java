@@ -56,8 +56,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
         if (fromSolutionItem == null) {
             var valueRange = fetchValueRangeFromSolution(solution, sorter);
             fromSolutionItem = ValueRangeItem.ofLeft(null, valueRange, sorter);
-            fromSolutionValueIndexMap = buildIndexMap(valueRange.createOriginalIterator(), (int) valueRange.getSize(),
-                    valueRangeDescriptor.isGenericTypeImmutable());
+            fromSolutionValueIndexMap = buildIndexMap(valueRange.createOriginalIterator(), (int) valueRange.getSize());
             return valueRange;
         }
         var valueRange = pickValueBySorter(fromSolutionItem, sorter, null);
@@ -72,7 +71,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
                             fromSolutionItem.rightSorter());
             // We need to update the index map or the positions may become inconsistent
             fromSolutionValueIndexMap = buildIndexMap(sortedValueRange.createOriginalIterator(),
-                    (int) sortedValueRange.getSize(), valueRangeDescriptor.isGenericTypeImmutable());
+                    (int) sortedValueRange.getSize());
             return sortedValueRange;
         } else if (fromSolutionItem.rightItem() == null) {
             var sortedValueRange = sortValueRange(Objects.requireNonNull(fromSolutionItem.leftItem()), sorter);
@@ -294,11 +293,10 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
             @Nullable SelectionSorter<Solution_, Value_> sorter) {
         var entityDescriptor = variableDescriptor.getEntityDescriptor();
         var entityList = (List<Entity_>) entityDescriptor.extractEntities(cachedWorkingSolution);
-        var entityIndexMap = buildIndexMap(entityList.iterator(), entityList.size(), false);
+        var entityIndexMap = buildIndexMap(entityList.iterator(), entityList.size());
         var entityIndexItem = new ReachableValuesIndex<>(entityIndexMap, entityList);
         var valueList = getFromSolution(cachedWorkingSolution, null);
-        var valueIndexMap = buildIndexMap(valueList.createOriginalIterator(), (int) valueList.getSize(),
-                valueRangeDescriptor.isGenericTypeImmutable());
+        var valueIndexMap = buildIndexMap(valueList.createOriginalIterator(), (int) valueList.getSize());
         var valueListSize = valueList.getSize();
         if (valueListSize > Integer.MAX_VALUE) {
             throw new IllegalStateException(
@@ -322,10 +320,8 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
                 variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
     }
 
-    private static <Type_> Map<Type_, Integer> buildIndexMap(Iterator<@Nullable Type_> allValues, int size,
-            boolean isImmutable) {
-        Map<Type_, Integer> indexMap =
-                isImmutable ? CollectionUtils.newHashMap(size) : CollectionUtils.newIdentityHashMap(size);
+    private static <Type_> Map<Type_, Integer> buildIndexMap(Iterator<@Nullable Type_> allValues, int size) {
+        Map<Type_, Integer> indexMap = CollectionUtils.newHashMap(size);
         var idx = 0;
         while (allValues.hasNext()) {
             var value = allValues.next();
