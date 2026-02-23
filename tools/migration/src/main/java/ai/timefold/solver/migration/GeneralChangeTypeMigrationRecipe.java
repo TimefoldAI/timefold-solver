@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.openrewrite.Recipe;
 import org.openrewrite.java.ChangeType;
-import org.openrewrite.java.ReplaceConstantWithAnotherConstant;
 
 public class GeneralChangeTypeMigrationRecipe extends AbstractRecipe {
     @Override
@@ -54,11 +53,6 @@ public class GeneralChangeTypeMigrationRecipe extends AbstractRecipe {
                         "ai.timefold.solver.core.api.score.BendableBigDecimalScore", true),
                 // Problem fact
                 new ChangeType("ai.timefold.solver.core.api.solver.ProblemFactChange",
-                        "ai.timefold.solver.core.api.solver.change.ProblemChange", true),
-                // ENVIRONMENT values
-                new ReplaceConstantWithAnotherConstant("ai.timefold.solver.core.config.solver.EnvironmentMode.FAST_ASSERT",
-                        "ai.timefold.solver.core.config.solver.EnvironmentMode.STEP_ASSERT"),
-                new ReplaceConstantWithAnotherConstant("ai.timefold.solver.core.config.solver.EnvironmentMode.REPRODUCIBLE",
-                        "ai.timefold.solver.core.config.solver.EnvironmentMode.NO_ASSERT"));
+                        "ai.timefold.solver.core.api.solver.change.ProblemChange", true));
     }
 }
