@@ -303,12 +303,12 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         var actualScoreImpactType = constraint.getScoreImpactType();
         if (actualScoreImpactType == ScoreImpactType.MIXED) {
             // Impact means we need to check for expected impact type and actual impact match.
-            if (requireNonNull(scoreImpactType) == ScoreImpactType.REWARD) {
+            if (requireNonNull(scoreImpactType) == ScoreImpactType.PENALTY) {
                 var negatedImpact = deducedImpacts.value();
                 if (equalityPredicate.test(matchWeightTotal, negatedImpact)) {
                     return;
                 }
-            } else if (scoreImpactType == ScoreImpactType.PENALTY && equalityPredicate.test(matchWeightTotal, impact)) {
+            } else if (scoreImpactType == ScoreImpactType.REWARD && equalityPredicate.test(matchWeightTotal, impact)) {
                 return;
             }
         } else if (actualScoreImpactType == scoreImpactType && equalityPredicate.test(matchWeightTotal, impact)) {
@@ -327,12 +327,12 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         var actualScoreImpactType = constraint.getScoreImpactType();
         if (actualScoreImpactType == ScoreImpactType.MIXED) {
             // Impact means we need to check for expected impact type and actual impact match.
-            if (requireNonNull(scoreImpactType) == ScoreImpactType.REWARD) {
+            if (requireNonNull(scoreImpactType) == ScoreImpactType.PENALTY) {
                 var negatedImpact = deducedImpacts.value();
                 if (comparator.compare(matchWeightTotal, negatedImpact) < 0) {
                     return;
                 }
-            } else if (scoreImpactType == ScoreImpactType.PENALTY && comparator.compare(matchWeightTotal, impact) < 0) {
+            } else if (scoreImpactType == ScoreImpactType.REWARD && comparator.compare(matchWeightTotal, impact) < 0) {
                 return;
             }
         } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) < 0) {
@@ -351,12 +351,12 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         var actualScoreImpactType = constraint.getScoreImpactType();
         if (actualScoreImpactType == ScoreImpactType.MIXED) {
             // Impact means we need to check for expected impact type and actual impact match.
-            if (requireNonNull(scoreImpactType) == ScoreImpactType.REWARD) {
+            if (requireNonNull(scoreImpactType) == ScoreImpactType.PENALTY) {
                 var negatedImpact = deducedImpacts.value();
                 if (comparator.compare(matchWeightTotal, negatedImpact) > 0) {
                     return;
                 }
-            } else if (scoreImpactType == ScoreImpactType.PENALTY && comparator.compare(matchWeightTotal, impact) > 0) {
+            } else if (scoreImpactType == ScoreImpactType.REWARD && comparator.compare(matchWeightTotal, impact) > 0) {
                 return;
             }
         } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) > 0) {
@@ -570,9 +570,9 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
                     if (actualImpactType == ScoreImpactType.MIXED) {
                         var isImpactPositive = constraintMatchTotal.getScore().compareTo(zeroScore) > 0;
                         var isImpactNegative = constraintMatchTotal.getScore().compareTo(zeroScore) < 0;
-                        if (isImpactPositive && scoreImpactType == ScoreImpactType.PENALTY) {
+                        if (isImpactPositive && scoreImpactType == ScoreImpactType.REWARD) {
                             return constraintMatchTotal.getConstraintMatchSet().size();
-                        } else if (isImpactNegative && scoreImpactType == ScoreImpactType.REWARD) {
+                        } else if (isImpactNegative && scoreImpactType == ScoreImpactType.PENALTY) {
                             return constraintMatchTotal.getConstraintMatchSet().size();
                         } else {
                             return 0;
