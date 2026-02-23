@@ -16,6 +16,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.ListVal
 import ai.timefold.solver.core.impl.domain.valuerange.sort.SelectionSorterAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
+import ai.timefold.solver.core.testdomain.equals.list.TestdataEqualsByCodeListObject;
 import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,11 @@ class CompositeCountableValueRangeTest {
         assertThat(createValueRange(Arrays.asList(0, 2, 5, 10), Arrays.asList(-15, 25, -1)).contains(1)).isFalse();
         assertThat(createValueRange(Arrays.asList("a", "b"), Arrays.asList("c"), Arrays.asList("d")).contains("c")).isTrue();
         assertThat(createValueRange(Arrays.asList("a", "b"), Arrays.asList("c"), Arrays.asList("d")).contains("n")).isFalse();
+        // Different instances with the same ID return true
+        assertThat(createValueRange(
+                Arrays.asList(new TestdataEqualsByCodeListObject("a"), new TestdataEqualsByCodeListObject("b")),
+                List.of(new TestdataEqualsByCodeListObject("b")), List.of(new TestdataEqualsByCodeListObject("c")))
+                .contains(new TestdataEqualsByCodeListObject("a"))).isTrue();
     }
 
     @Test
