@@ -14,6 +14,18 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Instances are usually created using one of the static {@code of(...)} factory methods,
+ * which control how the underlying collection is initialized.
+ * The collection preserves the original insertion order and enables efficient indexed and random access.
+ * <p>
+ * When values are added via {@link #add(Object)}, the set is consulted first and the value
+ * is only appended to the list if it was not already present in the set.
+ * <p>
+ * As a result, the cache never contains duplicate elements according to their {@code equals}/{@code hashCode} contract.
+ *
+ * @param <Value_> the type of the cached values
+ */
 @NullMarked
 public final class ValueRangeCache<Value_>
         implements Iterable<Value_> {
