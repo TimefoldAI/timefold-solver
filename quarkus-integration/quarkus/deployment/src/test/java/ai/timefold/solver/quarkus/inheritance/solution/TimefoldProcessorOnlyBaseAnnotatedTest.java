@@ -7,7 +7,6 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedBaseEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedConstraintProvider;
@@ -31,8 +30,7 @@ class TimefoldProcessorOnlyBaseAnnotatedTest {
                             TestdataOnlyBaseAnnotatedExtendedSolution.class,
                             TestdataOnlyBaseAnnotatedSolution.class,
                             TestdataOnlyBaseAnnotatedChildEntity.class,
-                            TestdataOnlyBaseAnnotatedBaseEntity.class,
-                            TestdataObject.class));
+                            TestdataOnlyBaseAnnotatedBaseEntity.class));
 
     @Inject
     SolverFactory<TestdataOnlyBaseAnnotatedExtendedSolution> solverFactory;
