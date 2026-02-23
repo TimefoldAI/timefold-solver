@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
@@ -14,6 +15,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.decorator.Select
 import ai.timefold.solver.core.impl.domain.valuerange.sort.SelectionSorterAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
+import ai.timefold.solver.core.testdomain.equals.list.TestdataEqualsByCodeListObject;
 import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
@@ -47,6 +49,9 @@ class ListValueRangeTest {
         assertThat(new ListValueRange<>(Arrays.asList(-15, 25, 0)).contains(-14)).isFalse();
         assertThat(new ListValueRange<>(Arrays.asList("b", "z", "a")).contains("a")).isTrue();
         assertThat(new ListValueRange<>(Arrays.asList("b", "z", "a")).contains("n")).isFalse();
+        // Different instances with the same ID return true
+        assertThat(new ListValueRange<>(List.of(new TestdataEqualsByCodeListObject("a")))
+                .contains(new TestdataEqualsByCodeListObject("a"))).isTrue();
     }
 
     @Test

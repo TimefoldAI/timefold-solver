@@ -15,15 +15,12 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class CompositeCountableValueRange<T> extends AbstractCountableValueRange<T> {
 
-    private final boolean isValueImmutable;
     private final List<? extends AbstractCountableValueRange<T>> valueRangeList;
     private final ValueRangeCache<T> cache;
 
     public CompositeCountableValueRange(List<? extends AbstractCountableValueRange<T>> childValueRangeList) {
         var maximumSize = 0L;
-        var isImmutable = true;
         for (AbstractCountableValueRange<T> childValueRange : childValueRangeList) {
-            isImmutable &= childValueRange.isValueImmutable();
             // We choose to select the larger size instead of summing all sizes, as they may not be distinct.
             // This approach opts for the cost of resizing instead of allocating larger chunks of memory.
             var size = childValueRange.getSize();
@@ -32,9 +29,7 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
             }
         }
         // To eliminate duplicates, we immediately expand the child value ranges into a cache.
-        var cacheBuilder = isImmutable ? ValueRangeCache.Builder.FOR_TRUSTED_VALUES
-                : ValueRangeCache.Builder.FOR_USER_VALUES;
-        this.cache = cacheBuilder.buildCache((int) maximumSize);
+        this.cache = ValueRangeCache.of((int) maximumSize);
         for (var childValueRange : childValueRangeList) {
             // If the child value range includes nulls, we will ignore them.
             // They will be added later by the wrapper, if necessary.
@@ -43,20 +38,13 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
             }
             childValueRange.createOriginalIterator().forEachRemaining(cache::add);
         }
-        this.isValueImmutable = isImmutable;
         this.valueRangeList = childValueRangeList;
     }
 
-    private CompositeCountableValueRange(boolean isValueImmutable,
-            List<? extends AbstractCountableValueRange<T>> valueRangeList, ValueRangeCache<T> cache) {
-        this.isValueImmutable = isValueImmutable;
+    private CompositeCountableValueRange(List<? extends AbstractCountableValueRange<T>> valueRangeList,
+            ValueRangeCache<T> cache) {
         this.valueRangeList = valueRangeList;
         this.cache = cache;
-    }
-
-    @Override
-    public boolean isValueImmutable() {
-        return isValueImmutable;
     }
 
     @Override
@@ -72,7 +60,7 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
     @Override
     public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
         var sortedCache = this.cache.sort(sorter);
-        return new CompositeCountableValueRange<>(isValueImmutable, valueRangeList, sortedCache);
+        return new CompositeCountableValueRange<>(valueRangeList, sortedCache);
     }
 
     @Override
@@ -97,7 +85,6 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
             return true;
         }
         return o instanceof CompositeCountableValueRange<?> that &&
-                isValueImmutable == that.isValueImmutable &&
                 valueRangeList.equals(that.valueRangeList);
     }
 
@@ -106,7 +93,6 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
         // We do not use Objects.hash(...) because it creates an array each time.
         // We do not use Objects.hashCode() due to https://bugs.openjdk.org/browse/JDK-8015417.
         var hash = 1;
-        hash = 31 * hash + Boolean.hashCode(isValueImmutable);
         return 31 * hash + valueRangeList.hashCode();
     }
 

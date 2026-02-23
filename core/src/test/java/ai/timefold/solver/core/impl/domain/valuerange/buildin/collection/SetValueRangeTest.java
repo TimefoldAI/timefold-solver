@@ -16,6 +16,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.decorator.Select
 import ai.timefold.solver.core.impl.domain.valuerange.sort.SelectionSorterAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
+import ai.timefold.solver.core.testdomain.equals.list.TestdataEqualsByCodeListObject;
 import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,9 @@ class SetValueRangeTest {
         assertThat(createRange(-15, 25, 0).contains(-14)).isFalse();
         assertThat(createRange("b", "z", "a").contains("a")).isTrue();
         assertThat(createRange("b", "z", "a").contains("n")).isFalse();
+        // Different instances with the same ID return true
+        assertThat(createRange(new TestdataEqualsByCodeListObject("a"))
+                .contains(new TestdataEqualsByCodeListObject("a"))).isTrue();
     }
 
     @Test

@@ -180,9 +180,9 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
         if (valueCollection.isEmpty()) {
             return EmptyValueRange.instance();
         } else if (valueCollection instanceof Set<T> set) {
-            return new SetValueRange<>(set, isGenericTypeImmutable);
+            return new SetValueRange<>(set);
         } else if (valueCollection instanceof List<T> list) {
-            return new ListValueRange<>(list, isGenericTypeImmutable);
+            return new ListValueRange<>(list);
         } else {
             throw new IllegalArgumentException("Impossible state: The collection (%s) must be a Set or a List."
                     .formatted(valueCollection));

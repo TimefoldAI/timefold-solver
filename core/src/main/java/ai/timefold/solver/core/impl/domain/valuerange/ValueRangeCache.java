@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.domain.valuerange;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -16,35 +15,51 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Instances should be created using the {@link Builder} enum.
+ * Instances are usually created using one of the static {@code of(...)} factory methods,
+ * which control how the underlying collection is initialized.
+ * The collection preserves the original insertion order and enables efficient indexed and random access.
+ * <p>
+ * When values are added via {@link #add(Object)}, the set is consulted first and the value
+ * is only appended to the list if it was not already present in the set.
+ * <p>
+ * As a result, the cache never contains duplicate elements according to their {@code equals}/{@code hashCode} contract.
  *
- * @param <Value_>
+ * @param <Value_> the type of the cached values
  */
 @NullMarked
 public final class ValueRangeCache<Value_>
         implements Iterable<Value_> {
 
-    private final List<Value_> valuesWithFastRandomAccess;
-    private final Set<Value_> valuesWithFastLookup;
-    private final boolean trustedValues;
-
-    private ValueRangeCache(int size, Set<Value_> emptyCacheSet, boolean trustedValues) {
-        this.valuesWithFastRandomAccess = new ArrayList<>(size);
-        this.valuesWithFastLookup = emptyCacheSet;
-        this.trustedValues = trustedValues;
+    public static <Value_> ValueRangeCache<Value_> of(int size) {
+        return new ValueRangeCache<>(size, CollectionUtils.newHashSet(size));
     }
 
-    private ValueRangeCache(Collection<Value_> collection, Set<Value_> emptyCacheSet, boolean trustedValues) {
+    public static <Value_> ValueRangeCache<Value_> of(Collection<Value_> collection) {
+        return new ValueRangeCache<>(collection, CollectionUtils.newHashSet(collection.size()));
+    }
+
+    public static <Value_> ValueRangeCache<Value_> of(List<Value_> valuesWithFastRandomAccess,
+            Set<Value_> valuesWithFastLookup) {
+        return new ValueRangeCache<>(valuesWithFastRandomAccess, valuesWithFastLookup);
+    }
+
+    private final List<Value_> valuesWithFastRandomAccess;
+    private final Set<Value_> valuesWithFastLookup;
+
+    private ValueRangeCache(int size, Set<Value_> emptyCacheSet) {
+        this.valuesWithFastRandomAccess = new ArrayList<>(size);
+        this.valuesWithFastLookup = emptyCacheSet;
+    }
+
+    private ValueRangeCache(Collection<Value_> collection, Set<Value_> emptyCacheSet) {
         this.valuesWithFastRandomAccess = new ArrayList<>(collection);
         this.valuesWithFastLookup = emptyCacheSet;
         this.valuesWithFastLookup.addAll(valuesWithFastRandomAccess);
-        this.trustedValues = trustedValues;
     }
 
-    private ValueRangeCache(List<Value_> valuesWithFastRandomAccess, Set<Value_> valuesWithFastLookup, boolean trustedValues) {
+    private ValueRangeCache(List<Value_> valuesWithFastRandomAccess, Set<Value_> valuesWithFastLookup) {
         this.valuesWithFastRandomAccess = valuesWithFastRandomAccess;
         this.valuesWithFastLookup = valuesWithFastLookup;
-        this.trustedValues = trustedValues;
     }
 
     public void add(@Nullable Value_ value) {
@@ -91,68 +106,7 @@ public final class ValueRangeCache<Value_>
         // We need to copy the list to ensure it won't affect other cache instances
         var newValuesWithFastRandomAccess = new ArrayList<>(valuesWithFastRandomAccess);
         sorter.sort(newValuesWithFastRandomAccess);
-        if (trustedValues) {
-            return Builder.FOR_TRUSTED_VALUES.buildCache(newValuesWithFastRandomAccess, valuesWithFastLookup);
-        } else {
-            return Builder.FOR_USER_VALUES.buildCache(newValuesWithFastRandomAccess, valuesWithFastLookup);
-        }
-    }
-
-    public enum Builder {
-
-        /**
-         * Use when {@link #FOR_TRUSTED_VALUES} is not suitable.
-         */
-        FOR_USER_VALUES {
-            @Override
-            public <Value_> ValueRangeCache<Value_> buildCache(int size) {
-                return new ValueRangeCache<>(size, CollectionUtils.newIdentityHashSet(size), false);
-            }
-
-            @Override
-            public <Value_> ValueRangeCache<Value_> buildCache(Collection<Value_> collection) {
-                return new ValueRangeCache<>(collection, CollectionUtils.newIdentityHashSet(collection.size()), false);
-            }
-
-            @Override
-            public <Value_> ValueRangeCache<Value_> buildCache(List<Value_> valuesWithFastRandomAccess,
-                    Set<Value_> valuesWithFastLookup) {
-                return new ValueRangeCache<>(valuesWithFastRandomAccess, valuesWithFastLookup, false);
-            }
-        },
-        /**
-         * For types where we can trust that {@link Object#equals(Object)} means
-         * that if two objects are equal, they are the same object.
-         * For example, this is the case for {@link String}, {@link Number}, {@link OffsetDateTime}
-         * and many other JDK types.
-         * It is not guaranteed to be the case for user-defined types,
-         * which is when {@link #FOR_USER_VALUES} should be used instead.
-         */
-        FOR_TRUSTED_VALUES {
-            @Override
-            public <Value_> ValueRangeCache<Value_> buildCache(int size) {
-                return new ValueRangeCache<>(size, CollectionUtils.newHashSet(size), true);
-            }
-
-            @Override
-            public <Value_> ValueRangeCache<Value_> buildCache(Collection<Value_> collection) {
-                return new ValueRangeCache<>(collection, CollectionUtils.newHashSet(collection.size()), true);
-            }
-
-            @Override
-            public <Value_> ValueRangeCache<Value_> buildCache(List<Value_> valuesWithFastRandomAccess,
-                    Set<Value_> valuesWithFastLookup) {
-                return new ValueRangeCache<>(valuesWithFastRandomAccess, valuesWithFastLookup, true);
-            }
-        };
-
-        public abstract <Value_> ValueRangeCache<Value_> buildCache(int size);
-
-        public abstract <Value_> ValueRangeCache<Value_> buildCache(Collection<Value_> collection);
-
-        public abstract <Value_> ValueRangeCache<Value_> buildCache(List<Value_> valuesWithFastRandomAccess,
-                Set<Value_> valuesWithFastLookup);
-
+        return ValueRangeCache.of(newValuesWithFastRandomAccess, valuesWithFastLookup);
     }
 
 }

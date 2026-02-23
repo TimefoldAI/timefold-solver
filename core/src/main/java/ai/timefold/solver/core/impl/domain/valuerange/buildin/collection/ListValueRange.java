@@ -17,22 +17,11 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
-    private final boolean isValueImmutable;
     private final List<T> list;
     private @Nullable ValueRangeCache<T> cache;
 
     public ListValueRange(List<T> list) {
-        this(list, false);
-    }
-
-    public ListValueRange(List<T> list, boolean isValueImmutable) {
-        this.isValueImmutable = isValueImmutable;
         this.list = list;
-    }
-
-    @Override
-    public boolean isValueImmutable() {
-        return isValueImmutable;
     }
 
     @Override
@@ -51,9 +40,7 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
     @Override
     public boolean contains(@Nullable T value) {
         if (cache == null) {
-            var cacheBuilder = isValueImmutable ? ValueRangeCache.Builder.FOR_TRUSTED_VALUES
-                    : ValueRangeCache.Builder.FOR_USER_VALUES;
-            cache = cacheBuilder.buildCache(list);
+            cache = ValueRangeCache.of(list);
         }
         return cache.contains(value);
     }
@@ -63,7 +50,7 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
         // The list may be immutable and need to be copied
         var sortableList = new ArrayList<>(list);
         sorter.sort(sortableList);
-        return new ListValueRange<>(sortableList, isValueImmutable);
+        return new ListValueRange<>(sortableList);
     }
 
     @Override
@@ -83,7 +70,6 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
             return true;
         }
         return o instanceof ListValueRange<?> that &&
-                isValueImmutable == that.isValueImmutable &&
                 list.equals(that.list);
     }
 
@@ -92,7 +78,6 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
         // We do not use Objects.hash(...) because it creates an array each time.
         // We do not use Objects.hashCode() due to https://bugs.openjdk.org/browse/JDK-8015417.
         var hash = 1;
-        hash = 31 * hash + Boolean.hashCode(isValueImmutable);
         return 31 * hash + list.hashCode();
     }
 
