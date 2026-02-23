@@ -19,22 +19,11 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
     private static final int VALUES_TO_LIST_IN_TO_STRING = 3;
     private static final String VALUE_DELIMITER = ", ";
 
-    private final boolean isValueImmutable;
     private final Set<T> set;
     private @Nullable ValueRangeCache<T> cache;
 
     public SetValueRange(Set<T> set) {
-        this(set, false);
-    }
-
-    public SetValueRange(Set<T> set, boolean isValueImmutable) {
-        this.isValueImmutable = isValueImmutable;
         this.set = set;
-    }
-
-    @Override
-    public boolean isValueImmutable() {
-        return isValueImmutable;
     }
 
     @Override
@@ -49,9 +38,7 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
 
     private ValueRangeCache<T> getCache() {
         if (cache == null) {
-            var cacheBuilder = isValueImmutable ? ValueRangeCache.Builder.FOR_TRUSTED_VALUES
-                    : ValueRangeCache.Builder.FOR_USER_VALUES;
-            cache = cacheBuilder.buildCache(set);
+            cache = ValueRangeCache.of(set);
         }
         return cache;
     }
@@ -84,7 +71,6 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
             return true;
         }
         return o instanceof SetValueRange<?> that &&
-                isValueImmutable == that.isValueImmutable &&
                 set.equals(that.set);
     }
 
@@ -93,7 +79,6 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
         // We do not use Objects.hash(...) because it creates an array each time.
         // We do not use Objects.hashCode() due to https://bugs.openjdk.org/browse/JDK-8015417.
         var hash = 1;
-        hash = 31 * hash + Boolean.hashCode(isValueImmutable);
         return 31 * hash + set.hashCode();
     }
 
