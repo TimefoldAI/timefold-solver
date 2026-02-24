@@ -1043,7 +1043,7 @@ class ValueRangeManagerTest {
     }
 
     @Test
-    void failExtractAllValuesFromSolutionRangeForListVariable() {
+    void failExtractAllValuesFromSolutionRange() {
         var solution = new TestdataValueRangeHashCodeSolution();
         var entity1 = new TestdataValueRangeHashCodeEntity("e1");
         var entity2 = new TestdataValueRangeHashCodeEntity("e2");
