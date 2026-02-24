@@ -177,8 +177,9 @@ Add a dependency to the `timefold-solver-jackson` jar and register `TimefoldJack
 
 [source,java,options="nowrap"]
 ----
-ObjectMapper objectMapper = new ObjectMapper();
-objectMapper.registerModule(TimefoldJacksonModule.createModule());
+var objectMapper = JsonMapper.builder()
+            .addModule(TimefoldJacksonModule.createModule())
+            .build();
 ----
 
 

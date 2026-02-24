@@ -315,9 +315,13 @@ class TimetableResourceTest {
     @Test
     void solveDemoDataUntilFeasible() throws IOException {
         // Provide the same input data shown in the text above.
-        Timetable testTimetable = new ObjectMapper()
-                .findAndRegisterModules()
-                .readValue(new File("src/test/resources/testing-timetable.json"), Timetable.class);
+        ObjectMapper objectMapper = JsonMapper.builder()
+            .findAndAddModules()
+            .build();
+        Timetable testTimetable = objectMapper
+.readValue(
+            new File("src/test/resources/testing-timetable.json"),
+            Timetable.class);
 
         Timetable solution = given()
                 .contentType(ContentType.JSON)
