@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.random.RandomGenerator;
 
+import ai.timefold.solver.core.impl.domain.solution.cloner.DeepCloningUtils;
 import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 
@@ -59,6 +60,10 @@ public final class ValueRangeCache<Value_>
             valuesWithFastLookup.put(value, value);
             valuesWithFastRandomAccess.add(value);
         } else {
+            // We verify whether the value is immutable to prevent errors when using wrapper classes such as Integer
+            if (DeepCloningUtils.isImmutable(value.getClass())) {
+                return;
+            }
             if (value != oldValue) {
                 throw new IllegalStateException(
                         "The value range already includes the value (%s), but a different instance with the same identity (%s) was found. Values that are considered identical according to equals/hashCode semantics must not have different instances in value ranges."
