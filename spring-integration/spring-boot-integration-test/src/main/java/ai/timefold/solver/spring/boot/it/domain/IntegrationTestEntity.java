@@ -9,12 +9,15 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+
 @PlanningEntity
 public class IntegrationTestEntity {
     @PlanningId
     private String id;
 
     @PlanningVariable(valueRangeProviderRefs = { "valueRange", "valueRangeWithParameter" })
+    @JsonIdentityReference(alwaysAsId = true)
     private IntegrationTestValue value;
 
     private List<IntegrationTestValue> valueList;

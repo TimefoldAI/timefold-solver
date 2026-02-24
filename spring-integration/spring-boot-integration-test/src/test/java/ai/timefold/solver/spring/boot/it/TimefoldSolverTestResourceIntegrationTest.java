@@ -34,12 +34,14 @@ class TimefoldSolverTestResourceIntegrationTest {
                 .baseUrl("http://localhost:" + port + "/integration-test")
                 .build();
 
+        var firstValue = new IntegrationTestValue("1");
+        var secondValue = new IntegrationTestValue("2");
         var firstEntity = new IntegrationTestEntity("0");
-        firstEntity.setValueList(List.of(new IntegrationTestValue("1"), new IntegrationTestValue("2")));
+        firstEntity.setValueList(List.of(firstValue, secondValue));
         var secondEntity = new IntegrationTestEntity("1");
-        secondEntity.setValueList(List.of(new IntegrationTestValue("1"), new IntegrationTestValue("2")));
+        secondEntity.setValueList(List.of(firstValue, secondValue));
         var thirdEntity = new IntegrationTestEntity("2");
-        thirdEntity.setValueList(List.of(new IntegrationTestValue("1"), new IntegrationTestValue("2")));
+        thirdEntity.setValueList(List.of(firstValue, secondValue));
         IntegrationTestSolution problem = new IntegrationTestSolution(
                 List.of(firstEntity, secondEntity, thirdEntity),
                 List.of(new IntegrationTestValue("0")));
@@ -51,11 +53,11 @@ class TimefoldSolverTestResourceIntegrationTest {
                 .jsonPath("entityList").isArray()
                 .jsonPath("valueList").isArray()
                 .jsonPath("entityList[0].id").isEqualTo("0")
-                .jsonPath("entityList[0].value.id").isEqualTo("0")
+                .jsonPath("entityList[0].value").isEqualTo("0")
                 .jsonPath("entityList[1].id").isEqualTo("1")
-                .jsonPath("entityList[1].value.id").isEqualTo("1")
+                .jsonPath("entityList[1].value").isEqualTo("1")
                 .jsonPath("entityList[2].id").isEqualTo("2")
-                .jsonPath("entityList[2].value.id").isEqualTo("2");
+                .jsonPath("entityList[2].value").isEqualTo("2");
 
     }
 

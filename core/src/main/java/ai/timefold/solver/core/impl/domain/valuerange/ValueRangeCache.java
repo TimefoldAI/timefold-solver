@@ -2,10 +2,10 @@ package ai.timefold.solver.core.impl.domain.valuerange;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
@@ -19,40 +19,51 @@ public final class ValueRangeCache<Value_>
         implements Iterable<Value_> {
 
     public static <Value_> ValueRangeCache<Value_> of(int size) {
-        return new ValueRangeCache<>(size, HashSet.newHashSet(size));
+        return new ValueRangeCache<>(size, HashMap.newHashMap(size));
     }
 
     public static <Value_> ValueRangeCache<Value_> of(Collection<Value_> collection) {
-        return new ValueRangeCache<>(collection, HashSet.newHashSet(collection.size()));
+        return new ValueRangeCache<>(collection, HashMap.newHashMap(collection.size()));
     }
 
     public static <Value_> ValueRangeCache<Value_> of(List<Value_> valuesWithFastRandomAccess,
-            Set<Value_> valuesWithFastLookup) {
+            Map<Value_, Value_> valuesWithFastLookup) {
         return new ValueRangeCache<>(valuesWithFastRandomAccess, valuesWithFastLookup);
     }
 
     private final List<Value_> valuesWithFastRandomAccess;
-    private final Set<Value_> valuesWithFastLookup;
+    private final Map<Value_, Value_> valuesWithFastLookup;
 
-    private ValueRangeCache(int size, Set<Value_> emptyCacheSet) {
+    private ValueRangeCache(int size, Map<Value_, Value_> emptyCacheSet) {
         this.valuesWithFastRandomAccess = new ArrayList<>(size);
         this.valuesWithFastLookup = emptyCacheSet;
     }
 
-    private ValueRangeCache(Collection<Value_> collection, Set<Value_> emptyCacheSet) {
-        this.valuesWithFastRandomAccess = new ArrayList<>(collection);
+    private ValueRangeCache(Collection<Value_> collection, Map<Value_, Value_> emptyCacheSet) {
+        this.valuesWithFastRandomAccess = new ArrayList<>(collection.size());
         this.valuesWithFastLookup = emptyCacheSet;
-        this.valuesWithFastLookup.addAll(valuesWithFastRandomAccess);
+        collection.forEach(this::add);
     }
 
-    private ValueRangeCache(List<Value_> valuesWithFastRandomAccess, Set<Value_> valuesWithFastLookup) {
+    private ValueRangeCache(List<Value_> valuesWithFastRandomAccess, Map<Value_, Value_> valuesWithFastLookup) {
         this.valuesWithFastRandomAccess = valuesWithFastRandomAccess;
         this.valuesWithFastLookup = valuesWithFastLookup;
     }
 
     public void add(@Nullable Value_ value) {
-        if (valuesWithFastLookup.add(value)) {
+        if (value == null) {
+            return;
+        }
+        var oldValue = valuesWithFastLookup.get(value);
+        if (oldValue == null) {
+            valuesWithFastLookup.put(value, value);
             valuesWithFastRandomAccess.add(value);
+        } else {
+            if (value != oldValue) {
+                throw new IllegalStateException(
+                        "The value range already includes the value (%s), but a different instance with the same identity (%s) was found. Values that are considered identical according to equals/hashCode semantics must not have different instances in value ranges."
+                                .formatted(oldValue, value));
+            }
         }
     }
 
@@ -64,7 +75,7 @@ public final class ValueRangeCache<Value_>
     }
 
     public boolean contains(@Nullable Value_ value) {
-        return valuesWithFastLookup.contains(value);
+        return valuesWithFastLookup.containsKey(value);
     }
 
     public long getSize() {

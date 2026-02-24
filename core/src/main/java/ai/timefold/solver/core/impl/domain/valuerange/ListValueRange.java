@@ -30,7 +30,7 @@ public final class ListValueRange<T> extends AbstractValueRange<T> {
     @Override
     public @Nullable T get(long index) {
         if (index > Integer.MAX_VALUE) {
-            throw new IndexOutOfBoundsException("The index (" + index + ") must fit in an int.");
+            throw new IndexOutOfBoundsException("The index (%d) must fit in an int.".formatted(index));
         }
         return list.get((int) index);
     }

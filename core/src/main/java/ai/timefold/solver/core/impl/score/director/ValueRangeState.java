@@ -55,6 +55,15 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
             var valueRange = fetchValueRangeFromSolution(solution, sorter);
             fromSolutionItem = ValueRangeItem.ofLeft(null, valueRange, sorter);
             fromSolutionValueIndexMap = buildIndexMap(valueRange.createOriginalIterator(), (int) valueRange.getSize());
+            // During the first loading of the solution range,
+            // we ensure that the value range cache is created if it is a solution range,
+            // in order to initiate the distinct instance check.
+            // The entity range does not need to touch the cache,
+            // as the composite value range descriptor already initiates the check.
+            if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
+                // The contains operation will force the cache initialization
+                valueRange.contains(null);
+            }
             return valueRange;
         }
         var valueRange = pickValueBySorter(fromSolutionItem, sorter, null);

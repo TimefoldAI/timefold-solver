@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.director;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertNonNullCodesOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertReversedNonNullCodesOfIterator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Comparator;
@@ -19,6 +20,7 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectEquals;
 import ai.timefold.solver.core.testdomain.composite.TestdataCompositeEntity;
 import ai.timefold.solver.core.testdomain.composite.TestdataCompositeSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -35,6 +37,8 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 import ai.timefold.solver.core.testdomain.list.valuerange.composite.TestdataListCompositeEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.composite.TestdataListCompositeEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.hashcode.TestdataListEntityProvidingHashCodeEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.hashcode.TestdataListEntityProvidingHashCodeSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.composite.TestdataListUnassignedCompositeEntityProvidingEntity;
@@ -49,10 +53,14 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEnt
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.composite.TestdataCompositeEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.composite.TestdataCompositeEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.hashCode.TestdataEntityProvidingHashCodeEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.hashCode.TestdataEntityProvidingHashCodeSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.composite.TestdataAllowsUnassignedCompositeEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.composite.TestdataAllowsUnassignedCompositeEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.hashcode.TestdataValueRangeHashCodeEntity;
+import ai.timefold.solver.core.testdomain.valuerange.hashcode.TestdataValueRangeHashCodeSolution;
 
 import org.assertj.core.data.Percentage;
 import org.junit.jupiter.api.Test;
@@ -984,6 +992,77 @@ class ValueRangeManagerTest {
         yetAnotherValueRange =
                 valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2), sorterComparator);
         assertThat(yetAnotherValueRange).isNotSameAs(otherValueRange);
+    }
+
+    @Test
+    void failExtractAllValuesFromEntityRangeForBasicVariable() {
+        var solution = new TestdataEntityProvidingHashCodeSolution("s1");
+        var entity1 = new TestdataEntityProvidingHashCodeEntity("e1",
+                List.of(new TestdataObjectEquals(1), new TestdataObjectEquals(2)));
+        var entity2 = new TestdataEntityProvidingHashCodeEntity("e2",
+                List.of(new TestdataObjectEquals(3), new TestdataObjectEquals(1)));
+        // We have two values 1 with different instances, which is not allowed
+        solution.setEntityList(List.of(entity1, entity2));
+
+        var valueRangeDescriptor = TestdataEntityProvidingHashCodeEntity.buildVariableDescriptorForValue()
+                .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        assertThatThrownBy(() -> valueRangeManager.countOnSolution(valueRangeDescriptor, solution))
+                .hasMessageContaining("The value range")
+                .hasMessageContaining("already includes the value")
+                .hasMessageContaining("but a different instance with the same identity")
+                .hasMessageContaining("was found")
+                .hasMessageContaining(
+                        "Values that are considered identical according to equals/hashCode semantics must not have different instances in value ranges");
+    }
+
+    @Test
+    void failExtractAllValuesFromEntityRangeForListVariable() {
+        var solution = new TestdataListEntityProvidingHashCodeSolution();
+        var entity1 = new TestdataListEntityProvidingHashCodeEntity("e1",
+                List.of(new TestdataObjectEquals(1), new TestdataObjectEquals(2)));
+        var entity2 = new TestdataListEntityProvidingHashCodeEntity("e2",
+                List.of(new TestdataObjectEquals(3), new TestdataObjectEquals(1)));
+        // We have two values 1 with different instances, which is not allowed
+        solution.setEntityList(List.of(entity1, entity2));
+
+        var valueRangeDescriptor = TestdataListEntityProvidingHashCodeEntity.buildVariableDescriptorForValueList()
+                .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        assertThatThrownBy(() -> valueRangeManager.countOnSolution(valueRangeDescriptor, solution))
+                .hasMessageContaining("The value range")
+                .hasMessageContaining("already includes the value")
+                .hasMessageContaining("but a different instance with the same identity")
+                .hasMessageContaining("was found")
+                .hasMessageContaining(
+                        "Values that are considered identical according to equals/hashCode semantics must not have different instances in value ranges");
+    }
+
+    @Test
+    void failExtractAllValuesFromSolutionRangeForListVariable() {
+        var solution = new TestdataValueRangeHashCodeSolution();
+        var entity1 = new TestdataValueRangeHashCodeEntity("e1");
+        var entity2 = new TestdataValueRangeHashCodeEntity("e2");
+        solution.setEntityList(List.of(entity1, entity2));
+        // We have two values 1 with different instances, which is not allowed
+        solution.setValueList(List.of(new TestdataObjectEquals(1), new TestdataObjectEquals(1)));
+
+        var valueRangeDescriptor = TestdataValueRangeHashCodeEntity.buildVariableDescriptorForValue()
+                .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        assertThatThrownBy(() -> valueRangeManager.countOnSolution(valueRangeDescriptor, solution))
+                .hasMessageContaining("The value range")
+                .hasMessageContaining("already includes the value")
+                .hasMessageContaining("but a different instance with the same identity")
+                .hasMessageContaining("was found")
+                .hasMessageContaining(
+                        "Values that are considered identical according to equals/hashCode semantics must not have different instances in value ranges");
     }
 
     private <Solution_> void assertSolutionValueRangeSortingOrder(Solution_ solution,
