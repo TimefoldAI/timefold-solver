@@ -94,7 +94,7 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
     @Bean
     @Lazy
     @ConditionalOnMissingBean
-    public <Solution_, ProblemId_> SolverManager<Solution_> solverManager(SolverFactory solverFactory) {
+    public <Solution_> SolverManager<Solution_> solverManager(SolverFactory solverFactory) {
         // TODO supply ThreadFactory
         if (solverFactory == null) {
             return null;
@@ -166,7 +166,6 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
 
         @Bean
         @Lazy
-        @SuppressWarnings("unchecked")
         <ConstraintProvider_ extends ConstraintProvider, SolutionClass_>
                 ConstraintVerifier<ConstraintProvider_, SolutionClass_> constraintVerifier() {
             // Using SolverConfig as an injected parameter here leads to an injection failure on an empty app,

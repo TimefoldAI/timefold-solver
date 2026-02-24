@@ -9,10 +9,6 @@ public abstract class AbstractJacksonRoundTripTest {
     // Helper methods
     // ************************************************************************
 
-    protected static <W> W serializeAndDeserialize(W input) {
-        return serializeAndDeserialize(new ObjectMapper(), input);
-    }
-
     protected static <W> W serializeAndDeserialize(ObjectMapper objectMapper, W input) {
         String jsonString;
         W output;

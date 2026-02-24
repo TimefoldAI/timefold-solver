@@ -38,7 +38,7 @@ public abstract class AbstractConstraintBuilder<Score_ extends Score<Score_>> im
 
     public static String sanitize(String fieldName, String fieldValue) {
         if (fieldValue == null || fieldValue.equalsIgnoreCase("null") || fieldValue.equalsIgnoreCase("nil")) {
-            throw new IllegalArgumentException("The %s cannot be null.".formatted(fieldName));
+            throw new IllegalArgumentException("The %s (%s) cannot be null.".formatted(fieldName, fieldValue));
         }
         if (!fieldValue.matches("^[a-zA-Z0-9]+[a-zA-Z0-9 _.'-]*$")) {
             throw new IllegalArgumentException(

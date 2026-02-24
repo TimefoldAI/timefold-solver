@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 /**
  *
@@ -19,7 +20,7 @@ public class JacksonSolutionFileIO<Solution_> implements SolutionFileIO<Solution
     private final ObjectMapper mapper;
 
     public JacksonSolutionFileIO(Class<Solution_> clazz) {
-        this(clazz, new ObjectMapper());
+        this(clazz, JsonMapper.builder().build());
     }
 
     public JacksonSolutionFileIO(Class<Solution_> clazz, ObjectMapper mapper) {

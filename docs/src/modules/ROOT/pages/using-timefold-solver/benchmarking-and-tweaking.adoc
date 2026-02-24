@@ -219,10 +219,9 @@ public class VehicleRoutePlanJsonSolutionFileIO extends JacksonSolutionFileIO<Ve
     public VehicleRoutePlanJsonSolutionFileIO() {
         // VehicleRoutePlan is the @PlanningSolution class.
         super(VehicleRoutePlan.class,
-                new ObjectMapper()
-                        .registerModule(new JavaTimeModule())
-                        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        );
+                new JsonMapper.builder()
+                    ...
+                    .build());
     }
 
 }

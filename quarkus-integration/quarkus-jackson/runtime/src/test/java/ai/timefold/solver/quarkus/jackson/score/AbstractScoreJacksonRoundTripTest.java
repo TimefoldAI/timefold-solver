@@ -32,11 +32,11 @@ public abstract class AbstractScoreJacksonRoundTripTest extends AbstractJacksonR
         if (expectedScore != null) {
             regex = "\\{\\s*" // Start of element
                     + "\"score\":\""
-                    + expectedScore.toString().replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]") // Score
+                    + expectedScore.toString().replaceAll("\\[", "\\\\[").replaceAll("]", "\\\\]") // Score
                     + "\""
-                    + "\\s*\\}"; // End of element
+                    + "\\s*}"; // End of element
         } else {
-            regex = "\\{\"score\":null\\}"; // Start and end of element
+            regex = "\\{\"score\":null}"; // Start and end of element
         }
         if (!jsonString.matches(regex)) {
             fail("Regular expression match failed.\nExpected regular expression: " + regex + "\nActual string: " + jsonString);

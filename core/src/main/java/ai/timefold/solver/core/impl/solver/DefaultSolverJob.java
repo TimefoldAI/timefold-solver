@@ -58,13 +58,13 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
     private final @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer;
     private final BiConsumer<? super Object, ? super Throwable> exceptionHandler;
 
-    private volatile SolverStatus solverStatus;
     private final CountDownLatch terminatedLatch;
     private final ReentrantLock solverStatusModifyingLock;
     private final AtomicBoolean terminatedEarly = new AtomicBoolean(false);
     private final BestSolutionHolder<Solution_> bestSolutionHolder = new BestSolutionHolder<>();
     private final AtomicReference<@Nullable ProblemSizeStatistics> temporaryProblemSizeStatistics = new AtomicReference<>();
 
+    private volatile SolverStatus solverStatus = SolverStatus.SOLVING_SCHEDULED;
     private @Nullable Future<Solution_> finalBestSolutionFuture;
     private @Nullable ConsumerSupport<Solution_, Object> consumerSupport;
 
@@ -88,9 +88,8 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
         this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer;
         this.solverJobStartedConsumer = solverJobStartedConsumer;
         this.exceptionHandler = exceptionHandler;
-        solverStatus = SolverStatus.SOLVING_SCHEDULED;
-        terminatedLatch = new CountDownLatch(1);
-        solverStatusModifyingLock = new ReentrantLock();
+        this.terminatedLatch = new CountDownLatch(1);
+        this.solverStatusModifyingLock = new ReentrantLock();
     }
 
     public void setFinalBestSolutionFuture(Future<Solution_> finalBestSolutionFuture) {
@@ -268,7 +267,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
         // before the solving has started.
         // Once the solving has started, the problem size statistics will be computed
         // using the ScoreDirector's hot ValueRangeManager.
-        return temporaryProblemSizeStatistics.updateAndGet(oldStatistics -> {
+        var result = temporaryProblemSizeStatistics.updateAndGet(oldStatistics -> {
             if (oldStatistics != null) {
                 // If the problem size statistics were already computed, return them.
                 // This can happen if the problem size statistics were computed before the solving started.
@@ -278,6 +277,11 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
             var valueManager = ValueRangeManager.of(solutionDescriptor, problemFinder.apply(problemId));
             return valueManager.getProblemSizeStatistics();
         });
+        // Avoids nullness issues reported by IDE which cannot actually happen.
+        // The result can never be null, because none of the methods called in the lambda can return null,
+        // and the lambda is the only way to set the value of the temporaryProblemSizeStatistics,
+        // which is the only way for it to be null.
+        return Objects.requireNonNull(result);
     }
 
     public SolverTermination<Solution_> getSolverTermination() {
@@ -293,21 +297,33 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
 
     /**
      * A listener that unlocks the solverStatusModifyingLock when Solving has started.
-     *
      * It prevents the following scenario caused by unlocking before Solving started:
      *
-     * Thread 1:
-     * solverStatusModifyingLock.unlock()
-     * >solver.solve(...) // executes second
-     *
-     * Thread 2:
-     * case SOLVING_ACTIVE:
-     * >solver.terminateEarly(); // executes first
+     * <dl>
+     * <dt>Thread 1</dt>
+     * <dd>
+     * 
+     * <pre>
+     *           solverStatusModifyingLock.unlock()
+     *           > solver.solve(...) // executes second
+     * </pre>
+     * 
+     * </dd>
+     * <dt>Thread 2</dt>
+     * <dd>
+     * 
+     * <pre>
+     *           case SOLVING_ACTIVE:
+     *           >solver.terminateEarly(); // executes first
+     * </pre>
+     * 
+     * </dd>
+     * </dl>
      *
      * The solver.solve() call resets the terminateEarly flag, and thus the solver will not be terminated
      * by the call, which means terminatedLatch will not be decremented, causing Thread 2 to wait forever
      * (at least until another Thread calls terminateEarly again).
-     *
+     * <p>
      * To prevent Thread 2 from potentially waiting forever, we only unlock the lock after the
      * solvingStarted phase lifecycle event is fired, meaning the terminateEarly flag will not be
      * reset and thus the solver will actually terminate.

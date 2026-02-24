@@ -66,7 +66,7 @@ public final class DefaultSolverManager<Solution_> implements SolverManager<Solu
         solverFactory.buildSolver();
     }
 
-    private Object getProblemIdOrThrow(Object problemId) {
+    private static Object getProblemIdOrThrow(Object problemId) {
         return Objects.requireNonNull(problemId, "Invalid problemId (null) given to SolverManager.");
     }
 
