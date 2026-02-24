@@ -35,5 +35,6 @@ recipeList:
   - ai.timefold.solver.migration.v8.RemoveConstraintPackageRecipe
   - ai.timefold.solver.migration.v8.SolutionManagerRecommendAssignmentRecipe
   - ai.timefold.solver.migration.v8.SortingMigrationRecipe
+  - ai.timefold.solver.migration.v8.EnvironmentMigrationRecipe
   - org.openrewrite.java.RemoveUnusedImports
   - ai.timefold.solver.migration.ChangeVersion
