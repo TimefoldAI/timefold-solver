@@ -90,7 +90,7 @@ class GeneralChangeTypeMigrationRecipeTest implements RewriteTest {
                         }""",
                 """
                         package timefold;
-                        
+
                         import ai.timefold.solver.core.api.domain.common.PlanningId;
                         import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
                         import ai.timefold.solver.core.api.score.BendableScore;
