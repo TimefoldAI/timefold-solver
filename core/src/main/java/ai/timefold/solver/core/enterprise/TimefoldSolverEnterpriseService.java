@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.enterprise;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -42,6 +41,14 @@ import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
 public interface TimefoldSolverEnterpriseService {
 
+    final class InstanceCarrier {
+
+        // Workaround to be able to have a lazy singleton inside of an interface.
+        // Otherwise load() would be calling the reflective constructor every time, which is expensive.
+        private static volatile TimefoldSolverEnterpriseService INSTANCE;
+
+    }
+
     String SOLVER_NAME = "Timefold Solver";
     String COMMUNITY_NAME = "Community Edition";
     String COMMUNITY_COORDINATES = "ai.timefold.solver:timefold-solver-core";
@@ -62,14 +69,21 @@ public interface TimefoldSolverEnterpriseService {
     }
 
     @SuppressWarnings("unchecked")
-    static TimefoldSolverEnterpriseService load()
-            throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        // Avoids ServiceLoader by using reflection directly.
-        var clz = (Class<? extends TimefoldSolverEnterpriseService>) Class
-                .forName("ai.timefold.solver.enterprise.core.DefaultTimefoldSolverEnterpriseService");
-        Method method = clz.getMethod("getInstance", Function.class);
-        return (TimefoldSolverEnterpriseService) method.invoke(null,
-                (Function<Class<?>, String>) TimefoldSolverEnterpriseService::getVersionString);
+    static TimefoldSolverEnterpriseService load() throws ClassNotFoundException, NoSuchMethodException,
+            InvocationTargetException, IllegalAccessException, InstantiationException {
+        if (InstanceCarrier.INSTANCE == null) {
+            synchronized (InstanceCarrier.class) {
+                if (InstanceCarrier.INSTANCE == null) {
+                    // Avoids ServiceLoader by using reflection directly.
+                    var clz = (Class<? extends TimefoldSolverEnterpriseService>) Class
+                            .forName("ai.timefold.solver.enterprise.core.DefaultTimefoldSolverEnterpriseService");
+                    var ctor = clz.getDeclaredConstructor(Function.class);
+                    InstanceCarrier.INSTANCE =
+                            ctor.newInstance((Function<Class<?>, String>) TimefoldSolverEnterpriseService::getVersionString);
+                }
+            }
+        }
+        return InstanceCarrier.INSTANCE;
     }
 
     static String getVersionString(Class<?> clz) {
@@ -84,17 +98,15 @@ public interface TimefoldSolverEnterpriseService {
             throw new IllegalStateException("""
                     No valid Timefold Enterprise License was found.
                     Please contact Timefold to obtain a valid license,
-                    or if you believe that this message was given in error.""",
-                    cause);
+                    or if you believe that this message was given in error.""", cause);
         } catch (Exception cause) {
             throw new IllegalStateException("""
                     %s requested but %s %s could not be loaded.
                     Maybe add the %s dependency, or %s.
                     Note: %s %s is a commercial product.
-                    Visit https://timefold.ai to find out more, or contact Timefold customer support."""
-                    .formatted(feature.getName(), SOLVER_NAME, ENTERPRISE_NAME, feature.getWorkaround(),
-                            ENTERPRISE_COORDINATES, SOLVER_NAME, ENTERPRISE_NAME),
-                    cause);
+                    Visit https://timefold.ai to find out more, or contact Timefold customer support.""".formatted(
+                    feature.getName(), SOLVER_NAME, ENTERPRISE_NAME, feature.getWorkaround(), ENTERPRISE_COORDINATES,
+                    SOLVER_NAME, ENTERPRISE_NAME), cause);
         }
     }
 
@@ -146,12 +158,10 @@ public interface TimefoldSolverEnterpriseService {
             SelectionOrder resolvedSelectionOrder, ElementDestinationSelector<Solution_> destinationSelector);
 
     <Solution_> AbstractMoveSelectorFactory<Solution_, MultistageMoveSelectorConfig>
-            buildBasicMultistageMoveSelectorFactory(
-                    MultistageMoveSelectorConfig moveSelectorConfig);
+            buildBasicMultistageMoveSelectorFactory(MultistageMoveSelectorConfig moveSelectorConfig);
 
     <Solution_> AbstractMoveSelectorFactory<Solution_, ListMultistageMoveSelectorConfig>
-            buildListMultistageMoveSelectorFactory(
-                    ListMultistageMoveSelectorConfig moveSelectorConfig);
+            buildListMultistageMoveSelectorFactory(ListMultistageMoveSelectorConfig moveSelectorConfig);
 
     InnerConstraintProfiler buildConstraintProfiler();
 
@@ -159,8 +169,7 @@ public interface TimefoldSolverEnterpriseService {
         MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),
         PARTITIONED_SEARCH("Partitioned search", "remove partitioned search phase from solver configuration"),
         NEARBY_SELECTION("Nearby selection", "remove nearby selection from solver configuration"),
-        AUTOMATIC_NODE_SHARING("Automatic node sharing",
-                "remove automatic node sharing from solver configuration"),
+        AUTOMATIC_NODE_SHARING("Automatic node sharing", "remove automatic node sharing from solver configuration"),
         MULTISTAGE_MOVE("Multistage move selector",
                 "remove multistageMoveSelector and/or listMultistageMoveSelector from the solver configuration"),
         CONSTRAINT_PROFILING("Constraint profiling", "remove constraintStreamProfilingEnabled from the solver configuration");
