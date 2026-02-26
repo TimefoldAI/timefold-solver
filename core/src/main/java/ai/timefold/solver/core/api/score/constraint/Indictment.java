@@ -50,7 +50,7 @@ public interface Indictment<Score_ extends Score<Score_>> {
 
     /**
      * Retrieve {@link ConstraintJustification} instances associated with {@link ConstraintMatch}es in
-     * {@link #getConstraintMatchSet()}, which are of (or extend) a given constraint justification implementation.
+     * {@link #getConstraintMatchSet()}, which are of (or extend) a given constraint constraintverifier implementation.
      * This is equivalent to retrieving {@link #getConstraintMatchSet()}
      * and collecting all matching {@link ConstraintMatch#getJustification()} objects into a list.
      *

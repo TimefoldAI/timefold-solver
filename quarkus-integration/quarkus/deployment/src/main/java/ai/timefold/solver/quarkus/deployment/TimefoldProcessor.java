@@ -763,7 +763,7 @@ class TimefoldProcessor {
                                 var constraintVerifierResultHandle = methodCreator.new_(
                                         ConstructorDesc.of(
                                                 ClassDesc.of(
-                                                        "ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier"),
+                                                        "ai.timefold.solver.core.impl.score.stream.test.DefaultConstraintVerifier"),
                                                 ConstraintProvider.class, SolutionDescriptor.class),
                                         constraintProviderResultHandle, solutionDescriptorResultHandle);
 

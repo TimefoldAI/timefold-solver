@@ -54,15 +54,15 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
     }
 
     /**
-     * Return a singular justification for the constraint.
+     * Return a singular constraintverifier for the constraint.
      * <p>
      * This method has a different meaning based on which score director the constraint comes from.
      * <ul>
      * <li>For constraint streams, it returns {@link DefaultConstraintJustification} from the matching tuple
-     * (eg. [A, B] for a bi stream), unless a custom justification mapping was provided,
+     * (eg. [A, B] for a bi stream), unless a custom constraintverifier mapping was provided,
      * in which case it returns the return value of that function.</li>
      * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
-     * <li>It may return null, if justification support was disabled altogether.</li>
+     * <li>It may return null, if constraintverifier support was disabled altogether.</li>
      * </ul>
      */
     @SuppressWarnings("unchecked")
@@ -79,7 +79,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * (eg. [A, B] for a bi stream), unless a custom indictment mapping was provided,
      * in which case it returns the return value of that function.</li>
      * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
-     * <li>It may return an empty list, if justification support was disabled altogether.</li>
+     * <li>It may return an empty list, if constraintverifier support was disabled altogether.</li>
      * </ul>
      *
      * @return may be empty or contain null

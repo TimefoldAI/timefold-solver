@@ -10,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
 public interface ImpactHandler<Tuple_ extends Tuple> {
 
     /**
-     * Impacts the score, providing neither constraint match information, neither justification for it.
+     * Impacts the score, providing neither constraint match information, neither constraintverifier for it.
      *
      * @param impacter knows which level(s) of the score to impact, and using which type of number
      * @param tuple the tuple that triggered the impact
@@ -19,7 +19,7 @@ public interface ImpactHandler<Tuple_ extends Tuple> {
     ScoreImpact<?> impactNaked(WeightedScoreImpacter<?, ?> impacter, Tuple_ tuple);
 
     /**
-     * Impacts the score, providing constraint match information but justification for it.
+     * Impacts the score, providing constraint match information but constraintverifier for it.
      *
      * @param impacter knows which level(s) of the score to impact, and using which type of number
      * @param tuple the tuple that triggered the impact

@@ -37,7 +37,7 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
 
     /**
      * 
-     * @return the constraint match returned by the supplier will have its justification set to null.
+     * @return the constraint match returned by the supplier will have its constraintverifier set to null.
      *         This is useful when the justifications are disabled, to save memory.
      * @param <Score_>
      */
@@ -69,7 +69,8 @@ public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
 
     private static RuntimeException createJustificationException(Constraint constraint, Exception cause, Object... facts) {
         throw new IllegalStateException("Consequence of a constraint (" + constraint.getConstraintRef()
-                + ") threw an exception creating constraint justification from a tuple (" + factsToString(facts) + ").", cause);
+                + ") threw an exception creating constraint constraintverifier from a tuple (" + factsToString(facts) + ").",
+                cause);
     }
 
     private static String factsToString(Object... facts) {

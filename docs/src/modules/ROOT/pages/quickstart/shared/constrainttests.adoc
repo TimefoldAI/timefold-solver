@@ -1,4 +1,4 @@
-Then create the test itself:
+Now create the test itself:
 
 [tabs]
 ====

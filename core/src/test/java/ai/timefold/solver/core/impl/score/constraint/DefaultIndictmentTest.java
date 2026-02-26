@@ -35,10 +35,10 @@ class DefaultIndictmentTest {
         assertThat(indictment.getScore()).isEqualTo(SimpleScore.of(-21));
         indictment.addConstraintMatch(buildConstraintMatch("constraint3", SimpleScore.of(-300), e1, e2));
         assertThat(indictment.getScore()).isEqualTo(SimpleScore.of(-321));
-        // Different justification
+        // Different constraintverifier
         indictment.addConstraintMatch(buildConstraintMatch("constraint3", SimpleScore.of(-4000), e1, e3));
         assertThat(indictment.getScore()).isEqualTo(SimpleScore.of(-4321));
-        // Almost duplicate, but e2 and e1 are in reverse order, so different justification
+        // Almost duplicate, but e2 and e1 are in reverse order, so different constraintverifier
         indictment.addConstraintMatch(buildConstraintMatch("constraint3", SimpleScore.of(-50000), e2, e1));
         assertThat(indictment.getScore()).isEqualTo(SimpleScore.of(-54321));
 
@@ -56,7 +56,7 @@ class DefaultIndictmentTest {
         DefaultIndictment<SimpleScore> indictment = new DefaultIndictment<>(e1, SimpleScore.ZERO);
         assertThat(indictment.getScore()).isEqualTo(SimpleScore.ZERO);
 
-        // Add a constraint match with a default justification
+        // Add a constraint match with a default constraintverifier
         ConstraintMatch<SimpleScore> match1 = buildConstraintMatch("constraint1", SimpleScore.of(-1), e1, e2);
         indictment.addConstraintMatch(match1);
 
@@ -73,7 +73,7 @@ class DefaultIndictmentTest {
         assertThat(constraintJustification.getFacts())
                 .containsExactly(e1, e2);
 
-        // Add another constraint match with a custom justification
+        // Add another constraint match with a custom constraintverifier
         ConstraintMatch<SimpleScore> match2 = buildConstraintMatch("constraint1",
                 SimpleScore.of(-1), new TestConstraintJustification(e1, e3), e1, e3);
         indictment.addConstraintMatch(match2);

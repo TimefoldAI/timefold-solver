@@ -231,23 +231,12 @@ First update your build tool configuration:
 Maven::
 +
 --
-Add a `timefold-solver-test` dependency in your `pom.xml`:
+Add the subsequent dependencies in your `pom.xml`:
 [source,xml,subs=attributes+]
 ----
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>io.rest-assured</groupId>
-        <artifactId>rest-assured</artifactId>
-        <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-test</artifactId>
-      <version>{timefold-solver-version}</version>
       <scope>test</scope>
     </dependency>
 ----
@@ -259,7 +248,6 @@ Add the subsequent dependencies to your `build.gradle`:
 [source,groovy,subs=attributes+]
 ----
     testImplementation "io.quarkus:quarkus-junit5"
-    testImplementation "ai.timefold.solver:timefold-solver-test:{timefold-solver-version}"
 ----
 --
 ====

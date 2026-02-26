@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Default implementation of {@link ConstraintJustification}, returned by {@link ConstraintMatch#getJustification()}
- * unless the user defined a custom justification mapping.
+ * unless the user defined a custom constraintverifier mapping.
  */
 public final class DefaultConstraintJustification
         implements ConstraintJustification, Comparable<DefaultConstraintJustification> {

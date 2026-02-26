@@ -5,7 +5,7 @@ import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Determines whether constraint match is enabled and whether constraint match justification is enabled.
+ * Determines whether constraint match is enabled and whether constraint match constraintverifier is enabled.
  *
  * @see ai.timefold.solver.core.api.score.constraint.ConstraintMatch
  * @see ai.timefold.solver.core.api.score.stream.ConstraintJustification

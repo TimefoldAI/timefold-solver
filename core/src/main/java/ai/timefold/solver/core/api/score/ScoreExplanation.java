@@ -80,15 +80,16 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      *
      * <ul>
      * <li>
-     * With Constraint Streams, the user has an option to provide a custom justification mapping,
+     * With Constraint Streams, the user has an option to provide a custom constraintverifier mapping,
      * implementing {@link ConstraintJustification}.
-     * If provided, every {@link ConstraintMatch} of such constraint will be associated with this custom justification class.
-     * Every constraint not associated with a custom justification class
+     * If provided, every {@link ConstraintMatch} of such constraint will be associated with this custom constraintverifier
+     * class.
+     * Every constraint not associated with a custom constraintverifier class
      * will be associated with {@link DefaultConstraintJustification}.
      * </li>
      * <li>
      * With {@link ConstraintMatchAwareIncrementalScoreCalculator},
-     * every {@link ConstraintMatch} will be associated with the justification class that the user created it with.
+     * every {@link ConstraintMatch} will be associated with the constraintverifier class that the user created it with.
      * </li>
      * </ul>
      *
@@ -101,9 +102,9 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * Explains the {@link Score} of {@link #getScore()} for all constraints
      * justified with a given {@link ConstraintJustification} type.
      * Otherwise, as defined by {@link #getJustificationList()}.
-     * May be empty, if the score explanation ran with justification support disabled.
+     * May be empty, if the score explanation ran with constraintverifier support disabled.
      *
-     * @return all constraint matches associated with the given justification class
+     * @return all constraint matches associated with the given constraintverifier class
      * @see #getIndictmentMap()
      */
     default <ConstraintJustification_ extends ConstraintJustification> List<ConstraintJustification_>

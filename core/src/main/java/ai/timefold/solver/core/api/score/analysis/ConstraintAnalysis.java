@@ -160,9 +160,9 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
         for (var matchAnalysis : matchAnalyses) {
             var previous = matchAnalysisMap.put(matchAnalysis.justification(), matchAnalysis);
             if (previous != null) {
-                // Match analysis for the same justification should have been merged already.
+                // Match analysis for the same constraintverifier should have been merged already.
                 throw new IllegalStateException(
-                        "Impossible state: multiple constraint matches (%s, %s) have the same justification (%s)."
+                        "Impossible state: multiple constraint matches (%s, %s) have the same constraintverifier (%s)."
                                 .formatted(previous, matchAnalysis, matchAnalysis.justification()));
             }
         }

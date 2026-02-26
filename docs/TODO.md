@@ -39,5 +39,7 @@
 - [ ] `AutoDiscoverMemberType` is gone
 - [ ] Constraint name and group now forces strict validation.
 - [ ] `SolverManager` and `SolverJob` no longer have the `ProblemId_` type parameter.
+- [ ] `timefold-solver-test` is no more
+- [ ] `MockProblemChangeDirector` and `ConstraintVerifier` have moved.
 
 Remove this file when done.
