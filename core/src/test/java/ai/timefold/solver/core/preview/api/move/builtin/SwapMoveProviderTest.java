@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
-import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTester;
+import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;

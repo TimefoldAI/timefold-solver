@@ -10,10 +10,10 @@ import ai.timefold.solver.core.impl.move.DefaultMoveTestContext;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
-import ai.timefold.solver.core.preview.api.move.MoveTester;
+import ai.timefold.solver.core.preview.api.move.test.MoveTester;
 import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
-import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTestContext;
-import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTester;
+import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTestContext;
+import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 
 import org.jspecify.annotations.NullMarked;
 

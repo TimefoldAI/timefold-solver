@@ -1,7 +1,8 @@
-package ai.timefold.solver.core.preview.api.move;
+package ai.timefold.solver.core.preview.api.move.test;
 
 import ai.timefold.solver.core.impl.move.DefaultMoveTester;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
 

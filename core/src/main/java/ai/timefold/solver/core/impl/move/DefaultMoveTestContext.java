@@ -5,8 +5,8 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.MoveTestContext;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+import ai.timefold.solver.core.preview.api.move.test.MoveTestContext;
 
 import org.jspecify.annotations.NullMarked;
 

@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
-import ai.timefold.solver.core.preview.api.move.MoveTester;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
+import ai.timefold.solver.core.preview.api.move.test.MoveTester;
 import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedSolution;
 import ai.timefold.solver.core.testdomain.shadow.mixed.TestdataMixedValue;

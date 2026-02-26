@@ -1,6 +1,9 @@
-package ai.timefold.solver.core.preview.api.move;
+package ai.timefold.solver.core.preview.api.move.test;
 
 import java.util.function.Consumer;
+
+import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.neighborhood;
+package ai.timefold.solver.core.preview.api.neighborhood.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

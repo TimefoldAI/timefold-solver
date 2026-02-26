@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.neighborhood;
+package ai.timefold.solver.core.preview.api.neighborhood.test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +10,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.MoveTestContext;
+import ai.timefold.solver.core.preview.api.move.test.MoveTestContext;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 
 import org.jspecify.annotations.NullMarked;
 

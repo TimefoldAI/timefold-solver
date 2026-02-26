@@ -1,7 +1,8 @@
-package ai.timefold.solver.core.preview.api.neighborhood;
+package ai.timefold.solver.core.preview.api.neighborhood.test;
 
 import ai.timefold.solver.core.impl.neighborhood.DefaultNeighborhoodTester;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveProvider;
 
 import org.jspecify.annotations.NullMarked;
 
