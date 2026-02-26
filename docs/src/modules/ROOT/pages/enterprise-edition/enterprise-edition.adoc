@@ -9,9 +9,10 @@ such as <<nearbySelection,nearby selection>> and <<multithreadedSolving,multi-th
 These features are essential to scale out to huge datasets.
 
 Unlike Timefold Solver Community Edition, the Enterprise Edition is not open-source.
-You are allowed to use Timefold Solver Enterprise Edition for evaluation and development.
+We offer free licenses to non-profit organizations and for academic research.
+Everyone else may be entitled to a trial license to evaluate the product before purchasing.
 Please https://timefold.ai/contact[contact Timefold]
-to obtain the credentials necessary to start your evaluation.
+to obtain an Enterprise license.
 
 TIP: Looking for quicker time-to-value?
 Timefold offers https://docs.timefold.ai/[pre-built, fully tuned optimization models], no constraint building required.
@@ -23,92 +24,16 @@ see https://timefold.ai/pricing[Timefold Pricing].
 [#switchToEnterpriseEdition]
 == Switch to Enterprise Edition
 
-// Uncomment the following when ready to enable the Enterprise license
-// =============================
-// To switch from Timefold Solver Community Edition to Enterprise Edition,
-// https://timefold.ai/contact[contact us first] to obtain an Enterprise License.
-// This license is represented by a file named `timefold-solver-enterprise-license.pem`,
-// which you can introduce to your project by one of the following methods:
-//
-// * Place the file in the user's home directory.
-// * Store the path to the file in `TIMEFOLD_ENTERPRISE_LICENSE` system property.
-// * Place the file in the root of your application classpath.
-//
-// Having done that, reference the Enterprise Edition Maven repository in your project:
-// =============================
-// Also delete the next line of text.
+To switch from Timefold Solver Community Edition to Enterprise Edition,
+https://timefold.ai/contact[contact us first] to obtain an Enterprise License.
+This license is represented by a file named `timefold-solver-enterprise-license.pem`,
+which you can introduce to your project by one of the following methods:
 
-First reference the Enterprise Edition Maven repository in your project:
+* Place the file in the user's home directory.
+* Store the path to the file in `TIMEFOLD_ENTERPRISE_LICENSE` system property.
+* Place the file in the root of your application classpath.
 
-[tabs]
-====
-Maven::
-+
---
-Add the following repository to your `pom.xml`:
-
-[source,xml,options="nowrap"]
-----
-<project>
-  ...
-  <repositories>
-    <repository>
-      <id>timefold-solver-enterprise</id>
-      <name>Timefold Solver Enterprise Edition</name>
-      <url>https://timefold.jfrog.io/artifactory/releases/</url>
-    </repository>
-  </repositories>
-  ...
-</project>
-----
-
-Then create `.m2/settings.xml` in your home directory with the following content:
-
-[source,xml,options="nowrap"]
-----
-<settings>
-  ...
-  <servers>
-    <server>
-      <!-- Replace "my_username" and "my_password" with credentials obtained from a Timefold representative. -->
-      <id>timefold-solver-enterprise</id>
-      <username>my_username</username>
-      <password>my_password</password>
-    </server>
-  </servers>
-  ...
-</settings>
-----
-
-See https://maven.apache.org/settings.html[Settings Reference] for more information on Maven settings.
---
-
-Gradle::
-+
---
-Add the following in your `build.gradle`:
-
-[source,groovy,options="nowrap"]
-----
-repositories {
-  mavenCentral()
-  maven {
-    url "https://timefold.jfrog.io/artifactory/releases/"
-    credentials { // Replace "my_username" and "my_password" with credentials obtained from a Timefold representative.
-        username "my_username"
-        password "my_password"
-    }
-    authentication {
-        basic(BasicAuthentication)
-    }
-  }
-}
-----
---
-====
-
-Finally, having done all of the above,
-replace references to Community Edition artifacts by their Enterprise Edition counterparts
+Having done that, replace references to Community Edition artifacts by their Enterprise Edition counterparts
 as shown in the following table:
 
 |===
