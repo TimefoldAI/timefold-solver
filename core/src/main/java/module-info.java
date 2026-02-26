@@ -1,59 +1,61 @@
 open module ai.timefold.solver.core {
     // explicit exports to other modules
     exports ai.timefold.solver.core.impl.solver.scope to
-            ai.timefold.solver.jackson, timefold.solver.benchmark, timefold.solver.spring.boot.autoconfigure,
-            timefold.solver.quarkus.deployment, timefold.solver.quarkus.integration.test;
+            ai.timefold.solver.jackson, ai.timefold.solver.benchmark, ai.timefold.solver.spring.boot.autoconfigure,
+            ai.timefold.solver.quarkus.deployment, ai.timefold.solver.quarkus.integration.test;
     exports ai.timefold.solver.core.impl.constructionheuristic.event to
-            ai.timefold.solver.jackson, timefold.solver.benchmark;
+            ai.timefold.solver.jackson, ai.timefold.solver.benchmark;
     exports ai.timefold.solver.core.impl.constructionheuristic.scope to
-            ai.timefold.solver.jackson, timefold.solver.benchmark;
+            ai.timefold.solver.jackson, ai.timefold.solver.benchmark;
     exports ai.timefold.solver.core.impl.io.jaxb to
             ai.timefold.solver.jackson, ai.timefold.solver.jaxb, ai.timefold.solver.spring.boot.autoconfigure,
-            timefold.solver.benchmark, timefold.solver.spring.boot.autoconfigure, timefold.solver.spring.boot.it,
-            timefold.solver.quarkus;
+            ai.timefold.solver.benchmark, ai.timefold.solver.spring.boot.it,
+            ai.timefold.solver.quarkus;
     exports ai.timefold.solver.core.impl.domain.entity.descriptor
-            to ai.timefold.solver.jackson, ai.timefold.solver.jaxb, timefold.solver.benchmark,
-            timefold.solver.spring.boot.autoconfigure, timefold.solver.quarkus.integration.test, timefold.solver.quarkus,
-            timefold.solver.quarkus.jackson;
-    exports ai.timefold.solver.core.impl.domain.solution to ai.timefold.solver.jackson, timefold.solver.quarkus.jackson;
+            to ai.timefold.solver.jackson, ai.timefold.solver.jaxb, ai.timefold.solver.benchmark,
+            ai.timefold.solver.spring.boot.autoconfigure, ai.timefold.solver.quarkus.integration.test,
+            ai.timefold.solver.quarkus,
+            ai.timefold.solver.quarkus.jackson;
+    exports ai.timefold.solver.core.impl.domain.solution to ai.timefold.solver.jackson, ai.timefold.solver.quarkus.jackson;
     exports ai.timefold.solver.core.impl.domain.solution.descriptor
             to ai.timefold.solver.jackson, ai.timefold.solver.jaxb, ai.timefold.solver.test, ai.timefold.solver.core.test,
-            timefold.solver.benchmark, timefold.solver.spring.boot.autoconfigure, timefold.solver.test,
-            timefold.solver.quarkus.integration.test, timefold.solver.quarkus, timefold.solver.quarkus.deployment,
-            timefold.solver.quarkus.jackson;
+            ai.timefold.solver.benchmark, ai.timefold.solver.spring.boot.autoconfigure,
+            ai.timefold.solver.quarkus.integration.test, ai.timefold.solver.quarkus, ai.timefold.solver.quarkus.deployment,
+            ai.timefold.solver.quarkus.jackson;
     exports ai.timefold.solver.core.impl.domain.variable.descriptor
-            to ai.timefold.solver.jackson, ai.timefold.solver.jaxb, timefold.solver.benchmark,
-            timefold.solver.quarkus, timefold.solver.quarkus.jackson;
+            to ai.timefold.solver.jackson, ai.timefold.solver.jaxb, ai.timefold.solver.benchmark,
+            ai.timefold.solver.quarkus, ai.timefold.solver.quarkus.jackson;
     exports ai.timefold.solver.core.impl.util
-            to ai.timefold.solver.jackson, ai.timefold.solver.test, timefold.solver.benchmark, timefold.solver.test,
-            timefold.solver.quarkus.deployment, timefold.solver.quarkus.jackson;
+            to ai.timefold.solver.jackson, ai.timefold.solver.test, ai.timefold.solver.benchmark,
+            ai.timefold.solver.quarkus.deployment, ai.timefold.solver.quarkus.jackson;
     exports ai.timefold.solver.core.impl.score.stream to ai.timefold.solver.jackson;
-    exports ai.timefold.solver.core.impl.score.stream.collector to ai.timefold.solver.jackson, timefold.solver.quarkus.jackson;
+    exports ai.timefold.solver.core.impl.score.stream.collector
+            to ai.timefold.solver.jackson, ai.timefold.solver.quarkus.jackson;
     exports ai.timefold.solver.core.impl.solver
-            to ai.timefold.solver.jackson, ai.timefold.solver.spring.boot.autoconfigure,
-            timefold.solver.spring.boot.autoconfigure, timefold.solver.benchmark, timefold.solver.quarkus,
-            timefold.solver.quarkus.deployment, timefold.solver.quarkus.integration.test, timefold.solver.quarkus.jackson;
-    exports ai.timefold.solver.core.impl.io.jaxb.adapter to ai.timefold.solver.benchmark, timefold.solver.benchmark;
+            to ai.timefold.solver.jackson, ai.timefold.solver.spring.boot.autoconfigure, ai.timefold.solver.benchmark,
+            ai.timefold.solver.quarkus,
+            ai.timefold.solver.quarkus.deployment, ai.timefold.solver.quarkus.integration.test,
+            ai.timefold.solver.quarkus.jackson;
+    exports ai.timefold.solver.core.impl.io.jaxb.adapter to ai.timefold.solver.benchmark;
     exports ai.timefold.solver.core.impl.score.definition
-            to ai.timefold.solver.test, timefold.solver.benchmark, timefold.solver.test;
-    exports ai.timefold.solver.core.impl.heuristic.selector to ai.timefold.solver.jackson, timefold.solver.benchmark;
-    exports ai.timefold.solver.core.impl.heuristic.selector.entity to ai.timefold.solver.jackson, timefold.solver.benchmark;
+            to ai.timefold.solver.test, ai.timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.heuristic.selector to ai.timefold.solver.jackson, ai.timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.heuristic.selector.entity to ai.timefold.solver.jackson, ai.timefold.solver.benchmark;
     exports ai.timefold.solver.core.impl.heuristic.selector.entity.pillar
-            to ai.timefold.solver.jackson, timefold.solver.benchmark;
-    exports ai.timefold.solver.core.impl.heuristic.selector.move to ai.timefold.solver.jackson, timefold.solver.benchmark;
-    exports ai.timefold.solver.core.impl.heuristic.selector.value to ai.timefold.solver.jackson, timefold.solver.benchmark;
-    exports ai.timefold.solver.core.impl.localsearch.event to ai.timefold.solver.jackson, timefold.solver.benchmark;
-    exports ai.timefold.solver.core.impl.phase.event to ai.timefold.solver.jackson, timefold.solver.benchmark;
-    exports ai.timefold.solver.core.impl.phase.scope to ai.timefold.solver.jackson, timefold.solver.benchmark;
+            to ai.timefold.solver.jackson, ai.timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.heuristic.selector.move to ai.timefold.solver.jackson, ai.timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.heuristic.selector.value to ai.timefold.solver.jackson, ai.timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.localsearch.event to ai.timefold.solver.jackson, ai.timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.phase.event to ai.timefold.solver.jackson, ai.timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.phase.scope to ai.timefold.solver.jackson, ai.timefold.solver.benchmark;
     exports ai.timefold.solver.core.impl.heuristic.selector.common.nearby
             to ai.timefold.solver.jackson,
-            timefold.solver.benchmark,
-            timefold.solver.benchmark.aggregator,
-            ai.timefold.solver.spring.boot.autoconfigure,
-            timefold.solver.spring.boot.autoconfigure, timefold.solver.quarkus.deployment;
-    exports ai.timefold.solver.core.impl.score.constraint to timefold.solver.benchmark, timefold.solver.test;
-    exports ai.timefold.solver.core.impl.partitionedsearch.partitioner to timefold.solver.quarkus.deployment;
-    exports ai.timefold.solver.core.impl.heuristic.selector.common.decorator to timefold.solver.quarkus.deployment;
+            ai.timefold.solver.benchmark,
+            ai.timefold.solver.benchmark.aggregator,
+            ai.timefold.solver.spring.boot.autoconfigure, ai.timefold.solver.quarkus.deployment;
+    exports ai.timefold.solver.core.impl.score.constraint to ai.timefold.solver.benchmark, ai.timefold.solver.test;
+    exports ai.timefold.solver.core.impl.partitionedsearch.partitioner to ai.timefold.solver.quarkus.deployment;
+    exports ai.timefold.solver.core.impl.heuristic.selector.common.decorator to ai.timefold.solver.quarkus.deployment;
 
     // IMPL usage
     exports ai.timefold.solver.core.impl.solver.thread;
@@ -71,12 +73,12 @@ open module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.domain.common.accessor;
     exports ai.timefold.solver.core.impl.domain.common;
     exports ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
-    exports ai.timefold.solver.core.impl.score to timefold.solver.benchmark, timefold.solver.test;
-    exports ai.timefold.solver.core.impl.score.trend to timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.score to ai.timefold.solver.benchmark, ai.timefold.solver.test;
+    exports ai.timefold.solver.core.impl.score.trend to ai.timefold.solver.benchmark;
     exports ai.timefold.solver.core.impl.score.director;
-    exports ai.timefold.solver.core.impl.score.director.easy to timefold.solver.benchmark;
-    exports ai.timefold.solver.core.impl.score.director.incremental to timefold.solver.benchmark;
-    exports ai.timefold.solver.core.impl.solver.monitoring to timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.score.director.easy to ai.timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.score.director.incremental to ai.timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.solver.monitoring to ai.timefold.solver.benchmark;
     exports ai.timefold.solver.core.impl.solver.termination;
 
     // expected exports

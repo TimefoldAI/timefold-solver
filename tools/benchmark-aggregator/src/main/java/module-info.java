@@ -1,5 +1,5 @@
-module timefold.solver.benchmark.aggregator {
+module ai.timefold.solver.benchmark.aggregator {
     requires java.desktop;
-    requires timefold.solver.benchmark;
+    requires ai.timefold.solver.benchmark;
     requires org.slf4j;
 }

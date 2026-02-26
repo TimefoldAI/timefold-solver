@@ -1,4 +1,4 @@
-open module timefold.solver.quarkus.jackson {
+open module ai.timefold.solver.quarkus.jackson {
     exports ai.timefold.solver.quarkus.jackson;
 
     requires ai.timefold.solver.core;

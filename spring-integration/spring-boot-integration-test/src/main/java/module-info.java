@@ -1,4 +1,4 @@
-module timefold.solver.spring.boot.it {
+module ai.timefold.solver.spring.boot.it {
     requires ai.timefold.solver.core;
     requires org.jspecify;
     requires spring.boot;

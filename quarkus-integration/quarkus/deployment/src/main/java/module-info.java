@@ -1,5 +1,5 @@
-open module timefold.solver.quarkus.deployment {
-    requires timefold.solver.quarkus;
+open module ai.timefold.solver.quarkus.deployment {
+    requires ai.timefold.solver.quarkus;
     requires quarkus.arc.deployment;
     requires quarkus.builder;
     requires quarkus.core.deployment;
