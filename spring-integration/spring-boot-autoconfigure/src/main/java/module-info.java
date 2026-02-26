@@ -9,7 +9,6 @@ module timefold.solver.spring.boot.autoconfigure {
     requires spring.core;
     requires tools.jackson.databind;
     requires timefold.solver.benchmark;
-    requires timefold.solver.test;
     requires ai.timefold.solver.core;
     requires org.jspecify;
 }

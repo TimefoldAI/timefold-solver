@@ -136,6 +136,8 @@ open module ai.timefold.solver.core {
     exports ai.timefold.solver.core.preview.api.domain.metamodel;
     exports ai.timefold.solver.core.preview.api.domain.solution.diff;
     exports ai.timefold.solver.core.impl.domain.variable.declarative;
+    exports ai.timefold.solver.core.api.score.stream.test;
+    exports ai.timefold.solver.core.impl.score.stream.test;
 
     requires commons.math3;
     requires jakarta.xml.bind;

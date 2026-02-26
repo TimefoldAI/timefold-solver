@@ -40,6 +40,7 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+            <useModulePath>false</useModulePath>
             <systemPropertyVariables>
               <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             </systemPropertyVariables>
@@ -48,6 +49,7 @@
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <configuration>
+            <useModulePath>false</useModulePath>
             <systemPropertyVariables>
               <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             </systemPropertyVariables>

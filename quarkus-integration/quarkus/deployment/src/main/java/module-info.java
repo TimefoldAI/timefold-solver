@@ -8,10 +8,12 @@ open module timefold.solver.quarkus.deployment {
     requires io.quarkus.gizmo2;
     requires jakarta.cdi;
     requires quarkus.core;
-    requires org.jboss.logging;
     requires arc.processor;
     requires org.jspecify;
     requires io.quarkus.gizmo;
-    requires org.objectweb.asm;
     requires org.jboss.jandex;
+    requires io.smallrye.config;
+    requires org.eclipse.microprofile.config;
+    requires org.objectweb.asm;
+    requires org.jboss.logging;
 }

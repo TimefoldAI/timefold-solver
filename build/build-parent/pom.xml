@@ -454,6 +454,28 @@
               <compilerArgument>-Xlint:none</compilerArgument>
             </compilerArgs>
           </configuration>
+          <executions>
+            <execution>
+              <id>default-compile</id>
+              <phase>compile</phase>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+              <!-- no useModulePath override here -->
+            </execution>
+
+            <!-- test compile: force classpath (no module-path) -->
+            <execution>
+              <id>default-testCompile</id>
+              <phase>test-compile</phase>
+              <goals>
+                <goal>testCompile</goal>
+              </goals>
+              <configuration>
+                <useModulePath>false</useModulePath>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.jacoco</groupId>
@@ -568,6 +590,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${version.surefire.plugin}</version>
         <configuration>
+          <!-- Currently not running on the module path, despite including JPMS -->
+          <useModulePath>false</useModulePath>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
       </plugin>
@@ -575,6 +599,8 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${version.surefire.plugin}</version>
         <configuration>
+          <!-- Currently not running on the module path, despite including JPMS -->
+          <useModulePath>false</useModulePath>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
         <executions>
