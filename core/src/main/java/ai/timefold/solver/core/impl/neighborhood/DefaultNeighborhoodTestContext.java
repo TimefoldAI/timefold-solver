@@ -7,8 +7,8 @@ import java.util.function.Function;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.MoveTestContext;
-import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTestContext;
+import ai.timefold.solver.core.preview.api.move.test.MoveTestContext;
+import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTestContext;
 
 import org.jspecify.annotations.NullMarked;
 

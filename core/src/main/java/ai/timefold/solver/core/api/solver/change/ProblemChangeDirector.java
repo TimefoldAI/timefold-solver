@@ -19,6 +19,7 @@ import org.jspecify.annotations.NullMarked;
  * To see an example implementation, please refer to the {@link ProblemChange} Javadoc.
  *
  * @see Lookup You may need to perform lookups of working objects from external objects.
+ * @see MockProblemChangeDirector You may need to use this for testing purposes.
  */
 @NullMarked
 public interface ProblemChangeDirector

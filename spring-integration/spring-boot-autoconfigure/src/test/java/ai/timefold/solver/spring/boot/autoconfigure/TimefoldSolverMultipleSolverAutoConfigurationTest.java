@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -39,7 +40,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.invalid.entity.InvalidEntity
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.solution.InvalidSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.multimodule.MultiModuleSpringTestConfiguration;
-import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;

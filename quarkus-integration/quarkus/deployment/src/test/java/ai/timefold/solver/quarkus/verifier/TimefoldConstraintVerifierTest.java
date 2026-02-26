@@ -5,10 +5,10 @@ import java.util.Arrays;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusSolution;
-import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

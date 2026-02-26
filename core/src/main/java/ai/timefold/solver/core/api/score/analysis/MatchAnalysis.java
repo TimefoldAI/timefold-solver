@@ -24,7 +24,7 @@ public record MatchAnalysis<Score_ extends Score<Score_>>(ConstraintRef constrai
         Objects.requireNonNull(constraintRef);
         Objects.requireNonNull(score);
         // Null justification is impossible;
-        // if the fetch policy doesn't requre match analysis, the code shouldn't even get here.
+        // if the fetch policy doesn't require match analysis, the code shouldn't even get here.
         Objects.requireNonNull(justification, () -> """
                 Impossible state: Received a null justification.
                 Maybe check your %s's justifyWith() implementation for that constraint?"""

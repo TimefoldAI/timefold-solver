@@ -1753,7 +1753,6 @@ to determine if using it brings benefits for your use case.
 
 We recommend that you test your constraints to ensure that they behave as expected.
 Constraint streams include the Constraint Verifier unit testing harness.
-To use it, first add a test scoped dependency to the `timefold-solver-test` JAR.
 
 
 [#constraintStreamsTestingIsolatedConstraints]

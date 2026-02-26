@@ -2,7 +2,6 @@ package ai.timefold.solver.quarkus.deployment;
 
 import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 
-import java.lang.constant.ClassDesc;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -45,6 +44,7 @@ import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.AccessorInfo;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSource;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
+import ai.timefold.solver.core.impl.score.stream.test.DefaultConstraintVerifier;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.BeanUtil;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
@@ -761,10 +761,8 @@ class TimefoldProcessor {
                                                 enabledPreviewFeatureSet, planningSolutionClassResultHandle,
                                                 planningEntityClassesResultHandle));
                                 var constraintVerifierResultHandle = methodCreator.new_(
-                                        ConstructorDesc.of(
-                                                ClassDesc.of(
-                                                        "ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier"),
-                                                ConstraintProvider.class, SolutionDescriptor.class),
+                                        ConstructorDesc.of(DefaultConstraintVerifier.class, ConstraintProvider.class,
+                                                SolutionDescriptor.class),
                                         constraintProviderResultHandle, solutionDescriptorResultHandle);
 
                                 methodCreator.return_(constraintVerifierResultHandle);

@@ -3,6 +3,7 @@ package ai.timefold.solver.core.preview.api.neighborhood;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 
 import org.jspecify.annotations.NullMarked;
 

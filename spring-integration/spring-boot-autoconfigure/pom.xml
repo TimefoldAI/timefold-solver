@@ -36,13 +36,6 @@
       <artifactId>timefold-solver-jackson</artifactId>
     </dependency>
 
-    <!-- Need this so we can @Autowire ConstraintVerifier -->
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-test</artifactId>
-      <optional>true</optional>
-    </dependency>
-
     <!-- Need this so we can @Autowire Benchmark -->
     <dependency>
       <groupId>ai.timefold.solver</groupId>

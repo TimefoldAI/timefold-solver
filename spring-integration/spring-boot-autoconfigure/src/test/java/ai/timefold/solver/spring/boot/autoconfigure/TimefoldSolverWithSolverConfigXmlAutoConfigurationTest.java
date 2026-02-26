@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.util.Collections;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -30,7 +31,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringE
 import ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringSolution;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.entity.InvalidEntitySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
-import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;

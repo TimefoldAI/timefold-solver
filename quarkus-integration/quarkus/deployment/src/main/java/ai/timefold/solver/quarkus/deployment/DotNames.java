@@ -33,6 +33,7 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -83,10 +84,7 @@ public final class DotNames {
     static final DotName SOLVER_MANAGER_CONFIG = DotName.createSimple(SolverManagerConfig.class.getName());
     static final DotName SOLVER_FACTORY = DotName.createSimple(SolverFactory.class.getName());
     static final DotName SOLVER_MANAGER = DotName.createSimple(SolverManager.class.getName());
-
-    // Need to use String since timefold-solver-test is not on the compile classpath
-    static final DotName CONSTRAINT_VERIFIER =
-            DotName.createSimple("ai.timefold.solver.test.api.score.stream.ConstraintVerifier");
+    static final DotName CONSTRAINT_VERIFIER = DotName.createSimple(ConstraintVerifier.class.getName());
 
     static final DotName[] PLANNING_ENTITY_FIELD_ANNOTATIONS = {
             PLANNING_PIN,

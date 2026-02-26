@@ -6,8 +6,8 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
-import ai.timefold.solver.core.preview.api.move.MoveTestContext;
-import ai.timefold.solver.core.preview.api.move.MoveTester;
+import ai.timefold.solver.core.preview.api.move.test.MoveTestContext;
+import ai.timefold.solver.core.preview.api.move.test.MoveTester;
 
 import org.jspecify.annotations.NullMarked;
 

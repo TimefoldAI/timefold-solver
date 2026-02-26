@@ -27,7 +27,6 @@
     <module>benchmark</module>
     <module>benchmark-aggregator</module>
     <module>migration</module>
-    <module>test</module>
   </modules>
 
 </project>

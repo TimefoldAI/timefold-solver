@@ -1,4 +1,4 @@
-Then create the test itself:
+Now create the test itself:
 
 [tabs]
 ====
@@ -22,7 +22,7 @@ import org.acme.schooltimetabling.domain.Room;
 import org.acme.schooltimetabling.domain.Timetable;
 import org.acme.schooltimetabling.domain.Timeslot;
 import org.junit.jupiter.api.Test;
-import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
+import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
 
 {testannotation}
 class TimetableConstraintProviderTest {
@@ -56,7 +56,7 @@ Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstrain
 ----
 package org.acme.schooltimetabling.solver
 
-import ai.timefold.solver.test.api.score.stream.ConstraintVerifier
+import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier
 import {testannotationfq}
 import {wiringannotationfq}
 import org.acme.schooltimetabling.domain.Lesson

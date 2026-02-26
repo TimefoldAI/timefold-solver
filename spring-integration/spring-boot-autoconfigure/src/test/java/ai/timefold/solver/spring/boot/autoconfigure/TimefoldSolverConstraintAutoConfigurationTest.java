@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
+import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.spring.boot.autoconfigure.basic.NormalSpringTestConfiguration;
@@ -16,7 +17,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.basic.domain.TestdataSpringS
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperty;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.multiple.MultipleConstraintSpringTestConfiguration;
-import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
