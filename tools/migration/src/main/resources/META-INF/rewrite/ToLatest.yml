@@ -3,9 +3,14 @@ name: ai.timefold.solver.migration.ToLatest
 displayName: Upgrade to the latest Timefold Solver
 description: 'Replace all your calls to deleted/deprecated types and methods of Timefold Solver with their proper alternatives.'
 recipeList:
-  - ai.timefold.solver.migration.GeneralChangeTypeMigrationRecipe
-  - ai.timefold.solver.migration.ConstraintStreamMigrationRecipe
+  - ai.timefold.solver.migration.ChangeVersion
+  - ai.timefold.solver.migration.one.GeneralChangeTypeMigrationRecipe
+  - ai.timefold.solver.migration.one.ConstraintStreamMigrationRecipe
   - org.openrewrite.java.DeleteMethodArgument:
       methodPattern: ai.timefold.solver.core.api.score.constraint.ConstraintRef of(String, String)
       argumentIndex: 0
+  - ai.timefold.solver.migration.one.TestingAPIsMigrationRecipe
   - org.openrewrite.java.RemoveUnusedImports
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: ai.timefold.solver
+      artifactId: timefold-solver-test

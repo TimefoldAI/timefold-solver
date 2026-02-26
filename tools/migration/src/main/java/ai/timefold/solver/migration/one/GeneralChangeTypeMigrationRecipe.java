@@ -1,6 +1,8 @@
-package ai.timefold.solver.migration;
+package ai.timefold.solver.migration.one;
 
 import java.util.List;
+
+import ai.timefold.solver.migration.AbstractRecipe;
 
 import org.openrewrite.Recipe;
 import org.openrewrite.java.ChangeType;

@@ -749,13 +749,11 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
     }
 
     private static String getImpactTypeLabel(ScoreImpactType scoreImpactType) {
-        if (scoreImpactType == ScoreImpactType.PENALTY) {
-            return "penalty";
-        } else if (scoreImpactType == ScoreImpactType.REWARD) {
-            return "reward";
-        } else { // Needs to work with null.
-            return "impact";
-        }
+        return switch (scoreImpactType) {
+            case PENALTY -> "penalty";
+            case REWARD -> "reward";
+            case MIXED -> "impact";
+        };
     }
 
 }

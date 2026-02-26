@@ -95,13 +95,18 @@ final class NumberEqualityUtil {
      * @return never null
      */
     public static Comparator<Number> getComparison(Number expectedImpact) {
-        return Comparator.comparing(a -> {
-            if (a instanceof BigDecimal bigDecimal) {
-                return bigDecimal;
-            } else {
-                return BigDecimal.valueOf(a.longValue());
-            }
-        });
+        if (expectedImpact instanceof Integer || expectedImpact instanceof Long || expectedImpact instanceof BigDecimal) {
+            return Comparator.comparing(a -> {
+                if (a instanceof BigDecimal bigDecimal) {
+                    return bigDecimal;
+                } else {
+                    return BigDecimal.valueOf(a.longValue());
+                }
+            });
+        }
+
+        throw new IllegalStateException("Impossible state: unknown impact type class (%s) for impact (%s)."
+                .formatted(expectedImpact.getClass(), expectedImpact));
     }
 
     private NumberEqualityUtil() {

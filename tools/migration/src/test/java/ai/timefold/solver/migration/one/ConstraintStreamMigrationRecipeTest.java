@@ -1,4 +1,4 @@
-package ai.timefold.solver.migration;
+package ai.timefold.solver.migration.one;
 
 import static org.openrewrite.java.Assertions.java;
 

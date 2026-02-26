@@ -29,7 +29,7 @@ abstract class AbstractConstraintVerification<Solution_, Score_ extends Score<Sc
                     "Maybe call givenSolution() instead?", facts[0]);
         }
         Arrays.stream(facts)
-                .filter(fact -> fact instanceof Collection)
+                .filter(Collection.class::isInstance)
                 .findFirst()
                 .ifPresent(collection -> LOGGER.warn("Called given() with collection ({}) as argument." +
                         "This will treat the collection itself as a fact, and not its contents.\n" +

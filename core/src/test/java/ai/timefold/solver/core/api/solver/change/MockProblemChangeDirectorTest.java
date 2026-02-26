@@ -58,11 +58,11 @@ class MockProblemChangeDirectorTest {
 
         problemChange.doChange(testdataSolution, mockProblemChangeDirector);
 
-        SoftAssertions.assertSoftly((softAssertions) -> {
-            softAssertions.assertThat(testdataSolution.getEntityList()).doesNotContain(removedWorkingEntity);
-            softAssertions.assertThat(testdataSolution.getValueList()).doesNotContain(removedWorkingFact);
-            softAssertions.assertThat(changedWorkingEntity.getValue()).isEqualTo(changedFact);
-            softAssertions.assertThat(changedWorkingEntity.getEntityGroup()).isNull();
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(testdataSolution.getEntityList()).doesNotContain(removedWorkingEntity);
+            softly.assertThat(testdataSolution.getValueList()).doesNotContain(removedWorkingFact);
+            softly.assertThat(changedWorkingEntity.getValue()).isEqualTo(changedFact);
+            softly.assertThat(changedWorkingEntity.getEntityGroup()).isNull();
         });
     }
 }

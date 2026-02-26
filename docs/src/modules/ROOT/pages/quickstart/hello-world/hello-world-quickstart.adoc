@@ -746,7 +746,7 @@ import org.acme.schooltimetabling.domain.Room;
 import org.acme.schooltimetabling.domain.Timetable;
 import org.acme.schooltimetabling.domain.Timeslot;
 import org.junit.jupiter.api.Test;
-import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
+import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
 
 class TimetableConstraintProviderTest {
 
@@ -782,7 +782,7 @@ Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstrain
 package org.acme.schooltimetabling.solver
 
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory
-import ai.timefold.solver.test.api.score.stream.ConstraintVerifier
+import ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier;
 import org.acme.schooltimetabling.domain.Lesson
 import org.acme.schooltimetabling.domain.Room
 import org.acme.schooltimetabling.domain.Timeslot

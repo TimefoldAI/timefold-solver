@@ -231,7 +231,7 @@ First update your build tool configuration:
 Maven::
 +
 --
-Add the subsequent dependencies in your `pom.xml`:
+Add the subsequent dependency in your `pom.xml`:
 [source,xml,subs=attributes+]
 ----
     <dependency>
@@ -244,7 +244,7 @@ Add the subsequent dependencies in your `pom.xml`:
 Gradle::
 +
 --
-Add the subsequent dependencies to your `build.gradle`:
+Add the subsequent dependency to your `build.gradle`:
 [source,groovy,subs=attributes+]
 ----
     testImplementation "io.quarkus:quarkus-junit5"
