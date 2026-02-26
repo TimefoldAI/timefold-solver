@@ -110,7 +110,7 @@ class SingleConstraintAssertionTest {
                 .settingAllShadowVariables()
                 .rewardsWith(20)).doesNotThrowAnyException();
 
-        // Test cascade constraintverifier
+        // Test cascade justification
         assertThatCode(() -> shadowConstraintVerifier
                 .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::penalizeCascadingUpdate)
                 .givenSolution(solution)
@@ -841,7 +841,7 @@ class SingleConstraintAssertionTest {
                                 new TestFirstJustification("Generated Entity 1")))
                 .doesNotThrowAnyException();
 
-        // Different constraintverifier
+        // Different justification
         assertThatCode(
                 () -> constraintVerifierForJustification
                         .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
@@ -849,7 +849,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWith(new TestFirstJustification("2")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Justification: Justify with first constraintverifier")
+                        "Justification: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -865,7 +865,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWith(new TestFirstJustification("2")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Justification: Justify with first constraintverifier")
+                        "Justification: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -883,7 +883,7 @@ class SingleConstraintAssertionTest {
                                 new TestFirstJustification("2")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Justification: Justify with first constraintverifier")
+                        "Justification: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
@@ -902,7 +902,7 @@ class SingleConstraintAssertionTest {
                                 new TestSecondJustification("1")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Justification: Justify with first constraintverifier")
+                        "Justification: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
@@ -927,7 +927,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWith("Custom Message", new TestFirstJustification("2")))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Justification: Justify with first constraintverifier")
+                        "Justification: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -943,7 +943,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWith("Custom Message", new TestFirstJustification("2")))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Justification: Justify with first constraintverifier")
+                        "Justification: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -1014,7 +1014,7 @@ class SingleConstraintAssertionTest {
                                 new TestFirstJustification("Generated Entity 2")))
                 .doesNotThrowAnyException();
 
-        // Different constraintverifier
+        // Different justification
         assertThatCode(
                 () -> constraintVerifierForJustification
                         .verifyThat(TestdataConstraintVerifierJustificationProvider::justifyWithFirstJustification)
@@ -1022,7 +1022,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWithExactly(new TestFirstJustification("2")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Justification: Justify with first constraintverifier")
+                        "Justification: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -1044,7 +1044,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWithExactly("Custom Message", new TestFirstJustification("2")))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Justification: Justify with first constraintverifier")
+                        "Justification: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -1061,7 +1061,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWithExactly("Custom Message", new TestFirstJustification("2")))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Justification: Justify with first constraintverifier")
+                        "Justification: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -1139,7 +1139,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith(badEntity))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: Justify with first constraintverifier")
+                        "Indictment: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1155,7 +1155,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith(badEntity))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: Justify with first constraintverifier")
+                        "Indictment: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1172,7 +1172,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith(solution.getEntityList().getFirst(), badEntity))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: Justify with first constraintverifier")
+                        "Indictment: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(solution.getEntityList().get(0).toString())
                 .hasMessageContaining(badEntity.toString())
@@ -1190,7 +1190,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith(solution.getEntityList().getFirst(), badEntity, "bad indictment"))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: Justify with first constraintverifier")
+                        "Indictment: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 0')")
                 .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='bad code')")
@@ -1217,7 +1217,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith("Custom Message", badEntity))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Indictment: Justify with first constraintverifier")
+                        "Indictment: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1233,7 +1233,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith("Custom Message", badEntity))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Indictment: Justify with first constraintverifier")
+                        "Indictment: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1310,7 +1310,7 @@ class SingleConstraintAssertionTest {
                         .indictsWithExactly(badEntity))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: Justify with first constraintverifier")
+                        "Indictment: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1326,7 +1326,7 @@ class SingleConstraintAssertionTest {
                         .indictsWithExactly(badEntity))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: Justify with first constraintverifier")
+                        "Indictment: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1350,7 +1350,7 @@ class SingleConstraintAssertionTest {
                         .indictsWithExactly("Custom Message", badEntity))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Indictment: Justify with first constraintverifier")
+                        "Indictment: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1367,7 +1367,7 @@ class SingleConstraintAssertionTest {
                         .indictsWithExactly("Custom Message", badEntity))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Indictment: Justify with first constraintverifier")
+                        "Indictment: Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")

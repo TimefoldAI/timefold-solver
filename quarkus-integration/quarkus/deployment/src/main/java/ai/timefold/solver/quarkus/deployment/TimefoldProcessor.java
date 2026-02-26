@@ -1,8 +1,5 @@
 package ai.timefold.solver.quarkus.deployment;
 
-import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
-
-import java.lang.constant.ClassDesc;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -20,9 +17,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Singleton;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -45,6 +39,7 @@ import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.AccessorInfo;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSource;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
+import ai.timefold.solver.core.impl.score.stream.test.DefaultConstraintVerifier;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.BeanUtil;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
@@ -58,18 +53,6 @@ import ai.timefold.solver.quarkus.devui.DevUISolverConfig;
 import ai.timefold.solver.quarkus.devui.TimefoldDevUIPropertiesRPCService;
 import ai.timefold.solver.quarkus.devui.TimefoldDevUIRecorder;
 import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
-
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.FieldInfo;
-import org.jboss.jandex.IndexView;
-import org.jboss.jandex.MethodInfo;
-import org.jboss.jandex.ParameterizedType;
-import org.jboss.jandex.Type;
-import org.jboss.logging.Logger;
-
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanGizmo2Adaptor;
@@ -99,6 +82,20 @@ import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.runtime.configuration.ConfigurationException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Singleton;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.FieldInfo;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.ParameterizedType;
+import org.jboss.jandex.Type;
+import org.jboss.logging.Logger;
+
+import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 
 class TimefoldProcessor {
 
@@ -761,10 +758,7 @@ class TimefoldProcessor {
                                                 enabledPreviewFeatureSet, planningSolutionClassResultHandle,
                                                 planningEntityClassesResultHandle));
                                 var constraintVerifierResultHandle = methodCreator.new_(
-                                        ConstructorDesc.of(
-                                                ClassDesc.of(
-                                                        "ai.timefold.solver.core.impl.score.stream.test.DefaultConstraintVerifier"),
-                                                ConstraintProvider.class, SolutionDescriptor.class),
+                                        ConstructorDesc.of(DefaultConstraintVerifier.class, ConstraintProvider.class, SolutionDescriptor.class),
                                         constraintProviderResultHandle, solutionDescriptorResultHandle);
 
                                 methodCreator.return_(constraintVerifierResultHandle);

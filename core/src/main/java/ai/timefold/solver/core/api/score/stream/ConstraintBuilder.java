@@ -11,7 +11,7 @@ public interface ConstraintBuilder {
      * Builds a {@link Constraint} from the constraint stream.
      * The constraint will be placed in the {@link Constraint#DEFAULT_CONSTRAINT_GROUP default constraint group}.
      *
-     * @param constraintName shows up in {@link ConstraintMatchTotal} during score constraintverifier
+     * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
      */
     default Constraint asConstraint(String constraintName) {
         return asConstraintDescribed(constraintName, "");
@@ -21,7 +21,7 @@ public interface ConstraintBuilder {
      * As defined by {@link #asConstraintDescribed(String, String, String)},
      * placing the constraint in the {@link Constraint#DEFAULT_CONSTRAINT_GROUP default constraint group}.
      *
-     * @param constraintName shows up in {@link ConstraintMatchTotal} during score constraintverifier
+     * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintDescription can contain any character, but it is recommended to keep it short and concise.
      */
     default Constraint asConstraintDescribed(String constraintName, String constraintDescription) {
@@ -38,7 +38,7 @@ public interface ConstraintBuilder {
      * the constraint description is unlikely to be used externally as an identifier,
      * and therefore doesn't need to be URL-friendly, or protected against injection attacks.
      *
-     * @param constraintName shows up in {@link ConstraintMatchTotal} during score constraintverifier
+     * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintDescription can contain any character, but it is recommended to keep it short and concise.
      * @param constraintGroup not used by the solver directly, but may be used by external tools to group constraints together,
      *        such as by their source or by their purpose

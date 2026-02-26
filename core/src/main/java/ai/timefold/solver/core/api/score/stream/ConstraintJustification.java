@@ -20,7 +20,7 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
  *
  * <p>
  * If two instances of this class are {@link Object#equals(Object) equal},
- * they are considered to be the same constraintverifier.
+ * they are considered to be the same justification.
  * This matters in case of {@link SolutionManager#analyze(Object)} score analysis
  * where such justifications are grouped together.
  * This situation is likely to occur in case a {@link ConstraintStream} produces duplicate tuples,

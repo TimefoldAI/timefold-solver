@@ -19,7 +19,7 @@ import org.jspecify.annotations.NullMarked;
  * To build the constraint, use one of the terminal operations, such as {@link #asConstraint(String)}.
  * <p>
  * Unless {@link #justifyWith(TriFunction)} is called,
- * the default constraintverifier mapping will be used.
+ * the default justification mapping will be used.
  * The function takes the input arguments and converts them into a {@link java.util.List}.
  * <p>
  * Unless {@link #indictWith(BiFunction)} is called, the default indicted objects' mapping will be used.

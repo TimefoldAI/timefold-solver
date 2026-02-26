@@ -23,7 +23,7 @@ public final class TestdataConstraintVerifierJustificationProvider implements Co
                 .penalize(HardSoftScore.ONE_HARD)
                 .justifyWith((entity, score) -> new TestFirstJustification(entity.getCode()))
                 .indictWith(Set::of)
-                .asConstraint("Justify with first constraintverifier");
+                .asConstraint("Justify with first justification");
     }
 
     public Constraint justifyWithNoJustifications(ConstraintFactory constraintFactory) {

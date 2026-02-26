@@ -14,7 +14,7 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #justifiesWith(ConstraintJustification...)}.
      *
-     * @param justifications the expected constraintverifier.
+     * @param justifications the expected justification.
      * @param message description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      */
@@ -36,7 +36,7 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #justifiesWithExactly(ConstraintJustification...)}.
      *
-     * @param justifications the expected constraintverifier.
+     * @param justifications the expected justification.
      * @param message description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      */
