@@ -39,31 +39,31 @@ class SingleDirectionalParentVariableReferenceGraphTest {
 
         value1.setEntity(entity1);
         value1.setPrevious(null);
-        Mockito.when(listStateSupply.getIndex(value1)).thenReturn(0);
+        Mockito.doReturn(0).when(listStateSupply).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
         Mockito.when(listStateSupply.getNextElement(value1)).thenReturn(null);
         Mockito.when(listStateSupply.getInverseSingleton(value1)).thenReturn(entity1);
 
         value2.setEntity(entity2);
         value2.setPrevious(null);
-        Mockito.when(listStateSupply.getIndex(value2)).thenReturn(0);
+        Mockito.doReturn(0).when(listStateSupply).getIndexOrElse(Mockito.eq(value2), Mockito.anyInt());
         Mockito.when(listStateSupply.getNextElement(value2)).thenReturn(value3);
         Mockito.when(listStateSupply.getInverseSingleton(value2)).thenReturn(entity2);
 
         value3.setEntity(entity2);
         value3.setPrevious(value2);
-        Mockito.when(listStateSupply.getIndex(value3)).thenReturn(1);
+        Mockito.doReturn(1).when(listStateSupply).getIndexOrElse(Mockito.eq(value3), Mockito.anyInt());
         Mockito.when(listStateSupply.getNextElement(value3)).thenReturn(value4);
         Mockito.when(listStateSupply.getInverseSingleton(value3)).thenReturn(entity2);
 
         value4.setEntity(entity2);
         value4.setPrevious(value3);
-        Mockito.when(listStateSupply.getIndex(value4)).thenReturn(2);
+        Mockito.doReturn(2).when(listStateSupply).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
         Mockito.when(listStateSupply.getNextElement(value4)).thenReturn(null);
         Mockito.when(listStateSupply.getInverseSingleton(value4)).thenReturn(entity2);
 
         value5.setEntity(null);
         value5.setPrevious(null);
-        Mockito.when(listStateSupply.getIndex(value5)).thenReturn(-1);
+        Mockito.doReturn(-1).when(listStateSupply).getIndexOrElse(Mockito.eq(value5), Mockito.anyInt());
         Mockito.when(listStateSupply.getNextElement(value5)).thenReturn(null);
         Mockito.when(listStateSupply.getInverseSingleton(value5)).thenReturn(null);
 
@@ -90,23 +90,23 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         value5.setEntity(entity2);
         value4.setPrevious(value2);
 
-        Mockito.when(listStateSupply.getIndex(value1)).thenReturn(0);
+        Mockito.doReturn(0).when(listStateSupply).getIndexOrElse(Mockito.eq(value1), Mockito.anyInt());
         Mockito.when(listStateSupply.getNextElement(value1)).thenReturn(null);
         Mockito.when(listStateSupply.getInverseSingleton(value1)).thenReturn(entity1);
 
-        Mockito.when(listStateSupply.getIndex(value5)).thenReturn(0);
+        Mockito.doReturn(0).when(listStateSupply).getIndexOrElse(Mockito.eq(value5), Mockito.anyInt());
         Mockito.when(listStateSupply.getNextElement(value5)).thenReturn(value3);
         Mockito.when(listStateSupply.getInverseSingleton(value5)).thenReturn(entity2);
 
-        Mockito.when(listStateSupply.getIndex(value3)).thenReturn(1);
+        Mockito.doReturn(1).when(listStateSupply).getIndexOrElse(Mockito.eq(value3), Mockito.anyInt());
         Mockito.when(listStateSupply.getNextElement(value3)).thenReturn(value2);
         Mockito.when(listStateSupply.getInverseSingleton(value3)).thenReturn(entity2);
 
-        Mockito.when(listStateSupply.getIndex(value2)).thenReturn(2);
+        Mockito.doReturn(2).when(listStateSupply).getIndexOrElse(Mockito.eq(value2), Mockito.anyInt());
         Mockito.when(listStateSupply.getNextElement(value2)).thenReturn(value4);
         Mockito.when(listStateSupply.getInverseSingleton(value2)).thenReturn(entity2);
 
-        Mockito.when(listStateSupply.getIndex(value4)).thenReturn(3);
+        Mockito.doReturn(3).when(listStateSupply).getIndexOrElse(Mockito.eq(value4), Mockito.anyInt());
         Mockito.when(listStateSupply.getNextElement(value4)).thenReturn(null);
         Mockito.when(listStateSupply.getInverseSingleton(value4)).thenReturn(entity2);
 

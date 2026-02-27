@@ -12,8 +12,6 @@ import java.util.stream.IntStream;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 
 /**
  *
@@ -167,7 +165,8 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
         }
 
         var combinedList = computeCombinedList(listVariableDescriptor, listVariableStateSupply);
-        IndexVariableSupply indexVariableSupply = node -> combinedList.getIndexOfValue(listVariableStateSupply, node);
+        var indexVariableSupply = new DelegatingListVariableStateSupply<>(listVariableStateSupply,
+                n -> combinedList.getIndexOfValue(listVariableStateSupply, n));
         var entityListSize = combinedList.size();
         List<FlipSublistAction> out = new ArrayList<>();
         var originalToCurrentIndexList = new int[entityListSize];
@@ -390,7 +389,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      * between the start and end of the given edges.
      *
      * @param listVariableDescriptor
-     * @param indexVariableSupply
+     * @param listVariableStateSupply
      * @param originalToCurrentIndexList
      * @param firstEdgeStart
      * @param firstEdgeEnd
@@ -398,19 +397,22 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      * @param secondEdgeEnd
      * @return
      */
-    @SuppressWarnings("unchecked")
     private static <Node_> FlipSublistAction getListReversalMoveForEdgePair(
             ListVariableDescriptor<?> listVariableDescriptor,
-            IndexVariableSupply indexVariableSupply,
+            ListVariableStateSupply<?, ?, ?> listVariableStateSupply,
             int[] originalToCurrentIndexList,
             Node_ firstEdgeStart,
             Node_ firstEdgeEnd,
             Node_ secondEdgeStart,
             Node_ secondEdgeEnd) {
-        var originalFirstEdgeStartIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(firstEdgeStart));
-        var originalFirstEdgeEndIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(firstEdgeEnd));
-        var originalSecondEdgeStartIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(secondEdgeStart));
-        var originalSecondEdgeEndIndex = indexOf(originalToCurrentIndexList, indexVariableSupply.getIndex(secondEdgeEnd));
+        var originalFirstEdgeStartIndex =
+                indexOf(originalToCurrentIndexList, listVariableStateSupply.getIndexOrFail(firstEdgeStart));
+        var originalFirstEdgeEndIndex =
+                indexOf(originalToCurrentIndexList, listVariableStateSupply.getIndexOrFail(firstEdgeEnd));
+        var originalSecondEdgeStartIndex =
+                indexOf(originalToCurrentIndexList, listVariableStateSupply.getIndexOrFail(secondEdgeStart));
+        var originalSecondEdgeEndIndex =
+                indexOf(originalToCurrentIndexList, listVariableStateSupply.getIndexOrFail(secondEdgeEnd));
 
         var firstEndpoint = ((originalFirstEdgeStartIndex + 1) % originalToCurrentIndexList.length) == originalFirstEdgeEndIndex
                 ? originalFirstEdgeEndIndex
@@ -428,10 +430,10 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
 
     @SuppressWarnings("unchecked")
     private MultipleDelegateList<Node_> computeCombinedList(ListVariableDescriptor<?> listVariableDescriptor,
-            SingletonInverseVariableSupply inverseVariableSupply) {
+            ListVariableStateSupply<?, ?, ?> listVariableStateSupply) {
         var entityToEntityIndex = new IdentityHashMap<Object, Integer>();
         for (var i = 1; i < removedEdges.length; i++) {
-            entityToEntityIndex.computeIfAbsent(inverseVariableSupply.getInverseSingleton(removedEdges[i]),
+            entityToEntityIndex.computeIfAbsent(listVariableStateSupply.getInverseSingleton(removedEdges[i]),
                     entity -> entityToEntityIndex.size());
         }
 
@@ -458,12 +460,12 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof KOptDescriptor<?> that
-                && k == that.k
-                && Arrays.equals(removedEdges, that.removedEdges)
-                && Arrays.equals(removedEdgeIndexToTourOrder, that.removedEdgeIndexToTourOrder)
-                && Arrays.equals(inverseRemovedEdgeIndexToTourOrder, that.inverseRemovedEdgeIndexToTourOrder)
-                && Arrays.equals(addedEdgeToOtherEndpoint, that.addedEdgeToOtherEndpoint);
+        return o instanceof KOptDescriptor<?>(var otherK, var otherEdges, var otherEdgeIndexToTourOrder, var otherIndexToTourOrder, var otherEdgeToOtherEndpoint)
+                && k == otherK
+                && Arrays.equals(removedEdges, otherEdges)
+                && Arrays.equals(removedEdgeIndexToTourOrder, otherEdgeIndexToTourOrder)
+                && Arrays.equals(inverseRemovedEdgeIndexToTourOrder, otherIndexToTourOrder)
+                && Arrays.equals(addedEdgeToOtherEndpoint, otherEdgeToOtherEndpoint);
     }
 
     @Override
@@ -476,7 +478,9 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
         return result;
     }
 
+    @Override
     public String toString() {
         return k + "-opt(removed=" + KOptUtils.getRemovedEdgeList(this) + "\n, added=" + KOptUtils.getAddedEdgeList(this) + ")";
     }
+
 }

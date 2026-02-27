@@ -25,7 +25,6 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.domain.variable.PlanningVariableReference;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
@@ -67,7 +66,6 @@ public final class DotNames {
 
     static final DotName PLANNING_VARIABLE = DotName.createSimple(PlanningVariable.class.getName());
     static final DotName PLANNING_LIST_VARIABLE = DotName.createSimple(PlanningListVariable.class.getName());
-    static final DotName PLANNING_VARIABLE_REFERENCE = DotName.createSimple(PlanningVariableReference.class.getName());
     static final DotName VALUE_RANGE_PROVIDER = DotName.createSimple(ValueRangeProvider.class.getName());
 
     static final DotName INDEX_SHADOW_VARIABLE = DotName.createSimple(IndexShadowVariable.class.getName());
@@ -111,7 +109,6 @@ public final class DotNames {
             PLANNING_ID,
             PLANNING_VARIABLE,
             PLANNING_LIST_VARIABLE,
-            PLANNING_VARIABLE_REFERENCE,
             VALUE_RANGE_PROVIDER,
             INDEX_SHADOW_VARIABLE,
             INVERSE_RELATION_SHADOW_VARIABLE,

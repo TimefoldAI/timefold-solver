@@ -6,7 +6,7 @@ import java.util.Locale;
 
 import ai.timefold.solver.core.impl.util.MathUtils;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * The statistics of a given problem submitted to a {@link Solver}.
@@ -17,6 +17,7 @@ import org.jspecify.annotations.NonNull;
  *        Can be larger than the actual value count.
  * @param approximateProblemSizeLog The estimated log_10 of the problem's search space size.
  */
+@NullMarked
 public record ProblemSizeStatistics(long entityCount,
         long variableCount,
         long approximateValueCount,
@@ -69,7 +70,7 @@ public record ProblemSizeStatistics(long entityCount,
      *
      * @return the given decimalFormat with the given locale
      */
-    private static @NonNull String format(double number, @NonNull DecimalFormat decimalFormat, @NonNull Locale locale) {
+    private static String format(double number, DecimalFormat decimalFormat, Locale locale) {
         if (locale.equals(FORMATTER_LOCALE)) {
             return decimalFormat.format(number);
         }

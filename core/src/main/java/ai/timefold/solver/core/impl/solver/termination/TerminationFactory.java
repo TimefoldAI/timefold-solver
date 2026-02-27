@@ -156,15 +156,19 @@ public final class TerminationFactory<Solution_> {
     @SuppressWarnings("unchecked")
     @Nullable
     Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList) {
-        if (terminationList.size() == 1) {
-            return terminationList.getFirst();
-        }
-        var terminationArray = terminationList.toArray(new Termination[0]);
-        var compositionStyle =
-                Objects.requireNonNullElse(terminationConfig.getTerminationCompositionStyle(), TerminationCompositionStyle.OR);
-        return switch (compositionStyle) {
-            case AND -> UniversalTermination.and(terminationArray);
-            case OR -> UniversalTermination.or(terminationArray);
+        return switch (terminationList.size()) {
+            case 0 -> null;
+            case 1 -> terminationList.getFirst();
+            default -> {
+                var terminationArray = terminationList.toArray(new Termination[0]);
+                var compositionStyle =
+                        Objects.requireNonNullElse(terminationConfig.getTerminationCompositionStyle(),
+                                TerminationCompositionStyle.OR);
+                yield switch (compositionStyle) {
+                    case AND -> UniversalTermination.and(terminationArray);
+                    case OR -> UniversalTermination.or(terminationArray);
+                };
+            }
         };
     }
 }

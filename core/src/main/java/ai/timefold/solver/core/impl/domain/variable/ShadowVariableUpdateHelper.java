@@ -35,7 +35,6 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVar
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;

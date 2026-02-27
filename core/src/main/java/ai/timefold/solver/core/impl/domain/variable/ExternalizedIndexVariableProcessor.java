@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.domain.variable;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 final class ExternalizedIndexVariableProcessor<Solution_> {

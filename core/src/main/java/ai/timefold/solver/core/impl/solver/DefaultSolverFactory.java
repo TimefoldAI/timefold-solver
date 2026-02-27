@@ -46,7 +46,7 @@ import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +57,7 @@ import io.micrometer.core.instrument.Tags;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see SolverFactory
  */
+@NullMarked
 public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolverFactory.class);
@@ -89,7 +90,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     @Override
-    public @NonNull Solver<Solution_> buildSolver(@NonNull SolverConfigOverride<Solution_> configOverride) {
+    public Solver<Solution_> buildSolver(SolverConfigOverride<Solution_> configOverride) {
         Objects.requireNonNull(configOverride, "Invalid configOverride (null) given to SolverFactory.");
         var isDaemon = Objects.requireNonNullElse(solverConfig.getDaemon(), false);
 
@@ -240,7 +241,6 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 } else if (entityDescriptor.hasAnyGenuineListVariables()) {
                     // There is no need to revalidate the number of list variables,
                     // as it has already been validated in SolutionDescriptor
-                    // TODO: Do multiple Construction Heuristics for each list variable descriptor?
                     phaseConfigList.add(buildConstructionHeuristicPhaseConfigForListVariable(configPolicy, entityDescriptor));
                 } else {
                     phaseConfigList.add(buildConstructionHeuristicPhaseConfigForBasicVariable(configPolicy, entityDescriptor));
@@ -283,7 +283,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
             return resolveMoveThreadCount(moveThreadCount, true);
         }
 
-        protected OptionalInt resolveMoveThreadCount(String moveThreadCount, boolean enforceMaximum) {
+        protected OptionalInt resolveMoveThreadCount(@Nullable String moveThreadCount, boolean enforceMaximum) {
             var availableProcessorCount = getAvailableProcessors();
             int resolvedMoveThreadCount;
             if (moveThreadCount == null || moveThreadCount.equals(SolverConfig.MOVE_THREAD_COUNT_NONE)) {
@@ -293,7 +293,6 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 resolvedMoveThreadCount = (availableProcessorCount - 2);
                 if (enforceMaximum && resolvedMoveThreadCount > 4) {
                     // A moveThreadCount beyond 4 is currently typically slower
-                    // TODO remove limitation after fixing https://issues.redhat.com/browse/PLANNER-2449
                     resolvedMoveThreadCount = 4;
                 }
                 if (resolvedMoveThreadCount <= 1) {

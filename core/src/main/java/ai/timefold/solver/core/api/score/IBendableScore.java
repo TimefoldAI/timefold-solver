@@ -15,8 +15,8 @@ import org.jspecify.annotations.NullMarked;
  * @param <Score_> the actual score type to allow addition, subtraction and other arithmetic
  */
 @NullMarked
-public interface IBendableScore<Score_ extends IBendableScore<Score_>>
-        extends Score<Score_> {
+public sealed interface IBendableScore<Score_ extends IBendableScore<Score_>>
+        extends Score<Score_> permits BendableBigDecimalScore, BendableScore {
 
     /**
      * The sum of this and {@link #softLevelsSize()} equals {@link #levelsSize()}.

@@ -29,19 +29,9 @@ public interface ValueRange<T> {
 
     /**
      * @param value sometimes null
-     * @return true if the ValueRange contains that value
+     * @return true if the range contains that value
      */
     boolean contains(@Nullable T value);
-
-    /**
-     * Select in random order, but without shuffling the elements.
-     * Each element might be selected multiple times.
-     * Scales well because it does not require caching.
-     *
-     * @param workingRandom the {@link RandomGenerator} to use when any random number is needed,
-     *        so runs are reproducible.
-     */
-    Iterator<T> createRandomIterator(RandomGenerator workingRandom);
 
     /**
      * Used by uniform random selection.
@@ -63,5 +53,15 @@ public interface ValueRange<T> {
      * Select the elements in original (natural) order.
      */
     Iterator<T> createOriginalIterator();
+
+    /**
+     * Select in random order, but without shuffling the elements.
+     * Each element might be selected multiple times.
+     * Scales well because it does not require caching.
+     *
+     * @param workingRandom the {@link RandomGenerator} to use when any random number is needed,
+     *        so runs are reproducible.
+     */
+    Iterator<T> createRandomIterator(RandomGenerator workingRandom);
 
 }

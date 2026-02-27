@@ -126,10 +126,9 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
  * The solver will fail-fast if it detects a source-induced or fact-induced loop.
  * <p>
  * Important:
- * Do not use a {@link ShadowVariablesInconsistent} property in a method annotated
- * with {@link ShadowSources}. {@link ShadowSources} marked methods do not need to check
- * {@link ShadowVariablesInconsistent} properties, since they are only called if all
- * their dependencies are consistent.
+ * Do not use a {@link ShadowVariablesInconsistent} property in a method annotated with {@link ShadowSources}.
+ * {@link ShadowSources} marked methods do not need to check {@link ShadowVariablesInconsistent} properties,
+ * since they are only called if all their dependencies are consistent.
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)
