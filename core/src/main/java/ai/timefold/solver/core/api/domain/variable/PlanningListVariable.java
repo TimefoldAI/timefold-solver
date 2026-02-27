@@ -38,9 +38,9 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable.NullComparat
  * </ul>
  *
  * <p>
- * This makes sense for common use cases, for example the Vehicle Routing Problem or Task Assigning. In both cases
- * the <em>order</em> in which customers are visited and tasks are being worked on matters. Also, each customer
- * must be visited <em>once</em> and each task must be completed by <em>exactly one</em> employee.
+ * This makes sense for common use cases, for example the Vehicle Routing Problem or Task Assigning.
+ * In both cases the <em>order</em> in which customers are visited and tasks are being worked on matters.
+ * Also, each customer must be visited <em>once</em> and each task must be completed by <em>exactly one</em> employee.
  *
  * @see PlanningPin
  * @see PlanningPinToIndex

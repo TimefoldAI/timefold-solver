@@ -2,10 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
@@ -39,7 +36,7 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public interface ListVariableStateSupply<Solution_, Entity_, Element_>
-        extends SourcedListVariableListener<Solution_, Entity_, Element_>, SingletonInverseVariableSupply, IndexVariableSupply {
+        extends SourcedListVariableListener<Solution_, Entity_, Element_> {
 
     void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
@@ -48,6 +45,40 @@ public interface ListVariableStateSupply<Solution_, Entity_, Element_>
     void externalize(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
     void externalize(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
+
+    /**
+     * Get {@code planningValue}'s index in the {@link PlanningListVariable list variable} it is an element of.
+     *
+     * @param planningValue never null
+     * @return {@code planningValue}'s index in the list variable it is an element of or {@code null} if the value is unassigned
+     */
+    @Nullable
+    Integer getIndex(Object planningValue);
+
+    default int getIndexOrFail(Object planningValue) {
+        var index = getIndex(planningValue);
+        if (index == null) {
+            throw new IllegalStateException("The element (%s) is not assigned to any list variable.");
+        }
+        return index;
+    }
+
+    default int getIndexOrElse(Object planningValue, int defaultValue) {
+        var index = getIndex(planningValue);
+        if (index == null) {
+            return defaultValue;
+        }
+        return index;
+    }
+
+    /**
+     * If entity1.varA = x then the inverse of x is entity1.
+     *
+     * @param planningValue never null
+     * @return sometimes null, an entity for which the planning variable is the planningValue.
+     */
+    @Nullable
+    Object getInverseSingleton(Object planningValue);
 
     @Override
     ListVariableDescriptor<Solution_> getSourceVariableDescriptor();

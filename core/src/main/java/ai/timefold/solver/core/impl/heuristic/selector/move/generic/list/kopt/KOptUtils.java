@@ -7,7 +7,6 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
@@ -105,18 +104,18 @@ final class KOptUtils {
         return out;
     }
 
-    @SuppressWarnings("unchecked")
     public static <Node_> Function<Node_, Node_> getMultiEntitySuccessorFunction(Node_[] pickedValues,
             ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
         var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply);
         return node -> entityOrderInfo.successor(node, listVariableStateSupply);
     }
 
-    public static <Node_> TriPredicate<Node_, Node_, Node_> getBetweenPredicate(IndexVariableSupply indexVariableSupply) {
+    public static <Node_> TriPredicate<Node_, Node_, Node_>
+            getBetweenPredicate(ListVariableStateSupply<?, ?, ?> listVariableStateSupply) {
         return (start, middle, end) -> {
-            int startIndex = indexVariableSupply.getIndex(start);
-            int middleIndex = indexVariableSupply.getIndex(middle);
-            int endIndex = indexVariableSupply.getIndex(end);
+            int startIndex = listVariableStateSupply.getIndexOrFail(start);
+            int middleIndex = listVariableStateSupply.getIndexOrFail(middle);
+            int endIndex = listVariableStateSupply.getIndexOrFail(end);
 
             if (startIndex <= endIndex) {
                 // test middleIndex in [startIndex, endIndex]

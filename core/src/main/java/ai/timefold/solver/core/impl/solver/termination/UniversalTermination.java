@@ -9,7 +9,6 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Determines when a {@link Solver} or a {@link Phase} should stop.
@@ -43,19 +42,33 @@ public sealed interface UniversalTermination<Solution_>
     }
 
     @SafeVarargs
-    static <Solution_> @Nullable UniversalTermination<Solution_> or(Termination<Solution_>... terminations) {
-        if (terminations.length == 0) {
-            return null;
-        }
-        return new OrCompositeTermination<>(terminations);
+    static <Solution_> UniversalTermination<Solution_> or(Termination<Solution_>... terminations) {
+        return switch (terminations.length) {
+            case 0 -> throw new IllegalArgumentException("Impossible state: cannot or() with no terminations.");
+            case 1 -> {
+                var termination = terminations[0];
+                if (termination instanceof UniversalTermination<Solution_> universalTermination) {
+                    yield universalTermination;
+                }
+                yield new OrCompositeTermination<>(termination);
+            }
+            default -> new OrCompositeTermination<>(terminations);
+        };
     }
 
     @SafeVarargs
-    static <Solution_> @Nullable UniversalTermination<Solution_> and(Termination<Solution_>... terminations) {
-        if (terminations.length == 0) {
-            return null;
-        }
-        return new AndCompositeTermination<>(terminations);
+    static <Solution_> UniversalTermination<Solution_> and(Termination<Solution_>... terminations) {
+        return switch (terminations.length) {
+            case 0 -> throw new IllegalArgumentException("Impossible state: cannot and() with no terminations.");
+            case 1 -> {
+                var termination = terminations[0];
+                if (termination instanceof UniversalTermination<Solution_> universalTermination) {
+                    yield universalTermination;
+                }
+                yield new AndCompositeTermination<>(termination);
+            }
+            default -> new AndCompositeTermination<>(terminations);
+        };
     }
 
 }

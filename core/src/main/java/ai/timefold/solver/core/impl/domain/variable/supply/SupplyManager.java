@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.domain.variable.supply;
 
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.ExternalizedSingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
 
 /**
@@ -13,8 +12,8 @@ public interface SupplyManager {
      * Returns a {@link Consumer} that notifies internal components (such as {@link NeighborhoodsBasedMoveRepository})
      * when the {@link Supply} changes.
      * <p>
-     * This is required to be used for externalized supplies (such as {@link ExternalizedSingletonInverseVariableSupply}), since
-     * their state can change without modifying any variables on an entity.
+     * This is required to be used for externalized supplies,
+     * since their state can change without modifying any variables on an entity.
      *
      * @return never null
      */

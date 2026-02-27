@@ -15,8 +15,10 @@ import org.jspecify.annotations.NullMarked;
  * @see HardSoftScore
  */
 @NullMarked
-public interface Score<Score_ extends Score<Score_>>
-        extends Comparable<Score_> {
+public sealed interface Score<Score_ extends Score<Score_>>
+        extends Comparable<Score_>
+        permits HardMediumSoftBigDecimalScore, HardMediumSoftScore, HardSoftBigDecimalScore, HardSoftScore, IBendableScore,
+        SimpleBigDecimalScore, SimpleScore {
 
     /**
      * Returns a Score whose value is (this + addend).

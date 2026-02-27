@@ -22,7 +22,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
 import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
@@ -34,17 +34,14 @@ import io.micrometer.core.instrument.Tags;
  * @see Solver
  * @see AbstractSolver
  */
+@NullMarked
 public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
-    protected EnvironmentMode environmentMode;
-    protected RandomFactory randomFactory;
-
-    protected BasicPlumbingTermination<Solution_> basicPlumbingTermination;
-
+    protected final EnvironmentMode environmentMode;
+    protected final RandomFactory randomFactory;
+    protected final BasicPlumbingTermination<Solution_> basicPlumbingTermination;
     protected final AtomicBoolean solving = new AtomicBoolean(false);
-
     protected final SolverScope<Solution_> solverScope;
-
     private final String moveThreadCountDescription;
 
     // ************************************************************************
@@ -124,12 +121,12 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     @Override
-    public void addProblemChange(@NonNull ProblemChange<Solution_> problemChange) {
+    public void addProblemChange(ProblemChange<Solution_> problemChange) {
         addProblemChanges(Collections.singletonList(problemChange));
     }
 
     @Override
-    public void addProblemChanges(@NonNull List<ProblemChange<Solution_>> problemChangeList) {
+    public void addProblemChanges(List<ProblemChange<Solution_>> problemChangeList) {
         Objects.requireNonNull(problemChangeList,
                 () -> "The list of problem changes (%s) cannot be null."
                         .formatted(problemChangeList));
@@ -153,7 +150,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     // ************************************************************************
 
     @Override
-    public final @NonNull Solution_ solve(@NonNull Solution_ problem) {
+    public final Solution_ solve(Solution_ problem) {
         // No tags for these metrics; they are global
         var solveLengthTimer = Metrics.more().longTaskTimer(SolverMetric.SOLVE_DURATION.getMeterId());
         var errorCounter = Metrics.counter(SolverMetric.ERROR_COUNT.getMeterId());
@@ -214,7 +211,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 solverScope.getBestScore().raw(),
                 environmentMode.name(),
                 moveThreadCountDescription,
-                (randomFactory != null ? randomFactory : "not fixed"));
+                randomFactory);
         if (logger.isInfoEnabled()) { // Formatting is expensive here.
             var problemSizeStatistics = solverScope.getProblemSizeStatistics();
             logger.info(

@@ -16,6 +16,7 @@ import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
+import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
  * @see Solver
  * @see DefaultSolver
  */
+@NullMarked
 public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
 
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());

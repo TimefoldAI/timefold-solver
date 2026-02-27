@@ -19,7 +19,6 @@ import ai.timefold.solver.core.api.solver.Solver;
  * <p>
  * The source variable must be a {@link PlanningListVariable list variable}.
  */
-// TODO When a non-disjoint list variable is supported, specify that this annotation is only allowed on disjoint list variables.
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)
 public @interface NextElementShadowVariable {

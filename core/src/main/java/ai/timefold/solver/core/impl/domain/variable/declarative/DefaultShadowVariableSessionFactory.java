@@ -264,13 +264,13 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             case PREVIOUS -> {
                 var listStateSupply = scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor());
                 yield new TopologicalSorter(listStateSupply::getNextElement,
-                        Comparator.comparingInt(entity -> Objects.requireNonNullElse(listStateSupply.getIndex(entity), 0)),
+                        Comparator.comparingInt(entity -> listStateSupply.getIndexOrElse(entity, 0)),
                         listStateSupply::getInverseSingleton);
             }
             case NEXT -> {
                 var listStateSupply = scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor());
                 yield new TopologicalSorter(listStateSupply::getPreviousElement,
-                        Comparator.comparingInt(entity -> Objects.requireNonNullElse(listStateSupply.getIndex(entity), 0))
+                        Comparator.comparingInt(entity -> listStateSupply.getIndexOrElse(entity, 0))
                                 .reversed(),
                         listStateSupply::getInverseSingleton);
             }

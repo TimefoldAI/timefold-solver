@@ -2,10 +2,12 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.KOptUtils.getBetweenPredicate;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.List;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 
@@ -258,7 +260,8 @@ public class KOptUtilsTest {
         return new KOptDescriptor<>(tourArray,
                 incl,
                 item -> originalTour.get((originalTour.indexOf(item) + 1) % originalTour.size()),
-                getBetweenPredicate(originalTour::indexOf));
+                getBetweenPredicate(
+                        new DelegatingListVariableStateSupply<>(mock(ListVariableStateSupply.class), originalTour::indexOf)));
     }
 
     private static int identityIndexOf(List<TestdataListValue> sourceList, TestdataListValue query) {

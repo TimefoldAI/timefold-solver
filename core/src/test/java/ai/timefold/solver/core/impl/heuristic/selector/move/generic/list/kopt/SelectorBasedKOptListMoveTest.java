@@ -16,7 +16,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
@@ -219,7 +218,7 @@ class SelectorBasedKOptListMoveTest {
                         { e2, destinationE2 },
                 });
         var supplyManager = Mockito.mock(SupplyManager.class);
-        var inverseVariableSupply = Mockito.mock(SingletonInverseVariableSupply.class);
+        var inverseVariableSupply = Mockito.mock(ListVariableStateSupply.class);
 
         when(destinationScoreDirector.getSupplyManager()).thenReturn(supplyManager);
         when(supplyManager.demand(Mockito.any(ListVariableStateDemand.class))).thenReturn(inverseVariableSupply);

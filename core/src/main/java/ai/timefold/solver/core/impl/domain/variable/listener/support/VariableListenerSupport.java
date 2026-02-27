@@ -20,6 +20,7 @@ import java.util.function.IntFunction;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
@@ -30,7 +31,6 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrder
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.ShadowVariablesAssert;
