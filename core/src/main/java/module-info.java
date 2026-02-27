@@ -131,13 +131,13 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.score.director.stream;
     exports ai.timefold.solver.core.impl.score.stream.bavet;
     exports ai.timefold.solver.core.impl.domain.solution.cloner.gizmo;
+    exports ai.timefold.solver.core.impl.domain.solution.descriptor;
     exports ai.timefold.solver.core.impl.domain.common.accessor;
     exports ai.timefold.solver.core.impl.domain.common;
     exports ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
     exports ai.timefold.solver.core.impl.solver.termination;
     exports ai.timefold.solver.core.impl.domain.variable.declarative;
     exports ai.timefold.solver.core.impl.score.stream.test;
-
 
     // expected exports
     exports ai.timefold.solver.core.api.domain.common;
