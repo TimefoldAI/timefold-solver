@@ -1,4 +1,4 @@
-open module ai.timefold.solver.jaxb {
+module ai.timefold.solver.jaxb {
     exports ai.timefold.solver.jaxb.api.score;
 
     requires ai.timefold.solver.persistence.common;

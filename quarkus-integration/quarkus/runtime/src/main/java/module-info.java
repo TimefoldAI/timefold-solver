@@ -1,4 +1,4 @@
-open module ai.timefold.solver.quarkus {
+module ai.timefold.solver.quarkus {
     exports ai.timefold.solver.quarkus.bean;
     exports ai.timefold.solver.quarkus;
     exports ai.timefold.solver.quarkus.config;

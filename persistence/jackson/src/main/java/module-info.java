@@ -1,4 +1,4 @@
-open module ai.timefold.solver.jackson {
+module ai.timefold.solver.jackson {
     exports ai.timefold.solver.jackson.api;
 
     provides tools.jackson.databind.JacksonModule with

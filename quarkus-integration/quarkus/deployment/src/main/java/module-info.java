@@ -1,4 +1,4 @@
-open module ai.timefold.solver.quarkus.deployment {
+module ai.timefold.solver.quarkus.deployment {
     requires ai.timefold.solver.quarkus;
     requires quarkus.arc.deployment;
     requires quarkus.builder;
@@ -16,4 +16,9 @@ open module ai.timefold.solver.quarkus.deployment {
     requires org.eclipse.microprofile.config;
     requires org.objectweb.asm;
     requires org.jboss.logging;
+
+    // Enterprise exports
+    exports ai.timefold.solver.quarkus.deployment to ai.timefold.solver.enterprise.quarkus.deployment;
+    exports ai.timefold.solver.quarkus.deployment.config to ai.timefold.solver.enterprise.quarkus.deployment;
+    exports ai.timefold.solver.quarkus.deployment.api to ai.timefold.solver.enterprise.quarkus.deployment;
 }
