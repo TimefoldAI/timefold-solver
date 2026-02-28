@@ -8,11 +8,11 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import ai.timefold.solver.benchmark.config.ranking.SolverRankingType;
+import ai.timefold.solver.benchmark.impl.io.JaxbLocaleAdapter;
 import ai.timefold.solver.benchmark.impl.ranking.SolverRankingWeightFactory;
 import ai.timefold.solver.benchmark.impl.result.SolverBenchmarkResult;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbLocaleAdapter;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

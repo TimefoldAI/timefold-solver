@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.io.jaxb.adapter;
+package ai.timefold.solver.benchmark.impl.io;
 
 import java.time.DateTimeException;
 import java.time.OffsetDateTime;
@@ -8,8 +8,12 @@ import java.time.temporal.ChronoField;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
-// TODO: Move the code to the jaxb-ri
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public class JaxbOffsetDateTimeAdapter extends XmlAdapter<String, OffsetDateTime> {
+
     private final DateTimeFormatter formatter;
 
     public JaxbOffsetDateTimeAdapter() {
@@ -21,7 +25,7 @@ public class JaxbOffsetDateTimeAdapter extends XmlAdapter<String, OffsetDateTime
     }
 
     @Override
-    public OffsetDateTime unmarshal(String offsetDateTimeString) {
+    public @Nullable OffsetDateTime unmarshal(@Nullable String offsetDateTimeString) {
         if (offsetDateTimeString == null) {
             return null;
         }
@@ -34,7 +38,7 @@ public class JaxbOffsetDateTimeAdapter extends XmlAdapter<String, OffsetDateTime
     }
 
     @Override
-    public String marshal(OffsetDateTime offsetDateTimeObject) {
+    public @Nullable String marshal(@Nullable OffsetDateTime offsetDateTimeObject) {
         if (offsetDateTimeObject == null) {
             return null;
         }

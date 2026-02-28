@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.io.jaxb.adapter;
+package ai.timefold.solver.core.impl.io.jaxb;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

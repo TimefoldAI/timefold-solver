@@ -12,9 +12,7 @@ module ai.timefold.solver.core {
             ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.io.jaxb to
             ai.timefold.solver.jackson, ai.timefold.solver.jaxb, ai.timefold.solver.spring.boot.autoconfigure,
-            ai.timefold.solver.benchmark,
-            ai.timefold.solver.quarkus,
-            ai.timefold.solver.enterprise.core;
+            ai.timefold.solver.benchmark, ai.timefold.solver.quarkus, ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.domain.entity.descriptor
             to ai.timefold.solver.jackson, ai.timefold.solver.jaxb, ai.timefold.solver.benchmark,
             ai.timefold.solver.spring.boot.autoconfigure, ai.timefold.solver.quarkus.integration.test,
@@ -41,8 +39,6 @@ module ai.timefold.solver.core {
             ai.timefold.solver.quarkus,
             ai.timefold.solver.quarkus.deployment, ai.timefold.solver.quarkus.integration.test,
             ai.timefold.solver.quarkus.jackson,
-            ai.timefold.solver.enterprise.core;
-    exports ai.timefold.solver.core.impl.io.jaxb.adapter to ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.definition
             to ai.timefold.solver.benchmark,

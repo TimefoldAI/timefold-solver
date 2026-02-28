@@ -1,14 +1,17 @@
-package ai.timefold.solver.core.impl.io.jaxb.adapter;
+package ai.timefold.solver.core.impl.io.jaxb;
 
 import java.time.Duration;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
-// TODO: Move the code to the jaxb-ri
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public class JaxbDurationAdapter extends XmlAdapter<String, Duration> {
 
     @Override
-    public Duration unmarshal(String durationString) {
+    public @Nullable Duration unmarshal(@Nullable String durationString) {
         if (durationString == null) {
             return null;
         }
@@ -16,7 +19,7 @@ public class JaxbDurationAdapter extends XmlAdapter<String, Duration> {
     }
 
     @Override
-    public String marshal(Duration duration) {
+    public @Nullable String marshal(@Nullable Duration duration) {
         if (duration == null) {
             return null;
         }

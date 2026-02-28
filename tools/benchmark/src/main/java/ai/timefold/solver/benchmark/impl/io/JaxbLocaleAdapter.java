@@ -1,13 +1,17 @@
-package ai.timefold.solver.core.impl.io.jaxb.adapter;
+package ai.timefold.solver.benchmark.impl.io;
 
 import java.util.Locale;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public class JaxbLocaleAdapter extends XmlAdapter<String, Locale> {
 
     @Override
-    public Locale unmarshal(String localeString) {
+    public @Nullable Locale unmarshal(@Nullable String localeString) {
         if (localeString == null) {
             return null;
         }
@@ -15,7 +19,7 @@ public class JaxbLocaleAdapter extends XmlAdapter<String, Locale> {
     }
 
     @Override
-    public String marshal(Locale locale) {
+    public @Nullable String marshal(@Nullable Locale locale) {
         if (locale == null) {
             return null;
         }

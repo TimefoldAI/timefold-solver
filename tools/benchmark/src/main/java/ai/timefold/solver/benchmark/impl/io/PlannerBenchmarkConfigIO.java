@@ -7,16 +7,16 @@ import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.io.jaxb.ElementNamespaceOverride;
 import ai.timefold.solver.core.impl.io.jaxb.GenericJaxbIO;
-import ai.timefold.solver.core.impl.io.jaxb.JaxbIO;
 
+import org.jspecify.annotations.NullMarked;
 import org.w3c.dom.Document;
 
-public class PlannerBenchmarkConfigIO implements JaxbIO<PlannerBenchmarkConfig> {
+@NullMarked
+public class PlannerBenchmarkConfigIO {
 
     private static final String BENCHMARK_XSD_RESOURCE = "/benchmark.xsd";
     private final GenericJaxbIO<PlannerBenchmarkConfig> genericJaxbIO = new GenericJaxbIO<>(PlannerBenchmarkConfig.class);
 
-    @Override
     public PlannerBenchmarkConfig read(Reader reader) {
         Document document = genericJaxbIO.parseXml(reader);
         String rootElementNamespace = document.getDocumentElement().getNamespaceURI();
@@ -41,8 +41,8 @@ public class PlannerBenchmarkConfigIO implements JaxbIO<PlannerBenchmarkConfig> 
         }
     }
 
-    @Override
     public void write(PlannerBenchmarkConfig plannerBenchmarkConfig, Writer writer) {
         genericJaxbIO.writeWithoutNamespaces(plannerBenchmarkConfig, writer);
     }
+
 }

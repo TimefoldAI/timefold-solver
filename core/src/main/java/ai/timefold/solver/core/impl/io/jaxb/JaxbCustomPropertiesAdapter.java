@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.io.jaxb.adapter;
+package ai.timefold.solver.core.impl.io.jaxb;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,7 @@ public class JaxbCustomPropertiesAdapter extends XmlAdapter<JaxbCustomProperties
 
     // Required to generate the XSD type in the same namespace.
     @XmlType(namespace = SolverConfig.XML_NAMESPACE)
-    static class JaxbAdaptedMap {
+    public static class JaxbAdaptedMap {
 
         @XmlElement(name = "property", namespace = SolverConfig.XML_NAMESPACE)
         private List<JaxbAdaptedMapEntry> entries;
