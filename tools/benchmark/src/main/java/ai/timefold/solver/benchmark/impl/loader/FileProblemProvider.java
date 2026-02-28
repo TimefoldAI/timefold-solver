@@ -6,7 +6,7 @@ import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlTransient;
 
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
-import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
+import ai.timefold.solver.core.api.domain.solution.SolutionFileIO;
 
 public class FileProblemProvider<Solution_> implements ProblemProvider<Solution_> {
 

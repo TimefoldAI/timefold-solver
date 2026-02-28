@@ -33,10 +33,6 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-persistence-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-core</artifactId>
       <type>test-jar</type>
       <scope>test</scope>

@@ -7,6 +7,7 @@ import ai.timefold.solver.migration.AbstractRecipe;
 import org.openrewrite.Recipe;
 import org.openrewrite.java.ChangePackage;
 import org.openrewrite.java.ChangeType;
+import org.openrewrite.maven.RemoveDependency;
 
 public class TestingAPIsMigrationRecipe extends AbstractRecipe {
 
@@ -34,6 +35,7 @@ public class TestingAPIsMigrationRecipe extends AbstractRecipe {
                 new ChangeType("ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTester",
                         "ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester", true),
                 new ChangeType("ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodTestContext",
-                        "ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTestContext", true));
+                        "ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTestContext", true),
+                new RemoveDependency("ai.timefold.solver", "timefold-solver-test", null));
     }
 }

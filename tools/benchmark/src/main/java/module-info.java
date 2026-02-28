@@ -1,6 +1,5 @@
 module ai.timefold.solver.benchmark {
     requires ai.timefold.solver.jaxb;
-    requires ai.timefold.solver.persistence.common;
     requires freemarker;
     requires ai.timefold.solver.core;
     requires org.jspecify;

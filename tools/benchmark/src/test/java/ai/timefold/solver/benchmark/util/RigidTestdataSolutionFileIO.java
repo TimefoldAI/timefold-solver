@@ -1,8 +1,9 @@
-package ai.timefold.solver.persistence.common.api.domain.solution;
+package ai.timefold.solver.benchmark.util;
 
 import java.io.File;
 import java.util.Arrays;
 
+import ai.timefold.solver.core.api.domain.solution.SolutionFileIO;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;

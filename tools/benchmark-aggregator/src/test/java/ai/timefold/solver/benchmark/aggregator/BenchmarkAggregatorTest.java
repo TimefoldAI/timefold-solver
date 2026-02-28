@@ -63,7 +63,7 @@ class BenchmarkAggregatorTest {
                             </benchmarkReport>
                             <solverBenchmark>
                                 <problemBenchmarks>
-                                    <solutionFileIOClass>ai.timefold.solver.persistence.common.api.domain.solution.RigidTestdataSolutionFileIO</solutionFileIOClass>
+                                    <solutionFileIOClass>ai.timefold.solver.benchmark.util.RigidTestdataSolutionFileIO</solutionFileIOClass>
                                     <inputSolutionFile>%s</inputSolutionFile>
                                 </problemBenchmarks>
                                 <solver>
