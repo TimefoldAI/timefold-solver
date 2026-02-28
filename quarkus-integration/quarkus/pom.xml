@@ -22,4 +22,22 @@
     <module>reflection-integration-test</module>
     <module>devui-integration-test</module>
   </modules>
+
+  <!-- Fixes quarkus https://github.com/microprofile/microprofile-config/issues/811 -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.eclipse.microprofile.config</groupId>
+        <artifactId>microprofile-config-api</artifactId>
+        <version>3.1.1-RC1</version>
+        <scope>compile</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.microprofile.config</groupId>
+      <artifactId>microprofile-config-api</artifactId>
+    </dependency>
+  </dependencies>
 </project>
