@@ -60,9 +60,6 @@
     <!-- Plugin configuration properties -->
     <maven.min.version>3.9.11</maven.min.version> <!-- The same as the version in .mvn/maven-wrapper.properties -->
     <maven.compiler.release>21</maven.compiler.release>
-    <!-- This property needs to be defined in all modules that use the packaging 'jar'.
-         It is used by different plugins to make sure the module/bundle names are consistent. -->
-    <java.module.name/>
     <spotless.skip>false</spotless.skip>
     <spotless.goal>apply</spotless.goal>
     <!-- JaCoCo coverage data file location -->
@@ -369,16 +366,6 @@
           <artifactId>maven-jar-plugin</artifactId>
           <version>${version.jar.plugin}</version>
           <executions>
-            <execution>
-              <id>default-jar</id>
-              <configuration>
-                <archive>
-                  <manifestEntries combine.children="append">
-                    <Automatic-Module-Name>${java.module.name}</Automatic-Module-Name>
-                  </manifestEntries>
-                </archive>
-              </configuration>
-            </execution>
             <execution>
               <id>test-jar</id>
               <goals>

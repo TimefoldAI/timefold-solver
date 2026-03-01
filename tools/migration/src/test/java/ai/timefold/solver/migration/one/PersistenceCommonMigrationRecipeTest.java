@@ -1,5 +1,7 @@
 package ai.timefold.solver.migration.one;
 
+import static org.openrewrite.java.Assertions.java;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -13,8 +15,6 @@ import org.openrewrite.style.NamedStyles;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
-
-import static org.openrewrite.java.Assertions.java;
 
 @Execution(ExecutionMode.CONCURRENT)
 class PersistenceCommonMigrationRecipeTest implements RewriteTest {

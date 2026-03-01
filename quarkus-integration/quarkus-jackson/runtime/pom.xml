@@ -14,10 +14,6 @@
   <description>Activate Jackson bindings for Timefold's Score classes</description>
   <url>https://solver.timefold.ai</url>
 
-  <properties>
-    <java.module.name>ai.timefold.solver.quarkus.jackson</java.module.name>
-  </properties>
-
   <dependencies>
     <!-- Internal dependencies -->
     <dependency>

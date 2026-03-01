@@ -22,10 +22,6 @@
   </description>
   <url>https://solver.timefold.ai</url>
 
-  <properties>
-    <java.module.name>ai.timefold.solver.core</java.module.name>
-  </properties>
-
   <dependencies>
 
     <!-- Gizmo dependencies -->

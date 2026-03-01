@@ -15,7 +15,6 @@
   <url>https://solver.timefold.ai</url>
 
   <properties>
-    <java.module.name>ai.timefold.solver.quarkus</java.module.name>
     <!-- Code of integration tests should not be a part of test coverage reports. -->
     <sonar.coverage.exclusions>**/*</sonar.coverage.exclusions>
   </properties>

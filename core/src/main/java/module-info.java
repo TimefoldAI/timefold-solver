@@ -1,4 +1,65 @@
 module ai.timefold.solver.core {
+
+    // Public APIs
+    exports ai.timefold.solver.core.api.domain.common;
+    exports ai.timefold.solver.core.api.domain.entity;
+    exports ai.timefold.solver.core.api.domain.solution;
+    exports ai.timefold.solver.core.api.domain.solution.cloner;
+    exports ai.timefold.solver.core.api.domain.valuerange;
+    exports ai.timefold.solver.core.api.domain.variable;
+    exports ai.timefold.solver.core.api.function;
+    exports ai.timefold.solver.core.api.score;
+    exports ai.timefold.solver.core.api.score.analysis;
+    exports ai.timefold.solver.core.api.score.stream;
+    exports ai.timefold.solver.core.api.score.stream.common;
+    exports ai.timefold.solver.core.api.score.stream.uni;
+    exports ai.timefold.solver.core.api.score.stream.bi;
+    exports ai.timefold.solver.core.api.score.stream.tri;
+    exports ai.timefold.solver.core.api.score.stream.penta;
+    exports ai.timefold.solver.core.api.score.stream.quad;
+    exports ai.timefold.solver.core.api.score.calculator;
+    exports ai.timefold.solver.core.config.solver;
+    exports ai.timefold.solver.core.config.solver.random;
+    exports ai.timefold.solver.core.config.solver.monitoring;
+    exports ai.timefold.solver.core.config.solver.termination;
+    exports ai.timefold.solver.core.config.heuristic.selector.entity;
+    exports ai.timefold.solver.core.config.heuristic.selector.entity.pillar;
+    exports ai.timefold.solver.core.config.heuristic.selector.list;
+    exports ai.timefold.solver.core.config.heuristic.selector.move;
+    exports ai.timefold.solver.core.config.heuristic.selector.move.factory;
+    exports ai.timefold.solver.core.config.heuristic.selector.move.composite;
+    exports ai.timefold.solver.core.config.heuristic.selector.move.generic;
+    exports ai.timefold.solver.core.config.heuristic.selector.move.generic.list;
+    exports ai.timefold.solver.core.config.heuristic.selector.value;
+    exports ai.timefold.solver.core.config.heuristic.selector.common;
+    exports ai.timefold.solver.core.config.heuristic.selector.common.decorator;
+    exports ai.timefold.solver.core.config.heuristic.selector.common.nearby;
+    exports ai.timefold.solver.core.config.localsearch;
+    exports ai.timefold.solver.core.config.localsearch.decider.forager;
+    exports ai.timefold.solver.core.config.localsearch.decider.acceptor;
+    exports ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing;
+    exports ai.timefold.solver.core.config.partitionedsearch;
+    exports ai.timefold.solver.core.config.phase;
+    exports ai.timefold.solver.core.config.phase.custom;
+    exports ai.timefold.solver.core.config.score.director;
+    exports ai.timefold.solver.core.config.score.trend;
+    exports ai.timefold.solver.core.config.util;
+    exports ai.timefold.solver.core.config;
+    exports ai.timefold.solver.core.api.score.constraint;
+    exports ai.timefold.solver.core.api.solver;
+    exports ai.timefold.solver.core.api.solver.event;
+    exports ai.timefold.solver.core.api.solver.phase;
+    exports ai.timefold.solver.core.api.solver.change;
+    exports ai.timefold.solver.core.config.constructionheuristic;
+    exports ai.timefold.solver.core.enterprise;
+
+    // Preview APIs
+    exports ai.timefold.solver.core.preview.api.move;
+    exports ai.timefold.solver.core.preview.api.move.builtin;
+    exports ai.timefold.solver.core.preview.api.domain.metamodel;
+    exports ai.timefold.solver.core.preview.api.domain.solution.diff;
+    exports ai.timefold.solver.core.api.score.stream.test;
+
     // explicit exports to other modules
     exports ai.timefold.solver.core.impl.solver.scope to
             ai.timefold.solver.jackson, ai.timefold.solver.benchmark, ai.timefold.solver.spring.boot.autoconfigure,
@@ -84,14 +145,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.solver.monitoring to ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
 
-    // Preview APIs
-    exports ai.timefold.solver.core.preview.api.move;
-    exports ai.timefold.solver.core.preview.api.move.builtin;
-    exports ai.timefold.solver.core.preview.api.domain.metamodel;
-    exports ai.timefold.solver.core.preview.api.domain.solution.diff;
-    exports ai.timefold.solver.core.api.score.stream.test;
-
-    // enterprise specific exports
+    // enterprise-specific exports
     exports ai.timefold.solver.core.impl.bavet.common to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.constructionheuristic.decider to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.constructionheuristic.decider.forager to ai.timefold.solver.enterprise.core;
@@ -135,58 +189,42 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.domain.variable.declarative;
     exports ai.timefold.solver.core.impl.score.stream.test;
 
-    // expected exports
-    exports ai.timefold.solver.core.api.domain.common;
-    exports ai.timefold.solver.core.api.domain.entity;
-    exports ai.timefold.solver.core.api.domain.solution;
-    exports ai.timefold.solver.core.api.domain.solution.cloner;
-    exports ai.timefold.solver.core.api.domain.valuerange;
-    exports ai.timefold.solver.core.api.domain.variable;
-    exports ai.timefold.solver.core.api.function;
-    exports ai.timefold.solver.core.api.score;
-    exports ai.timefold.solver.core.api.score.analysis;
-    exports ai.timefold.solver.core.api.score.stream;
-    exports ai.timefold.solver.core.api.score.stream.common;
-    exports ai.timefold.solver.core.api.score.stream.uni;
-    exports ai.timefold.solver.core.api.score.stream.bi;
-    exports ai.timefold.solver.core.api.score.stream.tri;
-    exports ai.timefold.solver.core.api.score.stream.penta;
-    exports ai.timefold.solver.core.api.score.stream.quad;
-    exports ai.timefold.solver.core.api.score.calculator;
-    exports ai.timefold.solver.core.config.solver;
-    exports ai.timefold.solver.core.config.solver.random;
-    exports ai.timefold.solver.core.config.solver.monitoring;
-    exports ai.timefold.solver.core.config.solver.termination;
-    exports ai.timefold.solver.core.config.heuristic.selector.entity;
-    exports ai.timefold.solver.core.config.heuristic.selector.entity.pillar;
-    exports ai.timefold.solver.core.config.heuristic.selector.list;
-    exports ai.timefold.solver.core.config.heuristic.selector.move;
-    exports ai.timefold.solver.core.config.heuristic.selector.move.factory;
-    exports ai.timefold.solver.core.config.heuristic.selector.move.composite;
-    exports ai.timefold.solver.core.config.heuristic.selector.move.generic;
-    exports ai.timefold.solver.core.config.heuristic.selector.move.generic.list;
-    exports ai.timefold.solver.core.config.heuristic.selector.value;
-    exports ai.timefold.solver.core.config.heuristic.selector.common;
-    exports ai.timefold.solver.core.config.heuristic.selector.common.decorator;
-    exports ai.timefold.solver.core.config.heuristic.selector.common.nearby;
-    exports ai.timefold.solver.core.config.localsearch;
-    exports ai.timefold.solver.core.config.localsearch.decider.forager;
-    exports ai.timefold.solver.core.config.localsearch.decider.acceptor;
-    exports ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing;
-    exports ai.timefold.solver.core.config.partitionedsearch;
-    exports ai.timefold.solver.core.config.phase;
-    exports ai.timefold.solver.core.config.phase.custom;
-    exports ai.timefold.solver.core.config.score.director;
-    exports ai.timefold.solver.core.config.score.trend;
-    exports ai.timefold.solver.core.config.util;
-    exports ai.timefold.solver.core.config;
-    exports ai.timefold.solver.core.api.score.constraint;
-    exports ai.timefold.solver.core.api.solver;
-    exports ai.timefold.solver.core.api.solver.event;
-    exports ai.timefold.solver.core.api.solver.phase;
-    exports ai.timefold.solver.core.api.solver.change;
-    exports ai.timefold.solver.core.config.constructionheuristic;
-    exports ai.timefold.solver.core.enterprise;
+    // open configs to JAXB
+    opens ai.timefold.solver.core.impl.io.jaxb to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.constructionheuristic to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.constructionheuristic.decider.forager to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.constructionheuristic.placer to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.exhaustivesearch to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.entity to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.entity.pillar to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.list to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.move to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.move.factory to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.move.composite to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.move.generic to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.move.generic.list to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt
+            to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.value to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.common to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.common.decorator to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.common.nearby to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.localsearch to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.localsearch.decider.forager to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.localsearch.decider.acceptor to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing
+            to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.partitionedsearch to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.phase to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.phase.custom to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.score.director to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.score.trend to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.solver to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.solver.random to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.solver.monitoring to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.solver.termination to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.util to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config to jakarta.xml.bind, org.glassfish.jaxb.runtime;
 
     requires commons.math3;
     requires jakarta.xml.bind;

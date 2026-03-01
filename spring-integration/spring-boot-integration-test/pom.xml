@@ -15,7 +15,6 @@
   <description>Spring Boot integration tests for Timefold</description>
 
   <properties>
-    <java.module.name>ai.timefold.solver.spring.boot</java.module.name>
     <!-- Code of integration tests should not be a part of test coverage reports. -->
     <sonar.coverage.exclusions>**/*</sonar.coverage.exclusions>
     <version.junit.platform.launcher>1.12.1</version.junit.platform.launcher>
