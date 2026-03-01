@@ -40,7 +40,7 @@ public class JaxbCustomPropertiesAdapter extends XmlAdapter<JaxbCustomProperties
         @XmlElement(name = "property", namespace = SolverConfig.XML_NAMESPACE)
         private List<JaxbAdaptedMapEntry> entries;
 
-        private JaxbAdaptedMap() {
+        public JaxbAdaptedMap() {
             // Required by JAXB
         }
 
