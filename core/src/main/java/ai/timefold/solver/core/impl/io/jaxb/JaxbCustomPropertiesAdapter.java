@@ -35,7 +35,7 @@ public class JaxbCustomPropertiesAdapter extends XmlAdapter<JaxbCustomProperties
 
     // Required to generate the XSD type in the same namespace.
     @XmlType(namespace = SolverConfig.XML_NAMESPACE)
-    public static class JaxbAdaptedMap {
+    public static final class JaxbAdaptedMap {
 
         @XmlElement(name = "property", namespace = SolverConfig.XML_NAMESPACE)
         private List<JaxbAdaptedMapEntry> entries;
@@ -51,7 +51,7 @@ public class JaxbCustomPropertiesAdapter extends XmlAdapter<JaxbCustomProperties
 
     // Required to generate the XSD type in the same namespace.
     @XmlType(namespace = SolverConfig.XML_NAMESPACE)
-    public static class JaxbAdaptedMapEntry {
+    public static final class JaxbAdaptedMapEntry {
 
         @XmlAttribute
         private String name;
