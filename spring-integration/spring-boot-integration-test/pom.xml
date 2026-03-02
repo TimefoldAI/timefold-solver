@@ -15,7 +15,6 @@
   <description>Spring Boot integration tests for Timefold</description>
 
   <properties>
-    <java.module.name>ai.timefold.solver.spring.boot</java.module.name>
     <!-- Code of integration tests should not be a part of test coverage reports. -->
     <sonar.coverage.exclusions>**/*</sonar.coverage.exclusions>
     <version.junit.platform.launcher>1.12.1</version.junit.platform.launcher>
@@ -110,9 +109,6 @@
                   <goal>test</goal>
                 </goals>
                 <phase>package</phase>
-                <configuration>
-                  <imageName>app.native</imageName>
-                </configuration>
               </execution>
               <execution>
                 <id>add-reachability-metadata</id>
@@ -126,7 +122,7 @@
               <buildArgs>
                 <!-- Ob == fast build -->
                 <buildArg>-Ob</buildArg>
-                <buildArg>--no-fallback -H:+ReportExceptionStackTraces</buildArg>
+                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
               </buildArgs>
               <metadataRepository>
                 <enabled>true</enabled>

@@ -191,7 +191,6 @@ public interface SolutionFileIO<Solution_> {
 }
 ----
 
-The `SolutionFileIO` interface is in the `timefold-persistence-common` jar (which is a dependency of the `timefold-solver-benchmark` jar).
 There are several ways to serialize a solution.
 
 

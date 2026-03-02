@@ -42,5 +42,6 @@
 - [ ] `timefold-solver-test` is no more
 - [ ] `MockProblemChangeDirector` and `ConstraintVerifier` have moved.
 - [ ] `MoveTester` and `NeighborhoodTester` have moved.
+- [ ] `persistence-common` module is no more, `SolutionFileIO` is now in `core`.
 
 Remove this file when done.

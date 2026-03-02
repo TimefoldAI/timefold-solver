@@ -12,7 +12,7 @@ import ai.timefold.solver.benchmark.impl.ranking.SolverRankingWeightFactory;
 import ai.timefold.solver.benchmark.impl.result.SolverBenchmarkResult;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbLocaleAdapter;
+import ai.timefold.solver.core.impl.io.jaxb.JaxbLocaleAdapter;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

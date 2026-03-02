@@ -14,10 +14,6 @@
   <description>Benchmark an Timefold project to power tweak the solver configuration for speed and scalability.</description>
   <url>https://solver.timefold.ai</url>
 
-  <properties>
-    <java.module.name>ai.timefold.solver.quarkus.benchmark</java.module.name>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>

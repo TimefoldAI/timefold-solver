@@ -18,10 +18,10 @@ import ai.timefold.solver.benchmark.impl.result.SingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SolverBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.ProblemStatistic;
+import ai.timefold.solver.core.api.domain.solution.SolutionFileIO;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
-import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
 public class ProblemBenchmarksFactory {
     private final ProblemBenchmarksConfig config;

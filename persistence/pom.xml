@@ -24,7 +24,6 @@
   <url>https://solver.timefold.ai</url>
 
   <modules>
-    <module>common</module>
     <module>jaxb</module>
     <module>jackson</module>
     <module>jpa</module>

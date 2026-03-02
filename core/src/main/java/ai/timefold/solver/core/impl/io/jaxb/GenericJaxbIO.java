@@ -43,7 +43,7 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
 @NullMarked
-public final class GenericJaxbIO<T> implements JaxbIO<T> {
+public final class GenericJaxbIO<T> {
 
     public static DocumentBuilderFactory createDocumentBuilderFactory() {
         try {
@@ -122,7 +122,6 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         }
     }
 
-    @Override
     public T read(Reader reader) {
         try {
             return (T) createUnmarshaller().unmarshal(reader);
@@ -265,7 +264,6 @@ public final class GenericJaxbIO<T> implements JaxbIO<T> {
         }
     }
 
-    @Override
     public void write(T root, Writer writer) {
         write(root, writer, null);
     }

@@ -24,10 +24,6 @@
   </description>
   <url>https://solver.timefold.ai</url>
 
-  <properties>
-    <java.module.name>ai.timefold.solver.benchmark.aggregator</java.module.name>
-  </properties>
-
   <dependencies>
     <!-- Internal dependencies -->
     <dependency>

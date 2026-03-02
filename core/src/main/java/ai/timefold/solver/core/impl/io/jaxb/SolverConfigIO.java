@@ -5,13 +5,14 @@ import java.io.Writer;
 
 import ai.timefold.solver.core.config.solver.SolverConfig;
 
+import org.jspecify.annotations.NullMarked;
 import org.w3c.dom.Document;
 
-public class SolverConfigIO implements JaxbIO<SolverConfig> {
+@NullMarked
+public class SolverConfigIO {
     private static final String SOLVER_XSD_RESOURCE = "/solver.xsd";
     private final GenericJaxbIO<SolverConfig> genericJaxbIO = new GenericJaxbIO<>(SolverConfig.class);
 
-    @Override
     public SolverConfig read(Reader reader) {
         Document document = genericJaxbIO.parseXml(reader);
         String rootElementNamespace = document.getDocumentElement().getNamespaceURI();
@@ -29,8 +30,8 @@ public class SolverConfigIO implements JaxbIO<SolverConfig> {
         }
     }
 
-    @Override
     public void write(SolverConfig solverConfig, Writer writer) {
         genericJaxbIO.writeWithoutNamespaces(solverConfig, writer);
     }
+
 }

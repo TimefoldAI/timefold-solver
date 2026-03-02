@@ -9,8 +9,6 @@ recipeList:
   - org.openrewrite.java.DeleteMethodArgument:
       methodPattern: ai.timefold.solver.core.api.score.constraint.ConstraintRef of(String, String)
       argumentIndex: 0
+  - ai.timefold.solver.migration.one.PersistenceCommonMigrationRecipe
   - ai.timefold.solver.migration.one.TestingAPIsMigrationRecipe
   - org.openrewrite.java.RemoveUnusedImports
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: ai.timefold.solver
-      artifactId: timefold-solver-test

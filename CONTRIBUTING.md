@@ -91,7 +91,7 @@ CI checks enforce those conventions too, so be sure to build your project with M
 ./mvnw clean install
 ```
 
-For information about how to set up code style checks in your IDE, see [IDE Setup Instructions](https://github.com/TimefoldAI/timefold-solver/blob/main/build/ide-config/ide-configuration.adoc).
+For information about how to set up code style checks in your IDE, see [IDE Setup Instructions](build/ide-config/ide-configuration.adoc).
 
 **Key code style conventions** (see [Constitution](.specify/memory/constitution.md) for complete details):
 - Automatic formatting via Maven build
