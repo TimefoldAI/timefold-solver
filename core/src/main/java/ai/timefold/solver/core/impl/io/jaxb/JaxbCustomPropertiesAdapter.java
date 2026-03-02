@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.io.jaxb;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -16,7 +17,11 @@ public class JaxbCustomPropertiesAdapter extends XmlAdapter<JaxbAdaptedMap, Map<
         if (jaxbAdaptedMap == null) {
             return null;
         }
-        return jaxbAdaptedMap.getEntries().stream()
+        var entries = jaxbAdaptedMap.getEntries();
+        if (entries == null || entries.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return entries.stream()
                 .collect(Collectors.toMap(JaxbAdaptedMapEntry::getName, JaxbAdaptedMapEntry::getValue));
     }
 
