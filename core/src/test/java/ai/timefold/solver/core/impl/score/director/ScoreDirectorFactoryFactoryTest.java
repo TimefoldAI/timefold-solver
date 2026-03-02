@@ -32,8 +32,9 @@ class ScoreDirectorFactoryFactoryTest {
         customProperties.put("intProperty", "7");
         config.setIncrementalScoreCalculatorCustomProperties(customProperties);
 
-        var scoreDirectorFactory = (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) buildTestdataScoreDirectoryFactory(
-                config);
+        var scoreDirectorFactory =
+                (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) buildTestdataScoreDirectoryFactory(
+                        config);
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             var scoreCalculator = (TestCustomPropertiesIncrementalScoreCalculator) scoreDirector
                     .getIncrementalScoreCalculator();
@@ -54,8 +55,9 @@ class ScoreDirectorFactoryFactoryTest {
                 config,
                 EnvironmentMode.STEP_ASSERT);
 
-        var assertionScoreDirectorFactory = (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) scoreDirectorFactory
-                .getAssertionScoreDirectorFactory();
+        var assertionScoreDirectorFactory =
+                (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) scoreDirectorFactory
+                        .getAssertionScoreDirectorFactory();
         try (var assertionScoreDirector = assertionScoreDirectorFactory.buildScoreDirector()) {
             var assertionScoreCalculator = assertionScoreDirector.getIncrementalScoreCalculator();
             assertThat(assertionScoreCalculator)

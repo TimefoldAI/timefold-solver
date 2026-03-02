@@ -24,9 +24,10 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
         extends
         AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>> {
 
-    public static <Solution_, Score_ extends Score<Score_>> BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory(
-            SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
-            EnvironmentMode environmentMode) {
+    public static <Solution_, Score_ extends Score<Score_>> BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>
+            buildScoreDirectorFactory(
+                    SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
+                    EnvironmentMode environmentMode) {
         var providedConstraintProvider = config.getConstraintProvider();
         if (providedConstraintProvider != null) {
             // Use the provided instance

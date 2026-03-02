@@ -39,7 +39,7 @@ class ConstraintProviderInstanceIntegrationTest {
                 .withTerminationConfig(
                         new TerminationConfig().withBestScoreLimit("0").withSpentLimit(Duration.ofSeconds(30)));
 
-        var solverFactory = SolverFactory.<TestdataSolution>create(solverConfig);
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
         var solver = solverFactory.buildSolver();
 
         // Prepare test data
@@ -85,7 +85,7 @@ class ConstraintProviderInstanceIntegrationTest {
                         .withConstraintProvider(constraintProvider))
                 .withTerminationConfig(
                         new TerminationConfig().withBestScoreLimit("0").withSpentLimit(Duration.ofSeconds(30)));
-        return SolverFactory.<TestdataSolution>create(solverConfig).buildSolver();
+        return SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
     }
 
     private TestdataSolution createTestSolution() {
