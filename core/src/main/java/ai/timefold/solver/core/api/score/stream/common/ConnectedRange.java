@@ -1,5 +1,9 @@
 package ai.timefold.solver.core.api.score.stream.common;
 
+import java.util.Collection;
+import java.util.function.ToIntBiFunction;
+import java.util.function.ToIntFunction;
+
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -45,6 +49,26 @@ public interface ConnectedRange<Range_, Point_ extends Comparable<Point_>, Diffe
      *         in this {@link ConnectedRange}.
      */
     int getMaximumOverlap();
+
+    /**
+     * Get the maximum sum of a function amongst distinct ranges of overlapping values
+     * amongst all points contained by this {@link ConnectedRange}.
+     *
+     * @return get the maximum sum of a function amongst distinct ranges of overlapping values
+     *         for any point contained by this {@link ConnectedRange}.
+     */
+    int getMaximumValue(ToIntFunction<? super Range_> functionSupplier);
+
+    /**
+     * Get the maximum sum of a function amongst distinct ranges of overlapping values
+     * amongst all points contained by this {@link ConnectedRange}. This method allows you to use
+     * a function that takes all active ranges as an input. Use {@link ::getMaximumValue} if possible
+     * for efficiency.
+     *
+     * @return get the maximum sum of a function amongst distinct ranges of overlapping values
+     *         for any point contained by this {@link ConnectedRange}.
+     */
+    int getMaximumValueForDistinctRanges(ToIntBiFunction<Collection<? super Range_>, Difference_> functionSupplier);
 
     /**
      * Get the length of this {@link ConnectedRange}.
