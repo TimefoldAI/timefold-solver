@@ -42,21 +42,10 @@ import freemarker.template.TemplateException;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = PlannerBenchmarkConfig.XML_ELEMENT_NAME)
-@XmlType(propOrder = {
-        "name",
-        "benchmarkDirectory",
-        "threadFactoryClass",
-        "parallelBenchmarkCount",
-        "warmUpMillisecondsSpentLimit",
-        "warmUpSecondsSpentLimit",
-        "warmUpMinutesSpentLimit",
-        "warmUpHoursSpentLimit",
-        "warmUpDaysSpentLimit",
-        "benchmarkReportConfig",
-        "inheritedSolverBenchmarkConfig",
-        "solverBenchmarkBluePrintConfigList",
-        "solverBenchmarkConfigList"
-})
+@XmlType(propOrder = { "name", "benchmarkDirectory", "threadFactoryClass", "parallelBenchmarkCount",
+        "warmUpMillisecondsSpentLimit", "warmUpSecondsSpentLimit", "warmUpMinutesSpentLimit", "warmUpHoursSpentLimit",
+        "warmUpDaysSpentLimit", "benchmarkReportConfig", "inheritedSolverBenchmarkConfig", "solverBenchmarkBluePrintConfigList",
+        "solverBenchmarkConfigList" })
 public class PlannerBenchmarkConfig {
     public static final String SOLVER_NAMESPACE_PREFIX = "solver";
     public static final String XML_ELEMENT_NAME = "plannerBenchmark";
@@ -109,19 +98,21 @@ public class PlannerBenchmarkConfig {
         var actualClassLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
         try (var in = actualClassLoader.getResourceAsStream(benchmarkConfigResource)) {
             if (in == null) {
-                var errorMessage = "The benchmarkConfigResource (" + benchmarkConfigResource
-                        + ") does not exist as a classpath resource in the classLoader (" + actualClassLoader + ").";
+                var errorMessage = """
+                        The benchmarkConfigResource (%s) does not exist as a classpath resource in the classLoader (%s)."""
+                        .formatted(benchmarkConfigResource, actualClassLoader);
                 if (benchmarkConfigResource.startsWith("/")) {
-                    errorMessage += "\nA classpath resource should not start with a slash (/)."
-                            + " A benchmarkConfigResource adheres to ClassLoader.getResource(String)."
-                            + " Maybe remove the leading slash from the benchmarkConfigResource.";
+                    errorMessage +=
+                            """
+                                    A classpath resource should not start with a slash (/). A benchmarkConfigResource adheres to ClassLoader.getResource(String).
+                                    Maybe remove the leading slash from the benchmarkConfigResource.""";
                 }
                 throw new IllegalArgumentException(errorMessage);
             }
             return createFromXmlInputStream(in, classLoader);
         } catch (TimefoldXmlSerializationException e) {
-            throw new IllegalArgumentException("Unmarshalling of benchmarkConfigResource (" + benchmarkConfigResource
-                    + ") fails.", e);
+            throw new IllegalArgumentException(
+                    "Unmarshalling of benchmarkConfigResource (" + benchmarkConfigResource + ") fails.", e);
         } catch (IOException e) {
             throw new IllegalArgumentException("Reading the benchmarkConfigResource (" + benchmarkConfigResource + ") fails.",
                     e);
@@ -149,11 +140,14 @@ public class PlannerBenchmarkConfig {
         try (InputStream in = new FileInputStream(benchmarkConfigFile)) {
             return createFromXmlInputStream(in, classLoader);
         } catch (TimefoldXmlSerializationException e) {
-            throw new IllegalArgumentException("Unmarshalling the benchmarkConfigFile (" + benchmarkConfigFile + ") fails.", e);
+            throw new IllegalArgumentException("Unmarshalling the benchmarkConfigFile (%s) fails."
+                    .formatted(benchmarkConfigFile), e);
         } catch (FileNotFoundException e) {
-            throw new IllegalArgumentException("The benchmarkConfigFile (" + benchmarkConfigFile + ") was not found.", e);
+            throw new IllegalArgumentException("The benchmarkConfigFile (%s) was not found."
+                    .formatted(benchmarkConfigFile), e);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Reading the benchmarkConfigFile (" + benchmarkConfigFile + ") fails.", e);
+            throw new IllegalArgumentException("Reading the benchmarkConfigFile (%s) fails."
+                    .formatted(benchmarkConfigFile), e);
         }
     }
 
@@ -174,7 +168,8 @@ public class PlannerBenchmarkConfig {
         try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
             return createFromXmlReader(reader, classLoader);
         } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("This vm does not support the charset (" + StandardCharsets.UTF_8 + ").", e);
+            throw new IllegalStateException("This VM does not support the charset (%s)."
+                    .formatted(StandardCharsets.UTF_8), e);
         } catch (IOException e) {
             throw new IllegalArgumentException("Reading fails.", e);
         }
@@ -247,18 +242,21 @@ public class PlannerBenchmarkConfig {
         var actualClassLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
         try (var templateIn = actualClassLoader.getResourceAsStream(templateResource)) {
             if (templateIn == null) {
-                var errorMessage = "The templateResource (" + templateResource
-                        + ") does not exist as a classpath resource in the classLoader (" + actualClassLoader + ").";
+                var errorMessage = "The templateResource (%s) does not exist as a classpath resource in the classLoader (%s)."
+                        .formatted(templateResource, actualClassLoader);
                 if (templateResource.startsWith("/")) {
-                    errorMessage += "\nA classpath resource should not start with a slash (/)."
-                            + " A templateResource adheres to ClassLoader.getResource(String)."
-                            + " Maybe remove the leading slash from the templateResource.";
+                    errorMessage +=
+                            """
+
+                                    A classpath resource should not start with a slash (/). A templateResource adheres to ClassLoader.getResource(String).
+                                    Maybe remove the leading slash from the templateResource.""";
                 }
                 throw new IllegalArgumentException(errorMessage);
             }
             return createFromFreemarkerXmlInputStream(templateIn, model, classLoader);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Reading the templateResource (" + templateResource + ") fails.", e);
+            throw new IllegalArgumentException("Reading the templateResource (%s) fails."
+                    .formatted(templateResource), e);
         }
     }
 
@@ -302,9 +300,11 @@ public class PlannerBenchmarkConfig {
         try (var templateIn = new FileInputStream(templateFile)) {
             return createFromFreemarkerXmlInputStream(templateIn, model, classLoader);
         } catch (FileNotFoundException e) {
-            throw new IllegalArgumentException("The templateFile (" + templateFile + ") was not found.", e);
+            throw new IllegalArgumentException("The templateFile (%s) was not found."
+                    .formatted(templateFile), e);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Reading the templateFile (" + templateFile + ") fails.", e);
+            throw new IllegalArgumentException("Reading the templateFile (%s) fails."
+                    .formatted(templateFile), e);
         }
     }
 
@@ -349,7 +349,8 @@ public class PlannerBenchmarkConfig {
         try (Reader reader = new InputStreamReader(templateIn, StandardCharsets.UTF_8)) {
             return createFromFreemarkerXmlReader(reader, model, classLoader);
         } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("This vm does not support the charset (" + StandardCharsets.UTF_8 + ").", e);
+            throw new IllegalStateException("This VM does not support the charset (%s)."
+                    .formatted(StandardCharsets.UTF_8), e);
         } catch (IOException e) {
             throw new IllegalArgumentException("Reading fails.", e);
         }
@@ -649,8 +650,8 @@ public class PlannerBenchmarkConfig {
         return this;
     }
 
-    public @NonNull PlannerBenchmarkConfig withSolverBenchmarkBluePrintConfigs(
-            @NonNull SolverBenchmarkBluePrintConfig... solverBenchmarkBluePrintConfigs) {
+    public @NonNull PlannerBenchmarkConfig
+            withSolverBenchmarkBluePrintConfigs(@NonNull SolverBenchmarkBluePrintConfig... solverBenchmarkBluePrintConfigs) {
         this.setSolverBenchmarkBluePrintConfigList(List.of(solverBenchmarkBluePrintConfigs));
         return this;
     }

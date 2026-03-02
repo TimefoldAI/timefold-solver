@@ -5,6 +5,7 @@ module ai.timefold.solver.benchmark {
     requires commons.math3;
     requires freemarker;
     requires jakarta.xml.bind;
+    requires java.xml;
     requires micrometer.core;
     requires org.jspecify;
     requires org.slf4j;
