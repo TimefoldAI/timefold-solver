@@ -1,78 +1,34 @@
 package ai.timefold.solver.core.impl.io.jaxb;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
-import ai.timefold.solver.core.config.solver.SolverConfig;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-public class JaxbCustomPropertiesAdapter extends XmlAdapter<JaxbCustomPropertiesAdapter.JaxbAdaptedMap, Map<String, String>> {
+@NullMarked
+public class JaxbCustomPropertiesAdapter extends XmlAdapter<JaxbAdaptedMap, Map<String, String>> {
 
     @Override
-    public Map<String, String> unmarshal(JaxbAdaptedMap jaxbAdaptedMap) {
+    public @Nullable Map<String, String> unmarshal(@Nullable JaxbAdaptedMap jaxbAdaptedMap) {
         if (jaxbAdaptedMap == null) {
             return null;
         }
-        return jaxbAdaptedMap.entries.stream()
+        return jaxbAdaptedMap.getEntries().stream()
                 .collect(Collectors.toMap(JaxbAdaptedMapEntry::getName, JaxbAdaptedMapEntry::getValue));
     }
 
     @Override
-    public JaxbAdaptedMap marshal(Map<String, String> originalMap) {
+    public @Nullable JaxbAdaptedMap marshal(@Nullable Map<String, String> originalMap) {
         if (originalMap == null) {
             return null;
         }
-        List<JaxbAdaptedMapEntry> entries = originalMap.entrySet().stream()
-                .map(entry -> new JaxbCustomPropertiesAdapter.JaxbAdaptedMapEntry(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        var entries = originalMap.entrySet().stream()
+                .map(entry -> new JaxbAdaptedMapEntry(entry.getKey(), entry.getValue()))
+                .toList();
         return new JaxbAdaptedMap(entries);
     }
 
-    // Required to generate the XSD type in the same namespace.
-    @XmlType(namespace = SolverConfig.XML_NAMESPACE)
-    public static final class JaxbAdaptedMap {
-
-        @XmlElement(name = "property", namespace = SolverConfig.XML_NAMESPACE)
-        private List<JaxbAdaptedMapEntry> entries;
-
-        public JaxbAdaptedMap() {
-            // Required by JAXB
-        }
-
-        public JaxbAdaptedMap(List<JaxbAdaptedMapEntry> entries) {
-            this.entries = entries;
-        }
-    }
-
-    // Required to generate the XSD type in the same namespace.
-    @XmlType(namespace = SolverConfig.XML_NAMESPACE)
-    public static final class JaxbAdaptedMapEntry {
-
-        @XmlAttribute
-        private String name;
-
-        @XmlAttribute
-        private String value;
-
-        public JaxbAdaptedMapEntry() {
-        }
-
-        public JaxbAdaptedMapEntry(String name, String value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
 }
