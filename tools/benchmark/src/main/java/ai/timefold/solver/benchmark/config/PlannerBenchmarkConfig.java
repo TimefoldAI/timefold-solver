@@ -25,7 +25,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.benchmark.config.blueprint.SolverBenchmarkBluePrintConfig;
 import ai.timefold.solver.benchmark.config.report.BenchmarkReportConfig;
-import ai.timefold.solver.benchmark.impl.io.PlannerBenchmarkConfigIO;
+import ai.timefold.solver.benchmark.impl.io.jaxb.PlannerBenchmarkConfigIO;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;

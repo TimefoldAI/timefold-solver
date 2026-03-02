@@ -127,9 +127,6 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
     exports ai.timefold.solver.core.impl.heuristic.selector.value to ai.timefold.solver.jackson, ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
-    exports ai.timefold.solver.core.impl.io.jaxb to
-            ai.timefold.solver.jackson, ai.timefold.solver.jaxb, ai.timefold.solver.spring.boot.autoconfigure,
-            ai.timefold.solver.benchmark, ai.timefold.solver.quarkus, ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.localsearch.event to ai.timefold.solver.jackson, ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.localsearch.scope
@@ -205,11 +202,12 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.solver.event to ai.timefold.solver.enterprise.core;
 
     // Broad impl usage
+    exports ai.timefold.solver.core.impl.io.jaxb;
     exports ai.timefold.solver.core.impl.domain.solution.descriptor;
     exports ai.timefold.solver.core.impl.solver.termination;
 
     // Open configs to JAXB
-    opens ai.timefold.solver.core.impl.io.jaxb to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.impl.io.jaxb;
     opens ai.timefold.solver.core.config to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.constructionheuristic to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.constructionheuristic.decider.forager to jakarta.xml.bind, org.glassfish.jaxb.runtime;

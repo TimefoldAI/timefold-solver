@@ -19,6 +19,8 @@
   },
   {
     "name": "ai.timefold.solver.core.impl.io.jaxb.JaxbAdaptedMap",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
     "methods": [
       {
         "name": "<init>",
@@ -28,6 +30,8 @@
   },
   {
     "name": "ai.timefold.solver.core.impl.io.jaxb.JaxbAdaptedMapEntry",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
     "methods": [
       {
         "name": "<init>",

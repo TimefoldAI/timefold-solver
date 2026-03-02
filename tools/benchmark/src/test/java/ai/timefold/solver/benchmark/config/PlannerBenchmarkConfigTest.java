@@ -11,7 +11,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
-import ai.timefold.solver.benchmark.impl.io.PlannerBenchmarkConfigIO;
+import ai.timefold.solver.benchmark.impl.io.jaxb.PlannerBenchmarkConfigIO;
 import ai.timefold.solver.benchmark.util.RigidTestdataSolutionFileIO;
 import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.testdomain.TestdataSolution;

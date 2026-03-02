@@ -1,4 +1,4 @@
-package ai.timefold.solver.benchmark.impl.io;
+package ai.timefold.solver.benchmark.impl.io.jaxb;
 
 import java.io.Reader;
 import java.io.Writer;

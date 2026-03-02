@@ -1,4 +1,4 @@
-package ai.timefold.solver.benchmark.impl.io;
+package ai.timefold.solver.core.impl.io.jaxb;
 
 import java.time.DateTimeException;
 import java.time.OffsetDateTime;

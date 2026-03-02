@@ -109,9 +109,6 @@
                   <goal>test</goal>
                 </goals>
                 <phase>package</phase>
-                <configuration>
-                  <imageName>app.native</imageName>
-                </configuration>
               </execution>
               <execution>
                 <id>add-reachability-metadata</id>
@@ -125,7 +122,7 @@
               <buildArgs>
                 <!-- Ob == fast build -->
                 <buildArg>-Ob</buildArg>
-                <buildArg>--no-fallback -H:IncludeLocales=en -H:+ReportExceptionStackTraces</buildArg>
+                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
               </buildArgs>
               <metadataRepository>
                 <enabled>true</enabled>
