@@ -34,7 +34,7 @@
     <version.org.springframework.boot>4.0.2</version.org.springframework.boot>
     <version.ow2.asm>9.9.1</version.ow2.asm>
     <version.com.fasterxml.jackson>2.20.1</version.com.fasterxml.jackson>
-    <version.tools.jackson>3.0.4</version.tools.jackson>
+    <version.tools.jackson>3.1.0</version.tools.jackson>
 
     <!-- ************************************************************************ -->
     <!-- Plugins -->
