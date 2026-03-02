@@ -25,7 +25,7 @@ public class MoveIteratorFactoryConfig extends MoveSelectorConfig<MoveIteratorFa
     protected Class<? extends MoveIteratorFactory> moveIteratorFactoryClass = null;
 
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
-    protected Map<String, String> moveIteratorFactoryCustomProperties = null;
+    protected @Nullable Map<String, String> moveIteratorFactoryCustomProperties = null;
 
     public @Nullable Class<? extends MoveIteratorFactory> getMoveIteratorFactoryClass() {
         return moveIteratorFactoryClass;
