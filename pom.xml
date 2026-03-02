@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>ai.timefold.solver</groupId>
   <artifactId>timefold-solver-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.28.0</version>
+  <version>999-SNAPSHOT</version>
 
   <name>Timefold Solver multiproject parent</name>
   <description>
@@ -167,7 +168,8 @@
     </profile>
     <profile>
       <!--
-        Migration to Timefold 0.9 involves upgrading to Quarkus 3, Spring Boot 3 and migrating to jakarta.* packages.
+        Migration to Timefold 0.9 involves upgrading to Quarkus 3, Spring Boot 3 and migrating to jakarta.*
+      packages.
         Timefold 0.8 remains compatible with Quarkus 2, Spring Boot 2 and javax.* packages.
         Both Timefold 0.8 and 0.9 are functionally equal.
       -->

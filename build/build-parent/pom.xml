@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-parent</artifactId>
-    <version>1.28.0</version>
+    <version>999-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -56,20 +57,23 @@
     <version.versions.plugin>2.19.1</version.versions.plugin>
 
     <!-- Plugin configuration properties -->
-    <maven.min.version>3.9.11</maven.min.version> <!-- The same as the version in .mvn/maven-wrapper.properties -->
+    <maven.min.version>3.9.11</maven.min.version> <!-- The same as the version in
+    .mvn/maven-wrapper.properties -->
     <maven.compiler.release>17</maven.compiler.release>
     <!-- This property needs to be defined in all modules that use the packaging 'jar'.
          It is used by different plugins to make sure the module/bundle names are consistent. -->
-    <java.module.name/>
+    <java.module.name />
     <spotless.skip>false</spotless.skip>
     <spotless.goal>apply</spotless.goal>
     <!-- JaCoCo coverage data file location -->
     <jacoco.exec.file>${project.root.dir}/target/jacoco.exec</jacoco.exec.file>
-    <jacoco.agent.argLine/>
+    <jacoco.agent.argLine />
     <enforcer.failOnDuplicatedClasses>true</enforcer.failOnDuplicatedClasses>
-    <!-- Latest release to be used by api-compatibility-check to check backwards compatibility of the API. -->
+    <!-- Latest release to be used by api-compatibility-check to check backwards compatibility of
+    the API. -->
     <revapi.oldTimefoldVersion>0.9.38</revapi.oldTimefoldVersion>
-    <!--suppress UnresolvedMavenProperty-->
+    <!--suppress
+    UnresolvedMavenProperty-->
     <project.root.dir>${maven.multiModuleProjectDirectory}</project.root.dir>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -239,7 +243,8 @@
               </goals>
               <configuration>
                 <rules>
-                  <requireManagedDeps implementation="org.commonjava.maven.enforcer.rule.EnforceManagedDepsRule">
+                  <requireManagedDeps
+                    implementation="org.commonjava.maven.enforcer.rule.EnforceManagedDepsRule">
                     <checkProfiles>true</checkProfiles>
                     <failOnViolation>true</failOnViolation>
                   </requireManagedDeps>
@@ -256,11 +261,14 @@
                   <bannedDependencies>
                     <excludes combine.children="append">
                       <!-- Ban forbidden logging deps (we only use SLF4J + Logback) -->
-                      <!-- In case of transitive dependency, exclude it and use 'org.slf4j:jcl-over-slf4j' instead -->
+                      <!-- In case of transitive dependency, exclude it and use
+                      'org.slf4j:jcl-over-slf4j' instead -->
                       <exclude>commons-logging:commons-log*</exclude>
-                      <!-- In case of transitive dependency, exclude it and use 'org.apache.logging.log4j:log4j-to-slf4j' instead -->
+                      <!-- In case of transitive dependency, exclude it and use
+                      'org.apache.logging.log4j:log4j-to-slf4j' instead -->
                       <exclude>log4j:log4j</exclude>
-                      <!-- In case of transitive dependency, exclude it and use 'org.javassist:javassist' instead -->
+                      <!-- In case of transitive dependency, exclude it and use
+                      'org.javassist:javassist' instead -->
                       <exclude>javassist:javassist</exclude>
                       <exclude>org.apache.cxf:cxf-bundle-jaxrs</exclude>
                       <exclude>org.mockito:mockito-all</exclude><!-- Use mockito-core instead -->
@@ -286,7 +294,8 @@
                     </ignoreClasses>
                     <dependencies>
                       <dependency>
-                        <!-- quarkus-ide-launcher is a dependency of quarkus-core that they auto exclude during the build -->
+                        <!-- quarkus-ide-launcher is a dependency of quarkus-core that they auto
+                        exclude during the build -->
                         <groupId>io.quarkus</groupId>
                         <artifactId>quarkus-ide-launcher</artifactId>
                         <ignoreClasses>
@@ -312,7 +321,7 @@
               </goals>
               <configuration>
                 <rules>
-                  <banDuplicatePomDependencyVersions/>
+                  <banDuplicatePomDependencyVersions />
                 </rules>
               </configuration>
             </execution>
@@ -400,7 +409,8 @@
           <version>${version.source.plugin}</version>
           <configuration>
             <excludes>
-              <!-- The JAXB nor XSD artifacts should not appear in the sources JAR either (see the maven-jar-plugin). -->
+              <!-- The JAXB nor XSD artifacts should not appear in the sources JAR either (see the
+              maven-jar-plugin). -->
               <exclude>META-INF/JAXB/</exclude>
               <exclude>${schema.filename.benchmark}</exclude>
             </excludes>
@@ -494,7 +504,7 @@
                   <importOrder>
                     <file>eclipse.importorder</file>
                   </importOrder>
-                  <removeUnusedImports/>
+                  <removeUnusedImports />
                   <replaceRegex> <!-- Wildcard imports will break the build. -->
                     <name>Remove wildcard imports</name>
                     <searchRegex>import\s+[^\*\s]+\*;(\r\n|\r|\n)</searchRegex>
@@ -575,7 +585,8 @@
           </execution>
         </executions>
       </plugin>
-      <!-- Do not move to full profile. Otherwise upstream dependency changes can break our build without CI catching it. -->
+      <!-- Do not move to full profile. Otherwise upstream dependency changes can break our build
+      without CI catching it. -->
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>${version.dependency.plugin}</version>
@@ -634,7 +645,8 @@
       </properties>
     </profile>
     <!--
-      Creates JaCoCo XML reports and invokes the Sonar scanner, which uploads code quality data into the SonarCloud.
+      Creates JaCoCo XML reports and invokes the Sonar scanner, which uploads code quality data into the
+    SonarCloud.
     -->
     <profile>
       <id>sonarcloud-analysis</id>
@@ -669,16 +681,16 @@
                     https://groups.google.com/forum/#!topic/jacoco/oMxNZs_DNII
                   -->
                   <target>
-                    <echo message="Generating JaCoCo Reports"/>
-                    <taskdef name="report" classname="org.jacoco.ant.ReportTask"/>
-                    <mkdir dir="${project.reporting.outputDirectory}/jacoco"/>
+                    <echo message="Generating JaCoCo Reports" />
+                    <taskdef name="report" classname="org.jacoco.ant.ReportTask" />
+                    <mkdir dir="${project.reporting.outputDirectory}/jacoco" />
                     <report>
                       <executiondata>
                         <fileset dir="${project.root.dir}/target">
                           <!--
                             Include a single jacoco.exec file, which should be used in append mode by every module.
                           -->
-                          <include name="jacoco.exec"/>
+                          <include name="jacoco.exec" />
                         </fileset>
                       </executiondata>
                       <structure name="Coverage Report">
@@ -688,9 +700,10 @@
                               <!--
                                 Include class files from every module.
                               -->
-                              <include name="**/target/classes/**/*.class"/>
-                              <!-- To avoid warning about class file not matching the jacoco.exec data. -->
-                              <exclude name="**/target/classes/**/it/*/*.class"/>
+                              <include name="**/target/classes/**/*.class" />
+                              <!-- To avoid warning about class file not matching the jacoco.exec
+                              data. -->
+                              <exclude name="**/target/classes/**/it/*/*.class" />
                             </fileset>
                           </classfiles>
                           <sourcefiles encoding="UTF-8">
@@ -698,14 +711,14 @@
                               <!--
                                 Include source files from every module.
                               -->
-                              <include name="**/src/main/**/*.java"/>
-                              <exclude name="**/target/classes/**/it/*/*.java"/>
+                              <include name="**/src/main/**/*.java" />
+                              <exclude name="**/target/classes/**/it/*/*.java" />
                             </fileset>
                           </sourcefiles>
                         </group>
                       </structure>
                       <!-- The same report is generated in each module -->
-                      <xml destfile="${project.reporting.outputDirectory}/jacoco/jacoco.xml"/>
+                      <xml destfile="${project.reporting.outputDirectory}/jacoco/jacoco.xml" />
                     </report>
                   </target>
                 </configuration>
