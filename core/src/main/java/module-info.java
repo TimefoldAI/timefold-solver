@@ -208,7 +208,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.domain.solution.descriptor;
     exports ai.timefold.solver.core.impl.solver.termination;
 
-    // open configs to JAXB; not doing so in this specific way caused trouble in Spring Native.
+    // Open configs to JAXB
     opens ai.timefold.solver.core.impl.io.jaxb to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.constructionheuristic to jakarta.xml.bind, org.glassfish.jaxb.runtime;

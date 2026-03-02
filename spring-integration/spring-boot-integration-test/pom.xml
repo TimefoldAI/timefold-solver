@@ -125,7 +125,7 @@
               <buildArgs>
                 <!-- Ob == fast build -->
                 <buildArg>-Ob</buildArg>
-                <buildArg>--no-fallback -H:+ReportExceptionStackTraces</buildArg>
+                <buildArg>--no-fallback -H:IncludeLocales=en -H:+ReportExceptionStackTraces</buildArg>
               </buildArgs>
               <metadataRepository>
                 <enabled>true</enabled>
