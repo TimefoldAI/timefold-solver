@@ -209,7 +209,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.solver.termination;
 
     // open configs to JAXB
-    opens ai.timefold.solver.core.impl.io.jaxb to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.impl.io.jaxb to jakarta.xml.bind, org.glassfish.jaxb.runtime, org.glassfish.jaxb.core;
     opens ai.timefold.solver.core.config to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.constructionheuristic to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.constructionheuristic.decider.forager to jakarta.xml.bind, org.glassfish.jaxb.runtime;
