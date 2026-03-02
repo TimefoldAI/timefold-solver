@@ -44,6 +44,7 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
@@ -230,6 +231,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     protected Map<String, MemberAccessor> gizmoMemberAccessorMap = null;
     @XmlTransient
     protected Map<String, SolutionCloner> gizmoSolutionClonerMap = null;
+    @XmlTransient
+    protected DomainAccessType resolvedDomainAccessType = null;
 
     @XmlElement(name = "scoreDirectorFactory")
     protected ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = null;
@@ -643,9 +646,21 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
                         SolverMetric.PROBLEM_VALUE_COUNT, SolverMetric.PROBLEM_SIZE_LOG)));
     }
 
+    public DomainAccessType determineDomainAccessType() {
+        if (resolvedDomainAccessType == null) {
+            return DomainAccessType.AUTO;
+        }
+        return resolvedDomainAccessType;
+    }
+
     // ************************************************************************
     // Builder methods
     // ************************************************************************
+
+    public SolverConfig adaptForQuarkusBuildTime() {
+        resolvedDomainAccessType = DomainAccessType.FORCE_REFLECTION;
+        return this;
+    }
 
     public void offerRandomSeedFromSubSingleIndex(long subSingleIndex) {
         if ((environmentMode == null || environmentMode.isReproducible()) && randomFactoryClass == null && randomSeed == null) {
@@ -682,6 +697,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
                 gizmoMemberAccessorMap, inheritedConfig.getGizmoMemberAccessorMap());
         gizmoSolutionClonerMap = ConfigUtils.inheritMergeableMapProperty(
                 gizmoSolutionClonerMap, inheritedConfig.getGizmoSolutionClonerMap());
+        resolvedDomainAccessType =
+                ConfigUtils.inheritOverwritableProperty(resolvedDomainAccessType, inheritedConfig.resolvedDomainAccessType);
 
         scoreDirectorFactoryConfig = ConfigUtils.inheritConfig(scoreDirectorFactoryConfig,
                 inheritedConfig.getScoreDirectorFactoryConfig());
