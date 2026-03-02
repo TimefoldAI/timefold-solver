@@ -20,8 +20,8 @@
     <!-- ************************************************************************ -->
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
-    <version.ch.qos.logback>1.5.29</version.ch.qos.logback>
-    <version.io.quarkus>3.31.3</version.io.quarkus>
+    <version.ch.qos.logback>1.5.32</version.ch.qos.logback>
+    <version.io.quarkus>3.31.4</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.25.3</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.7</version.org.assertj>
@@ -29,9 +29,9 @@
     <version.org.freemarker>2.3.34</version.org.freemarker>
     <version.org.jfree.jfreechart>1.5.6</version.org.jfree.jfreechart>
     <version.org.jspecify>1.0.0</version.org.jspecify>
-    <version.org.junit.jupiter>6.0.2</version.org.junit.jupiter>
+    <version.org.junit.jupiter>6.0.3</version.org.junit.jupiter>
     <version.org.openrewrite.recipe>3.23.0</version.org.openrewrite.recipe>
-    <version.org.springframework.boot>3.5.10</version.org.springframework.boot>
+    <version.org.springframework.boot>3.5.11</version.org.springframework.boot>
     <version.ow2.asm>9.9.1</version.ow2.asm>
 
     <!-- ************************************************************************ -->
@@ -52,7 +52,7 @@
     <version.sonar.plugin>5.5.0.6356</version.sonar.plugin>
     <version.source.plugin>3.4.0</version.source.plugin>
     <version.spotless.plugin>3.2.1</version.spotless.plugin>
-    <version.surefire.plugin>3.5.4</version.surefire.plugin>
+    <version.surefire.plugin>3.5.5</version.surefire.plugin>
     <version.versions.plugin>2.21.0</version.versions.plugin>
 
     <!-- Plugin configuration properties -->
