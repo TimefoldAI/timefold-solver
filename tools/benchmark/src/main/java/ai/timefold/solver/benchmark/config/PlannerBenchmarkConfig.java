@@ -33,7 +33,6 @@ import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
@@ -73,9 +72,9 @@ public class PlannerBenchmarkConfig {
 
     public static @NonNull PlannerBenchmarkConfig createFromSolverConfig(@NonNull SolverConfig solverConfig,
             @NonNull File benchmarkDirectory) {
-        PlannerBenchmarkConfig plannerBenchmarkConfig = new PlannerBenchmarkConfig();
+        var plannerBenchmarkConfig = new PlannerBenchmarkConfig();
         plannerBenchmarkConfig.setBenchmarkDirectory(benchmarkDirectory);
-        SolverBenchmarkConfig solverBenchmarkConfig = new SolverBenchmarkConfig();
+        var solverBenchmarkConfig = new SolverBenchmarkConfig();
         // Defensive copy of solverConfig
         solverBenchmarkConfig.setSolverConfig(new SolverConfig(solverConfig));
         plannerBenchmarkConfig.setInheritedSolverBenchmarkConfig(solverBenchmarkConfig);
@@ -107,10 +106,10 @@ public class PlannerBenchmarkConfig {
      */
     public static @NonNull PlannerBenchmarkConfig createFromXmlResource(@NonNull String benchmarkConfigResource,
             @Nullable ClassLoader classLoader) {
-        ClassLoader actualClassLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
-        try (InputStream in = actualClassLoader.getResourceAsStream(benchmarkConfigResource)) {
+        var actualClassLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
+        try (var in = actualClassLoader.getResourceAsStream(benchmarkConfigResource)) {
             if (in == null) {
-                String errorMessage = "The benchmarkConfigResource (" + benchmarkConfigResource
+                var errorMessage = "The benchmarkConfigResource (" + benchmarkConfigResource
                         + ") does not exist as a classpath resource in the classLoader (" + actualClassLoader + ").";
                 if (benchmarkConfigResource.startsWith("/")) {
                     errorMessage += "\nA classpath resource should not start with a slash (/)."
@@ -195,18 +194,8 @@ public class PlannerBenchmarkConfig {
      */
     public static @NonNull PlannerBenchmarkConfig createFromXmlReader(@NonNull Reader reader,
             @Nullable ClassLoader classLoader) {
-        PlannerBenchmarkConfigIO xmlIO = new PlannerBenchmarkConfigIO();
-        Object benchmarkConfigObject = xmlIO.read(reader);
-        if (!(benchmarkConfigObject instanceof PlannerBenchmarkConfig)) {
-            throw new IllegalArgumentException("The " + PlannerBenchmarkConfig.class.getSimpleName()
-                    + "'s XML root element resolves to a different type ("
-                    + (benchmarkConfigObject == null ? null : benchmarkConfigObject.getClass().getSimpleName()) + ")."
-                    + (benchmarkConfigObject instanceof SolverConfig
-                            ? "\nMaybe use " + PlannerBenchmarkFactory.class.getSimpleName()
-                                    + ".createFromSolverConfigXmlResource() instead."
-                            : ""));
-        }
-        PlannerBenchmarkConfig benchmarkConfig = (PlannerBenchmarkConfig) benchmarkConfigObject;
+        var xmlIO = new PlannerBenchmarkConfigIO();
+        var benchmarkConfig = xmlIO.read(reader);
         benchmarkConfig.setClassLoader(classLoader);
         return benchmarkConfig;
     }
@@ -255,10 +244,10 @@ public class PlannerBenchmarkConfig {
      */
     public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlResource(@NonNull String templateResource,
             @Nullable Object model, @Nullable ClassLoader classLoader) {
-        ClassLoader actualClassLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
-        try (InputStream templateIn = actualClassLoader.getResourceAsStream(templateResource)) {
+        var actualClassLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
+        try (var templateIn = actualClassLoader.getResourceAsStream(templateResource)) {
             if (templateIn == null) {
-                String errorMessage = "The templateResource (" + templateResource
+                var errorMessage = "The templateResource (" + templateResource
                         + ") does not exist as a classpath resource in the classLoader (" + actualClassLoader + ").";
                 if (templateResource.startsWith("/")) {
                     errorMessage += "\nA classpath resource should not start with a slash (/)."
@@ -310,7 +299,7 @@ public class PlannerBenchmarkConfig {
      */
     public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlFile(@NonNull File templateFile,
             @Nullable Object model, @Nullable ClassLoader classLoader) {
-        try (FileInputStream templateIn = new FileInputStream(templateFile)) {
+        try (var templateIn = new FileInputStream(templateFile)) {
             return createFromFreemarkerXmlInputStream(templateIn, model, classLoader);
         } catch (FileNotFoundException e) {
             throw new IllegalArgumentException("The templateFile (" + templateFile + ") was not found.", e);
@@ -404,21 +393,21 @@ public class PlannerBenchmarkConfig {
      */
     public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlReader(@NonNull Reader templateReader,
             @Nullable Object model, @Nullable ClassLoader classLoader) {
-        Configuration freemarkerConfiguration = BenchmarkReport.createFreeMarkerConfiguration();
+        var freemarkerConfiguration = BenchmarkReport.createFreeMarkerConfiguration();
         freemarkerConfiguration.setNumberFormat("computer");
         freemarkerConfiguration.setDateFormat("yyyy-mm-dd");
         freemarkerConfiguration.setDateTimeFormat("yyyy-mm-dd HH:mm:ss.SSS z");
         freemarkerConfiguration.setTimeFormat("HH:mm:ss.SSS");
         String xmlContent;
-        try (StringWriter xmlContentWriter = new StringWriter()) {
-            Template template = new Template("benchmarkTemplate.ftl", templateReader, freemarkerConfiguration,
+        try (var xmlContentWriter = new StringWriter()) {
+            var template = new Template("benchmarkTemplate.ftl", templateReader, freemarkerConfiguration,
                     freemarkerConfiguration.getDefaultEncoding());
             template.process(model, xmlContentWriter);
             xmlContent = xmlContentWriter.toString();
         } catch (TemplateException | IOException e) {
             throw new IllegalArgumentException("Can not process the Freemarker template into xmlContentWriter.", e);
         }
-        try (StringReader configReader = new StringReader(xmlContent)) {
+        try (var configReader = new StringReader(xmlContent)) {
             return createFromXmlReader(configReader, classLoader);
         }
     }
