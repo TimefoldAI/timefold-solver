@@ -234,11 +234,11 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
             var genuineEntityDescriptorCollection = configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();
             phaseConfigList = new ArrayList<>(genuineEntityDescriptorCollection.size() + 2);
             for (var entityDescriptor : genuineEntityDescriptorCollection) {
-                if (entityDescriptor.hasBothGenuineListAndBasicVariables()) {
+                if (entityDescriptor.hasBothListAndBasicVariables()) {
                     // We add a separate step for each variable type
                     phaseConfigList.add(buildConstructionHeuristicPhaseConfigForBasicVariable(configPolicy, entityDescriptor));
                     phaseConfigList.add(buildConstructionHeuristicPhaseConfigForListVariable(configPolicy, entityDescriptor));
-                } else if (entityDescriptor.hasAnyGenuineListVariables()) {
+                } else if (entityDescriptor.hasAnyListVariables()) {
                     // There is no need to revalidate the number of list variables,
                     // as it has already been validated in SolutionDescriptor
                     phaseConfigList.add(buildConstructionHeuristicPhaseConfigForListVariable(configPolicy, entityDescriptor));
@@ -265,7 +265,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
             buildConstructionHeuristicPhaseConfigForListVariable(HeuristicConfigPolicy<Solution_> configPolicy,
                     EntityDescriptor<Solution_> entityDescriptor) {
         var constructionHeuristicPhaseConfig = new ConstructionHeuristicPhaseConfig();
-        var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+        var listVariableDescriptor = entityDescriptor.getListVariableDescriptor();
         constructionHeuristicPhaseConfig
                 .setEntityPlacerConfig(DefaultConstructionHeuristicPhaseFactory
                         .buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor));

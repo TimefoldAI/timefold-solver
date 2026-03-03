@@ -14,13 +14,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.SequencedCollection;
+import java.util.SequencedMap;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
@@ -70,17 +70,10 @@ import org.jspecify.annotations.Nullable;
  */
 public class EntityDescriptor<Solution_> {
 
-    protected static final Class[] VARIABLE_ANNOTATION_CLASSES = {
-            PlanningVariable.class,
-            PlanningListVariable.class,
-            InverseRelationShadowVariable.class,
-            IndexShadowVariable.class,
-            PreviousElementShadowVariable.class,
-            NextElementShadowVariable.class,
-            ShadowVariable.class,
-            CascadingUpdateShadowVariable.class,
-            ShadowVariablesInconsistent.class
-    };
+    protected static final Class[] VARIABLE_ANNOTATION_CLASSES =
+            { PlanningVariable.class, PlanningListVariable.class, InverseRelationShadowVariable.class,
+                    IndexShadowVariable.class, PreviousElementShadowVariable.class, NextElementShadowVariable.class,
+                    ShadowVariable.class, CascadingUpdateShadowVariable.class, ShadowVariablesInconsistent.class };
 
     private final int ordinal;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
@@ -94,9 +87,9 @@ public class EntityDescriptor<Solution_> {
     private SelectionSorter<Solution_, Object> descendingSorter;
 
     // Only declared variable descriptors, excludes inherited variable descriptors
-    private Map<String, GenuineVariableDescriptor<Solution_>> declaredGenuineVariableDescriptorMap;
-    private Map<String, ShadowVariableDescriptor<Solution_>> declaredShadowVariableDescriptorMap;
-    private Map<String, CascadingUpdateShadowVariableDescriptor<Solution_>> declaredCascadingUpdateShadowVariableDecriptorMap;
+    private SequencedMap<String, GenuineVariableDescriptor<Solution_>> declaredGenuineVariableDescriptorMap;
+    private SequencedMap<String, ShadowVariableDescriptor<Solution_>> declaredShadowVariableDescriptorMap;
+    private SequencedMap<String, CascadingUpdateShadowVariableDescriptor<Solution_>> declaredCascadingUpdateShadowVariableDecriptorMap;
 
     private List<MovableFilter<Solution_>> declaredPinEntityFilterList;
     private List<EntityDescriptor<Solution_>> effectiveInheritedEntityDescriptorList;
@@ -105,19 +98,19 @@ public class EntityDescriptor<Solution_> {
     private MovableFilter<Solution_> effectiveMovableEntityFilter;
     private PlanningPinToIndexReader effectivePlanningPinToIndexReader;
 
-    // Caches the inherited and declared variable descriptors
-    private Map<String, GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorMap;
-    private Map<String, ShadowVariableDescriptor<Solution_>> effectiveShadowVariableDescriptorMap;
-    private Map<String, VariableDescriptor<Solution_>> effectiveVariableDescriptorMap;
-    // Duplicate of effectiveGenuineVariableDescriptorMap.values() for faster iteration on the hot path.
+    // Caches the inherited and declared variable descriptors; provides views for fast iteration.
+    private SequencedMap<String, GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorMap;
+    private SequencedMap<String, ShadowVariableDescriptor<Solution_>> effectiveShadowVariableDescriptorMap;
+    private SequencedMap<String, VariableDescriptor<Solution_>> effectiveVariableDescriptorMap;
+    private List<VariableDescriptor<Solution_>> declaredVariableDescriptorList;
     private List<GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorList;
-    private List<ListVariableDescriptor<Solution_>> effectiveGenuineListVariableDescriptorList;
+    private List<BasicVariableDescriptor<Solution_>> effectiveBasicVariableDescriptorList;
+    private List<ListVariableDescriptor<Solution_>> effectiveListVariableDescriptorList;
 
-    private final UniNeighborhoodsPredicate<Solution_, Object> entityMovablePredicate =
-            (solutionView, entity) -> {
-                var moveDirector = (MoveDirector<Solution_, ?>) solutionView;
-                return !moveDirector.isPinned(this, entity);
-            };
+    private final UniNeighborhoodsPredicate<Solution_, Object> entityMovablePredicate = (solutionView, entity) -> {
+        var moveDirector = (MoveDirector<Solution_, ?>) solutionView;
+        return !moveDirector.isPinned(this, entity);
+    };
 
     // Caches the metamodel
     private PlanningEntityMetaModel<Solution_, ?> entityMetaModel = null;
@@ -162,7 +155,7 @@ public class EntityDescriptor<Solution_> {
         processEntityAnnotations();
         declaredGenuineVariableDescriptorMap = new LinkedHashMap<>();
         declaredShadowVariableDescriptorMap = new LinkedHashMap<>();
-        declaredCascadingUpdateShadowVariableDecriptorMap = new HashMap<>();
+        declaredCascadingUpdateShadowVariableDecriptorMap = new LinkedHashMap<>();
         declaredPinEntityFilterList = new ArrayList<>(2);
         // Only iterate declared fields and methods, not inherited members, to avoid registering the same one twice
         // The inherited classes will be analyzed in a later step
@@ -195,7 +188,8 @@ public class EntityDescriptor<Solution_> {
         }
         // We use the parent class of the entity as the base annotation
         if (entityAnnotation == null) {
-            entityAnnotation = declaredInheritedEntityClassList.stream().filter(c -> !c.equals(entityClass))
+            entityAnnotation = declaredInheritedEntityClassList.stream()
+                    .filter(c -> !c.equals(entityClass))
                     .findFirst()
                     .map(c -> c.getAnnotation(PlanningEntity.class))
                     .orElseThrow(
@@ -209,8 +203,7 @@ public class EntityDescriptor<Solution_> {
             return;
         }
         var comparatorClass = entityAnnotation.comparatorClass();
-        if (comparatorClass != null
-                && PlanningEntity.NullComparator.class.isAssignableFrom(comparatorClass)) {
+        if (comparatorClass != null && PlanningEntity.NullComparator.class.isAssignableFrom(comparatorClass)) {
             comparatorClass = null;
         }
         var comparatorFactoryClass = entityAnnotation.comparatorFactoryClass();
@@ -229,8 +222,7 @@ public class EntityDescriptor<Solution_> {
             var comparator = ConfigUtils.newInstance(this::toString, "comparatorClass", comparatorClass);
             descendingSorter = new ComparatorSelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);
         } else if (comparatorFactoryClass != null) {
-            var comparator = ConfigUtils.newInstance(this::toString, "comparatorFactoryClass",
-                    comparatorFactoryClass);
+            var comparator = ConfigUtils.newInstance(this::toString, "comparatorFactoryClass", comparatorFactoryClass);
             descendingSorter = new ComparatorFactorySelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);
         }
     }
@@ -265,16 +257,15 @@ public class EntityDescriptor<Solution_> {
             } else if (member instanceof Method method) {
                 annotation = method.getAnnotation(variableAnnotationClass);
             } else {
-                throw new IllegalStateException("Member must be a field or a method, but was (%s)."
-                        .formatted(member.getClass().getSimpleName()));
+                throw new IllegalStateException(
+                        "Member must be a field or a method, but was (%s).".formatted(member.getClass().getSimpleName()));
             }
             if (annotation == null) {
                 throw new IllegalStateException("Impossible state: cannot get annotation on a %s-annotated member (%s)."
                         .formatted(variableAnnotationClass, member));
             }
-            var memberAccessor = descriptorPolicy.getMemberAccessorFactory()
-                    .buildAndCacheMemberAccessor(member, FIELD_OR_GETTER_METHOD_WITH_SETTER, variableAnnotationClass,
-                            descriptorPolicy.getDomainAccessType());
+            var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
+                    FIELD_OR_GETTER_METHOD_WITH_SETTER, variableAnnotationClass, descriptorPolicy.getDomainAccessType());
             registerVariableAccessor(variableDescriptorCounter.intValue(), variableAnnotationClass, memberAccessor);
             variableDescriptorCounter.increment();
         }
@@ -291,9 +282,8 @@ public class EntityDescriptor<Solution_> {
             }
             throw new IllegalStateException("""
                     The entityClass (%s) has a @%s annotated member (%s), duplicated by member for variableDescriptor (%s).
-                    Maybe the annotation is defined on both the field and its getter."""
-                    .formatted(entityClass.getCanonicalName(), variableAnnotationClass.getSimpleName(), memberAccessor,
-                            duplicate));
+                    Maybe the annotation is defined on both the field and its getter.""".formatted(
+                    entityClass.getCanonicalName(), variableAnnotationClass.getSimpleName(), memberAccessor, duplicate));
         } else if (variableAnnotationClass.equals(PlanningVariable.class)) {
             var type = memberAccessor.getType();
             if (type.isArray()) {
@@ -309,9 +299,8 @@ public class EntityDescriptor<Solution_> {
             } else {
                 throw new IllegalStateException("""
                         The entityClass (%s) has a @%s annotated member (%s) that has an unsupported type (%s).
-                        Maybe use %s."""
-                        .formatted(entityClass.getCanonicalName(), PlanningListVariable.class.getSimpleName(), memberAccessor,
-                                memberAccessor.getType(), List.class.getCanonicalName()));
+                        Maybe use %s.""".formatted(entityClass.getCanonicalName(), PlanningListVariable.class.getSimpleName(),
+                        memberAccessor, memberAccessor.getType(), List.class.getCanonicalName()));
             }
         } else if (variableAnnotationClass.equals(InverseRelationShadowVariable.class)) {
             var variableDescriptor =
@@ -347,13 +336,13 @@ public class EntityDescriptor<Solution_> {
                         variableDescriptor);
             }
         } else if (variableAnnotationClass.equals(ShadowVariablesInconsistent.class)) {
-            var variableDescriptor = new ShadowVariablesInconsistentVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
-                    memberAccessor);
+            var variableDescriptor =
+                    new ShadowVariablesInconsistentVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             shadowVariablesInconsistentDescriptor = variableDescriptor;
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else {
-            throw new IllegalStateException("The variableAnnotationClass (%s) is not implemented."
-                    .formatted(variableAnnotationClass));
+            throw new IllegalStateException(
+                    "The variableAnnotationClass (%s) is not implemented.".formatted(variableAnnotationClass));
         }
     }
 
@@ -375,11 +364,11 @@ public class EntityDescriptor<Solution_> {
     private void processPlanningPinIndexAnnotation(DescriptorPolicy descriptorPolicy, Member member) {
         var annotatedMember = ((AnnotatedElement) member);
         if (annotatedMember.isAnnotationPresent(PlanningPinToIndex.class)) {
-            if (!hasAnyGenuineListVariables()) {
+            if (!hasAnyListVariables()) {
                 throw new IllegalStateException(
-                        "The entityClass (%s) has a %s annotated member (%s) but no %s annotated member."
-                                .formatted(entityClass.getCanonicalName(), PlanningPinToIndex.class.getSimpleName(), member,
-                                        PlanningListVariable.class.getSimpleName()));
+                        "The entityClass (%s) has a %s annotated member (%s) but no %s annotated member.".formatted(
+                                entityClass.getCanonicalName(), PlanningPinToIndex.class.getSimpleName(), member,
+                                PlanningListVariable.class.getSimpleName()));
             }
             var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                     FIELD_OR_READ_METHOD, PlanningPinToIndex.class, descriptorPolicy.getDomainAccessType());
@@ -439,8 +428,7 @@ public class EntityDescriptor<Solution_> {
         }
         // It is not allowed to redefine genuine or shadow variables
         var redefinedGenuineVariables = declaredGenuineVariableDescriptorMap.keySet().stream()
-                .filter(key -> effectiveGenuineVariableDescriptorMap.containsKey(key))
-                .toList();
+                .filter(key -> effectiveGenuineVariableDescriptorMap.containsKey(key)).toList();
         if (!redefinedGenuineVariables.isEmpty()) {
             throw new IllegalStateException("""
                     The entityClass (%s) redefines the genuine variables (%s), which is not permitted.
@@ -449,8 +437,7 @@ public class EntityDescriptor<Solution_> {
         }
         effectiveGenuineVariableDescriptorMap.putAll(declaredGenuineVariableDescriptorMap);
         var redefinedShadowVariables = declaredShadowVariableDescriptorMap.keySet().stream()
-                .filter(key -> effectiveShadowVariableDescriptorMap.containsKey(key))
-                .toList();
+                .filter(key -> effectiveShadowVariableDescriptorMap.containsKey(key)).toList();
         if (!redefinedShadowVariables.isEmpty()) {
             throw new IllegalStateException("""
                     The entityClass (%s) redefines the shadow variables (%s), which is not permitted.
@@ -463,11 +450,23 @@ public class EntityDescriptor<Solution_> {
                 .newLinkedHashMap(effectiveGenuineVariableDescriptorMap.size() + effectiveShadowVariableDescriptorMap.size());
         effectiveVariableDescriptorMap.putAll(effectiveGenuineVariableDescriptorMap);
         effectiveVariableDescriptorMap.putAll(effectiveShadowVariableDescriptorMap);
-        effectiveGenuineVariableDescriptorList = new ArrayList<>(effectiveGenuineVariableDescriptorMap.values());
-        effectiveGenuineListVariableDescriptorList = effectiveGenuineVariableDescriptorList.stream()
-                .filter(VariableDescriptor::isListVariable)
-                .map(l -> (ListVariableDescriptor<Solution_>) l)
-                .toList();
+        effectiveGenuineVariableDescriptorList = List.copyOf(effectiveGenuineVariableDescriptorMap.values());
+        effectiveBasicVariableDescriptorList = effectiveGenuineVariableDescriptorList.stream()
+                .flatMap(descriptor -> {
+                    if (descriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
+                        return Stream.of(basicVariableDescriptor);
+                    } else {
+                        return Stream.empty();
+                    }
+                }).toList();
+        effectiveListVariableDescriptorList = effectiveGenuineVariableDescriptorList.stream()
+                .flatMap(descriptor -> {
+                    if (descriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
+                        return Stream.of(listVariableDescriptor);
+                    } else {
+                        return Stream.empty();
+                    }
+                }).toList();
     }
 
     private void createEffectiveMovableEntitySelectionFilter() {
@@ -490,7 +489,7 @@ public class EntityDescriptor<Solution_> {
     }
 
     private void createEffectivePlanningPinIndexReader() {
-        if (!hasAnyGenuineListVariables()) {
+        if (!hasAnyListVariables()) {
             effectivePlanningPinToIndexReader = null;
             return;
         }
@@ -508,9 +507,9 @@ public class EntityDescriptor<Solution_> {
                 effectivePlanningPinToIndexReader = entity -> (int) memberAccessor.executeGetter(entity);
             }
             default -> throw new IllegalStateException(
-                    "The entityClass (%s) has (%d) @%s-annotated members (%s), where it should only have one."
-                            .formatted(entityClass.getCanonicalName(), planningPinIndexMemberAccessorList.size(),
-                                    PlanningPinToIndex.class.getSimpleName(), planningPinIndexMemberAccessorList));
+                    "The entityClass (%s) has (%d) @%s-annotated members (%s), where it should only have one.".formatted(
+                            entityClass.getCanonicalName(), planningPinIndexMemberAccessorList.size(),
+                            PlanningPinToIndex.class.getSimpleName(), planningPinIndexMemberAccessorList));
         }
     }
 
@@ -569,8 +568,8 @@ public class EntityDescriptor<Solution_> {
         return descendingSorter;
     }
 
-    public Collection<String> getGenuineVariableNameSet() {
-        return effectiveGenuineVariableDescriptorMap.keySet();
+    public SequencedCollection<String> getGenuineVariableNameSet() {
+        return effectiveGenuineVariableDescriptorMap.sequencedKeySet();
     }
 
     public GenuineVariableDescriptor<Solution_> getGenuineVariableDescriptor(String variableName) {
@@ -581,48 +580,45 @@ public class EntityDescriptor<Solution_> {
         return shadowVariablesInconsistentDescriptor;
     }
 
-    public boolean hasBothGenuineListAndBasicVariables() {
+    public boolean hasBothListAndBasicVariables() {
         if (!isGenuine()) {
             return false;
         }
-        return hasAnyGenuineListVariables() && hasAnyGenuineBasicVariables();
+        return hasAnyListVariables() && hasAnyBasicVariables();
     }
 
-    public boolean hasAnyGenuineBasicVariables() {
+    public boolean hasAnyBasicVariables() {
         if (!isGenuine()) {
             return false;
         }
-        return getDeclaredGenuineVariableDescriptors().stream()
-                .anyMatch(descriptor -> !descriptor.isListVariable());
+        return !getBasicVariableDescriptorList().isEmpty();
     }
 
-    public boolean hasAnyGenuineListVariables() {
+    public boolean hasAnyListVariables() {
         if (!isGenuine()) {
             return false;
         }
-        return getGenuineListVariableDescriptor() != null;
+        return getListVariableDescriptor() != null;
     }
 
     public boolean isGenuine() {
         return !effectiveGenuineVariableDescriptorMap.isEmpty();
     }
 
-    public ListVariableDescriptor<Solution_> getGenuineListVariableDescriptor() {
-        if (effectiveGenuineListVariableDescriptorList.isEmpty()) {
-            return null;
-        }
-        // Earlier validation guarantees there will only ever be one.
-        return effectiveGenuineListVariableDescriptorList.getFirst();
-    }
-
     public List<GenuineVariableDescriptor<Solution_>> getGenuineVariableDescriptorList() {
         return effectiveGenuineVariableDescriptorList;
     }
 
-    public List<GenuineVariableDescriptor<Solution_>> getGenuineBasicVariableDescriptorList() {
-        return effectiveGenuineVariableDescriptorList.stream()
-                .filter(descriptor -> !descriptor.isListVariable())
-                .toList();
+    public List<BasicVariableDescriptor<Solution_>> getBasicVariableDescriptorList() {
+        return effectiveBasicVariableDescriptorList;
+    }
+
+    public ListVariableDescriptor<Solution_> getListVariableDescriptor() {
+        if (effectiveListVariableDescriptorList.isEmpty()) {
+            return null;
+        }
+        // Earlier validation guarantees there will only ever be one.
+        return effectiveListVariableDescriptorList.getFirst();
     }
 
     public long getGenuineVariableCount() {
@@ -643,15 +639,15 @@ public class EntityDescriptor<Solution_> {
         return count;
     }
 
-    public Collection<ShadowVariableDescriptor<Solution_>> getShadowVariableDescriptors() {
-        return effectiveShadowVariableDescriptorMap.values();
+    public SequencedCollection<ShadowVariableDescriptor<Solution_>> getShadowVariableDescriptors() {
+        return effectiveShadowVariableDescriptorMap.sequencedValues();
     }
 
     public ShadowVariableDescriptor<Solution_> getShadowVariableDescriptor(String variableName) {
         return effectiveShadowVariableDescriptorMap.get(variableName);
     }
 
-    public Map<String, VariableDescriptor<Solution_>> getVariableDescriptorMap() {
+    public SequencedMap<String, VariableDescriptor<Solution_>> getVariableDescriptorMap() {
         return effectiveVariableDescriptorMap;
     }
 
@@ -667,37 +663,37 @@ public class EntityDescriptor<Solution_> {
         return !declaredGenuineVariableDescriptorMap.isEmpty();
     }
 
-    public Collection<GenuineVariableDescriptor<Solution_>> getDeclaredGenuineVariableDescriptors() {
-        return declaredGenuineVariableDescriptorMap.values();
+    public SequencedCollection<GenuineVariableDescriptor<Solution_>> getDeclaredGenuineVariableDescriptors() {
+        return declaredGenuineVariableDescriptorMap.sequencedValues();
     }
 
-    public Collection<ShadowVariableDescriptor<Solution_>> getDeclaredShadowVariableDescriptors() {
-        return declaredShadowVariableDescriptorMap.values();
+    public SequencedCollection<ShadowVariableDescriptor<Solution_>> getDeclaredShadowVariableDescriptors() {
+        return declaredShadowVariableDescriptorMap.sequencedValues();
     }
 
-    public Collection<CascadingUpdateShadowVariableDescriptor<Solution_>>
+    public SequencedCollection<CascadingUpdateShadowVariableDescriptor<Solution_>>
             getDeclaredCascadingUpdateShadowVariableDescriptors() {
-        return declaredCascadingUpdateShadowVariableDecriptorMap.values();
+        return declaredCascadingUpdateShadowVariableDecriptorMap.sequencedValues();
     }
 
-    public Collection<VariableDescriptor<Solution_>> getDeclaredVariableDescriptors() {
-        Collection<VariableDescriptor<Solution_>> variableDescriptors = new ArrayList<>(
-                declaredGenuineVariableDescriptorMap.size() + declaredShadowVariableDescriptorMap.size());
-        variableDescriptors.addAll(declaredGenuineVariableDescriptorMap.values());
-        variableDescriptors.addAll(declaredShadowVariableDescriptorMap.values());
-        return variableDescriptors;
+    public SequencedCollection<VariableDescriptor<Solution_>> getDeclaredVariableDescriptors() {
+        if (declaredVariableDescriptorList != null) {
+            return declaredVariableDescriptorList;
+        }
+        declaredVariableDescriptorList = Stream.concat(declaredGenuineVariableDescriptorMap.values().stream(),
+                declaredShadowVariableDescriptorMap.values().stream())
+                .toList();
+        return declaredVariableDescriptorList;
     }
 
     public String buildInvalidVariableNameExceptionMessage(String variableName) {
         if (!ReflectionHelper.hasGetterMethod(entityClass, variableName)
                 && !ReflectionHelper.hasField(entityClass, variableName)) {
-            String exceptionMessage =
-                    """
-                            The variableName (%s) for entityClass (%s) does not exist as a getter or field on that class.
-                            Check the spelling of the variableName (%s)."""
-                            .formatted(variableName, entityClass.getCanonicalName(), variableName);
-            if (variableName.length() >= 2
-                    && !Character.isUpperCase(variableName.charAt(0))
+            String exceptionMessage = """
+                    The variableName (%s) for entityClass (%s) does not exist as a getter or field on that class.
+                    Check the spelling of the variableName (%s).""".formatted(variableName, entityClass.getCanonicalName(),
+                    variableName);
+            if (variableName.length() >= 2 && !Character.isUpperCase(variableName.charAt(0))
                     && Character.isUpperCase(variableName.charAt(1))) {
                 String correctedVariableName = variableName.substring(0, 1).toUpperCase() + variableName.substring(1);
                 exceptionMessage +=
@@ -801,17 +797,15 @@ public class EntityDescriptor<Solution_> {
     }
 
     public boolean isMovable(Solution_ workingSolution, Object entity) {
-        return isGenuine() &&
-                (effectiveMovableEntityFilter == null
-                        || effectiveMovableEntityFilter.test(workingSolution, entity));
+        return isGenuine()
+                && (effectiveMovableEntityFilter == null || effectiveMovableEntityFilter.test(workingSolution, entity));
     }
 
     public PlanningEntityMetaModel<Solution_, ?> getEntityMetaModel() {
         if (entityMetaModel != null) {
             return entityMetaModel;
         }
-        entityMetaModel = solutionDescriptor.getMetaModel()
-                .entity(entityClass);
+        entityMetaModel = solutionDescriptor.getMetaModel().entity(entityClass);
         return entityMetaModel;
     }
 

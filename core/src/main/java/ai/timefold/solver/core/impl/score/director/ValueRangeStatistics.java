@@ -85,7 +85,7 @@ final class ValueRangeStatistics<Solution_> {
             if (finisher != null) {
                 finisher.accept(entity);
             }
-            if (!entityDescriptor.hasAnyGenuineListVariables()) {
+            if (!entityDescriptor.hasAnyListVariables()) {
                 return;
             }
             var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();

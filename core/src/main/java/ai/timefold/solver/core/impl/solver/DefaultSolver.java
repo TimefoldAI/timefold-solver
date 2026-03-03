@@ -237,10 +237,10 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             assertNonNullPlanningId(entity);
             // Ensure correct state of pinning properties.
             var entityDescriptor = solverScope.getSolutionDescriptor().findEntityDescriptorOrFail(entity.getClass());
-            if (!entityDescriptor.supportsPinning() || !entityDescriptor.hasAnyGenuineListVariables()) {
+            if (!entityDescriptor.supportsPinning() || !entityDescriptor.hasAnyListVariables()) {
                 return;
             }
-            var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+            var listVariableDescriptor = entityDescriptor.getListVariableDescriptor();
             var pinIndex = listVariableDescriptor.getFirstUnpinnedIndex(entity);
             if (entityDescriptor.isMovable(solverScope.getScoreDirector().getWorkingSolution(), entity)) {
                 if (pinIndex < 0) {

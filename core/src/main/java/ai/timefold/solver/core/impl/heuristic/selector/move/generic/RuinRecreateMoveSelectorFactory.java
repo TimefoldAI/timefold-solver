@@ -33,26 +33,34 @@ public final class RuinRecreateMoveSelectorFactory<Solution_>
         var ruinRecreateEntitySelector = EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
                 .buildEntitySelector(configPolicy, minimumCacheType,
                         SelectionOrder.fromRandomSelectionBoolean(true));
-        var genuineVariableDescriptorList =
-                ruinRecreateEntitySelector.getEntityDescriptor().getGenuineBasicVariableDescriptorList();
-        if (genuineVariableDescriptorList.size() != 1 && config.getVariableName() == null) {
-            throw new UnsupportedOperationException(
-                    """
-                            The entity class %s contains several variables (%s), and it cannot be deduced automatically.
-                            Maybe set the property variableName."""
-                            .formatted(
-                                    ruinRecreateEntitySelector.getEntityDescriptor().getEntityClass().getName(),
-                                    genuineVariableDescriptorList.stream().map(GenuineVariableDescriptor::getVariableName)
-                                            .toList()));
+        var entityClassName = ruinRecreateEntitySelector.getEntityDescriptor().getEntityClass().getCanonicalName();
+        var variableName = config.getVariableName();
+
+        var basicVariableDescriptorList = ruinRecreateEntitySelector.getEntityDescriptor()
+                .getBasicVariableDescriptorList();
+        if (basicVariableDescriptorList.isEmpty()) {
+            throw new UnsupportedOperationException("The entity class %s has no basic planning variable."
+                    .formatted(entityClassName));
         }
-        var variableDescriptor = genuineVariableDescriptorList.get(0);
-        if (genuineVariableDescriptorList.size() > 1) {
-            variableDescriptor = genuineVariableDescriptorList.stream()
-                    .filter(v -> v.getVariableName().equals(config.getVariableName())).findFirst().orElse(null);
+        if (basicVariableDescriptorList.size() != 1 && variableName == null) {
+            throw new UnsupportedOperationException("""
+                    The entity class %s contains several variables (%s), and it cannot be deduced automatically.
+                    Maybe set the property variableName."""
+                    .formatted(entityClassName,
+                            basicVariableDescriptorList.stream()
+                                    .map(GenuineVariableDescriptor::getVariableName)
+                                    .toList()));
+        }
+        var variableDescriptor = basicVariableDescriptorList.getFirst();
+        if (basicVariableDescriptorList.size() > 1) {
+            variableDescriptor = basicVariableDescriptorList.stream()
+                    .filter(v -> v.getVariableName().equals(variableName))
+                    .findFirst()
+                    .orElse(null);
         }
         if (variableDescriptor == null) {
             throw new UnsupportedOperationException("The entity class %s has no variable named %s."
-                    .formatted(ruinRecreateEntitySelector.getEntityDescriptor().getEntityClass(), config.getVariableName()));
+                    .formatted(entityClassName, variableName));
         }
         var nestedEntitySelectorConfig =
                 getDefaultEntitySelectorConfigForEntity(configPolicy, ruinRecreateEntitySelector.getEntityDescriptor());

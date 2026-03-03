@@ -3,7 +3,7 @@ package ai.timefold.solver.core.testdomain.multivar;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
@@ -15,12 +15,14 @@ public class TestdataMultiVarEntity extends TestdataObject {
                 .findEntityDescriptorOrFail(TestdataMultiVarEntity.class);
     }
 
-    public static GenuineVariableDescriptor<TestdataMultiVarSolution> buildVariableDescriptorForPrimaryValue() {
-        return buildEntityDescriptor().getGenuineVariableDescriptor("primaryValue");
+    public static BasicVariableDescriptor<TestdataMultiVarSolution> buildVariableDescriptorForPrimaryValue() {
+        return (BasicVariableDescriptor<TestdataMultiVarSolution>) buildEntityDescriptor()
+                .getGenuineVariableDescriptor("primaryValue");
     }
 
-    public static GenuineVariableDescriptor<TestdataMultiVarSolution> buildVariableDescriptorForSecondaryValue() {
-        return buildEntityDescriptor().getGenuineVariableDescriptor("secondaryValue");
+    public static BasicVariableDescriptor<TestdataMultiVarSolution> buildVariableDescriptorForSecondaryValue() {
+        return (BasicVariableDescriptor<TestdataMultiVarSolution>) buildEntityDescriptor()
+                .getGenuineVariableDescriptor("secondaryValue");
     }
 
     private TestdataValue primaryValue;

@@ -75,7 +75,7 @@ public class ListChangeMoveSelectorFactory<Solution_>
         // the recorder ID from the origin selector is required for FilteringEntityValueRangeSelector and FilteringValueRangeSelector
         // to replay the selected value and return only reachable values.
         var enableEntityValueRangeFilter =
-                !entityDescriptor.getGenuineListVariableDescriptor().canExtractValueRangeFromSolution();
+                !entityDescriptor.getListVariableDescriptor().canExtractValueRangeFromSolution();
         // A null ID means to turn off the entity value range filtering
         String entityValueRangeRecorderId = null;
         if (enableEntityValueRangeFilter) {
@@ -124,7 +124,7 @@ public class ListChangeMoveSelectorFactory<Solution_>
         var entityDescriptors =
                 onlyEntityDescriptor == null ? configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors().stream()
                         // We need to filter the entity that defines the list variable
-                        .filter(EntityDescriptor::hasAnyGenuineListVariables)
+                        .filter(EntityDescriptor::hasAnyListVariables)
                         .toList()
                         : Collections.singletonList(onlyEntityDescriptor);
 

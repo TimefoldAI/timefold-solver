@@ -346,7 +346,7 @@ public final class TestdataListUtils {
         destinationSelectorConfig.setEntitySelectorConfig(new EntitySelectorConfig()
                 .withEntityClass(entityDescriptor.getEntityClass()));
         destinationSelectorConfig.setValueSelectorConfig(new ValueSelectorConfig()
-                .withVariableName(entityDescriptor.getGenuineListVariableDescriptor().getVariableName()));
+                .withVariableName(entityDescriptor.getListVariableDescriptor().getVariableName()));
         var configPolicy = mock(HeuristicConfigPolicy.class);
         doReturn(solutionDescriptor).when(configPolicy).getSolutionDescriptor();
         doReturn(mimicRecordingValueSelector).when(configPolicy).getValueMimicRecorder(any());
@@ -363,7 +363,7 @@ public final class TestdataListUtils {
                 .withEntityClass(entityDescriptor.getEntityClass()));
         destinationSelectorConfig.setValueSelectorConfig(new ValueSelectorConfig()
                 .withFilterClass(selectionFilterClass)
-                .withVariableName(entityDescriptor.getGenuineListVariableDescriptor().getVariableName()));
+                .withVariableName(entityDescriptor.getListVariableDescriptor().getVariableName()));
         var configPolicy = mock(HeuristicConfigPolicy.class);
         doReturn(solutionDescriptor).when(configPolicy).getSolutionDescriptor();
         doReturn(innerMimicRecordingValueSelector).when(configPolicy).getValueMimicRecorder(any());

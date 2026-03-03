@@ -76,7 +76,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
             valueRangeDescriptorList.add(buildValueRangeDescriptor(descriptorPolicy, valueRangeProviderMemberAccessor));
         }
         if (valueRangeDescriptorList.size() == 1) {
-            valueRangeDescriptor = valueRangeDescriptorList.get(0);
+            valueRangeDescriptor = valueRangeDescriptorList.getFirst();
         } else {
             valueRangeDescriptor = descriptorPolicy.buildCompositeValueRangeDescriptor(this, valueRangeDescriptorList);
         }

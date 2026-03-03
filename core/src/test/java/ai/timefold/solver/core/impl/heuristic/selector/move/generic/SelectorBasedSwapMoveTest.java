@@ -50,7 +50,7 @@ class SelectorBasedSwapMoveTest {
 
         var entityDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor();
 
-        var abMove = new SelectorBasedSwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, b);
+        var abMove = new SelectorBasedSwapMove<>(entityDescriptor.getBasicVariableDescriptorList(), a, b);
         a.setValue(v2);
         b.setValue(v3);
         assertThat(abMove.isMoveDoable(scoreDirector)).isTrue();
@@ -61,7 +61,7 @@ class SelectorBasedSwapMoveTest {
         b.setValue(v3);
         assertThat(abMove.isMoveDoable(scoreDirector)).isFalse();
 
-        var bcMove = new SelectorBasedSwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), b, c);
+        var bcMove = new SelectorBasedSwapMove<>(entityDescriptor.getBasicVariableDescriptorList(), b, c);
         b.setValue(v4);
         c.setValue(v5);
         assertThat(bcMove.isMoveDoable(scoreDirector)).isTrue();
@@ -72,7 +72,7 @@ class SelectorBasedSwapMoveTest {
         c.setValue(v5);
         assertThat(bcMove.isMoveDoable(scoreDirector)).isFalse();
 
-        var aaMove = new SelectorBasedSwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, a);
+        var aaMove = new SelectorBasedSwapMove<>(entityDescriptor.getBasicVariableDescriptorList(), a, a);
         assertThat(aaMove.isMoveDoable(scoreDirector)).isFalse();
     }
 
@@ -93,7 +93,7 @@ class SelectorBasedSwapMoveTest {
         var scoreDirector = scoreDirectorFactory.buildScoreDirector();
         var entityDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor();
 
-        var abMove = new SelectorBasedSwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, b);
+        var abMove = new SelectorBasedSwapMove<>(entityDescriptor.getBasicVariableDescriptorList(), a, b);
 
         a.setValue(v1);
         b.setValue(v1);
@@ -116,7 +116,7 @@ class SelectorBasedSwapMoveTest {
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(b.getValue()).isEqualTo(v3);
 
-        var acMove = new SelectorBasedSwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, c);
+        var acMove = new SelectorBasedSwapMove<>(entityDescriptor.getBasicVariableDescriptorList(), a, c);
 
         a.setValue(v2);
         c.setValue(v2);
@@ -139,7 +139,7 @@ class SelectorBasedSwapMoveTest {
         assertThat(a.getValue()).isEqualTo(v3);
         assertThat(c.getValue()).isEqualTo(v4);
 
-        var bcMove = new SelectorBasedSwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), b, c);
+        var bcMove = new SelectorBasedSwapMove<>(entityDescriptor.getBasicVariableDescriptorList(), b, c);
 
         b.setValue(v2);
         c.setValue(v2);
@@ -166,7 +166,7 @@ class SelectorBasedSwapMoveTest {
     @Test
     void rebase() {
         var entityDescriptor = TestdataEntity.buildEntityDescriptor();
-        var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
+        var variableDescriptorList = entityDescriptor.getBasicVariableDescriptorList();
 
         var v1 = new TestdataValue("v1");
         var v2 = new TestdataValue("v2");
@@ -225,7 +225,7 @@ class SelectorBasedSwapMoveTest {
         var b = new TestdataEntity("b", v1);
         var c = new TestdataEntity("c", v2);
         var entityDescriptor = TestdataEntity.buildEntityDescriptor();
-        var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
+        var variableDescriptorList = entityDescriptor.getBasicVariableDescriptorList();
 
         assertThat(new SelectorBasedSwapMove<>(variableDescriptorList, a, a)).hasToString("a {null} <-> a {null}");
         assertThat(new SelectorBasedSwapMove<>(variableDescriptorList, a, b)).hasToString("a {null} <-> b {v1}");
@@ -246,7 +246,7 @@ class SelectorBasedSwapMoveTest {
         var b = new TestdataMultiVarEntity("b", v1, v3, w1);
         var c = new TestdataMultiVarEntity("c", v2, v4, w2);
         var entityDescriptor = TestdataMultiVarEntity.buildEntityDescriptor();
-        var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
+        var variableDescriptorList = entityDescriptor.getBasicVariableDescriptorList();
 
         assertThat(new SelectorBasedSwapMove<>(variableDescriptorList, a, a))
                 .hasToString("a {null, null, null} <-> a {null, null, null}");

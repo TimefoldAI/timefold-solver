@@ -67,7 +67,7 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
                             variableMemberAccessor, sourceVariableName, sourceVariableName, entitiesWithSourceVariable));
         }
         VariableDescriptor<Solution_> variableDescriptor =
-                entitiesWithSourceVariable.get(0).getVariableDescriptor(sourceVariableName);
+                entitiesWithSourceVariable.getFirst().getVariableDescriptor(sourceVariableName);
         if (variableDescriptor == null) {
             throw new IllegalStateException("""
                     Impossible state: variableDescriptor (%s) is null but previous checks indicate that \

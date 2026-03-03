@@ -210,9 +210,9 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             var valueSelectorConfig = new ValueSelectorConfig()
                     .withMimicSelectorRef(valueRangeRecorderId.recorderId());
             // We set the name for the list variable in case there are multiple variables present
-            if (entitySelector.getEntityDescriptor().hasBothGenuineListAndBasicVariables()) {
+            if (entitySelector.getEntityDescriptor().hasBothListAndBasicVariables()) {
                 valueSelectorConfig.setVariableName(
-                        entitySelector.getEntityDescriptor().getGenuineListVariableDescriptor().getVariableName());
+                        entitySelector.getEntityDescriptor().getListVariableDescriptor().getVariableName());
             }
             var replayingValueSelector = (IterableValueSelector<Solution_>) ValueSelectorFactory
                     .<Solution_> create(valueSelectorConfig)

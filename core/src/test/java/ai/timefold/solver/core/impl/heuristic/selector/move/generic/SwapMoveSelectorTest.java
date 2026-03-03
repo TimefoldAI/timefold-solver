@@ -261,7 +261,7 @@ class SwapMoveSelectorTest {
         // It is impossible for the left and right selectors to be equal
         // when using the entity-range filtering node FilteringEntityByEntitySelector
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
+                leftEntitySelector.getEntityDescriptor().getBasicVariableDescriptorList(), false);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(moveSelector, solverScope);
@@ -485,7 +485,7 @@ class SwapMoveSelectorTest {
                 new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
+                leftEntitySelector.getEntityDescriptor().getBasicVariableDescriptorList(), true);
 
         var random = new TestRandom(0);
         var solverScope = solvingStarted(moveSelector, scoreDirector, random);
@@ -537,7 +537,7 @@ class SwapMoveSelectorTest {
                 new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
+                leftEntitySelector.getEntityDescriptor().getBasicVariableDescriptorList(), true);
 
         var random = new TestRandom(0);
         var solverScope = solvingStarted(moveSelector, scoreDirector, random);
@@ -605,7 +605,7 @@ class SwapMoveSelectorTest {
                 new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
+                leftEntitySelector.getEntityDescriptor().getBasicVariableDescriptorList(), true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(moveSelector, solverScope);

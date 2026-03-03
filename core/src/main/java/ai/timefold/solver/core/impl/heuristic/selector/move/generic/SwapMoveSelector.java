@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractOriginalSwapIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.AbstractRandomSwapIterator;
@@ -14,11 +15,11 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
 
     protected final EntitySelector<Solution_> leftEntitySelector;
     protected final EntitySelector<Solution_> rightEntitySelector;
-    protected final List<GenuineVariableDescriptor<Solution_>> variableDescriptorList;
+    protected final List<BasicVariableDescriptor<Solution_>> variableDescriptorList;
     protected final boolean randomSelection;
 
     public SwapMoveSelector(EntitySelector<Solution_> leftEntitySelector, EntitySelector<Solution_> rightEntitySelector,
-            List<GenuineVariableDescriptor<Solution_>> variableDescriptorList, boolean randomSelection) {
+            List<BasicVariableDescriptor<Solution_>> variableDescriptorList, boolean randomSelection) {
         this.leftEntitySelector = leftEntitySelector;
         this.rightEntitySelector = rightEntitySelector;
         this.variableDescriptorList = variableDescriptorList;

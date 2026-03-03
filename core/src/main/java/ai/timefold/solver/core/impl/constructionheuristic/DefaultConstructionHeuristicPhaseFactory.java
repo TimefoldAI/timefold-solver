@@ -118,7 +118,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         // When an entity has both list and basic variables,
         // the CH configuration will require two separate placers to initialize each variable,
         // which cannot be deduced automatically by default, since a single placer would be returned
-        if (listVariableDescriptor.getEntityDescriptor().hasAnyGenuineBasicVariables()) {
+        if (listVariableDescriptor.getEntityDescriptor().hasAnyBasicVariables()) {
             throw new IllegalArgumentException("""
                     The entity (%s) has both basic and list variables and cannot be deduced automatically.
                     Maybe customize the phase configuration and add separate construction heuristic phases for each variable."""
