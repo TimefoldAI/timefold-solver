@@ -15,7 +15,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
+import ai.timefold.solver.core.impl.io.jaxb.JaxbCustomPropertiesAdapter;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

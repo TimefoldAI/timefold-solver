@@ -1,11 +1,21 @@
-= IDE code style setup
+= Configuring your IDE for Timefold Solver
+
+== Running tests in your IDE
+
+Timefold Solver is https://en.wikipedia.org/wiki/Java_Platform_Module_System[a modular project].
+However, its test coverage runs on the classpath, not the module path.
+Maven respects this and runs the tests on the classpath, but IDEs don't always do that by default.
+If you're running your tests in the IDE and seeing errors about missing modules,
+you need to configure your IDE to run the tests on the classpath.
+
+== IDE code style setup
 
 Every Maven build formats the source code with the standard code style.
 This avoids merge conflicts and code style discussions.
 
 Configure it in your favorite IDE too:
 
-== IDEA setup
+=== IDEA setup
 
 . Open the _Settings_ window (or _Preferences_ depending on your edition) and navigate to _Plugins_.
 
@@ -26,7 +36,7 @@ file in the `build/ide-config/src/main/resources/` directory.
 
 . Open the _Editor -> Code Style -> Java -> Imports_ settings and set the _Class count to use import with '\*'_ to 999. This is to avoid the `*` imports, which should only be used in special cases.
 
-== Eclipse setup
+=== Eclipse setup
 
 . Open the _Preferences_ window, and then navigate to _Java -> Code Style -> Formatter_.
 
@@ -36,7 +46,7 @@ file in the `build/ide-config/src/main/resources/` directory.
 
 . Click Import and select the `build/ide-config/src/main/resources/eclipse.importorder` file.
 
-== VS Code setup
+=== VS Code setup
 
 . Open the _Extensions_ window (Ctrl+Shift+X) and search for _Language Support for Java(TM)_ and install it.
 

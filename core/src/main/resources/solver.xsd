@@ -123,7 +123,7 @@
       
   </xs:complexType>
     
-  <xs:complexType name="jaxbAdaptedMap">
+  <xs:complexType final="extension restriction" name="jaxbAdaptedMap">
         
     <xs:sequence>
             
@@ -133,7 +133,7 @@
       
   </xs:complexType>
     
-  <xs:complexType name="jaxbAdaptedMapEntry">
+  <xs:complexType final="extension restriction" name="jaxbAdaptedMapEntry">
         
     <xs:sequence/>
         

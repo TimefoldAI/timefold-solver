@@ -7,8 +7,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import io.quarkus.builder.item.SimpleBuildItem;
 
 /**
- * Represents a {@link ai.timefold.solver.core.api.score.stream.ConstraintMetaModel} at the build time for the purpose
- * of Quarkus augmentation.
+ * Represents a {@link ConstraintMetaModel} at the build time for the purpose of Quarkus augmentation.
  */
 public final class ConstraintMetaModelBuildItem extends SimpleBuildItem {
 

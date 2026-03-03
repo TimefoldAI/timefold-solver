@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
+import ai.timefold.solver.core.api.domain.solution.SolutionFileIO;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;

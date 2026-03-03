@@ -5,7 +5,7 @@
 <#list ['FIRST_FIT', 'CHEAPEST_INSERTION'] as constructionHeuristicType>
   <solverBenchmark>
     <problemBenchmarks>
-      <solutionFileIOClass>ai.timefold.solver.persistence.common.api.domain.solution.RigidTestdataSolutionFileIO</solutionFileIOClass>
+      <solutionFileIOClass>ai.timefold.solver.benchmark.util.RigidTestdataSolutionFileIO</solutionFileIOClass>
       <inputSolutionFile>target/test/benchmarkTest/input.xml</inputSolutionFile>
     </problemBenchmarks>
     <solver>

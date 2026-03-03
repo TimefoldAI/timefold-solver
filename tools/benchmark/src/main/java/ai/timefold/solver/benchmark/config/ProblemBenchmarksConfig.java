@@ -11,9 +11,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.benchmark.config.statistic.ProblemStatisticType;
 import ai.timefold.solver.benchmark.config.statistic.SingleStatisticType;
+import ai.timefold.solver.core.api.domain.solution.SolutionFileIO;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

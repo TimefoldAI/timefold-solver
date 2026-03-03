@@ -19,10 +19,6 @@
   </description>
   <url>https://solver.timefold.ai</url>
 
-  <properties>
-    <java.module.name>ai.timefold.solver.migration</java.module.name>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.openrewrite</groupId>

@@ -9,7 +9,7 @@
     ]
   },
   {
-    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter",
+    "name": "ai.timefold.solver.core.impl.io.jaxb.JaxbCustomPropertiesAdapter",
     "methods": [
       {
         "name": "<init>",
@@ -18,7 +18,9 @@
     ]
   },
   {
-    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbDurationAdapter",
+    "name": "ai.timefold.solver.core.impl.io.jaxb.JaxbAdaptedMap",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
     "methods": [
       {
         "name": "<init>",
@@ -27,7 +29,9 @@
     ]
   },
   {
-    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbLocaleAdapter",
+    "name": "ai.timefold.solver.core.impl.io.jaxb.JaxbAdaptedMapEntry",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
     "methods": [
       {
         "name": "<init>",
@@ -36,7 +40,7 @@
     ]
   },
   {
-    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbOffsetDateTimeAdapter",
+    "name": "ai.timefold.solver.core.impl.io.jaxb.JaxbDurationAdapter",
     "methods": [
       {
         "name": "<init>",
@@ -45,12 +49,22 @@
     ]
   },
   {
-    "name": "ai.timefold.solver.core.api.domain.common.DomainAccessType",
-    "allDeclaredFields": true
+    "name": "ai.timefold.solver.core.impl.io.jaxb.JaxbLocaleAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   },
   {
-    "name": "ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType",
-    "allDeclaredFields": true
+    "name": "ai.timefold.solver.core.impl.io.jaxb.JaxbOffsetDateTimeAdapter",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   },
   {
     "name": "ai.timefold.solver.core.config.AbstractConfig",
@@ -616,37 +630,6 @@
   },
   {
     "name": "ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig",
-    "allDeclaredFields": true,
-    "queryAllDeclaredMethods": true,
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter",
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter$JaxbAdaptedMap",
-    "allDeclaredFields": true,
-    "queryAllDeclaredMethods": true,
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter$JaxbAdaptedMapEntry",
     "allDeclaredFields": true,
     "queryAllDeclaredMethods": true,
     "methods": [

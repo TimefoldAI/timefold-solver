@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
+import ai.timefold.solver.core.impl.io.jaxb.JaxbCustomPropertiesAdapter;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

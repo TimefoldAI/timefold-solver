@@ -21,4 +21,22 @@
     <module>integration-test</module>
   </modules>
 
+  <!-- Fixes quarkus https://github.com/microprofile/microprofile-config/issues/811 -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.eclipse.microprofile.config</groupId>
+        <artifactId>microprofile-config-api</artifactId>
+        <version>${version.org.eclipse.microprofile.config}</version>
+        <scope>compile</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.microprofile.config</groupId>
+      <artifactId>microprofile-config-api</artifactId>
+    </dependency>
+  </dependencies>
+
 </project>

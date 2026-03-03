@@ -16,7 +16,7 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
+import ai.timefold.solver.core.impl.io.jaxb.JaxbCustomPropertiesAdapter;
 import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartitioner;
 
 import org.jspecify.annotations.NonNull;

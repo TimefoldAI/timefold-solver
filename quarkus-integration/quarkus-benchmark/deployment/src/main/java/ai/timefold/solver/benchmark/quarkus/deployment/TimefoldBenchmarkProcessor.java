@@ -8,7 +8,7 @@ import ai.timefold.solver.benchmark.quarkus.TimefoldBenchmarkRecorder;
 import ai.timefold.solver.benchmark.quarkus.UnavailableTimefoldBenchmarkBeanProvider;
 import ai.timefold.solver.benchmark.quarkus.config.TimefoldBenchmarkRuntimeConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.quarkus.deployment.SolverConfigBuildItem;
+import ai.timefold.solver.quarkus.deployment.api.SolverConfigBuildItem;
 
 import org.jboss.logging.Logger;
 
