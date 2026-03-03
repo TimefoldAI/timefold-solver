@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
@@ -167,9 +166,6 @@ public class PlannerBenchmarkConfig {
             @Nullable ClassLoader classLoader) {
         try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
             return createFromXmlReader(reader, classLoader);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("This VM does not support the charset (%s)."
-                    .formatted(StandardCharsets.UTF_8), e);
         } catch (IOException e) {
             throw new IllegalArgumentException("Reading fails.", e);
         }
@@ -348,9 +344,6 @@ public class PlannerBenchmarkConfig {
             @Nullable Object model, @Nullable ClassLoader classLoader) {
         try (Reader reader = new InputStreamReader(templateIn, StandardCharsets.UTF_8)) {
             return createFromFreemarkerXmlReader(reader, model, classLoader);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("This VM does not support the charset (%s)."
-                    .formatted(StandardCharsets.UTF_8), e);
         } catch (IOException e) {
             throw new IllegalArgumentException("Reading fails.", e);
         }
