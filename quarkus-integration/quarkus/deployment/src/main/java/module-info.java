@@ -1,14 +1,8 @@
 module ai.timefold.solver.quarkus.deployment {
 
-    // Friendly exports.
-    exports ai.timefold.solver.quarkus.deployment
-            to ai.timefold.solver.enterprise.quarkus.deployment;
-    exports ai.timefold.solver.quarkus.deployment.config
-            to ai.timefold.solver.enterprise.quarkus.deployment;
-    exports ai.timefold.solver.quarkus.deployment.api
-            to ai.timefold.solver.enterprise.quarkus.deployment,
-            ai.timefold.solver.quarkus.benchmark.deployment,
-            ai.timefold.sdk.quarkus.deployment;
+    exports ai.timefold.solver.quarkus.deployment;
+    exports ai.timefold.solver.quarkus.deployment.config;
+    exports ai.timefold.solver.quarkus.deployment.api;
 
     requires transitive ai.timefold.solver.quarkus;
     requires arc.processor;
