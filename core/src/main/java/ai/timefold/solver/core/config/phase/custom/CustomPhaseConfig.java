@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
         "customProperties",
 })
 @NullMarked
-public class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
+public final class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
 
     public static final String XML_ELEMENT_NAME = "customPhase";
 
@@ -33,13 +33,16 @@ public class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
     // and also because the input config file should match the output config file
 
     @XmlElement(name = "customPhaseCommandClass")
-    protected @Nullable List<Class<? extends PhaseCommand>> customPhaseCommandClassList = null;
+    @Nullable
+    private List<Class<? extends PhaseCommand>> customPhaseCommandClassList = null;
 
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
-    protected @Nullable Map<String, String> customProperties = null;
+    @Nullable
+    private Map<String, String> customProperties = null;
 
     @XmlTransient
-    protected @Nullable List<? extends PhaseCommand> customPhaseCommandList = null;
+    @Nullable
+    private List<? extends PhaseCommand> customPhaseCommandList = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters

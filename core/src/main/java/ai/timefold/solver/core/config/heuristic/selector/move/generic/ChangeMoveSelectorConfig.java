@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
         "entitySelectorConfig",
         "valueSelectorConfig"
 })
-public class ChangeMoveSelectorConfig
+public final class ChangeMoveSelectorConfig
         extends MoveSelectorConfig<ChangeMoveSelectorConfig>
         implements NearbyAutoConfigurationEnabled<ChangeMoveSelectorConfig> {
 

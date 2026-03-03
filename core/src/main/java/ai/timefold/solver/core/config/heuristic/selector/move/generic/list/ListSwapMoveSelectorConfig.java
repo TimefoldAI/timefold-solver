@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
         "valueSelectorConfig",
         "secondaryValueSelectorConfig"
 })
-public class ListSwapMoveSelectorConfig
+public final class ListSwapMoveSelectorConfig
         extends MoveSelectorConfig<ListSwapMoveSelectorConfig>
         implements NearbyAutoConfigurationEnabled<ListSwapMoveSelectorConfig> {
 

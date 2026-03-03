@@ -38,7 +38,7 @@ import org.jspecify.annotations.Nullable;
         "moveSelectorConfigList",
         "selectorProbabilityWeightFactoryClass"
 })
-public class UnionMoveSelectorConfig
+public final class UnionMoveSelectorConfig
         extends MoveSelectorConfig<UnionMoveSelectorConfig>
         implements NearbyAutoConfigurationEnabled<UnionMoveSelectorConfig> {
 

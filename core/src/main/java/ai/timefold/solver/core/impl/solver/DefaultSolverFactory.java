@@ -26,6 +26,7 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.AbstractFromConfigFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhaseFactory;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -66,8 +67,14 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     private final SolverConfig solverConfig;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory;
+    private final DomainAccessType domainAccessType;
 
     public DefaultSolverFactory(SolverConfig solverConfig) {
+        this(solverConfig, DomainAccessType.AUTO);
+    }
+
+    public DefaultSolverFactory(SolverConfig solverConfig, DomainAccessType domainAccessType) {
+        this.domainAccessType = domainAccessType;
         this.clock = Objects.requireNonNullElse(solverConfig.getClock(), Clock.systemDefaultZone());
         this.solverConfig = Objects.requireNonNull(solverConfig, "The solverConfig (" + solverConfig + ") cannot be null.");
         this.solutionDescriptor = buildSolutionDescriptor();
@@ -190,7 +197,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                             .formatted(solverConfig.getEntityClassList()));
         }
         return SolutionDescriptor.buildSolutionDescriptor(solverConfig.getEnablePreviewFeatureSet(),
-                solverConfig.determineDomainAccessType(),
+                domainAccessType,
                 (Class<Solution_>) solverConfig.getSolutionClass(),
                 solverConfig.getGizmoMemberAccessorMap(),
                 solverConfig.getGizmoSolutionClonerMap(),

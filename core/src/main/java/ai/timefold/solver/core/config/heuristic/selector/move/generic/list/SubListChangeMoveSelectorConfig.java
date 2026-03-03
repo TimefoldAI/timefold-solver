@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
         "subListSelectorConfig",
         "destinationSelectorConfig"
 })
-public class SubListChangeMoveSelectorConfig extends MoveSelectorConfig<SubListChangeMoveSelectorConfig> {
+public final class SubListChangeMoveSelectorConfig extends MoveSelectorConfig<SubListChangeMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "subListChangeMoveSelector";
 

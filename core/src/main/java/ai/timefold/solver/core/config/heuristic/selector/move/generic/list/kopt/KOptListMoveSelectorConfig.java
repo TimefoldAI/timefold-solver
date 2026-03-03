@@ -22,14 +22,14 @@ import org.jspecify.annotations.Nullable;
         "originSelectorConfig",
         "valueSelectorConfig"
 })
-public class KOptListMoveSelectorConfig
+public final class KOptListMoveSelectorConfig
         extends MoveSelectorConfig<KOptListMoveSelectorConfig>
         implements NearbyAutoConfigurationEnabled<KOptListMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "kOptListMoveSelector";
 
-    protected Integer minimumK = null;
-    protected Integer maximumK = null;
+    private Integer minimumK = null;
+    private Integer maximumK = null;
 
     @XmlElement(name = "originSelector")
     private ValueSelectorConfig originSelectorConfig = null;

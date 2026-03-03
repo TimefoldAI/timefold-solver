@@ -33,7 +33,7 @@ import org.jspecify.annotations.Nullable;
         "moveSelectorConfigList",
         "ignoreEmptyChildIterators"
 })
-public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<CartesianProductMoveSelectorConfig> {
+public final class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<CartesianProductMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "cartesianProductMoveSelector";
 

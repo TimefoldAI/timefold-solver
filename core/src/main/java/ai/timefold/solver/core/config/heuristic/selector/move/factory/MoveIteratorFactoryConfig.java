@@ -18,14 +18,15 @@ import org.jspecify.annotations.Nullable;
         "moveIteratorFactoryClass",
         "moveIteratorFactoryCustomProperties"
 })
-public class MoveIteratorFactoryConfig extends MoveSelectorConfig<MoveIteratorFactoryConfig> {
+public final class MoveIteratorFactoryConfig extends MoveSelectorConfig<MoveIteratorFactoryConfig> {
 
     public static final String XML_ELEMENT_NAME = "moveIteratorFactory";
 
-    protected Class<? extends MoveIteratorFactory> moveIteratorFactoryClass = null;
+    private Class<? extends MoveIteratorFactory> moveIteratorFactoryClass = null;
 
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
-    protected @Nullable Map<String, String> moveIteratorFactoryCustomProperties = null;
+    @Nullable
+    private Map<String, String> moveIteratorFactoryCustomProperties = null;
 
     public @Nullable Class<? extends MoveIteratorFactory> getMoveIteratorFactoryClass() {
         return moveIteratorFactoryClass;

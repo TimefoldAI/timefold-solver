@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
         "secondaryEntitySelectorConfig",
         "variableNameIncludeList"
 })
-public class SwapMoveSelectorConfig
+public final class SwapMoveSelectorConfig
         extends MoveSelectorConfig<SwapMoveSelectorConfig>
         implements NearbyAutoConfigurationEnabled<SwapMoveSelectorConfig> {
 

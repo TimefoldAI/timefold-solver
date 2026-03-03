@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
         "minimumRuinedPercentage",
         "maximumRuinedPercentage"
 })
-public class ListRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<ListRuinRecreateMoveSelectorConfig> {
+public final class ListRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<ListRuinRecreateMoveSelectorConfig> {
 
     // Determined by benchmarking on multiple datasets.
     private static final int DEFAULT_MINIMUM_RUINED_COUNT = 5;
@@ -24,11 +24,11 @@ public class ListRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<ListR
 
     public static final String XML_ELEMENT_NAME = "listRuinRecreateMoveSelector";
 
-    protected Integer minimumRuinedCount = null;
-    protected Integer maximumRuinedCount = null;
+    private Integer minimumRuinedCount = null;
+    private Integer maximumRuinedCount = null;
 
-    protected Double minimumRuinedPercentage = null;
-    protected Double maximumRuinedPercentage = null;
+    private Double minimumRuinedPercentage = null;
+    private Double maximumRuinedPercentage = null;
 
     // **************************
     // Getters/Setters

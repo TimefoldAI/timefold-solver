@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
 @XmlType(propOrder = {
         "valueSelectorConfig"
 })
-public class PillarChangeMoveSelectorConfig extends AbstractPillarMoveSelectorConfig<PillarChangeMoveSelectorConfig> {
+public final class PillarChangeMoveSelectorConfig extends AbstractPillarMoveSelectorConfig<PillarChangeMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "pillarChangeMoveSelector";
 

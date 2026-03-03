@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
         "secondaryPillarSelectorConfig",
         "variableNameIncludeList"
 })
-public class PillarSwapMoveSelectorConfig extends AbstractPillarMoveSelectorConfig<PillarSwapMoveSelectorConfig> {
+public final class PillarSwapMoveSelectorConfig extends AbstractPillarMoveSelectorConfig<PillarSwapMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "pillarSwapMoveSelector";
 

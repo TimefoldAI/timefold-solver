@@ -14,13 +14,13 @@ import org.jspecify.annotations.NonNull;
         "entityClass",
         "variableName"
 })
-public class MultistageMoveSelectorConfig extends MoveSelectorConfig<MultistageMoveSelectorConfig> {
+public final class MultistageMoveSelectorConfig extends MoveSelectorConfig<MultistageMoveSelectorConfig> {
     public static final String XML_ELEMENT_NAME = "multistageMoveSelector";
 
-    protected Class<?> stageProviderClass;
+    private Class<?> stageProviderClass;
 
-    protected Class<?> entityClass = null;
-    protected String variableName = null;
+    private Class<?> entityClass = null;
+    private String variableName = null;
 
     // **************************
     // Getters/Setters

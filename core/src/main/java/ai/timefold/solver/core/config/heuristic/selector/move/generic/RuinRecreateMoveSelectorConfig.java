@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
         "entitySelectorConfig",
         "variableName"
 })
-public class RuinRecreateMoveSelectorConfig extends MoveSelectorConfig<RuinRecreateMoveSelectorConfig> {
+public final class RuinRecreateMoveSelectorConfig extends MoveSelectorConfig<RuinRecreateMoveSelectorConfig> {
 
     // Determined by benchmarking on multiple datasets.
     private static final int DEFAULT_MINIMUM_RUINED_COUNT = 5;
@@ -28,15 +28,15 @@ public class RuinRecreateMoveSelectorConfig extends MoveSelectorConfig<RuinRecre
 
     public static final String XML_ELEMENT_NAME = "ruinRecreateMoveSelector";
 
-    protected Integer minimumRuinedCount = null;
-    protected Integer maximumRuinedCount = null;
+    private Integer minimumRuinedCount = null;
+    private Integer maximumRuinedCount = null;
 
-    protected Double minimumRuinedPercentage = null;
-    protected Double maximumRuinedPercentage = null;
+    private Double minimumRuinedPercentage = null;
+    private Double maximumRuinedPercentage = null;
 
     @XmlElement(name = "entitySelector")
-    protected EntitySelectorConfig entitySelectorConfig = null;
-    protected String variableName = null;
+    private EntitySelectorConfig entitySelectorConfig = null;
+    private String variableName = null;
 
     // **************************
     // Getters/Setters

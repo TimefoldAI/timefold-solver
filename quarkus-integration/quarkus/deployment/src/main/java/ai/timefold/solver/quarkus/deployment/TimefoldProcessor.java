@@ -45,6 +45,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSource;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.score.stream.test.DefaultConstraintVerifier;
+import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.BeanUtil;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
@@ -606,7 +607,7 @@ class TimefoldProcessor {
 
         var constraintMetaModelsBySolverNames = new HashMap<String, ConstraintMetaModel>();
         solverConfigBuildItem.getSolverConfigMap().forEach((solverName, solverConfig) -> {
-            var solverFactory = SolverFactory.create(solverConfig);
+            var solverFactory = new DefaultSolverFactory<>(solverConfig, DomainAccessType.FORCE_REFLECTION);
             var constraintMetaModel = BeanUtil.buildConstraintMetaModel(solverFactory);
             // Avoid changing the original solver config.
             constraintMetaModelsBySolverNames.put(solverName, constraintMetaModel);

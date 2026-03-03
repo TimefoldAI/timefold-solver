@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
         "valueSelectorConfig",
         "destinationSelectorConfig"
 })
-public class ListChangeMoveSelectorConfig
+public final class ListChangeMoveSelectorConfig
         extends MoveSelectorConfig<ListChangeMoveSelectorConfig>
         implements NearbyAutoConfigurationEnabled<ListChangeMoveSelectorConfig> {
 
