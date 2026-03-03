@@ -231,6 +231,8 @@ module ai.timefold.solver.core {
     opens ai.timefold.solver.core.config.heuristic.selector.move.factory to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.heuristic.selector.move.generic to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.heuristic.selector.move.generic.list to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt
+            to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.heuristic.selector.value to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.localsearch to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.localsearch.decider.acceptor to jakarta.xml.bind, org.glassfish.jaxb.runtime;
@@ -255,4 +257,5 @@ module ai.timefold.solver.core {
     requires org.jspecify;
     requires org.slf4j;
     requires io.quarkus.gizmo2;
+
 }
