@@ -1,15 +1,5 @@
 module ai.timefold.solver.benchmark {
 
-    requires ai.timefold.solver.core;
-    requires ai.timefold.solver.jaxb;
-    requires commons.math3;
-    requires freemarker;
-    requires jakarta.xml.bind;
-    requires java.xml;
-    requires micrometer.core;
-    requires org.jspecify;
-    requires org.slf4j;
-
     // Public API
     exports ai.timefold.solver.benchmark.api;
 
@@ -40,5 +30,15 @@ module ai.timefold.solver.benchmark {
     // Friendly usage.
     exports ai.timefold.solver.benchmark.impl
             to ai.timefold.solver.quarkus.benchmark.integration.test;
+
+    requires transitive ai.timefold.solver.core;
+    requires ai.timefold.solver.jaxb;
+    requires commons.math3;
+    requires freemarker;
+    requires jakarta.xml.bind;
+    requires java.xml;
+    requires micrometer.core;
+    requires org.jspecify;
+    requires org.slf4j;
 
 }
