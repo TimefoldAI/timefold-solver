@@ -1,4 +1,5 @@
 module ai.timefold.solver.quarkus {
+
     exports ai.timefold.solver.quarkus.bean;
     exports ai.timefold.solver.quarkus;
     exports ai.timefold.solver.quarkus.config;
@@ -14,7 +15,7 @@ module ai.timefold.solver.quarkus {
     requires org.jspecify;
     requires quarkus.core;
     requires io.smallrye.config;
-    requires org.eclipse.microprofile.config;
     requires org.jboss.logging;
+    requires org.eclipse.microprofile.config;
 
 }

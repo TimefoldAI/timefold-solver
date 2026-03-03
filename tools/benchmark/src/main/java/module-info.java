@@ -37,4 +37,8 @@ module ai.timefold.solver.benchmark {
     opens ai.timefold.solver.benchmark.config.statistic to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.benchmark.impl.result to jakarta.xml.bind, org.glassfish.jaxb.runtime;
 
+    // Friendly usage.
+    exports ai.timefold.solver.benchmark.impl
+            to ai.timefold.solver.quarkus.benchmark.integration.test;
+
 }

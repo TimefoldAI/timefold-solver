@@ -1,4 +1,4 @@
-package ai.timefold.solver.quarkus.deployment;
+package ai.timefold.solver.quarkus.deployment.api;
 
 import java.util.Map;
 

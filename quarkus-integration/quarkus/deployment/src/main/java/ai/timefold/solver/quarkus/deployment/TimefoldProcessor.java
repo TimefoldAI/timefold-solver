@@ -52,6 +52,8 @@ import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 import ai.timefold.solver.quarkus.deployment.api.ConstraintMetaModelBuildItem;
+import ai.timefold.solver.quarkus.deployment.api.GeneratedGizmoClasses;
+import ai.timefold.solver.quarkus.deployment.api.SolverConfigBuildItem;
 import ai.timefold.solver.quarkus.deployment.config.SolverBuildTimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
 import ai.timefold.solver.quarkus.devui.DevUISolverConfig;
@@ -636,10 +638,10 @@ class TimefoldProcessor {
                         .supplier(recorder.solverConfigSupplier(key, value,
                                 GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
                                         solverConfigBuildItem
-                                                .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
+                                                .getGeneratedGizmoClasses().memberAccessorClassSet()),
                                 GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
                                         solverConfigBuildItem
-                                                .getGeneratedGizmoClasses().generatedGizmoSolutionClonerClassSet)))
+                                                .getGeneratedGizmoClasses().solutionClonerClassSet())))
                         .setRuntimeInit()
                         .defaultBean()
                         .done());
@@ -664,10 +666,10 @@ class TimefoldProcessor {
                                 .supplier(recorder.solverManager(key, value,
                                         GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
                                                 solverConfigBuildItem
-                                                        .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
+                                                        .getGeneratedGizmoClasses().memberAccessorClassSet()),
                                         GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
                                                 solverConfigBuildItem
-                                                        .getGeneratedGizmoClasses().generatedGizmoSolutionClonerClassSet)))
+                                                        .getGeneratedGizmoClasses().solutionClonerClassSet())))
                                 .setRuntimeInit()
                                 .named(key)
                                 .done());
@@ -699,10 +701,10 @@ class TimefoldProcessor {
                 .supplier(devUIRecorder.solverConfigSupplier(solverConfigBuildItem.getSolverConfigMap(),
                         GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
                                 solverConfigBuildItem
-                                        .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
+                                        .getGeneratedGizmoClasses().memberAccessorClassSet()),
                         GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
                                 solverConfigBuildItem
-                                        .getGeneratedGizmoClasses().generatedGizmoSolutionClonerClassSet)))
+                                        .getGeneratedGizmoClasses().solutionClonerClassSet())))
                 .defaultBean()
                 .setRuntimeInit()
                 .done());

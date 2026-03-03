@@ -29,19 +29,8 @@
       <artifactId>timefold-solver-quarkus</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-awt</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-benchmark</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>ai.timefold.solver</groupId>
-          <artifactId>timefold-solver-core</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
   <build>
