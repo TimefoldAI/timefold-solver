@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Objects;
+import java.util.SequencedCollection;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -93,20 +93,19 @@ public class SwapMoveSelectorFactory<Solution_>
         if (onlyEntityDescriptor != null) {
             var variableDescriptorList = onlyEntityDescriptor.getGenuineVariableDescriptorList();
             // If there is a single list variable, unfold to list swap move selector config.
-            if (variableDescriptorList.size() == 1 && variableDescriptorList.get(0).isListVariable()) {
-                return buildListSwapMoveSelectorConfig(variableDescriptorList.get(0), true);
+            if (variableDescriptorList.size() == 1 && variableDescriptorList.getFirst().isListVariable()) {
+                return buildListSwapMoveSelectorConfig(variableDescriptorList.getFirst(), true);
             }
             // No need for unfolding or deducing
             return null;
         }
-        Collection<EntityDescriptor<Solution_>> entityDescriptors =
-                configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();
+        var entityDescriptors = configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();
         return buildUnfoldedMoveSelectorConfig(configPolicy, entityDescriptors);
     }
 
     protected MoveSelectorConfig<?>
             buildUnfoldedMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy,
-                    Collection<EntityDescriptor<Solution_>> entityDescriptors) {
+                    SequencedCollection<EntityDescriptor<Solution_>> entityDescriptors) {
         var moveSelectorConfigList = new ArrayList<MoveSelectorConfig>(entityDescriptors.size());
 
         // When using a mixed model,
@@ -114,19 +113,19 @@ public class SwapMoveSelectorFactory<Solution_>
         // and delegate it to the ListSwapMoveSelectorFactory.
         // The strategy aims to provide a more normalized move selector collection for mixed models.
         var variableDescriptorList = configPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()
-                ? entityDescriptors.iterator().next().getGenuineBasicVariableDescriptorList()
-                : entityDescriptors.iterator().next().getGenuineVariableDescriptorList();
+                ? entityDescriptors.getFirst().getBasicVariableDescriptorList()
+                : entityDescriptors.getFirst().getGenuineVariableDescriptorList();
 
         // Only unfold into list swap move selector for the basic scenario with 1 entity and 1 list variable.
         if (entityDescriptors.size() == 1 && variableDescriptorList.size() == 1
-                && variableDescriptorList.get(0).isListVariable()) {
+                && variableDescriptorList.getFirst().isListVariable()) {
             // No childMoveSelectorConfig.inherit() because of unfoldedMoveSelectorConfig.inheritFolded()
-            var childMoveSelectorConfig = buildListSwapMoveSelectorConfig(variableDescriptorList.get(0), false);
+            var childMoveSelectorConfig = buildListSwapMoveSelectorConfig(variableDescriptorList.getFirst(), false);
             moveSelectorConfigList.add(childMoveSelectorConfig);
         } else {
             // More complex scenarios do not support unfolding into list swap => fail fast if there is any list variable.
             for (var entityDescriptor : entityDescriptors) {
-                if (!entityDescriptor.hasAnyGenuineBasicVariables()) {
+                if (!entityDescriptor.hasAnyBasicVariables()) {
                     // We filter out entities that do not have basic variables (e.g., mixed models)
                     continue;
                 }
@@ -138,7 +137,7 @@ public class SwapMoveSelectorFactory<Solution_>
                 }
                 childMoveSelectorConfig.setEntitySelectorConfig(childEntitySelectorConfig);
                 if (config.getSecondaryEntitySelectorConfig() != null) {
-                    EntitySelectorConfig childSecondaryEntitySelectorConfig =
+                    var childSecondaryEntitySelectorConfig =
                             new EntitySelectorConfig(config.getSecondaryEntitySelectorConfig());
                     if (childSecondaryEntitySelectorConfig.getMimicSelectorRef() == null) {
                         childSecondaryEntitySelectorConfig.setEntityClass(entityDescriptor.getEntityClass());
@@ -150,12 +149,12 @@ public class SwapMoveSelectorFactory<Solution_>
             }
         }
         if (moveSelectorConfigList.isEmpty()) {
-            throw new IllegalStateException("The swap move selector cannot be created when there is no basic variables.");
+            throw new IllegalStateException("The swap move selector cannot be created when there are no basic variables.");
         }
 
         MoveSelectorConfig<?> unfoldedMoveSelectorConfig;
         if (moveSelectorConfigList.size() == 1) {
-            unfoldedMoveSelectorConfig = moveSelectorConfigList.get(0);
+            unfoldedMoveSelectorConfig = moveSelectorConfigList.getFirst();
         } else {
             unfoldedMoveSelectorConfig = new UnionMoveSelectorConfig(moveSelectorConfigList);
         }

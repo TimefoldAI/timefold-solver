@@ -95,16 +95,16 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        var basicVariableList = childEntitySelector.getEntityDescriptor().getGenuineBasicVariableDescriptorList().stream()
-                .filter(v -> !v.isListVariable() && !v.canExtractValueRangeFromSolution())
-                .map(v -> (BasicVariableDescriptor<Solution_>) v)
+        var basicVariableDescriptorList = childEntitySelector.getEntityDescriptor()
+                .getBasicVariableDescriptorList().stream()
+                .filter(v -> !v.canExtractValueRangeFromSolution())
                 .toList();
-        if (basicVariableList.isEmpty()) {
+        if (basicVariableDescriptorList.isEmpty()) {
             throw new IllegalStateException("Impossible state: no basic variable found for the entity %s."
                     .formatted(childEntitySelector.getEntityDescriptor().getEntityClass()));
         }
         this.allEntities = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution());
-        this.basicVariableDescriptors = basicVariableList.toArray(new BasicVariableDescriptor[0]);
+        this.basicVariableDescriptors = basicVariableDescriptorList.toArray(new BasicVariableDescriptor[0]);
         this.valueRangeManager = phaseScope.getScoreDirector().getValueRangeManager();
         if (basicVariableDescriptors.length == 1) {
             this.reachableValues = valueRangeManager.getReachableValues(basicVariableDescriptors[0]);

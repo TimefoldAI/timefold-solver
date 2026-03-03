@@ -43,7 +43,7 @@ public class ListSwapMoveSelectorFactory<Solution_>
         // the recorder ID from the origin selector is required for FilteringEntityValueRangeSelector and FilteringValueRangeSelector
         // to replay the selected value and return only reachable values.
         var enableEntityValueRangeFilter =
-                !entityDescriptor.getGenuineListVariableDescriptor().canExtractValueRangeFromSolution();
+                !entityDescriptor.getListVariableDescriptor().canExtractValueRangeFromSolution();
         // A null ID means to turn off the entity value range filtering
         String entityValueRangeRecorderId = null;
         if (enableEntityValueRangeFilter) {

@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.bi;
 
 import java.util.Objects;
+import java.util.SequencedSet;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -18,7 +19,7 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 public class BavetPrecomputeBiConstraintStream<Solution_, A, B> extends BavetAbstractBiConstraintStream<Solution_, A, B>
         implements TupleSource {
     private final BavetAbstractConstraintStream<Solution_> recordingPrecomputedConstraintStream;
-    private final Set<Class<?>> entityClassSet;
+    private final SequencedSet<Class<?>> entityClassSet;
     private BavetAftBridgeBiConstraintStream<Solution_, A, B> aftStream;
 
     public BavetPrecomputeBiConstraintStream(

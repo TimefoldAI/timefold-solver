@@ -116,7 +116,7 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
         // Mixed models require that the variable name be set
         if (configPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()
                 && valueSelectorConfig.getVariableName() == null) {
-            var variableName = entityDescriptor.getGenuineListVariableDescriptor().getVariableName();
+            var variableName = entityDescriptor.getListVariableDescriptor().getVariableName();
             valueSelectorConfig.setVariableName(variableName);
         }
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory

@@ -118,8 +118,8 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         var mimicValueSelectorConfig = new ValueSelectorConfig()
                 .withMimicSelectorRef(entityValueRangeRecorderId);
         // We set the name for the list variable in case there are multiple variables present
-        if (entityDescriptor.hasBothGenuineListAndBasicVariables()) {
-            mimicValueSelectorConfig.setVariableName(entityDescriptor.getGenuineListVariableDescriptor().getVariableName());
+        if (entityDescriptor.hasBothListAndBasicVariables()) {
+            mimicValueSelectorConfig.setVariableName(entityDescriptor.getListVariableDescriptor().getVariableName());
         }
         return (IterableValueSelector<Solution_>) ValueSelectorFactory
                 .<Solution_> create(mimicValueSelectorConfig)

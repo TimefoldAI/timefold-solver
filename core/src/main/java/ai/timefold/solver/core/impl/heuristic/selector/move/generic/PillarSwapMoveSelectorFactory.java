@@ -36,9 +36,9 @@ public class PillarSwapMoveSelectorFactory<Solution_>
         }
         var leftVariableNameIncludeList = config.getVariableNameIncludeList();
         if (leftVariableNameIncludeList == null && leftEntityDescriptor != null
-                && leftEntityDescriptor.hasAnyGenuineBasicVariables() && leftEntityDescriptor.hasAnyGenuineListVariables()) {
+                && leftEntityDescriptor.hasAnyBasicVariables() && leftEntityDescriptor.hasAnyListVariables()) {
             // Mixed models filter out the list variable
-            leftVariableNameIncludeList = leftEntityDescriptor.getGenuineBasicVariableDescriptorList().stream()
+            leftVariableNameIncludeList = leftEntityDescriptor.getBasicVariableDescriptorList().stream()
                     .map(GenuineVariableDescriptor::getVariableName)
                     .toList();
         }
@@ -54,9 +54,9 @@ public class PillarSwapMoveSelectorFactory<Solution_>
         }
         var rightVariableNameIncludeList = config.getVariableNameIncludeList();
         if (rightVariableNameIncludeList == null && rightEntityDescriptor != null
-                && rightEntityDescriptor.hasAnyGenuineBasicVariables() && rightEntityDescriptor.hasAnyGenuineListVariables()) {
+                && rightEntityDescriptor.hasAnyBasicVariables() && rightEntityDescriptor.hasAnyListVariables()) {
             // Mixed models filter out the list variable
-            rightVariableNameIncludeList = rightEntityDescriptor.getGenuineBasicVariableDescriptorList().stream()
+            rightVariableNameIncludeList = rightEntityDescriptor.getBasicVariableDescriptorList().stream()
                     .map(GenuineVariableDescriptor::getVariableName)
                     .toList();
         }

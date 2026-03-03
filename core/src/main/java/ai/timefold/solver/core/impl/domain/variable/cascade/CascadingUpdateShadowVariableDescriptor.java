@@ -43,7 +43,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     }
 
     public String getTargetMethodName() {
-        var variableMemberAccessor = shadowVariableTargetList.get(0).variableMemberAccessor();
+        var variableMemberAccessor = shadowVariableTargetList.getFirst().variableMemberAccessor();
         return Arrays
                 .stream(variableMemberAccessor.getDeclaredAnnotationsByType(CascadingUpdateShadowVariable.class))
                 .findFirst().map(CascadingUpdateShadowVariable::targetMethodName)
@@ -129,9 +129,10 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                                     variableMemberAccessor.getName(),
                                     targetMethodName));
         }
-        targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(allSourceMethodMembers.get(0),
-                MemberAccessorType.VOID_METHOD, null, descriptorPolicy.getDomainAccessType());
-        firstTargetVariableDescriptor = targetVariableDescriptorList.get(0);
+        targetMethod =
+                descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(allSourceMethodMembers.getFirst(),
+                        MemberAccessorType.VOID_METHOD, null, descriptorPolicy.getDomainAccessType());
+        firstTargetVariableDescriptor = targetVariableDescriptorList.getFirst();
     }
 
     @Override

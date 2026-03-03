@@ -147,7 +147,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
             return solutionDescriptor.getListVariableDescriptor().getEntityDescriptor();
         }
         var entityDescriptors = solutionDescriptor.getGenuineEntityDescriptors().stream()
-                .filter(EntityDescriptor::hasAnyGenuineBasicVariables).toList();
+                .filter(EntityDescriptor::hasAnyBasicVariables).toList();
         if (entityDescriptors.size() != 1) {
             throw new IllegalArgumentException(
                     "The phaseConfig (%s) has no entitySelector configured and because there are multiple in the entityClassSet (%s), it cannot be deduced automatically."

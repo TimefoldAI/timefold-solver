@@ -17,12 +17,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.SequencedCollection;
+import java.util.SequencedMap;
+import java.util.SequencedSet;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -86,43 +88,34 @@ public final class SolutionDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolutionDescriptor.class);
     private static final EntityDescriptor<?> NULL_ENTITY_DESCRIPTOR = new EntityDescriptor<>(-1, null, PlanningEntity.class);
-    private static final Class[] ANNOTATED_MEMBERS_CLASSES = {
-            ProblemFactCollectionProperty.class,
-            ValueRangeProvider.class,
-            PlanningEntityCollectionProperty.class,
-            PlanningScore.class };
+    private static final Class[] ANNOTATED_MEMBERS_CLASSES = { ProblemFactCollectionProperty.class, ValueRangeProvider.class,
+            PlanningEntityCollectionProperty.class, PlanningScore.class };
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(Class<Solution_> solutionClass,
             Class<?>... entityClasses) {
         return buildSolutionDescriptor(solutionClass, Arrays.asList(entityClasses));
     }
 
-    public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
-            Class<Solution_> solutionClass,
+    public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(Class<Solution_> solutionClass,
             List<Class<?>> entityClassList) {
         return buildSolutionDescriptor(EnumSet.noneOf(PreviewFeature.class), solutionClass, entityClassList);
     }
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
-            Set<PreviewFeature> enabledPreviewFeaturesSet,
-            Class<Solution_> solutionClass,
-            Class<?>... entityClasses) {
+            Set<PreviewFeature> enabledPreviewFeaturesSet, Class<Solution_> solutionClass, Class<?>... entityClasses) {
         return buildSolutionDescriptor(enabledPreviewFeaturesSet, solutionClass, List.of(entityClasses));
     }
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
-            Set<PreviewFeature> enabledPreviewFeaturesSet,
-            Class<Solution_> solutionClass,
-            List<Class<?>> entityClassList) {
-        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.FORCE_REFLECTION, solutionClass, null,
-                null, entityClassList);
+            Set<PreviewFeature> enabledPreviewFeaturesSet, Class<Solution_> solutionClass, List<Class<?>> entityClassList) {
+        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.FORCE_REFLECTION, solutionClass, null, null,
+                entityClassList);
     }
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
-            Set<PreviewFeature> enabledPreviewFeatureSet,
-            DomainAccessType domainAccessType,
-            Class<Solution_> solutionClass, Map<String, MemberAccessor> memberAccessorMap,
-            Map<String, SolutionCloner> solutionClonerMap, List<Class<?>> entityClassList) {
+            Set<PreviewFeature> enabledPreviewFeatureSet, DomainAccessType domainAccessType, Class<Solution_> solutionClass,
+            Map<String, MemberAccessor> memberAccessorMap, Map<String, SolutionCloner> solutionClonerMap,
+            List<Class<?>> entityClassList) {
         assertMutable(solutionClass, "solutionClass");
         assertSingleInheritance(solutionClass);
         assertValidAnnotatedMembers(solutionClass);
@@ -144,7 +137,8 @@ public final class SolutionDescriptor<Solution_> {
         for (var entityClass : entityClassList) {
             var inheritedEntityClasses = extractInheritedClasses(entityClass);
             var filteredInheritedEntityClasses = inheritedEntityClasses.stream()
-                    .filter(c -> !updatedEntityClassList.contains(c)).toList();
+                    .filter(c -> !updatedEntityClassList.contains(c))
+                    .toList();
             updatedEntityClassList.addAll(filteredInheritedEntityClasses);
         }
         for (var entityClass : sortEntityClassList(updatedEntityClassList)) {
@@ -164,13 +158,11 @@ public final class SolutionDescriptor<Solution_> {
         if (clz.isRecord()) {
             throw new IllegalArgumentException("""
                     The %s (%s) cannot be a record as it needs to be mutable.
-                    Use a regular class instead."""
-                    .formatted(classType, clz.getCanonicalName()));
+                    Use a regular class instead.""".formatted(classType, clz.getCanonicalName()));
         } else if (clz.isEnum()) {
             throw new IllegalArgumentException("""
                     The %s (%s) cannot be an enum as it needs to be mutable.
-                    Use a regular class instead."""
-                    .formatted(classType, clz.getCanonicalName()));
+                    Use a regular class instead.""".formatted(classType, clz.getCanonicalName()));
         }
     }
 
@@ -184,12 +176,10 @@ public final class SolutionDescriptor<Solution_> {
             var annotatedMembers = extractAnnotatedMembers(clazz).stream()
                     .map(Member::getName)
                     .toList();
-            throw new IllegalStateException(
-                    """
-                            The class %s is not annotated with @PlanningSolution but defines annotated members.
-                            Maybe annotate %s with @PlanningSolution.
-                            Maybe remove the annotated members (%s)."""
-                            .formatted(clazz.getName(), clazz.getName(), annotatedMembers));
+            throw new IllegalStateException("""
+                    The class %s is not annotated with @PlanningSolution but defines annotated members.
+                    Maybe annotate %s with @PlanningSolution.
+                    Maybe remove the annotated members (%s).""".formatted(clazz.getName(), clazz.getName(), annotatedMembers));
         }
         // We check the first level of the inheritance chain
         var otherClazz = clazz.getSuperclass();
@@ -198,12 +188,11 @@ public final class SolutionDescriptor<Solution_> {
             var annotatedMembers = extractAnnotatedMembers(otherClazz).stream()
                     .map(Member::getName)
                     .toList();
-            throw new IllegalStateException(
-                    """
-                            The class %s is not annotated with @PlanningSolution but defines annotated members.
-                            Maybe annotate %s with @PlanningSolution.
-                            Maybe remove the annotated members (%s)."""
-                            .formatted(otherClazz.getName(), otherClazz.getName(), annotatedMembers));
+            throw new IllegalStateException("""
+                    The class %s is not annotated with @PlanningSolution but defines annotated members.
+                    Maybe annotate %s with @PlanningSolution.
+                    Maybe remove the annotated members (%s).""".formatted(otherClazz.getName(), otherClazz.getName(),
+                    annotatedMembers));
         }
     }
 
@@ -211,11 +200,10 @@ public final class SolutionDescriptor<Solution_> {
         var inheritedClassList =
                 ConfigUtils.getAllAnnotatedLineageClasses(solutionClass.getSuperclass(), PlanningSolution.class);
         if (inheritedClassList.size() > 1) {
-            throw new IllegalStateException(
-                    """
-                            The class %s inherits its @%s annotation from multiple classes (%s).
-                            Remove solution class(es) from the inheritance chain to create a single-level inheritance structure."""
-                            .formatted(solutionClass.getName(), PlanningSolution.class.getSimpleName(), inheritedClassList));
+            throw new IllegalStateException("""
+                    The class %s inherits its @%s annotation from multiple classes (%s).
+                    Remove solution class(es) from the inheritance chain to create a single-level inheritance structure."""
+                    .formatted(solutionClass.getName(), PlanningSolution.class.getSimpleName(), inheritedClassList));
         }
     }
 
@@ -256,25 +244,28 @@ public final class SolutionDescriptor<Solution_> {
     private final Class<Solution_> solutionClass;
     private final MemberAccessorFactory memberAccessorFactory;
 
-    private DomainAccessType domainAccessType;
-    private LookupStrategyResolver lookUpStrategyResolver;
-
-    private final Map<String, MemberAccessor> problemFactMemberAccessorMap = new LinkedHashMap<>();
-    private final Map<String, MemberAccessor> problemFactCollectionMemberAccessorMap = new LinkedHashMap<>();
-    private final Map<String, MemberAccessor> entityMemberAccessorMap = new LinkedHashMap<>();
-    private final Map<String, MemberAccessor> entityCollectionMemberAccessorMap = new LinkedHashMap<>();
-    private Set<Class<?>> problemFactOrEntityClassSet;
-    private List<ListVariableDescriptor<Solution_>> listVariableDescriptorList;
-    private ScoreDescriptor<?> scoreDescriptor;
+    private final SequencedMap<String, MemberAccessor> problemFactMemberAccessorMap = new LinkedHashMap<>();
+    private final SequencedMap<String, MemberAccessor> problemFactCollectionMemberAccessorMap = new LinkedHashMap<>();
+    private final SequencedMap<String, MemberAccessor> entityMemberAccessorMap = new LinkedHashMap<>();
+    private final SequencedMap<String, MemberAccessor> entityCollectionMemberAccessorMap = new LinkedHashMap<>();
 
     private ConstraintWeightSupplier<Solution_, ?> constraintWeightSupplier;
-    private final Map<Class<?>, EntityDescriptor<Solution_>> entityDescriptorMap = new LinkedHashMap<>();
+    private final SequencedMap<Class<?>, EntityDescriptor<Solution_>> entityDescriptorMap = new LinkedHashMap<>();
     private final List<Class<?>> reversedEntityClassList = new ArrayList<>();
     private final ConcurrentMap<Class<?>, EntityDescriptor<Solution_>> lowestEntityDescriptorMap = new ConcurrentHashMap<>();
     private final ConcurrentMap<Class<?>, MemberAccessor> planningIdMemberAccessorMap = new ConcurrentHashMap<>();
 
+    // Lazily initialized fields
+    private SequencedSet<Class<?>> problemFactOrEntityClassSet;
+    private ScoreDescriptor<?> scoreDescriptor;
+    private DomainAccessType domainAccessType;
+    private LookupStrategyResolver lookUpStrategyResolver;
     private PlanningSolutionMetaModel<Solution_> planningSolutionMetaModel;
     private SolutionCloner<Solution_> solutionCloner;
+    private List<EntityDescriptor<Solution_>> genuineEntityDescriptorList;
+    private List<BasicVariableDescriptor<Solution_>> basicVariableDescriptorList;
+    private List<ListVariableDescriptor<Solution_>> listVariableDescriptorList;
+    private List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptorList;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -292,13 +283,14 @@ public final class SolutionDescriptor<Solution_> {
         var entityClass = entityDescriptor.getEntityClass();
         for (var otherEntityClass : entityDescriptorMap.keySet()) {
             if (entityClass.isAssignableFrom(otherEntityClass)) {
-                throw new IllegalArgumentException(
-                        "An earlier entityClass (%s) should not be a subclass of a later entityClass (%s). Switch their declaration so superclasses are defined earlier."
-                                .formatted(otherEntityClass, entityClass));
+                throw new IllegalArgumentException("""
+                        An earlier entityClass (%s) should not be a subclass of a later entityClass (%s).
+                        Switch their declaration so superclasses are defined earlier."""
+                        .formatted(otherEntityClass, entityClass));
             }
         }
         entityDescriptorMap.put(entityClass, entityDescriptor);
-        reversedEntityClassList.add(0, entityClass);
+        reversedEntityClassList.addFirst(entityClass);
         lowestEntityDescriptorMap.put(entityClass, entityDescriptor);
     }
 
@@ -310,14 +302,19 @@ public final class SolutionDescriptor<Solution_> {
         for (var lineageClass : ConfigUtils.getAllParents(solutionClass)) {
             var memberList = ConfigUtils.getDeclaredMembers(lineageClass);
             var constraintWeightFieldList = memberList.stream()
-                    .filter(member -> member instanceof Field field
-                            && ConstraintWeightOverrides.class.isAssignableFrom(field.getType()))
-                    .map(f -> ((Field) f))
-                    .toList();
+                    .flatMap(member -> {
+                        if (member instanceof Field field
+                                && ConstraintWeightOverrides.class.isAssignableFrom(field.getType())) {
+                            return Stream.of(field);
+                        } else {
+                            return Stream.empty();
+                        }
+                    }).toList();
             switch (constraintWeightFieldList.size()) {
-                case 0:
-                    break;
-                case 1:
+                case 0 -> {
+                    // Do nothing.
+                }
+                case 1 -> {
                     if (constraintWeightSupplier != null) {
                         // The bottom-most class wins, they are parsed first due to ConfigUtil.getAllParents().
                         throw new IllegalStateException(
@@ -325,9 +322,9 @@ public final class SolutionDescriptor<Solution_> {
                                         .formatted(lineageClass, ConstraintWeightOverrides.class));
                     }
                     constraintWeightSupplier = OverridesBasedConstraintWeightSupplier.create(this, descriptorPolicy,
-                            constraintWeightFieldList.get(0));
-                    break;
-                default:
+                            constraintWeightFieldList.getFirst());
+                }
+                default ->
                     throw new IllegalStateException("The solutionClass (%s) has more than one field (%s) of type %s."
                             .formatted(solutionClass, constraintWeightFieldList, ConstraintWeightOverrides.class));
             }
@@ -346,8 +343,8 @@ public final class SolutionDescriptor<Solution_> {
         for (var lineageClass : lineageClassList) {
             var memberList = ConfigUtils.getDeclaredMembers(lineageClass);
             for (var member : memberList) {
-                if (member instanceof Method method && potentiallyOverwritingMethodList.stream().anyMatch(
-                        m -> member.getName().equals(m.getName()) // Shortcut to discard negatives faster
+                if (member instanceof Method method
+                        && potentiallyOverwritingMethodList.stream().anyMatch(m -> member.getName().equals(m.getName()) // Shortcut to discard negatives faster
                                 && ReflectionHelper.isMethodOverwritten(method, m.getDeclaringClass()))) {
                     // Ignore member because it is an overwritten method
                     continue;
@@ -368,12 +365,10 @@ public final class SolutionDescriptor<Solution_> {
         // Do not check if problemFactCollectionMemberAccessorMap and problemFactMemberAccessorMap are empty
         // because they are only required for ConstraintStreams.
         if (scoreDescriptor == null) {
-            throw new IllegalStateException(
-                    """
-                            The solutionClass (%s) must have 1 member with a @%s annotation.
-                            Maybe add a getScore() method with a @%s annotation."""
-                            .formatted(solutionClass, PlanningScore.class.getSimpleName(),
-                                    PlanningScore.class.getSimpleName()));
+            throw new IllegalStateException("""
+                    The solutionClass (%s) must have 1 member with a @%s annotation.
+                    Maybe add a getScore() method with a @%s annotation.""".formatted(solutionClass,
+                    PlanningScore.class.getSimpleName(), PlanningScore.class.getSimpleName()));
         }
     }
 
@@ -395,16 +390,15 @@ public final class SolutionDescriptor<Solution_> {
         if (solutionSuperclass == null) {
             throw new IllegalStateException("""
                     The solutionClass (%s) has been specified as a solution in the configuration, \
-                    but does not have a @%s annotation."""
-                    .formatted(solutionClass.getCanonicalName(), PlanningSolution.class.getSimpleName()));
+                    but does not have a @%s annotation.""".formatted(solutionClass.getCanonicalName(),
+                    PlanningSolution.class.getSimpleName()));
         }
         var parentSolutionAnnotation = solutionSuperclass.getAnnotation(PlanningSolution.class);
         if (parentSolutionAnnotation == null) {
             throw new IllegalStateException("""
                     The solutionClass (%s) has been specified as a solution in the configuration, \
-                    but neither it nor its superclass (%s) have a @%s annotation."""
-                    .formatted(solutionClass.getCanonicalName(), solutionSuperclass.getCanonicalName(),
-                            PlanningSolution.class.getSimpleName()));
+                    but neither it nor its superclass (%s) have a @%s annotation.""".formatted(solutionClass.getCanonicalName(),
+                    solutionSuperclass.getCanonicalName(), PlanningSolution.class.getSimpleName()));
         }
         return parentSolutionAnnotation;
     }
@@ -417,15 +411,12 @@ public final class SolutionDescriptor<Solution_> {
         }
     }
 
-    private void processFactEntityOrScoreAnnotation(DescriptorPolicy descriptorPolicy,
-            Member member) {
-        var annotationClass = extractFactEntityOrScoreAnnotationClass(
-                member);
+    private void processFactEntityOrScoreAnnotation(DescriptorPolicy descriptorPolicy, Member member) {
+        var annotationClass = extractFactEntityOrScoreAnnotationClass(member);
         if (annotationClass == null) {
             return;
         }
-        if (annotationClass.equals(ProblemFactProperty.class)
-                || annotationClass.equals(ProblemFactCollectionProperty.class)) {
+        if (annotationClass.equals(ProblemFactProperty.class) || annotationClass.equals(ProblemFactCollectionProperty.class)) {
             processProblemFactPropertyAnnotation(descriptorPolicy, member, annotationClass);
         } else if (annotationClass.equals(PlanningEntityProperty.class)
                 || annotationClass.equals(PlanningEntityCollectionProperty.class)) {
@@ -441,11 +432,8 @@ public final class SolutionDescriptor<Solution_> {
     }
 
     private static Class<? extends Annotation> extractFactEntityOrScoreAnnotationClass(Member member) {
-        return ConfigUtils.extractAnnotationClass(member,
-                ProblemFactProperty.class,
-                ProblemFactCollectionProperty.class,
-                PlanningEntityProperty.class, PlanningEntityCollectionProperty.class,
-                PlanningScore.class);
+        return ConfigUtils.extractAnnotationClass(member, ProblemFactProperty.class, ProblemFactCollectionProperty.class,
+                PlanningEntityProperty.class, PlanningEntityCollectionProperty.class, PlanningScore.class);
     }
 
     private void processProblemFactPropertyAnnotation(DescriptorPolicy descriptorPolicy, Member member,
@@ -471,8 +459,8 @@ public final class SolutionDescriptor<Solution_> {
                 problemFactType = type.getComponentType();
             } else {
                 problemFactType = ConfigUtils.extractGenericTypeParameterOrFail(PlanningSolution.class.getSimpleName(),
-                        memberAccessor.getDeclaringClass(),
-                        type, memberAccessor.getGenericType(), annotationClass, memberAccessor.getName());
+                        memberAccessor.getDeclaringClass(), type, memberAccessor.getGenericType(), annotationClass,
+                        memberAccessor.getName());
             }
         } else {
             throw new IllegalStateException("Impossible situation with annotationClass (" + annotationClass + ").");
@@ -480,12 +468,10 @@ public final class SolutionDescriptor<Solution_> {
         if (problemFactType.isAnnotationPresent(PlanningEntity.class)) {
             throw new IllegalStateException("""
                     The solutionClass (%s) has a @%s-annotated member (%s) that returns a @%s.
-                    Maybe use @%s instead?"""
-                    .formatted(solutionClass, annotationClass.getSimpleName(), memberAccessor.getName(),
-                            PlanningEntity.class.getSimpleName(),
-                            ((annotationClass == ProblemFactProperty.class)
-                                    ? PlanningEntityProperty.class.getSimpleName()
-                                    : PlanningEntityCollectionProperty.class.getSimpleName())));
+                    Maybe use @%s instead?""".formatted(solutionClass, annotationClass.getSimpleName(),
+                    memberAccessor.getName(), PlanningEntity.class.getSimpleName(),
+                    ((annotationClass == ProblemFactProperty.class) ? PlanningEntityProperty.class.getSimpleName()
+                            : PlanningEntityCollectionProperty.class.getSimpleName())));
         }
     }
 
@@ -510,8 +496,8 @@ public final class SolutionDescriptor<Solution_> {
         }
     }
 
-    private void assertNoFieldAndGetterDuplicationOrConflict(
-            MemberAccessor memberAccessor, Class<? extends Annotation> annotationClass) {
+    private void assertNoFieldAndGetterDuplicationOrConflict(MemberAccessor memberAccessor,
+            Class<? extends Annotation> annotationClass) {
         MemberAccessor duplicate;
         Class<? extends Annotation> otherAnnotationClass;
         var memberName = memberAccessor.getName();
@@ -533,8 +519,8 @@ public final class SolutionDescriptor<Solution_> {
         throw new IllegalStateException("""
                 The solutionClass (%s) has a @%s annotated member (%s) that is duplicated by a @%s annotated member (%s).
                 %s""".formatted(solutionClass, annotationClass.getSimpleName(), memberAccessor,
-                otherAnnotationClass.getSimpleName(),
-                duplicate, annotationClass.equals(otherAnnotationClass)
+                otherAnnotationClass.getSimpleName(), duplicate,
+                annotationClass.equals(otherAnnotationClass)
                         ? "Maybe the annotation is defined on both the field and its getter."
                         : "Maybe 2 mutually exclusive annotations are configured."));
     }
@@ -560,8 +546,7 @@ public final class SolutionDescriptor<Solution_> {
                 for (var variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
                     LOGGER.trace("            {} variable {} ({})",
                             variableDescriptor instanceof GenuineVariableDescriptor ? "Genuine" : "Shadow",
-                            variableDescriptor.getVariableName(),
-                            variableDescriptor.getMemberAccessorSpeedNote());
+                            variableDescriptor.getVariableName(), variableDescriptor.getMemberAccessorSpeedNote());
                 }
             }
         }
@@ -592,7 +577,7 @@ public final class SolutionDescriptor<Solution_> {
         var globalShadowOrder = 0;
         while (!pairList.isEmpty()) {
             pairList.sort(Comparator.comparingInt(MutablePair::getValue));
-            var pair = pairList.remove(0);
+            var pair = pairList.removeFirst();
             var shadow = pair.getKey();
             if (pair.getValue() != 0) {
                 if (pair.getValue() < 0) {
@@ -625,18 +610,13 @@ public final class SolutionDescriptor<Solution_> {
         }
     }
 
-    private Set<Class<?>> collectEntityAndProblemFactClasses() {
+    private SequencedSet<Class<?>> collectEntityAndProblemFactClasses() {
         // Figure out all problem fact or entity types that are used within this solution,
         // using the knowledge we've already gained by processing all the annotations.
-        var entityClassStream = entityDescriptorMap.keySet()
-                .stream();
-        var factClassStream = problemFactMemberAccessorMap
-                .values()
-                .stream()
-                .map(MemberAccessor::getType);
+        var entityClassStream = entityDescriptorMap.keySet().stream();
+        var factClassStream = problemFactMemberAccessorMap.values().stream().map(MemberAccessor::getType);
         var problemFactOrEntityClassStream = concat(entityClassStream, factClassStream);
-        var factCollectionClassStream = problemFactCollectionMemberAccessorMap.values()
-                .stream()
+        var factCollectionClassStream = problemFactCollectionMemberAccessorMap.values().stream()
                 .map(accessor -> ConfigUtils
                         .extractGenericTypeParameter("solutionClass", getSolutionClass(), accessor.getType(),
                                 accessor.getGenericType(), ProblemFactCollectionProperty.class, accessor.getName())
@@ -644,24 +624,25 @@ public final class SolutionDescriptor<Solution_> {
         problemFactOrEntityClassStream = concat(problemFactOrEntityClassStream, factCollectionClassStream);
         // Add constraint configuration, if configured.
         if (constraintWeightSupplier != null) {
-            problemFactOrEntityClassStream = concat(problemFactOrEntityClassStream,
-                    Stream.of(constraintWeightSupplier.getProblemFactClass()));
+            problemFactOrEntityClassStream =
+                    concat(problemFactOrEntityClassStream, Stream.of(constraintWeightSupplier.getProblemFactClass()));
         }
-        return problemFactOrEntityClassStream.collect(Collectors.toSet());
+        return problemFactOrEntityClassStream.collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private List<ListVariableDescriptor<Solution_>> findListVariableDescriptors() {
         return getGenuineEntityDescriptors().stream()
                 .map(EntityDescriptor::getGenuineVariableDescriptorList)
                 .flatMap(Collection::stream)
-                .filter(VariableDescriptor::isListVariable)
-                .map(variableDescriptor -> ((ListVariableDescriptor<Solution_>) variableDescriptor))
+                .flatMap(e -> e instanceof ListVariableDescriptor<Solution_> listVariableDescriptor
+                        ? Stream.of(listVariableDescriptor)
+                        : Stream.empty())
                 .toList();
     }
 
     private void initSolutionCloner(DescriptorPolicy descriptorPolicy) {
-        solutionCloner = solutionCloner == null ? descriptorPolicy.getGeneratedSolutionClonerMap()
-                .get(GizmoSolutionClonerFactory.getGeneratedClassName(this))
+        solutionCloner = solutionCloner == null
+                ? descriptorPolicy.getGeneratedSolutionClonerMap().get(GizmoSolutionClonerFactory.getGeneratedClassName(this))
                 : solutionCloner;
 
         if (solutionCloner instanceof GizmoSolutionCloner<Solution_> gizmoSolutionCloner) {
@@ -697,28 +678,28 @@ public final class SolutionDescriptor<Solution_> {
         return (ScoreDescriptor<Score_>) scoreDescriptor;
     }
 
-    public Map<String, MemberAccessor> getProblemFactMemberAccessorMap() {
+    public SequencedMap<String, MemberAccessor> getProblemFactMemberAccessorMap() {
         return problemFactMemberAccessorMap;
     }
 
-    public Map<String, MemberAccessor> getProblemFactCollectionMemberAccessorMap() {
+    public SequencedMap<String, MemberAccessor> getProblemFactCollectionMemberAccessorMap() {
         return problemFactCollectionMemberAccessorMap;
     }
 
-    public Map<String, MemberAccessor> getEntityMemberAccessorMap() {
+    public SequencedMap<String, MemberAccessor> getEntityMemberAccessorMap() {
         return entityMemberAccessorMap;
     }
 
-    public Map<String, MemberAccessor> getEntityCollectionMemberAccessorMap() {
+    public SequencedMap<String, MemberAccessor> getEntityCollectionMemberAccessorMap() {
         return entityCollectionMemberAccessorMap;
     }
 
-    public Set<Class<?>> getProblemFactOrEntityClassSet() {
+    public SequencedSet<Class<?>> getProblemFactOrEntityClassSet() {
         return problemFactOrEntityClassSet;
     }
 
     public ListVariableDescriptor<Solution_> getListVariableDescriptor() {
-        return listVariableDescriptorList.isEmpty() ? null : listVariableDescriptorList.get(0);
+        return listVariableDescriptorList.isEmpty() ? null : listVariableDescriptorList.getFirst();
     }
 
     public SolutionCloner<Solution_> getSolutionCloner() {
@@ -739,8 +720,8 @@ public final class SolutionDescriptor<Solution_> {
                 for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
                     if (variableDescriptor.isListVariable()) {
                         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
-                        var listVariableMetaModel = new DefaultPlanningListVariableMetaModel<>(entityMetaModel,
-                                listVariableDescriptor);
+                        var listVariableMetaModel =
+                                new DefaultPlanningListVariableMetaModel<>(entityMetaModel, listVariableDescriptor);
                         entityMetaModel.addVariable(listVariableMetaModel);
                     } else {
                         var basicVariableDescriptor = (BasicVariableDescriptor<Solution_>) variableDescriptor;
@@ -762,10 +743,13 @@ public final class SolutionDescriptor<Solution_> {
     }
 
     public List<BasicVariableDescriptor<Solution_>> getBasicVariableDescriptorList() {
-        return getGenuineEntityDescriptors().stream()
-                .flatMap(entityDescriptor -> entityDescriptor.getGenuineBasicVariableDescriptorList().stream())
-                .map(descriptor -> (BasicVariableDescriptor<Solution_>) descriptor)
+        if (basicVariableDescriptorList != null) {
+            return basicVariableDescriptorList;
+        }
+        basicVariableDescriptorList = getGenuineEntityDescriptors().stream()
+                .flatMap(entityDescriptor -> entityDescriptor.getBasicVariableDescriptorList().stream())
                 .toList();
+        return basicVariableDescriptorList;
     }
 
     public boolean hasBasicVariable() {
@@ -785,21 +769,21 @@ public final class SolutionDescriptor<Solution_> {
         return (ConstraintWeightSupplier<Solution_, Score_>) constraintWeightSupplier;
     }
 
-    public Set<Class<?>> getEntityClassSet() {
-        return entityDescriptorMap.keySet();
+    public SequencedSet<Class<?>> getEntityClassSet() {
+        return entityDescriptorMap.sequencedKeySet();
     }
 
-    public Collection<EntityDescriptor<Solution_>> getEntityDescriptors() {
-        return entityDescriptorMap.values();
+    public SequencedCollection<EntityDescriptor<Solution_>> getEntityDescriptors() {
+        return entityDescriptorMap.sequencedValues();
     }
 
-    public Collection<EntityDescriptor<Solution_>> getGenuineEntityDescriptors() {
-        var genuineEntityDescriptorList = new ArrayList<EntityDescriptor<Solution_>>(entityDescriptorMap.size());
-        for (var entityDescriptor : entityDescriptorMap.values()) {
-            if (entityDescriptor.hasAnyDeclaredGenuineVariableDescriptor()) {
-                genuineEntityDescriptorList.add(entityDescriptor);
-            }
+    public SequencedCollection<EntityDescriptor<Solution_>> getGenuineEntityDescriptors() {
+        if (genuineEntityDescriptorList != null) {
+            return genuineEntityDescriptorList;
         }
+        genuineEntityDescriptorList = entityDescriptorMap.values().stream()
+                .filter(EntityDescriptor::hasAnyDeclaredGenuineVariableDescriptor)
+                .toList();
         return genuineEntityDescriptorList;
     }
 
@@ -884,12 +868,6 @@ public final class SolutionDescriptor<Solution_> {
     // Extraction methods
     // ************************************************************************
 
-    public Collection<Object> getAllEntitiesAndProblemFacts(Solution_ solution) {
-        var facts = new ArrayList<>();
-        visitAll(solution, facts::add);
-        return facts;
-    }
-
     /**
      * @param solution never null
      * @return {@code >= 0}
@@ -964,9 +942,8 @@ public final class SolutionDescriptor<Solution_> {
             var optionalTypeParameter = ConfigUtils.extractGenericTypeParameter("solutionClass",
                     entityCollectionMemberAccessor.getDeclaringClass(), entityCollectionMemberAccessor.getType(),
                     entityCollectionMemberAccessor.getGenericType(), null, entityCollectionMemberAccessor.getName());
-            boolean collectionGuaranteedToContainOnlyGivenEntityType = optionalTypeParameter
-                    .map(entityClass::isAssignableFrom)
-                    .orElse(false);
+            boolean collectionGuaranteedToContainOnlyGivenEntityType =
+                    optionalTypeParameter.map(entityClass::isAssignableFrom).orElse(false);
             if (collectionGuaranteedToContainOnlyGivenEntityType) {
                 /*
                  * In a typical case typeParameter is specified and it is the expected entity or its superclass.
@@ -981,9 +958,8 @@ public final class SolutionDescriptor<Solution_> {
                 continue;
             }
             // The collection now is either raw, or it is not of an entity type, such as perhaps a parent interface.
-            boolean collectionCouldPossiblyContainGivenEntityType = optionalTypeParameter
-                    .map(e -> e.isAssignableFrom(entityClass))
-                    .orElse(true);
+            boolean collectionCouldPossiblyContainGivenEntityType =
+                    optionalTypeParameter.map(e -> e.isAssignableFrom(entityClass)).orElse(true);
             if (!collectionCouldPossiblyContainGivenEntityType) {
                 // There is no way how this collection could possibly contain entities of the given type.
                 continue;
@@ -1046,14 +1022,6 @@ public final class SolutionDescriptor<Solution_> {
         return result.longValue();
     }
 
-    public List<ShadowVariableDescriptor<Solution_>> getAllShadowVariableDescriptors() {
-        var out = new ArrayList<ShadowVariableDescriptor<Solution_>>();
-        for (var entityDescriptor : entityDescriptorMap.values()) {
-            out.addAll(entityDescriptor.getShadowVariableDescriptors());
-        }
-        return out;
-    }
-
     public int getValueRangeDescriptorCount() {
         var count = 0;
         for (var entityDescriptor : entityDescriptorMap.values()) {
@@ -1063,16 +1031,20 @@ public final class SolutionDescriptor<Solution_> {
     }
 
     public List<DeclarativeShadowVariableDescriptor<Solution_>> getDeclarativeShadowVariableDescriptors() {
-        var out = new HashSet<DeclarativeShadowVariableDescriptor<Solution_>>();
-        for (var entityDescriptor : entityDescriptorMap.values()) {
-            entityDescriptor.getShadowVariableDescriptors();
-            for (var shadowVariableDescriptor : entityDescriptor.getShadowVariableDescriptors()) {
-                if (shadowVariableDescriptor instanceof DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariableDescriptor) {
-                    out.add(declarativeShadowVariableDescriptor);
-                }
-            }
+        if (declarativeShadowVariableDescriptorList != null) {
+            return declarativeShadowVariableDescriptorList;
         }
-        return new ArrayList<>(out);
+        declarativeShadowVariableDescriptorList = entityDescriptorMap.values().stream()
+                .flatMap(entityDescriptor -> entityDescriptor.getShadowVariableDescriptors().stream())
+                .flatMap(shadowVariableDescriptor -> {
+                    if (shadowVariableDescriptor instanceof DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariableDescriptor) {
+                        return Stream.of(declarativeShadowVariableDescriptor);
+                    }
+                    return Stream.empty();
+                })
+                .distinct()
+                .toList();
+        return declarativeShadowVariableDescriptorList;
     }
 
     public Stream<Object> extractAllEntitiesStream(Solution_ solution) {
@@ -1109,7 +1081,8 @@ public final class SolutionDescriptor<Solution_> {
                             The solutionClass (%s)'s %s (%s) should never return null.
                             %sMaybe that property (%s) was set with null instead of an empty collection/array when the class (%s) instance was created."""
                             .formatted(solutionClass, isFact ? "factCollectionProperty" : "entityCollectionProperty",
-                                    memberAccessor, memberAccessor instanceof ReflectionFieldMemberAccessor ? ""
+                                    memberAccessor,
+                                    memberAccessor instanceof ReflectionFieldMemberAccessor ? ""
                                             : "Maybe the getter/method always returns null instead of the actual data.\n",
                                     memberAccessor.getName(), solutionClass.getSimpleName()));
         }
@@ -1145,8 +1118,7 @@ public final class SolutionDescriptor<Solution_> {
         for (var entry : oldEntities.entrySet()) {
             var entityClassName = entry.getKey();
             for (var oldEntity : entry.getValue()) {
-                var newEntity = newEntities.getOrDefault(entityClassName, Collections.emptySet())
-                        .stream()
+                var newEntity = newEntities.getOrDefault(entityClassName, Collections.emptySet()).stream()
                         .filter(e -> Objects.equals(e, oldEntity))
                         .findFirst()
                         .orElse(null);
@@ -1158,14 +1130,14 @@ public final class SolutionDescriptor<Solution_> {
             }
         }
 
-        var addedNewEntities = newEntities.values().stream()
-                .flatMap(Collection::stream)
+        var addedNewEntities = newEntities.values().stream().flatMap(Collection::stream)
                 .filter(newEntity -> !oldToNewEntities.containsValue(newEntity))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         // Genuine variables first, then sort by ordinal.
-        var variableDescriptorComparator = Comparator.<VariableDescriptor<Solution_>, String> comparing(
-                variableDescriptor -> variableDescriptor instanceof GenuineVariableDescriptor<Solution_> ? "0" : "1")
+        var variableDescriptorComparator = Comparator
+                .<VariableDescriptor<Solution_>, String> comparing(
+                        variableDescriptor -> variableDescriptor instanceof GenuineVariableDescriptor<Solution_> ? "0" : "1")
                 .thenComparingInt(VariableDescriptor::getOrdinal);
         var solutionDiff = new DefaultPlanningSolutionDiff<>(getMetaModel(), oldSolution, newSolution, removedOldEntities,
                 addedNewEntities);
@@ -1174,8 +1146,7 @@ public final class SolutionDescriptor<Solution_> {
             var newEntity = entry.getValue();
             var entityDescriptor = findEntityDescriptorOrFail(oldEntity.getClass());
             var entityDiff = new DefaultPlanningEntityDiff<>(solutionDiff, entry.getKey());
-            entityDescriptor.getVariableDescriptorMap().values().stream()
-                    .sorted(variableDescriptorComparator)
+            entityDescriptor.getVariableDescriptorMap().values().stream().sorted(variableDescriptorComparator)
                     .flatMap(variableDescriptor -> {
                         var oldValue = variableDescriptor.getValue(oldEntity);
                         var newValue = variableDescriptor.getValue(newEntity);
@@ -1194,8 +1165,7 @@ public final class SolutionDescriptor<Solution_> {
     }
 
     private SortedMap<String, Set<Object>> sortEntitiesForDiff(Solution_ solution) {
-        return getEntityDescriptors().stream()
-                .map(descriptor -> descriptor.extractEntities(solution))
+        return getEntityDescriptors().stream().map(descriptor -> descriptor.extractEntities(solution))
                 .flatMap(Collection::stream)
                 // TreeMap and LinkedHashSet for fully reproducible ordering of entities and variables.
                 .collect(Collectors.groupingBy(s -> s.getClass().getCanonicalName(), TreeMap::new,

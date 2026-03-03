@@ -846,8 +846,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             // It may be called for a shadow entity
             return;
         }
-        var basicVariableDescriptorList = entityDescriptor.getGenuineBasicVariableDescriptorList().stream()
-                .map(v -> (BasicVariableDescriptor<Solution_>) v).toList();
+        var basicVariableDescriptorList = entityDescriptor.getBasicVariableDescriptorList();
         assertValueRangeForBasicVariables(this, basicVariableDescriptorList, entity);
     }
 
@@ -857,7 +856,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             // It may be called for a shadow entity
             return;
         }
-        var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+        var listVariableDescriptor = entityDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             // The entity has no genuine list variable
             return;

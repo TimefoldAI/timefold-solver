@@ -3,7 +3,7 @@ package ai.timefold.solver.core.testdomain;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 
 @PlanningEntity
 public class TestdataEntity extends TestdataObject {
@@ -14,8 +14,8 @@ public class TestdataEntity extends TestdataObject {
         return TestdataSolution.buildSolutionDescriptor().findEntityDescriptorOrFail(TestdataEntity.class);
     }
 
-    public static GenuineVariableDescriptor<TestdataSolution> buildVariableDescriptorForValue() {
-        return buildEntityDescriptor().getGenuineVariableDescriptor("value");
+    public static BasicVariableDescriptor<TestdataSolution> buildVariableDescriptorForValue() {
+        return (BasicVariableDescriptor<TestdataSolution>) buildEntityDescriptor().getGenuineVariableDescriptor("value");
     }
 
     private TestdataValue value;
