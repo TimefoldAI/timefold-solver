@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -31,8 +32,8 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     private final Semaphore startSolverJobConsumption = new Semaphore(1);
     private final BestSolutionHolder<Solution_> bestSolutionHolder;
     private final ExecutorService consumerExecutor = Executors.newSingleThreadExecutor();
-    private @Nullable Solution_ firstInitializedSolution;
-    private @Nullable Solution_ initialSolution;
+    private final AtomicReference<@Nullable Solution_> firstInitializedSolution = new AtomicReference<>();
+    private final AtomicReference<@Nullable Solution_> initialSolution = new AtomicReference<>();
 
     public ConsumerSupport(ProblemId_ problemId, @Nullable Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer,
             @Nullable Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer,
@@ -49,25 +50,23 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         this.solverJobStartedConsumer = solverJobStartedConsumer;
         this.exceptionHandler = exceptionHandler;
         this.bestSolutionHolder = bestSolutionHolder;
-        this.firstInitializedSolution = null;
-        this.initialSolution = null;
     }
 
     // Called on the Solver thread.
-    void consumeIntermediateBestSolution(Solution_ bestSolution, EventProducerId producerId,
+    void consumeIntermediateBestSolution(Solution_ solution, EventProducerId producerId,
             BooleanSupplier isEveryProblemChangeProcessed) {
         /*
          * If the bestSolutionConsumer is not provided, the best solution is still set for the purpose of recording
          * problem changes.
          */
-        bestSolutionHolder.set(bestSolution, producerId, isEveryProblemChangeProcessed);
+        bestSolutionHolder.set(solution, producerId, isEveryProblemChangeProcessed);
         if (bestSolutionConsumer != null) {
             tryConsumeWaitingIntermediateBestSolution();
         }
     }
 
     // Called on the Solver thread.
-    void consumeFirstInitializedSolution(Solution_ firstInitializedSolution, EventProducerId producerId,
+    void consumeFirstInitializedSolution(Solution_ solution, EventProducerId producerId,
             boolean isTerminatedEarly) {
         try {
             // Called on the solver thread
@@ -78,13 +77,13 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
             throw new IllegalStateException("Interrupted when waiting for the first initialized solution consumption.");
         }
         // called on the Consumer thread
-        this.firstInitializedSolution = firstInitializedSolution;
-        scheduleFirstInitializedSolutionConsumption(solution -> firstInitializedSolutionConsumer
-                .accept(new FirstInitializedSolutionEventImpl<>(solution, producerId, isTerminatedEarly)));
+        this.firstInitializedSolution.getAndSet(solution); // Reachable more than once; problem change triggers restart.
+        scheduleFirstInitializedSolutionConsumption(s -> firstInitializedSolutionConsumer
+                .accept(new FirstInitializedSolutionEventImpl<>(s, producerId, isTerminatedEarly)));
     }
 
     // Called on the consumer thread
-    void consumeStartSolverJob(Solution_ initialSolution) {
+    void consumeStartSolverJob(Solution_ solution) {
         try {
             // Called on the solver thread
             // During the solving process, this lock is called once, and it won't block the Solver thread
@@ -94,12 +93,12 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
             throw new IllegalStateException("Interrupted when waiting for the start solver job consumption.");
         }
         // called on the Consumer thread
-        this.initialSolution = initialSolution;
+        this.initialSolution.getAndSet(solution); // Reachable more than once; problem change triggers restart.
         scheduleStartJobConsumption();
     }
 
     // Called on the Solver thread after Solver#solve() returns.
-    void consumeFinalBestSolution(Solution_ finalBestSolution) {
+    void consumeFinalBestSolution(Solution_ solution) {
         try {
             acquireAll();
         } catch (InterruptedException e) {
@@ -114,7 +113,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         }
         consumerExecutor.submit(() -> {
             try {
-                finalBestSolutionConsumer.accept(new FinalBestSolutionEventImpl<>(finalBestSolution));
+                finalBestSolutionConsumer.accept(new FinalBestSolutionEventImpl<>(solution));
             } catch (Throwable throwable) {
                 exceptionHandler.accept(problemId, throwable);
             } finally {
@@ -175,7 +174,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
      * because the consumption may not be executed before the final best solution is executed.
      */
     private void scheduleFirstInitializedSolutionConsumption(Consumer<? super Solution_> solutionConsumer) {
-        scheduleConsumption(firstSolutionConsumption, solutionConsumer, firstInitializedSolution);
+        scheduleConsumption(firstSolutionConsumption, solutionConsumer, firstInitializedSolution.get());
     }
 
     /**
@@ -187,7 +186,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         scheduleConsumption(startSolverJobConsumption,
                 solverJobStartedConsumer == null ? null
                         : solution -> solverJobStartedConsumer.accept(new SolverJobStartedEventImpl<>(solution)),
-                initialSolution);
+                initialSolution.get());
     }
 
     private void scheduleConsumption(Semaphore semaphore, @Nullable Consumer<? super Solution_> consumer,

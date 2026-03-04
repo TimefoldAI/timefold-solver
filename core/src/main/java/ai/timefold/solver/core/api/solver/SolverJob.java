@@ -55,8 +55,8 @@ public interface SolverJob<Solution_> {
     CompletableFuture<Void> addProblemChanges(List<ProblemChange<Solution_>> problemChangeList);
 
     /**
-     * Terminates the solver or cancels the solver job if it hasn't (re)started yet.
-     * <p>
+     * Terminates the solver if running.
+     * If the solver has not yet started, the job will be canceled and the solver will never start.
      * Does nothing if the solver already terminated.
      * <p>
      * Waits for the termination or cancellation to complete before returning.
@@ -64,6 +64,10 @@ public interface SolverJob<Solution_> {
      * the {@code finalBestSolutionConsumer} is executed with the latest best solution.
      * These consumers run on a consumer thread independently of the termination and may still run even after
      * this method returns.
+     * <p>
+     * It waits for no more than one minute, at which point it returns.
+     * In this case the solver might still be running in the background, but it will be terminated as soon as possible.
+     * Any best solutions from that point on will be ignored.
      */
     void terminateEarly();
 
