@@ -98,8 +98,6 @@ module ai.timefold.solver.core {
             to ai.timefold.solver.quarkus.deployment, ai.timefold.solver.quarkus;
     exports ai.timefold.solver.core.impl.domain.common
             to ai.timefold.solver.quarkus.deployment;
-    exports ai.timefold.solver.core.impl.domain.common.accessor.gizmo
-            to ai.timefold.solver.quarkus.deployment;
     exports ai.timefold.solver.core.impl.domain.entity.descriptor
             to ai.timefold.solver.jackson, ai.timefold.solver.jaxb, ai.timefold.solver.benchmark,
             ai.timefold.solver.spring.boot.autoconfigure, ai.timefold.solver.quarkus.integration.test,
@@ -210,6 +208,7 @@ module ai.timefold.solver.core {
 
     // Broad impl usage
     exports ai.timefold.solver.core.impl.io.jaxb;
+    exports ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
     exports ai.timefold.solver.core.impl.domain.solution.descriptor;
     exports ai.timefold.solver.core.impl.solver.termination;
 
