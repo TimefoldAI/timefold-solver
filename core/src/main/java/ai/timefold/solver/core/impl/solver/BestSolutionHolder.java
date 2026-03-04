@@ -16,7 +16,6 @@ import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -149,7 +148,6 @@ final class BestSolutionHolder<Solution_> {
      * @return CompletableFuture that will be completed after the best solution containing this change is passed to
      *         a user-defined Consumer.
      */
-    @NonNull
     CompletableFuture<Void> addProblemChange(Solver<Solution_> solver, List<ProblemChange<Solution_>> problemChangeList) {
         var futureProblemChange = new CompletableFuture<Void>();
         synchronized (this) {
