@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -16,7 +17,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
+import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.util.CompositeListEntry;
 import ai.timefold.solver.core.impl.util.ListEntry;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -25,7 +26,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * As defined by {@link UnfinishedJoiners#containingAnyOf(Function, Function)}
+ * As defined by {@link Joiners#containingAnyOf(Function, Function)}
  */
 @NullMarked
 final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
@@ -187,12 +188,24 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        return randomIterator(queryCompositeKey, workingRandom, null);
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, Predicate<T> filter) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, @Nullable Predicate<T> filter) {
+        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        if (indexKeyCollection.isEmpty()) {
+            return Collections.emptyIterator();
+        }
+        if (filter == null) {
+            return new RandomIterator(indexKeyCollection, workingRandom,
+                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom),
+                    size(queryCompositeKey));
+        } else {
+            return new RandomIterator(indexKeyCollection, workingRandom,
+                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter),
+                    size(queryCompositeKey));
+        }
     }
 
     @Override
@@ -224,11 +237,13 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
             if (next != null) {
                 return true;
             }
-            if (downstreamIterator != null && downstreamIterator.hasNext()) {
-                var tuple = downstreamIterator.next();
-                if (distinctingSet.add(tuple)) {
-                    next = tuple;
-                    return true;
+            if (downstreamIterator != null) {
+                while (downstreamIterator.hasNext()) {
+                    var tuple = downstreamIterator.next();
+                    if (distinctingSet.add(tuple)) {
+                        next = tuple;
+                        return true;
+                    }
                 }
             }
             while (indexerIterator.hasNext()) {
@@ -257,6 +272,74 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
             var result = next;
             next = null;
             return result;
+        }
+    }
+
+    private final class RandomIterator implements Iterator<T> {
+
+        private final List<Iterator<T>> downstreamIteratorList;
+        private final RandomGenerator workingRandom;
+        private final Set<T> removedSet;
+        private final int uniqueElementCount;
+        private @Nullable T next = null;
+        private @Nullable T current = null;
+
+        public RandomIterator(KeyCollection_ indexKeyCollection, RandomGenerator workingRandom,
+                Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction,
+                int uniqueElementCount) {
+            this.downstreamIteratorList = new ArrayList<>(indexKeyCollection.size());
+            this.removedSet = new HashSet<>();
+            this.workingRandom = workingRandom;
+            this.uniqueElementCount = uniqueElementCount;
+            for (var indexKey : indexKeyCollection) {
+                this.downstreamIteratorList.add(downstreamIndexerIteratorFunction.apply(downstreamIndexerMap.get(indexKey)));
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (next != null) {
+                return true;
+            }
+            if (uniqueElementCount <= removedSet.size()) {
+                return false;
+            }
+            while (!downstreamIteratorList.isEmpty()) {
+                var remainingIteratorCount = downstreamIteratorList.size();
+                var selectedIndex = workingRandom.nextInt(remainingIteratorCount);
+                var downstreamIterator = downstreamIteratorList.get(selectedIndex);
+                if (!downstreamIterator.hasNext()) {
+                    downstreamIteratorList.remove(selectedIndex);
+                    continue;
+                }
+
+                next = downstreamIterator.next();
+                if (!removedSet.contains(next)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            current = next;
+            next = null;
+            return current;
+        }
+
+        @Override
+        public void remove() {
+            // Note: since we have multiple downstream iterators, and they may have
+            // duplicates, we need to keep track of removed elements ourselves
+            if (current == null) {
+                throw new IllegalStateException("next() must be called before remove().");
+            }
+            removedSet.add(current);
+            current = null;
         }
     }
 
