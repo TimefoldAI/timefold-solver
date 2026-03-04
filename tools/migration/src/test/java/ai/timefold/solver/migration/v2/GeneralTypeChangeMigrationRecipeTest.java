@@ -17,7 +17,7 @@ import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
 
 @Execution(ExecutionMode.CONCURRENT)
-class GeneralChangeTypeMigrationRecipeTest implements RewriteTest {
+class GeneralTypeChangeMigrationRecipeTest implements RewriteTest {
 
     private static final class NoWildCardImportStyle extends NamedStyles {
 
@@ -30,7 +30,7 @@ class GeneralChangeTypeMigrationRecipeTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipes(new GeneralChangeTypeMigrationRecipe())
+        spec.recipes(new GeneralTypeChangeMigrationRecipe())
                 .typeValidationOptions(TypeValidation.builder().allowMissingType(ignore -> true).build())
                 .parser(JavaParser.fromJavaVersion()
                         .styles(List.of(new NoWildCardImportStyle()))

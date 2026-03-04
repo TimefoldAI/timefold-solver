@@ -6,8 +6,15 @@ recipeList:
   # Solver 1.x
   - ai.timefold.solver.migration.ToV1
   # Solver 2.x
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: ai.timefold.solver
+      artifactId: timefold-solver-webui
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: ai.timefold.solver
+      artifactId: timefold-solver-jsonb
   - ai.timefold.solver.migration.ChangeVersion
   - ai.timefold.solver.migration.v2.GeneralChangeTypeMigrationRecipe
+  - ai.timefold.solver.migration.v2.GeneralChangeMethodMigrationRecipe
   - ai.timefold.solver.migration.v2.ConstraintStreamMigrationRecipe
   - org.openrewrite.java.DeleteMethodArgument:
       methodPattern: ai.timefold.solver.core.api.score.constraint.ConstraintRef of(String, String)

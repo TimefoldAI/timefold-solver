@@ -7,7 +7,7 @@ import ai.timefold.solver.migration.AbstractRecipe;
 import org.openrewrite.Recipe;
 import org.openrewrite.java.ChangeType;
 
-public class GeneralChangeTypeMigrationRecipe extends AbstractRecipe {
+public class GeneralTypeChangeMigrationRecipe extends AbstractRecipe {
     @Override
     public String getDisplayName() {
         return "Migrate legacy code to the new class structure";
