@@ -993,8 +993,10 @@ class Resource {
 [#integrationWithJPMS]
 === Java platform module system (Jigsaw)
 
-When using Timefold Solver from code on the modulepath (Java 9 and higher),
-_open_ your packages that contain your domain objects, constraints and solver configuration
+Starting in version 2.0, Timefold Solver has official support for the https://openjdk.org/projects/jigsaw/spec/[Java Platform Module System (JPMS)].
+
+When using Timefold Solver from code on the modulepath,
+_export_ and _open_ your packages that contain your domain objects, constraints and solver configuration
 _to all modules_ in your `module-info.java` file:
 
 [source,java,options="nowrap"]
@@ -1003,13 +1005,32 @@ module org.acme.vehiclerouting {
     requires ai.timefold.solver.core;
     ...
 
-    opens org.acme.vehiclerouting.domain; // Domain classes
-    opens org.acme.vehiclerouting.solver; // Constraints
+    exports org.acme.vehiclerouting.domain; // Domain classes
+    exports org.acme.vehiclerouting.solver; // Constraints
+
+    opens org.acme.vehiclerouting.domain to ai.timefold.solver.core; // Domain classes
+    opens org.acme.vehiclerouting.solver to ai.timefold.solver.core; // Constraints
     ...
 }
 ----
 
-Otherwise Timefold Solver can't reach those classes or files, even if they are exported.
+If this is not setup correctly, you will get errors. Usually, these mention the `unnamed module` and give detailed information of what needs to be changed.
+
+[source,options="nowrap"]
+----
+class org.acme.schooltimetabling.domain.Timetable$Timefold$MemberAccessor$Field$lessons (in unnamed module @0x273444fe)
+cannot access class org.acme.schooltimetabling.domain.Timetable (in module hello.world.school.timetabling)
+because module hello.world.school.timetabling does not export org.acme.schooltimetabling.domain to unnamed module @0x273444fe
+----
+
+[WARNING]
+====
+Only JPMS exported packages are part of the supported public API.
+====
+If you access non-exported classes (for example by running on the classpath), and we later change or remove them, we will not treat that as a breaking change.
+Those classes are not covered by compatibility guarantees.
+
+You can opt-out of JPMS by running all jar-files on the classpath, usually by not including `module-info.jar` file in your own project.
 
 
 [#integrationWithHumanPlanners]
