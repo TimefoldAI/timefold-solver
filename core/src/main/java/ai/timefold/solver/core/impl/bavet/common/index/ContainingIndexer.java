@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
+import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.util.CompositeListEntry;
 import ai.timefold.solver.core.impl.util.ListEntry;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -22,7 +22,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * As defined by {@link UnfinishedJoiners#containing(Function, Function)}
+ * As defined by {@link Joiners#containing(Function, Function)}
  */
 @NullMarked
 final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
