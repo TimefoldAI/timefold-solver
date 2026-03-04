@@ -91,11 +91,11 @@ public final class SolverManagerConfig extends AbstractConfig<SolverManagerConfi
         return resolvedParallelSolverCount;
     }
 
-    private int getAvailableProcessors() {
+    private static int getAvailableProcessors() {
         return Runtime.getRuntime().availableProcessors();
     }
 
-    private int resolveParallelSolverCountAutomatically(int availableProcessorCount) {
+    private static int resolveParallelSolverCountAutomatically(int availableProcessorCount) {
         // Tweaked based on experience
         if (availableProcessorCount < 2) {
             return 1;
