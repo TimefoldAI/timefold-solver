@@ -40,7 +40,7 @@ import org.jspecify.annotations.Nullable;
         "moveCountLimit",
         "terminationConfigList"
 })
-public class TerminationConfig extends AbstractConfig<TerminationConfig> {
+public final class TerminationConfig extends AbstractConfig<TerminationConfig> {
 
     private TerminationCompositionStyle terminationCompositionStyle = null;
 

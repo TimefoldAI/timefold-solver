@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 @XmlType(propOrder = {
         "moveSelectorConfig"
 })
-public class PooledEntityPlacerConfig extends EntityPlacerConfig<PooledEntityPlacerConfig> {
+public final class PooledEntityPlacerConfig extends EntityPlacerConfig<PooledEntityPlacerConfig> {
 
     @XmlElements({
             @XmlElement(name = CartesianProductMoveSelectorConfig.XML_ELEMENT_NAME,

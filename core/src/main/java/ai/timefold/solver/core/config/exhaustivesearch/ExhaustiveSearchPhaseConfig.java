@@ -32,20 +32,20 @@ import org.jspecify.annotations.Nullable;
         "entitySelectorConfig",
         "moveSelectorConfig"
 })
-public class ExhaustiveSearchPhaseConfig extends PhaseConfig<ExhaustiveSearchPhaseConfig> {
+public final class ExhaustiveSearchPhaseConfig extends PhaseConfig<ExhaustiveSearchPhaseConfig> {
 
     public static final String XML_ELEMENT_NAME = "exhaustiveSearch";
 
     // Warning: all fields are null (and not defaulted) because they can be inherited
     // and also because the input config file should match the output config file
 
-    protected ExhaustiveSearchType exhaustiveSearchType = null;
-    protected NodeExplorationType nodeExplorationType = null;
-    protected EntitySorterManner entitySorterManner = null;
-    protected ValueSorterManner valueSorterManner = null;
+    private ExhaustiveSearchType exhaustiveSearchType = null;
+    private NodeExplorationType nodeExplorationType = null;
+    private EntitySorterManner entitySorterManner = null;
+    private ValueSorterManner valueSorterManner = null;
 
     @XmlElement(name = "entitySelector")
-    protected EntitySelectorConfig entitySelectorConfig = null;
+    private EntitySelectorConfig entitySelectorConfig = null;
 
     @XmlElements({
             @XmlElement(name = CartesianProductMoveSelectorConfig.XML_ELEMENT_NAME,
@@ -59,7 +59,7 @@ public class ExhaustiveSearchPhaseConfig extends PhaseConfig<ExhaustiveSearchPha
             @XmlElement(name = SwapMoveSelectorConfig.XML_ELEMENT_NAME, type = SwapMoveSelectorConfig.class),
             @XmlElement(name = UnionMoveSelectorConfig.XML_ELEMENT_NAME, type = UnionMoveSelectorConfig.class)
     })
-    protected MoveSelectorConfig moveSelectorConfig = null;
+    private MoveSelectorConfig moveSelectorConfig = null;
 
     public @Nullable ExhaustiveSearchType getExhaustiveSearchType() {
         return exhaustiveSearchType;

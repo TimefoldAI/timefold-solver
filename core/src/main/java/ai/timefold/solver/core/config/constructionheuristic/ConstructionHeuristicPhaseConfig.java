@@ -37,23 +37,23 @@ import org.jspecify.annotations.Nullable;
         "moveSelectorConfigList",
         "foragerConfig"
 })
-public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHeuristicPhaseConfig> {
+public final class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHeuristicPhaseConfig> {
 
     public static final String XML_ELEMENT_NAME = "constructionHeuristic";
 
     // Warning: all fields are null (and not defaulted) because they can be inherited
     // and also because the input config file should match the output config file
 
-    protected ConstructionHeuristicType constructionHeuristicType = null;
-    protected EntitySorterManner entitySorterManner = null;
-    protected ValueSorterManner valueSorterManner = null;
+    private ConstructionHeuristicType constructionHeuristicType = null;
+    private EntitySorterManner entitySorterManner = null;
+    private ValueSorterManner valueSorterManner = null;
 
     @XmlElements({
             @XmlElement(name = "queuedEntityPlacer", type = QueuedEntityPlacerConfig.class),
             @XmlElement(name = "queuedValuePlacer", type = QueuedValuePlacerConfig.class),
             @XmlElement(name = "pooledEntityPlacer", type = PooledEntityPlacerConfig.class)
     })
-    protected EntityPlacerConfig entityPlacerConfig = null;
+    private EntityPlacerConfig entityPlacerConfig = null;
 
     /** Simpler alternative for {@link #entityPlacerConfig}. */
     @XmlElements({
@@ -68,10 +68,10 @@ public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHe
             @XmlElement(name = SwapMoveSelectorConfig.XML_ELEMENT_NAME, type = SwapMoveSelectorConfig.class),
             @XmlElement(name = UnionMoveSelectorConfig.XML_ELEMENT_NAME, type = UnionMoveSelectorConfig.class)
     })
-    protected List<MoveSelectorConfig> moveSelectorConfigList = null;
+    private List<MoveSelectorConfig> moveSelectorConfigList = null;
 
     @XmlElement(name = "forager")
-    protected ConstructionHeuristicForagerConfig foragerConfig = null;
+    private ConstructionHeuristicForagerConfig foragerConfig = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters

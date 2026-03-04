@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
         "slidingWindowDays",
         "minimumImprovementRatio"
 })
-public class DiminishedReturnsTerminationConfig extends AbstractConfig<DiminishedReturnsTerminationConfig> {
+public final class DiminishedReturnsTerminationConfig extends AbstractConfig<DiminishedReturnsTerminationConfig> {
     @XmlJavaTypeAdapter(JaxbDurationAdapter.class)
     private Duration slidingWindowDuration = null;
     private Long slidingWindowMilliseconds = null;

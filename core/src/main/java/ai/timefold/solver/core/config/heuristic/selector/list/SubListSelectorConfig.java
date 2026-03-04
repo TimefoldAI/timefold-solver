@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
         "minimumSubListSize",
         "maximumSubListSize",
 })
-public class SubListSelectorConfig extends SelectorConfig<SubListSelectorConfig> {
+public final class SubListSelectorConfig extends SelectorConfig<SubListSelectorConfig> {
 
     @XmlAttribute
     private String id = null;

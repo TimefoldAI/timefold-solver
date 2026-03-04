@@ -12,10 +12,10 @@ import org.jspecify.annotations.NonNull;
 @XmlType(propOrder = {
         "stageProviderClass"
 })
-public class ListMultistageMoveSelectorConfig extends MoveSelectorConfig<ListMultistageMoveSelectorConfig> {
+public final class ListMultistageMoveSelectorConfig extends MoveSelectorConfig<ListMultistageMoveSelectorConfig> {
     public static final String XML_ELEMENT_NAME = "listMultistageMoveSelector";
 
-    protected Class<?> stageProviderClass;
+    private Class<?> stageProviderClass;
 
     // **************************
     // Getters/Setters

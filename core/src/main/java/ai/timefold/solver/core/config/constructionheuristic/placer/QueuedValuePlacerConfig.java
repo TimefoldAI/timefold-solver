@@ -26,14 +26,14 @@ import org.jspecify.annotations.Nullable;
         "valueSelectorConfig",
         "moveSelectorConfig"
 })
-public class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValuePlacerConfig> {
+public final class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValuePlacerConfig> {
 
     public static final String XML_ELEMENT_NAME = "queuedValuePlacer";
 
-    protected Class<?> entityClass = null;
+    private Class<?> entityClass = null;
 
     @XmlElement(name = "valueSelector")
-    protected ValueSelectorConfig valueSelectorConfig = null;
+    private ValueSelectorConfig valueSelectorConfig = null;
 
     @XmlElements({
             @XmlElement(name = CartesianProductMoveSelectorConfig.XML_ELEMENT_NAME,

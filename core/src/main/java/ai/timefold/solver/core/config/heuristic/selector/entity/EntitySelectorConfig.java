@@ -40,7 +40,7 @@ import org.jspecify.annotations.Nullable;
         "selectedCountLimit"
 })
 @NullMarked
-public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
+public final class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
 
     public static EntitySelectorConfig newMimicSelectorConfig(String mimicSelectorRef) {
         return new EntitySelectorConfig()
@@ -49,41 +49,41 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
 
     @Nullable
     @XmlAttribute
-    protected String id = null;
+    private String id = null;
     @XmlAttribute
     @Nullable
-    protected String mimicSelectorRef = null;
+    private String mimicSelectorRef = null;
 
     @Nullable
-    protected Class<?> entityClass = null;
+    private Class<?> entityClass = null;
     @Nullable
-    protected SelectionCacheType cacheType = null;
+    private SelectionCacheType cacheType = null;
     @Nullable
-    protected SelectionOrder selectionOrder = null;
+    private SelectionOrder selectionOrder = null;
 
     @Nullable
     @XmlElement(name = "nearbySelection")
-    protected NearbySelectionConfig nearbySelectionConfig = null;
+    private NearbySelectionConfig nearbySelectionConfig = null;
 
     @Nullable
-    protected Class<? extends SelectionFilter> filterClass = null;
+    private Class<? extends SelectionFilter> filterClass = null;
 
     @Nullable
-    protected EntitySorterManner sorterManner = null;
+    private EntitySorterManner sorterManner = null;
     @Nullable
-    protected Class<? extends Comparator> comparatorClass = null;
+    private Class<? extends Comparator> comparatorClass = null;
     @Nullable
-    protected Class<? extends ComparatorFactory> comparatorFactoryClass = null;
+    private Class<? extends ComparatorFactory> comparatorFactoryClass = null;
     @Nullable
-    protected SelectionSorterOrder sorterOrder = null;
+    private SelectionSorterOrder sorterOrder = null;
     @Nullable
-    protected Class<? extends SelectionSorter> sorterClass = null;
+    private Class<? extends SelectionSorter> sorterClass = null;
 
     @Nullable
-    protected Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass = null;
+    private Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass = null;
 
     @Nullable
-    protected Long selectedCountLimit = null;
+    private Long selectedCountLimit = null;
 
     public EntitySelectorConfig() {
     }

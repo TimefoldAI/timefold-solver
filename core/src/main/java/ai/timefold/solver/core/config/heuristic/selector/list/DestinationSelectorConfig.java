@@ -19,7 +19,7 @@ import org.jspecify.annotations.Nullable;
         "valueSelectorConfig",
         "nearbySelectionConfig",
 })
-public class DestinationSelectorConfig extends SelectorConfig<DestinationSelectorConfig> {
+public final class DestinationSelectorConfig extends SelectorConfig<DestinationSelectorConfig> {
 
     @XmlElement(name = "entitySelector")
     private EntitySelectorConfig entitySelectorConfig;

@@ -305,7 +305,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="solverConfig">
+  <xs:complexType final="extension restriction" name="solverConfig">
             
     
     <xs:complexContent>
@@ -395,7 +395,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="monitoringConfig">
+  <xs:complexType final="extension restriction" name="monitoringConfig">
             
     
     <xs:complexContent>
@@ -422,7 +422,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="scoreDirectorFactoryConfig">
+  <xs:complexType final="extension restriction" name="scoreDirectorFactoryConfig">
             
     
     <xs:complexContent>
@@ -506,7 +506,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="terminationConfig">
+  <xs:complexType final="extension restriction" name="terminationConfig">
             
     
     <xs:complexContent>
@@ -596,7 +596,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="diminishedReturnsTerminationConfig">
+  <xs:complexType final="extension restriction" name="diminishedReturnsTerminationConfig">
             
     
     <xs:complexContent>
@@ -641,7 +641,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="constructionHeuristicPhaseConfig">
+  <xs:complexType final="extension restriction" name="constructionHeuristicPhaseConfig">
             
     
     <xs:complexContent>
@@ -749,7 +749,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="queuedEntityPlacerConfig">
+  <xs:complexType final="extension restriction" name="queuedEntityPlacerConfig">
             
     
     <xs:complexContent>
@@ -827,7 +827,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="entitySelectorConfig">
+  <xs:complexType final="extension restriction" name="entitySelectorConfig">
             
     
     <xs:complexContent>
@@ -914,7 +914,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="nearbySelectionConfig">
+  <xs:complexType final="extension restriction" name="nearbySelectionConfig">
             
     
     <xs:complexContent>
@@ -977,7 +977,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="subListSelectorConfig">
+  <xs:complexType final="extension restriction" name="subListSelectorConfig">
             
     
     <xs:complexContent>
@@ -1019,7 +1019,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="valueSelectorConfig">
+  <xs:complexType final="extension restriction" name="valueSelectorConfig">
             
     
     <xs:complexContent>
@@ -1088,7 +1088,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="cartesianProductMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="cartesianProductMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1226,7 +1226,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="changeMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="changeMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1256,7 +1256,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="kOptListMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="kOptListMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1292,7 +1292,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="listChangeMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="listChangeMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1322,7 +1322,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="destinationSelectorConfig">
+  <xs:complexType final="extension restriction" name="destinationSelectorConfig">
             
     
     <xs:complexContent>
@@ -1355,7 +1355,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="listSwapMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="listSwapMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1385,7 +1385,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="moveIteratorFactoryConfig">
+  <xs:complexType final="extension restriction" name="moveIteratorFactoryConfig">
             
     
     <xs:complexContent>
@@ -1415,7 +1415,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="moveListFactoryConfig">
+  <xs:complexType final="extension restriction" name="moveListFactoryConfig">
             
     
     <xs:complexContent>
@@ -1445,7 +1445,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="pillarChangeMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="pillarChangeMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1505,7 +1505,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="pillarSelectorConfig">
+  <xs:complexType final="extension restriction" name="pillarSelectorConfig">
             
     
     <xs:complexContent>
@@ -1538,7 +1538,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="pillarSwapMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="pillarSwapMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1586,7 +1586,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="ruinRecreateMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="ruinRecreateMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1628,7 +1628,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="listRuinRecreateMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="listRuinRecreateMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1664,7 +1664,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="subListChangeMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="subListChangeMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1697,7 +1697,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="subListSwapMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="subListSwapMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1730,7 +1730,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="swapMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="swapMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1781,7 +1781,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="unionMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="unionMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1865,7 +1865,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="multistageMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="multistageMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1898,7 +1898,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="listMultistageMoveSelectorConfig">
+  <xs:complexType final="extension restriction" name="listMultistageMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -1925,7 +1925,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="pooledEntityPlacerConfig">
+  <xs:complexType final="extension restriction" name="pooledEntityPlacerConfig">
             
     
     <xs:complexContent>
@@ -1979,7 +1979,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="queuedValuePlacerConfig">
+  <xs:complexType final="extension restriction" name="queuedValuePlacerConfig">
             
     
     <xs:complexContent>
@@ -2039,7 +2039,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="constructionHeuristicForagerConfig">
+  <xs:complexType final="extension restriction" name="constructionHeuristicForagerConfig">
             
     
     <xs:complexContent>
@@ -2066,7 +2066,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="customPhaseConfig">
+  <xs:complexType final="extension restriction" name="customPhaseConfig">
             
     
     <xs:complexContent>
@@ -2096,7 +2096,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="exhaustiveSearchPhaseConfig">
+  <xs:complexType final="extension restriction" name="exhaustiveSearchPhaseConfig">
             
     
     <xs:complexContent>
@@ -2165,7 +2165,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="localSearchPhaseConfig">
+  <xs:complexType final="extension restriction" name="localSearchPhaseConfig">
             
     
     <xs:complexContent>
@@ -2255,7 +2255,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="localSearchAcceptorConfig">
+  <xs:complexType final="extension restriction" name="localSearchAcceptorConfig">
             
     
     <xs:complexContent>
@@ -2324,7 +2324,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="localSearchForagerConfig">
+  <xs:complexType final="extension restriction" name="localSearchForagerConfig">
             
     
     <xs:complexContent>
@@ -2360,7 +2360,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="partitionedSearchPhaseConfig">
+  <xs:complexType final="extension restriction" name="partitionedSearchPhaseConfig">
             
     
     <xs:complexContent>

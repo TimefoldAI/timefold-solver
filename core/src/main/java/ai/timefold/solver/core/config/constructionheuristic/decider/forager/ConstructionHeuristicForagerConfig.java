@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 @XmlType(propOrder = {
         "pickEarlyType"
 })
-public class ConstructionHeuristicForagerConfig extends AbstractConfig<ConstructionHeuristicForagerConfig> {
+public final class ConstructionHeuristicForagerConfig extends AbstractConfig<ConstructionHeuristicForagerConfig> {
 
     private ConstructionHeuristicPickEarlyType pickEarlyType = null;
 

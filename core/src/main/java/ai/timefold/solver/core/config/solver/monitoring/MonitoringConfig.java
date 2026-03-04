@@ -15,9 +15,9 @@ import org.jspecify.annotations.Nullable;
 @XmlType(propOrder = {
         "solverMetricList",
 })
-public class MonitoringConfig extends AbstractConfig<MonitoringConfig> {
+public final class MonitoringConfig extends AbstractConfig<MonitoringConfig> {
     @XmlElement(name = "metric")
-    protected List<SolverMetric> solverMetricList = null;
+    private List<SolverMetric> solverMetricList = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters

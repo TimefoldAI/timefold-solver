@@ -77,7 +77,7 @@ import org.jspecify.annotations.Nullable;
         "nearbyDistanceMeterClass",
         "phaseConfigList",
 })
-public class SolverConfig extends AbstractConfig<SolverConfig> {
+public final class SolverConfig extends AbstractConfig<SolverConfig> {
 
     public static final String XML_ELEMENT_NAME = "solver";
     public static final String XML_NAMESPACE = "https://timefold.ai/xsd/solver";
@@ -212,32 +212,32 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     // Warning: all fields are null (and not defaulted) because they can be inherited
     // and also because the input config file should match the output config file
     @XmlElement(name = "enablePreviewFeature")
-    protected Set<PreviewFeature> enablePreviewFeatureSet = null;
-    protected EnvironmentMode environmentMode = null;
-    protected Boolean daemon = null;
-    protected RandomType randomType = null;
-    protected Long randomSeed = null;
-    protected Class<? extends RandomFactory> randomFactoryClass = null;
-    protected String moveThreadCount = null;
-    protected Integer moveThreadBufferSize = null;
-    protected Class<? extends ThreadFactory> threadFactoryClass = null;
+    private Set<PreviewFeature> enablePreviewFeatureSet = null;
+    private EnvironmentMode environmentMode = null;
+    private Boolean daemon = null;
+    private RandomType randomType = null;
+    private Long randomSeed = null;
+    private Class<? extends RandomFactory> randomFactoryClass = null;
+    private String moveThreadCount = null;
+    private Integer moveThreadBufferSize = null;
+    private Class<? extends ThreadFactory> threadFactoryClass = null;
 
-    protected Class<?> solutionClass = null;
+    private Class<?> solutionClass = null;
 
     @XmlElement(name = "entityClass")
-    protected List<Class<?>> entityClassList = null;
+    private List<Class<?>> entityClassList = null;
     @XmlTransient
-    protected Map<String, MemberAccessor> gizmoMemberAccessorMap = null;
+    private Map<String, MemberAccessor> gizmoMemberAccessorMap = null;
     @XmlTransient
-    protected Map<String, SolutionCloner> gizmoSolutionClonerMap = null;
+    private Map<String, SolutionCloner> gizmoSolutionClonerMap = null;
 
     @XmlElement(name = "scoreDirectorFactory")
-    protected ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = null;
+    private ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = null;
 
     @XmlElement(name = "termination")
     private TerminationConfig terminationConfig;
 
-    protected Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass = null;
+    private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass = null;
 
     @XmlElements({
             @XmlElement(name = ConstructionHeuristicPhaseConfig.XML_ELEMENT_NAME,
@@ -247,10 +247,10 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
             @XmlElement(name = LocalSearchPhaseConfig.XML_ELEMENT_NAME, type = LocalSearchPhaseConfig.class),
             @XmlElement(name = PartitionedSearchPhaseConfig.XML_ELEMENT_NAME, type = PartitionedSearchPhaseConfig.class)
     })
-    protected List<PhaseConfig> phaseConfigList = null;
+    private List<PhaseConfig> phaseConfigList = null;
 
     @XmlElement(name = "monitoring")
-    protected MonitoringConfig monitoringConfig = null;
+    private MonitoringConfig monitoringConfig = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters

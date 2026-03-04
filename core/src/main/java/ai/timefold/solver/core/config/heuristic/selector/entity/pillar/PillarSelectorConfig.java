@@ -17,13 +17,13 @@ import org.jspecify.annotations.Nullable;
         "minimumSubPillarSize",
         "maximumSubPillarSize"
 })
-public class PillarSelectorConfig extends SelectorConfig<PillarSelectorConfig> {
+public final class PillarSelectorConfig extends SelectorConfig<PillarSelectorConfig> {
 
     @XmlElement(name = "entitySelector")
-    protected EntitySelectorConfig entitySelectorConfig = null;
+    private EntitySelectorConfig entitySelectorConfig = null;
 
-    protected Integer minimumSubPillarSize = null;
-    protected Integer maximumSubPillarSize = null;
+    private Integer minimumSubPillarSize = null;
+    private Integer maximumSubPillarSize = null;
 
     public @Nullable EntitySelectorConfig getEntitySelectorConfig() {
         return entitySelectorConfig;

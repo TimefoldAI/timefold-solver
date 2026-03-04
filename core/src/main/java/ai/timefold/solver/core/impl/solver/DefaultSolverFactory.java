@@ -67,8 +67,14 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     private final SolverConfig solverConfig;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory;
+    private final DomainAccessType domainAccessType;
 
     public DefaultSolverFactory(SolverConfig solverConfig) {
+        this(solverConfig, DomainAccessType.AUTO);
+    }
+
+    public DefaultSolverFactory(SolverConfig solverConfig, DomainAccessType domainAccessType) {
+        this.domainAccessType = domainAccessType;
         this.clock = Objects.requireNonNullElse(solverConfig.getClock(), Clock.systemDefaultZone());
         this.solverConfig = Objects.requireNonNull(solverConfig, "The solverConfig (" + solverConfig + ") cannot be null.");
         this.solutionDescriptor = buildSolutionDescriptor();
@@ -191,7 +197,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                             .formatted(solverConfig.getEntityClassList()));
         }
         return SolutionDescriptor.buildSolutionDescriptor(solverConfig.getEnablePreviewFeatureSet(),
-                DomainAccessType.AUTO,
+                domainAccessType,
                 (Class<Solution_>) solverConfig.getSolutionClass(),
                 solverConfig.getGizmoMemberAccessorMap(),
                 solverConfig.getGizmoSolutionClonerMap(),

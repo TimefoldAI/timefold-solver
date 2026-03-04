@@ -30,29 +30,29 @@ import org.jspecify.annotations.Nullable;
         "stepCountingHillClimbingSize",
         "stepCountingHillClimbingType"
 })
-public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAcceptorConfig> {
+public final class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAcceptorConfig> {
 
     @XmlElement(name = "acceptorType")
     private List<AcceptorType> acceptorTypeList = null;
 
-    protected Integer entityTabuSize = null;
-    protected Double entityTabuRatio = null;
-    protected Integer fadingEntityTabuSize = null;
-    protected Double fadingEntityTabuRatio = null;
-    protected Integer valueTabuSize = null;
-    protected Integer fadingValueTabuSize = null;
-    protected Integer moveTabuSize = null;
-    protected Integer fadingMoveTabuSize = null;
+    private Integer entityTabuSize = null;
+    private Double entityTabuRatio = null;
+    private Integer fadingEntityTabuSize = null;
+    private Double fadingEntityTabuRatio = null;
+    private Integer valueTabuSize = null;
+    private Integer fadingValueTabuSize = null;
+    private Integer moveTabuSize = null;
+    private Integer fadingMoveTabuSize = null;
 
-    protected String simulatedAnnealingStartingTemperature = null;
+    private String simulatedAnnealingStartingTemperature = null;
 
-    protected Integer lateAcceptanceSize = null;
+    private Integer lateAcceptanceSize = null;
 
-    protected String greatDelugeWaterLevelIncrementScore = null;
-    protected Double greatDelugeWaterLevelIncrementRatio = null;
+    private String greatDelugeWaterLevelIncrementScore = null;
+    private Double greatDelugeWaterLevelIncrementRatio = null;
 
-    protected Integer stepCountingHillClimbingSize = null;
-    protected StepCountingHillClimbingType stepCountingHillClimbingType = null;
+    private Integer stepCountingHillClimbingSize = null;
+    private StepCountingHillClimbingType stepCountingHillClimbingType = null;
 
     public @Nullable List<AcceptorType> getAcceptorTypeList() {
         return acceptorTypeList;

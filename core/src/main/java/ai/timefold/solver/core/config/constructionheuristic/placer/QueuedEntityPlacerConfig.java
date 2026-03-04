@@ -27,12 +27,12 @@ import org.jspecify.annotations.Nullable;
         "entitySelectorConfig",
         "moveSelectorConfigList"
 })
-public class QueuedEntityPlacerConfig extends EntityPlacerConfig<QueuedEntityPlacerConfig> {
+public final class QueuedEntityPlacerConfig extends EntityPlacerConfig<QueuedEntityPlacerConfig> {
 
     public static final String XML_ELEMENT_NAME = "queuedEntityPlacer";
 
     @XmlElement(name = "entitySelector")
-    protected EntitySelectorConfig entitySelectorConfig = null;
+    private EntitySelectorConfig entitySelectorConfig = null;
 
     @XmlElements({
             @XmlElement(name = CartesianProductMoveSelectorConfig.XML_ELEMENT_NAME,
@@ -46,7 +46,7 @@ public class QueuedEntityPlacerConfig extends EntityPlacerConfig<QueuedEntityPla
             @XmlElement(name = SwapMoveSelectorConfig.XML_ELEMENT_NAME, type = SwapMoveSelectorConfig.class),
             @XmlElement(name = UnionMoveSelectorConfig.XML_ELEMENT_NAME, type = UnionMoveSelectorConfig.class)
     })
-    protected List<MoveSelectorConfig> moveSelectorConfigList = null;
+    private List<MoveSelectorConfig> moveSelectorConfigList = null;
 
     public @Nullable EntitySelectorConfig getEntitySelectorConfig() {
         return entitySelectorConfig;

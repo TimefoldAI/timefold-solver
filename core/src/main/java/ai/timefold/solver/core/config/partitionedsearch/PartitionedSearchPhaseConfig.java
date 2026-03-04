@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
         "runnablePartThreadLimit",
         "phaseConfigList"
 })
-public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchPhaseConfig> {
+public final class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchPhaseConfig> {
 
     public static final String XML_ELEMENT_NAME = "partitionedSearch";
     public static final String ACTIVE_THREAD_COUNT_AUTO = "AUTO";
@@ -37,11 +37,11 @@ public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchP
     // Warning: all fields are null (and not defaulted) because they can be inherited
     // and also because the input config file should match the output config file
 
-    protected Class<? extends SolutionPartitioner<?>> solutionPartitionerClass = null;
+    private Class<? extends SolutionPartitioner<?>> solutionPartitionerClass = null;
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
-    protected Map<String, String> solutionPartitionerCustomProperties = null;
+    private Map<String, String> solutionPartitionerCustomProperties = null;
 
-    protected String runnablePartThreadLimit = null;
+    private String runnablePartThreadLimit = null;
 
     @XmlElements({
             @XmlElement(name = ConstructionHeuristicPhaseConfig.XML_ELEMENT_NAME,
@@ -51,7 +51,7 @@ public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchP
             @XmlElement(name = LocalSearchPhaseConfig.XML_ELEMENT_NAME, type = LocalSearchPhaseConfig.class),
             @XmlElement(name = PartitionedSearchPhaseConfig.XML_ELEMENT_NAME, type = PartitionedSearchPhaseConfig.class)
     })
-    protected List<PhaseConfig> phaseConfigList = null;
+    private List<PhaseConfig> phaseConfigList = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters

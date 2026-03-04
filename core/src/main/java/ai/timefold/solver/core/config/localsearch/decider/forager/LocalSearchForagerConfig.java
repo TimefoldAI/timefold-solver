@@ -16,12 +16,12 @@ import org.jspecify.annotations.Nullable;
         "finalistPodiumType",
         "breakTieRandomly"
 })
-public class LocalSearchForagerConfig extends AbstractConfig<LocalSearchForagerConfig> {
+public final class LocalSearchForagerConfig extends AbstractConfig<LocalSearchForagerConfig> {
 
-    protected LocalSearchPickEarlyType pickEarlyType = null;
-    protected Integer acceptedCountLimit = null;
-    protected FinalistPodiumType finalistPodiumType = null;
-    protected Boolean breakTieRandomly = null;
+    private LocalSearchPickEarlyType pickEarlyType = null;
+    private Integer acceptedCountLimit = null;
+    private FinalistPodiumType finalistPodiumType = null;
+    private Boolean breakTieRandomly = null;
 
     public @Nullable LocalSearchPickEarlyType getPickEarlyType() {
         return pickEarlyType;

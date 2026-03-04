@@ -41,49 +41,49 @@ import org.jspecify.annotations.Nullable;
         "selectedCountLimit"
 })
 @NullMarked
-public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
+public final class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
 
     @XmlAttribute
     @Nullable
-    protected String id = null;
+    private String id = null;
     @XmlAttribute
     @Nullable
-    protected String mimicSelectorRef = null;
+    private String mimicSelectorRef = null;
 
     @Nullable
-    protected Class<?> downcastEntityClass = null;
+    private Class<?> downcastEntityClass = null;
     @XmlAttribute
     @Nullable
-    protected String variableName = null;
+    private String variableName = null;
 
     @Nullable
-    protected SelectionCacheType cacheType = null;
+    private SelectionCacheType cacheType = null;
     @Nullable
-    protected SelectionOrder selectionOrder = null;
+    private SelectionOrder selectionOrder = null;
 
     @XmlElement(name = "nearbySelection")
     @Nullable
-    protected NearbySelectionConfig nearbySelectionConfig = null;
+    private NearbySelectionConfig nearbySelectionConfig = null;
 
     @Nullable
-    protected Class<? extends SelectionFilter> filterClass = null;
+    private Class<? extends SelectionFilter> filterClass = null;
 
     @Nullable
-    protected ValueSorterManner sorterManner = null;
+    private ValueSorterManner sorterManner = null;
     @Nullable
-    protected Class<? extends Comparator> comparatorClass = null;
+    private Class<? extends Comparator> comparatorClass = null;
     @Nullable
-    protected Class<? extends ComparatorFactory> comparatorFactoryClass = null;
+    private Class<? extends ComparatorFactory> comparatorFactoryClass = null;
     @Nullable
-    protected SelectionSorterOrder sorterOrder = null;
+    private SelectionSorterOrder sorterOrder = null;
     @Nullable
-    protected Class<? extends SelectionSorter> sorterClass = null;
+    private Class<? extends SelectionSorter> sorterClass = null;
 
     @Nullable
-    protected Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass = null;
+    private Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass = null;
 
     @Nullable
-    protected Long selectedCountLimit = null;
+    private Long selectedCountLimit = null;
 
     public ValueSelectorConfig() {
     }

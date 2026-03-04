@@ -17,14 +17,14 @@ import org.slf4j.LoggerFactory;
         "parallelSolverCount",
         "threadFactoryClass"
 })
-public class SolverManagerConfig extends AbstractConfig<SolverManagerConfig> {
+public final class SolverManagerConfig extends AbstractConfig<SolverManagerConfig> {
 
     public static final String PARALLEL_SOLVER_COUNT_AUTO = "AUTO";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolverManagerConfig.class);
 
-    protected String parallelSolverCount = null;
-    protected Class<? extends ThreadFactory> threadFactoryClass = null;
+    private String parallelSolverCount = null;
+    private Class<? extends ThreadFactory> threadFactoryClass = null;
 
     // Future features:
     // throttlingDelay
@@ -91,11 +91,11 @@ public class SolverManagerConfig extends AbstractConfig<SolverManagerConfig> {
         return resolvedParallelSolverCount;
     }
 
-    protected int getAvailableProcessors() {
+    private static int getAvailableProcessors() {
         return Runtime.getRuntime().availableProcessors();
     }
 
-    protected int resolveParallelSolverCountAutomatically(int availableProcessorCount) {
+    private static int resolveParallelSolverCountAutomatically(int availableProcessorCount) {
         // Tweaked based on experience
         if (availableProcessorCount < 2) {
             return 1;

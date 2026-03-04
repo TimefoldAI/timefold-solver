@@ -36,29 +36,29 @@ import org.jspecify.annotations.Nullable;
         "betaDistributionAlpha",
         "betaDistributionBeta"
 })
-public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig> {
+public final class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig> {
 
     @XmlElement(name = "originEntitySelector")
-    protected EntitySelectorConfig originEntitySelectorConfig = null;
+    private EntitySelectorConfig originEntitySelectorConfig = null;
     @XmlElement(name = "originSubListSelector")
-    protected SubListSelectorConfig originSubListSelectorConfig = null;
+    private SubListSelectorConfig originSubListSelectorConfig = null;
     @XmlElement(name = "originValueSelector")
-    protected ValueSelectorConfig originValueSelectorConfig = null;
-    protected Class<? extends NearbyDistanceMeter> nearbyDistanceMeterClass = null;
+    private ValueSelectorConfig originValueSelectorConfig = null;
+    private Class<? extends NearbyDistanceMeter> nearbyDistanceMeterClass = null;
 
-    protected NearbySelectionDistributionType nearbySelectionDistributionType = null;
+    private NearbySelectionDistributionType nearbySelectionDistributionType = null;
 
-    protected Integer blockDistributionSizeMinimum = null;
-    protected Integer blockDistributionSizeMaximum = null;
-    protected Double blockDistributionSizeRatio = null;
-    protected Double blockDistributionUniformDistributionProbability = null;
+    private Integer blockDistributionSizeMinimum = null;
+    private Integer blockDistributionSizeMaximum = null;
+    private Double blockDistributionSizeRatio = null;
+    private Double blockDistributionUniformDistributionProbability = null;
 
-    protected Integer linearDistributionSizeMaximum = null;
+    private Integer linearDistributionSizeMaximum = null;
 
-    protected Integer parabolicDistributionSizeMaximum = null;
+    private Integer parabolicDistributionSizeMaximum = null;
 
-    protected Double betaDistributionAlpha = null;
-    protected Double betaDistributionBeta = null;
+    private Double betaDistributionAlpha = null;
+    private Double betaDistributionBeta = null;
 
     public @Nullable EntitySelectorConfig getOriginEntitySelectorConfig() {
         return originEntitySelectorConfig;

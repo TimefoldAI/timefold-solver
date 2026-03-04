@@ -29,30 +29,30 @@ import org.jspecify.annotations.Nullable;
         "initializingScoreTrend",
         "assertionScoreDirectorFactory"
 })
-public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFactoryConfig> {
+public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFactoryConfig> {
 
-    protected Class<? extends EasyScoreCalculator> easyScoreCalculatorClass = null;
-
-    @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
-    protected Map<String, String> easyScoreCalculatorCustomProperties = null;
-
-    protected Class<? extends ConstraintProvider> constraintProviderClass = null;
+    private Class<? extends EasyScoreCalculator> easyScoreCalculatorClass = null;
 
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
-    protected Map<String, String> constraintProviderCustomProperties = null;
-    protected Boolean constraintStreamAutomaticNodeSharing;
-    protected Boolean constraintStreamProfilingEnabled;
+    private Map<String, String> easyScoreCalculatorCustomProperties = null;
 
-    protected Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass = null;
+    private Class<? extends ConstraintProvider> constraintProviderClass = null;
 
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
-    protected Map<String, String> incrementalScoreCalculatorCustomProperties = null;
+    private Map<String, String> constraintProviderCustomProperties = null;
+    private Boolean constraintStreamAutomaticNodeSharing;
+    private Boolean constraintStreamProfilingEnabled;
+
+    private Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass = null;
+
+    @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
+    private Map<String, String> incrementalScoreCalculatorCustomProperties = null;
 
     // TODO: this should be rather an enum?
-    protected String initializingScoreTrend = null;
+    private String initializingScoreTrend = null;
 
     @XmlElement(name = "assertionScoreDirectorFactory")
-    protected ScoreDirectorFactoryConfig assertionScoreDirectorFactory = null;
+    private ScoreDirectorFactoryConfig assertionScoreDirectorFactory = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters
