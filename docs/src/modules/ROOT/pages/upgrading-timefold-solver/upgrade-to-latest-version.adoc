@@ -58,3 +58,755 @@ Every upgrade note indicates how likely your code will be affected by that chang
 
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin users to translate the changes accordingly.
+
+=== Upgrade from 1.x to 2.0.0
+
+.icon:magic[] Score class packages simplified
+[%collapsible%open]
+====
+Score classes have been moved from their `buildin` sub-packages to the top-level score package.
+
+Before in `*.java`:
+
+[source,java]
+----
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
+----
+
+After in `*.java`:
+
+[source,java]
+----
+import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
+import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.api.score.BendableScore;
+----
+
+Similarly, `HardSoftLongScore` and `HardSoftBigDecimalScore` are now `HardSoftScore` and `HardSoftBigDecimalScore` respectively, and the same for all other score variants.
+The long variants (`HardSoftLongScore`, `HardMediumSoftLongScore`, `SimpleLongScore`, `BendableLongScore`) have been merged into their `int` counterparts as `int`-based scores are no longer supported.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `BendableScore` array type changed from `int[]` to `long[]`
+[%collapsible%open]
+====
+`BendableScore` and `BendableLongScore` have been merged into a single `BendableScore` backed by `long[]`.
+`BendableScore.of(int[], int[])` is now `BendableScore.of(long[], long[])`.
+
+Before in `*.java`:
+
+[source,java]
+----
+BendableScore score = BendableScore.of(new int[]{0, -1}, new int[]{-2});
+----
+
+After in `*.java`:
+
+[source,java]
+----
+BendableScore score = BendableScore.of(new long[]{0L, -1L}, new long[]{-2L});
+----
+====
+
+'''
+
+.icon:magic[] `PlanningId` moved to `common` package
+[%collapsible%open]
+====
+`@PlanningId` has been moved from `ai.timefold.solver.core.api.domain.lookup` to `ai.timefold.solver.core.api.domain.common`.
+
+Before in `*.java`:
+
+[source,java]
+----
+import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+----
+
+After in `*.java`:
+
+[source,java]
+----
+import ai.timefold.solver.core.api.domain.common.PlanningId;
+----
+====
+
+'''
+
+.icon:magic[] `ProblemFactChange` removed
+[%collapsible%open]
+====
+`ProblemFactChange` has been removed; use `ProblemChange` instead.
+
+The `Solver.addProblemFactChange()`, `Solver.addProblemFactChanges()`, and `Solver.isEveryProblemFactChangeProcessed()` methods have also been removed;
+use `Solver.addProblemChange()`, `Solver.addProblemChanges()`, and `Solver.isEveryProblemChangeProcessed()` respectively.
+
+Likewise, `BestSolutionChangedEvent.isEveryProblemFactChangeProcessed()` has been removed; use `isEveryProblemChangeProcessed()`.
+
+Before in `*.java`:
+
+[source,java]
+----
+solver.addProblemFactChange(scoreDirector -> {
+    var workingShift = scoreDirector.lookUpWorkingObject(externalShift);
+    scoreDirector.beforeProblemPropertyChanged(workingShift);
+    workingShift.setEmployee(null);
+    scoreDirector.afterProblemPropertyChanged(workingShift);
+});
+----
+
+After in `*.java`:
+
+[source,java]
+----
+solver.addProblemChange((workingSolution, problemChangeDirector) -> {
+    problemChangeDirector.changeProblemProperty(externalShift, workingShift -> {
+        workingShift.setEmployee(null);
+    });
+});
+----
+====
+
+'''
+
+.icon:magic[] Constraint stream `penalizeLong`, `rewardLong`, `impactLong` removed
+[%collapsible%open]
+====
+The `penalizeLong`, `rewardLong`, and `impactLong` methods on constraint streams have been removed.
+Use `penalize`, `reward`, and `impact` respectively; they now also accept `long` weights.
+
+Before in `*ConstraintProvider.java`:
+
+[source,java]
+----
+return factory.forEach(Shift.class)
+    .penalizeLong(HardSoftScore.ONE_HARD, shift -> shift.getOvertime());
+----
+
+After in `*ConstraintProvider.java`:
+[source,java]
+----
+return factory.forEach(Shift.class)
+    .penalize(HardSoftScore.ONE_HARD, shift -> shift.getOvertime());
+----
+====
+
+'''
+
+.icon:magic[] `ConstraintRef` package change and constraint packages removed
+[%collapsible%open]
+====
+`ConstraintRef` has been moved from `ai.timefold.solver.core.api.score.constraint` to `ai.timefold.solver.core.api.score.stream`.
+
+Additionally, constraint packages have been fully removed.
+`ConstraintRef.of(String, String)` (package + name) has been replaced by `ConstraintRef.of(String)` (name only).
+Methods to retrieve the package name of a constraint have been removed from every other place where they existed,
+most notably from `ConstraintAnalysis` and `Constraint`.
+
+Before in `*.java`:
+
+[source,java]
+----
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+var ref = ConstraintRef.of("my.constraint.package", "myConstraint");
+----
+
+After in `*.java`:
+
+[source,java]
+----
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+var ref = ConstraintRef.of("myConstraint");
+----
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] `SolverManager` and `SolverJob` no longer generic over problem ID
+[%collapsible%open]
+====
+`SolverManager<Solution_, ProblemId_>` and `SolverJob<Solution_, ProblemId_>` have dropped the `ProblemId_` type parameter.
+The `problemId` argument in `solve()`, `addProblemChange()`, `getSolverStatus()`, and `terminateEarly()` is now of type `Object`.
+
+Before in `*.java`:
+
+[source,java]
+----
+SolverManager<Timetable, Long> solverManager = SolverManager.create(solverConfig);
+SolverJob<Timetable, Long> job = solverManager.solve(1L, timetable);
+----
+
+After in `*.java`:
+
+[source,java]
+----
+SolverManager<Timetable> solverManager = SolverManager.create(solverConfig);
+SolverJob<Timetable> job = solverManager.solve(1L, timetable);
+----
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] `SolverJobBuilder` deprecated consumer methods removed
+[%collapsible%open]
+====
+The following deprecated `SolverJobBuilder` methods have been removed:
+
+|===
+|Removed method |Replacement
+
+|`withBestSolutionConsumer`
+|`withBestSolutionEventConsumer`
+
+|`withFinalBestSolutionConsumer`
+|`withFinalBestSolutionEventConsumer`
+
+|`withFirstInitializedSolutionConsumer`
+|`withFirstInitializedSolutionEventConsumer`
+
+|`withSolverJobStartedConsumer`
+|`withSolverJobStartedEventConsumer`
+|===
+
+See the 1.27.0 and 1.28.0 upgrade steps for before/after code examples.
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] `ScoreDirector` removed from public API
+[%collapsible%open]
+====
+`ScoreDirector` is no longer a public interface.
+The functionality it provided in `Move` is now available via `Lookup` and `MutableSolutionView`.
+The functionality it provided in `ProblemChange` is now available via `ProblemChangeDirector`.
+The functionality it provided in `PhaseCommand` is now available via `PhaseCommandContext`.
+
+If your `Move` implementations used `ScoreDirector`, migrate to the new `Move` interface.
+If your `ProblemChange` implementations used `ScoreDirector`, migrate to `ProblemChangeDirector`.
+If your `PhaseCommand` implementations used `ScoreDirector`, see the next upgrade step.
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] `PhaseCommand.changeWorkingSolution` signature changed
+[%collapsible%open]
+====
+`PhaseCommand.changeWorkingSolution(ScoreDirector, BooleanSupplier)` has been replaced by
+`PhaseCommand.changeWorkingSolution(PhaseCommandContext)`.
+
+`PhaseCommandContext` provides the working solution, termination check, and the ability to execute moves.
+Direct modification of the working solution without going through `PhaseCommandContext` is no longer supported.
+
+Before in `MyPhaseCommand.java`:
+
+[source,java]
+----
+public class MyPhaseCommand implements PhaseCommand<Timetable> {
+
+    @Override
+    public void changeWorkingSolution(ScoreDirector<Timetable> scoreDirector, BooleanSupplier isPhaseTerminated) {
+        var timetable = scoreDirector.getWorkingSolution();
+        while (!isPhaseTerminated.getAsBoolean()) {
+            // ... make changes and notify scoreDirector
+            scoreDirector.beforeVariableChanged(lesson, "room");
+            lesson.setRoom(newRoom);
+            scoreDirector.afterVariableChanged(lesson, "room");
+            scoreDirector.triggerVariableListeners();
+        }
+    }
+
+}
+----
+
+After in `MyPhaseCommand.java`:
+
+[source,java]
+----
+public class MyPhaseCommand implements PhaseCommand<Timetable> {
+
+    @Override
+    public void changeWorkingSolution(PhaseCommandContext<Timetable> context) {
+        var timetable = context.getWorkingSolution();
+        while (!context.isPhaseTerminated()) {
+            // ... execute moves through the context
+            context.executeAndCalculateScore(myMove);
+        }
+    }
+
+}
+----
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] `ProblemChangeDirector` lookup method renamed
+[%collapsible%open]
+====
+`ProblemChangeDirector.lookUpWorkingObjectOrFail(Object)` has been renamed to `lookUpWorkingObject(Object)`.
+The old `lookUpWorkingObject(Object)` method that returned `Optional` has been removed.
+
+Before in `*.java`:
+
+[source,java]
+----
+var workingShift = problemChangeDirector.lookUpWorkingObjectOrFail(externalShift);
+----
+
+After in `*.java`:
+
+[source,java]
+----
+var workingShift = problemChangeDirector.lookUpWorkingObject(externalShift);
+----
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] `BestSolutionChangedEvent` is now an interface
+[%collapsible%open]
+====
+`BestSolutionChangedEvent` has been converted from a class to an interface.
+Its public constructors were already deprecated; if your code constructed instances of this class (e.g. for unit tests), you must remove those usages.
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] `@ConstraintConfiguration` removed
+[%collapsible%open]
+====
+The `@ConstraintConfiguration`, `@ConstraintConfigurationProvider`, and `@ConstraintWeight` annotations have been removed.
+Use `ConstraintWeightOverrides` instead.
+See the 1.12.0 to 1.13.0 upgrade step for detailed before/after code examples.
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] `CountableValueRange` removed
+[%collapsible%open]
+====
+`CountableValueRange` has been removed and `DoubleValueRange` was replaced by `BigDecimalValueRange`.
+All value ranges are now countable, and its methods (`getSize()`, `get(long)`, `createOriginalIterator()`) have been merged into `ValueRange`.
+
+If your code used `CountableValueRange`, change references to `ValueRange`.
+If you implemented `CountableValueRange` to create custom value ranges, implement `ValueRange` directly instead.
+
+Before in `*.java`:
+
+[source,java]
+----
+CountableValueRange<LocalDate> range = ValueRangeFactory.createLocalDateValueRange(...);
+long size = range.getSize();
+----
+
+After in `*.java`:
+
+[source,java]
+----
+ValueRange<LocalDate> range = ValueRangeFactory.createLocalDateValueRange(...);
+long size = range.getSize();
+----
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] Chained planning variable support removed
+[%collapsible%open]
+====
+Support for chained planning variables has been removed entirely.
+The chained variable paradigm was deprecated since 1.30.0 in favor of the planning list variable.
+
+We invite you to read the xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[chained variable to list variable migration guide].
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] Variable listeners removed
+[%collapsible%open]
+====
+The variable listener mechanism has been removed.
+Variable listeners were deprecated since 1.26.0 in favor of xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[custom shadow variables].
+
+We invite you to read the xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[variable listeners to custom shadow variables migration guide].
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] Testing classes moved; `timefold-solver-test` module removed
+[%collapsible%open]
+====
+The `timefold-solver-test` module has been removed.
+Its classes have been moved to `timefold-solver-core`:
+
+|===
+|Old class |New class
+
+|`ai.timefold.solver.test.api.score.stream.ConstraintVerifier`
+|`ai.timefold.solver.core.api.score.stream.test.ConstraintVerifier`
+
+|`ai.timefold.solver.test.api.solver.change.MockProblemChangeDirector`
+|`ai.timefold.solver.core.api.solver.change.MockProblemChangeDirector`
+|===
+
+Update your Maven/Gradle dependencies: remove `timefold-solver-test` and use `timefold-solver-core` with test scope instead.
+
+Before in `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-test</artifactId>
+    <scope>test</scope>
+</dependency>
+----
+
+After in `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-core</artifactId>
+    <scope>test</scope>
+</dependency>
+----
+====
+
+'''
+
+.icon:info-circle[role=yellow] `AutoDiscoverMemberType` removed from `@PlanningSolution`
+[%collapsible%open]
+====
+The `autoDiscoverMemberType` attribute of `@PlanningSolution` has been removed.
+If your solution class relied on auto-discovery, add the appropriate annotations explicitly:
+`@ProblemFactCollectionProperty`, `@ProblemFactProperty`, `@PlanningEntityCollectionProperty`, `@PlanningEntityProperty`, or `@PlanningScore`.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `domainAccessType` removed from `SolverConfig`
+[%collapsible%open]
+====
+The `domainAccessType` field has been removed from `SolverConfig`.
+Gizmo-based member access is now used automatically when possible.
+Remove any `withDomainAccessType(...)` calls from your solver configuration.
+
+Before in `*.java`:
+
+[source,java]
+----
+var solverConfig = new SolverConfig()
+    .withDomainAccessType(DomainAccessType.GIZMO)
+    ...
+----
+
+After in `*.java`:
+
+[source,java]
+----
+var solverConfig = new SolverConfig()
+    ...
+----
+====
+
+'''
+
+.icon:info-circle[role=yellow] `ConstraintStreamImplType` removed
+[%collapsible%open]
+====
+`ConstraintStreamImplType` has been removed.
+There is only one constraint stream implementation (Bavet), so this configuration option is no longer needed.
+Remove any `constraintStreamImplType` configuration from `ScoreDirectorFactoryConfig`, Spring properties, or Quarkus properties.
+
+Before in `solverConfig.xml`:
+
+[source,xml]
+----
+<scoreDirectorFactory>
+  <constraintStreamImplType>BAVET</constraintStreamImplType>
+  ...
+</scoreDirectorFactory>
+----
+
+After in `solverConfig.xml`:
+
+[source,xml]
+----
+<scoreDirectorFactory>
+  ...
+</scoreDirectorFactory>
+----
+====
+
+'''
+
+.icon:info-circle[role=yellow] `@PlanningEntity` `pinningFilter` removed
+[%collapsible%open]
+====
+The `pinningFilter` attribute of `@PlanningEntity` has been removed.
+Use `@PlanningPin` instead.
+See the 1.22.0 to 1.23.0 upgrade step for details.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `@PlanningSolution` `lookUpStrategyType` removed
+[%collapsible%open]
+====
+The `lookUpStrategyType` attribute has been removed from `@PlanningSolution`.
+Remove `lookUpStrategyType` from your `@PlanningSolution` annotations.
+See the 1.9.0 to 1.10.0 upgrade step for details.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `NoChangePhase` removed from XML configuration
+[%collapsible%open]
+====
+The `<noChangePhase>` element has been removed from the solver XML configuration,
+and the phase itself has been removed from the codebase.
+If you used it as a placeholder phase, remove it from your configuration.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `SelectionSorterWeightFactory` removed
+[%collapsible%open]
+====
+`SelectionSorterWeightFactory` has been removed.
+Use `ComparatorFactory` instead.
+See the 1.27.0 to 1.28.0 upgrade step for details.
+====
+
+'''
+
+.icon:info-circle[role=yellow] Tabu search XML options removed
+[%collapsible%open]
+====
+The following configuration attributes have been removed from local search's `<acceptor>`:
+
+- `undoMoveTabuSize`
+- `fadingUndoMoveTabuSize`
+- `valueTabuRatio`
+- `fadingValueTabuRatio`
+
+These have been long since deprecated and their presence in the configuration had no effect.
+Remove them from your configuration if they are present.
+====
+
+'''
+
+.icon:info-circle[role=yellow] All code must use `RandomGenerator` instead of `Random`
+[%collapsible%open]
+====
+If you used any solver API which took a `Random` argument, change it to use `RandomGenerator` instead.
+
+Before in `*.java`:
+
+[source,java]
+----
+@Override
+public Iterator<LocalDate> createRandomIterator(Random workingRandom) {
+    ...
+}
+----
+
+After in `*.java`:
+
+[source,java]
+----
+@Override
+public Iterator<LocalDate> createRandomIterator(RandomGenerator workingRandom) {
+    ...
+}
+----
+====
+
+'''
+
+.icon:info-circle[role=yellow] `SolutionFileIO` moved to core; `timefold-solver-persistence-common` removed
+[%collapsible%open]
+====
+`SolutionFileIO` has been moved from `ai.timefold.solver.persistence.common.api.domain.solution` to `ai.timefold.solver.core.api.domain.solution`.
+The `timefold-solver-persistence-common` module has been removed; replace that dependency with `timefold-solver-core`.
+
+Before in `*.java`:
+
+[source,java]
+----
+import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
+----
+
+After in `*.java`:
+
+[source,java]
+----
+import ai.timefold.solver.core.api.domain.solution.SolutionFileIO;
+----
+====
+
+'''
+
+.icon:info-circle[role=yellow] Constraint name now strictly validated
+[%collapsible%open]
+====
+Constraint names are now validated more strictly.
+Constraint names must be non-null, non-empty, and must not contain slashes or other special characters.
+If your constraint names do not comply, an exception will be thrown at solver initialization.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `EnvironmentMode` `FAST_ASSERT` and `REPRODUCIBLE` removed
+[%collapsible%open]
+====
+`EnvironmentMode.FAST_ASSERT` and `EnvironmentMode.REPRODUCIBLE` have been removed.
+They were deprecated since 1.19.0.
+Use `EnvironmentMode.STEP_ASSERT` and `EnvironmentMode.NO_ASSERT` respectively.
+See the 1.19.0 to 1.20.0 upgrade step for details.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `SolutionPartitioner` signature changed
+[%collapsible%open]
+====
+`SolutionPartitioner.splitWorkingSolution(ScoreDirector, Integer)` now takes the solution directly.
+
+Before in `MySolutionPartitioner.java`:
+
+[source,java]
+----
+@Override
+public List<Timetable> splitWorkingSolution(ScoreDirector<Timetable> scoreDirector, Integer runnablePartThreadLimit) {
+    var solution = scoreDirector.getWorkingSolution();
+    // ...
+}
+----
+
+After in `MySolutionPartitioner.java`:
+
+[source,java]
+----
+@Override
+public List<Timetable> splitWorkingSolution(Timetable solution, Integer runnablePartThreadLimit) {
+    // ...
+}
+----
+====
+
+'''
+
+.icon:info-circle[role=yellow] `timefold-solver-jsonb` module removed
+[%collapsible%open]
+====
+The `timefold-solver-jsonb` and `timefold-solver-quarkus-jsonb` modules have been removed.
+They were deprecated since 1.4.0.
+Use the Jackson integration (`timefold-solver-jackson`) instead.
+====
+
+'''
+
+.icon:info-circle[role=yellow] Getter and setter access rules enforced
+[%collapsible%open]
+====
+When a planning annotation (`@PlanningVariable`, `@PlanningScore`, etc.) is placed on a getter method,
+that getter and its paired setter must now be `public`.
+Previously, the solver would make them accessible via reflection.
+
+Additionally, when an annotation is placed on a field, the solver will now prefer to use
+the corresponding public getter and setter if they exist, rather than accessing the field directly.
+
+If your domain class has a planning annotation on a non-`public` getter, make it `public`.
+If the paired setter is missing or not `public`, add or expose it.
+====
+
+'''
+
+.icon:info-circle[role=yellow] Spring Boot 4 and Jackson 3
+[%collapsible%open]
+====
+Spring Boot support has been upgraded to Spring Boot 4.x.
+`timefold-solver-spring-boot-autoconfigure` and `timefold-solver-jackson` now depend on Jackson 3 (groupId `tools.jackson`).
+
+If you use Timefold Solver with Spring Boot, upgrade Spring Boot to 4.x.
+
+Users of Quarkus continue to use the `quarkus-jackson` integration module, which remains on Jackson 2.
+====
+
+'''
+
+.icon:info-circle[role=yellow] Jackson and JPA score serializer/converter packages restructured
+[%collapsible%open]
+====
+The Jackson serializer/deserializer and JPA converter classes for individual score types
+have been moved from their individual sub-packages to the parent package.
+
+Before in `*.java`:
+
+[source,java]
+----
+import ai.timefold.solver.jackson.api.score.buildin.hardsoft.HardSoftScoreJacksonDeserializer;
+import ai.timefold.solver.jpa.api.score.buildin.hardsoft.HardSoftScoreConverter;
+----
+
+After in `*.java`:
+
+[source,java]
+----
+import ai.timefold.solver.jackson.api.score.buildin.HardSoftScoreJacksonDeserializer;
+import ai.timefold.solver.jpa.api.score.HardSoftScoreConverter;
+----
+====
+
+'''
+
+.icon:info-circle[role=yellow] `BenchmarkAggregator` moved to separate module
+[%collapsible%open]
+====
+`BenchmarkAggregator` has been moved from `timefold-solver-benchmark` into a separate `timefold-solver-benchmark-aggregator` module.
+If your project uses `BenchmarkAggregator`, add the new module as a dependency.
+
+Before in `pom.xml` (no separate dependency needed):
+
+[source,xml]
+----
+<dependency>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-benchmark</artifactId>
+</dependency>
+----
+
+After in `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-benchmark</artifactId>
+</dependency>
+<dependency>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-benchmark-aggregator</artifactId>
+</dependency>
+----
+====
+
+'''
+
+.icon:eye[] Solver is now a Java module (JPMS)
+[%collapsible%open]
+====
+Timefold Solver is now a proper Java module under JPMS.
+The module name is `ai.timefold.solver.core`.
+
+Most users won't need to do anything, unless they use `--add-opens` or reflection-based access to internal classes,
+or unless their own project is a named module.
+If your project uses classpath (the default for Maven and Gradle projects), no changes are required.
+====
+
+'''
