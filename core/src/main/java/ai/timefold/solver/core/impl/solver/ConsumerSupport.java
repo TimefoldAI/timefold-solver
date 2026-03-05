@@ -65,9 +65,45 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         }
     }
 
+    // Called both on the Solver thread and the Consumer thread.
+    private void tryConsumeWaitingIntermediateBestSolution() {
+        if (bestSolutionHolder.isEmpty()) {
+            return; // There is no best solution to consume.
+        }
+        if (activeConsumption.tryAcquire()) {
+            scheduleIntermediateBestSolutionConsumption()
+                    .whenComplete((solution, throwable) -> activeConsumption.release())
+                    .thenRunAsync(this::tryConsumeWaitingIntermediateBestSolution, consumerExecutor);
+        }
+    }
+
+    /**
+     * Called both on the Solver thread and the Consumer thread.
+     * Don't call without locking, otherwise multiple consumptions may be scheduled.
+     * 
+     * @return future which completes when the consumption is done; can be unlocked then
+     */
+    private CompletableFuture<Void> scheduleIntermediateBestSolutionConsumption() {
+        return CompletableFuture.runAsync(() -> {
+            BestSolutionContainingProblemChanges<Solution_> bestSolutionContainingProblemChanges = bestSolutionHolder.take();
+            if (bestSolutionContainingProblemChanges != null) {
+                try {
+                    if (bestSolutionConsumer != null) {
+                        bestSolutionConsumer
+                                .accept(new NewBestSolutionEventImpl<>(bestSolutionContainingProblemChanges.getBestSolution(),
+                                        bestSolutionContainingProblemChanges.getProducerId()));
+                    }
+                    bestSolutionContainingProblemChanges.completeProblemChanges();
+                } catch (Throwable throwable) {
+                    exceptionHandler.accept(problemId, throwable);
+                    bestSolutionContainingProblemChanges.completeProblemChangesExceptionally(throwable);
+                }
+            }
+        }, consumerExecutor);
+    }
+
     // Called on the Solver thread.
-    void consumeFirstInitializedSolution(Solution_ solution, EventProducerId producerId,
-            boolean isTerminatedEarly) {
+    void consumeFirstInitializedSolution(Solution_ solution, EventProducerId producerId, boolean isTerminatedEarly) {
         try {
             // Called on the solver thread
             // During the solving process, this lock is called once, and it won't block the Solver thread
@@ -79,7 +115,8 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         // called on the Consumer thread
         this.firstInitializedSolution.getAndSet(solution); // Reachable more than once; problem change triggers restart.
         scheduleFirstInitializedSolutionConsumption(s -> firstInitializedSolutionConsumer
-                .accept(new FirstInitializedSolutionEventImpl<>(s, producerId, isTerminatedEarly)));
+                .accept(new FirstInitializedSolutionEventImpl<>(s, producerId, isTerminatedEarly)))
+                .whenComplete((unused, throwable) -> firstSolutionConsumption.release());
     }
 
     // Called on the consumer thread
@@ -94,7 +131,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         }
         // called on the Consumer thread
         this.initialSolution.getAndSet(solution); // Reachable more than once; problem change triggers restart.
-        scheduleStartJobConsumption();
+        scheduleStartJobConsumption().whenComplete((unused, throwable) -> startSolverJobConsumption.release());
     }
 
     // Called on the Solver thread after Solver#solve() returns.
@@ -111,7 +148,12 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         if (bestSolutionConsumer != null) {
             scheduleIntermediateBestSolutionConsumption();
         }
-        consumerExecutor.submit(() -> {
+        scheduleBestSolutionConsumption(solution)
+                .whenComplete((unused, throwable) -> releaseAll());
+    }
+
+    private CompletableFuture<Void> scheduleBestSolutionConsumption(Solution_ solution) {
+        return CompletableFuture.runAsync(() -> {
             try {
                 finalBestSolutionConsumer.accept(new FinalBestSolutionEventImpl<>(solution));
             } catch (Throwable throwable) {
@@ -126,44 +168,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
                 }
                 // Cancel problem changes that arrived after the solver terminated.
                 bestSolutionHolder.cancelPendingChanges();
-                releaseAll();
                 disposeConsumerThread();
-            }
-        });
-    }
-
-    // Called both on the Solver thread and the Consumer thread.
-    private void tryConsumeWaitingIntermediateBestSolution() {
-        if (bestSolutionHolder.isEmpty()) {
-            return; // There is no best solution to consume.
-        }
-        if (activeConsumption.tryAcquire()) {
-            scheduleIntermediateBestSolutionConsumption().thenRunAsync(this::tryConsumeWaitingIntermediateBestSolution,
-                    consumerExecutor);
-        }
-    }
-
-    /**
-     * Called both on the Solver thread and the Consumer thread.
-     * Don't call without locking, otherwise multiple consumptions may be scheduled.
-     */
-    private CompletableFuture<Void> scheduleIntermediateBestSolutionConsumption() {
-        return CompletableFuture.runAsync(() -> {
-            BestSolutionContainingProblemChanges<Solution_> bestSolutionContainingProblemChanges = bestSolutionHolder.take();
-            if (bestSolutionContainingProblemChanges != null) {
-                try {
-                    if (bestSolutionConsumer != null) {
-                        bestSolutionConsumer
-                                .accept(new NewBestSolutionEventImpl<>(bestSolutionContainingProblemChanges.getBestSolution(),
-                                        bestSolutionContainingProblemChanges.getProducerId()));
-                    }
-                    bestSolutionContainingProblemChanges.completeProblemChanges();
-                } catch (Throwable throwable) {
-                    exceptionHandler.accept(problemId, throwable);
-                    bestSolutionContainingProblemChanges.completeProblemChangesExceptionally(throwable);
-                } finally {
-                    activeConsumption.release();
-                }
             }
         }, consumerExecutor);
     }
@@ -172,34 +177,41 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
      * Called on the Consumer thread.
      * Don't call without locking firstSolutionConsumption,
      * because the consumption may not be executed before the final best solution is executed.
+     * 
+     * @return future which completes when the consumption is done; can be unlocked then
      */
-    private void scheduleFirstInitializedSolutionConsumption(Consumer<? super Solution_> solutionConsumer) {
-        scheduleConsumption(firstSolutionConsumption, solutionConsumer, firstInitializedSolution.get());
+    private CompletableFuture<Void> scheduleFirstInitializedSolutionConsumption(Consumer<? super Solution_> solutionConsumer) {
+        return scheduleConsumption(solutionConsumer, firstInitializedSolution.get());
     }
 
     /**
      * Called on the Consumer thread.
      * Don't call without locking startSolverJobConsumption,
      * because the consumption may not be executed before the final best solution is executed.
+     * 
+     * @return future which completes when the consumption is done; can be unlocked then
      */
-    private void scheduleStartJobConsumption() {
-        scheduleConsumption(startSolverJobConsumption,
+    private CompletableFuture<Void> scheduleStartJobConsumption() {
+        return scheduleConsumption(
                 solverJobStartedConsumer == null ? null
                         : solution -> solverJobStartedConsumer.accept(new SolverJobStartedEventImpl<>(solution)),
                 initialSolution.get());
     }
 
-    private void scheduleConsumption(Semaphore semaphore, @Nullable Consumer<? super Solution_> consumer,
+    /**
+     * Assumes that it runs locked.
+     * 
+     * @return future which completes when the consumption is done; can be unlocked then
+     */
+    private CompletableFuture<Void> scheduleConsumption(@Nullable Consumer<? super Solution_> consumer,
             @Nullable Solution_ solution) {
-        CompletableFuture.runAsync(() -> {
+        return CompletableFuture.runAsync(() -> {
             try {
                 if (consumer != null && solution != null) {
                     consumer.accept(solution);
                 }
             } catch (Throwable throwable) {
                 exceptionHandler.accept(problemId, throwable);
-            } finally {
-                semaphore.release();
             }
         }, consumerExecutor);
     }
