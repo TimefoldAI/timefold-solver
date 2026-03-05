@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
 
 import java.lang.constant.ClassDesc;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -81,5 +83,36 @@ interface GizmoMemberHandler {
         // "L" + className + ";"
         var classDescriptor = classDesc.descriptorString();
         return classDescriptor.substring(1, classDescriptor.length() - 1).replace('/', '.');
+    }
+
+    static Class<?> resolveType(Class<?> declaringClass, ClassDesc classDesc) {
+        try {
+            return classDesc.resolveConstantDesc(MethodHandles.publicLookup().in(declaringClass));
+        } catch (ReflectiveOperationException e) {
+            // Probably Quarkus, due to different class loaders
+            if (!classDesc.isArray()) {
+                try {
+                    return Thread.currentThread().getContextClassLoader().loadClass(getTypeName(classDesc));
+                } catch (ClassNotFoundException ex) {
+                    throw new IllegalStateException("Unable to resolve type (%s) referenced from class (%s).".formatted(
+                            getTypeName(classDesc), declaringClass.getCanonicalName()), ex);
+                }
+            } else {
+                var componentType = resolveType(declaringClass, classDesc.componentType());
+                var arrayDepth = 0;
+                var currentIndex = 0;
+
+                // No convenience method to get array dimensions
+                var descriptorText = classDesc.descriptorString();
+                while (currentIndex != -1) {
+                    currentIndex = descriptorText.indexOf('[', currentIndex);
+                    arrayDepth++;
+                    if (currentIndex != -1) {
+                        currentIndex++;
+                    }
+                }
+                return Array.newInstance(componentType, arrayDepth).getClass();
+            }
+        }
     }
 }

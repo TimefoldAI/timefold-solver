@@ -26,8 +26,9 @@ final class GizmoFieldHandler implements GizmoMemberHandler {
     GizmoFieldHandler(Class<?> declaringClass, FieldDesc fieldDescriptor, boolean canBeWritten) {
         this.declaringClass = declaringClass;
         this.fieldDescriptor = fieldDescriptor;
+        var fieldType = GizmoMemberHandler.resolveType(declaringClass, fieldDescriptor.type());
         var getterMethod = ReflectionHelper.getGetterMethod(declaringClass, fieldDescriptor.name());
-        var setterMethod = ReflectionHelper.getSetterMethod(declaringClass, fieldDescriptor.name());
+        var setterMethod = ReflectionHelper.getSetterMethod(declaringClass, fieldType, fieldDescriptor.name());
 
         if (getterMethod == null) {
             getterDescriptor = null;

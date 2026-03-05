@@ -36,7 +36,7 @@ public final class ReflectionHelper {
             PROPERTY_ACCESSOR_PREFIX_IS
     };
 
-    private static final String PROPERTY_MUTATOR_PREFIX = "set";
+    public static final String PROPERTY_MUTATOR_PREFIX = "set";
 
     /**
      * Returns the JavaBeans property name of the given member.
@@ -172,7 +172,7 @@ public final class ReflectionHelper {
         return null;
     }
 
-    private static String capitalizePropertyName(String propertyName) {
+    public static String capitalizePropertyName(String propertyName) {
         if (propertyName.isEmpty() || Character.isUpperCase(propertyName.charAt(0))) {
             return propertyName;
         } else {
@@ -243,27 +243,6 @@ public final class ReflectionHelper {
     public static Method getDeclaredSetterMethod(Class<?> containingClass, Class<?> propertyType, String propertyName) {
         String setterName = PROPERTY_MUTATOR_PREFIX + capitalizePropertyName(propertyName);
         return getDeclaredMethod(containingClass, setterName, propertyType);
-    }
-
-    /**
-     * @param containingClass never null
-     * @param propertyName never null
-     * @return null if it doesn't exist
-     */
-    public static Method getSetterMethod(Class<?> containingClass, String propertyName) {
-        String setterName = PROPERTY_MUTATOR_PREFIX + capitalizePropertyName(propertyName);
-        Method[] methods = Arrays.stream(containingClass.getMethods())
-                .filter(method -> method.getName().equals(setterName))
-                .toArray(Method[]::new);
-        if (methods.length == 0) {
-            return null;
-        }
-        if (methods.length > 1) {
-            throw new IllegalStateException("The containingClass (" + containingClass
-                    + ") has multiple setter methods (" + Arrays.toString(methods)
-                    + ") with the propertyName (" + propertyName + ").");
-        }
-        return methods[0];
     }
 
     public static boolean isMethodOverwritten(Method parentMethod, Class<?> childClass) {

@@ -50,6 +50,10 @@ public class TestdataGenericEntity<T> extends TestdataObject {
         this.value = value;
     }
 
+    public void setValue(String code) {
+        this.value = new TestdataGenericValue<>(code);
+    }
+
     public void setSubTypeValue(TestdataGenericValue<T> subTypeValue) {
         this.subTypeValue = subTypeValue;
     }

@@ -101,7 +101,7 @@ public class ConfigUtils {
         }
         var beanClass = bean.getClass();
         customProperties.forEach((propertyName, valueString) -> {
-            var setterMethod = ReflectionHelper.getSetterMethod(beanClass, propertyName);
+            var setterMethod = getSetterMethod(beanClass, propertyName);
             if (setterMethod == null) {
                 throw new IllegalStateException(
                         """
@@ -604,11 +604,31 @@ public class ConfigUtils {
         return value.toString();
     }
 
+    /**
+     * @param containingClass never null
+     * @param propertyName never null
+     * @return null if it doesn't exist
+     */
+    private static Method getSetterMethod(Class<?> containingClass, String propertyName) {
+        String setterName = ReflectionHelper.PROPERTY_MUTATOR_PREFIX + ReflectionHelper.capitalizePropertyName(propertyName);
+        Method[] methods = Arrays.stream(containingClass.getMethods())
+                .filter(method -> method.getName().equals(setterName))
+                .toArray(Method[]::new);
+        if (methods.length == 0) {
+            return null;
+        }
+        if (methods.length > 1) {
+            throw new IllegalStateException("The containingClass (" + containingClass
+                    + ") has multiple setter methods (" + Arrays.toString(methods)
+                    + ") with the propertyName (" + propertyName + ").");
+        }
+        return methods[0];
+    }
+
     // ************************************************************************
     // Private constructor
     // ************************************************************************
 
     private ConfigUtils() {
     }
-
 }
