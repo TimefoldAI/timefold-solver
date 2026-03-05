@@ -27,6 +27,8 @@
   </licenses>
 
   <properties>
+    <!-- Used for GitHub Packages publishing in CI; resolves to "owner/repo" on GitHub Actions. -->
+    <github.repository>${env.GITHUB_REPOSITORY}</github.repository>
     <version.javadoc.plugin>3.12.0</version.javadoc.plugin>
     <version.rewrite.plugin>6.23.0</version.rewrite.plugin>
     <version.source.plugin>3.3.1</version.source.plugin>
@@ -69,6 +71,14 @@
     <module>tools</module>
     <module>migration</module><!-- TODO move to tools/migration -->
   </modules>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/${github.repository}</url>
+    </repository>
+  </distributionManagement>
 
   <build>
     <pluginManagement>
