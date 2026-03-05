@@ -44,7 +44,7 @@ If you are starting out, we recommend working on the quickstarts first, as those
 ## Development
 
 > [!IMPORTANT]
-> **All contributions must comply with the [Timefold Solver Constitution](.specify/memory/constitution.md).**
+> **All contributions must comply with the [Timefold Solver Constitution](CONSTITUTION.md).**
 > The constitution defines our core principles, technology stack, code quality standards, and development practices. Key areas include:
 > - **Core Principles**: Fail Fast, Understandable Error Messages, Consistent Terminology, Real World Usefulness, Automated Testing, Good Code Hygiene
 > - **Technology Stack**: JDK 21 compatibility, nullability policy, dependency constraints, test infrastructure, security requirements
@@ -93,7 +93,7 @@ CI checks enforce those conventions too, so be sure to build your project with M
 
 For information about how to set up code style checks in your IDE, see [IDE Setup Instructions](build/ide-config/ide-configuration.adoc).
 
-**Key code style conventions** (see [Constitution](.specify/memory/constitution.md) for complete details):
+**Key code style conventions** (see [Constitution](CONSTITUTION.md) for complete details):
 - Automatic formatting via Maven build
 - Use newlines sparingly to separate logical blocks
 - When multiple class fields are touched, use/modify them in declaration order
