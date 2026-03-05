@@ -1,52 +1,11 @@
-name: Finish Release
+name: Finish Release (disabled in fork)
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
 
 jobs:
-  build:
-    env:
-      RELEASE_BRANCH_NAME: "__timefold_release_branch__"
+  disabled:
+    if: ${{ false }}
     runs-on: ubuntu-latest
-    timeout-minutes: 120
     steps:
-      - name: Checkout timefold-solver
-        uses: actions/checkout@v5
-        with:
-          ref: main
-          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-
-      - name: Put back the 999-SNAPSHOT version on the release branch
-        run: |
-          git config user.name "Timefold Release Bot"
-          git config user.email "release@timefold.ai"
-          git checkout $RELEASE_BRANCH_NAME
-          ./mvnw -Dfull versions:set -DnewVersion=999-SNAPSHOT
-          git commit -am "build: move back to 999-SNAPSHOT"
-          git push origin $RELEASE_BRANCH_NAME          
-
-      - name: Update release branch
-        shell: bash
-        run: |
-          tag=${{ github.ref }}
-          tag_version=${tag##*/}
-          version=${tag_version%.*}
-          version="${version:1}.x"
-          echo $version
-          exists="$(git branch -a | grep -w $version || true)"
-          echo "branch $exists"
-          if [ -n "$exists" ]; then
-            git config user.name "Timefold Release Bot"
-            git config user.email "release@timefold.ai"
-            git checkout $RELEASE_BRANCH_NAME
-            git checkout $version
-            git merge -Xtheirs --no-edit --squash -m "build: release version $tag_version" $RELEASE_BRANCH_NAME
-            git push origin $version
-            git push -d origin $RELEASE_BRANCH_NAME
-          else
-            git checkout $RELEASE_BRANCH_NAME
-            git branch -m $RELEASE_BRANCH_NAME $version
-            git push origin -u $version
-            git push -d origin $RELEASE_BRANCH_NAME
-          fi
+      - run: echo "Disabled in this fork. Use the manual Publish to GitHub Packages workflow."
