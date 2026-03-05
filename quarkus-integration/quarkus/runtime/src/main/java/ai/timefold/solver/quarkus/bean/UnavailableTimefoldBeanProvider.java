@@ -99,10 +99,11 @@ public class UnavailableTimefoldBeanProvider {
     private RuntimeException createException(Class<?> beanClass) {
         return new IllegalStateException("The " + beanClass.getName() + " is not available as there are no @"
                 + PlanningSolution.class.getSimpleName() + " or @" + PlanningEntity.class.getSimpleName()
-                + " annotated classes."
+                + " annotated classes, and no PlanningSpecification CDI bean was found."
+                + "\nEither annotate your domain classes, or provide a PlanningSpecification CDI bean via a @Produces method."
                 + "\nIf your domain classes are located in a dependency of this project, maybe try generating"
                 + " the Jandex index by using the jandex-maven-plugin in that dependency, or by adding"
-                + "application.properties entries (quarkus.index-dependency.<name>.group-id"
+                + " application.properties entries (quarkus.index-dependency.<name>.group-id"
                 + " and quarkus.index-dependency.<name>.artifact-id).");
     }
 }

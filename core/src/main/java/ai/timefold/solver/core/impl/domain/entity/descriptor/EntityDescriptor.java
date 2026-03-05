@@ -147,6 +147,77 @@ public class EntityDescriptor<Solution_> {
         return entityForEachFilter;
     }
 
+    /**
+     * Initialize variable descriptor maps without annotation processing.
+     * Used by the programmatic specification API.
+     */
+    public void initializeVariableMaps() {
+        declaredGenuineVariableDescriptorMap = new LinkedHashMap<>();
+        declaredShadowVariableDescriptorMap = new LinkedHashMap<>();
+        declaredCascadingUpdateShadowVariableDecriptorMap = new LinkedHashMap<>();
+        declaredPinEntityFilterList = new ArrayList<>(2);
+    }
+
+    /**
+     * Add a genuine variable descriptor directly.
+     * Used by the programmatic specification API.
+     */
+    public void addGenuineVariableDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor) {
+        declaredGenuineVariableDescriptorMap.put(variableDescriptor.getVariableName(), variableDescriptor);
+    }
+
+    /**
+     * Add a shadow variable descriptor directly.
+     * Used by the programmatic specification API.
+     */
+    public void addShadowVariableDescriptor(ShadowVariableDescriptor<Solution_> variableDescriptor) {
+        addShadowVariableDescriptor(variableDescriptor, true);
+    }
+
+    /**
+     * Add a shadow variable descriptor directly, optionally registering it as a primary cascading descriptor.
+     * When {@code registerInCascadingMap} is false, the descriptor is added to the shadow map only,
+     * not to the cascading update map. This is used for secondary fields that share the same targetMethodName.
+     */
+    public void addShadowVariableDescriptor(ShadowVariableDescriptor<Solution_> variableDescriptor,
+            boolean registerInCascadingMap) {
+        declaredShadowVariableDescriptorMap.put(variableDescriptor.getVariableName(), variableDescriptor);
+        if (registerInCascadingMap
+                && variableDescriptor instanceof CascadingUpdateShadowVariableDescriptor<Solution_> cascading) {
+            declaredCascadingUpdateShadowVariableDecriptorMap.put(cascading.getVariableName(), cascading);
+        }
+        if (variableDescriptor instanceof ShadowVariablesInconsistentVariableDescriptor<Solution_> inconsistent) {
+            shadowVariablesInconsistentDescriptor = inconsistent;
+        }
+    }
+
+    /**
+     * Add a pin filter from a predicate (equivalent to @PlanningPin).
+     * Used by the programmatic specification API.
+     */
+    public void addPinnedPredicate(java.util.function.Predicate<Object> pinnedPredicate) {
+        if (declaredPinEntityFilterList == null) {
+            declaredPinEntityFilterList = new ArrayList<>(2);
+        }
+        declaredPinEntityFilterList.add((solution, entity) -> !pinnedPredicate.test(entity));
+    }
+
+    /**
+     * Set the descending difficulty sorter.
+     * Used by the programmatic specification API.
+     */
+    public void setDescendingSorter(SelectionSorter<Solution_, Object> sorter) {
+        this.descendingSorter = sorter;
+    }
+
+    /**
+     * Set the pin-to-index reader.
+     * Used by the programmatic specification API.
+     */
+    public void setPlanningPinToIndexReader(PlanningPinToIndexReader reader) {
+        this.effectivePlanningPinToIndexReader = reader;
+    }
+
     // ************************************************************************
     // Lifecycle methods
     // ************************************************************************

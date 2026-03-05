@@ -47,6 +47,20 @@ public abstract sealed class AbstractFromPropertyValueRangeDescriptor<Solution_>
         processValueRangeProviderAnnotation(valueRangeProviderAnnotation);
     }
 
+    /**
+     * Constructor that bypasses annotation checking.
+     * Used by the programmatic specification API where configuration comes from
+     * the specification rather than annotations.
+     */
+    protected AbstractFromPropertyValueRangeDescriptor(int ordinalId, GenuineVariableDescriptor<Solution_> variableDescriptor,
+            MemberAccessor memberAccessor, boolean skipAnnotationCheck) {
+        super(ordinalId, variableDescriptor);
+        this.memberAccessor = memberAccessor;
+        var type = memberAccessor.getType();
+        collectionWrapping = Collection.class.isAssignableFrom(type);
+        arrayWrapping = type.isArray();
+    }
+
     private void processValueRangeProviderAnnotation(ValueRangeProvider valueRangeProviderAnnotation) {
         EntityDescriptor<Solution_> entityDescriptor = variableDescriptor.getEntityDescriptor();
         Class<?> type = memberAccessor.getType();

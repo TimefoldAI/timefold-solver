@@ -23,6 +23,15 @@ public final class FromEntityPropertyValueRangeDescriptor<Solution_>
         super(ordinal, variableDescriptor, memberAccessor);
     }
 
+    /**
+     * Constructor that bypasses annotation checking.
+     * Used by the programmatic specification API.
+     */
+    public FromEntityPropertyValueRangeDescriptor(int ordinal, GenuineVariableDescriptor<Solution_> variableDescriptor,
+            MemberAccessor memberAccessor, boolean skipAnnotationCheck) {
+        super(ordinal, variableDescriptor, memberAccessor, skipAnnotationCheck);
+    }
+
     @Override
     public <T> ValueRange<T> extractAllValues(Solution_ solution) {
         var entityList = variableDescriptor.getEntityDescriptor().extractEntities(solution);

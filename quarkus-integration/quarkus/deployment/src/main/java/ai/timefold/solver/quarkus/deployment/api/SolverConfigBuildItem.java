@@ -1,6 +1,7 @@
 package ai.timefold.solver.quarkus.deployment.api;
 
 import java.util.Map;
+import java.util.Set;
 
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
@@ -10,14 +11,21 @@ import io.quarkus.builder.item.SimpleBuildItem;
 public final class SolverConfigBuildItem extends SimpleBuildItem {
     private final Map<String, SolverConfig> solverConfigurations;
     private final GeneratedGizmoClasses generatedGizmoClasses;
+    private final Set<String> specBasedSolverNames;
 
     /**
      * Constructor for multiple solver configurations.
      */
     public SolverConfigBuildItem(Map<String, SolverConfig> solverConfig, GeneratedGizmoClasses generatedGizmoClasses) {
+        this(solverConfig, generatedGizmoClasses, Set.of());
+    }
+
+    public SolverConfigBuildItem(Map<String, SolverConfig> solverConfig, GeneratedGizmoClasses generatedGizmoClasses,
+            Set<String> specBasedSolverNames) {
         // Defensive copy to avoid changing the map in dependent build items.
         this.solverConfigurations = Map.copyOf(solverConfig);
         this.generatedGizmoClasses = generatedGizmoClasses;
+        this.specBasedSolverNames = Set.copyOf(specBasedSolverNames);
     }
 
     public boolean isDefaultSolverConfig(String solverName) {
@@ -30,5 +38,13 @@ public final class SolverConfigBuildItem extends SimpleBuildItem {
 
     public GeneratedGizmoClasses getGeneratedGizmoClasses() {
         return generatedGizmoClasses;
+    }
+
+    public boolean isSpecBased(String solverName) {
+        return specBasedSolverNames.contains(solverName);
+    }
+
+    public boolean isAllSpecBased() {
+        return !solverConfigurations.isEmpty() && specBasedSolverNames.equals(solverConfigurations.keySet());
     }
 }

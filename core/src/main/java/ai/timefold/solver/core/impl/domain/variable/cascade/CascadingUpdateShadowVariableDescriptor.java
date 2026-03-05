@@ -42,6 +42,28 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
         shadowVariableTargetList.add(new ShadowVariableTarget<>(entityDescriptor, variableMemberAccessor));
     }
 
+    /**
+     * Set the target method accessor and target variable descriptors directly.
+     * Used by the programmatic specification API.
+     */
+    public void setTargetMethod(MemberAccessor targetMethod) {
+        this.targetMethod = targetMethod;
+    }
+
+    /**
+     * Complete linking by populating target variable descriptors and setting first target.
+     * Used by the programmatic specification API after all shadow descriptors are registered.
+     */
+    public void completeTargetLinking() {
+        for (var shadowVariableTarget : shadowVariableTargetList) {
+            targetVariableDescriptorList.add(shadowVariableTarget.entityDescriptor()
+                    .getShadowVariableDescriptor(shadowVariableTarget.variableMemberAccessor().getName()));
+        }
+        if (!targetVariableDescriptorList.isEmpty()) {
+            firstTargetVariableDescriptor = targetVariableDescriptorList.getFirst();
+        }
+    }
+
     public String getTargetMethodName() {
         var variableMemberAccessor = shadowVariableTargetList.getFirst().variableMemberAccessor();
         return Arrays

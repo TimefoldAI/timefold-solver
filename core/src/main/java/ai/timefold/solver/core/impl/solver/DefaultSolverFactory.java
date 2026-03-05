@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.OptionalInt;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.specification.PlanningSpecification;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
@@ -29,6 +30,8 @@ import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeu
 import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SpecificationCompiler;
+import ai.timefold.solver.core.impl.domain.specification.AnnotationSpecificationFactory;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
@@ -70,7 +73,10 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     private final DomainAccessType domainAccessType;
 
     public DefaultSolverFactory(SolverConfig solverConfig) {
-        this(solverConfig, DomainAccessType.AUTO);
+        this(solverConfig,
+                solverConfig.getDomainAccessType() != null
+                        ? solverConfig.getDomainAccessType()
+                        : DomainAccessType.AUTO);
     }
 
     public DefaultSolverFactory(SolverConfig solverConfig, DomainAccessType domainAccessType) {
@@ -185,7 +191,14 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .buildTermination(configPolicy, basicPlumbingTermination);
     }
 
+    @SuppressWarnings("unchecked")
     private SolutionDescriptor<Solution_> buildSolutionDescriptor() {
+        var spec = solverConfig.getPlanningSpecification();
+        if (spec != null) {
+            return SpecificationCompiler.compile(
+                    (PlanningSpecification<Solution_>) spec,
+                    solverConfig.getEnablePreviewFeatureSet());
+        }
         if (solverConfig.getSolutionClass() == null) {
             throw new IllegalArgumentException(
                     "The solver configuration must have a solutionClass (%s). If you're using the Quarkus extension or Spring Boot starter, it should have been filled in already."
@@ -196,12 +209,26 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     "The solver configuration must have at least 1 entityClass (%s). If you're using the Quarkus extension or Spring Boot starter, it should have been filled in already."
                             .formatted(solverConfig.getEntityClassList()));
         }
-        return SolutionDescriptor.buildSolutionDescriptor(solverConfig.getEnablePreviewFeatureSet(),
+        var solutionClass = (Class<Solution_>) solverConfig.getSolutionClass();
+        SolutionDescriptor.assertMutable(solutionClass, "solutionClass");
+        SolutionDescriptor.assertSingleInheritance(solutionClass);
+        SolutionDescriptor.assertValidAnnotatedMembers(solutionClass);
+        if (solverConfig.getLookup() != null) {
+            var lookupSpec = AnnotationSpecificationFactory.fromAnnotations(
+                    solutionClass, solverConfig.getEntityClassList(), solverConfig.getLookup());
+            return SpecificationCompiler.compile(lookupSpec,
+                    solverConfig.getEnablePreviewFeatureSet());
+        }
+        var annotationSpec = AnnotationSpecificationFactory.fromAnnotations(
+                solutionClass,
+                solverConfig.getEntityClassList(),
                 domainAccessType,
-                (Class<Solution_>) solverConfig.getSolutionClass(),
+                solverConfig.getGizmoMemberAccessorMap());
+        return SpecificationCompiler.compile(annotationSpec,
+                solverConfig.getEnablePreviewFeatureSet(),
+                domainAccessType,
                 solverConfig.getGizmoMemberAccessorMap(),
-                solverConfig.getGizmoSolutionClonerMap(),
-                solverConfig.getEntityClassList());
+                false);
     }
 
     private <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory() {

@@ -83,6 +83,8 @@ public final class DotNames {
     static final DotName SOLVER_FACTORY = DotName.createSimple(SolverFactory.class.getName());
     static final DotName SOLVER_MANAGER = DotName.createSimple(SolverManager.class.getName());
     static final DotName CONSTRAINT_VERIFIER = DotName.createSimple(ConstraintVerifier.class.getName());
+    static final DotName PLANNING_SPECIFICATION = DotName.createSimple(
+            "ai.timefold.solver.core.api.domain.specification.PlanningSpecification");
 
     static final DotName[] PLANNING_ENTITY_FIELD_ANNOTATIONS = {
             PLANNING_PIN,

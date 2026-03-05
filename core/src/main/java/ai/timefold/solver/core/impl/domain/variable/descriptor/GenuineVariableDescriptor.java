@@ -42,6 +42,22 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         super(ordinal, entityDescriptor, variableMemberAccessor);
     }
 
+    /**
+     * Set the value range descriptor directly, bypassing annotation-based resolution.
+     * Used by the programmatic specification API.
+     */
+    public void setValueRangeDescriptor(AbstractValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+        this.valueRangeDescriptor = valueRangeDescriptor;
+    }
+
+    /**
+     * Process value range refs from specification, delegating to the existing ref resolution logic.
+     * Used by the programmatic specification API.
+     */
+    public void processValueRangeRefsFromSpecification(DescriptorPolicy descriptorPolicy, String[] valueRangeProviderRefs) {
+        processValueRangeRefs(descriptorPolicy, valueRangeProviderRefs);
+    }
+
     // ************************************************************************
     // Lifecycle methods
     // ************************************************************************
@@ -181,6 +197,30 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
             ascendingSorter = new ComparatorFactorySelectionSorter<>(comparatorFactory, SelectionSorterOrder.ASCENDING);
             descendingSorter = new ComparatorFactorySelectionSorter<>(comparatorFactory, SelectionSorterOrder.DESCENDING);
         }
+    }
+
+    /**
+     * Set the strength sorting from an already-instantiated comparator.
+     * Used by the programmatic specification API.
+     */
+    @SuppressWarnings("unchecked")
+    public void setStrengthSorting(Comparator<?> comparator) {
+        ascendingSorter = new ComparatorSelectionSorter<>((Comparator<Object>) comparator,
+                SelectionSorterOrder.ASCENDING);
+        descendingSorter = new ComparatorSelectionSorter<>((Comparator<Object>) comparator,
+                SelectionSorterOrder.DESCENDING);
+    }
+
+    /**
+     * Set the strength sorting from a comparator factory class (solution-aware comparators).
+     * Used by the programmatic specification API.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void setStrengthSortingFromFactory(Class<?> comparatorFactoryClass) {
+        ComparatorFactory<Solution_, Object> comparatorFactory = (ComparatorFactory<Solution_, Object>) ConfigUtils
+                .newInstance(this::toString, "comparatorFactoryClass", (Class) comparatorFactoryClass);
+        ascendingSorter = new ComparatorFactorySelectionSorter<>(comparatorFactory, SelectionSorterOrder.ASCENDING);
+        descendingSorter = new ComparatorFactorySelectionSorter<>(comparatorFactory, SelectionSorterOrder.DESCENDING);
     }
 
     @Override

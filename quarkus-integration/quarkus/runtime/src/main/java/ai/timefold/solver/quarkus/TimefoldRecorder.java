@@ -1,8 +1,6 @@
 package ai.timefold.solver.quarkus;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -10,14 +8,14 @@ import java.util.function.Supplier;
 
 import jakarta.inject.Named;
 
-import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
+import ai.timefold.solver.core.api.domain.specification.PlanningSpecification;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.quarkus.config.DiminishedReturnsRuntimeConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
@@ -62,22 +60,46 @@ public class TimefoldRecorder {
         assertNoUnmatchedProperties(names, timefoldRuntimeConfig.getValue().solver().keySet());
     }
 
-    public <Solution_> Supplier<SolverConfig> solverConfigSupplier(final String solverName,
-            final SolverConfig solverConfig,
-            Map<String, RuntimeValue<MemberAccessor>> generatedGizmoMemberAccessorMap,
-            Map<String, RuntimeValue<SolutionCloner<Solution_>>> generatedGizmoSolutionClonerMap) {
+    public Supplier<SolverConfig> solverConfigWithSpecSupplier(String solverName, SolverConfig solverConfig) {
         return () -> {
             updateSolverConfigWithRuntimeProperties(solverName, solverConfig);
-            Map<String, MemberAccessor> memberAccessorMap = new HashMap<>();
-            Map<String, SolutionCloner<Solution_>> solutionClonerMap = new HashMap<>();
-            generatedGizmoMemberAccessorMap
-                    .forEach((className, runtimeValue) -> memberAccessorMap.put(className, runtimeValue.getValue()));
-            generatedGizmoSolutionClonerMap
-                    .forEach((className, runtimeValue) -> solutionClonerMap.put(className, runtimeValue.getValue()));
-
-            solverConfig.setGizmoMemberAccessorMap(memberAccessorMap);
-            solverConfig.setGizmoSolutionClonerMap((Map) solutionClonerMap);
+            var spec = io.quarkus.arc.Arc.container().instance(PlanningSpecification.class).get();
+            solverConfig.setPlanningSpecification(spec);
             return solverConfig;
+        };
+    }
+
+    public Supplier<SolverConfig> solverConfigSupplier(String solverName, SolverConfig solverConfig) {
+        return () -> {
+            updateSolverConfigWithRuntimeProperties(solverName, solverConfig);
+            solverConfig.setDomainAccessType(DomainAccessType.FORCE_REFLECTION);
+            return solverConfig;
+        };
+    }
+
+    public <Solution_> Supplier<SolverManager<Solution_>> solverManager(
+            String solverName, SolverConfig solverConfig) {
+        return () -> {
+            updateSolverConfigWithRuntimeProperties(solverName, solverConfig);
+            solverConfig.setDomainAccessType(DomainAccessType.FORCE_REFLECTION);
+            var solverManagerConfig = new SolverManagerConfig();
+            updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig);
+            return (SolverManager<Solution_>) SolverManager.create(
+                    SolverFactory.create(solverConfig), solverManagerConfig);
+        };
+    }
+
+    public <Solution_> Supplier<SolverManager<Solution_>> solverManagerWithSpec(
+            String solverName, SolverConfig solverConfig) {
+        return () -> {
+            updateSolverConfigWithRuntimeProperties(solverName, solverConfig);
+            var spec = io.quarkus.arc.Arc.container().instance(PlanningSpecification.class).get();
+            solverConfig.setPlanningSpecification(spec);
+
+            var solverManagerConfig = new SolverManagerConfig();
+            updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig);
+
+            return (SolverManager<Solution_>) SolverManager.create(SolverFactory.create(solverConfig), solverManagerConfig);
         };
     }
 
@@ -85,31 +107,6 @@ public class TimefoldRecorder {
         return () -> {
             updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig);
             return solverManagerConfig;
-        };
-    }
-
-    public <Solution_> Supplier<SolverManager<Solution_>> solverManager(final String solverName,
-            final SolverConfig solverConfig,
-            Map<String, RuntimeValue<MemberAccessor>> generatedGizmoMemberAccessorMap,
-            Map<String, RuntimeValue<SolutionCloner<Solution_>>> generatedGizmoSolutionClonerMap) {
-        return () -> {
-            updateSolverConfigWithRuntimeProperties(solverName, solverConfig);
-            Map<String, MemberAccessor> memberAccessorMap = new HashMap<>();
-            Map<String, SolutionCloner> solutionClonerMap = new HashMap<>();
-            generatedGizmoMemberAccessorMap
-                    .forEach((className, runtimeValue) -> memberAccessorMap.put(className, runtimeValue.getValue()));
-            generatedGizmoSolutionClonerMap
-                    .forEach((className, runtimeValue) -> solutionClonerMap.put(className, runtimeValue.getValue()));
-
-            solverConfig.setGizmoMemberAccessorMap(memberAccessorMap);
-            solverConfig.setGizmoSolutionClonerMap(solutionClonerMap);
-
-            var solverManagerConfig = new SolverManagerConfig();
-            updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig);
-
-            var solverFactory = SolverFactory.create(solverConfig);
-
-            return (SolverManager<Solution_>) SolverManager.create(solverFactory, solverManagerConfig);
         };
     }
 
