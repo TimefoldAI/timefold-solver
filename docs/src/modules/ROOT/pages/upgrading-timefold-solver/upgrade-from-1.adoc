@@ -61,7 +61,7 @@ Every upgrade note indicates how likely your code will be affected by that chang
 - icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeTo200,upgrade tooling>>.
 - icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
 - icon:info-circle[role=yellow] *Minor*: Less likely to affect your code, especially if you've been upgrading Timefold Solver regularly, paying attention to new deprecations.
-- icon:eye[] *Recommended*: We think this likely won't affect you, but still want you to be aware.
+- icon:eye[] *Recommended*: We think this won't affect you, but we'd rather be safe than sorry.
 
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin users to translate the changes accordingly.
@@ -170,8 +170,74 @@ If your constraint names do not comply, an exception will be thrown at solver in
 [%collapsible%open]
 ====
 The `@ConstraintConfiguration`, `@ConstraintConfigurationProvider`, and `@ConstraintWeight` annotations have been removed.
-Use `ConstraintWeightOverrides` instead.
-See the 1.12.0 to 1.13.0 upgrade step for detailed before/after code examples.
+Please use xref:constraints-and-score/constraint-configuration.adoc#definingAndOverridingConstraintWeights[constraint weight overrides] instead.
+
+Before in `*ConstraintProvider.java`:
+
+[source,java]
+----
+...
+    .penalizeConfigurable()
+    .asConstraint("maxHoursWorked");
+...
+----
+
+After in `*ConstraintProvider.java`:
+
+[source,java]
+----
+...
+    .penalize(ONE_SOFT)
+    .asConstraint("maxHoursWorked");
+...
+----
+
+Before in `*Solution.java`:
+
+[source,java]
+----
+...
+    @ConstraintConfiguration
+    private MyConstraintConfiguration myConstraintConfiguration;
+...
+----
+
+After in `*Solution.java`:
+
+[source,java]
+----
+...
+    ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides;
+...
+    constraintWeightOverrides = ConstraintWeightOverrides.of(
+        Map.of(
+            "maxHoursWorked", HardSoftScore.ofSoft(10)
+        )
+    );
+...
+----
+====
+
+'''
+
+.icon:info-circle[role=yellow] `@PlanningEntity` `pinningFilter` removed
+[%collapsible%open]
+====
+Pinning filters were an outdated way of specifying whether any particular entity might be changed by the solver.
+It makes more sense to keep this information in the dataset, as opposed to having it in the runtime.
+We have removed the long-deprecated the `pinningFilter` field on `@PlanningEntity` annotation,
+and replaced it with xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[`@PlanningPin` annotation] instead.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `SelectionSorterWeightFactory` removed
+[%collapsible%open]
+====
+The `SelectionSorterWeightFactory` sorter class has been removed in favor of `ComparatorFactory`.
+The sorting settings now utilize a `Comparator` class rather than a `Comparable` class,
+ensuring all related settings are consistent and simpler.
+Old implementations can be easily (but manually) converted to use the `ComparatorFactory` instead.
 ====
 
 '''
@@ -271,6 +337,69 @@ public List<Timetable> splitWorkingSolution(Timetable solution, Integer runnable
 
 '''
 
+.icon:info-eye[] `@PlanningSolution` `lookUpStrategyType` removed
+[%collapsible%open]
+====
+The `lookUpStrategyType` attribute has been removed from `@PlanningSolution`.
+Remove `lookUpStrategyType` from your `@PlanningSolution` annotations
+and ensure that your planning entities and problem facts have a `@PlanningId`-annotated field.
+
+LookupStrategyType` was used in xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
+to specify how the solver should match entities and facts between parent and child score directors.
+The default value was `PLANNING_ID_OR_NONE`, which meant
+that the solver would look up entities by their xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[planning ID].
+This behavior is now the default and only behavior.
+
+Before in `Timetable.java`:
+
+[source,java]
+----
+@PlanningSolution(lookUpStrategyType = LookUpStrategyType.PLANNING_ID_OR_NONE)
+public class Timetable {
+    ...
+}
+----
+
+After in `Timetable.java`:
+
+[source,java]
+----
+@PlanningSolution
+public class Timetable {
+    ...
+}
+----
+
+Before in `Lesson.java`:
+
+[source,java]
+----
+@PlanningEntity
+public class Lesson {
+
+    private String id;
+    ...
+
+}
+----
+
+After in `Lesson.java`:
+
+[source,java]
+----
+@PlanningEntity
+public class Lesson {
+
+    @PlanningId
+    private String id;
+    ...
+
+}
+----
+====
+
+'''
+
 .icon:eye[] `BenchmarkAggregator` moved to separate module
 [%collapsible%open]
 ====
@@ -304,12 +433,20 @@ After in `pom.xml`:
 
 '''
 
-.icon:eye[role=yellow] `timefold-solver-jsonb` module removed
+.icon:eye[] Explicit JSON-B support removed
 [%collapsible%open]
 ====
-The `timefold-solver-jsonb` and `timefold-solver-quarkus-jsonb` modules have been removed.
-They were deprecated since 1.4.0.
+The long-deprecated `timefold-solver-jsonb` and `timefold-solver-quarkus-jsonb` modules have been removed.
 Use the Jackson integration (`timefold-solver-jackson`) instead.
+====
+
+'''
+
+.icon:eye[] `timefold-solver-webui` module removed
+[%collapsible%open]
+====
+This module was never intended to be used by end users, as it only contained Timefold branding.
+It was removed without replacement.
 ====
 
 === Fully or partially automated changes
@@ -508,7 +645,16 @@ SolverJob<Timetable> job = solverManager.solve(1L, timetable);
 
 '''
 
-.icon:exclamation-triangle[role=red] `SolverJobBuilder` deprecated consumer methods removed
+.icon:info-circle[role=yellow] Deprecated `SolverManager` `solve` methods removed
+[%collapsible%open]
+====
+Various previously deprecated overloads of `SolverManager.solve()` and `SolverManager.solveAndListen()` were removed.
+Use the `SolverManager.solveBuilder()` method to build `SolverJob`s instead, as it provides more flexibility.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `SolverJobBuilder` deprecated consumer methods removed
 [%collapsible%open]
 ====
 The following deprecated `SolverJobBuilder` methods have been removed:
@@ -529,12 +675,88 @@ The following deprecated `SolverJobBuilder` methods have been removed:
 |`withSolverJobStartedEventConsumer`
 |===
 
-See the 1.27.0 and 1.28.0 upgrade steps for before/after code examples.
+To migrate, change your `Consumer` to accept the event instead of the solution:
+
+Before in `*.java`:
+
+[source,java]
+----
+SolverManager<Timetable, Long> solverManager = SolverManager.create(solverConfig);
+
+void runJob(Timetable timetable) {
+    solverManager.solveBuilder()
+        .withProblemId(1L)
+        .withProblem(timetable)
+        .withSolverJobStartedConsumer(this::onJobStart)
+        .withFirstInitializedSolutionConsumer(this::onInitializedSolution)
+        .withBestSolutionConsumer(this::onNewBestSolution)
+        .withFinalBestSolutionConsumer(this::onFinalBestSolution)
+        .run();
+}
+
+void onJobStart(Timetable timetable) {
+    // ...
+}
+
+void onInitializedSolution(Timetable timetable) {
+    // ...
+}
+
+void onFinalBestSolution(Timetable timetable) {
+    // ...
+}
+
+void onJobStart(Timetable timetable) {
+    // ...
+}
+----
+
+After in `*.java`:
+
+[source,java]
+----
+SolverManager<Timetable> solverManager = SolverManager.create(solverConfig);
+
+void runJob(Timetable timetable) {
+    solverManager.solveBuilder()
+        .withProblemId(1L)
+        .withProblem(timetable)
+        .withSolverJobStartedEventConsumer(this::onJobStart)
+        .withFirstInitializedSolutionEventConsumer(this::onInitializedSolution)
+        .withBestSolutionEventConsumer(this::onNewBestSolution)
+        .withFinalBestSolutionEventConsumer(this::onFinalBestSolution)
+        .run();
+}
+
+void onJobStart(SolverJobStartedEvent<Timetable> event) {
+    var timetable = event.solution();
+    // ...
+}
+
+void onInitializedSolution(FirstInitializedSolutionEvent<Timetable> event) {
+    var timetable = event.solution();
+    // ...
+}
+
+void onNewBestSolution(NewBestSolutionEvent<Timetable> event) {
+    var timetable = event.solution();
+    // ...
+}
+
+void onFinalBestSolution(FinalBestSolutionEvent<Timetable> event) {
+    var timetable = event.solution();
+    // ...
+}
+----
+
+Users of xref:enterprise-edition/enterprise-edition.adoc#throttlingBestSolutionEvents[solution throttling]
+should also update their code to use `ThrottlingBestSolutionEventConsumer`
+instead of the now removed `ThrottlingBestSolutionConsumer`.
 ====
 
 '''
 
-.icon:exclamation-triangle[role=red] `ProblemChangeDirector` lookup method renamed
+.icon:info-circle[role=yellow] `ProblemChangeDirector` lookup method renamed
 [%collapsible%open]
 ====
 `ProblemChangeDirector.lookUpWorkingObjectOrFail(Object)` has been renamed to `lookUpWorkingObject(Object)`.
@@ -557,19 +779,10 @@ var workingShift = problemChangeDirector.lookUpWorkingObject(externalShift);
 
 '''
 
-.icon:exclamation-triangle[role=red] `BestSolutionChangedEvent` is now an interface
-[%collapsible%open]
-====
-`BestSolutionChangedEvent` has been converted from a class to an interface.
-Its public constructors were already deprecated; if your code constructed instances of this class (e.g. for unit tests), you must remove those usages.
-====
-
-'''
-
 .icon:exclamation-triangle[role=red] `CountableValueRange` removed
 [%collapsible%open]
 ====
-`CountableValueRange` has been removed and `DoubleValueRange` was replaced by `BigDecimalValueRange`.
+`CountableValueRange` has been removed.
 All value ranges are now countable, and its methods (`getSize()`, `get(long)`, `createOriginalIterator()`) have been merged into `ValueRange`.
 
 If your code used `CountableValueRange`, change references to `ValueRange`.
@@ -637,16 +850,6 @@ After in `pom.xml`:
 
 '''
 
-.icon:info-circle[role=yellow] `AutoDiscoverMemberType` removed from `@PlanningSolution`
-[%collapsible%open]
-====
-The `autoDiscoverMemberType` attribute of `@PlanningSolution` has been removed.
-If your solution class relied on auto-discovery, add the appropriate annotations explicitly:
-`@ProblemFactCollectionProperty`, `@ProblemFactProperty`, `@PlanningEntityCollectionProperty`, `@PlanningEntityProperty`, or `@PlanningScore`.
-====
-
-'''
-
 .icon:info-circle[role=yellow] `domainAccessType` removed from `SolverConfig`
 [%collapsible%open]
 ====
@@ -703,42 +906,12 @@ After in `solverConfig.xml`:
 
 '''
 
-.icon:info-circle[role=yellow] `@PlanningEntity` `pinningFilter` removed
-[%collapsible%open]
-====
-The `pinningFilter` attribute of `@PlanningEntity` has been removed.
-Use `@PlanningPin` instead.
-See the 1.22.0 to 1.23.0 upgrade step for details.
-====
-
-'''
-
-.icon:info-circle[role=yellow] `@PlanningSolution` `lookUpStrategyType` removed
-[%collapsible%open]
-====
-The `lookUpStrategyType` attribute has been removed from `@PlanningSolution`.
-Remove `lookUpStrategyType` from your `@PlanningSolution` annotations.
-See the 1.9.0 to 1.10.0 upgrade step for details.
-====
-
-'''
-
 .icon:info-circle[role=yellow] `NoChangePhase` removed from XML configuration
 [%collapsible%open]
 ====
 The `<noChangePhase>` element has been removed from the solver XML configuration,
 and the phase itself has been removed from the codebase.
 If you used it as a placeholder phase, remove it from your configuration.
-====
-
-'''
-
-.icon:info-circle[role=yellow] `SelectionSorterWeightFactory` removed
-[%collapsible%open]
-====
-`SelectionSorterWeightFactory` has been removed.
-Use `ComparatorFactory` instead.
-See the 1.27.0 to 1.28.0 upgrade step for details.
 ====
 
 '''
@@ -755,34 +928,6 @@ The following configuration attributes have been removed from local search's `<a
 
 These have been long since deprecated and their presence in the configuration had no effect.
 Remove them from your configuration if they are present.
-====
-
-'''
-
-.icon:info-circle[role=yellow] All code must use `RandomGenerator` instead of `Random`
-[%collapsible%open]
-====
-If you used any solver API which took a `Random` argument, change it to use `RandomGenerator` instead.
-
-Before in `*.java`:
-
-[source,java]
-----
-@Override
-public Iterator<LocalDate> createRandomIterator(Random workingRandom) {
-    ...
-}
-----
-
-After in `*.java`:
-
-[source,java]
-----
-@Override
-public Iterator<LocalDate> createRandomIterator(RandomGenerator workingRandom) {
-    ...
-}
-----
 ====
 
 '''
@@ -845,3 +990,107 @@ import ai.timefold.solver.jpa.api.score.HardSoftScoreConverter;
 ====
 
 '''
+
+.icon:info-eye[] Benchmarker's `benchmarkAndShowReportInBrowser()` method removed
+[%collapsible%open]
+====
+The method `Benchmarker.benchmarkAndShowReportInBrowser()` has been replaced by `Benchmarker.benchmark()`,
+which no longer automatically opens the report in a web browser.
+
+Before in `*.java`:
+
+[source,java]
+----
+var benchmarker = ...;
+benchmarker.benchmarkAndShowReportInBrowser(myProblem);
+----
+
+After in `*.java`:
+
+[source,java]
+----
+var benchmarker = ...;
+benchmarker.benchmark(myProblem);
+----
+====
+
+'''
+
+=== Changes requiring manual intervention
+
+The following changes could not be automated,
+but they are mechanical in nature and are unlikely to require significant adjustments to your code.
+
+.icon:info-circle[role=yellow] All code must use `RandomGenerator` instead of `Random`
+[%collapsible%open]
+====
+If you used any solver API which took a `Random` argument, change it to use `RandomGenerator` instead.
+
+Before in `*.java`:
+
+[source,java]
+----
+@Override
+public Iterator<LocalDate> createRandomIterator(Random workingRandom) {
+    ...
+}
+----
+
+After in `*.java`:
+
+[source,java]
+----
+@Override
+public Iterator<LocalDate> createRandomIterator(RandomGenerator workingRandom) {
+    ...
+}
+----
+====
+
+'''
+
+.icon:info-eye[] Deprecated `ConstraintCollectors` methods removed
+[%collapsible%open]
+====
+Various previously deprecated static methods on `ConstraintCollectors` have been removed:
+
+- Specialized `min()` and `max()` overloads that took a `Comparator` argument;
+use the remaining overloads, which take a `Comparable` mapping instead.
+- `toCollection()`; prefer `toList()` or `toSet()` instead.
+====
+
+'''
+
+.icon:info-eye[] `AutoDiscoverMemberType` removed from `@PlanningSolution`
+[%collapsible%open]
+====
+The `autoDiscoverMemberType` attribute of `@PlanningSolution` has been removed.
+If your solution class relied on auto-discovery, add the appropriate annotations explicitly:
+`@ProblemFactCollectionProperty`, `@ProblemFactProperty`, `@PlanningEntityCollectionProperty`, `@PlanningEntityProperty`, or `@PlanningScore`.
+The solver will throw helpful exceptions if any members are missing the necessary annotations.
+====
+
+'''
+
+.icon:info-eye[] `DoubleValueRange` removed
+[%collapsible%open]
+====
+`DoubleValueRange` was replaced by `BigDecimalValueRange`.
+If you used `DoubleValueRange`, change your code to use `BigDecimalValueRange` instead
+or, better yet, start using a collection-based value range if possible.
+====
+
+'''
+
+.icon:info-eye[] `BestSolutionChangedEvent` is now an interface
+[%collapsible%open]
+====
+`BestSolutionChangedEvent` has been converted from a class to an interface.
+Its public constructors were already deprecated;
+if your code constructed instances of this class (e.g. for unit tests), you must remove those usages.
+====
+
+'''
+
+
+
