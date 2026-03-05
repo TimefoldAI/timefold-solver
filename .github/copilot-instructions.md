@@ -2,7 +2,7 @@
 
 Read [CONSTITUTION.md](/CONSTITUTION.md) before reviewing. Comment only with >80% confidence. One sentence per comment.
 
-## Review: Yes
+## MUST DO while reviewing
 
 **Security**: command injection, path traversal, hardcoded secrets, missing input validation, error handling leaking sensitive info.
 
@@ -10,7 +10,7 @@ Read [CONSTITUTION.md](/CONSTITUTION.md) before reviewing. Comment only with >80
 
 **Architecture**: pattern violations, inconsistent library use, missing error handling, inconsistent naming, comments that restate the code.
 
-## Review: No
+## MUST NOT DO while reviewing
 
 Style/formatting (CI), test failures (CI), suggestions to add comments, refactoring without clear bug, multiple issues per comment.
 

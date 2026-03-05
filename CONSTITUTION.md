@@ -2,21 +2,24 @@
 
 ## Terminology
 
-Key words per [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.html): **MUST** = absolute requirement; **MUST NOT** = absolute prohibition; **SHOULD** = strong recommendation; **MAY** = optional.
+Key words per [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.html): **MUST** = absolute requirement; **MUST NOT** = absolute prohibition; **SHOULD** = strong recommendation; **SHOULD NOT** = strong recommendation against; **MAY** = optional.
 
 ## Core Principles
 
 ### I. Real World Usefulness
 
 - Every suitable feature MUST be used in at least one quickstart
-- Features complete only when: fully tested, fully documented, validated in realistic scenario
+- Features considered complete only when: fully tested, fully documented, validated in realistic scenario
 
 **Documentation**:
 
 1. **Public API** (MUST): All public classes/interfaces/methods MUST have Javadoc with `@param`, `@return`, `@throws` (omit NPE for null params; omit if present on referenced overload). `@since` optional.
-2. **User-facing** (MUST): New features → user guide; config changes → reference docs; breaking changes → migration guides.
+2. **User-facing** (MUST): 
+   - New features → user guide; 
+   - Config changes → reference docs; 
+   - Breaking changes → migration guides.
 3. **Examples** (SHOULD): Docs SHOULD include code examples; quickstart examples SHOULD be added externally.
-4. **Implementation** (MAY): Complex classes SHOULD have class-level Javadoc; non-obvious details SHOULD have comments.
+4. **Implementation** (SHOULD): Complex classes SHOULD have class-level Javadoc; non-obvious details SHOULD have comments.
 
 ### II. Consistent Terminology
 
@@ -41,7 +44,7 @@ Validate invalid states ASAP, in priority order:
 1. **Compile time** — type safety
 2. **Startup time** — config validation
 3. **Runtime** — request parameter validation (see also: Security § Input Validation)
-4. **Assertion mode** — perf-sensitive checks gated on `EnvironmentMode`
+4. **Assertion mode** — performance-sensitive checks gated on `EnvironmentMode`
 
 ### IV. Understandable Error Messages
 
@@ -51,7 +54,7 @@ throw new IllegalArgumentException(
         "The fooSize (%d) of bar (%s) must be positive.".formatted(fooSize, this));
 ```
 
-Actionable advice on new line starting with "Maybe":
+Actionable advice SHOULD be on new line starting with "Maybe":
 ```java
 throw new IllegalStateException("""
         The valueRangeDescriptor (%s) is nullable, but not countable (%s).
@@ -67,7 +70,7 @@ throw new IllegalStateException("""
 
 ### V. Automated Testing
 
-All code MUST have tests before merge. Methodology (TDD etc.) is discretionary.
+All code MUST have tests before merging. Methodology (TDD etc.) is discretionary.
 
 **Naming** (required for Maven Surefire/Failsafe):
 - Unit tests: `*Test` (e.g., `ScoreCalculatorTest`) — Surefire, `test` phase
@@ -101,6 +104,7 @@ Performance/stress tests are in other repositories; not applicable here.
 - Classes/methods MUST be `final` unless designed for extension
 - Fields MUST be `final` unless value must change post-construction
 - Prefer immutable objects: `List.of()`, `Set.of()`, records
+- Seal interfaces/abstract classes if no external implementations allowed
 
 ```java
 // ✅ Correct
@@ -211,7 +215,7 @@ JPMS MUST be implemented; every generated jar MUST have `module-info.java`.
 - `.api.*` and `.config.*` packages MUST be exported.
 - `.impl.*` packages MUST NOT be exported; if unavoidable, use qualified exports (`exports pkg to module;`).
 - Modules MUST NOT be fully `open`; only open specific packages to specific modules.
-- Our modules SHOULD `requires transitive` other our modules where possible; external modules MUST NOT be `transitive`.
+- Our modules SHOULD `requires transitive` our other modules where possible; external modules MUST NOT be `transitive`.
 
 ```java
 module ai.timefold.solver.jaxb {
@@ -277,7 +281,8 @@ public Score calculateScore(Solution solution) { ... }
 
 This constitution supersedes all other development practices. All PRs MUST verify constitutional compliance.
 
-**Amendment**: Requires maintainer discussion and approval. Versioning: MAJOR = principle removal/redefinition; MINOR = new principles; PATCH = clarifications.
+Constitution amendments require maintainer discussion and approval. 
+Constitution versioning: MAJOR = principle removal/redefinition; MINOR = new principles; PATCH = clarifications.
 
 ### Compliance
 
