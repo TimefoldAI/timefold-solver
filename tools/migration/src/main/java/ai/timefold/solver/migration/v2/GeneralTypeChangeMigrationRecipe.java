@@ -55,6 +55,14 @@ public class GeneralTypeChangeMigrationRecipe extends AbstractRecipe {
                         "ai.timefold.solver.core.api.score.BendableBigDecimalScore", true),
                 // Problem fact
                 new ChangeType("ai.timefold.solver.core.api.solver.ProblemFactChange",
-                        "ai.timefold.solver.core.api.solver.change.ProblemChange", true));
+                        "ai.timefold.solver.core.api.solver.change.ProblemChange", true),
+                // Value Range
+                new ChangeType("ai.timefold.solver.core.api.domain.valuerange.CountableValueRange",
+                        "ai.timefold.solver.core.api.domain.valuerange.ValueRange", true),
+                new ChangeType("ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.CompositeCountableValueRange",
+                        "ai.timefold.solver.core.impl.domain.valuerange.CompositeValueRange", true),
+                new ChangeType("ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange",
+                        "ai.timefold.solver.core.impl.domain.valuerange.NullAllowingValueRange", true)
+                );
     }
 }

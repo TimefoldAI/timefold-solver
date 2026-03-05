@@ -48,7 +48,11 @@ class GeneralTypeChangeMigrationRecipeTest implements RewriteTest {
                                 "package ai.timefold.solver.core.api.score.buildin.bendable; public class BendableScore {}",
                                 "package ai.timefold.solver.core.api.score.buildin.bendablelong; public class BendableLongScore {}",
                                 "package ai.timefold.solver.core.api.score.buildin.bendablebigdecimal; public class BendableBigDecimalScore {}",
-                                "package ai.timefold.solver.core.api.solver; public class ProblemFactChange {}"));
+                                "package ai.timefold.solver.core.api.solver; public class ProblemFactChange {}",
+                                "package ai.timefold.solver.core.api.domain.valuerange; public class CountableValueRange {}",
+                                "package ai.timefold.solver.core.api.domain.valuerange; public class ValueRange {}",
+                                "package ai.timefold.solver.core.impl.domain.valuerange.buildin.composite; public class CompositeCountableValueRange {}",
+                                "package ai.timefold.solver.core.impl.domain.valuerange.buildin.composite; public class NullAllowingCountableValueRange {}"));
     }
 
     @Test
@@ -71,6 +75,9 @@ class GeneralTypeChangeMigrationRecipeTest implements RewriteTest {
                         import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
                         import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
                         import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
+                        import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+                        import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.CompositeCountableValueRange;
+                        import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
 
                         public class Test {
                                 @PlanningId
@@ -87,11 +94,13 @@ class GeneralTypeChangeMigrationRecipeTest implements RewriteTest {
                                 BendableScore bendableScore;
                                 BendableLongScore bendableLongScore;
                                 BendableBigDecimalScore bendableBigDecimalScore;
+                                CountableValueRange valueRange;
+                                CompositeCountableValueRange valueRange2;
+                                NullAllowingCountableValueRange valueRange3;
                         }""",
                 """
                         package timefold;
-
-                        import ai.timefold.solver.core.api.domain.common.PlanningId;
+                        import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
                         import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
                         import ai.timefold.solver.core.api.score.BendableScore;
                         import ai.timefold.solver.core.api.score.HardMediumSoftBigDecimalScore;
@@ -101,6 +110,9 @@ class GeneralTypeChangeMigrationRecipeTest implements RewriteTest {
                         import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
                         import ai.timefold.solver.core.api.score.SimpleScore;
                         import ai.timefold.solver.core.api.solver.change.ProblemChange;
+                        import ai.timefold.solver.core.impl.domain.valuerange.CompositeValueRange;
+                        import ai.timefold.solver.core.impl.domain.valuerange.NullAllowingValueRange;
+                        import ai.timefold.solver.core.api.domain.common.PlanningId;
 
                         public class Test {
                                 @PlanningId
@@ -117,6 +129,9 @@ class GeneralTypeChangeMigrationRecipeTest implements RewriteTest {
                                 BendableScore bendableScore;
                                 BendableScore bendableLongScore;
                                 BendableBigDecimalScore bendableBigDecimalScore;
+                                ValueRange valueRange;
+                                CompositeValueRange valueRange2;
+                                NullAllowingValueRange valueRange3;
                         }"""));
     }
 

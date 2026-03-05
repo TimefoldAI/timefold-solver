@@ -6,19 +6,25 @@ recipeList:
   # Solver 1.x
   - ai.timefold.solver.migration.ToV1
   # Solver 2.x
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: ai.timefold.solver
-      artifactId: timefold-solver-webui
-  - org.openrewrite.maven.RemoveDependency:
-      groupId: ai.timefold.solver
-      artifactId: timefold-solver-jsonb
   - ai.timefold.solver.migration.ChangeVersion
-  - ai.timefold.solver.migration.v2.GeneralChangeTypeMigrationRecipe
-  - ai.timefold.solver.migration.v2.GeneralChangeMethodMigrationRecipe
-  - ai.timefold.solver.migration.v2.ConstraintStreamMigrationRecipe
   - org.openrewrite.java.DeleteMethodArgument:
       methodPattern: ai.timefold.solver.core.api.score.constraint.ConstraintRef of(String, String)
       argumentIndex: 0
-  - ai.timefold.solver.migration.v2.PersistenceCommonMigrationRecipe
+  - org.openrewrite.java.DeleteMethodArgument:
+      methodPattern: ai.timefold.solver.core.api.score.stream.ConstraintBuilder asConstraint(String, String)
+      argumentIndex: 0
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: "ai.timefold.solver.core.api.domain.solution.PlanningSolution"
+      attributeName: "lookUpStrategyType"
+  - org.openrewrite.java.RemoveAnnotationAttribute:
+      annotationType: "ai.timefold.solver.core.api.domain.solution.PlanningSolution"
+      attributeName: "autoDiscoverMemberType"
+  - ai.timefold.solver.migration.v2.GeneralMethodDeleteInvocationMigrationRecipe
+  - ai.timefold.solver.migration.v2.GeneralMethodChangeNameMigrationRecipe
+  - ai.timefold.solver.migration.v2.GeneralTypeChangeMigrationRecipe
+  - ai.timefold.solver.migration.v2.ProblemIdDeletionMigrationRecipe
+  - ai.timefold.solver.migration.v2.ConstraintStreamMigrationRecipe
   - ai.timefold.solver.migration.v2.TestingAPIsMigrationRecipe
+  - ai.timefold.solver.migration.v2.GeneralDependencyDeleteMigrationRecipe
+  - ai.timefold.solver.migration.v2.GeneralPackageRenameMigrationRecipe
   - org.openrewrite.java.RemoveUnusedImports
