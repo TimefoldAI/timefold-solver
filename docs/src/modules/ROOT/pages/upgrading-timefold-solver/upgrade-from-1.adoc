@@ -1,19 +1,28 @@
-[#upgradeToLatestVersion]
-= Upgrade to the latest version
-:doctype: book
+[#upgradeFrom1to2]
+= Upgrade from Timefold Solver 1.x to 2.0.0
 :sectnums:
 :icons: font
 
-Timefold Solver public APIs are backwards compatible,
-but users often also use internal Solver classes which are not guaranteed to stay compatible.
-This upgrade recipe minimizes the pain to upgrade your code
-and to take advantage of the newest features in Timefold Solver.
+Timefold Solver 2.0.0 is a major release with many improvements and some breaking changes.
+Many of the upgrade steps can be applied automatically using our migration tooling,
+but some manual changes may still be required.
+This upgrade recipe is intended to help you navigate those changes and upgrade your codebase with confidence.
 
-[#automaticUpgradeToLatestVersion]
-== Automatic upgrade to the latest version
+[#upgradeFrom1to2BeforeYouStart]
+== Before you start
+
+Throughout this document, we assume that you are upgrading from the latest available version of the 1.x line.
+Make sure to first upgrade to the latest 1.x version and only then follow this recipe to upgrade to 2.0.0.
+
+Please refer to
+xref:https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-to-latest-version[upgrade recipe for Timefold Solver 1.x] or even
+xref:https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-from-optaplanner[upgrade recipe for OptaPlanner] if you go way back.
+
+[#automaticUpgradeTo200]
+== Automatic upgrade to Timefold Solver 2.0.0
 
 For many of the upgrade steps mentioned later,
-we actually provide an upgrade tool that can automatically apply those changes to Java files.
+we provide a migration tool that can automatically apply those changes to Java files and Maven POMs.
 This tool is based on OpenRewrite and can be run as a Maven or Gradle plugin.
 To run the tool, execute the following command in your project directory:
 
@@ -41,8 +50,6 @@ curl https://raw.githubusercontent.com/TimefoldAI/timefold-solver/refs/tags/v{ti
 include::framework-version-warning.adoc[leveloffset=+1]
 
 Having done that, you can check the local changes and commit them.
-Note that none of the upgrade steps could be automatically applied,
-and it may still be worth your while to read the rest the upgrade recipe below.
 
 For the time being, Kotlin users need to follow the upgrade recipe and apply the steps manually.
 
@@ -51,15 +58,288 @@ For the time being, Kotlin users need to follow the upgrade recipe and apply the
 
 Every upgrade note indicates how likely your code will be affected by that change:
 
-- icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,upgrade tooling>>.
+- icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeTo200,upgrade tooling>>.
 - icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
-- icon:info-circle[role=yellow] *Minor*: Lesser used feature, unlikely to affect your code.
-- icon:eye[] *Recommended*: Does not affect backwards compatibility, but you probably want to be aware.
+- icon:info-circle[role=yellow] *Minor*: Less likely to affect your code, especially if you've been upgrading Timefold Solver regularly, paying attention to new deprecations.
+- icon:eye[] *Recommended*: We think this likely won't affect you, but still want you to be aware.
 
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin users to translate the changes accordingly.
 
-=== Upgrade from 1.x to 2.0.0
+=== Conceptual changes
+
+These changes are most likely to require you to change your code in a non-mechanical way,
+and they can only be automated partially, if at all.
+
+.icon:exclamation-triangle[role=red] Java 21 or later required
+[%collapsible%open]
+====
+Timefold Solver 2.0.0 requires Java 21 or later to run,
+whereas Timefold Solver 1.x supported Java 17 and later.
+If you are using an older version of Java, you will need to upgrade your tooling and runtime to Java 21 or later.
+====
+
+'''
+
+.icon:info-triangle[role=red] Spring Boot 4 and Jackson 3
+[%collapsible%open]
+====
+Spring Boot integration has been upgraded to Spring Boot 4.
+`timefold-solver-spring-boot-autoconfigure` and `timefold-solver-jackson` now depend on Jackson 3 (groupId `tools.jackson`).
+
+If you use Timefold Solver with Spring Boot, upgrade Spring Boot to 4.x.
+You'll be happy to know that both projects have provided their own upgrade recipes to help with this transition:
+
+- xref:https://github.com/FasterXML/jackson/blob/main/jackson3/MIGRATING_TO_JACKSON_3.md[Migrating to Jackson 3]
+includes a link to an automated OpenRewrite recipe for the Jackson upgrade.
+- xref:https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Migration-Guide[Spring Boot 4.0 Migration Guide].
+
+Users of Quarkus are not affected.
+They continue to use the `quarkus-jackson` integration module, which remains on Jackson 2.
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] Chained planning variable support removed
+[%collapsible%open]
+====
+Support for chained planning variables has been removed entirely.
+The chained variable paradigm was deprecated since 1.30.0 in favor of the planning list variable.
+
+We invite you to read the xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[chained variable to list variable migration guide].
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] Variable listeners removed
+[%collapsible%open]
+====
+The variable listener mechanism has been removed.
+Variable listeners were deprecated since 1.26.0 in favor of xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[custom shadow variables].
+
+We invite you to read the xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[variable listeners to custom shadow variables migration guide].
+====
+
+'''
+
+.icon:info-circle[role=yellow] Full modularization under JPMS
+[%collapsible%open]
+====
+Timefold Solver and all of its JARs are now modules https://en.wikipedia.org/wiki/Java_Platform_Module_System[under JPMS].
+
+Most users won't need to do anything and can continue using the solver on the classpath.
+If your project is already using JPMS, you are not likely to notice any changes,
+since we were providing automatic module names in Timefold Solver 1.x
+and we have kept the same module name for 2.0.0.
+
+Please reach out if you notice any issues related to this change.
+====
+
+'''
+
+.icon:info-circle[role=yellow] Getter and setter access rules enforced
+[%collapsible%open]
+====
+When a planning annotation (`@PlanningVariable`, `@PlanningScore`, etc.) is placed on a getter method,
+that getter and its paired setter must now be `public`.
+Previously, the solver would make them accessible via reflection.
+
+Additionally, when an annotation is placed on a field, the solver will now prefer to use
+the corresponding public getter and setter if they exist, rather than accessing the field directly.
+
+If your domain class has a planning annotation on a non-`public` getter, make it `public`.
+If the paired setter is missing or not `public`, add or expose it.
+
+If your project uses JPMS, your domain classes must be `opens` to `ai.timefold.solver.core`
+to allow the solver to access them via reflection.
+====
+
+'''
+
+.icon:info-circle[role=yellow] Constraint name now strictly validated
+[%collapsible%open]
+====
+Constraint names are now validated more strictly.
+Constraint names must be non-null, non-empty, and must not contain slashes or other special characters.
+If your constraint names do not comply, an exception will be thrown at solver initialization.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `@ConstraintConfiguration` removed
+[%collapsible%open]
+====
+The `@ConstraintConfiguration`, `@ConstraintConfigurationProvider`, and `@ConstraintWeight` annotations have been removed.
+Use `ConstraintWeightOverrides` instead.
+See the 1.12.0 to 1.13.0 upgrade step for detailed before/after code examples.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `ScoreDirector` removed from public API
+[%collapsible%open]
+====
+`ScoreDirector` is no longer a public interface.
+The functionality it provided in `Move` is now available via `Lookup` and `MutableSolutionView`.
+The functionality it provided in `ProblemChange` is now available via `ProblemChangeDirector`.
+The functionality it provided in `PhaseCommand` is now available via `PhaseCommandContext`.
+
+If your `Move` implementations used `ScoreDirector`, migrate to the new `Move` interface.
+If your `ProblemChange` implementations used `ScoreDirector`, migrate to `ProblemChangeDirector`.
+If your `PhaseCommand` implementations used `ScoreDirector`, see the next upgrade step.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `PhaseCommand.changeWorkingSolution` signature changed
+[%collapsible%open]
+====
+`PhaseCommand.changeWorkingSolution(ScoreDirector, BooleanSupplier)` has been replaced by
+`PhaseCommand.changeWorkingSolution(PhaseCommandContext)`.
+
+`PhaseCommandContext` provides the working solution, termination check, and the ability to execute moves.
+Direct modification of the working solution without going through `PhaseCommandContext` is no longer supported.
+
+Before in `MyPhaseCommand.java`:
+
+[source,java]
+----
+public class MyPhaseCommand implements PhaseCommand<Timetable> {
+
+    @Override
+    public void changeWorkingSolution(ScoreDirector<Timetable> scoreDirector, BooleanSupplier isPhaseTerminated) {
+        var timetable = scoreDirector.getWorkingSolution();
+        while (!isPhaseTerminated.getAsBoolean()) {
+            // ... make changes and notify scoreDirector
+            scoreDirector.beforeVariableChanged(lesson, "room");
+            lesson.setRoom(newRoom);
+            scoreDirector.afterVariableChanged(lesson, "room");
+            scoreDirector.triggerVariableListeners();
+        }
+    }
+
+}
+----
+
+After in `MyPhaseCommand.java`:
+
+[source,java]
+----
+public class MyPhaseCommand implements PhaseCommand<Timetable> {
+
+    @Override
+    public void changeWorkingSolution(PhaseCommandContext<Timetable> context) {
+        var timetable = context.getWorkingSolution();
+        while (!context.isPhaseTerminated()) {
+            // ... execute moves through the context
+            context.executeAndCalculateScore(myMove);
+        }
+    }
+
+}
+----
+====
+
+'''
+
+.icon:info-circle[role=yellow] `SolutionPartitioner` signature changed
+[%collapsible%open]
+====
+`SolutionPartitioner.splitWorkingSolution(ScoreDirector, Integer)` now takes the solution directly.
+
+Before in `MySolutionPartitioner.java`:
+
+[source,java]
+----
+@Override
+public List<Timetable> splitWorkingSolution(ScoreDirector<Timetable> scoreDirector, Integer runnablePartThreadLimit) {
+    var solution = scoreDirector.getWorkingSolution();
+    // ...
+}
+----
+
+After in `MySolutionPartitioner.java`:
+
+[source,java]
+----
+@Override
+public List<Timetable> splitWorkingSolution(Timetable solution, Integer runnablePartThreadLimit) {
+    // ...
+}
+----
+====
+
+'''
+
+.icon:eye[] `BenchmarkAggregator` moved to separate module
+[%collapsible%open]
+====
+`BenchmarkAggregator` has been moved from `timefold-solver-benchmark` into a separate `timefold-solver-benchmark-aggregator` module.
+If your project uses `BenchmarkAggregator`, add the new module as a dependency.
+
+Before in `pom.xml` (no separate dependency needed):
+
+[source,xml]
+----
+<dependency>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-benchmark</artifactId>
+</dependency>
+----
+
+After in `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-benchmark</artifactId>
+</dependency>
+<dependency>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-benchmark-aggregator</artifactId>
+</dependency>
+----
+====
+
+'''
+
+.icon:eye[role=yellow] `timefold-solver-jsonb` module removed
+[%collapsible%open]
+====
+The `timefold-solver-jsonb` and `timefold-solver-quarkus-jsonb` modules have been removed.
+They were deprecated since 1.4.0.
+Use the Jackson integration (`timefold-solver-jackson`) instead.
+====
+
+=== Fully or partially automated changes
+
+For the following changes, we provide an OpenRewrite recipe
+that can automatically apply some or all of the necessary modifications to Java files and Maven POMs,
+but manual review and adjustments may still be necessary.
+
+.icon:info-circle[role=yellow] `BendableScore` array type changed from `int[]` to `long[]`
+[%collapsible%open]
+====
+`BendableScore` and `BendableLongScore` have been merged into a single `BendableScore` backed by `long[]`.
+`BendableScore.of(int[], int[])` is now `BendableScore.of(long[], long[])`.
+
+Before in `*.java`:
+
+[source,java]
+----
+BendableScore score = BendableScore.of(new int[]{0, -1}, new int[]{-2});
+----
+
+After in `*.java`:
+
+[source,java]
+----
+BendableScore score = BendableScore.of(new long[]{0L, -1L}, new long[]{-2L});
+----
+====
+
+'''
 
 .icon:magic[] Score class packages simplified
 [%collapsible%open]
@@ -88,29 +368,6 @@ import ai.timefold.solver.core.api.score.BendableScore;
 
 Similarly, `HardSoftLongScore` and `HardSoftBigDecimalScore` are now `HardSoftScore` and `HardSoftBigDecimalScore` respectively, and the same for all other score variants.
 The long variants (`HardSoftLongScore`, `HardMediumSoftLongScore`, `SimpleLongScore`, `BendableLongScore`) have been merged into their `int` counterparts as `int`-based scores are no longer supported.
-====
-
-'''
-
-.icon:info-circle[role=yellow] `BendableScore` array type changed from `int[]` to `long[]`
-[%collapsible%open]
-====
-`BendableScore` and `BendableLongScore` have been merged into a single `BendableScore` backed by `long[]`.
-`BendableScore.of(int[], int[])` is now `BendableScore.of(long[], long[])`.
-
-Before in `*.java`:
-
-[source,java]
-----
-BendableScore score = BendableScore.of(new int[]{0, -1}, new int[]{-2});
-----
-
-After in `*.java`:
-
-[source,java]
-----
-BendableScore score = BendableScore.of(new long[]{0L, -1L}, new long[]{-2L});
-----
 ====
 
 '''
@@ -277,72 +534,6 @@ See the 1.27.0 and 1.28.0 upgrade steps for before/after code examples.
 
 '''
 
-.icon:exclamation-triangle[role=red] `ScoreDirector` removed from public API
-[%collapsible%open]
-====
-`ScoreDirector` is no longer a public interface.
-The functionality it provided in `Move` is now available via `Lookup` and `MutableSolutionView`.
-The functionality it provided in `ProblemChange` is now available via `ProblemChangeDirector`.
-The functionality it provided in `PhaseCommand` is now available via `PhaseCommandContext`.
-
-If your `Move` implementations used `ScoreDirector`, migrate to the new `Move` interface.
-If your `ProblemChange` implementations used `ScoreDirector`, migrate to `ProblemChangeDirector`.
-If your `PhaseCommand` implementations used `ScoreDirector`, see the next upgrade step.
-====
-
-'''
-
-.icon:exclamation-triangle[role=red] `PhaseCommand.changeWorkingSolution` signature changed
-[%collapsible%open]
-====
-`PhaseCommand.changeWorkingSolution(ScoreDirector, BooleanSupplier)` has been replaced by
-`PhaseCommand.changeWorkingSolution(PhaseCommandContext)`.
-
-`PhaseCommandContext` provides the working solution, termination check, and the ability to execute moves.
-Direct modification of the working solution without going through `PhaseCommandContext` is no longer supported.
-
-Before in `MyPhaseCommand.java`:
-
-[source,java]
-----
-public class MyPhaseCommand implements PhaseCommand<Timetable> {
-
-    @Override
-    public void changeWorkingSolution(ScoreDirector<Timetable> scoreDirector, BooleanSupplier isPhaseTerminated) {
-        var timetable = scoreDirector.getWorkingSolution();
-        while (!isPhaseTerminated.getAsBoolean()) {
-            // ... make changes and notify scoreDirector
-            scoreDirector.beforeVariableChanged(lesson, "room");
-            lesson.setRoom(newRoom);
-            scoreDirector.afterVariableChanged(lesson, "room");
-            scoreDirector.triggerVariableListeners();
-        }
-    }
-
-}
-----
-
-After in `MyPhaseCommand.java`:
-
-[source,java]
-----
-public class MyPhaseCommand implements PhaseCommand<Timetable> {
-
-    @Override
-    public void changeWorkingSolution(PhaseCommandContext<Timetable> context) {
-        var timetable = context.getWorkingSolution();
-        while (!context.isPhaseTerminated()) {
-            // ... execute moves through the context
-            context.executeAndCalculateScore(myMove);
-        }
-    }
-
-}
-----
-====
-
-'''
-
 .icon:exclamation-triangle[role=red] `ProblemChangeDirector` lookup method renamed
 [%collapsible%open]
 ====
@@ -375,16 +566,6 @@ Its public constructors were already deprecated; if your code constructed instan
 
 '''
 
-.icon:exclamation-triangle[role=red] `@ConstraintConfiguration` removed
-[%collapsible%open]
-====
-The `@ConstraintConfiguration`, `@ConstraintConfigurationProvider`, and `@ConstraintWeight` annotations have been removed.
-Use `ConstraintWeightOverrides` instead.
-See the 1.12.0 to 1.13.0 upgrade step for detailed before/after code examples.
-====
-
-'''
-
 .icon:exclamation-triangle[role=red] `CountableValueRange` removed
 [%collapsible%open]
 ====
@@ -409,28 +590,6 @@ After in `*.java`:
 ValueRange<LocalDate> range = ValueRangeFactory.createLocalDateValueRange(...);
 long size = range.getSize();
 ----
-====
-
-'''
-
-.icon:exclamation-triangle[role=red] Chained planning variable support removed
-[%collapsible%open]
-====
-Support for chained planning variables has been removed entirely.
-The chained variable paradigm was deprecated since 1.30.0 in favor of the planning list variable.
-
-We invite you to read the xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[chained variable to list variable migration guide].
-====
-
-'''
-
-.icon:exclamation-triangle[role=red] Variable listeners removed
-[%collapsible%open]
-====
-The variable listener mechanism has been removed.
-Variable listeners were deprecated since 1.26.0 in favor of xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[custom shadow variables].
-
-We invite you to read the xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[variable listeners to custom shadow variables migration guide].
 ====
 
 '''
@@ -651,16 +810,6 @@ import ai.timefold.solver.core.api.domain.solution.SolutionFileIO;
 
 '''
 
-.icon:info-circle[role=yellow] Constraint name now strictly validated
-[%collapsible%open]
-====
-Constraint names are now validated more strictly.
-Constraint names must be non-null, non-empty, and must not contain slashes or other special characters.
-If your constraint names do not comply, an exception will be thrown at solver initialization.
-====
-
-'''
-
 .icon:info-circle[role=yellow] `EnvironmentMode` `FAST_ASSERT` and `REPRODUCIBLE` removed
 [%collapsible%open]
 ====
@@ -668,74 +817,6 @@ If your constraint names do not comply, an exception will be thrown at solver in
 They were deprecated since 1.19.0.
 Use `EnvironmentMode.STEP_ASSERT` and `EnvironmentMode.NO_ASSERT` respectively.
 See the 1.19.0 to 1.20.0 upgrade step for details.
-====
-
-'''
-
-.icon:info-circle[role=yellow] `SolutionPartitioner` signature changed
-[%collapsible%open]
-====
-`SolutionPartitioner.splitWorkingSolution(ScoreDirector, Integer)` now takes the solution directly.
-
-Before in `MySolutionPartitioner.java`:
-
-[source,java]
-----
-@Override
-public List<Timetable> splitWorkingSolution(ScoreDirector<Timetable> scoreDirector, Integer runnablePartThreadLimit) {
-    var solution = scoreDirector.getWorkingSolution();
-    // ...
-}
-----
-
-After in `MySolutionPartitioner.java`:
-
-[source,java]
-----
-@Override
-public List<Timetable> splitWorkingSolution(Timetable solution, Integer runnablePartThreadLimit) {
-    // ...
-}
-----
-====
-
-'''
-
-.icon:info-circle[role=yellow] `timefold-solver-jsonb` module removed
-[%collapsible%open]
-====
-The `timefold-solver-jsonb` and `timefold-solver-quarkus-jsonb` modules have been removed.
-They were deprecated since 1.4.0.
-Use the Jackson integration (`timefold-solver-jackson`) instead.
-====
-
-'''
-
-.icon:info-circle[role=yellow] Getter and setter access rules enforced
-[%collapsible%open]
-====
-When a planning annotation (`@PlanningVariable`, `@PlanningScore`, etc.) is placed on a getter method,
-that getter and its paired setter must now be `public`.
-Previously, the solver would make them accessible via reflection.
-
-Additionally, when an annotation is placed on a field, the solver will now prefer to use
-the corresponding public getter and setter if they exist, rather than accessing the field directly.
-
-If your domain class has a planning annotation on a non-`public` getter, make it `public`.
-If the paired setter is missing or not `public`, add or expose it.
-====
-
-'''
-
-.icon:info-circle[role=yellow] Spring Boot 4 and Jackson 3
-[%collapsible%open]
-====
-Spring Boot support has been upgraded to Spring Boot 4.x.
-`timefold-solver-spring-boot-autoconfigure` and `timefold-solver-jackson` now depend on Jackson 3 (groupId `tools.jackson`).
-
-If you use Timefold Solver with Spring Boot, upgrade Spring Boot to 4.x.
-
-Users of Quarkus continue to use the `quarkus-jackson` integration module, which remains on Jackson 2.
 ====
 
 '''
@@ -761,52 +842,6 @@ After in `*.java`:
 import ai.timefold.solver.jackson.api.score.buildin.HardSoftScoreJacksonDeserializer;
 import ai.timefold.solver.jpa.api.score.HardSoftScoreConverter;
 ----
-====
-
-'''
-
-.icon:info-circle[role=yellow] `BenchmarkAggregator` moved to separate module
-[%collapsible%open]
-====
-`BenchmarkAggregator` has been moved from `timefold-solver-benchmark` into a separate `timefold-solver-benchmark-aggregator` module.
-If your project uses `BenchmarkAggregator`, add the new module as a dependency.
-
-Before in `pom.xml` (no separate dependency needed):
-
-[source,xml]
-----
-<dependency>
-    <groupId>ai.timefold.solver</groupId>
-    <artifactId>timefold-solver-benchmark</artifactId>
-</dependency>
-----
-
-After in `pom.xml`:
-
-[source,xml]
-----
-<dependency>
-    <groupId>ai.timefold.solver</groupId>
-    <artifactId>timefold-solver-benchmark</artifactId>
-</dependency>
-<dependency>
-    <groupId>ai.timefold.solver</groupId>
-    <artifactId>timefold-solver-benchmark-aggregator</artifactId>
-</dependency>
-----
-====
-
-'''
-
-.icon:eye[] Solver is now a Java module (JPMS)
-[%collapsible%open]
-====
-Timefold Solver is now a proper Java module under JPMS.
-The module name is `ai.timefold.solver.core`.
-
-Most users won't need to do anything, unless they use `--add-opens` or reflection-based access to internal classes,
-or unless their own project is a named module.
-If your project uses classpath (the default for Maven and Gradle projects), no changes are required.
 ====
 
 '''
