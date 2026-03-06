@@ -81,7 +81,7 @@ public final class MemberAccessorFactory {
         if (member instanceof Field field) {
             var getter = ReflectionHelper.getGetterMethod(field.getDeclaringClass(), field.getName());
             if (getter == null) {
-                var setter = ReflectionHelper.getSetterMethod(field.getDeclaringClass(), field.getName());
+                var setter = ReflectionHelper.getSetterMethod(field.getDeclaringClass(), field.getType(), field.getName());
                 if (setter != null) {
                     throw new IllegalArgumentException("%s field (%s) on class (%s) has a setter (%s) but no getter."
                             .formatted(messagePrefix, field.getName(), field.getDeclaringClass().getCanonicalName(), setter));

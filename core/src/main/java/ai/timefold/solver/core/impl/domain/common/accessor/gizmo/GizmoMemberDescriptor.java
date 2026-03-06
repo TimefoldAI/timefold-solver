@@ -232,8 +232,9 @@ public final class GizmoMemberDescriptor {
     }
 
     private static Optional<MethodDesc> lookupSetter(Object memberDescriptor, Class<?> declaringClass, String name) {
-        if (memberDescriptor instanceof MethodDesc) {
-            return Optional.ofNullable(ReflectionHelper.getSetterMethod(declaringClass, name))
+        if (memberDescriptor instanceof MethodDesc methodDesc) {
+            var returnType = GizmoMemberHandler.resolveType(declaringClass, methodDesc.returnType());
+            return Optional.ofNullable(ReflectionHelper.getSetterMethod(declaringClass, returnType, name))
                     .map(MethodDesc::of);
         } else {
             return Optional.empty();

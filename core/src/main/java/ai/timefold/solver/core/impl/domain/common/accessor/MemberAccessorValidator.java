@@ -156,8 +156,9 @@ final class MemberAccessorValidator {
     private static void verifyIsPublicFieldOrHasPublicSetter(Member member, String messagePrefix) {
         switch (member) {
             case Field field -> {
+                var memberType = field.getType();
                 var getterMethod = ReflectionHelper.getGetterMethod(field.getDeclaringClass(), field.getName());
-                var setterMethod = ReflectionHelper.getSetterMethod(field.getDeclaringClass(), field.getName());
+                var setterMethod = ReflectionHelper.getSetterMethod(field.getDeclaringClass(), memberType, field.getName());
                 if (setterMethod == null) {
                     if (!Modifier.isPublic(field.getModifiers())) {
                         throw new IllegalArgumentException(
@@ -174,10 +175,11 @@ final class MemberAccessorValidator {
                 }
             }
             case Method getterMethod -> {
+                var memberType = getterMethod.getReturnType();
                 verifyGetterName(getterMethod, messagePrefix);
                 var memberName = ReflectionHelper.getGetterPropertyName(getterMethod);
                 var setterMethod = ReflectionHelper.getSetterMethod(getterMethod.getDeclaringClass(),
-                        memberName);
+                        memberType, memberName);
                 if (setterMethod == null) {
                     throw new IllegalArgumentException("""
                             %s requires both a public getter and a public setter but only have a public getter.

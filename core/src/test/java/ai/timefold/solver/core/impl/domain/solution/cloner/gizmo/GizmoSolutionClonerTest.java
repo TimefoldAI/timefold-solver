@@ -104,7 +104,7 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                                 AccessorInfo.withReturnValueAndNoArguments());
                     } else {
                         var getter = ReflectionHelper.getGetterMethod(currentClass, field.getName());
-                        var setter = ReflectionHelper.getSetterMethod(currentClass, field.getName());
+                        var setter = ReflectionHelper.getSetterMethod(currentClass, field.getType(), field.getName());
                         if (getter != null && setter != null) {
                             var getterDescriptor = MethodDesc.of(field.getDeclaringClass(),
                                     getter.getName(),
