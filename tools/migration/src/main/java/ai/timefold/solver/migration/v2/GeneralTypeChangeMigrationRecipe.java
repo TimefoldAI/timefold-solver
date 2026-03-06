@@ -24,7 +24,9 @@ public class GeneralTypeChangeMigrationRecipe extends AbstractRecipe {
                 // Planning Id
                 new ChangeType("ai.timefold.solver.core.api.domain.lookup.PlanningId",
                         "ai.timefold.solver.core.api.domain.common.PlanningId", true),
-                // Score classes
+                // Score API
+                new ChangeType("ai.timefold.solver.core.api.score.director.ScoreDirector",
+                        "ai.timefold.solver.core.impl.score.director.ScoreDirector", true),
                 new ChangeType("ai.timefold.solver.core.api.score.buildin.simple.SimpleScore",
                         "ai.timefold.solver.core.api.score.SimpleScore", true),
                 new ChangeType("ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore",

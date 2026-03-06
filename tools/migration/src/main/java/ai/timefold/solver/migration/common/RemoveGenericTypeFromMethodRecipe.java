@@ -38,10 +38,12 @@ public class RemoveGenericTypeFromMethodRecipe extends Recipe {
             @Override
             public J.MethodInvocation visitMethodInvocation(J.MethodInvocation method, ExecutionContext executionContext) {
                 J.MethodInvocation mi = super.visitMethodInvocation(method, executionContext);
-                List<Expression> typeParams = new ArrayList<>(mi.getTypeParameters());
-                if (methodMatcher.matches(mi) && index < typeParams.size()) {
-                    typeParams.remove(index);
-                    mi = mi.withTypeParameters(JContainer.withElements(JContainer.empty(), typeParams));
+                if (mi.getTypeParameters() != null) {
+                    List<Expression> typeParams = new ArrayList<>(mi.getTypeParameters());
+                    if (methodMatcher.matches(mi) && index < typeParams.size()) {
+                        typeParams.remove(index);
+                        mi = mi.withTypeParameters(JContainer.withElements(JContainer.empty(), typeParams));
+                    }
                 }
                 return mi;
             }
