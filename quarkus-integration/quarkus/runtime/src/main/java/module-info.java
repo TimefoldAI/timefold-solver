@@ -5,7 +5,6 @@ module ai.timefold.solver.quarkus {
     exports ai.timefold.solver.quarkus.config;
     exports ai.timefold.solver.quarkus.devui;
     exports ai.timefold.solver.quarkus.gizmo;
-    exports ai.timefold.solver.quarkus.nativeimage;
 
     requires transitive ai.timefold.solver.core;
     requires arc;
