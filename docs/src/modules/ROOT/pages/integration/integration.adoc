@@ -1014,7 +1014,7 @@ module org.acme.vehiclerouting {
 }
 ----
 
-If this is not setup correctly, you will get errors. Usually, these mention the `unnamed module` and give detailed information of what needs to be changed.
+If this is not set up correctly, you will get errors. Usually, these mention the `unnamed module` and give detailed information of what needs to be changed.
 
 [source,options="nowrap"]
 ----
