@@ -40,13 +40,13 @@ public abstract class AbstractConstraintBuilder<Score_ extends Score<Score_>> im
         if (fieldValue == null || fieldValue.equalsIgnoreCase("null") || fieldValue.equalsIgnoreCase("nil")) {
             throw new IllegalArgumentException("The %s (%s) cannot be null.".formatted(fieldName, fieldValue));
         }
-        if (!fieldValue.matches("^[a-zA-Z0-9]+[a-zA-Z0-9 _.'-]*$")) {
+        if (!fieldValue.matches("^[a-zA-Z0-9]+[a-zA-Z0-9 _.'()-]*$")) {
             throw new IllegalArgumentException(
                     """
-                            The %s (%s) must only contain alphanumeric characters, spaces, underscores, hyphens, apostrophes ("'") or full stops (".").
+                            The %s (%s) must only contain alphanumeric characters, spaces, underscores, hyphens, \
+                            apostrophes ("'"), parentheses ("(", ")") or full stops (".").
                             It must start with an alphanumeric character.
-                            Names "null" and "nil" are not allowed either.
-                            """
+                            Names "null" and "nil" are not allowed."""
                             .formatted(fieldName, fieldValue));
         }
         var trimmed = fieldValue.trim();

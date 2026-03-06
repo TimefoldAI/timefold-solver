@@ -18,6 +18,7 @@ public abstract class AbstractConstraintBuilderTest {
     @CsvSource("""
             name, true
             Name and spaces, true
+            Name (or spaces), true
             Name and numb3rs, true
             name_and_numb3r5, true
             name-and-numb3r5, true
