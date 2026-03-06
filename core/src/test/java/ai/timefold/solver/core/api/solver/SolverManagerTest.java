@@ -1276,7 +1276,7 @@ class SolverManagerTest {
             var inputProblem = PlannerTestUtils.generateTestdataSolution("s2", 4);
             var solverJob = solverManager.solve(2L, inputProblem);
 
-            solverJob.terminateEarly();
+            solverJob.terminateEarly(); // Never started.
             var result = solverJob.getFinalBestSolution();
             assertThat(result).isSameAs(inputProblem);
             assertThat(solverJob.isTerminatedEarly()).isTrue();
