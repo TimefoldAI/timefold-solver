@@ -39,6 +39,14 @@ public interface CloningSpecificationBuilder<S> {
             Consumer<CloneableClassBuilder<E>> config);
 
     /**
+     * Registers an entity class with its no-arg constructor, without additional property definitions.
+     */
+    default <E> CloningSpecificationBuilder<S> entityFactory(Class<E> entityClass, Supplier<E> factory) {
+        return entityClass(entityClass, factory, e -> {
+        });
+    }
+
+    /**
      * Registers a {@code @DeepPlanningClone} fact class with its no-arg constructor and property definitions.
      */
     <E> CloningSpecificationBuilder<S> deepCloneFact(Class<E> factClass, Supplier<E> factory,
