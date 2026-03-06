@@ -44,7 +44,44 @@ public class GeneralMethodChangeNameMigrationRecipe extends AbstractRecipe {
                 new ChangeMethodName("ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig getMoveSelectorConfigList()",
                         "getMoveSelectorList", true, false),
                 new ChangeMethodName("ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig setMoveSelectorConfigList(..)",
-                        "setMoveSelectorList", true, false));
+                        "setMoveSelectorList", true, false),
+                // Constraint Stream API
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream penalizeLong(..)",
+                        "penalize", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream rewardLong(..)",
+                        "reward", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream impactLong(..)",
+                        "impact", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream penalizeLong(..)",
+                        "penalize", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream rewardLong(..)",
+                        "reward", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream impactLong(..)",
+                        "impact", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream penalizeLong(..)",
+                        "penalize", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream rewardLong(..)",
+                        "reward", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream impactLong(..)",
+                        "impact", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream penalizeLong(..)",
+                        "penalize", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream rewardLong(..)",
+                        "reward", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream impactLong(..)",
+                        "impact", true, false));
 
     }
 }

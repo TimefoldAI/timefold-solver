@@ -23,7 +23,6 @@ recipeList:
   - ai.timefold.solver.migration.v2.GeneralMethodChangeNameMigrationRecipe
   - ai.timefold.solver.migration.v2.GeneralTypeChangeMigrationRecipe
   - ai.timefold.solver.migration.v2.ProblemIdDeletionMigrationRecipe
-  - ai.timefold.solver.migration.v2.ConstraintStreamMigrationRecipe
   - ai.timefold.solver.migration.v2.TestingAPIsMigrationRecipe
   - ai.timefold.solver.migration.v2.GeneralDependencyDeleteMigrationRecipe
   - ai.timefold.solver.migration.v2.GeneralPackageRenameMigrationRecipe
