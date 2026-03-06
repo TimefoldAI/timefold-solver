@@ -43,6 +43,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.config.heuristic.selector.move.factory;
     exports ai.timefold.solver.core.config.heuristic.selector.move.generic;
     exports ai.timefold.solver.core.config.heuristic.selector.move.generic.list;
+    exports ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt;
     exports ai.timefold.solver.core.config.heuristic.selector.value;
     exports ai.timefold.solver.core.config.localsearch;
     exports ai.timefold.solver.core.config.localsearch.decider.acceptor;
