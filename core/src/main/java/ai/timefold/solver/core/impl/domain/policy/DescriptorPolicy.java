@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
-import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.BendableScore;
@@ -27,6 +26,7 @@ import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
+import ai.timefold.solver.core.impl.domain.common.accessor.LambdaMemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -53,7 +53,6 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class DescriptorPolicy {
 
-    private Map<String, SolutionCloner> generatedSolutionClonerMap = new LinkedHashMap<>();
     private final Map<String, MemberAccessor> fromSolutionValueRangeProviderMap = new LinkedHashMap<>();
     private final Set<MemberAccessor> anonymousFromSolutionValueRangeProviderSet = new LinkedHashSet<>();
     private final Map<String, MemberAccessor> fromEntityValueRangeProviderMap = new LinkedHashMap<>();
@@ -90,12 +89,20 @@ public class DescriptorPolicy {
 
     public <Solution_> FromSolutionPropertyValueRangeDescriptor<Solution_> buildFromSolutionPropertyValueRangeDescriptor(
             GenuineVariableDescriptor<Solution_> variableDescriptor, MemberAccessor valueRangeProviderMemberAccessor) {
+        if (valueRangeProviderMemberAccessor instanceof LambdaMemberAccessor) {
+            return new FromSolutionPropertyValueRangeDescriptor<>(valueRangeDescriptorCount++, variableDescriptor,
+                    valueRangeProviderMemberAccessor, true);
+        }
         return new FromSolutionPropertyValueRangeDescriptor<>(valueRangeDescriptorCount++, variableDescriptor,
                 valueRangeProviderMemberAccessor);
     }
 
     public <Solution_> FromEntityPropertyValueRangeDescriptor<Solution_> buildFromEntityPropertyValueRangeDescriptor(
             GenuineVariableDescriptor<Solution_> variableDescriptor, MemberAccessor valueRangeProviderMemberAccessor) {
+        if (valueRangeProviderMemberAccessor instanceof LambdaMemberAccessor) {
+            return new FromEntityPropertyValueRangeDescriptor<>(valueRangeDescriptorCount++, variableDescriptor,
+                    valueRangeProviderMemberAccessor, true);
+        }
         return new FromEntityPropertyValueRangeDescriptor<>(valueRangeDescriptorCount++, variableDescriptor,
                 valueRangeProviderMemberAccessor);
     }
@@ -190,6 +197,64 @@ public class DescriptorPolicy {
         }
     }
 
+    /**
+     * Build a ScoreDescriptor from a MemberAccessor and score type, bypassing annotation reading.
+     * Used by the programmatic specification API.
+     */
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> ScoreDescriptor<Score_> buildScoreDescriptorFromType(
+            MemberAccessor scoreMemberAccessor, Class<Score_> scoreType) {
+        return buildScoreDescriptorFromType(scoreMemberAccessor, scoreType, -1, -1);
+    }
+
+    /**
+     * Build a ScoreDescriptor from a MemberAccessor and score type with optional bendable level sizes.
+     * Used by the programmatic specification API.
+     */
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> ScoreDescriptor<Score_> buildScoreDescriptorFromType(
+            MemberAccessor scoreMemberAccessor, Class<Score_> scoreType,
+            int bendableHardLevelsSize, int bendableSoftLevelsSize) {
+        ScoreDefinition<Score_> scoreDefinition;
+        if (IBendableScore.class.isAssignableFrom(scoreType)) {
+            if (bendableHardLevelsSize == -1 || bendableSoftLevelsSize == -1) {
+                throw new IllegalArgumentException(
+                        "The bendable score type (%s) requires bendableHardLevelsSize and bendableSoftLevelsSize to be set."
+                                .formatted(scoreType.getSimpleName()));
+            }
+            if (scoreType.equals(BendableScore.class)) {
+                scoreDefinition = (ScoreDefinition<Score_>) new BendableScoreDefinition(
+                        bendableHardLevelsSize, bendableSoftLevelsSize);
+            } else if (scoreType.equals(BendableBigDecimalScore.class)) {
+                scoreDefinition = (ScoreDefinition<Score_>) new BendableBigDecimalScoreDefinition(
+                        bendableHardLevelsSize, bendableSoftLevelsSize);
+            } else {
+                throw new IllegalArgumentException(
+                        "The bendable score type (%s) is not a recognized Score implementation."
+                                .formatted(scoreType.getSimpleName()));
+            }
+        } else {
+            if (scoreType.equals(SimpleScore.class)) {
+                scoreDefinition = (ScoreDefinition<Score_>) new SimpleScoreDefinition();
+            } else if (scoreType.equals(SimpleBigDecimalScore.class)) {
+                scoreDefinition = (ScoreDefinition<Score_>) new SimpleBigDecimalScoreDefinition();
+            } else if (scoreType.equals(HardSoftScore.class)) {
+                scoreDefinition = (ScoreDefinition<Score_>) new HardSoftScoreDefinition();
+            } else if (scoreType.equals(HardSoftBigDecimalScore.class)) {
+                scoreDefinition = (ScoreDefinition<Score_>) new HardSoftBigDecimalScoreDefinition();
+            } else if (scoreType.equals(HardMediumSoftScore.class)) {
+                scoreDefinition = (ScoreDefinition<Score_>) new HardMediumSoftScoreDefinition();
+            } else if (scoreType.equals(HardMediumSoftBigDecimalScore.class)) {
+                scoreDefinition = (ScoreDefinition<Score_>) new HardMediumSoftBigDecimalScoreDefinition();
+            } else {
+                throw new IllegalArgumentException(
+                        "The score type (%s) is not a recognized Score implementation."
+                                .formatted(scoreType.getSimpleName()));
+            }
+        }
+        return new ScoreDescriptor<>(scoreMemberAccessor, scoreDefinition);
+    }
+
     public MemberAccessor buildScoreMemberAccessor(Member member) {
         return getMemberAccessorFactory().buildAndCacheMemberAccessor(
                 member,
@@ -204,6 +269,32 @@ public class DescriptorPolicy {
             anonymousFromSolutionValueRangeProviderSet.add(memberAccessor);
         } else {
             fromSolutionValueRangeProviderMap.put(id, memberAccessor);
+        }
+    }
+
+    /**
+     * Register a value range provider with an explicit ID, bypassing annotation reading.
+     * Used by the programmatic specification API.
+     */
+    public void addFromSolutionValueRangeProvider(String id, MemberAccessor memberAccessor) {
+        if (id == null) {
+            anonymousFromSolutionValueRangeProviderSet.add(memberAccessor);
+        } else {
+            validateUniqueValueRangeProviderId(id, memberAccessor);
+            fromSolutionValueRangeProviderMap.put(id, memberAccessor);
+        }
+    }
+
+    /**
+     * Register an entity-scoped value range provider with an explicit ID, bypassing annotation reading.
+     * Used by the programmatic specification API.
+     */
+    public void addFromEntityValueRangeProvider(String id, MemberAccessor memberAccessor) {
+        if (id == null) {
+            anonymousFromEntityValueRangeProviderSet.add(memberAccessor);
+        } else {
+            validateUniqueValueRangeProviderId(id, memberAccessor);
+            fromEntityValueRangeProviderMap.put(id, memberAccessor);
         }
     }
 
@@ -260,17 +351,6 @@ public class DescriptorPolicy {
 
     public void setEnabledPreviewFeatureSet(Set<PreviewFeature> enabledPreviewFeatureSet) {
         this.enabledPreviewFeatureSet = enabledPreviewFeatureSet;
-    }
-
-    /**
-     * @return never null
-     */
-    public Map<String, SolutionCloner> getGeneratedSolutionClonerMap() {
-        return generatedSolutionClonerMap;
-    }
-
-    public void setGeneratedSolutionClonerMap(Map<String, SolutionCloner> generatedSolutionClonerMap) {
-        this.generatedSolutionClonerMap = generatedSolutionClonerMap;
     }
 
     public MemberAccessorFactory getMemberAccessorFactory() {

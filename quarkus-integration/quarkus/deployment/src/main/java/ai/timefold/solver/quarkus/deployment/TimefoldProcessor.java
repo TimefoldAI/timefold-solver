@@ -2,9 +2,6 @@ package ai.timefold.solver.quarkus.deployment;
 
 import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,8 +22,7 @@ import jakarta.inject.Singleton;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.ShadowSources;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.api.domain.specification.PlanningSpecification;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
@@ -38,11 +34,7 @@ import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
-import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType;
-import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.AccessorInfo;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSource;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.score.stream.test.DefaultConstraintVerifier;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
@@ -66,9 +58,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.IndexView;
-import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.ParameterizedType;
 import org.jboss.jandex.Type;
 import org.jboss.logging.Logger;
@@ -78,7 +68,6 @@ import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanGizmo2Adaptor;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
-import io.quarkus.deployment.GeneratedClassGizmo2Adaptor;
 import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -93,11 +82,9 @@ import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeBuild;
-import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.devui.spi.JsonRPCProvidersBuildItem;
 import io.quarkus.devui.spi.page.CardPageBuildItem;
 import io.quarkus.devui.spi.page.Page;
-import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -226,14 +213,22 @@ class TimefoldProcessor {
             }
         }
 
+        // Check if there is a PlanningSpecification CDI producer bean
+        var hasPlanningSpecBean = indexView.getAnnotations(
+                DotName.createSimple("jakarta.enterprise.inject.Produces")).stream()
+                .filter(ai -> ai.target().kind() == AnnotationTarget.Kind.METHOD)
+                .anyMatch(ai -> ai.target().asMethod().returnType().name().equals(DotNames.PLANNING_SPECIFICATION));
+
         // Only skip this extension if everything is missing. Otherwise, if some parts are missing, fail fast later.
-        if (indexView.getAnnotations(DotNames.PLANNING_SOLUTION).isEmpty()
-                && indexView.getAnnotations(DotNames.PLANNING_ENTITY).isEmpty()) {
+        boolean hasAnnotations = !indexView.getAnnotations(DotNames.PLANNING_SOLUTION).isEmpty()
+                || !indexView.getAnnotations(DotNames.PLANNING_ENTITY).isEmpty();
+        if (!hasAnnotations && !hasPlanningSpecBean) {
             LOGGER.warn(
                     """
-                            Skipping Timefold extension because there are no @%s or @%s annotated classes.
+                            Skipping Timefold extension because there are no @%s or @%s annotated classes \
+                            and no PlanningSpecification CDI bean was found.
                             If your domain classes are located in a dependency of this project, maybe try generating the \
-                            Jandex index by using the jandex-maven-plugin in that dependency, or by addingapplication.properties entries \
+                            Jandex index by using the jandex-maven-plugin in that dependency, or by adding application.properties entries \
                             (quarkus.index-dependency.<name>.group-id and quarkus.index-dependency.<name>.artifact-id)."""
                             .formatted(PlanningSolution.class.getSimpleName(), PlanningEntity.class.getSimpleName()));
             additionalBeans.produce(new AdditionalBeanBuildItem(UnavailableTimefoldBeanProvider.class));
@@ -258,35 +253,89 @@ class TimefoldProcessor {
                     createSolverConfig(classLoader, solverName)));
         }
 
-        // Step 2 - validate all SolverConfig definitions
-        assertNoMemberAnnotationWithoutClassAnnotation(indexView);
+        // Determine which solvers are spec-based (programmatic PlanningSpecification)
+        var specBasedSolverNames = new HashSet<String>();
+        if (hasPlanningSpecBean) {
+            for (var entry : solverConfigMap.entrySet()) {
+                // Solvers without a solutionClass (not configured via XML) will use the spec bean
+                if (entry.getValue().getSolutionClass() == null) {
+                    specBasedSolverNames.add(entry.getKey());
+                }
+            }
+        }
+        boolean allSpecBased = !solverConfigMap.isEmpty()
+                && specBasedSolverNames.equals(solverConfigMap.keySet());
+
+        // Apply score director factory properties for spec-based solvers
+        // (they need constraint provider discovery even without annotation scanning)
+        for (var entry : solverConfigMap.entrySet()) {
+            if (specBasedSolverNames.contains(entry.getKey())) {
+                applyScoreDirectorFactoryProperties(indexView, entry.getValue());
+            }
+        }
+
+        // Step 2 - validate all SolverConfig definitions (only for annotation-based solvers)
+        if (!allSpecBased) {
+            assertNoMemberAnnotationWithoutClassAnnotation(indexView);
+            assertSolverConfigSolutionClasses(indexView, solverConfigMap);
+            assertSolverConfigEntityClasses(indexView);
+        }
         assertNodeSharingDisabled(solverConfigMap);
-        assertSolverConfigSolutionClasses(indexView, solverConfigMap);
-        assertSolverConfigEntityClasses(indexView);
         assertSolverConfigConstraintClasses(indexView, solverConfigMap);
 
         // Step 3 - load all additional information per SolverConfig
         Set<Class<?>> reflectiveClassSet = new LinkedHashSet<>();
-        solverConfigMap.forEach((solverName, solverConfig) -> loadSolverConfig(indexView, reflectiveHierarchyClass,
-                solverConfig, solverName, reflectiveClassSet));
+        if (!allSpecBased) {
+            // Annotation path for non-spec solvers
+            solverConfigMap.forEach((solverName, solverConfig) -> {
+                if (!specBasedSolverNames.contains(solverName)) {
+                    loadSolverConfig(indexView, reflectiveHierarchyClass,
+                            solverConfig, solverName, reflectiveClassSet);
+                }
+            });
+            // Register all annotated domain model classes
+            registerClassesFromAnnotations(indexView, reflectiveClassSet);
 
-        // Register all annotated domain model classes
-        registerClassesFromAnnotations(indexView, reflectiveClassSet);
+            // Validate domain model by building the solution descriptor
+            // (catches inheritance, duplicate variables, etc.)
+            for (var entry : solverConfigMap.entrySet()) {
+                if (!specBasedSolverNames.contains(entry.getKey())) {
+                    var solverConfig = entry.getValue();
+                    if (solverConfig.getSolutionClass() != null
+                            && solverConfig.getEntityClassList() != null) {
+                        SolutionDescriptor.buildSolutionDescriptor(
+                                solverConfig.getSolutionClass(),
+                                solverConfig.getEntityClassList());
+                    }
+                }
+            }
+        }
 
-        // Register only distinct constraint providers
-        solverConfigMap.values()
+        // Register only distinct constraint providers (skip spec-based solvers as they lack solution/entity classes)
+        solverConfigMap.entrySet()
                 .stream()
-                .filter(config -> config.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null)
+                .filter(entry -> !specBasedSolverNames.contains(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .filter(config -> config.getScoreDirectorFactoryConfig() != null
+                        && config.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null)
                 .map(config -> config.getScoreDirectorFactoryConfig().getConstraintProviderClass().getName())
                 .distinct()
                 .map(constraintProviderName -> solverConfigMap.entrySet().stream().filter(entryConfig -> entryConfig.getValue()
-                        .getScoreDirectorFactoryConfig().getConstraintProviderClass().getName().equals(constraintProviderName))
+                        .getScoreDirectorFactoryConfig() != null
+                        && entryConfig.getValue().getScoreDirectorFactoryConfig().getConstraintProviderClass() != null
+                        && entryConfig.getValue().getScoreDirectorFactoryConfig().getConstraintProviderClass().getName()
+                                .equals(constraintProviderName))
                         .findFirst().orElseThrow())
                 .forEach(
                         entryConfig -> generateConstraintVerifier(entryConfig.getValue(), syntheticBeanBuildItemBuildProducer));
 
-        GeneratedGizmoClasses generatedGizmoClasses = generateDomainAccessors(solverConfigMap, indexView, generatedBeans,
-                generatedClasses, generatedResources, transformers, reflectiveClassSet);
+        // Gizmo MemberAccessor/SolutionCloner generation is no longer needed;
+        // FORCE_REFLECTION domain access type is used instead (set by TimefoldRecorder).
+        // Only the bean factory for ConstraintProvider instantiation is still generated.
+        GeneratedGizmoClasses generatedGizmoClasses = new GeneratedGizmoClasses(Set.of());
+        var beanClassOutput = new GeneratedBeanGizmo2Adaptor(generatedBeans);
+        new GizmoMemberAccessorEntityEnhancer()
+                .generateGizmoBeanFactory(beanClassOutput, reflectiveClassSet, transformers);
 
         additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldSolverBannerBean.class));
         if (solverConfigMap.size() <= 1) {
@@ -295,6 +344,16 @@ class TimefoldProcessor {
         }
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldRuntimeConfig.class));
 
+        if (hasPlanningSpecBean) {
+            unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(PlanningSpecification.class));
+            // Also mark any class that produces a PlanningSpecification as unremovable
+            unremovableBeans.produce(new UnremovableBeanBuildItem(
+                    beanInfo -> beanInfo.isProducerMethod()
+                            && beanInfo.getTypes().stream()
+                                    .anyMatch(t -> t.name().equals(DotNames.PLANNING_SPECIFICATION))));
+        }
+
+        // Reflection registration needed for FORCE_REFLECTION MemberAccessors
         for (var reflectiveClass : reflectiveClassSet) {
             registerReflectiveClasses.produce(ReflectiveClassBuildItem.builder(reflectiveClass)
                     .fields()
@@ -303,7 +362,7 @@ class TimefoldProcessor {
                     .build());
         }
 
-        return new SolverConfigBuildItem(solverConfigMap, generatedGizmoClasses);
+        return new SolverConfigBuildItem(solverConfigMap, generatedGizmoClasses, specBasedSolverNames);
     }
 
     private void assertNoMemberAnnotationWithoutClassAnnotation(IndexView indexView) {
@@ -607,6 +666,9 @@ class TimefoldProcessor {
 
         var constraintMetaModelsBySolverNames = new HashMap<String, ConstraintMetaModel>();
         solverConfigBuildItem.getSolverConfigMap().forEach((solverName, solverConfig) -> {
+            if (solverConfigBuildItem.isSpecBased(solverName)) {
+                return; // Spec-based solvers build constraint metamodel at runtime
+            }
             var solverFactory = new DefaultSolverFactory<>(solverConfig, DomainAccessType.FORCE_REFLECTION);
             var constraintMetaModel = BeanUtil.buildConstraintMetaModel(solverFactory);
             // Avoid changing the original solver config.
@@ -618,7 +680,7 @@ class TimefoldProcessor {
 
     @BuildStep
     @Record(RUNTIME_INIT)
-    void recordAndRegisterRuntimeBeans(TimefoldRecorder recorder, RecorderContext recorderContext,
+    void recordAndRegisterRuntimeBeans(TimefoldRecorder recorder,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer,
             SolverConfigBuildItem solverConfigBuildItem) {
         // Skip this extension if everything is missing.
@@ -632,20 +694,23 @@ class TimefoldProcessor {
         // which can inject all resources to be retro-compatible.
         solverConfigBuildItem.getSolverConfigMap().forEach((key, value) -> {
             if (solverConfigBuildItem.isDefaultSolverConfig(key)) {
-                // The two configuration resources are required for DefaultTimefoldBeanProvider
-                // to produce all available managed beans for the default solver.
-                syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverConfig.class)
-                        .scope(Singleton.class)
-                        .supplier(recorder.solverConfigSupplier(key, value,
-                                GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
-                                        solverConfigBuildItem
-                                                .getGeneratedGizmoClasses().memberAccessorClassSet()),
-                                GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
-                                        solverConfigBuildItem
-                                                .getGeneratedGizmoClasses().solutionClonerClassSet())))
-                        .setRuntimeInit()
-                        .defaultBean()
-                        .done());
+                if (solverConfigBuildItem.isSpecBased(key)) {
+                    // Spec path: CDI lookup of PlanningSpecification at runtime
+                    syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverConfig.class)
+                            .scope(Singleton.class)
+                            .supplier(recorder.solverConfigWithSpecSupplier(key, value))
+                            .setRuntimeInit()
+                            .defaultBean()
+                            .done());
+                } else {
+                    // Annotation path: FORCE_REFLECTION (no Gizmo maps needed)
+                    syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverConfig.class)
+                            .scope(Singleton.class)
+                            .supplier(recorder.solverConfigSupplier(key, value))
+                            .setRuntimeInit()
+                            .defaultBean()
+                            .done());
+                }
 
                 var solverManagerConfig = new SolverManagerConfig();
                 syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverManagerConfig.class)
@@ -656,24 +721,28 @@ class TimefoldProcessor {
                         .done());
             }
             if (!TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME.equals(key)) {
-                // The default SolverManager instance is generated by DefaultTimefoldBeanProvider
-                syntheticBeanBuildItemBuildProducer.produce(
-                        // We generate all required resources only to create a SolverManager and set it as managed bean
-                        SyntheticBeanBuildItem.configure(SolverManager.class)
-                                .scope(Singleton.class)
-                                .addType(ParameterizedType.create(DotName.createSimple(SolverManager.class.getName()),
-                                        Type.create(DotName.createSimple(value.getSolutionClass().getName()),
-                                                Type.Kind.CLASS)))
-                                .supplier(recorder.solverManager(key, value,
-                                        GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
-                                                solverConfigBuildItem
-                                                        .getGeneratedGizmoClasses().memberAccessorClassSet()),
-                                        GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
-                                                solverConfigBuildItem
-                                                        .getGeneratedGizmoClasses().solutionClonerClassSet())))
-                                .setRuntimeInit()
-                                .named(key)
-                                .done());
+                if (solverConfigBuildItem.isSpecBased(key)) {
+                    // Spec path: CDI lookup of PlanningSpecification at runtime
+                    syntheticBeanBuildItemBuildProducer.produce(
+                            SyntheticBeanBuildItem.configure(SolverManager.class)
+                                    .scope(Singleton.class)
+                                    .supplier(recorder.solverManagerWithSpec(key, value))
+                                    .setRuntimeInit()
+                                    .named(key)
+                                    .done());
+                } else {
+                    // Annotation path: FORCE_REFLECTION (no Gizmo maps needed)
+                    syntheticBeanBuildItemBuildProducer.produce(
+                            SyntheticBeanBuildItem.configure(SolverManager.class)
+                                    .scope(Singleton.class)
+                                    .addType(ParameterizedType.create(DotName.createSimple(SolverManager.class.getName()),
+                                            Type.create(DotName.createSimple(value.getSolutionClass().getName()),
+                                                    Type.Kind.CLASS)))
+                                    .supplier(recorder.solverManager(key, value))
+                                    .setRuntimeInit()
+                                    .named(key)
+                                    .done());
+                }
             }
         });
     }
@@ -682,16 +751,13 @@ class TimefoldProcessor {
     @Record(RUNTIME_INIT)
     public void recordAndRegisterDevUIBean(
             TimefoldDevUIRecorder devUIRecorder,
-            RecorderContext recorderContext,
             SolverConfigBuildItem solverConfigBuildItem,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
         if (solverConfigBuildItem.getGeneratedGizmoClasses() == null) {
             // Extension was skipped, so no solver configs
             syntheticBeans.produce(SyntheticBeanBuildItem.configure(DevUISolverConfig.class)
                     .scope(ApplicationScoped.class)
-                    .supplier(devUIRecorder.solverConfigSupplier(Collections.emptyMap(),
-                            Collections.emptyMap(),
-                            Collections.emptyMap()))
+                    .supplier(devUIRecorder.solverConfigSupplier(Collections.emptyMap()))
                     .defaultBean()
                     .setRuntimeInit()
                     .done());
@@ -699,13 +765,7 @@ class TimefoldProcessor {
         }
         syntheticBeans.produce(SyntheticBeanBuildItem.configure(DevUISolverConfig.class)
                 .scope(ApplicationScoped.class)
-                .supplier(devUIRecorder.solverConfigSupplier(solverConfigBuildItem.getSolverConfigMap(),
-                        GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
-                                solverConfigBuildItem
-                                        .getGeneratedGizmoClasses().memberAccessorClassSet()),
-                        GizmoMemberAccessorEntityEnhancer.getGeneratedSolutionClonerMap(recorderContext,
-                                solverConfigBuildItem
-                                        .getGeneratedGizmoClasses().solutionClonerClassSet())))
+                .supplier(devUIRecorder.solverConfigSupplier(solverConfigBuildItem.getSolverConfigMap()))
                 .defaultBean()
                 .setRuntimeInit()
                 .done());
@@ -942,242 +1002,6 @@ class TimefoldProcessor {
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("The class (%s) cannot be created during deployment.".formatted(className), e);
         }
-    }
-
-    private GeneratedGizmoClasses generateDomainAccessors(Map<String, SolverConfig> solverConfigMap, IndexView indexView,
-            BuildProducer<GeneratedBeanBuildItem> generatedBeans,
-            BuildProducer<GeneratedClassBuildItem> generatedClasses,
-            BuildProducer<GeneratedResourceBuildItem> generatedResources,
-            BuildProducer<BytecodeTransformerBuildItem> transformers,
-            Set<Class<?>> reflectiveClassSet) {
-        // Use mvn quarkus:dev -Dquarkus.debug.generated-classes-dir=dump-classes
-        // to dump generated classes
-        var classOutput = new GeneratedClassGizmo2Adaptor(generatedClasses, generatedResources, true);
-        var beanClassOutput = new GeneratedBeanGizmo2Adaptor(generatedBeans);
-
-        var generatedMemberAccessorsClassNameSet = new HashSet<String>();
-        var gizmoSolutionClonerClassNameSet = new HashSet<String>();
-
-        /*
-         * TODO consistently change the name "entity" to something less confusing
-         * "entity" in this context means both "planning solution",
-         * "planning entity" and other things as well.
-         */
-        var entityEnhancer = new GizmoMemberAccessorEntityEnhancer();
-        var membersToGeneratedAccessorsForCollection = new ArrayList<AnnotationInstance>();
-
-        // Every entity and solution gets scanned for annotations.
-        // Annotated members get their accessors generated.
-        for (var dotName : DotNames.GIZMO_MEMBER_ACCESSOR_ANNOTATIONS) {
-            membersToGeneratedAccessorsForCollection.addAll(indexView.getAnnotationsWithRepeatable(dotName, indexView));
-        }
-        generateDomainAccessorsForShadowSources(indexView, membersToGeneratedAccessorsForCollection);
-        membersToGeneratedAccessorsForCollection.removeIf(this::shouldIgnoreMember);
-
-        // Fail fast on auto-discovery.
-        var planningSolutionAnnotationInstanceCollection = getAllConcreteSolutionClasses(indexView);
-        var unconfiguredSolverConfigList = solverConfigMap.entrySet().stream()
-                .filter(e -> e.getValue().getSolutionClass() == null)
-                .map(Map.Entry::getKey)
-                .toList();
-        var unusedSolutionClassList = planningSolutionAnnotationInstanceCollection.stream()
-                .map(planningClass -> planningClass.target().asClass().name().toString())
-                .filter(planningClassName -> reflectiveClassSet.stream()
-                        .noneMatch(clazz -> clazz.getName().equals(planningClassName)))
-                .toList();
-        if (planningSolutionAnnotationInstanceCollection.isEmpty()) {
-            throw new IllegalStateException(
-                    "No classes found with a @%s annotation.".formatted(PlanningSolution.class.getSimpleName()));
-        } else if (planningSolutionAnnotationInstanceCollection.size() > 1 && !unconfiguredSolverConfigList.isEmpty()
-                && !unusedSolutionClassList.isEmpty()) {
-            throw new IllegalStateException(
-                    "Unused classes (%s) found with a @%s annotation.".formatted(String.join(", ", unusedSolutionClassList),
-                            PlanningSolution.class.getSimpleName()));
-        }
-
-        var solutionClassInstance = planningSolutionAnnotationInstanceCollection.iterator().next();
-        var solutionClassInfo = solutionClassInstance.target().asClass();
-        var visited = new HashSet<AnnotationTarget>();
-        for (var annotatedMember : membersToGeneratedAccessorsForCollection) {
-            ClassInfo classInfo = null;
-            String memberName = null;
-            if (!visited.add(annotatedMember.target())) {
-                continue;
-            }
-            switch (annotatedMember.target().kind()) {
-                case FIELD -> {
-                    var fieldInfo = annotatedMember.target().asField();
-                    classInfo = fieldInfo.declaringClass();
-                    memberName = fieldInfo.name();
-                    buildFieldAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                            classInfo, fieldInfo, transformers);
-                }
-                case METHOD -> {
-                    var methodInfo = annotatedMember.target().asMethod();
-                    classInfo = methodInfo.declaringClass();
-                    memberName = methodInfo.name();
-                    buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                            classInfo, methodInfo,
-                            AccessorInfo.of((annotatedMember.name().equals(DotNames.VALUE_RANGE_PROVIDER))
-                                    ? MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER
-                                    : MemberAccessorType.FIELD_OR_READ_METHOD),
-                            transformers);
-                }
-                default -> throw new IllegalStateException(
-                        "The member (%s) is not on a field or method.".formatted(annotatedMember));
-            }
-            if (annotatedMember.name().equals(DotNames.CASCADING_UPDATE_SHADOW_VARIABLE)) {
-                // The source method name also must be included
-                // targetMethodName is a required field and is always present
-                var targetMethodName = annotatedMember.value("targetMethodName").asString();
-                var methodInfo = classInfo.method(targetMethodName);
-                buildMethodAccessor(null, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput, classInfo,
-                        methodInfo, AccessorInfo.of(MemberAccessorType.VOID_METHOD), transformers);
-            } else if (annotatedMember.name().equals(DotNames.SHADOW_VARIABLE)
-                    && annotatedMember.value("supplierName") != null) {
-                // The source method name also must be included
-                var targetMethodName = annotatedMember.value("supplierName")
-                        .asString();
-                var methodInfo = classInfo.method(targetMethodName);
-                if (methodInfo == null) {
-                    // Retry with the solution class
-                    var solutionType = Type.create(solutionClassInfo.name(), Type.Kind.CLASS);
-                    methodInfo = classInfo.method(targetMethodName, solutionType);
-                }
-                if (methodInfo == null) {
-                    throw new IllegalArgumentException("""
-                            @%s (%s) defines a supplierName (%s) that does not exist inside its declaring class (%s).
-                            Maybe you included a parameter which is not a planning solution (%s)?
-                            Maybe you misspelled the supplierName name?"""
-                            .formatted(ShadowVariable.class.getSimpleName(), memberName, targetMethodName,
-                                    classInfo.name().toString(), solutionClassInfo.name().toString()));
-                }
-                buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                        classInfo, methodInfo,
-                        AccessorInfo
-                                .of(MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER),
-                        transformers);
-            }
-        }
-        // The ConstraintWeightOverrides field is not annotated, but it needs a member accessor
-        var constraintFieldInfo = solutionClassInfo.fields().stream()
-                .filter(f -> f.type().name().equals(DotNames.CONSTRAINT_WEIGHT_OVERRIDES))
-                .findFirst()
-                .orElse(null);
-        if (constraintFieldInfo != null) {
-            // Prefer method to field
-            var solutionClass = convertClassInfoToClass(solutionClassInfo);
-            var constraintMethod =
-                    ReflectionHelper.getGetterMethod(solutionClass, constraintFieldInfo.name());
-            var constraintMethodInfo = solutionClassInfo.methods().stream()
-                    .filter(m -> constraintMethod != null && m.name().equals(constraintMethod.getName())
-                            && m.parametersCount() == 0)
-                    .findFirst()
-                    .orElse(null);
-            if (constraintMethodInfo != null) {
-                buildMethodAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer,
-                        classOutput, solutionClassInfo, constraintMethodInfo, AccessorInfo.withReturnValueAndNoArguments(),
-                        transformers);
-            } else {
-                buildFieldAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                        solutionClassInfo, constraintFieldInfo, transformers);
-            }
-        }
-        // Using REFLECTION domain access type so Timefold doesn't try to generate GIZMO code
-        solverConfigMap.values().forEach(c -> {
-            var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
-                    c.getEnablePreviewFeatureSet(), DomainAccessType.FORCE_REFLECTION,
-                    c.getSolutionClass(), null, null, c.getEntityClassList());
-            gizmoSolutionClonerClassNameSet
-                    .add(entityEnhancer.generateSolutionCloner(solutionDescriptor, classOutput, indexView, transformers));
-        });
-
-        entityEnhancer.generateGizmoBeanFactory(beanClassOutput, reflectiveClassSet, transformers);
-        return new GeneratedGizmoClasses(generatedMemberAccessorsClassNameSet, gizmoSolutionClonerClassNameSet);
-    }
-
-    private static void generateDomainAccessorsForShadowSources(IndexView indexView,
-            List<AnnotationInstance> membersToGeneratedAccessorsForCollection) {
-        for (var shadowSources : indexView.getAnnotations(DotNames.SHADOW_SOURCES)) {
-            Class<?> rootType;
-            try {
-                rootType = Thread.currentThread().getContextClassLoader().loadClass(
-                        shadowSources.target().asMethod().declaringClass().name().toString());
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException("Unable to load class (%s) which has a @%s annotation."
-                        .formatted(shadowSources.target().asMethod().declaringClass().name(),
-                                ShadowSources.class.getSimpleName()));
-            }
-            var sources = shadowSources.value().asStringArray();
-            var alignmentKey = shadowSources.value("alignmentKey");
-
-            if (alignmentKey != null && !alignmentKey.asString().isEmpty()) {
-                generateDomainAccessorsForSourcePath(indexView, rootType, alignmentKey.asString(),
-                        membersToGeneratedAccessorsForCollection);
-            }
-            for (var source : sources) {
-                generateDomainAccessorsForSourcePath(indexView, rootType, source, membersToGeneratedAccessorsForCollection);
-            }
-        }
-    }
-
-    private static void generateDomainAccessorsForSourcePath(IndexView indexView, Class<?> rootType, String source,
-            List<AnnotationInstance> membersToGeneratedAccessorsForCollection) {
-        for (var iterator = RootVariableSource.pathIterator(rootType, source); iterator.hasNext();) {
-            var member = iterator.next().member();
-            AnnotationTarget target;
-
-            if (member instanceof Field field) {
-                target = indexView.getClassByName(field.getDeclaringClass()).field(field.getName());
-            } else if (member instanceof Method method) {
-                target = indexView.getClassByName(method.getDeclaringClass()).method(method.getName());
-            } else {
-                throw new IllegalStateException("Member (%s) is not on a field or method."
-                        .formatted(member));
-            }
-            // Create a fake annotation for it
-            membersToGeneratedAccessorsForCollection.add(
-                    AnnotationInstance.builder(DotNames.SHADOW_SOURCES)
-                            .value(source)
-                            .buildWithTarget(target));
-        }
-    }
-
-    private static void buildFieldAccessor(AnnotationInstance annotatedMember, Set<String> generatedMemberAccessorsClassNameSet,
-            GizmoMemberAccessorEntityEnhancer entityEnhancer, ClassOutput classOutput, ClassInfo classInfo, FieldInfo fieldInfo,
-            BuildProducer<BytecodeTransformerBuildItem> transformers) {
-        try {
-            generatedMemberAccessorsClassNameSet.add(
-                    entityEnhancer.generateFieldAccessor(annotatedMember, classOutput, fieldInfo,
-                            transformers));
-        } catch (ClassNotFoundException | NoSuchFieldException e) {
-            throw new IllegalStateException("Fail to generate member accessor for field (%s) of the class(%s)."
-                    .formatted(fieldInfo.name(), classInfo.name().toString()), e);
-        }
-    }
-
-    private static void buildMethodAccessor(AnnotationInstance annotatedMember,
-            Set<String> generatedMemberAccessorsClassNameSet, GizmoMemberAccessorEntityEnhancer entityEnhancer,
-            ClassOutput classOutput, ClassInfo classInfo, MethodInfo methodInfo, AccessorInfo accessorInfo,
-            BuildProducer<BytecodeTransformerBuildItem> transformers) {
-        try {
-            generatedMemberAccessorsClassNameSet.add(entityEnhancer.generateMethodAccessor(annotatedMember,
-                    classOutput, classInfo, methodInfo, accessorInfo, transformers));
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            throw new IllegalStateException(
-                    "Failed to generate member accessor for the method (%s) of the class (%s)."
-                            .formatted(methodInfo.name(), classInfo.name()),
-                    e);
-        }
-    }
-
-    private boolean shouldIgnoreMember(AnnotationInstance annotationInstance) {
-        return switch (annotationInstance.target().kind()) {
-            case FIELD -> (annotationInstance.target().asField().flags() & Modifier.STATIC) != 0;
-            case METHOD -> (annotationInstance.target().asMethod().flags() & Modifier.STATIC) != 0;
-            default -> throw new IllegalArgumentException(
-                    "Annotation (%s) can only be applied to methods and fields.".formatted(annotationInstance.name()));
-        };
     }
 
     private void registerCustomClassesFromSolverConfig(SolverConfig solverConfig, Set<Class<?>> reflectiveClassSet) {

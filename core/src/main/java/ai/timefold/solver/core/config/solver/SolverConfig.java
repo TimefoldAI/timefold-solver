@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
@@ -26,7 +27,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
+import ai.timefold.solver.core.api.domain.specification.PlanningSpecification;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.Solver;
@@ -44,6 +45,7 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
@@ -227,9 +229,13 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
     @XmlElement(name = "entityClass")
     private List<Class<?>> entityClassList = null;
     @XmlTransient
+    private DomainAccessType domainAccessType = null;
+    @XmlTransient
     private Map<String, MemberAccessor> gizmoMemberAccessorMap = null;
     @XmlTransient
-    private Map<String, SolutionCloner> gizmoSolutionClonerMap = null;
+    private PlanningSpecification<?> planningSpecification = null;
+    @XmlTransient
+    private MethodHandles.Lookup lookup = null;
 
     @XmlElement(name = "scoreDirectorFactory")
     private ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = null;
@@ -396,6 +402,14 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         this.entityClassList = entityClassList;
     }
 
+    public @Nullable DomainAccessType getDomainAccessType() {
+        return domainAccessType;
+    }
+
+    public void setDomainAccessType(@Nullable DomainAccessType domainAccessType) {
+        this.domainAccessType = domainAccessType;
+    }
+
     public @Nullable Map<@NonNull String, @NonNull MemberAccessor> getGizmoMemberAccessorMap() {
         return gizmoMemberAccessorMap;
     }
@@ -404,12 +418,20 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         this.gizmoMemberAccessorMap = gizmoMemberAccessorMap;
     }
 
-    public @Nullable Map<@NonNull String, @NonNull SolutionCloner> getGizmoSolutionClonerMap() {
-        return gizmoSolutionClonerMap;
+    public @Nullable PlanningSpecification<?> getPlanningSpecification() {
+        return planningSpecification;
     }
 
-    public void setGizmoSolutionClonerMap(@Nullable Map<@NonNull String, @NonNull SolutionCloner> gizmoSolutionClonerMap) {
-        this.gizmoSolutionClonerMap = gizmoSolutionClonerMap;
+    public void setPlanningSpecification(@Nullable PlanningSpecification<?> planningSpecification) {
+        this.planningSpecification = planningSpecification;
+    }
+
+    public MethodHandles.Lookup getLookup() {
+        return lookup;
+    }
+
+    public void setLookup(MethodHandles.Lookup lookup) {
+        this.lookup = lookup;
     }
 
     public @Nullable ScoreDirectorFactoryConfig getScoreDirectorFactoryConfig() {
@@ -522,9 +544,13 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
-    public @NonNull SolverConfig
-            withGizmoSolutionClonerMap(@NonNull Map<@NonNull String, @NonNull SolutionCloner> solutionClonerMap) {
-        this.gizmoSolutionClonerMap = solutionClonerMap;
+    public @NonNull SolverConfig withPlanningSpecification(@NonNull PlanningSpecification<?> planningSpecification) {
+        this.planningSpecification = planningSpecification;
+        return this;
+    }
+
+    public @NonNull SolverConfig withLookup(MethodHandles.Lookup lookup) {
+        this.lookup = lookup;
         return this;
     }
 
@@ -678,10 +704,13 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         solutionClass = ConfigUtils.inheritOverwritableProperty(solutionClass, inheritedConfig.getSolutionClass());
         entityClassList = ConfigUtils.inheritMergeableListProperty(entityClassList,
                 inheritedConfig.getEntityClassList());
+        domainAccessType = ConfigUtils.inheritOverwritableProperty(domainAccessType,
+                inheritedConfig.getDomainAccessType());
         gizmoMemberAccessorMap = ConfigUtils.inheritMergeableMapProperty(
                 gizmoMemberAccessorMap, inheritedConfig.getGizmoMemberAccessorMap());
-        gizmoSolutionClonerMap = ConfigUtils.inheritMergeableMapProperty(
-                gizmoSolutionClonerMap, inheritedConfig.getGizmoSolutionClonerMap());
+        planningSpecification = ConfigUtils.inheritOverwritableProperty(planningSpecification,
+                inheritedConfig.getPlanningSpecification());
+        lookup = ConfigUtils.inheritOverwritableProperty(lookup, inheritedConfig.getLookup());
 
         scoreDirectorFactoryConfig = ConfigUtils.inheritConfig(scoreDirectorFactoryConfig,
                 inheritedConfig.getScoreDirectorFactoryConfig());

@@ -7,6 +7,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.api.domain.solution;
     exports ai.timefold.solver.core.api.domain.solution.cloner;
     exports ai.timefold.solver.core.api.domain.valuerange;
+    exports ai.timefold.solver.core.api.domain.specification;
     exports ai.timefold.solver.core.api.domain.variable;
     exports ai.timefold.solver.core.api.function;
     exports ai.timefold.solver.core.api.score;
@@ -93,8 +94,6 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.constructionheuristic.scope to
             ai.timefold.solver.jackson, ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
-    exports ai.timefold.solver.core.impl.domain.solution.cloner.gizmo
-            to ai.timefold.solver.quarkus.deployment;
     exports ai.timefold.solver.core.impl.domain.common.accessor
             to ai.timefold.solver.quarkus.deployment, ai.timefold.solver.quarkus;
     exports ai.timefold.solver.core.impl.domain.common

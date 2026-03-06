@@ -26,6 +26,14 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
         return allowsUnassigned;
     }
 
+    /**
+     * Set allowsUnassigned without reading annotations.
+     * Used by the programmatic specification API.
+     */
+    public void setAllowsUnassigned(boolean allowsUnassigned) {
+        this.allowsUnassigned = allowsUnassigned;
+    }
+
     // ************************************************************************
     // Lifecycle methods
     // ************************************************************************

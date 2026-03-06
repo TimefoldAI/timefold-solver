@@ -36,6 +36,17 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
         super(ordinal, entityDescriptor, variableMemberAccessor);
     }
 
+    /**
+     * Set the calculator, source paths, and alignment key directly without reading annotations.
+     * Used by the programmatic specification API.
+     * The sources array will be resolved during linkVariableDescriptors.
+     */
+    public void setSpecificationData(MemberAccessor calculator, String[] sourcePaths, @Nullable String alignmentKey) {
+        this.calculator = calculator;
+        this.sourcePaths = sourcePaths;
+        this.alignmentKey = alignmentKey;
+    }
+
     @Override
     public void processAnnotations(DescriptorPolicy descriptorPolicy) {
         var annotation = variableMemberAccessor.getAnnotation(ShadowVariable.class);

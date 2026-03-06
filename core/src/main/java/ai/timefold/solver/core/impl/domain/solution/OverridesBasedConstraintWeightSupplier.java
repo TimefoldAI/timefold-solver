@@ -43,6 +43,13 @@ public final class OverridesBasedConstraintWeightSupplier<Score_ extends Score<S
         return new OverridesBasedConstraintWeightSupplier<>(solutionDescriptor, memberAccessor, overridesClass);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <Solution_, Score_ extends Score<Score_>> ConstraintWeightSupplier<Solution_, Score_> create(
+            SolutionDescriptor<Solution_> solutionDescriptor, MemberAccessor memberAccessor) {
+        return new OverridesBasedConstraintWeightSupplier<>(solutionDescriptor, memberAccessor,
+                (Class<? extends ConstraintWeightOverrides<Score_>>) (Class<?>) ConstraintWeightOverrides.class);
+    }
+
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final MemberAccessor overridesAccessor;
     private final Class<? extends ConstraintWeightOverrides<Score_>> overridesClass;

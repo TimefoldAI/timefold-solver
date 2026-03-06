@@ -56,6 +56,14 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         return allowsUnassignedValues;
     }
 
+    /**
+     * Set allowsUnassignedValues without reading annotations.
+     * Used by the programmatic specification API.
+     */
+    public void setAllowsUnassignedValues(boolean allowsUnassignedValues) {
+        this.allowsUnassignedValues = allowsUnassignedValues;
+    }
+
     @Override
     protected void processPropertyAnnotations(DescriptorPolicy descriptorPolicy) {
         PlanningListVariable planningVariableAnnotation = variableMemberAccessor.getAnnotation(PlanningListVariable.class);

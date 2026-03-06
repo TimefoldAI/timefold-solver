@@ -84,6 +84,15 @@ abstract class AbstractNextPrevElementShadowVariableDescriptor<Solution_> extend
         sourceVariableDescriptor.registerSinkVariableDescriptor(this);
     }
 
+    /**
+     * Link the source variable directly without reading annotations.
+     * Used by the programmatic specification API.
+     */
+    public void linkSourceVariable(ListVariableDescriptor<Solution_> sourceVariable) {
+        this.sourceVariableDescriptor = sourceVariable;
+        sourceVariable.registerSinkVariableDescriptor(this);
+    }
+
     @Override
     public List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList() {
         return Collections.singletonList(sourceVariableDescriptor);

@@ -115,6 +115,17 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
         sourceVariableDescriptor.registerSinkVariableDescriptor(this);
     }
 
+    /**
+     * Link the source variable directly without reading annotations.
+     * Used by the programmatic specification API.
+     */
+    public void linkSourceVariable(VariableDescriptor<Solution_> sourceVariable) {
+        this.sourceVariableDescriptor = sourceVariable;
+        Class<?> variablePropertyType = getVariablePropertyType();
+        this.singleton = !Collection.class.isAssignableFrom(variablePropertyType);
+        sourceVariable.registerSinkVariableDescriptor(this);
+    }
+
     @Override
     public List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList() {
         return Collections.singletonList(sourceVariableDescriptor);

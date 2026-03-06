@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_GETTER_METHOD;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorType.FIELD_OR_READ_METHOD;
-import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor.extractInheritedClasses;
 import static java.util.stream.Stream.concat;
 
 import java.lang.annotation.Annotation;
@@ -59,9 +58,7 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.OverridesBasedConstraintWeightSupplier;
-import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutionCloner;
-import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
-import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
+import ai.timefold.solver.core.impl.domain.specification.AnnotationSpecificationFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
@@ -108,50 +105,21 @@ public final class SolutionDescriptor<Solution_> {
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
             Set<PreviewFeature> enabledPreviewFeaturesSet, Class<Solution_> solutionClass, List<Class<?>> entityClassList) {
-        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.FORCE_REFLECTION, solutionClass, null, null,
+        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.FORCE_REFLECTION, solutionClass, null,
                 entityClassList);
     }
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
             Set<PreviewFeature> enabledPreviewFeatureSet, DomainAccessType domainAccessType, Class<Solution_> solutionClass,
-            Map<String, MemberAccessor> memberAccessorMap, Map<String, SolutionCloner> solutionClonerMap,
+            Map<String, MemberAccessor> memberAccessorMap,
             List<Class<?>> entityClassList) {
         assertMutable(solutionClass, "solutionClass");
         assertSingleInheritance(solutionClass);
         assertValidAnnotatedMembers(solutionClass);
-        solutionClonerMap = Objects.requireNonNullElse(solutionClonerMap, Collections.emptyMap());
-        var solutionDescriptor = new SolutionDescriptor<>(solutionClass, memberAccessorMap);
-        var descriptorPolicy = new DescriptorPolicy();
-        if (enabledPreviewFeatureSet != null) {
-            descriptorPolicy.setEnabledPreviewFeatureSet(enabledPreviewFeatureSet);
-        }
-        descriptorPolicy.setDomainAccessType(domainAccessType);
-        descriptorPolicy.setGeneratedSolutionClonerMap(solutionClonerMap);
-        descriptorPolicy.setMemberAccessorFactory(solutionDescriptor.getMemberAccessorFactory());
-
-        solutionDescriptor.processUnannotatedFieldsAndMethods(descriptorPolicy);
-        solutionDescriptor.processAnnotations(descriptorPolicy);
-        // Before iterating over the entity classes, we need to read the inheritance chain,
-        // add all parent and child classes, and sort them.
-        var updatedEntityClassList = new ArrayList<>(entityClassList);
-        for (var entityClass : entityClassList) {
-            var inheritedEntityClasses = extractInheritedClasses(entityClass);
-            var filteredInheritedEntityClasses = inheritedEntityClasses.stream()
-                    .filter(c -> !updatedEntityClassList.contains(c))
-                    .toList();
-            updatedEntityClassList.addAll(filteredInheritedEntityClasses);
-        }
-        for (var entityClass : sortEntityClassList(updatedEntityClassList)) {
-            var entityDescriptor = descriptorPolicy.buildEntityDescriptor(solutionDescriptor, entityClass);
-            entityDescriptor.processAnnotations(descriptorPolicy);
-        }
-        solutionDescriptor.afterAnnotationsProcessed(descriptorPolicy);
-        if (solutionDescriptor.constraintWeightSupplier != null) {
-            // The scoreDescriptor is definitely initialized at this point.
-            solutionDescriptor.constraintWeightSupplier.initialize(solutionDescriptor,
-                    descriptorPolicy.getMemberAccessorFactory(), descriptorPolicy.getDomainAccessType());
-        }
-        return solutionDescriptor;
+        var annotationSpec = AnnotationSpecificationFactory.fromAnnotations(
+                solutionClass, entityClassList, domainAccessType, memberAccessorMap);
+        return SpecificationCompiler.compile(annotationSpec, enabledPreviewFeatureSet,
+                domainAccessType, memberAccessorMap, true);
     }
 
     public static void assertMutable(Class<?> clz, String classType) {
@@ -170,7 +138,7 @@ public final class SolutionDescriptor<Solution_> {
      * If a class declares any annotated member, it must be annotated as a solution,
      * even if a supertype already has the annotation.
      */
-    private static void assertValidAnnotatedMembers(Class<?> clazz) {
+    public static void assertValidAnnotatedMembers(Class<?> clazz) {
         // We first check the entity class
         if (clazz.getAnnotation(PlanningSolution.class) == null && hasAnyAnnotatedMembers(clazz)) {
             var annotatedMembers = extractAnnotatedMembers(clazz).stream()
@@ -196,7 +164,7 @@ public final class SolutionDescriptor<Solution_> {
         }
     }
 
-    private static void assertSingleInheritance(Class<?> solutionClass) {
+    public static void assertSingleInheritance(Class<?> solutionClass) {
         var inheritedClassList =
                 ConfigUtils.getAllAnnotatedLineageClasses(solutionClass.getSuperclass(), PlanningSolution.class);
         if (inheritedClassList.size() > 1) {
@@ -271,12 +239,46 @@ public final class SolutionDescriptor<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    private SolutionDescriptor(Class<Solution_> solutionClass, Map<String, MemberAccessor> memberAccessorMap) {
+    SolutionDescriptor(Class<Solution_> solutionClass, Map<String, MemberAccessor> memberAccessorMap) {
         this.solutionClass = solutionClass;
         if (solutionClass.getPackage() == null) {
             LOGGER.warn("The solutionClass ({}) should be in a proper java package.", solutionClass);
         }
         this.memberAccessorFactory = new MemberAccessorFactory(memberAccessorMap);
+    }
+
+    // Package-private setters for programmatic specification API (SpecificationCompiler)
+
+    void setScoreDescriptor(ScoreDescriptor<?> scoreDescriptor) {
+        this.scoreDescriptor = scoreDescriptor;
+    }
+
+    void setSolutionCloner(SolutionCloner<Solution_> solutionCloner) {
+        this.solutionCloner = solutionCloner;
+    }
+
+    void setDomainAccessType(DomainAccessType domainAccessType) {
+        this.domainAccessType = domainAccessType;
+    }
+
+    void setLookUpStrategyResolver(LookupStrategyResolver lookUpStrategyResolver) {
+        this.lookUpStrategyResolver = lookUpStrategyResolver;
+    }
+
+    void setProblemFactOrEntityClassSet(SequencedSet<Class<?>> problemFactOrEntityClassSet) {
+        this.problemFactOrEntityClassSet = problemFactOrEntityClassSet;
+    }
+
+    void setListVariableDescriptorList(List<ListVariableDescriptor<Solution_>> listVariableDescriptorList) {
+        this.listVariableDescriptorList = listVariableDescriptorList;
+    }
+
+    void setConstraintWeightSupplier(ConstraintWeightSupplier<Solution_, ?> constraintWeightSupplier) {
+        this.constraintWeightSupplier = constraintWeightSupplier;
+    }
+
+    ConcurrentMap<Class<?>, MemberAccessor> getPlanningIdMemberAccessorMap() {
+        return planningIdMemberAccessorMap;
     }
 
     public void addEntityDescriptor(EntityDescriptor<Solution_> entityDescriptor) {
@@ -525,35 +527,7 @@ public final class SolutionDescriptor<Solution_> {
                         : "Maybe 2 mutually exclusive annotations are configured."));
     }
 
-    private void afterAnnotationsProcessed(DescriptorPolicy descriptorPolicy) {
-        for (var entityDescriptor : entityDescriptorMap.values()) {
-            entityDescriptor.linkEntityDescriptors(descriptorPolicy);
-        }
-        for (var entityDescriptor : entityDescriptorMap.values()) {
-            entityDescriptor.linkVariableDescriptors(descriptorPolicy);
-        }
-        determineGlobalShadowOrder();
-        problemFactOrEntityClassSet = collectEntityAndProblemFactClasses();
-        listVariableDescriptorList = findListVariableDescriptors();
-        validateListVariableDescriptors();
-
-        // And finally log the successful completion of processing.
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("    Model annotations parsed for solution {}:", solutionClass.getSimpleName());
-            for (var entry : entityDescriptorMap.entrySet()) {
-                var entityDescriptor = entry.getValue();
-                LOGGER.trace("        Entity {}:", entityDescriptor.getEntityClass().getSimpleName());
-                for (var variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
-                    LOGGER.trace("            {} variable {} ({})",
-                            variableDescriptor instanceof GenuineVariableDescriptor ? "Genuine" : "Shadow",
-                            variableDescriptor.getVariableName(), variableDescriptor.getMemberAccessorSpeedNote());
-                }
-            }
-        }
-        initSolutionCloner(descriptorPolicy);
-    }
-
-    private void determineGlobalShadowOrder() {
+    void determineGlobalShadowOrder() {
         // Topological sorting with Kahn's algorithm
         var pairList = new ArrayList<MutablePair<ShadowVariableDescriptor<Solution_>, Integer>>();
         var shadowToPairMap =
@@ -638,23 +612,6 @@ public final class SolutionDescriptor<Solution_> {
                         ? Stream.of(listVariableDescriptor)
                         : Stream.empty())
                 .toList();
-    }
-
-    private void initSolutionCloner(DescriptorPolicy descriptorPolicy) {
-        solutionCloner = solutionCloner == null
-                ? descriptorPolicy.getGeneratedSolutionClonerMap().get(GizmoSolutionClonerFactory.getGeneratedClassName(this))
-                : solutionCloner;
-
-        if (solutionCloner instanceof GizmoSolutionCloner<Solution_> gizmoSolutionCloner) {
-            gizmoSolutionCloner.setSolutionDescriptor(this);
-        }
-        if (solutionCloner == null) {
-            solutionCloner = switch (descriptorPolicy.getDomainAccessType()) {
-                case FORCE_GIZMO -> GizmoSolutionClonerFactory.build(this, memberAccessorFactory.getGizmoClassLoader());
-                // AUTO means we are probably in plain Java, so we need to use reflection so we can clone final fields
-                case AUTO, FORCE_REFLECTION -> new FieldAccessingSolutionCloner<>(this);
-            };
-        }
     }
 
     public Class<Solution_> getSolutionClass() {
