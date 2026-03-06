@@ -166,13 +166,12 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     private void onBestSolutionChangedEvent(BestSolutionChangedEvent<Solution_> bestSolutionChangedEvent) {
         var currentConsumerSupport = consumerSupport.get();
         if (currentConsumerSupport == null) { // We set this, we should only set it once and before any event is emitted.
-            LOGGER.warn("""
-                    Asked to consume a best solution changed event for problemId (%s), but consumer is not available.
-                    The solution is lost. This is likely a bug.
-                    Please report this issue to Timefold with details on how to reproduce it.
+            throw new IllegalStateException(
                     """
-                    .formatted(problemId));
-            return;
+                            Impossible state: Asked to consume a best solution changed event for problemId (%s), but the consumer is not set.
+                            This means the solver job did not start properly or has already been terminated. This is likely a bug.
+                            Please report this issue to Timefold with details on how to reproduce it."""
+                            .formatted(problemId));
         }
         currentConsumerSupport.consumeIntermediateBestSolution(bestSolutionChangedEvent.getNewBestSolution(),
                 bestSolutionChangedEvent.getProducerId(), bestSolutionChangedEvent::isEveryProblemChangeProcessed);
@@ -203,61 +202,65 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
 
     @Override
     public void terminateEarly() {
-        terminatedEarly.set(true);
-        if (!solver.isSolving()) {
-            LOGGER.debug("terminateEarly() has been called while the solver was not solving. Cancelling the job.");
-            var future = finalBestSolutionFuture.get();
-            if (future == null) { // We set this; we messed up.
-                throw new IllegalStateException(
-                        "Impossible state: the finalBestSolutionFuture is not set yet for problemId (%s)."
-                                .formatted(problemId));
-            }
-            future.cancel(false);
-            solvingTerminated();
-            return;
-        }
         try {
             solverStatusModifyingLock.lock();
-            switch (solverStatus.get()) {
-                case SOLVING_SCHEDULED:
-                    var future = finalBestSolutionFuture.get();
+            terminateEarlyLocked();
+        } finally {
+            solverStatusModifyingLock.unlock();
+        }
+    }
+
+    private void terminateEarlyLocked() {
+        var terminatedAlready = terminatedEarly.getAndSet(true);
+        if (terminatedAlready) {
+            return;
+        }
+        var actualSolverStatus = solverStatus.get();
+        var future = finalBestSolutionFuture.get();
+        switch (actualSolverStatus) {
+            case SOLVING_SCHEDULED -> {
+                if (solver.isSolving()) {
                     if (future == null) { // We set this; we messed up.
                         throw new IllegalStateException(
                                 "Impossible state: the finalBestSolutionFuture is not set yet for problemId (%s)."
                                         .formatted(problemId));
                     }
                     future.cancel(false);
-                    solvingTerminated();
-                    break;
-                case SOLVING_ACTIVE:
-                    // Indirectly triggers solvingTerminated()
-                    // No need to cancel the finalBestSolutionFuture as it will finish normally.
-                    solver.terminateEarly();
-                    break;
-                case NOT_SOLVING:
-                    // Do nothing, solvingTerminated() already called
-                    break;
-                default:
-                    throw new IllegalStateException("Unsupported solverStatus (%s).".formatted(solverStatus));
-            }
-            try {
-                // Don't return until bestSolutionConsumer won't be called anymore
-                terminatedLatch.await();
-                var terminatedCorrectly = terminatedLatch.await(EARLY_TERMINATION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
-                if (!terminatedCorrectly) {
-                    LOGGER.warn("""
-                            The terminateEarly() call did not complete within ({}) for problemId ({}).
-                            The final best solution may not have been consumed yet. This is likely a bug.
-                            Please report this issue to Timefold with details on how to reproduce it.""",
-                            EARLY_TERMINATION_TIMEOUT, problemId);
-                    solvingTerminated(); // Clean up the solver job as if everything went fine, to prevent resource leaks.
+                } else {
+                    LOGGER.debug("terminateEarly() has been called while the solver was not solving. Cancelling the job.");
+                    if (future != null) {
+                        future.cancel(false);
+                    }
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                LOGGER.warn("The terminateEarly() call is interrupted.", e);
+                solvingTerminated();
             }
-        } finally {
-            solverStatusModifyingLock.unlock();
+            case SOLVING_ACTIVE ->
+                // Indirectly triggers solvingTerminated()
+                // No need to cancel the finalBestSolutionFuture as it will finish normally.
+                solver.terminateEarly();
+            case NOT_SOLVING -> {
+                // Do nothing, solvingTerminated() already called
+            }
+            default -> throw new IllegalStateException("Unsupported solverStatus (%s).".formatted(actualSolverStatus));
+        }
+        try {
+            // Don't return until bestSolutionConsumer won't be called anymore
+            var terminatedCorrectly = terminatedLatch.await(EARLY_TERMINATION_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+            if (!terminatedCorrectly) {
+                LOGGER.warn("""
+                        The terminateEarly() call did not complete within ({}) for problemId ({}).
+                        The final best solution may not have been consumed yet. This is likely a bug.
+                        Please report this issue to Timefold with details on how to reproduce it.""",
+                        EARLY_TERMINATION_TIMEOUT, problemId);
+                // Escalate termination by interrupting the solver thread.
+                if (future != null && !future.isDone()) {
+                    future.cancel(true);
+                }
+                solvingTerminated();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOGGER.warn("The terminateEarly() call is interrupted.", e);
         }
     }
 
