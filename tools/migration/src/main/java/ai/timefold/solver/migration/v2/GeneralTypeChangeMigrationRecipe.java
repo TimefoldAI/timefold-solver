@@ -78,13 +78,16 @@ public class GeneralTypeChangeMigrationRecipe extends AbstractRecipe {
                         "ai.timefold.solver.core.impl.heuristic.move.SelectorBasedCompositeMove", true),
                 new ChangeType(
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.KOptListMove",
-                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.SelectorBasedKOptListMove", true),
+                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.SelectorBasedKOptListMove",
+                        true),
                 new ChangeType(
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.TwoOptListMove",
-                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.SelectorBasedTwoOptListMove", true),
+                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.SelectorBasedTwoOptListMove",
+                        true),
                 new ChangeType(
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMove",
-                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.SelectorBasedListRuinRecreateMove", true),
+                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.SelectorBasedListRuinRecreateMove",
+                        true),
                 new ChangeType(
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAssignMove",
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListAssignMove", true),
@@ -96,16 +99,19 @@ public class GeneralTypeChangeMigrationRecipe extends AbstractRecipe {
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListSwapMove", true),
                 new ChangeType(
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove",
-                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListUnassignMove", true),
+                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedListUnassignMove",
+                        true),
                 new ChangeType(
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListChangeMove",
-                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedSubListChangeMove", true),
+                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedSubListChangeMove",
+                        true),
                 new ChangeType(
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMove",
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedSubListSwapMove", true),
                 new ChangeType(
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListUnassignMove",
-                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedSubListUnassignMove", true),
+                        "ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SelectorBasedSubListUnassignMove",
+                        true),
                 new ChangeType(
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove",
                         "ai.timefold.solver.core.impl.heuristic.selector.move.generic.SelectorBasedChangeMove", true),

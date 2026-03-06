@@ -23,7 +23,7 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
                                         package ai.timefold.solver.core.api.score.stream;
                                         public interface ConstraintStreamImplType {
                                         }""",
-                                        """
+                                """
                                         package ai.timefold.solver.core.api.domain.common;
                                         public interface DomainAccessType {
                                         }""",

@@ -1,12 +1,13 @@
 package ai.timefold.solver.migration.v2;
 
+import java.util.List;
+
 import ai.timefold.solver.migration.AbstractRecipe;
 import ai.timefold.solver.migration.common.RemoveGenericTypeFromMethodRecipe;
 import ai.timefold.solver.migration.common.RemoveGenericTypeRecipe;
+
 import org.openrewrite.NlsRewrite;
 import org.openrewrite.Recipe;
-
-import java.util.List;
 
 public class ProblemIdDeletionMigrationRecipe extends AbstractRecipe {
     @Override
@@ -32,4 +33,3 @@ public class ProblemIdDeletionMigrationRecipe extends AbstractRecipe {
                 new RemoveGenericTypeRecipe("ai.timefold.solver.core.api.solver.SolverJob", 1));
     }
 }
-

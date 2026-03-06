@@ -37,7 +37,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.buildin.bendable;
                                         import ai.timefold.solver.core.api.score.IBendableScore;
-                                        
+
                                         public interface BendableScore extends IBendableScore {
                                             BendableScore of(int[] parameter, int[] secondParameter);
                                             int[] getHardScores();
@@ -60,7 +60,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.buildin.bendablelong;
                                         import ai.timefold.solver.core.api.score.IBendableScore;
-                                        
+
                                         public interface BendableLongScore extends IBendableScore {
                                             BendableLongScore of(long[] parameter, long[] secondParameter);
                                             BendableScore of(int[] parameter, int[] secondParameter);
@@ -82,7 +82,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal;
                                         import ai.timefold.solver.core.api.score.Score;
-                                        
+
                                         public interface HardMediumSoftBigDecimalScore extends Score {
                                             HardMediumSoftBigDecimalScore of(Object parameter, Object secondParameter, Object thirdParameter);
                                             Object getHardScore();
@@ -92,7 +92,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong;
                                         import ai.timefold.solver.core.api.score.Score;
-                                        
+
                                         public interface HardMediumSoftLongScore extends Score {
                                             HardMediumSoftLongScore of(long parameter, long secondParameter, long thirdParameter);
                                             long getHardScore();
@@ -102,7 +102,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.buildin.hardsoftlong;
                                         import ai.timefold.solver.core.api.score.Score;
-                                        
+
                                         public interface HardSoftLongScore extends Score {
                                             HardSoftLongScore of(long parameter, long secondParameter);
                                             long getHardScore();
@@ -111,7 +111,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal;
                                         import ai.timefold.solver.core.api.score.Score;
-                                        
+
                                         public interface HardSoftBigDecimalScore extends Score {
                                             HardSoftBigDecimalScore of(Object parameter, Object secondParameter);
                                             Object getHardScore();
@@ -120,7 +120,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.buildin.hardsoft;
                                         import ai.timefold.solver.core.api.score.Score;
-                                        
+
                                         public interface HardSoftScore extends Score {
                                             HardSoftScore of(int parameter, int secondParameter);
                                             int getHardScore();
@@ -129,7 +129,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.buildin.simplebigdecimal;
                                         import ai.timefold.solver.core.api.score.Score;
-                                        
+
                                         public interface SimpleBigDecimalScore extends Score {
                                             SimpleBigDecimalScore of(Object parameter);
                                             Object getScore();
@@ -137,7 +137,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.buildin.simple;
                                         import ai.timefold.solver.core.api.score.Score;
-                                        
+
                                         public interface SimpleScore extends Score {
                                             SimpleScore of(int parameter);
                                             int getScore();
@@ -145,7 +145,7 @@ class ScoreGettersRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.buildin.simplelong;
                                         import ai.timefold.solver.core.api.score.Score;
-                                        
+
                                         public interface SimpleLongScore extends Score {
                                             SimpleLongScore of(long parameter);
                                             long getScore();

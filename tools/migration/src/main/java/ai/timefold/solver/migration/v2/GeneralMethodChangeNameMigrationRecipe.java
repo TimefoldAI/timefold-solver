@@ -3,8 +3,8 @@ package ai.timefold.solver.migration.v2;
 import java.util.List;
 
 import ai.timefold.solver.migration.AbstractRecipe;
-
 import ai.timefold.solver.migration.common.CustomChangeMethodRecipe;
+
 import org.openrewrite.Recipe;
 import org.openrewrite.java.ChangeMethodName;
 
@@ -34,16 +34,21 @@ public class GeneralMethodChangeNameMigrationRecipe extends AbstractRecipe {
                 new ChangeMethodName("ai.timefold.solver.core.api.solver.Solver isEveryProblemFactChangeProcessed()",
                         "isEveryProblemChangeProcessed", true, false),
                 // BestSolutionChangedEvent
-                new ChangeMethodName("ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent isEveryProblemFactChangeProcessed()",
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent isEveryProblemFactChangeProcessed()",
                         "isEveryProblemChangeProcessed", true, false),
                 // Move API
-                new ChangeMethodName("ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig getMoveSelectorConfigList()",
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig getMoveSelectorConfigList()",
                         "getMoveSelectorList", true, false),
-                new ChangeMethodName("ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig setMoveSelectorConfigList(..)",
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig setMoveSelectorConfigList(..)",
                         "setMoveSelectorList", true, false),
-                new ChangeMethodName("ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig getMoveSelectorConfigList()",
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig getMoveSelectorConfigList()",
                         "getMoveSelectorList", true, false),
-                new ChangeMethodName("ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig setMoveSelectorConfigList(..)",
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig setMoveSelectorConfigList(..)",
                         "setMoveSelectorList", true, false),
                 // Constraint Stream API
                 new ChangeMethodName(

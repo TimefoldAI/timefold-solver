@@ -3,8 +3,8 @@ package ai.timefold.solver.migration.v1;
 import java.util.List;
 
 import ai.timefold.solver.migration.AbstractRecipe;
-
 import ai.timefold.solver.migration.common.CustomChangeMethodRecipe;
+
 import org.openrewrite.Recipe;
 
 public final class SolverManagerBuilderRecipe extends AbstractRecipe {

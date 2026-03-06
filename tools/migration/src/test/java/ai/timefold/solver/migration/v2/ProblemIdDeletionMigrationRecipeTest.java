@@ -29,11 +29,11 @@ class ProblemIdDeletionMigrationRecipeTest implements RewriteTest {
                                            SolverJob<Solution_, ProblemId_> solve(Object parameter, Object secondParameter);
                                            SolverJob<Solution_, ProblemId_> solveAndListen(Object parameter, Object secondParameter);
                                         }""",
-                                        """
+                                """
                                         package ai.timefold.solver.core.api.solver;
                                         public interface SolverJobBuilder<Solution_, ProblemId_> {
                                         }""",
-                                        """
+                                """
                                         package ai.timefold.solver.core.api.solver;
                                         public interface SolverJob<Solution_, ProblemId_> {
                                         }"""));
