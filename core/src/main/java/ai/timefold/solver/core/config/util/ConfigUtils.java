@@ -618,9 +618,9 @@ public class ConfigUtils {
             return null;
         }
         if (methods.length > 1) {
-            throw new IllegalStateException("The containingClass (" + containingClass
-                    + ") has multiple setter methods (" + Arrays.toString(methods)
-                    + ") with the propertyName (" + propertyName + ").");
+            throw new IllegalStateException(
+                    "The containingClass (%s) has multiple setter methods (%s) with the propertyName (%s)."
+                            .formatted(containingClass, Arrays.toString(methods), propertyName));
         }
         return methods[0];
     }
