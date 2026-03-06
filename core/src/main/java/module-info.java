@@ -207,9 +207,9 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.solver.event to ai.timefold.solver.enterprise.core;
 
     // Broad impl usage
-    exports ai.timefold.solver.core.impl.io.jaxb;
     exports ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
     exports ai.timefold.solver.core.impl.domain.solution.descriptor;
+    exports ai.timefold.solver.core.impl.io.jaxb;
     exports ai.timefold.solver.core.impl.solver.termination;
 
     // Open configs to JAXB
