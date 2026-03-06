@@ -1030,7 +1030,7 @@ Only JPMS exported packages are part of the supported public API.
 If you access non-exported classes (for example by running on the classpath), and we later change or remove them, we will not treat that as a breaking change.
 Those classes are not covered by compatibility guarantees.
 
-You can opt-out of JPMS by running all jar-files on the classpath, usually by not including `module-info.jar` file in your own project.
+You can opt-out of JPMS by running all JAR files on the classpath instead of using the module path (for example, by not configuring a module path in your build or runtime setup).
 
 
 [#integrationWithHumanPlanners]
