@@ -10,21 +10,20 @@ module ai.timefold.solver.quarkus.deployment {
             ai.timefold.solver.quarkus.benchmark.deployment,
             ai.timefold.sdk.quarkus.deployment;
 
-    requires ai.timefold.solver.quarkus;
+    requires transitive ai.timefold.solver.quarkus;
+    requires arc.processor;
+    requires io.quarkus.gizmo;
+    requires io.quarkus.gizmo2;
+    requires io.smallrye.config;
+    requires jakarta.cdi;
+    requires org.jboss.jandex;
+    requires org.jboss.logging;
+    requires org.jspecify;
+    requires org.objectweb.asm;
     requires quarkus.arc.deployment;
     requires quarkus.builder;
+    requires quarkus.core;
     requires quarkus.core.deployment;
     requires quarkus.devui.deployment.spi;
-    requires ai.timefold.solver.core;
-    requires io.quarkus.gizmo2;
-    requires jakarta.cdi;
-    requires quarkus.core;
-    requires arc.processor;
-    requires org.jspecify;
-    requires io.quarkus.gizmo;
-    requires org.jboss.jandex;
-    requires io.smallrye.config;
-    requires org.objectweb.asm;
-    requires org.jboss.logging;
 
 }

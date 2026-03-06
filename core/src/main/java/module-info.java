@@ -43,6 +43,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.config.heuristic.selector.move.factory;
     exports ai.timefold.solver.core.config.heuristic.selector.move.generic;
     exports ai.timefold.solver.core.config.heuristic.selector.move.generic.list;
+    exports ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt;
     exports ai.timefold.solver.core.config.heuristic.selector.value;
     exports ai.timefold.solver.core.config.localsearch;
     exports ai.timefold.solver.core.config.localsearch.decider.acceptor;
@@ -97,8 +98,6 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.domain.common.accessor
             to ai.timefold.solver.quarkus.deployment, ai.timefold.solver.quarkus;
     exports ai.timefold.solver.core.impl.domain.common
-            to ai.timefold.solver.quarkus.deployment;
-    exports ai.timefold.solver.core.impl.domain.common.accessor.gizmo
             to ai.timefold.solver.quarkus.deployment;
     exports ai.timefold.solver.core.impl.domain.entity.descriptor
             to ai.timefold.solver.jackson, ai.timefold.solver.jaxb, ai.timefold.solver.benchmark,
@@ -209,8 +208,9 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.solver.event to ai.timefold.solver.enterprise.core;
 
     // Broad impl usage
-    exports ai.timefold.solver.core.impl.io.jaxb;
+    exports ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
     exports ai.timefold.solver.core.impl.domain.solution.descriptor;
+    exports ai.timefold.solver.core.impl.io.jaxb;
     exports ai.timefold.solver.core.impl.solver.termination;
 
     // Open configs to JAXB
@@ -231,6 +231,8 @@ module ai.timefold.solver.core {
     opens ai.timefold.solver.core.config.heuristic.selector.move.factory to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.heuristic.selector.move.generic to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.heuristic.selector.move.generic.list to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt
+            to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.heuristic.selector.value to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.localsearch to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.localsearch.decider.acceptor to jakarta.xml.bind, org.glassfish.jaxb.runtime;
@@ -255,4 +257,5 @@ module ai.timefold.solver.core {
     requires org.jspecify;
     requires org.slf4j;
     requires io.quarkus.gizmo2;
+
 }
