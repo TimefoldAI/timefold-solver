@@ -996,8 +996,8 @@ class Resource {
 Starting in version 2.0, Timefold Solver has official support for the https://openjdk.org/projects/jigsaw/spec/[Java Platform Module System (JPMS)].
 
 When using Timefold Solver from code on the modulepath,
-_export_ and _open_ your packages that contain your domain objects, constraints and solver configuration
-_to all modules_ in your `module-info.java` file:
+_export_ the packages that contain your domain objects, constraints and solver configuration, and _open_ them to the Timefold Solver module(s)
+in your `module-info.java` file:
 
 [source,java,options="nowrap"]
 ----
