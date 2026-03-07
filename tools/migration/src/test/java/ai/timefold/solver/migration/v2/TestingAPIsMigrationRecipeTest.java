@@ -2,31 +2,20 @@ package ai.timefold.solver.migration.v2;
 
 import static org.openrewrite.java.Assertions.java;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
+
+import ai.timefold.solver.migration.NoWildCardImportStyle;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.style.ImportLayoutStyle;
-import org.openrewrite.style.NamedStyles;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 import org.openrewrite.test.TypeValidation;
 
 @Execution(ExecutionMode.CONCURRENT)
 class TestingAPIsMigrationRecipeTest implements RewriteTest {
-
-    private static final class NoWildCardImportStyle extends NamedStyles {
-
-        public NoWildCardImportStyle() {
-            super(UUID.randomUUID(), "ImportStyle", "ImportStyle", "ImportStyle", Collections.emptySet(),
-                    List.of(ImportLayoutStyle.builder().classCountToUseStarImport(9999999).importStaticAllOthers()
-                            .importAllOthers().build()));
-        }
-    }
 
     @Override
     public void defaults(RecipeSpec spec) {
