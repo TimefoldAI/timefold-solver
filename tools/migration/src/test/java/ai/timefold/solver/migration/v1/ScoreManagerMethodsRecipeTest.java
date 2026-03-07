@@ -36,7 +36,7 @@ class ScoreManagerMethodsRecipeTest implements RewriteTest {
                                             SolverFactory create(Object parameter);
                                         }""",
                                 """
-                                        package import ai.timefold.solver.core.api.score;
+                                        package ai.timefold.solver.core.api.score;
 
                                         public interface ScoreExplanation {
                                         }"""));

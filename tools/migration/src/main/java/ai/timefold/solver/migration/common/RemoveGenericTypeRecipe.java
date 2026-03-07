@@ -8,7 +8,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 
-public class RemoveGenericTypeRecipe extends Recipe {
+public final class RemoveGenericTypeRecipe extends Recipe {
 
     private final String clazz;
     private final int index;

@@ -29,7 +29,7 @@ public class RemoveGenericTypeFromMethodRecipe extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Removes a specific type from a from a method call.";
+        return "Removes a specific type from a method call.";
     }
 
     @Override

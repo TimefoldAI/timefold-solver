@@ -1,6 +1,6 @@
 type: specs.openrewrite.org/v1beta/recipe
-name: ai.timefold.solver.migration.ToV1
-displayName: Upgrade to the Timefold Solver 1.x
+name: ai.timefold.solver.migration.ToLatestV1
+displayName: Upgrade to the latest Timefold Solver 1.x
 description: 'Replace all your calls to deleted/deprecated types and methods of Timefold Solver with their proper alternatives.'
 recipeList:
   - org.openrewrite.properties.ChangePropertyKey:

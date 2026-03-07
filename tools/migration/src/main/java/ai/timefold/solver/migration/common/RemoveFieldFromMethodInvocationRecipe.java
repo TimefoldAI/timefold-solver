@@ -7,7 +7,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 
-public class RemoveFieldFromMethodInvocationRecipe extends Recipe {
+public final class RemoveFieldFromMethodInvocationRecipe extends Recipe {
 
     private final MethodMatcher methodMatcher;
 

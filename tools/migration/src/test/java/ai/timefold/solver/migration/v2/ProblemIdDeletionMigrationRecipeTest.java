@@ -40,7 +40,7 @@ class ProblemIdDeletionMigrationRecipeTest implements RewriteTest {
     }
 
     @Test
-    void removeConstraintStreamImplType() {
+    void removeProblemIdGenericType() {
         rewriteRun(java(
                 """
                         package timefold;

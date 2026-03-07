@@ -68,11 +68,11 @@ class GeneralTypeChangeMigrationRecipeTest implements RewriteTest {
                                 "package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list; public interface SubListChangeMove {}",
                                 "package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list; public interface SubListSwapMove {}",
                                 "package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list; public interface SubListUnassignMove {}",
-                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic public interface ChangeMove {}",
-                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic public interface PillarChangeMove {}",
-                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic public interface PillarSwapMove {}",
-                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic public interface RuinRecreateMove {}",
-                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic public interface SwapMove {}"));
+                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface ChangeMove {}",
+                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface PillarChangeMove {}",
+                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface PillarSwapMove {}",
+                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface RuinRecreateMove {}",
+                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface SwapMove {}"));
     }
 
     @Test

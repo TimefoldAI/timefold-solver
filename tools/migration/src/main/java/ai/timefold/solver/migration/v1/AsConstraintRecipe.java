@@ -306,7 +306,7 @@ public final class AsConstraintRecipe extends AbstractRecipe {
                 });
     }
 
-    private String mergeExpressions(Expression constraintPackage, Expression constraintName) {
+    private static String mergeExpressions(Expression constraintPackage, Expression constraintName) {
         return constraintPackage.toString() + "." + constraintName.toString();
     }
 

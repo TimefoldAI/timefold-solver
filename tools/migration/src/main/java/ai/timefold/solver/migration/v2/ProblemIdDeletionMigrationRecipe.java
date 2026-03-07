@@ -6,17 +6,16 @@ import ai.timefold.solver.migration.AbstractRecipe;
 import ai.timefold.solver.migration.common.RemoveGenericTypeFromMethodRecipe;
 import ai.timefold.solver.migration.common.RemoveGenericTypeRecipe;
 
-import org.openrewrite.NlsRewrite;
 import org.openrewrite.Recipe;
 
 public class ProblemIdDeletionMigrationRecipe extends AbstractRecipe {
     @Override
-    public @NlsRewrite.DisplayName String getDisplayName() {
+    public String getDisplayName() {
         return "Remove the ProblemId generic type";
     }
 
     @Override
-    public @NlsRewrite.Description String getDescription() {
+    public String getDescription() {
         return "Remove the ProblemId generic type.";
     }
 

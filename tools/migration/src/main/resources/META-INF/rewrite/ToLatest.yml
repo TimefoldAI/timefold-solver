@@ -4,7 +4,7 @@ displayName: Upgrade to the latest Timefold Solver
 description: 'Replace all your calls to deleted/deprecated types and methods of Timefold Solver with their proper alternatives.'
 recipeList:
   # Solver 1.x
-  - ai.timefold.solver.migration.ToV1
+  - ai.timefold.solver.migration.ToLatestV1
   # Solver 2.x
   - ai.timefold.solver.migration.ChangeVersion
   - org.openrewrite.java.DeleteMethodArgument:

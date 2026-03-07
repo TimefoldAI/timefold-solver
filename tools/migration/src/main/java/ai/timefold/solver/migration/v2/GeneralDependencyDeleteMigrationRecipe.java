@@ -4,18 +4,17 @@ import java.util.List;
 
 import ai.timefold.solver.migration.AbstractRecipe;
 
-import org.openrewrite.NlsRewrite;
 import org.openrewrite.Recipe;
 import org.openrewrite.maven.RemoveDependency;
 
 public class GeneralDependencyDeleteMigrationRecipe extends AbstractRecipe {
     @Override
-    public @NlsRewrite.DisplayName String getDisplayName() {
+    public String getDisplayName() {
         return "Remove dependencies that no longer exist";
     }
 
     @Override
-    public @NlsRewrite.Description String getDescription() {
+    public String getDescription() {
         return "Remove dependencies that no longer exist.";
     }
 

@@ -125,19 +125,13 @@ public final class ScoreGettersRecipe extends AbstractRecipe {
         public final String methodName;
 
         public MatcherMeta(String select, String method) {
-            String className;
-            switch (select) {
-                case "Score":
-                case "IBendableScore":
-                    className = "ai.timefold.solver.core.api.score." + select;
-                    break;
-                default:
-                    className = "ai.timefold.solver.core.api.score.buildin." +
-                            select.toLowerCase().replace("score", "") +
-                            "." +
-                            select;
-            }
-            this.scoreClassFqn = className;
+            this.scoreClassFqn = switch (select) {
+                case "Score", "IBendableScore" -> "ai.timefold.solver.core.api.score." + select;
+                default -> "ai.timefold.solver.core.api.score.buildin." +
+                        select.toLowerCase().replace("score", "") +
+                        "." +
+                        select;
+            };
             this.methodMatcher = new MethodMatcher(scoreClassFqn + " " + method);
             this.methodName = method;
         }

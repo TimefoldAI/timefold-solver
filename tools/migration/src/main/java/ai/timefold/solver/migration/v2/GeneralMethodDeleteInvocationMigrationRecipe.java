@@ -5,19 +5,18 @@ import java.util.List;
 import ai.timefold.solver.migration.AbstractRecipe;
 import ai.timefold.solver.migration.common.RemoveFieldFromMethodInvocationRecipe;
 
-import org.openrewrite.NlsRewrite;
 import org.openrewrite.Recipe;
 import org.openrewrite.java.RemoveMethodInvocations;
 
 public class GeneralMethodDeleteInvocationMigrationRecipe extends AbstractRecipe {
 
     @Override
-    public @NlsRewrite.DisplayName String getDisplayName() {
+    public String getDisplayName() {
         return "Remove any calls to methods that no longer exist";
     }
 
     @Override
-    public @NlsRewrite.Description String getDescription() {
+    public String getDescription() {
         return "Remove calls to methods that no longer exist.";
     }
 

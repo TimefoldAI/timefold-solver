@@ -25,12 +25,12 @@ public final class CustomChangeMethodRecipe extends AbstractRecipe {
 
     @Override
     public String getDisplayName() {
-        return "SolverManager: use builder API";
+        return "Custom change method recipe for %s.%s".formatted(matcherMeta.clazz, matcherMeta.methodName);
     }
 
     @Override
     public String getDescription() {
-        return "Use `solveBuilder()` instead of deprecated solve methods on `SolveManager`.";
+        return getDisplayName() + ".";
     }
 
     @Override

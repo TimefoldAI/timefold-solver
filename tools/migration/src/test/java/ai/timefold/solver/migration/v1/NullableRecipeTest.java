@@ -100,10 +100,6 @@ class NullableRecipeTest implements RewriteTest {
                 wrapStream("return f.forEachIncludingUnassigned(String.class)")));
     }
 
-    // ************************************************************************
-    // Uni
-    // ************************************************************************
-
     @Test
     void uniIfExists() {
         rewriteRun(java(
@@ -156,10 +152,6 @@ class NullableRecipeTest implements RewriteTest {
                         """)));
     }
 
-    // ************************************************************************
-    // Bi
-    // ************************************************************************
-
     @Test
     void biIfExists() {
         rewriteRun(java(
@@ -189,10 +181,6 @@ class NullableRecipeTest implements RewriteTest {
                             .ifNotExistsIncludingUnassigned(String.class);
                         """)));
     }
-
-    // ************************************************************************
-    // Bi
-    // ************************************************************************
 
     @Test
     void triIfExists() {
@@ -227,10 +215,6 @@ class NullableRecipeTest implements RewriteTest {
                             .ifNotExistsIncludingUnassigned(String.class);
                         """)));
     }
-
-    // ************************************************************************
-    // Quad
-    // ************************************************************************
 
     @Test
     void quadIfExists() {
@@ -269,10 +253,6 @@ class NullableRecipeTest implements RewriteTest {
                             .ifNotExistsIncludingUnassigned(String.class);
                         """)));
     }
-
-    // ************************************************************************
-    // Helper methods
-    // ************************************************************************
 
     private static String wrapVariable(String content) {
         return """
