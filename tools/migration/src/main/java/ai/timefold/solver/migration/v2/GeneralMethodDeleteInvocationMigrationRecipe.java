@@ -34,6 +34,39 @@ public class GeneralMethodDeleteInvocationMigrationRecipe extends AbstractRecipe
                         "ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig withConstraintStreamImplType(..)"),
                 new RemoveMethodInvocations(
                         "ai.timefold.solver.test.api.score.stream.ConstraintVerifier withConstraintStreamImplType(..)"),
+                // Tabu
+                new RemoveFieldFromMethodInvocationRecipe(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig getUndoMoveTabuSize()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig getUndoMoveTabuSize()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig setUndoMoveTabuSize(...)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig withUndoMoveTabuSize(...)"),
+                new RemoveFieldFromMethodInvocationRecipe(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig getFadingUndoMoveTabuSize()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig getFadingUndoMoveTabuSize()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig setFadingUndoMoveTabuSize(...)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig withFadingUndoMoveTabuSize(...)"),
+                new RemoveFieldFromMethodInvocationRecipe(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig getValueTabuRatio()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig getValueTabuRatio()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig setValueTabuRatio(...)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig withValueTabuRatio(...)"),
+                new RemoveFieldFromMethodInvocationRecipe(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig getFadingValueTabuRatio()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig getFadingValueTabuRatio()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig setFadingValueTabuRatio(...)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.accepter.LocalSearchAcceptorConfig withFadingValueTabuRatio(...)"),
                 // Drools support
                 new RemoveFieldFromMethodInvocationRecipe(
                         "ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig getScoreDrlList()"),
