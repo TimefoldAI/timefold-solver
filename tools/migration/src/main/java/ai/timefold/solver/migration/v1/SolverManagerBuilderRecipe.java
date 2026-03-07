@@ -16,7 +16,7 @@ public final class SolverManagerBuilderRecipe extends AbstractRecipe {
 
     @Override
     public String getDescription() {
-        return "Use `solveBuilder()` instead of deprecated solve methods on `SolveManager`.";
+        return "Use `solveBuilder()` instead of deprecated solve methods on `SolverManager`.";
     }
 
     @Override

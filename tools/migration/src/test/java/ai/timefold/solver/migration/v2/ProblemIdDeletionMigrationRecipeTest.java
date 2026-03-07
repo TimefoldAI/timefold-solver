@@ -56,8 +56,8 @@ class ProblemIdDeletionMigrationRecipeTest implements RewriteTest {
                                 public void test() {
                                     SolverManager<Solution_, ProblemId_> result1 = solverManager.<Solution_, ProblemId_>create(null);
                                     SolverJobBuilder<Solution_, ProblemId_> result2 = solverManager.<Solution_, ProblemId_>solveBuilder();
-                                    SolverJob<Solution_, ProblemId_> result1 = solverManager.<Solution_, ProblemId_>solve(null, null);
-                                    SolverJob<Solution_, ProblemId_> result1 = solverManager.<Solution_, ProblemId_>solveAndListen(null, null);
+                                    SolverJob<Solution_, ProblemId_> result3 = solverManager.<Solution_, ProblemId_>solve(null, null);
+                                    SolverJob<Solution_, ProblemId_> result4 = solverManager.<Solution_, ProblemId_>solveAndListen(null, null);
                                 }
                         }""",
                 """
@@ -74,8 +74,8 @@ class ProblemIdDeletionMigrationRecipeTest implements RewriteTest {
                                 public void test() {
                                     SolverManager<Solution_> result1 = solverManager.<Solution_>create(null);
                                     SolverJobBuilder<Solution_> result2 = solverManager.<Solution_>solveBuilder();
-                                    SolverJob<Solution_> result1 = solverManager.<Solution_>solve(null, null);
-                                    SolverJob<Solution_> result1 = solverManager.<Solution_>solveAndListen(null, null);
+                                    SolverJob<Solution_> result3 = solverManager.<Solution_>solve(null, null);
+                                    SolverJob<Solution_> result4 = solverManager.<Solution_>solveAndListen(null, null);
                                 }
                         }"""));
     }
