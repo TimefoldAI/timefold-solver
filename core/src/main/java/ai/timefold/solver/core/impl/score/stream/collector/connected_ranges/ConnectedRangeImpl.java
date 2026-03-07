@@ -1,9 +1,14 @@
 package ai.timefold.solver.core.impl.score.stream.collector.connected_ranges;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.ToIntBiFunction;
+import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRange;
 
@@ -132,6 +137,43 @@ final class ConnectedRangeImpl<Range_, Point_ extends Comparable<Point_>, Differ
             recalculateMinimumAndMaximumOverlap();
         }
         return maximumOverlap;
+    }
+
+    @Override
+    public int getMaximumValue(ToIntFunction<? super Range_> functionSupplier) {
+        var current = startSplitPoint;
+        var activeRangeCount = 0;
+        var maxValue = 0;
+        var activeValue = 0;
+        do {
+            activeRangeCount += current.rangesStartingAtSplitPointSet.size() - current.rangesEndingAtSplitPointSet.size();
+            activeValue += current.rangesStartingAtSplitPointSet.stream().map(Range::getValue).mapToInt(functionSupplier).sum();
+            activeValue -= current.rangesEndingAtSplitPointSet.stream().map(Range::getValue).mapToInt(functionSupplier).sum();
+            maxValue = Math.max(maxValue, activeValue);
+            current = splitPointSet.higher(current);
+        } while (activeRangeCount > 0 && current != null);
+        return maxValue;
+    }
+
+    @Override
+    public int getMaximumValueForDistinctRanges(ToIntBiFunction<Collection<? super Range_>, Difference_> functionSupplier) {
+        var current = startSplitPoint;
+        var activeValue = 0;
+        var activeRanges = new ArrayList<>();
+        var next = splitPointSet.higher(current);
+        while (next != null) {
+            activeRanges.addAll(current.rangesStartingAtSplitPointSet);
+            activeRanges.removeAll(current.rangesEndingAtSplitPointSet);
+            activeValue = Math.max(
+                    functionSupplier.applyAsInt(
+                            Collections.unmodifiableList(activeRanges),
+                            differenceFunction.apply(current.splitPoint, next.splitPoint)),
+                    activeValue);
+            current = next;
+            next = splitPointSet.higher(current);
+        }
+        ;
+        return activeValue;
     }
 
     @Override

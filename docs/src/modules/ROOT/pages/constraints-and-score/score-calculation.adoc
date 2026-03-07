@@ -1066,6 +1066,37 @@ Java::
 ----
 ====
 
+In the event that data about distinct ranges of overlapping values is needed beyond the total count, `ConnectedRange` provides methods to calculate a max sum
+of an integer function over each distinct arrangement of overlapping entities:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+.groupBy(Job::getEquipment,
+    ConstraintCollectors.toConnectedRanges(
+                          Job::getStart,
+                          Job::getEnd
+    )
+).expand(
+    connectedRangeChain -> connectedRangeChain.getMaximumValueForDistinctRanges(
+        (activeJobList, duration) -> {
+            var required = activeJobList.stream().mapToInt(Job::getCapacityRequired).sum()
+            var capacity = equipment.getCapacity() - (activeJobList.size() - 1);  // Lose a little capacity per additional job
+            return Math.max(0, capacity - required);
+        }
+    )
+)
+.filter((connectedRangeChain, amountOverCapacity) -> amountOverCapacity > 0)
+.penalize((connectedRangeChain, amountOverCapacity) -> amountOverCapacity)
+)
+)
+----
+====
+
+
 [#collectorsLoadBalance]
 ==== Load balancing collectors
 
