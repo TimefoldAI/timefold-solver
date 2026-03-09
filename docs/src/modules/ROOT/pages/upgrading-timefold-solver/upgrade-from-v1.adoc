@@ -887,7 +887,6 @@ removed (`getConstraintStreamImplType()`, `setConstraintStreamImplType()`, `with
 ==== Assorted other changes
 
 * `@PlanningId` moved from `ai.timefold.solver.core.api.domain.lookup` to `ai.timefold.solver.core.api.domain.common`.
-* The `Move` interface moved to `ai.timefold.solver.core.preview.api.move.Move`, and its methods have changed.
 * `ScoreDirector` moved from `ai.timefold.solver.core.api.score.director` to `ai.timefold.solver.core.impl.score.director`.
 * `SingleConstraintAssertion.penalizesBy(int, String)` and `rewardsWith(int, String)` (and their `long`/`BigDecimal` variants) have their arguments swapped to `penalizesBy(String, int)` — message comes first now.
 * `PlannerBenchmark.benchmarkAndShowReportInBrowser()` renamed to `benchmark()`.
