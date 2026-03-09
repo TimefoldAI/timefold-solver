@@ -332,8 +332,8 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         return score;
     }
 
-    public <Result_> Result_ executeTemporary(Move<Solution_> move,
-            TemporaryMovePostprocessor<Solution_, Score_, Result_> postprocessor) {
+    public @Nullable <Result_> Result_ executeTemporary(Move<Solution_> move,
+            TemporaryMovePostprocessor<Solution_, Score_, @Nullable Result_> postprocessor) {
         try (var ephemeralMoveDirector = ephemeral()) {
             ephemeralMoveDirector.execute(move);
             var score = backingScoreDirector.calculateScore();
@@ -341,7 +341,8 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         }
     }
 
-    public <Result_> Result_ executeTemporary(Move<Solution_> move, Function<Solution_, Result_> postprocessor,
+    public @Nullable <Result_> Result_ executeTemporary(Move<Solution_> move,
+            Function<Solution_, @Nullable Result_> postprocessor,
             boolean guaranteeFreshScore) {
         var ephemeralMoveDirector = ephemeral();
         ephemeralMoveDirector.execute(move, true);
@@ -451,7 +452,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      */
     @FunctionalInterface
     public interface TemporaryMovePostprocessor<Solution_, Score_ extends Score<Score_>, Result_>
-            extends BiFunction<InnerScore<Score_>, Move<Solution_>, Result_> {
+            extends BiFunction<InnerScore<Score_>, Move<Solution_>, @Nullable Result_> {
 
     }
 

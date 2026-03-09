@@ -56,29 +56,31 @@ final class DefaultPhaseCommandContext<Solution_> implements PhaseCommandContext
     }
 
     @Override
-    public <Result_> Result_ executeTemporarily(Move<Solution_> move,
-            Function<Solution_, Result_> temporarySolutionConsumer) {
+    public @Nullable <Result_> Result_ executeTemporarily(Move<Solution_> move,
+            Function<Solution_, @Nullable Result_> temporarySolutionConsumer) {
         return moveDirector.executeTemporary(move, temporarySolutionConsumer, false);
     }
 
     @Override
     public <Score_ extends Score<Score_>> Score_ executeTemporarily(Move<Solution_> move) {
-        return executeTemporarily(move, solution -> moveDirector.getScoreDirector()
+        Score_ score = executeTemporarily(move, solution -> moveDirector.getScoreDirector()
                 .getSolutionDescriptor()
                 .getScore(solution));
+        return Objects.requireNonNull(score, () -> "The move (%s) failed to calculate a score.".formatted(move));
     }
 
     @Override
-    public <Result_> Result_ executeTemporarilyAndCalculateScore(Move<Solution_> move,
-            Function<Solution_, Result_> temporarySolutionConsumer) {
+    public @Nullable <Result_> Result_ executeTemporarilyAndCalculateScore(Move<Solution_> move,
+            Function<Solution_, @Nullable Result_> temporarySolutionConsumer) {
         return moveDirector.executeTemporary(move, temporarySolutionConsumer, true);
     }
 
     @Override
     public <Score_ extends Score<Score_>> Score_ executeTemporarilyAndCalculateScore(Move<Solution_> move) {
-        return executeTemporarilyAndCalculateScore(move, solution -> moveDirector.getScoreDirector()
+        Score_ score = executeTemporarilyAndCalculateScore(move, solution -> moveDirector.getScoreDirector()
                 .getSolutionDescriptor()
                 .getScore(solution));
+        return Objects.requireNonNull(score, () -> "The move (%s) failed to calculate a score.".formatted(move));
     }
 
 }

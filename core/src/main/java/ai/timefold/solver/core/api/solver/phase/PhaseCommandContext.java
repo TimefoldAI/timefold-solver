@@ -73,10 +73,10 @@ public interface PhaseCommandContext<Solution_>
      * @param move the move to execute temporarily
      * @param temporarySolutionConsumer the consumer to execute with the temporarily modified solution;
      *        this solution must not be modified any further.
-     * @return the result of the consumer; may be null if the consumer returns null
+     * @return the result of the consumer
      */
-    <Result_> Result_ executeTemporarily(Move<Solution_> move,
-            Function<Solution_, Result_> temporarySolutionConsumer);
+    <Result_> @Nullable Result_ executeTemporarily(Move<Solution_> move,
+            Function<Solution_, @Nullable Result_> temporarySolutionConsumer);
 
     /**
      * Executes the given move temporarily and returns the score of the temporarily modified solution.
@@ -98,8 +98,8 @@ public interface PhaseCommandContext<Solution_>
      * As defined by {@link #executeTemporarily(Move, Function)},
      * with the guarantee of a fresh score at the end of the method's invocation.
      */
-    <Result_> Result_ executeTemporarilyAndCalculateScore(Move<Solution_> move,
-            Function<Solution_, Result_> temporarySolutionConsumer);
+    <Result_> @Nullable Result_ executeTemporarilyAndCalculateScore(Move<Solution_> move,
+            Function<Solution_, @Nullable Result_> temporarySolutionConsumer);
 
     @Override
     <T> @Nullable T lookUpWorkingObject(@Nullable T problemFactOrPlanningEntity);
