@@ -121,6 +121,21 @@ We invite you to read the xref:upgrading-timefold-solver/migration-guides/variab
 
 '''
 
+.icon:info-triangle[role=red] `Move` interface refactored
+[%collapsible%open]
+====
+Together with the introduction of the xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API],
+the `Move` interface has been significantly refactored.
+Please refer to xref:optimization-algorithms/neighborhoods.adoc#neighborhoodsMoveAnatomy[move anatomy] for details on the new interface.
+
+We realize this change will affect many users, and there is no clear migration path.
+The old Move API was never made public, even though it was the only way to implement custom moves.
+With Neighborhoods, this changes, as we are now providing an official and much simplified way of implementing custom moves,
+which we believe is well worth the breaking change.
+====
+
+'''
+
 .icon:info-circle[role=yellow] Full modularization under JPMS
 [%collapsible%open]
 ====
@@ -413,6 +428,23 @@ The long variants (`HardSoftLongScore`, `HardMediumSoftLongScore`, `SimpleLongSc
 
 '''
 
+.icon:info-circle[role=yellow] `Score` can no longer be uninitialized
+[%collapsible%open]
+====
+All score types lost their ability to be uninitialized; that is now considered an implementation detail
+and users can no longer represent this situation.
+
+The following methods were removed from all score types:
+
+- `ofUninitialized(...)` factory methods.
+- `isSolutionInitialized()`
+- `initScore()`
+- `getInitScore()`
+- `withInitScore(int)`
+====
+
+'''
+
 .icon:info-circle[role=yellow] `BendableScore` array type changed from `int[]` to `long[]`
 [%collapsible%open]
 ====
@@ -556,12 +588,27 @@ instead of the now removed `ThrottlingBestSolutionConsumer`.
 
 '''
 
+.icon:info-circle[role=yellow] `SubList` selector configuration moved
+[%collapsible%open]
+====
+Previously, sublist selector configuration was specified directly on `SubListChangeMoveSelectorConfig` and `SubListSwapMoveSelectorConfig` using the following methods / XML elements:
+
+- `minimumSubListSize` / `<minimumSubListSize>` (plus getters and setters)
+- `maximumSubListSize` / `<maximumSubListSize>` (plus getters and setters)
+
+The same can now be achieved by using a `SubListSelectorConfig`
+as the `subListSelectorConfig` property of those move selector configs.
+====
+
+'''
+
 .icon:info-circle[role=yellow] `NoChangePhase` removed from XML configuration
 [%collapsible%open]
 ====
 The `<noChangePhase>` element has been removed from the solver XML configuration,
-and the phase itself has been removed from the codebase.
-If you used it as a placeholder phase, remove it from your configuration.
+and the phase itself has been removed from the codebase,
+including `EventProducerId.noChange()`.
+If you used this phase as a placeholder, remove it from your configuration.
 ====
 
 '''
@@ -601,6 +648,28 @@ public Iterator<LocalDate> createRandomIterator(RandomGenerator workingRandom) {
     ...
 }
 ----
+====
+
+'''
+
+.icon:eye[] `Termination` can no longer be customized
+[%collapsible%open]
+====
+Custom `Termination` implementations are no longer supported.
+In practice, this hasn't worked for a very long time.
+All remnants of this functionality have now been removed,
+including the `terminationClass` field in the solver configuration.
+====
+
+'''
+
+.icon:eye[] `Score` can no longer be customized
+[%collapsible%open]
+====
+Custom `Score` implementations are no longer supported.
+In practice, this hasn't worked for a very long time.
+All remnants of this functionality have now been removed,
+including `ScoreDefinition` and `ScoreDefinitionType`.
 ====
 
 '''
@@ -687,11 +756,12 @@ Applies to all built-in score types and `IBendableScore`.
 
 ==== Constraint Identification Refactored
 
+* `ConstraintFactory.getDefaultConstraintPackage()` removed.
+* `Constraint.getConstraintPackage()` removed.
+* `ConstraintRef.of(packageName, constraintName)` → `ConstraintRef.of(constraintName)` (package argument removed).
 * `Constraint.getConstraintId()` replaced by `getConstraintRef().constraintId()`.
 * `Constraint.getConstraintName()` replaced by `getConstraintRef().constraintName()`.
-* `Constraint.getConstraintPackage()` replaced by `getConstraintRef().packageName()`.
 * Same renames apply to `ConstraintMatch` and `ConstraintMatchTotal`.
-* `ConstraintRef.of(packageName, constraintName)` → `ConstraintRef.of(constraintName)` (package argument removed).
 
 ==== Constraint Stream Terminal Methods Refactored
 

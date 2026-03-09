@@ -5,5 +5,5 @@
 :icons: font
 
 include::overview.adoc[leveloffset=+1]
-include::upgrade-from-1.adoc[leveloffset=+1]
+include::upgrade-from-v1.adoc[leveloffset=+1]
 include::backwards-compatibility.adoc[leveloffset=+1]

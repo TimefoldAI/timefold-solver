@@ -30,6 +30,12 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.stream;
                                         public interface ConstraintFactory {
+                                            String getDefaultConstraintPackage();
+                                        }""",
+                                """
+                                        package ai.timefold.solver.core.api.score.stream;
+                                        public interface ConstraintProvider {
+                                            Constraint[] defineConstraints(ConstraintFactory constraintFactory);
                                         }""",
                                 """
                                         package ai.timefold.solver.core.config.score.director;
@@ -69,6 +75,40 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
                                             String getConstraintId();
                                             ConstraintFactory getConstraintFactory();
                                         }"""));
+    }
+
+    @Test
+    void removeDefaultConstraintPackage() {
+        rewriteRun(java(
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.stream.Constraint;
+                        import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+                        import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+
+                        public class MyConstraintProvider implements ConstraintProvider {
+
+                                public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+                                    var defaultPackage = constraintFactory.getDefaultConstraintPackage();
+                                    return new Constraint[0];
+                                }
+
+                        }""",
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.stream.Constraint;
+                        import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+                        import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+
+                        public class MyConstraintProvider implements ConstraintProvider {
+
+                                public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+                                    return new Constraint[0];
+                                }
+
+                        }"""));
     }
 
     @Test
