@@ -349,7 +349,7 @@ The `lookUpStrategyType` attribute has been removed from `@PlanningSolution`.
 Remove `lookUpStrategyType` from your `@PlanningSolution` annotations
 and ensure that your planning entities and problem facts have a `@PlanningId`-annotated field.
 
-LookupStrategyType` was used in xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
+`LookupStrategyType` was used in xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
 to specify how the solver should match entities and facts between parent and child score directors.
 The default value was `PLANNING_ID_OR_NONE`, which meant
 that the solver would look up entities by their xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[planning ID].

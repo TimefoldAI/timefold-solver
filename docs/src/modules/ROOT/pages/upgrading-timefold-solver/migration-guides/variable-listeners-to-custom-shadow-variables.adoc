@@ -360,7 +360,7 @@ After in `Visit.java`.  `ArrivalTimeUpdatingVariableListener.java` is removed.
 
 [source,java]
 ----
-// This example keeps the "travel time matrix" on the solution
+import java.time.LocalDateTime;// This example keeps the "travel time matrix" on the solution
 public class Visit {
     private Location location;
 
@@ -376,10 +376,9 @@ public class Visit {
             return null;
         }
         // Global travel time matrix stored on the solution
-        long travelTime = solution.getTravelTime(previous.getLocation(), location);
-
-        Long previousDeparture = previous.arrivalTime + solution.getDefaultDuration();
-        return previousDeparture + travelTime;
+        var travelTime = solution.getTravelTime(previous.getLocation(), location);
+        var previousDeparture = previous.arrivalTime.plus(solution.getDefaultDuration());
+        return previousDeparture.plus(travelTime);
     }
 
     // ...
