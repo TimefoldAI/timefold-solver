@@ -82,7 +82,7 @@ If you are using an older version of Java, you will need to upgrade your tooling
 
 '''
 
-.icon:info-triangle[role=red] Spring Boot 4 and Jackson 3
+.icon:exclamation-triangle[role=red] Spring Boot 4 and Jackson 3
 [%collapsible%open]
 ====
 Spring Boot integration has been upgraded to Spring Boot 4.
@@ -123,7 +123,7 @@ We invite you to read the xref:upgrading-timefold-solver/migration-guides/variab
 
 '''
 
-.icon:info-triangle[role=red] `Move` interface refactored
+.icon:exclamation-triangle[role=red] `Move` interface refactored
 [%collapsible%open]
 ====
 Together with the introduction of the xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API],
