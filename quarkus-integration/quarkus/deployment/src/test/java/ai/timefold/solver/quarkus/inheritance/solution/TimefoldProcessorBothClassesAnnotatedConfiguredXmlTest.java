@@ -32,8 +32,8 @@ class TimefoldProcessorBothClassesAnnotatedConfiguredXmlTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataBothAnnotatedExtendedConstraintProvider.class,
                             TestdataBothAnnotatedConstraintProvider.class, TestdataBothAnnotatedNoRawListExtendedSolution.class,
-                            TestdataBothAnnotatedSolution.class, TestdataBothAnnotatedChildEntity.class, TestdataEntity.class,
-                            TestdataObject.class)
+                            TestdataBothAnnotatedSolution.class, TestdataBothAnnotatedChildEntity.class,
+                            TestdataEntity.class, TestdataObject.class)
                     .addAsResource("ai/timefold/solver/quarkus/inheritance/bothClassAnnotatedConfig.xml"));
 
     @Inject
