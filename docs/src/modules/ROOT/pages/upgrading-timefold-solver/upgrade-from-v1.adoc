@@ -1,3 +1,5 @@
+:page-aliases: upgrading-timefold-solver/upgrade-to-latest-version.adoc
+
 [#upgradeFrom1to2]
 = Upgrade from Timefold Solver 1.x to 2.0.0
 :sectnums:
@@ -15,8 +17,8 @@ Throughout this document, we assume that you are upgrading from the latest avail
 Make sure to first upgrade to the latest 1.x version and only then follow this recipe to upgrade to 2.0.0.
 
 Please refer to
-xref:https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-to-latest-version[upgrade recipe for Timefold Solver 1.x] or even
-xref:https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-from-optaplanner[upgrade recipe for OptaPlanner] if you go way back.
+link:https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-to-latest-version[upgrade recipe for Timefold Solver 1.x] or even
+link:https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-from-optaplanner[upgrade recipe for OptaPlanner] if you go way back.
 
 [#automaticUpgradeTo200]
 == Automatic upgrade to Timefold Solver 2.0.0
@@ -89,9 +91,9 @@ Spring Boot integration has been upgraded to Spring Boot 4.
 If you use Timefold Solver with Spring Boot, upgrade Spring Boot to 4.x.
 You'll be happy to know that both projects have provided their own upgrade recipes to help with this transition:
 
-- xref:https://github.com/FasterXML/jackson/blob/main/jackson3/MIGRATING_TO_JACKSON_3.md[Migrating to Jackson 3]
+- link:https://github.com/FasterXML/jackson/blob/main/jackson3/MIGRATING_TO_JACKSON_3.md[Migrating to Jackson 3]
 includes a link to an automated OpenRewrite recipe for the Jackson upgrade.
-- xref:https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Migration-Guide[Spring Boot 4.0 Migration Guide].
+- link:https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Migration-Guide[Spring Boot 4.0 Migration Guide].
 
 Users of Quarkus are not affected.
 They continue to use the `quarkus-jackson` integration module, which remains on Jackson 2.
