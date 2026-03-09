@@ -7,7 +7,6 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedBaseEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedConstraintProvider;
@@ -26,13 +25,13 @@ class TimefoldProcessorOnlyBaseAnnotatedTest {
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
+            .overrideConfigKey("quarkus.timefold.solver.domain-access-type", "REFLECTION")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataOnlyBaseAnnotatedConstraintProvider.class,
                             TestdataOnlyBaseAnnotatedExtendedSolution.class,
                             TestdataOnlyBaseAnnotatedSolution.class,
                             TestdataOnlyBaseAnnotatedChildEntity.class,
-                            TestdataOnlyBaseAnnotatedBaseEntity.class,
-                            TestdataObject.class));
+                            TestdataOnlyBaseAnnotatedBaseEntity.class));
 
     @Inject
     SolverFactory<TestdataOnlyBaseAnnotatedExtendedSolution> solverFactory;
