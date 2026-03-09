@@ -2,6 +2,7 @@
 
 [#upgradeFrom1to2]
 = Upgrade from Timefold Solver 1.x to 2.0.0
+:doctype: book
 :sectnums:
 :icons: font
 
