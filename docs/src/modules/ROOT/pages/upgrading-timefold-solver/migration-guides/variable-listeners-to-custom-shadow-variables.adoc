@@ -370,7 +370,7 @@ public class Visit {
     @ShadowVariable(supplierName = "computeArrivalTime")
     private LocalDateTime arrivalTime;
 
-    @ShadowSources({"vehicle", "previous.arrivalTime"})
+    @ShadowSources({"previous.arrivalTime"})
     public LocalDateTime computeArrivalTime(RoutingSolution solution) {
         if (previous == null) {
             return null;

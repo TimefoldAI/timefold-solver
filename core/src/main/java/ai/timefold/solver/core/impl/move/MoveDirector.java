@@ -341,8 +341,8 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         }
     }
 
-    public <Result_> @Nullable Result_ executeTemporary(Move<Solution_> move,
-            Function<Solution_, @Nullable Result_> postprocessor, boolean guaranteeFreshScore) {
+    public <Result_> Result_ executeTemporary(Move<Solution_> move, Function<Solution_, Result_> postprocessor,
+            boolean guaranteeFreshScore) {
         var ephemeralMoveDirector = ephemeral();
         ephemeralMoveDirector.execute(move, true);
         var result = postprocessor.apply(backingScoreDirector.getWorkingSolution());
