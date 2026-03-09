@@ -2,22 +2,22 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="800"
    height="600"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
    sodipodi:docname="realTimePlanningConcurrencySequenceDiagram.svg"
    inkscape:export-filename="realTimePlanningConcurrencySequenceDiagram.png"
    inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96">
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4">
     <marker
@@ -864,20 +864,20 @@
      borderopacity="1.0"
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.6666667"
-     inkscape:cx="392.03427"
-     inkscape:cy="327.83892"
+     inkscape:zoom="0.96864507"
+     inkscape:cx="383.52541"
+     inkscape:cy="274.61039"
      inkscape:document-units="px"
-     inkscape:current-layer="layer3"
+     inkscape:current-layer="layer4"
      showgrid="true"
      width="800px"
      borderlayer="true"
      gridtolerance="10"
-     inkscape:window-width="1920"
-     inkscape:window-height="1136"
-     inkscape:window-x="1920"
-     inkscape:window-y="27"
-     inkscape:window-maximized="1"
+     inkscape:window-width="1496"
+     inkscape:window-height="905"
+     inkscape:window-x="7"
+     inkscape:window-y="41"
+     inkscape:window-maximized="0"
      inkscape:snap-grids="true"
      inkscape:snap-bbox="true"
      showguides="true"
@@ -887,7 +887,10 @@
      inkscape:snap-nodes="true"
      inkscape:snap-others="true"
      inkscape:snap-global="false"
-     inkscape:snap-smooth-nodes="true">
+     inkscape:snap-smooth-nodes="true"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
     <inkscape:grid
        empspacing="10"
        visible="true"
@@ -899,7 +902,8 @@
        type="xygrid"
        id="grid2845"
        originx="0"
-       originy="0" />
+       originy="0"
+       units="px" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -934,7 +938,8 @@
            y="220.0002"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;text-anchor:middle" /></flowRegion><flowPara
          id="flowPara4621"
-         style="font-size:35px;line-height:1.25">Real-time planning concurrency</flowPara></flowRoot>    <g
+         style="font-size:35px;line-height:1.25">Real-time planning concurrency</flowPara></flowRoot>
+    <g
        id="g3709"
        transform="translate(0,19.999997)" />
     <flowRoot
@@ -950,7 +955,8 @@
            y="-53.932568"
            style="font-family:sans-serif" /></flowRegion><flowPara
          id="flowPara4163"
-         style="font-size:40px;line-height:1.25;font-family:sans-serif"> </flowPara></flowRoot>    <flowRoot
+         style="font-size:40px;line-height:1.25;font-family:sans-serif"> </flowPara></flowRoot>
+    <flowRoot
        transform="translate(-20.000004,372.36182)"
        xml:space="preserve"
        id="flowRoot4302-6"
@@ -963,7 +969,8 @@
            y="150.00014"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;text-anchor:middle" /></flowRegion><flowPara
          id="flowPara3108"
-         style="font-size:15px;line-height:1.25">When and how is the solution cloned to avoid race conditions?</flowPara></flowRoot>    <g
+         style="font-size:15px;line-height:1.25">When and how is the solution cloned to avoid race conditions?</flowPara></flowRoot>
+    <g
        transform="translate(-130,261.94875)"
        id="g9699" />
     <g
@@ -981,7 +988,8 @@
            x="-60"
            y="610" /></flowRegion><flowPara
          id="flowPara5324"
-         style="font-size:15px;line-height:1.25"> </flowPara></flowRoot>    <rect
+         style="font-size:15px;line-height:1.25"> </flowPara></flowRoot>
+    <rect
        style="display:inline;opacity:0.5;fill:#fce94f;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect4843"
        width="460"
@@ -1038,7 +1046,8 @@
            y="378.97104"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1" /></flowRegion><flowPara
          id="flowPara4952"
-         style="font-size:20px;line-height:1.25">Servlet thread (REST/UI)</flowPara></flowRoot>    <flowRoot
+         style="font-size:20px;line-height:1.25">Servlet thread (REST/UI)</flowPara></flowRoot>
+    <flowRoot
        transform="translate(-3.230469,173.39115)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot5273"
@@ -1051,7 +1060,8 @@
            width="159.50002"
            id="rect5277" /></flowRegion><flowPara
          id="flowPara5279"
-         style="font-size:20px;line-height:1.25">Solver thread</flowPara></flowRoot>    <flowRoot
+         style="font-size:20px;line-height:1.25">Solver thread</flowPara></flowRoot>
+    <flowRoot
        transform="translate(-328.84766,205.85856)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#ce5c00;fill-opacity:1;stroke:none"
        id="flowRoot6455"
@@ -1064,7 +1074,8 @@
            width="251.00012"
            id="rect6459" /></flowRegion><flowPara
          id="flowPara6461"
-         style="font-size:20px;line-height:1.25">UI solution</flowPara></flowRoot>    <flowRoot
+         style="font-size:20px;line-height:1.25">UI solution</flowPara></flowRoot>
+    <flowRoot
        xml:space="preserve"
        id="flowRoot6467"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#ce5c00;fill-opacity:1;stroke:none"
@@ -1077,7 +1088,8 @@
            y="378.97104"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;text-anchor:middle;fill:#ce5c00;fill-opacity:1" /></flowRegion><flowPara
          id="flowPara6473"
-         style="font-size:20px;line-height:1.25">best solution</flowPara></flowRoot>  </g>
+         style="font-size:20px;line-height:1.25">best solution</flowPara></flowRoot>
+  </g>
   <g
      inkscape:groupmode="layer"
      id="layer2"
@@ -1119,7 +1131,8 @@
            y="33.777069"
            style="font-size:15px" /></flowRegion><flowPara
          id="flowPara4852"
-         style="font-size:15px;line-height:1.25">List&lt;Computer&gt;</flowPara></flowRoot>    <rect
+         style="font-size:15px;line-height:1.25">List&lt;Computer&gt;</flowPara></flowRoot>
+    <rect
        style="fill:#729fcf;stroke:#000000;stroke-width:0.99999982;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect4866"
        width="319"
@@ -1150,7 +1163,8 @@
            y="33.777069"
            style="font-size:15px" /></flowRegion><flowPara
          id="flowPara4874"
-         style="font-size:15px;line-height:1.25">List&lt;Process&gt;</flowPara></flowRoot>    <flowRoot
+         style="font-size:15px;line-height:1.25">List&lt;Process&gt;</flowPara></flowRoot>
+    <flowRoot
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot4878"
        xml:space="preserve"
@@ -1163,7 +1177,8 @@
            width="179.99998"
            id="rect4882" /></flowRegion><flowPara
          id="flowPara4884"
-         style="font-size:15px;line-height:1.25">CloudBalance</flowPara></flowRoot>    <g
+         style="font-size:15px;line-height:1.25">CloudBalance</flowPara></flowRoot>
+    <g
        transform="matrix(0.47474749,0,0,0.47464394,200.05406,121.84605)"
        id="g4886">
       <path
@@ -1216,7 +1231,8 @@
            width="179.99998"
            id="rect4904" /></flowRegion><flowPara
          id="flowPara4906"
-         style="font-size:15px;line-height:1.25">List&lt;Process&gt;</flowPara></flowRoot>    <rect
+         style="font-size:15px;line-height:1.25">List&lt;Process&gt;</flowPara></flowRoot>
+    <rect
        style="fill:#fce94f;stroke:#000000;stroke-width:0.99999988;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect4908"
        width="139"
@@ -1238,7 +1254,8 @@
            y="33.777069"
            style="font-size:15px" /></flowRegion><flowPara
          id="flowPara4916"
-         style="font-size:15px;line-height:1.25">CloudBalance</flowPara></flowRoot>    <g
+         style="font-size:15px;line-height:1.25">CloudBalance</flowPara></flowRoot>
+    <g
        id="g4918"
        transform="matrix(0.47474749,0,0,0.47464394,560.30302,131.84631)">
       <path
@@ -1291,7 +1308,8 @@
              width="290"
              id="rect5012" /></flowRegion><flowPara
            id="flowPara5014"
-           style="font-size:12.5px;line-height:1.25">solvingStarted()</flowPara></flowRoot>    </g>
+           style="font-size:12.5px;line-height:1.25">solvingStarted()</flowPara></flowRoot>
+    </g>
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
@@ -1311,7 +1329,8 @@
            width="290"
            id="rect6485" /></flowRegion><flowPara
          id="flowPara6487"
-         style="font-size:12.5px;line-height:1.25">solve()</flowPara></flowRoot>    <path
+         style="font-size:12.5px;line-height:1.25">solve()</flowPara></flowRoot>
+    <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 70,160.00001 10,10"
        id="path6771"
@@ -1338,7 +1357,8 @@
              y="431.43814"
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:end;text-anchor:end" /></flowRegion><flowPara
            id="flowPara3646"
-           style="font-size:12.5px;line-height:1.25">doStep()</flowPara></flowRoot>    </g>
+           style="font-size:12.5px;line-height:1.25">doStep()</flowPara></flowRoot>
+    </g>
     <g
        id="g3648"
        transform="translate(-9.9997578,-10.000132)">
@@ -1349,7 +1369,7 @@
          d="m 619.99988,310.00014 80.00012,0"
          style="display:inline;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;marker-end:url(#marker6247)" />
       <flowRoot
-         transform="translate(168.93139,-138.43793)"
+         transform="translate(172.93139,-138.43793)"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:end;writing-mode:lr-tb;text-anchor:end;display:inline;fill:#000000;fill-opacity:1;stroke:none"
          id="flowRoot3652"
          xml:space="preserve"><flowRegion
@@ -1361,13 +1381,14 @@
              width="290"
              id="rect3656" /></flowRegion><flowPara
            id="flowPara3658"
-           style="font-size:12.5px;line-height:1.25">doMove()</flowPara></flowRoot>    </g>
+           style="font-size:12.5px;line-height:1.25">execute(...)</flowPara></flowRoot>
+    </g>
     <g
-       transform="translate(-9.9997578,10.000015)"
+       transform="translate(-5.9997578,10.000015)"
        id="g3660">
       <path
          style="display:inline;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;marker-end:url(#marker6247)"
-         d="m 619.99988,310.00014 80.00012,0"
+         d="M 619.99988,310.00014 H 700"
          id="path3662"
          inkscape:connector-curvature="0"
          sodipodi:nodetypes="cc" />
@@ -1384,7 +1405,8 @@
              y="431.43814"
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:end;text-anchor:end" /></flowRegion><flowPara
            id="flowPara3670"
-           style="font-size:12.5px;line-height:1.25">doMove()</flowPara></flowRoot>    </g>
+           style="font-size:12.5px;line-height:1.25">execute(...)</flowPara></flowRoot>
+    </g>
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 610.00012,320.00001 0,-20"
@@ -1426,7 +1448,8 @@
              width="156.343"
              id="rect6111" /></flowRegion><flowPara
            style="font-size:17.5px;line-height:1.25;fill:#ce5c00"
-           id="flowPara6113">planning clone</flowPara></flowRoot>    </g>
+           id="flowPara6113">planning clone</flowPara></flowRoot>
+    </g>
     <flowRoot
        transform="translate(116.2793,-246.50362)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#ce5c00;fill-opacity:1;stroke:none"
@@ -1440,7 +1463,8 @@
            width="251.00012"
            id="rect6479" /></flowRegion><flowPara
          id="flowPara6481"
-         style="font-size:20px;line-height:1.25">working solution</flowPara></flowRoot>  </g>
+         style="font-size:20px;line-height:1.25">working solution</flowPara></flowRoot>
+  </g>
   <g
      inkscape:groupmode="layer"
      id="layer4"
@@ -1465,7 +1489,8 @@
            width="290"
            id="rect5977" /></flowRegion><flowPara
          id="flowPara5979"
-         style="font-size:12.5px;line-height:1.25">bestSolutionChanged()</flowPara></flowRoot>    <rect
+         style="font-size:12.5px;line-height:1.25">bestSolutionChanged()</flowPara></flowRoot>
+    <rect
        ry="5"
        rx="4.999999"
        y="320.5"
@@ -1496,7 +1521,8 @@
            width="179.99998"
            id="rect3768" /></flowRegion><flowPara
          id="flowPara3770"
-         style="font-size:15px;line-height:1.25">List&lt;Process&gt;</flowPara></flowRoot>    <flowRoot
+         style="font-size:15px;line-height:1.25">List&lt;Process&gt;</flowPara></flowRoot>
+    <flowRoot
        transform="translate(-130.24896,315.3397)"
        xml:space="preserve"
        id="flowRoot3772"
@@ -1509,7 +1535,8 @@
            y="33.777069"
            style="font-size:15px" /></flowRegion><flowPara
          id="flowPara3778"
-         style="font-size:15px;line-height:1.25">CloudBalance</flowPara></flowRoot>    <g
+         style="font-size:15px;line-height:1.25">CloudBalance</flowPara></flowRoot>
+    <g
        style="display:inline"
        id="g3780"
        transform="matrix(0.47474749,0,0,0.47464394,200.05406,221.84616)">
@@ -1565,16 +1592,17 @@
              y="431.43814"
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:end;text-anchor:end" /></flowRegion><flowPara
            id="flowPara3844"
-           style="font-size:12.5px;line-height:1.25">doStep()</flowPara></flowRoot>    </g>
+           style="font-size:12.5px;line-height:1.25">doStep()</flowPara></flowRoot>
+    </g>
     <g
        style="display:inline"
        id="g3846"
-       transform="translate(-9.999758,59.99984)">
+       transform="translate(-5.999758,59.99984)">
       <path
          sodipodi:nodetypes="cc"
          inkscape:connector-curvature="0"
          id="path3848"
-         d="m 619.99988,310.00014 80.00012,0"
+         d="M 619.99988,310.00014 H 700"
          style="display:inline;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;marker-end:url(#marker6247-4)" />
       <flowRoot
          transform="translate(168.93139,-138.43793)"
@@ -1589,14 +1617,15 @@
              width="290"
              id="rect3854" /></flowRegion><flowPara
            id="flowPara3856"
-           style="font-size:12.5px;line-height:1.25">doMove()</flowPara></flowRoot>    </g>
+           style="font-size:12.5px;line-height:1.25">execute(...)</flowPara></flowRoot>
+    </g>
     <g
        style="display:inline"
-       transform="translate(-9.999758,80.00001)"
+       transform="translate(-5.999758,80.00001)"
        id="g3858">
       <path
          style="display:inline;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;marker-end:url(#marker6247-4)"
-         d="m 619.99988,310.00014 80.00012,0"
+         d="M 619.99988,310.00014 H 700"
          id="path3860"
          inkscape:connector-curvature="0"
          sodipodi:nodetypes="cc" />
@@ -1613,7 +1642,8 @@
              y="431.43814"
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:end;text-anchor:end" /></flowRegion><flowPara
            id="flowPara3868"
-           style="font-size:12.5px;line-height:1.25">doMove()</flowPara></flowRoot>    </g>
+           style="font-size:12.5px;line-height:1.25">execute(...)</flowPara></flowRoot>
+    </g>
     <path
        style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 610.00012,390.00001 0,-20"
@@ -1649,7 +1679,8 @@
              y="431.43814"
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:end;text-anchor:end" /></flowRegion><flowPara
            id="flowPara3785"
-           style="font-size:12.5px;line-height:1.25">show()</flowPara></flowRoot>    </g>
+           style="font-size:12.5px;line-height:1.25">show()</flowPara></flowRoot>
+    </g>
     <g
        style="display:inline"
        transform="matrix(0.99434442,-0.10620352,0.10620352,0.99434442,-22.6614,155.21434)"
@@ -1688,7 +1719,8 @@
              y="381.43814"
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;text-anchor:middle;fill:#ce5c00;fill-opacity:1" /></flowRegion><flowPara
            id="flowPara6168"
-           style="font-size:17.5px;line-height:1.25;fill:#ce5c00">planning clone</flowPara></flowRoot>    </g>
+           style="font-size:17.5px;line-height:1.25;fill:#ce5c00">planning clone</flowPara></flowRoot>
+    </g>
   </g>
   <g
      inkscape:groupmode="layer"
@@ -1721,7 +1753,8 @@
            y="431.43814"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:start;text-anchor:start" /></flowRegion><flowPara
          id="flowPara3802"
-         style="font-size:12.5px;line-height:1.25">bestSolutionChanged()</flowPara></flowRoot>    <rect
+         style="font-size:12.5px;line-height:1.25">bestSolutionChanged()</flowPara></flowRoot>
+    <rect
        style="display:inline;fill:#e9b96e;stroke:#000000;stroke-width:0.99999982;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect3804"
        width="319"
@@ -1752,7 +1785,8 @@
            y="33.777069"
            style="font-size:15px" /></flowRegion><flowPara
          id="flowPara3814"
-         style="font-size:15px;line-height:1.25">List&lt;Process&gt;</flowPara></flowRoot>    <flowRoot
+         style="font-size:15px;line-height:1.25">List&lt;Process&gt;</flowPara></flowRoot>
+    <flowRoot
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot3816"
        xml:space="preserve"
@@ -1765,7 +1799,8 @@
            width="179.99998"
            id="rect3820" /></flowRegion><flowPara
          id="flowPara3822"
-         style="font-size:15px;line-height:1.25">CloudBalance</flowPara></flowRoot>    <g
+         style="font-size:15px;line-height:1.25">CloudBalance</flowPara></flowRoot>
+    <g
        style="display:inline"
        transform="matrix(0.47474749,0,0,0.47464394,200.05406,391.84615)"
        id="g3824">
@@ -1811,7 +1846,8 @@
            y="431.43814"
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:end;text-anchor:end" /></flowRegion><flowPara
          id="flowPara3880"
-         style="font-size:12.5px;line-height:1.25">addProblemChange()</flowPara></flowRoot>    <path
+         style="font-size:12.5px;line-height:1.25">addProblemChange()</flowPara></flowRoot>
+    <path
        inkscape:connector-curvature="0"
        id="path3882"
        d="m 70,420 10,10"
@@ -1838,7 +1874,8 @@
            width="179.99998"
            id="rect3890" /></flowRegion><flowPara
          id="flowPara3892"
-         style="font-size:15px;line-height:1.25">List&lt;Computer&gt;</flowPara></flowRoot>    <rect
+         style="font-size:15px;line-height:1.25">List&lt;Computer&gt;</flowPara></flowRoot>
+    <rect
        style="display:inline;fill:#ad7fa8;stroke:#000000;stroke-width:0.99999988;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect3894"
        width="139"
@@ -1860,7 +1897,8 @@
            y="33.777069"
            style="font-size:15px" /></flowRegion><flowPara
          id="flowPara3902"
-         style="font-size:15px;line-height:1.25">List&lt;Process&gt;</flowPara></flowRoot>    <rect
+         style="font-size:15px;line-height:1.25">List&lt;Process&gt;</flowPara></flowRoot>
+    <rect
        ry="5"
        rx="4.999999"
        y="510.5"
@@ -1882,7 +1920,8 @@
            width="179.99998"
            id="rect3910" /></flowRegion><flowPara
          id="flowPara3912"
-         style="font-size:15px;line-height:1.25">CloudBalance</flowPara></flowRoot>    <g
+         style="font-size:15px;line-height:1.25">CloudBalance</flowPara></flowRoot>
+    <g
        style="display:inline"
        transform="matrix(0.47474749,0,0,0.47464394,560.30302,381.84615)"
        id="g3914">
@@ -1949,7 +1988,8 @@
              width="290"
              id="rect3769" /></flowRegion><flowPara
            id="flowPara3771"
-           style="font-size:12.5px;line-height:1.25">show()</flowPara></flowRoot>    </g>
+           style="font-size:12.5px;line-height:1.25">show()</flowPara></flowRoot>
+    </g>
     <g
        style="display:inline"
        id="g6177"
@@ -1988,7 +2028,8 @@
              width="156.343"
              id="rect6189" /></flowRegion><flowPara
            style="font-size:17.5px;line-height:1.25;fill:#ce5c00"
-           id="flowPara6191">planning clone</flowPara></flowRoot>    </g>
+           id="flowPara6191">planning clone</flowPara></flowRoot>
+    </g>
     <g
        style="display:inline"
        id="g6444"
@@ -2032,6 +2073,7 @@
              y="381.43814"
              style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;text-anchor:middle;fill:#a40000;fill-opacity:1" /></flowRegion><flowPara
            id="flowPara6435"
-           style="font-size:17.5px;line-height:1.25">deep clone</flowPara></flowRoot>    </g>
+           style="font-size:17.5px;line-height:1.25">deep clone</flowPara></flowRoot>
+    </g>
   </g>
 </svg>
