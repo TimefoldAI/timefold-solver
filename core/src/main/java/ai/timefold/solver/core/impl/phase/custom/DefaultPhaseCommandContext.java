@@ -57,8 +57,14 @@ final class DefaultPhaseCommandContext<Solution_> implements PhaseCommandContext
 
     @Override
     public @Nullable <Result_> Result_ executeTemporarily(Move<Solution_> move,
-            Function<Solution_, @Nullable Result_> temporarySolutionConsumer, boolean guaranteeFreshScore) {
-        return moveDirector.executeTemporary(move, temporarySolutionConsumer, guaranteeFreshScore);
+            Function<Solution_, Result_> temporarySolutionConsumer) {
+        return moveDirector.executeTemporary(move, temporarySolutionConsumer, false);
+    }
+
+    @Override
+    public @Nullable <Result_> Result_ executeTemporarilyAndCalculateScore(Move<Solution_> move,
+            Function<Solution_, Result_> temporarySolutionConsumer) {
+        return moveDirector.executeTemporary(move, temporarySolutionConsumer, true);
     }
 
 }

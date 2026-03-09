@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -31,7 +32,7 @@ public interface PhaseCommandContext<Solution_>
     /**
      * Returns the current working solution.
      * It must not be modified directly,
-     * but only through {@link #executeAndCalculateScore(Move)} or {@link #executeTemporarily(Move, Function)}.
+     * but only through {@link #execute(Move)} and other similar methods on this interface.
      * Direct modifications will cause the solver to be in an inconsistent state and likely throw an exception later on.
      *
      * @return the current working solution
@@ -66,29 +67,41 @@ public interface PhaseCommandContext<Solution_>
     <Score_ extends Score<Score_>> Score_ executeAndCalculateScore(Move<Solution_> move);
 
     /**
-     * As defined by {@link #executeTemporarily(Move, Function, boolean)},
-     * with the guarantee of a fresh score.
-     */
-    default <Result_> @Nullable Result_ executeTemporarily(Move<Solution_> move,
-            Function<Solution_, @Nullable Result_> temporarySolutionConsumer) {
-        return executeTemporarily(move, temporarySolutionConsumer, true);
-    }
-
-    /**
      * Executes the given move temporarily and returns the result of the given consumer.
      * The working solution is reverted to its original state after the consumer has been executed,
-     * optionally without recalculating the score for performance reasons.
+     * and its score will not be recalculated for performance reasons.
      *
      * @param move the move to execute temporarily
      * @param temporarySolutionConsumer the consumer to execute with the temporarily modified solution;
      *        this solution must not be modified any further.
-     * @param guaranteeFreshScore if true, the score of {@link #getWorkingSolution()} after this method returns
-     *        is guaranteed to be up-to-date;
-     *        otherwise it may be stale as the solver will skip recalculating it for performance reasons.
      * @return the result of the consumer
      */
     <Result_> @Nullable Result_ executeTemporarily(Move<Solution_> move,
-            Function<Solution_, @Nullable Result_> temporarySolutionConsumer, boolean guaranteeFreshScore);
+            Function<Solution_, @Nullable Result_> temporarySolutionConsumer);
+
+    /**
+     * Executes the given move temporarily and returns the score of the temporarily modified solution.
+     * The working solution is reverted to its original state after the consumer has been executed,
+     * and its score will not be recalculated for performance reasons.
+     *
+     * @param move the move to execute temporarily
+     * @return the score of the temporarily modified solution after executing the move
+     */
+    default <Score_ extends Score<Score_>> Score_ executeTemporarilyAndCalculateScore(Move<Solution_> move) {
+        return executeTemporarily(move, solution -> {
+            // The score is not recalculated in executeTemporarily, so we need to do it ourselves.
+            return ((DefaultPlanningSolutionMetaModel<Solution_>) getSolutionMetaModel())
+                    .solutionDescriptor()
+                    .getScore(solution);
+        });
+    }
+
+    /**
+     * As defined by {@link #executeTemporarily(Move, Function)},
+     * with the guarantee of a fresh score at the end of the method's invocation.
+     */
+    <Result_> @Nullable Result_ executeTemporarilyAndCalculateScore(Move<Solution_> move,
+            Function<Solution_, @Nullable Result_> temporarySolutionConsumer);
 
     @Override
     <T> @Nullable T lookUpWorkingObject(@Nullable T problemFactOrPlanningEntity);
