@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommandContext;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -62,9 +63,29 @@ final class DefaultPhaseCommandContext<Solution_> implements PhaseCommandContext
     }
 
     @Override
+    public <Score_ extends Score<Score_>> Score_ executeTemporarily(Move<Solution_> move) {
+        return executeTemporarily(move, solution -> {
+            // The score is not recalculated in executeTemporarily, so we need to do it ourselves.
+            return ((DefaultPlanningSolutionMetaModel<Solution_>) getSolutionMetaModel())
+                    .solutionDescriptor()
+                    .getScore(solution);
+        });
+    }
+
+    @Override
     public @Nullable <Result_> Result_ executeTemporarilyAndCalculateScore(Move<Solution_> move,
             Function<Solution_, Result_> temporarySolutionConsumer) {
         return moveDirector.executeTemporary(move, temporarySolutionConsumer, true);
+    }
+
+    @Override
+    public <Score_ extends Score<Score_>> Score_ executeTemporarilyAndCalculateScore(Move<Solution_> move) {
+        return executeTemporarilyAndCalculateScore(move, solution -> {
+            // The score is not recalculated in executeTemporarily, so we need to do it ourselves.
+            return ((DefaultPlanningSolutionMetaModel<Solution_>) getSolutionMetaModel())
+                    .solutionDescriptor()
+                    .getScore(solution);
+        });
     }
 
 }

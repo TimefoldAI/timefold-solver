@@ -536,11 +536,11 @@ void onInitializedSolution(Timetable timetable) {
     // ...
 }
 
-void onFinalBestSolution(Timetable timetable) {
+void onNewBestSolution(Timetable timetable) {
     // ...
 }
 
-void onJobStart(Timetable timetable) {
+void onFinalBestSolution(Timetable timetable) {
     // ...
 }
 ----
@@ -745,8 +745,8 @@ as well as other mechanical changes that were not previously deprecated.
 ==== `ScoreManager` Renamed and Methods Simplified
 
 * `ScoreManager` type renamed to `SolutionManager`.
-* `ScoreManager.getSummary(solution)` replaced by `SolutionManager.explain(solution,
-SolutionUpdatePolicy.UPDATE_SCORE_ONLY).getSummary()`.
+* `ScoreManager.getSummary(solution)` replaced by
+`SolutionManager.explain(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY).getSummary()`.
 * `ScoreManager.explainScore(solution)` replaced by `SolutionManager.explain(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY)`.
 * `ScoreManager.updateScore(solution)` replaced by `SolutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY)`.
 

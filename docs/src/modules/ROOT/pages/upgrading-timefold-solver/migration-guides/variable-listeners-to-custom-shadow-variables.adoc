@@ -4,7 +4,7 @@
 :icons: font
 
 This section explains how to update your planning model to use the new declarative xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[custom shadow variable]
-approach instead of the custom `VariableListener`] pattern,
+approach instead of the custom `VariableListener` pattern,
 which has been deprecated in Timefold Solver 1.x and removed entirely in Timefold Solver 2.0.
 
 Custom shadow variables replace imperative update logic with declarative, side-effect-free supplier methods.
@@ -20,7 +20,7 @@ This required:
 * Manually calling `ScoreDirector.beforeVariableChanged()` and `afterVariableChanged()`.
 * Handling entity lifecycle events explicitly.
 
-This approach has now been deprecated and will be removed in a future version.
+This approach has been removed in Timefold Solver 2.0.0.
 
 For example:
 [source,java]
@@ -371,13 +371,12 @@ public class Visit {
     private LocalDateTime arrivalTime;
 
     @ShadowSources({"vehicle", "previous.arrivalTime"})
-    public LocalDateTime computeArrivalTime(RoutingSolution planningSolution) {
+    public LocalDateTime computeArrivalTime(RoutingSolution solution) {
         if (previous == null) {
             return null;
         }
         // Global travel time matrix stored on the solution
-        long travelTime = solution.getTravelTime(
-            previous.getLocation(), visit.getLocation());
+        long travelTime = solution.getTravelTime(previous.getLocation(), location);
 
         Long previousDeparture = previous.arrivalTime + solution.getDefaultDuration();
         return previousDeparture + travelTime;
