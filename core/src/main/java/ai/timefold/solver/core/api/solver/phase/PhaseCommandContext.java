@@ -4,7 +4,6 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.common.Lookup;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -78,6 +77,7 @@ public interface PhaseCommandContext<Solution_>
      */
     <Result_> @Nullable Result_ executeTemporarily(Move<Solution_> move,
             Function<Solution_, @Nullable Result_> temporarySolutionConsumer);
+
     /**
      * Executes the given move temporarily and returns the score of the temporarily modified solution.
      * The working solution is reverted to its original state after the consumer has been executed,
