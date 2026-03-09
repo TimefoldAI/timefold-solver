@@ -3,9 +3,7 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
@@ -106,60 +104,38 @@ class ContainingAnyOfIndexerTest extends AbstractIndexerTest {
         assertForEach(indexer, List.of(), "999").isEmpty();
     }
 
-    private UniTuple<String> putSingle(Indexer<Object> indexer, List<String> keys, int id) {
-        var tuple = UniTuple.of("Tuple " + id, 0);
-        indexer.put(keys, tuple);
-        return tuple;
-    }
-
     @Test
     void forEachDuplicates() {
         var indexer = new IndexerFactory<>(singleJoiner).buildIndexer(true);
         var key = List.of("X");
 
-        var duplicate = putSingle(indexer, key, 0);
+        var duplicate = putContainingIndexer(indexer, key);
         indexer.put(key, duplicate);
-        var afterDuplicate = putSingle(indexer, key, 1);
+        var afterDuplicate = putContainingIndexer(indexer, key);
 
         assertForEach(indexer, List.of("X", "Y")).containsExactlyInAnyOrder(duplicate, afterDuplicate);
-    }
-
-    private Iterable<Object> randomIterable(Indexer<Object> indexer, String... keys) {
-        return () -> {
-            var random = new Random(0);
-            var delegate = indexer.randomIterator(List.of(keys), random);
-            return new Iterator<>() {
-
-                @Override
-                public boolean hasNext() {
-                    return delegate.hasNext();
-                }
-
-                @Override
-                public Object next() {
-                    var out = delegate.next();
-                    delegate.remove();
-                    return out;
-                }
-            };
-        };
     }
 
     @Test
     void randomIterator() {
         var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
 
-        var annXY1 = putSingle(indexer, List.of("X", "Y"), 0);
-        var bethXZ1 = putSingle(indexer, List.of("X", "Z"), 1);
-        var carlXY2 = putSingle(indexer, List.of("X", "Y"), 2);
-        var zero1 = putSingle(indexer, List.of(), 3);
+        var annXY1 = putContainingIndexer(indexer, List.of("X", "Y"));
+        var bethXZ1 = putContainingIndexer(indexer, List.of("X", "Z"));
+        var carlXY2 = putContainingIndexer(indexer, List.of("X", "Y"));
+        var zero1 = putContainingIndexer(indexer, List.of());
 
-        assertThat(randomIterable(indexer, "X"))
+        assertThat(randomIterableForCollectionQuery(indexer, "X"))
                 .containsExactlyInAnyOrder(annXY1, bethXZ1, carlXY2);
-        assertThat(randomIterable(indexer, "Y"))
+        assertThat(randomIterableForCollectionQuery(indexer, "Y"))
                 .containsExactlyInAnyOrder(annXY1, carlXY2);
-        assertThat(randomIterable(indexer, "Z"))
+        assertThat(randomIterableForCollectionQuery(indexer, "Z"))
                 .containsExactlyInAnyOrder(bethXZ1);
+
+        var list1 = randomListForCollectionQuery(indexer, 0, "X");
+        var list2 = randomListForCollectionQuery(indexer, 1, "X");
+        assertThat(list1).containsExactlyInAnyOrderElementsOf(list2);
+        assertThat(list1).isNotEqualTo(list2);
     }
 
     private record TestWorker(String name, List<String> skills, String department) {

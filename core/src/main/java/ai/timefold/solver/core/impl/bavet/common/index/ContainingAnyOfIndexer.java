@@ -199,12 +199,10 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
         }
         if (filter == null) {
             return new RandomIterator(indexKeyCollection, workingRandom,
-                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom),
-                    size(queryCompositeKey));
+                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom));
         } else {
             return new RandomIterator(indexKeyCollection, workingRandom,
-                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter),
-                    size(queryCompositeKey));
+                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter));
         }
     }
 
@@ -277,22 +275,41 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
 
     private final class RandomIterator implements Iterator<T> {
 
-        private final List<Iterator<T>> downstreamIteratorList;
+        private final List<DownstreamIteratorSupplier> downstreamIteratorSupplierList;
         private final RandomGenerator workingRandom;
+        private final Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction;
         private final Set<T> removedSet;
-        private final int uniqueElementCount;
         private @Nullable T next = null;
         private @Nullable T current = null;
+        private @Nullable DownstreamIteratorSupplier currentIteratorSupplier = null;
+
+        private class DownstreamIteratorSupplier {
+            private final Key_ key;
+            @Nullable
+            private Iterator<T> cachedDownstreamIterator;
+
+            public DownstreamIteratorSupplier(Key_ key) {
+                this.key = key;
+                this.cachedDownstreamIterator = null;
+            }
+
+            Iterator<T> iterator() {
+                if (cachedDownstreamIterator != null) {
+                    return cachedDownstreamIterator;
+                }
+                cachedDownstreamIterator = downstreamIndexerIteratorFunction.apply(downstreamIndexerMap.get(key));
+                return cachedDownstreamIterator;
+            }
+        }
 
         public RandomIterator(KeyCollection_ indexKeyCollection, RandomGenerator workingRandom,
-                Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction,
-                int uniqueElementCount) {
-            this.downstreamIteratorList = new ArrayList<>(indexKeyCollection.size());
+                Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction) {
+            this.downstreamIteratorSupplierList = new ArrayList<>(indexKeyCollection.size());
             this.removedSet = new HashSet<>();
             this.workingRandom = workingRandom;
-            this.uniqueElementCount = uniqueElementCount;
+            this.downstreamIndexerIteratorFunction = downstreamIndexerIteratorFunction;
             for (var indexKey : indexKeyCollection) {
-                this.downstreamIteratorList.add(downstreamIndexerIteratorFunction.apply(downstreamIndexerMap.get(indexKey)));
+                this.downstreamIteratorSupplierList.add(new DownstreamIteratorSupplier(indexKey));
             }
         }
 
@@ -301,21 +318,37 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
             if (next != null) {
                 return true;
             }
-            if (uniqueElementCount <= removedSet.size()) {
-                return false;
+
+            if (currentIteratorSupplier != null) {
+                var downstreamIterator = currentIteratorSupplier.iterator();
+                while (downstreamIterator.hasNext()) {
+                    next = downstreamIterator.next();
+                    if (!removedSet.contains(next)) {
+                        return true;
+                    } else {
+                        downstreamIterator.remove();
+                    }
+                }
+                downstreamIteratorSupplierList.remove(currentIteratorSupplier);
             }
-            while (!downstreamIteratorList.isEmpty()) {
-                var remainingIteratorCount = downstreamIteratorList.size();
+            while (!downstreamIteratorSupplierList.isEmpty()) {
+                var remainingIteratorCount = downstreamIteratorSupplierList.size();
                 var selectedIndex = workingRandom.nextInt(remainingIteratorCount);
-                var downstreamIterator = downstreamIteratorList.get(selectedIndex);
+                currentIteratorSupplier = downstreamIteratorSupplierList.get(selectedIndex);
+                var downstreamIterator = currentIteratorSupplier.iterator();
                 if (!downstreamIterator.hasNext()) {
-                    downstreamIteratorList.remove(selectedIndex);
+                    downstreamIteratorSupplierList.remove(selectedIndex);
                     continue;
                 }
 
                 next = downstreamIterator.next();
                 if (!removedSet.contains(next)) {
                     return true;
+                } else {
+                    downstreamIterator.remove();
+                    if (!downstreamIterator.hasNext()) {
+                        downstreamIteratorSupplierList.remove(selectedIndex);
+                    }
                 }
             }
             return false;
@@ -339,6 +372,10 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
                 throw new IllegalStateException("next() must be called before remove().");
             }
             removedSet.add(current);
+            currentIteratorSupplier.iterator().remove();
+            if (!currentIteratorSupplier.iterator().hasNext()) {
+                downstreamIteratorSupplierList.remove(currentIteratorSupplier);
+            }
             current = null;
         }
     }
