@@ -68,7 +68,7 @@ public interface PhaseCommandContext<Solution_>
     /**
      * Executes the given move temporarily and returns the result of the given consumer.
      * The working solution is reverted to its original state after the consumer has been executed,
-     * without recalculating the score for performance reasons.
+     * except for the score, which is not recalculated for performance reasons.
      *
      * @param move the move to execute temporarily
      * @param temporarySolutionConsumer the consumer to execute with the temporarily modified solution;
@@ -81,7 +81,7 @@ public interface PhaseCommandContext<Solution_>
     /**
      * Executes the given move temporarily and returns the score of the temporarily modified solution.
      * The working solution is reverted to its original state after the consumer has been executed,
-     * without recalculating the score for performance reasons.
+     * except for the score, which is not recalculated for performance reasons.
      *
      * @param move the move to execute temporarily
      * @return the score of the temporarily modified solution after executing the move

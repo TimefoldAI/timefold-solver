@@ -56,9 +56,172 @@ Having done that, you can check the local changes and commit them.
 
 For the time being, Kotlin users need to follow the upgrade recipe and apply the steps manually.
 
+=== Summary of automated changes
+
+The following includes a summary of all changes automated in the OpenRewrite recipe, for reference.
+They include both upgrades to address deprecations in Timefold Solver 1.x,
+as well as other mechanical changes that were not previously deprecated.
+
+==== `ConstraintFactory` Method Renames
+
+* `ConstraintFactory.from(Class)` renamed to `forEach(Class)`.
+* `ConstraintFactory.fromUnfiltered(Class)` renamed to `forEachIncludingUnassigned(Class)`.
+* `ConstraintFactory.fromUniquePair(..)` renamed to `forEachUniquePair(..)`.
+
+==== `ScoreManager` Renamed and Methods Simplified
+
+* `ScoreManager` type renamed to `SolutionManager`.
+* `ScoreManager.getSummary(solution)` replaced by
+`SolutionManager.explain(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY).getSummary()`.
+* `ScoreManager.explainScore(solution)` replaced by `SolutionManager.explain(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY)`.
+* `ScoreManager.updateScore(solution)` replaced by `SolutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY)`.
+
+==== Score Getter Methods Shortened
+
+* All `get`-prefixed getters on score types dropped the `get` prefix: e.g. `getScore()` → `score()`, `getHardScore()` →
+`hardScore()`, `getSoftScore()` → `softScore()`, `getInitScore()` → `initScore()`, `getHardLevelsSize()` → `hardLevelsSize()`, etc.
+Applies to all built-in score types and `IBendableScore`.
+
+==== Constraint Identification Refactored
+
+* `ConstraintFactory.getDefaultConstraintPackage()` removed.
+* `Constraint.getConstraintPackage()` removed.
+* `ConstraintRef.of(packageName, constraintName)` → `ConstraintRef.of(constraintName)` (package argument removed).
+* `Constraint.getConstraintId()` replaced by `getConstraintRef().constraintId()`.
+* `Constraint.getConstraintName()` replaced by `getConstraintRef().constraintName()`.
+* Same renames apply to `ConstraintMatch` and `ConstraintMatchTotal`.
+
+==== Constraint Stream Terminal Methods Refactored
+
+* All `penalize(constraintName, score)`, `reward(constraintName, score)`, `impact(constraintName, score)` forms
+(and their `Configurable`/`Long`/`BigDecimal` variants, across Uni/Bi/Tri/Quad streams)
+are replaced by a two-call chain:
+`penalize(score).asConstraint(constraintName)`, moving the constraint name out of the scoring method and into a dedicated
+`asConstraint()` call.
+* Where the old form passed both a package and a name (`penalize(pkg, name, score)`), the package argument is no longer available for `asConstraint()`: `penalize(score).asConstraint(name)`.
+* `ConstraintBuilder.asConstraint(packageName, constraintName)` → `asConstraint(constraintName)`
+(two-arg form collapsed to one).
+* `penalizeLong(..)`, `rewardLong(..)`, `impactLong(..)` on all stream types (Uni/Bi/Tri/Quad) renamed to `penalize(..)`,
+`reward(..)`, `impact(..)`.
+
+==== `SolverManager` API: Builder Pattern Replaces Overloaded `solve()` Methods
+
+* Deprecated overloads of `SolverManager.solve()` and `solveAndListen()` are replaced by chained calls on `solveBuilder()`: e.g.
+`solve(id, problemFinder, consumer)` →
+`solveBuilder().withProblemId(id).withProblemFinder(problemFinder).withFinalBestSolutionConsumer(consumer).run()`.
+* `solveAndListen()` variants are replaced similarly, using `withBestSolutionConsumer()` instead of
+`withFinalBestSolutionConsumer()`.
+
+==== `SolverManager` / `SolverJob` Problem ID Generic Type Removed
+
+* `SolverManager<Solution_, ProblemId_>` becomes `SolverManager<Solution_>` (second type parameter dropped).
+* Same removal applies to `SolverJobBuilder` and `SolverJob` generic declarations, and to the `create()`, `solveBuilder()`,
+`solve()`, `solveAndListen()` method type parameters.
+
+==== Nullable Planning Variables Renamed to Unassigned
+
+* `@PlanningVariable(nullable = ...)` attribute renamed to `@PlanningVariable(allowsUnassigned = ...)`.
+* `ConstraintFactory.forEachIncludingNullVars()` renamed to `forEachIncludingUnassigned()`.
+* `ifExistsIncludingNullVars()`, `ifExistsOtherIncludingNullVars()`, `ifNotExistsIncludingNullVars()`,
+`ifNotExistsOtherIncludingNullVars()` renamed to their `IncludingUnassigned` equivalents on Uni/Bi/Tri/Quad constraint streams.
+
+==== Sorting API Renamed
+
+* `@PlanningVariable(strengthComparatorClass = ...)` renamed to `comparatorClass`; `strengthWeightFactoryClass` renamed to
+`comparatorFactoryClass`.
+* `PlanningVariable.NullStrengthComparator` renamed to `NullComparator`; `NullStrengthWeightFactory` renamed to
+`NullComparatorFactory`.
+* `@PlanningEntity(difficultyComparatorClass = ...)` renamed to `comparatorClass`; `difficultyWeightFactoryClass` renamed to
+`comparatorFactoryClass`.
+* `PlanningEntity.NullDifficultyComparator` renamed to `NullComparator`; `NullDifficultyWeightFactory` renamed to
+`NullComparatorFactory`.
+* `getSorterComparatorClass()` / `setSorterComparatorClass()` / `withSorterComparatorClass()` on `MoveSelectorConfig`,
+`EntitySelectorConfig`, and `ValueSelectorConfig` renamed to `getComparatorClass()` / `setComparatorClass()` /
+`withComparatorClass()`.
+* `getSorterWeightFactoryClass()` / `setSorterWeightFactoryClass()` / `withSorterWeightFactoryClass()` on the same config classes
+renamed to `getComparatorFactoryClass()` / `setComparatorFactoryClass()` / `withComparatorFactoryClass()`.
+* `EntitySorterManner.DECREASING_DIFFICULTY` → `DESCENDING`; `DECREASING_DIFFICULTY_IF_AVAILABLE` → `DESCENDING_IF_AVAILABLE`.
+* `ValueSorterManner.DECREASING_STRENGTH` → `DESCENDING`; `DECREASING_STRENGTH_IF_AVAILABLE` → `DESCENDING_IF_AVAILABLE`;
+`INCREASING_STRENGTH` → `ASCENDING`; `INCREASING_STRENGTH_IF_AVAILABLE` → `ASCENDING_IF_AVAILABLE`.
+
+==== Recommended Fit API Renamed to Recommended Assignment
+
+* `SolutionManager.recommendFit()` renamed to `recommendAssignment()`.
+* `RecommendedFit` type renamed to `RecommendedAssignment`.
+
+==== `@PlanningSolution` Attributes Removed
+
+* `@PlanningSolution(lookUpStrategyType = ...)` attribute removed entirely.
+* `@PlanningSolution(autoDiscoverMemberType = ...)` attribute removed entirely.
+
+==== `ProblemFactChange` Renamed to `ProblemChange`
+
+* `ProblemFactChange` type renamed to `ProblemChange` and moved to package `ai.timefold.solver.core.api.solver.change`.
+* `Solver.isEveryProblemFactChangeProcessed()` renamed to `isEveryProblemChangeProcessed()`.
+* `BestSolutionChangedEvent.isEveryProblemFactChangeProcessed()` renamed to `isEveryProblemChangeProcessed()`.
+
+==== Score Types Moved Out of Sub-packages
+
+* All built-in score types moved from their per-type `ai.timefold.solver.core.api.score.buildin.<typename>` sub-packages
+to the parent `ai.timefold.solver.core.api.score` package
+(e.g. `api.score.buildin.hardsoft.HardSoftScore` → `api.score.HardSoftScore`).
+* `SimpleLongScore` and `HardSoftLongScore` and `HardMediumSoftLongScore` and `BendableLongScore` are merged into their non-Long
+counterparts (`SimpleScore`, `HardSoftScore`, `HardMediumSoftScore`, `BendableScore` respectively).
+
+==== ValueRange API Cleaned Up
+
+* `CountableValueRange` type replaced by `ValueRange`.
+* `CompositeCountableValueRange` renamed to `CompositeValueRange`.
+* `NullAllowingCountableValueRange` renamed to `NullAllowingValueRange`.
+* All value range implementation sub-packages under `buildin.*` flattened into `ai.timefold.solver.core.impl.domain.valuerange`.
+
+==== Serialization Packages Flattened
+
+* JPA score converters: per-score-type `ai.timefold.solver.jpa.api.buildin.<type>` packages merged into `ai.timefold.solver.jpa.api.score`.
+* Jackson score serializers: per-score-type packages merged into `ai.timefold.solver.jackson.api.score.buildin`.
+* JAXB score adapters: per-score-type packages merged into `ai.timefold.solver.jaxb.api.score`.
+* Quarkus Jackson score types: per-score-type packages merged into `ai.timefold.solver.quarkus.jackson.score`.
+* Persistence common solution API moved from `ai.timefold.solver.persistence.common.api.domain.solution` to
+`ai.timefold.solver.core.api.domain.solution`.
+
+==== Testing APIs Moved Into Core and Unified
+
+* Package `ai.timefold.solver.test.api.score.stream` moved to `ai.timefold.solver.core.api.score.stream.test`.
+* Package `ai.timefold.solver.test.api.solver.change` moved to `ai.timefold.solver.core.api.solver.change`.
+* `MoveTester` and `MoveTestContext` moved into `ai.timefold.solver.core.preview.api.move.test`.
+* `NeighborhoodTester` and `NeighborhoodTestContext` moved into `ai.timefold.solver.core.preview.api.neighborhood.test`.
+
+==== Maven Modules Removed
+
+* `timefold-solver-persistence-common` dependency removed (functionality moved into core).
+* `timefold-solver-webui` dependency removed.
+* `timefold-solver-jsonb` dependency removed.
+* `timefold-solver-test` dependency removed (testing APIs merged into core).
+
+==== Configuration Properties
+
+* `SolverConfig` methods for domain access type removed: `getDomainAccessType()`, `setDomainAccessType()`, `withDomainAccessType()`, `determineDomainAccessType()`.
+* `CartesianProductMoveSelectorConfig.getMoveSelectorConfigList()` / `setMoveSelectorConfigList()` renamed to
+`getMoveSelectorList()` / `setMoveSelectorList()`. Same rename applies to `UnionMoveSelectorConfig`.
+* `LocalSearchAcceptorConfig` no longer understands undo move tabu size and value tabu ratio, including their fading variants.
+* Drools-related methods on `ScoreDirectorFactoryConfig` removed: `getScoreDrlList()`, `setScoreDrlList()`, `withScoreDrlList()`.
+* All methods related to `ConstraintStreamImplType` on `ScoreDirectorFactoryConfig`, `SolverConfig`, and `ConstraintVerifier`
+removed (`getConstraintStreamImplType()`, `setConstraintStreamImplType()`, `withConstraintStreamImplType()`).
+* In Spring Boot, property `timefold.solver.solve-length` renamed to `timefold.solver.solve.duration` in `application.properties`.
+* In Quarkus, property `quarkus.timefold.solver.solve-length` renamed to `quarkus.timefold.solver.solve.duration` in `application.properties`.
+
+==== Assorted other changes
+
+* `@PlanningId` moved from `ai.timefold.solver.core.api.domain.lookup` to `ai.timefold.solver.core.api.domain.common`.
+* `ScoreDirector` moved from `ai.timefold.solver.core.api.score.director` to `ai.timefold.solver.core.impl.score.director`.
+* `SingleConstraintAssertion.penalizesBy(int, String)` and `rewardsWith(int, String)` (and their `long`/`BigDecimal` variants) have their arguments swapped to `penalizesBy(String, int)` — message comes first now.
+* `PlannerBenchmark.benchmarkAndShowReportInBrowser()` renamed to `benchmark()`.
+
+
 [#manualUpgrade]
 == Manual upgrade recipe
 
+In addition to the automated changes listed above, there are some changes that require manual intervention.
 Every upgrade note indicates how likely your code will be affected by that change:
 
 - icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
@@ -730,164 +893,3 @@ or, better yet, start using a collection-based value range if possible.
 Its public constructors were already deprecated;
 if your code constructed instances of this class (e.g. for unit tests), you must remove those usages.
 ====
-
-=== Summary of automated changes
-
-The following includes a summary of all changes automated in the OpenRewrite recipe, for reference.
-They include both upgrades to address deprecations in Timefold Solver 1.x,
-as well as other mechanical changes that were not previously deprecated.
-
-==== `ConstraintFactory` Method Renames
-
-* `ConstraintFactory.from(Class)` renamed to `forEach(Class)`.
-* `ConstraintFactory.fromUnfiltered(Class)` renamed to `forEachIncludingUnassigned(Class)`.
-* `ConstraintFactory.fromUniquePair(..)` renamed to `forEachUniquePair(..)`.
-
-==== `ScoreManager` Renamed and Methods Simplified
-
-* `ScoreManager` type renamed to `SolutionManager`.
-* `ScoreManager.getSummary(solution)` replaced by
-`SolutionManager.explain(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY).getSummary()`.
-* `ScoreManager.explainScore(solution)` replaced by `SolutionManager.explain(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY)`.
-* `ScoreManager.updateScore(solution)` replaced by `SolutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY)`.
-
-==== Score Getter Methods Shortened
-
-* All `get`-prefixed getters on score types dropped the `get` prefix: e.g. `getScore()` → `score()`, `getHardScore()` →
-`hardScore()`, `getSoftScore()` → `softScore()`, `getInitScore()` → `initScore()`, `getHardLevelsSize()` → `hardLevelsSize()`, etc.
-Applies to all built-in score types and `IBendableScore`.
-
-==== Constraint Identification Refactored
-
-* `ConstraintFactory.getDefaultConstraintPackage()` removed.
-* `Constraint.getConstraintPackage()` removed.
-* `ConstraintRef.of(packageName, constraintName)` → `ConstraintRef.of(constraintName)` (package argument removed).
-* `Constraint.getConstraintId()` replaced by `getConstraintRef().constraintId()`.
-* `Constraint.getConstraintName()` replaced by `getConstraintRef().constraintName()`.
-* Same renames apply to `ConstraintMatch` and `ConstraintMatchTotal`.
-
-==== Constraint Stream Terminal Methods Refactored
-
-* All `penalize(constraintName, score)`, `reward(constraintName, score)`, `impact(constraintName, score)` forms
-(and their `Configurable`/`Long`/`BigDecimal` variants, across Uni/Bi/Tri/Quad streams)
-are replaced by a two-call chain:
-`penalize(score).asConstraint(constraintName)`, moving the constraint name out of the scoring method and into a dedicated
-`asConstraint()` call.
-* Where the old form passed both a package and a name (`penalize(pkg, name, score)`), the package argument is no longer available for `asConstraint()`: `penalize(score).asConstraint(name)`.
-* `ConstraintBuilder.asConstraint(packageName, constraintName)` → `asConstraint(constraintName)`
-(two-arg form collapsed to one).
-* `penalizeLong(..)`, `rewardLong(..)`, `impactLong(..)` on all stream types (Uni/Bi/Tri/Quad) renamed to `penalize(..)`,
-`reward(..)`, `impact(..)`.
-
-==== `SolverManager` API: Builder Pattern Replaces Overloaded `solve()` Methods
-
-* Deprecated overloads of `SolverManager.solve()` and `solveAndListen()` are replaced by chained calls on `solveBuilder()`: e.g.
-`solve(id, problemFinder, consumer)` →
-`solveBuilder().withProblemId(id).withProblemFinder(problemFinder).withFinalBestSolutionConsumer(consumer).run()`.
-* `solveAndListen()` variants are replaced similarly, using `withBestSolutionConsumer()` instead of
-`withFinalBestSolutionConsumer()`.
-
-==== `SolverManager` / `SolverJob` Problem ID Generic Type Removed
-
-* `SolverManager<Solution_, ProblemId_>` becomes `SolverManager<Solution_>` (second type parameter dropped).
-* Same removal applies to `SolverJobBuilder` and `SolverJob` generic declarations, and to the `create()`, `solveBuilder()`,
-`solve()`, `solveAndListen()` method type parameters.
-
-==== Nullable Planning Variables Renamed to Unassigned
-
-* `@PlanningVariable(nullable = ...)` attribute renamed to `@PlanningVariable(allowsUnassigned = ...)`.
-* `ConstraintFactory.forEachIncludingNullVars()` renamed to `forEachIncludingUnassigned()`.
-* `ifExistsIncludingNullVars()`, `ifExistsOtherIncludingNullVars()`, `ifNotExistsIncludingNullVars()`,
-`ifNotExistsOtherIncludingNullVars()` renamed to their `IncludingUnassigned` equivalents on Uni/Bi/Tri/Quad constraint streams.
-
-==== Sorting API Renamed
-
-* `@PlanningVariable(strengthComparatorClass = ...)` renamed to `comparatorClass`; `strengthWeightFactoryClass` renamed to
-`comparatorFactoryClass`.
-* `PlanningVariable.NullStrengthComparator` renamed to `NullComparator`; `NullStrengthWeightFactory` renamed to
-`NullComparatorFactory`.
-* `@PlanningEntity(difficultyComparatorClass = ...)` renamed to `comparatorClass`; `difficultyWeightFactoryClass` renamed to
-`comparatorFactoryClass`.
-* `PlanningEntity.NullDifficultyComparator` renamed to `NullComparator`; `NullDifficultyWeightFactory` renamed to
-`NullComparatorFactory`.
-* `getSorterComparatorClass()` / `setSorterComparatorClass()` / `withSorterComparatorClass()` on `MoveSelectorConfig`,
-`EntitySelectorConfig`, and `ValueSelectorConfig` renamed to `getComparatorClass()` / `setComparatorClass()` /
-`withComparatorClass()`.
-* `getSorterWeightFactoryClass()` / `setSorterWeightFactoryClass()` / `withSorterWeightFactoryClass()` on the same config classes
-renamed to `getComparatorFactoryClass()` / `setComparatorFactoryClass()` / `withComparatorFactoryClass()`.
-* `EntitySorterManner.DECREASING_DIFFICULTY` → `DESCENDING`; `DECREASING_DIFFICULTY_IF_AVAILABLE` → `DESCENDING_IF_AVAILABLE`.
-* `ValueSorterManner.DECREASING_STRENGTH` → `DESCENDING`; `DECREASING_STRENGTH_IF_AVAILABLE` → `DESCENDING_IF_AVAILABLE`;
-`INCREASING_STRENGTH` → `ASCENDING`; `INCREASING_STRENGTH_IF_AVAILABLE` → `ASCENDING_IF_AVAILABLE`.
-
-==== Recommended Fit API Renamed to Recommended Assignment
-
-* `SolutionManager.recommendFit()` renamed to `recommendAssignment()`.
-* `RecommendedFit` type renamed to `RecommendedAssignment`.
-
-==== `@PlanningSolution` Attributes Removed
-
-* `@PlanningSolution(lookUpStrategyType = ...)` attribute removed entirely.
-* `@PlanningSolution(autoDiscoverMemberType = ...)` attribute removed entirely.
-
-==== `ProblemFactChange` Renamed to `ProblemChange`
-
-* `ProblemFactChange` type renamed to `ProblemChange` and moved to package `ai.timefold.solver.core.api.solver.change`.
-* `Solver.isEveryProblemFactChangeProcessed()` renamed to `isEveryProblemChangeProcessed()`.
-* `BestSolutionChangedEvent.isEveryProblemFactChangeProcessed()` renamed to `isEveryProblemChangeProcessed()`.
-
-==== Score Types Moved Out of Sub-packages
-
-* All built-in score types moved from their per-type `ai.timefold.solver.core.api.score.buildin.<typename>` sub-packages
-to the parent `ai.timefold.solver.core.api.score` package
-(e.g. `api.score.buildin.hardsoft.HardSoftScore` → `api.score.HardSoftScore`).
-* `SimpleLongScore` and `HardSoftLongScore` and `HardMediumSoftLongScore` and `BendableLongScore` are merged into their non-Long
-counterparts (`SimpleScore`, `HardSoftScore`, `HardMediumSoftScore`, `BendableScore` respectively).
-
-==== ValueRange API Cleaned Up
-
-* `CountableValueRange` type replaced by `ValueRange`.
-* `CompositeCountableValueRange` renamed to `CompositeValueRange`.
-* `NullAllowingCountableValueRange` renamed to `NullAllowingValueRange`.
-* All value range implementation sub-packages under `buildin.*` flattened into `ai.timefold.solver.core.impl.domain.valuerange`.
-
-==== Serialization Packages Flattened
-
-* JPA score converters: per-score-type `ai.timefold.solver.jpa.api.buildin.<type>` packages merged into `ai.timefold.solver.jpa.api.score`.
-* Jackson score serializers: per-score-type packages merged into `ai.timefold.solver.jackson.api.score.buildin`.
-* JAXB score adapters: per-score-type packages merged into `ai.timefold.solver.jaxb.api.score`.
-* Quarkus Jackson score types: per-score-type packages merged into `ai.timefold.solver.quarkus.jackson.score`.
-* Persistence common solution API moved from `ai.timefold.solver.persistence.common.api.domain.solution` to
-`ai.timefold.solver.core.api.domain.solution`.
-
-==== Testing APIs Moved Into Core and Unified
-
-* Package `ai.timefold.solver.test.api.score.stream` moved to `ai.timefold.solver.core.api.score.stream.test`.
-* Package `ai.timefold.solver.test.api.solver.change` moved to `ai.timefold.solver.core.api.solver.change`.
-* `MoveTester` and `MoveTestContext` moved into `ai.timefold.solver.core.preview.api.move.test`.
-* `NeighborhoodTester` and `NeighborhoodTestContext` moved into `ai.timefold.solver.core.preview.api.neighborhood.test`.
-
-==== Maven Modules Removed
-
-* `timefold-solver-persistence-common` dependency removed (functionality moved into core).
-* `timefold-solver-webui` dependency removed.
-* `timefold-solver-jsonb` dependency removed.
-* `timefold-solver-test` dependency removed (testing APIs merged into core).
-
-==== Configuration Properties
-
-* `SolverConfig` methods for domain access type removed: `getDomainAccessType()`, `setDomainAccessType()`, `withDomainAccessType()`, `determineDomainAccessType()`.
-* `CartesianProductMoveSelectorConfig.getMoveSelectorConfigList()` / `setMoveSelectorConfigList()` renamed to
-`getMoveSelectorList()` / `setMoveSelectorList()`. Same rename applies to `UnionMoveSelectorConfig`.
-* `LocalSearchAcceptorConfig` no longer understands undo move tabu size and value tabu ratio, including their fading variants.
-* Drools-related methods on `ScoreDirectorFactoryConfig` removed: `getScoreDrlList()`, `setScoreDrlList()`, `withScoreDrlList()`.
-* All methods related to `ConstraintStreamImplType` on `ScoreDirectorFactoryConfig`, `SolverConfig`, and `ConstraintVerifier`
-removed (`getConstraintStreamImplType()`, `setConstraintStreamImplType()`, `withConstraintStreamImplType()`).
-* In Spring Boot, property `timefold.solver.solve-length` renamed to `timefold.solver.solve.duration` in `application.properties`.
-* In Quarkus, property `quarkus.timefold.solver.solve-length` renamed to `quarkus.timefold.solver.solve.duration` in `application.properties`.
-
-==== Assorted other changes
-
-* `@PlanningId` moved from `ai.timefold.solver.core.api.domain.lookup` to `ai.timefold.solver.core.api.domain.common`.
-* `ScoreDirector` moved from `ai.timefold.solver.core.api.score.director` to `ai.timefold.solver.core.impl.score.director`.
-* `SingleConstraintAssertion.penalizesBy(int, String)` and `rewardsWith(int, String)` (and their `long`/`BigDecimal` variants) have their arguments swapped to `penalizesBy(String, int)` — message comes first now.
-* `PlannerBenchmark.benchmarkAndShowReportInBrowser()` renamed to `benchmark()`.
