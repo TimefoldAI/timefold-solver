@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.move;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -212,9 +214,6 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
                             .formatted(sourceIndex, destinationIndex));
         }
 
-        var fromIndex = Math.min(sourceIndex, destinationIndex);
-        var toIndex = Math.max(sourceIndex, destinationIndex) + 1;
-
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         var list = variableDescriptor.getValue(sourceEntity);
         var listSize = list.size();
@@ -227,12 +226,54 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
                             .formatted(destinationIndex, listSize));
         }
 
+        var fromIndex = Math.min(sourceIndex, destinationIndex);
+        var toIndex = Math.max(sourceIndex, destinationIndex) + 1;
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
-        var element = (Value_) list.remove(sourceIndex);
-        list.add(destinationIndex, element);
+        moveInList(list, sourceIndex, destinationIndex);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
         externalScoreDirector.triggerVariableListeners();
-        return element;
+        return (Value_) list.get(destinationIndex);
+    }
+
+    /**
+     * Moves the element at index {@code from} to index {@code to} in a list,
+     * choosing the faster of two strategies based on the move's distance and position within the list.
+     *
+     * <p>
+     * <b>Strategy selection</b> (lo = min(from, to), d = |from − to|):
+     * <ul>
+     * <li>Use {@code Collections.rotate} when {@code d * 8 < n − lo}
+     * (distance is small relative to the remaining tail).</li>
+     * <li>Use {@code remove + add} otherwise.</li>
+     * </ul>
+     *
+     * <p>
+     * <b>Why position matters</b>: {@code remove+add} shifts {@code (n−1−from) + (n−1−to)} elements in total.
+     * When one endpoint is near the tail, one of those copies is nearly free,
+     * making {@code remove+add} cheap even for large lists.
+     * {@code rotate} always pays for the full sublist span,
+     * so it only wins when that span is short relative to what {@code removeAdd} would have to copy.
+     *
+     * <p>
+     * The threshold constant 8 was determined empirically by benchmarking on HotSpot
+     * with a microbenchmark that performed moves of varying distances and positions within lists of varying sizes.
+     *
+     * @param list the list to mutate; assumes {@link ArrayList}
+     * @param from index of the element to move
+     * @param to index the element should occupy after the move
+     */
+    private static <T> void moveInList(List<T> list, int from, int to) {
+        var distance = Math.abs(from - to);
+        if (distance == 1) {
+            Collections.swap(list, from, to);
+            return;
+        }
+        var lo = Math.min(from, to);
+        if (distance * 8 < list.size() - lo) {
+            Collections.rotate(list.subList(lo, lo + distance + 1), from < to ? -1 : 1);
+        } else {
+            list.add(to, list.remove(from));
+        }
     }
 
     @Override
@@ -276,15 +317,11 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         }
 
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
-        var leftElement = variableDescriptor.getElement(entity, leftIndex);
-        var rightElement = variableDescriptor.getElement(entity, rightIndex);
-
         var fromIndex = Math.min(leftIndex, rightIndex);
         var toIndex = Math.max(leftIndex, rightIndex) + 1;
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         var list = variableDescriptor.getValue(entity);
-        list.set(leftIndex, rightElement);
-        list.set(rightIndex, leftElement);
+        Collections.swap(list, leftIndex, rightIndex);
         externalScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         externalScoreDirector.triggerVariableListeners();
     }
