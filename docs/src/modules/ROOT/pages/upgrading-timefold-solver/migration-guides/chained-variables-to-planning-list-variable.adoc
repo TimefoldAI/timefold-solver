@@ -4,7 +4,7 @@
 :icons: font
 
 This section explains how to update your planning model to use
-the declarative xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable] approach
+the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable] approach
 instead of the chained planning variable,
 which has been deprecated in Timefold Solver 1.x and removed entirely in Timefold Solver 2.0.
 
@@ -13,7 +13,7 @@ which was used for sequence-based problems like TSP and vehicle routing.
 The planning list variable provides a modern,
 more intuitive way to model sequences as lists of values on a parent entity.
 
-If you modeled vehicle routing, TSP, or any ‘ordered route’ problem using chained planning variables,
+If you modeled vehicle routing, TSP, or any ‘ordered sequence’ problem using chained planning variables,
 migrate to planning list variables to simplify your domain model and remove deprecated APIs.
 
 [#migrateChainedMigrationSteps]

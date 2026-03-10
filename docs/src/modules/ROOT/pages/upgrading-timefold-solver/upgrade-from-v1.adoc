@@ -76,7 +76,7 @@ and they can only be automated partially, if at all.
 .icon:exclamation-triangle[role=red] Java 21 or later required
 [%collapsible%open]
 ====
-Timefold Solver 2.0.0 requires Java 21 or later to run,
+Timefold Solver 2.x requires Java 21 or later to run,
 whereas Timefold Solver 1.x supported Java 17 and later.
 If you are using an older version of Java, you will need to upgrade your tooling and runtime to Java 21 or later.
 ====
@@ -484,7 +484,7 @@ Use `penalize`, `reward`, and `impact` respectively; they now also accept `long`
 [%collapsible%open]
 ====
 Various previously deprecated overloads of `SolverManager.solve()` and `SolverManager.solveAndListen()` were removed.
-Use the `SolverManager.solveBuilder()` method to build `SolverJob`s instead, as it provides more flexibility.
+Use the `SolverManager.solveBuilder()` method to build a `SolverJob` instead, as it provides more flexibility.
 ====
 
 '''
@@ -773,8 +773,8 @@ Applies to all built-in score types and `IBendableScore`.
 are replaced by a two-call chain:
 `penalize(score).asConstraint(constraintName)`, moving the constraint name out of the scoring method and into a dedicated
 `asConstraint()` call.
-* Where the old form passed both a package and a name (`penalize(pkg, name, score)`), the package and name are merged into a single string for `asConstraint()`: `penalize(score).asConstraint(pkg + "." + name)`.
-* `ConstraintBuilder.asConstraint(packageName, constraintName)` → `asConstraint(packageName + "." + constraintName)`
+* Where the old form passed both a package and a name (`penalize(pkg, name, score)`), the package argument is no longer available for `asConstraint()`: `penalize(score).asConstraint(name)`.
+* `ConstraintBuilder.asConstraint(packageName, constraintName)` → `asConstraint(constraintName)`
 (two-arg form collapsed to one).
 * `penalizeLong(..)`, `rewardLong(..)`, `impactLong(..)` on all stream types (Uni/Bi/Tri/Quad) renamed to `penalize(..)`,
 `reward(..)`, `impact(..)`.
