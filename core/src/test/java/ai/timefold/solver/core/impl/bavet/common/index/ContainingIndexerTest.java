@@ -79,10 +79,13 @@ class ContainingIndexerTest extends AbstractIndexerTest {
         var bethXZ1 = putTuple(indexer, List.of("X", "Z"), "1");
         var carlXY2 = putTuple(indexer, List.of("X", "Y"), "2");
         var ednaYZ1 = putTuple(indexer, List.of("Y", "Z"), "1");
+        @SuppressWarnings("unused")
         var zero1 = putTuple(indexer, List.of(), "1");
 
         assertForEach(indexer, "X", "1").containsExactlyInAnyOrder(annXY1, bethXZ1);
         assertForEach(indexer, "Y", "1").containsExactlyInAnyOrder(annXY1, ednaYZ1);
+        assertForEach(indexer, "X", "2").containsExactlyInAnyOrder(carlXY2);
+        assertForEach(indexer, "Y", "2").containsExactlyInAnyOrder(carlXY2);
         assertForEach(indexer, "Z", "1").containsExactlyInAnyOrder(bethXZ1, ednaYZ1);
         assertForEach(indexer, "AAA", "1").isEmpty();
         assertForEach(indexer, "X", "999").isEmpty();

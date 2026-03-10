@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.SequencedCollection;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -29,7 +29,7 @@ import org.jspecify.annotations.Nullable;
  * As defined by {@link Joiners#containingAnyOf(Function, Function)}
  */
 @NullMarked
-final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
+final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedCollection<Key_>> implements Indexer<T> {
 
     private final KeyUnpacker<KeyCollection_> modifyKeyUnpacker;
     private final KeyUnpacker<KeyCollection_> queryKeyUnpacker;
@@ -278,10 +278,11 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
         private final List<DownstreamIteratorSupplier> downstreamIteratorSupplierList;
         private final RandomGenerator workingRandom;
         private final Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction;
-        private final Set<T> removedSet;
+        private @Nullable Set<T> removedSet;
         private @Nullable T next = null;
         private @Nullable T current = null;
         private @Nullable DownstreamIteratorSupplier currentIteratorSupplier = null;
+        private @Nullable Iterator<T> currentIterator = null;
 
         private class DownstreamIteratorSupplier {
             private final Key_ key;
@@ -305,7 +306,6 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
         public RandomIterator(KeyCollection_ indexKeyCollection, RandomGenerator workingRandom,
                 Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction) {
             this.downstreamIteratorSupplierList = new ArrayList<>(indexKeyCollection.size());
-            this.removedSet = new HashSet<>();
             this.workingRandom = workingRandom;
             this.downstreamIndexerIteratorFunction = downstreamIndexerIteratorFunction;
             for (var indexKey : indexKeyCollection) {
@@ -318,15 +318,13 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
             if (next != null) {
                 return true;
             }
-
-            if (currentIteratorSupplier != null) {
-                var downstreamIterator = currentIteratorSupplier.iterator();
-                while (downstreamIterator.hasNext()) {
-                    next = downstreamIterator.next();
-                    if (!removedSet.contains(next)) {
+            if (currentIterator != null) {
+                while (currentIterator.hasNext()) {
+                    next = currentIterator.next();
+                    if (removedSet == null || !removedSet.contains(next)) {
                         return true;
                     } else {
-                        downstreamIterator.remove();
+                        currentIterator.remove();
                     }
                 }
                 downstreamIteratorSupplierList.remove(currentIteratorSupplier);
@@ -335,18 +333,18 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
                 var remainingIteratorCount = downstreamIteratorSupplierList.size();
                 var selectedIndex = workingRandom.nextInt(remainingIteratorCount);
                 currentIteratorSupplier = downstreamIteratorSupplierList.get(selectedIndex);
-                var downstreamIterator = currentIteratorSupplier.iterator();
-                if (!downstreamIterator.hasNext()) {
+                currentIterator = currentIteratorSupplier.iterator();
+                if (!currentIterator.hasNext()) {
                     downstreamIteratorSupplierList.remove(selectedIndex);
                     continue;
                 }
 
-                next = downstreamIterator.next();
-                if (!removedSet.contains(next)) {
+                next = currentIterator.next();
+                if (removedSet == null || !removedSet.contains(next)) {
                     return true;
                 } else {
-                    downstreamIterator.remove();
-                    if (!downstreamIterator.hasNext()) {
+                    currentIterator.remove();
+                    if (!currentIterator.hasNext()) {
                         downstreamIteratorSupplierList.remove(selectedIndex);
                     }
                 }
@@ -371,10 +369,15 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
             if (current == null) {
                 throw new IllegalStateException("next() must be called before remove().");
             }
+            if (removedSet == null) {
+                removedSet = new HashSet<>();
+            }
             removedSet.add(current);
-            currentIteratorSupplier.iterator().remove();
-            if (!currentIteratorSupplier.iterator().hasNext()) {
+            currentIterator.remove();
+            if (!currentIterator.hasNext()) {
                 downstreamIteratorSupplierList.remove(currentIteratorSupplier);
+                currentIteratorSupplier = null;
+                currentIterator = null;
             }
             current = null;
         }
