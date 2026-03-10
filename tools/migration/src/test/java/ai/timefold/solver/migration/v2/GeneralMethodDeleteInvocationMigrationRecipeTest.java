@@ -30,6 +30,28 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
                                 """
                                         package ai.timefold.solver.core.api.score.stream;
                                         public interface ConstraintFactory {
+                                            String getDefaultConstraintPackage();
+                                        }""",
+                                """
+                                        package ai.timefold.solver.core.api.score.stream;
+                                        public interface ConstraintProvider {
+                                            Constraint[] defineConstraints(ConstraintFactory constraintFactory);
+                                        }""",
+                                """
+                                        package ai.timefold.solver.core.config.localsearch.decider.acceptor;
+                                        public interface LocalSearchAcceptorConfig {
+                                            Integer getUndoMoveTabuSize();
+                                            void setUndoMoveTabuSize(Integer parameter);
+                                            LocalSearchAcceptorConfig withUndoMoveTabuSize(Integer parameter);
+                                            Integer getFadingUndoMoveTabuSize();
+                                            void setFadingUndoMoveTabuSize(Integer parameter);
+                                            LocalSearchAcceptorConfig withFadingUndoMoveTabuSize(Integer parameter);
+                                            Double getValueTabuRatio();
+                                            void setValueTabuRatio(Double parameter);
+                                            LocalSearchAcceptorConfig withValueTabuRatio(Double parameter);
+                                            Double getFadingValueTabuRatio();
+                                            void setFadingValueTabuRatio(Double parameter);
+                                            LocalSearchAcceptorConfig withFadingValueTabuRatio(Double parameter);
                                         }""",
                                 """
                                         package ai.timefold.solver.core.config.score.director;
@@ -72,6 +94,40 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
     }
 
     @Test
+    void removeDefaultConstraintPackage() {
+        rewriteRun(java(
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.stream.Constraint;
+                        import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+                        import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+
+                        public class MyConstraintProvider implements ConstraintProvider {
+
+                                public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+                                    var defaultPackage = constraintFactory.getDefaultConstraintPackage();
+                                    return new Constraint[0];
+                                }
+
+                        }""",
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.stream.Constraint;
+                        import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+                        import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+
+                        public class MyConstraintProvider implements ConstraintProvider {
+
+                                public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+                                    return new Constraint[0];
+                                }
+
+                        }"""));
+    }
+
+    @Test
     void removeConstraintStreamImplType() {
         rewriteRun(java(
                 """
@@ -107,6 +163,43 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
                                 ScoreDirectorFactoryConfig factoryConfig;
                                 SolverConfig solverConfig;
                                 ConstraintVerifier constraintVerifier;
+                                public void test() {
+                                }
+                        }"""));
+    }
+
+    @Test
+    void removeTabu() {
+        rewriteRun(java(
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig;
+
+                        public class Test {
+                                LocalSearchAcceptorConfig config;
+                                public void test() {
+                                    var a = config.getUndoMoveTabuSize();
+                                    config.setUndoMoveTabuSize(a);
+                                    config.withUndoMoveTabuSize(a);
+                                    var b = config.getFadingUndoMoveTabuSize();
+                                    config.setFadingUndoMoveTabuSize(b);
+                                    config.withFadingUndoMoveTabuSize(b);
+                                    var c = config.getValueTabuRatio();
+                                    config.setValueTabuRatio(c);
+                                    config.withValueTabuRatio(c);
+                                    var d = config.getFadingValueTabuRatio();
+                                    config.setFadingValueTabuRatio(d);
+                                    config.withFadingValueTabuRatio(d);
+                                }
+                        }""",
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig;
+
+                        public class Test {
+                                LocalSearchAcceptorConfig config;
                                 public void test() {
                                 }
                         }"""));

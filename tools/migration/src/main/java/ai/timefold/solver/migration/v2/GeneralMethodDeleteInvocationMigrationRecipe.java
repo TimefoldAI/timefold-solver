@@ -34,6 +34,39 @@ public class GeneralMethodDeleteInvocationMigrationRecipe extends AbstractRecipe
                         "ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig withConstraintStreamImplType(..)"),
                 new RemoveMethodInvocations(
                         "ai.timefold.solver.test.api.score.stream.ConstraintVerifier withConstraintStreamImplType(..)"),
+                // Tabu
+                new RemoveFieldFromMethodInvocationRecipe(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig getUndoMoveTabuSize()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig getUndoMoveTabuSize()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig setUndoMoveTabuSize(..)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig withUndoMoveTabuSize(..)"),
+                new RemoveFieldFromMethodInvocationRecipe(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig getFadingUndoMoveTabuSize()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig getFadingUndoMoveTabuSize()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig setFadingUndoMoveTabuSize(..)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig withFadingUndoMoveTabuSize(..)"),
+                new RemoveFieldFromMethodInvocationRecipe(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig getValueTabuRatio()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig getValueTabuRatio()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig setValueTabuRatio(..)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig withValueTabuRatio(..)"),
+                new RemoveFieldFromMethodInvocationRecipe(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig getFadingValueTabuRatio()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig getFadingValueTabuRatio()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig setFadingValueTabuRatio(..)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig withFadingValueTabuRatio(..)"),
                 // Drools support
                 new RemoveFieldFromMethodInvocationRecipe(
                         "ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig getScoreDrlList()"),
@@ -53,6 +86,11 @@ public class GeneralMethodDeleteInvocationMigrationRecipe extends AbstractRecipe
                 new RemoveMethodInvocations("ai.timefold.solver.core.api.score.stream.Constraint getConstraintPackage()"),
                 new RemoveMethodInvocations("ai.timefold.solver.core.api.score.stream.Constraint getConstraintId()"),
                 new RemoveMethodInvocations("ai.timefold.solver.core.api.score.stream.Constraint getConstraintFactory()"),
+                // ConstraintFactory
+                new RemoveFieldFromMethodInvocationRecipe(
+                        "ai.timefold.solver.core.api.score.stream.ConstraintFactory getDefaultConstraintPackage()"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.api.score.stream.ConstraintFactory getDefaultConstraintPackage()"),
                 // SolverConfig
                 new RemoveMethodInvocations(
                         "ai.timefold.solver.core.config.solver.SolverConfig withConstraintStreamImplType(..)"),

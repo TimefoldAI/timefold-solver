@@ -887,21 +887,20 @@ This is useful when the `PhaseCommand` remembers an object from some previous wo
 and needs to find the corresponding object in the current working solution,
 which may have been xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning-cloned] since.
 
-Any change on the planning entities in a `PhaseCommand` must be done through the `execute(Move)` method,
+Any change on the planning entities in a `PhaseCommand` must be done through the `execute` or `executeTemporarily` methods,
 to avoid corrupting the `Solver`.
+For performance reasons, these methods will not compute a fresh score before it finishes.
+If you want a fresh score computed, these methods have counterparts, `executeAndCalculateScore` and `executeTemporarilyAndCalculateScore`.
 
 Long-running commands may want to periodically check `isPhaseTerminated` and when it returns `true`,
 terminate the command by returning.
 The solver will only terminate after the command returns.
 
-[WARNING]
-====
-Do not change any of the problem facts in a `PhaseCommand` or add or remove entities,
+IMPORTANT: Do not change any of the problem facts in a `PhaseCommand` or add or remove entities,
 it will corrupt the `Solver` because any previous score or solution was for a different problem.
 To change problem facts or to add or remove entities,
 read about xref:responding-to-change/responding-to-change.adoc[repeated planning]
 and use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange] instead.
-====
 
 Configure the `PhaseCommand` in the solver configuration:
 
@@ -919,12 +918,9 @@ Configure the `PhaseCommand` in the solver configuration:
 
 Configure multiple `customPhaseCommandClass` instances to run them in sequence.
 
-[IMPORTANT]
-====
-If the changes performed in a `PhaseCommand` do not result in a better score,
+NOTE: If the changes performed in a `PhaseCommand` do not result in a better score,
 the best solution will not be changed.
 Effectively nothing will have changed for the next `Phase` or `PhaseCommand`.
-====
 
 To configure values of a `PhaseCommand` dynamically in the solver configuration
 (so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),

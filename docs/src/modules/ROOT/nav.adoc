@@ -33,6 +33,9 @@
 * https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy][leveloffset=+1]
 * Upgrading Timefold Solver
 ** xref:upgrading-timefold-solver/overview.adoc[leveloffset=+1]
-** xref:upgrading-timefold-solver/upgrade-to-latest-version.adoc[leveloffset=+1]
+** xref:upgrading-timefold-solver/upgrade-from-v1.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/backwards-compatibility.adoc[leveloffset=+1]
+** Migration Guides
+*** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
+*** xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
 * xref:enterprise-edition/enterprise-edition.adoc[leveloffset=+1]
