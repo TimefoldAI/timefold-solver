@@ -1445,7 +1445,7 @@ class MoveDirectorTest {
             var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
             var moveDirector = new MoveDirector<>(mockScoreDirector);
             Assertions.assertThatThrownBy(() -> moveDirector.replaceValueInList(variableMetaModel, entity, -1, 1))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(IndexOutOfBoundsException.class);
         }
 
         @Test

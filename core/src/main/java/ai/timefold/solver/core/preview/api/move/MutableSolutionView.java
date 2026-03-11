@@ -230,7 +230,6 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      *        Acceptable values range from zero to one less than list size.
      *        All values at or after the index are shifted to the right.
      * @return the value that was moved
-     * @throws IndexOutOfBoundsException if either index is out of bounds
      * @throws IllegalArgumentException if sourceIndex == destinationIndex
      * @see #replaceValueInList(PlanningListVariableMetaModel, Object, int, int) Similar operation that replaces the value at
      *      the destination index instead.
@@ -255,7 +254,6 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      *        Acceptable values range from zero to one less than list size.
      *        The value previously at this index is unassigned.
      * @return the value that was replaced
-     * @throws IndexOutOfBoundsException if either index is out of bounds
      * @throws IllegalArgumentException if sourceIndex == replacementIndex
      * @see #moveValueInList(PlanningListVariableMetaModel, Object, int, int) Similar operation that moves the value to the
      *      destination index instead.

@@ -235,21 +235,19 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
                     "When moving values in the same list, sourceIndex (%d) and destinationIndex (%d) must be different."
                             .formatted(sourceIndex, destinationIndex));
         } else if (sourceIndex < 0 || destinationIndex < 0) {
-            throw new IllegalArgumentException(
-                    "The sourceIndex (%d) and destinationIndex (%d) must both be >= 0."
-                            .formatted(sourceIndex, destinationIndex));
+            throw new IndexOutOfBoundsException("The sourceIndex (%d) and destinationIndex (%d) must both be >= 0."
+                    .formatted(sourceIndex, destinationIndex));
         }
 
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         var list = variableDescriptor.getValue(sourceEntity);
         var listSize = list.size();
         if (sourceIndex >= listSize) {
-            throw new IllegalArgumentException(
-                    "The sourceIndex (%d) must be less than the list size (%d).".formatted(sourceIndex, listSize));
+            throw new IndexOutOfBoundsException("The sourceIndex (%d) must be less than the list size (%d)."
+                    .formatted(sourceIndex, listSize));
         } else if (destinationIndex >= listSize) {
-            throw new IllegalArgumentException(
-                    "The destinationIndex (%d) must be less than the list size (%d)."
-                            .formatted(destinationIndex, listSize));
+            throw new IndexOutOfBoundsException("The destinationIndex (%d) must be less than the list size (%d)."
+                    .formatted(destinationIndex, listSize));
         }
 
         var fromIndex = Math.min(sourceIndex, destinationIndex);
@@ -270,9 +268,8 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
                     "When replacing values in the same list, sourceIndex (%d) and replacementIndex (%d) must be different."
                             .formatted(sourceIndex, replacementIndex));
         } else if (sourceIndex < 0 || replacementIndex < 0) {
-            throw new IllegalArgumentException(
-                    "The sourceIndex (%d) and replacementIndex (%d) must both be >= 0."
-                            .formatted(sourceIndex, replacementIndex));
+            throw new IndexOutOfBoundsException("The sourceIndex (%d) and replacementIndex (%d) must both be >= 0."
+                    .formatted(sourceIndex, replacementIndex));
         }
 
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
@@ -325,9 +322,9 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             Collections.swap(list, from, to);
             return;
         }
-        var lowerIndex = Math.min(from, to);
         var distanceTimesEight = (long) distance * 8L; // Prevents unlikely yet possible overflow.
-        var tailLength = (long) list.size() - lowerIndex;
+        var lowerIndex = Math.min(from, to);
+        var tailLength = list.size() - lowerIndex;
         if (distanceTimesEight < tailLength) {
             Collections.rotate(list.subList(lowerIndex, lowerIndex + distance + 1), from < to ? -1 : 1);
         } else {
