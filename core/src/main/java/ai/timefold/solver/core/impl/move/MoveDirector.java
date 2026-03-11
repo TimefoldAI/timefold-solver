@@ -322,7 +322,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             Collections.swap(list, from, to);
             return;
         }
-        var distanceTimesEight = (long) distance * 8L; // Prevents unlikely yet possible overflow.
+        var distanceTimesEight = distance * 8L; // Long prevents unlikely yet possible overflow.
         var lowerIndex = Math.min(from, to);
         var tailLength = list.size() - lowerIndex;
         if (distanceTimesEight < tailLength) {
