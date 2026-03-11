@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.util.CompositeListEntry;
 import ai.timefold.solver.core.impl.util.ListEntry;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -278,6 +279,8 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
         private final List<DownstreamIteratorSupplier> downstreamIteratorSupplierList;
         private final RandomGenerator workingRandom;
         private final Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction;
+        private final int[] distribution;
+        private int distributionSum;
         private @Nullable Set<T> removedSet;
         private @Nullable T next = null;
         private @Nullable T current = null;
@@ -285,21 +288,25 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
         private @Nullable Iterator<T> currentIterator = null;
 
         private class DownstreamIteratorSupplier {
-            private final Key_ key;
-            @Nullable
-            private Iterator<T> cachedDownstreamIterator;
+            private final int index;
+            private final Iterator<T> cachedDownstreamIterator;
 
-            public DownstreamIteratorSupplier(Key_ key) {
-                this.key = key;
-                this.cachedDownstreamIterator = null;
+            public DownstreamIteratorSupplier(int index, Key_ key) {
+                this.index = index;
+                var indexer = downstreamIndexerMap.get(key);
+                this.cachedDownstreamIterator = downstreamIndexerIteratorFunction.apply(indexer);
+                distribution[index] = indexer.size(key);
+                distributionSum += distribution[index];
             }
 
             Iterator<T> iterator() {
-                if (cachedDownstreamIterator != null) {
-                    return cachedDownstreamIterator;
-                }
-                cachedDownstreamIterator = downstreamIndexerIteratorFunction.apply(downstreamIndexerMap.get(key));
                 return cachedDownstreamIterator;
+            }
+
+            public void remove() {
+                cachedDownstreamIterator.remove();
+                distribution[index]--;
+                distributionSum--;
             }
         }
 
@@ -308,8 +315,11 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
             this.downstreamIteratorSupplierList = new ArrayList<>(indexKeyCollection.size());
             this.workingRandom = workingRandom;
             this.downstreamIndexerIteratorFunction = downstreamIndexerIteratorFunction;
+            this.distribution = new int[indexKeyCollection.size()];
+            var index = 0;
             for (var indexKey : indexKeyCollection) {
-                this.downstreamIteratorSupplierList.add(new DownstreamIteratorSupplier(indexKey));
+                this.downstreamIteratorSupplierList.add(new DownstreamIteratorSupplier(index, indexKey));
+                index++;
             }
         }
 
@@ -324,18 +334,20 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
                     if (removedSet == null || !removedSet.contains(next)) {
                         return true;
                     } else {
-                        currentIterator.remove();
+                        currentIteratorSupplier.remove();
+                        // We do not remove the current iterator supplier from the list
+                        // if the current iterator has no more elements, since then we
+                        // would need to resize the distribution array.
+                        // The current iterator will never be picked if it has no more
+                        // elements, since it would have a weight of 0 in the sample.
                     }
                 }
-                downstreamIteratorSupplierList.remove(currentIteratorSupplier);
             }
-            while (!downstreamIteratorSupplierList.isEmpty()) {
-                var remainingIteratorCount = downstreamIteratorSupplierList.size();
-                var selectedIndex = workingRandom.nextInt(remainingIteratorCount);
+            while (distributionSum > 0) {
+                var selectedIndex = RandomUtils.sampleWithDistribution(workingRandom, distributionSum, distribution);
                 currentIteratorSupplier = downstreamIteratorSupplierList.get(selectedIndex);
                 currentIterator = currentIteratorSupplier.iterator();
                 if (!currentIterator.hasNext()) {
-                    downstreamIteratorSupplierList.remove(selectedIndex);
                     continue;
                 }
 
@@ -343,10 +355,12 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
                 if (removedSet == null || !removedSet.contains(next)) {
                     return true;
                 } else {
-                    currentIterator.remove();
-                    if (!currentIterator.hasNext()) {
-                        downstreamIteratorSupplierList.remove(selectedIndex);
-                    }
+                    currentIteratorSupplier.remove();
+                    // We do not remove the current iterator supplier from the list
+                    // if the current iterator has no more elements, since then we
+                    // would need to resize the distribution array.
+                    // The current iterator will never be picked if it has no more
+                    // elements, since it would have a weight of 0 in the sample.
                 }
             }
             return false;
@@ -373,11 +387,15 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
                 removedSet = new HashSet<>();
             }
             removedSet.add(current);
-            currentIterator.remove();
+            currentIteratorSupplier.remove();
             if (!currentIterator.hasNext()) {
-                downstreamIteratorSupplierList.remove(currentIteratorSupplier);
                 currentIteratorSupplier = null;
                 currentIterator = null;
+                // We do not remove the current iterator supplier from the list
+                // if the current iterator has no more elements, since then we
+                // would need to resize the distribution array.
+                // The current iterator will never be picked if it has no more
+                // elements, since it would have a weight of 0 in the sample.
             }
             current = null;
         }

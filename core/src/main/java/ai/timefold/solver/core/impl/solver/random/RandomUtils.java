@@ -1,10 +1,8 @@
 package ai.timefold.solver.core.impl.solver.random;
 
-import java.util.List;
-import java.util.Random;
 import java.util.random.RandomGenerator;
 
-public class RandomUtils {
+public final class RandomUtils {
 
     /**
      * Mimics {@link java.util.Random#nextInt(int)} for longs.
@@ -49,18 +47,24 @@ public class RandomUtils {
     }
 
     /**
-     * Implements {@link java.util.Collections#shuffle(List, Random)} for {@link RandomGenerator}.
-     * There is a {@link RandomGenerator} overload for shuffle in JDK 21, but not JDK 17.
-     * TODO: Remove me when Minimum JDK 21
+     * Return a value between 0 and {@code distribution.length}, with indices with larger
+     * values in {@code distribution} being more likely.
+     *
+     * @param random The {@link RandomGenerator} to use.
+     * @param distributionSum Sum of all values in {@code distribution}. Must be positive.
+     * @param distribution Relative weight of the index being chosen. If one index's value is twice another index,
+     *        that index is twice as likely to be chosen. Each value must be non-negative (0 is allowed).
+     * @return An index between 0 and {@code distribution.length}, biased towards indices in distribution with larger values.
      */
-    public static <Item_> void shuffle(List<Item_> shuffledList, RandomGenerator random) {
-        var listSize = shuffledList.size();
-        for (var rightIndex = listSize - 1; rightIndex > 0; rightIndex--) {
-            var leftIndex = random.nextInt(rightIndex + 1); // leftIndex <= rightIndex
-            var leftValue = shuffledList.get(leftIndex);
-            var rightValue = shuffledList.set(rightIndex, leftValue);
-            shuffledList.set(leftIndex, rightValue);
+    public static int sampleWithDistribution(RandomGenerator random, int distributionSum,
+            int[] distribution) {
+        var choice = random.nextInt(distributionSum);
+        var index = 0;
+        while (distribution[index] < choice) {
+            choice -= distribution[index];
+            index++;
         }
+        return index;
     }
 
     private RandomUtils() {
