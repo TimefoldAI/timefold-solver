@@ -90,7 +90,6 @@
             <author>false</author>
             <failOnError>true</failOnError>
             <quiet>true</quiet>
-            <legacyMode>true</legacyMode>
           </configuration>
         </plugin>
         <plugin>
