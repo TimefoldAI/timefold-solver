@@ -165,21 +165,7 @@ final class ValueRangeStatistics<Solution_> {
                 processProblemScale(valueRangeManager, entityDescriptor, entity, problemScaleTracker);
             }
         });
-        var result = problemScaleTracker.getBasicProblemScaleLog();
-        if (problemScaleTracker.getListTotalEntityCount() != 0L) {
-            // List variables do not support from entity value ranges
-            var totalListValueCount = problemScaleTracker.getListTotalValueCount();
-            var totalListMovableValueCount = totalListValueCount - problemScaleTracker.getListPinnedValueCount();
-            var possibleTargetsForListValue = problemScaleTracker.getListMovableEntityCount();
-            var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-            if (listVariableDescriptor != null && listVariableDescriptor.allowsUnassignedValues()) {
-                // Treat unassigned values as assigned to a single virtual vehicle for the sake of this calculation
-                possibleTargetsForListValue++;
-            }
-
-            result += MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, logBase,
-                    totalListMovableValueCount, possibleTargetsForListValue);
-        }
+        var result = problemScaleTracker.getProblemScaleLog();
         var scale = (result / (double) MathUtils.LOG_PRECISION) / MathUtils.getLogInBase(logBase, 10d);
         if (Double.isNaN(scale) || Double.isInfinite(scale)) {
             return 0;
@@ -237,15 +223,8 @@ final class ValueRangeStatistics<Solution_> {
                     }
                 }
                 case ListVariableDescriptor<Solution_> listVariableDescriptor -> {
-                    var size = valueRangeManager.countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), solution);
-                    tracker.setListTotalValueCount((int) size);
-                    if (entityDescriptor.isMovable(solution, entity)) {
-                        tracker.incrementListEntityCount(true);
-                        tracker.addPinnedListValueCount(listVariableDescriptor.getFirstUnpinnedIndex(entity));
-                    } else {
-                        tracker.incrementListEntityCount(false);
-                        tracker.addPinnedListValueCount(listVariableDescriptor.getListSize(entity));
-                    }
+                    tracker.processListValueRange(listVariableDescriptor.allowsUnassignedValues(),
+                            valueRangeManager.getFromEntity(listVariableDescriptor.getValueRangeDescriptor(), entity));
                 }
                 default -> throw new IllegalStateException("Unhandled subclass of %s encountered (%s)."
                         .formatted(VariableDescriptor.class.getSimpleName(), variableDescriptor.getClass().getSimpleName()));
