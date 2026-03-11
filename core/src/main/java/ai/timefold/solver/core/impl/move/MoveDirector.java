@@ -246,9 +246,9 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         if (sourceIndex >= listSize) {
             throw new IllegalArgumentException(
                     "The sourceIndex (%d) must be less than the list size (%d).".formatted(sourceIndex, listSize));
-        } else if (destinationIndex > listSize) { // destinationIndex == listSize is allowed (append to the end of the list)
+        } else if (destinationIndex >= listSize) {
             throw new IllegalArgumentException(
-                    "The destinationIndex (%d) must be less than or equal to the list size (%d)."
+                    "The destinationIndex (%d) must be less than the list size (%d)."
                             .formatted(destinationIndex, listSize));
         }
 

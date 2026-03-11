@@ -188,7 +188,7 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * @param sourceIndex The index in the source entity's list variable which contains the value to be replaced;
      *        Acceptable values range from zero to one less than list size.
      * @param replacementEntity The entity from which the value will be taken.
-     * @param replacementIndex The index in the destination entity's list variable which contains the value to be moved;
+     * @param replacementIndex The index in the replacementEntity's list variable which contains the value to be moved;
      *        Acceptable values range from zero to one less than list size.
      *        All values at or after the index are shifted to the left.
      * @return the value that was replaced
