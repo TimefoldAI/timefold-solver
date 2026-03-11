@@ -848,8 +848,8 @@ class ValueRangeManagerTest {
             // 50% of the possible positions for v3 are valid,
             // So the actual problem scale would be half the total permutation count.
             softly.assertThat(
-                            // Use pow to get the approximate number of combinations
-                            Math.pow(10, (valueRangeManager.getStatistics().getProblemScale())))
+                    // Use pow to get the approximate number of combinations
+                    Math.pow(10, (valueRangeManager.getStatistics().getProblemScale())))
                     // There should be 12 possible combinations
                     // (total ways to split 3 values across 2 lists = 24, half of that is 12)
                     .isCloseTo(12.0, Percentage.withPercentage(1.0));
