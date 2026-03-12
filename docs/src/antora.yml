@@ -3,17 +3,17 @@
 # That file is then copied to src/modules/antora.yml and committed to Git on the release branch.
 # The timefold.ai website can then be refreshed from the release branch and/or tag.
 name: timefold-solver
-title: Timefold Solver ${project.version}
+title: Timefold Solver 2.0.0-beta-1
 version: latest
 asciidoc:
   attributes:
-    timefold-solver-version: ${project.version}
-    java-version: ${maven.compiler.release}
-    maven-version: ${maven.min.version}
-    quarkus-version: ${version.io.quarkus}
-    spring-boot-version: ${version.org.springframework.boot}
-    logback-version: ${version.ch.qos.logback}
-    exec-maven-plugin-version: ${version.exec.plugin}
-    rewrite-maven-plugin-version: ${version.rewrite.plugin}
+    timefold-solver-version: 2.0.0-beta-1
+    java-version: 21
+    maven-version: 3.9.11
+    quarkus-version: 3.32.3
+    spring-boot-version: 4.0.3
+    logback-version: 1.5.32
+    exec-maven-plugin-version: 3.6.3
+    rewrite-maven-plugin-version: 6.28.1
 nav:
   - modules/ROOT/nav.adoc
