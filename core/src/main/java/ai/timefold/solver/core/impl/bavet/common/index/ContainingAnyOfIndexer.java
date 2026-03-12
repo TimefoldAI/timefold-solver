@@ -276,22 +276,24 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
 
     private final class RandomIterator implements Iterator<T> {
 
-        private final List<DownstreamIteratorSupplier> downstreamIteratorSupplierList;
+        private final List<DownstreamIterator> downstreamIteratorList;
         private final RandomGenerator workingRandom;
-        private final Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction;
         private final int[] distribution;
         private int distributionSum;
-        private @Nullable Set<T> removedSet;
         private @Nullable T next = null;
         private @Nullable T current = null;
-        private @Nullable DownstreamIteratorSupplier currentIteratorSupplier = null;
-        private @Nullable Iterator<T> currentIterator = null;
 
-        private class DownstreamIteratorSupplier {
+        // These are nullable as an optimization for fast-step algorithms which
+        // will only call next() once.
+        private @Nullable Set<T> removedSet;
+        private @Nullable DownstreamIterator currentIterator = null;
+
+        private class DownstreamIterator implements Iterator<T> {
             private final int index;
             private final Iterator<T> cachedDownstreamIterator;
 
-            public DownstreamIteratorSupplier(int index, Key_ key) {
+            public DownstreamIterator(Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction, int index,
+                    Key_ key) {
                 this.index = index;
                 var indexer = downstreamIndexerMap.get(key);
                 this.cachedDownstreamIterator = downstreamIndexerIteratorFunction.apply(indexer);
@@ -299,8 +301,12 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
                 distributionSum += distribution[index];
             }
 
-            Iterator<T> iterator() {
-                return cachedDownstreamIterator;
+            public boolean hasNext() {
+                return cachedDownstreamIterator.hasNext();
+            }
+
+            public T next() {
+                return cachedDownstreamIterator.next();
             }
 
             public void remove() {
@@ -312,13 +318,12 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
 
         public RandomIterator(KeyCollection_ indexKeyCollection, RandomGenerator workingRandom,
                 Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction) {
-            this.downstreamIteratorSupplierList = new ArrayList<>(indexKeyCollection.size());
+            this.downstreamIteratorList = new ArrayList<>(indexKeyCollection.size());
             this.workingRandom = workingRandom;
-            this.downstreamIndexerIteratorFunction = downstreamIndexerIteratorFunction;
             this.distribution = new int[indexKeyCollection.size()];
             var index = 0;
             for (var indexKey : indexKeyCollection) {
-                this.downstreamIteratorSupplierList.add(new DownstreamIteratorSupplier(index, indexKey));
+                this.downstreamIteratorList.add(new DownstreamIterator(downstreamIndexerIteratorFunction, index, indexKey));
                 index++;
             }
         }
@@ -334,8 +339,8 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
                     if (removedSet == null || !removedSet.contains(next)) {
                         return true;
                     } else {
-                        currentIteratorSupplier.remove();
-                        // We do not remove the current iterator supplier from the list
+                        currentIterator.remove();
+                        // We do not remove the current iterator from the list
                         // if the current iterator has no more elements, since then we
                         // would need to resize the distribution array.
                         // The current iterator will never be picked if it has no more
@@ -345,8 +350,7 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
             }
             while (distributionSum > 0) {
                 var selectedIndex = RandomUtils.sampleWithDistribution(workingRandom, distributionSum, distribution);
-                currentIteratorSupplier = downstreamIteratorSupplierList.get(selectedIndex);
-                currentIterator = currentIteratorSupplier.iterator();
+                currentIterator = downstreamIteratorList.get(selectedIndex);
                 if (!currentIterator.hasNext()) {
                     continue;
                 }
@@ -355,8 +359,8 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
                 if (removedSet == null || !removedSet.contains(next)) {
                     return true;
                 } else {
-                    currentIteratorSupplier.remove();
-                    // We do not remove the current iterator supplier from the list
+                    currentIterator.remove();
+                    // We do not remove the current iterator from the list
                     // if the current iterator has no more elements, since then we
                     // would need to resize the distribution array.
                     // The current iterator will never be picked if it has no more
@@ -378,7 +382,7 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
 
         @Override
         public void remove() {
-            // Note: since we have multiple downstream iterators, and they may have
+            // Since we have multiple downstream iterators, and they may have
             // duplicates, we need to keep track of removed elements ourselves
             if (current == null) {
                 throw new IllegalStateException("next() must be called before remove().");
@@ -387,11 +391,10 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
                 removedSet = new HashSet<>();
             }
             removedSet.add(current);
-            currentIteratorSupplier.remove();
+            currentIterator.remove();
             if (!currentIterator.hasNext()) {
-                currentIteratorSupplier = null;
                 currentIterator = null;
-                // We do not remove the current iterator supplier from the list
+                // We do not remove the current iterator from the list
                 // if the current iterator has no more elements, since then we
                 // would need to resize the distribution array.
                 // The current iterator will never be picked if it has no more
