@@ -45,10 +45,6 @@ deploy:
           - "target/staging-deploy"
         artifactOverrides:
           - groupId: ai.timefold.solver
-            artifactId: timefold-solver-spring-boot-starter
-            sourceJar: false
-            javadocJar: false
-          - groupId: ai.timefold.solver
             artifactId: timefold-solver-ide-config
             sourceJar: true
             javadocJar: false
