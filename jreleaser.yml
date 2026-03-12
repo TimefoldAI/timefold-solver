@@ -1,10 +1,12 @@
 project:
-  java:
-    groupId: "ai.timefold.solver"
+  languages:
+    java:
+      groupId: "ai.timefold.solver"
 
 signing:
-  active: ALWAYS
-  armored: true
+  pgp:
+    active: ALWAYS
+    armored: true
 
 release:
   github:
