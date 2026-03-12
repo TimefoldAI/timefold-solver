@@ -366,7 +366,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (solutionTracker != null) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
-        return moveDirector.executeTemporary(move,
+        var result = moveDirector.executeTemporary(move,
                 (score, undoMove) -> {
                     if (solutionTracker != null) {
                         solutionTracker.setAfterMoveSolution(workingSolution);
@@ -379,6 +379,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     }
                     return score;
                 });
+        return Objects.requireNonNull(result);
     }
 
     @Override
