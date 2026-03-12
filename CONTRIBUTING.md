@@ -78,7 +78,7 @@ Use one of the following ways to build this project:
 - 🚀 **build-fast**: `./mvnw clean install -Dquickly` - Skips checks and code analysis (~1 min)
 - 🔨 **build-normally**: `./mvnw clean install` - Runs tests, checks code style, skips documentation (~17 min)
 - 📄 **build-doc**: `./mvnw clean install` in the `docs` directory - Creates asciidoctor documentation `docs/target/html_single/index.html` (~2 min)
-- 🦾 **build-all**: `./mvnw clean install -Dfull` - Runs all checks, creates documentation and distribution files (~20 min)
+- 🦾 **build-all**: `./mvnw clean install -Dfull` - Runs all checks, creates documentation and distribution files (~20 min). It requires JDK 25+ to build properly.
 
 ---
 
