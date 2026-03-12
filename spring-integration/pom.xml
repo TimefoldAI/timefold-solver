@@ -33,6 +33,18 @@
     <dependencies>
       <dependency>
         <!--
+          Our version of Jackson 3 in the persistence module is independent of Spring Boot.
+          Therefore we need to bring them in sync here.
+          This needs to be imported before the Spring Boot dependency management to be effective.
+        -->
+        <groupId>tools.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>${version.tools.jackson}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <!--
           Import dependency management from Spring Boot, as recommended here:
           https://github.com/TimefoldAI/timefold-solver/issues/395
          -->
