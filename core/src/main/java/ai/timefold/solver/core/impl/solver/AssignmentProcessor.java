@@ -139,13 +139,13 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
 
     private Recommendation_ execute(InnerScoreDirector<Solution_, Score_> scoreDirector, Move<Solution_> move, long moveIndex,
             In_ clonedElement, Function<In_, @Nullable Out_> propositionFunction) {
-        return scoreDirector.getMoveDirector().executeTemporary(move,
-                (moveDirector, score) -> {
+        return Objects.requireNonNull(scoreDirector.getMoveDirector()
+                .executeTemporary(move, (unused, unused2) -> {
                     var newScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy);
                     var newScoreDifference = newScoreAnalysis.diff(originalScoreAnalysis);
                     return recommendationConstructor.apply(moveIndex, propositionFunction.apply(clonedElement),
                             newScoreDifference);
-                });
+                }));
     }
 
 }
