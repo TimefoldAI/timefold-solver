@@ -58,12 +58,23 @@ public final class RandomUtils {
      */
     public static int sampleWithDistribution(RandomGenerator random, int distributionSum,
             int[] distribution) {
-        var choice = random.nextInt(distributionSum);
+        // choose a random number between 1 and distributionSum
+        var choice = random.nextInt(distributionSum) + 1;
         var index = 0;
+        // We pick the first index where sum_(i=0...index)(distribution[i]) >= choice
+        // Loop Precondition: initialChoice > sum(i=0...index)(distribution[i])
         while (distribution[index] < choice) {
+            // Instead of incrementing a sum variable, we decrement choice,
+            // which has the same effect
             choice -= distribution[index];
             index++;
         }
+        // Loop Postcondition: initialChoice <= sum(i=0...index)(distribution[i])
+        // An index is chosen if initialChoice in
+        // [sum(i=0...index - 1)(distribution[i]), sum(i=0...index - 1)(distribution[i]) + distribution[i]]
+        // (start exclusive, end inclusive)
+        // which is an interval of length distribution[index], and thus have a distribution[index]/distributionSum chance
+        // of being chosen.
         return index;
     }
 

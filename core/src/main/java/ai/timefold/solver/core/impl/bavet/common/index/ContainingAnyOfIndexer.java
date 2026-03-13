@@ -278,7 +278,20 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
 
         private final List<DownstreamIterator> downstreamIteratorList;
         private final RandomGenerator workingRandom;
+        /**
+         * How many elements are remaining for each {@link Iterator} in
+         * {@link #downstreamIteratorList}. Used with
+         * {@link RandomUtils#sampleWithDistribution(RandomGenerator, int, int[])} to
+         * fairly select an iterator (so selecting an iterator with more elements is
+         * more likely).
+         */
         private final int[] distribution;
+        /**
+         * Sum of all values in {@link #distribution}. Used with
+         * {@link RandomUtils#sampleWithDistribution(RandomGenerator, int, int[])} to
+         * fairly select an iterator (so selecting an iterator with more elements is
+         * more likely).
+         */
         private int distributionSum;
         private @Nullable T next = null;
         private @Nullable T current = null;
@@ -301,14 +314,17 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedColl
                 distributionSum += distribution[index];
             }
 
+            @Override
             public boolean hasNext() {
                 return cachedDownstreamIterator.hasNext();
             }
 
+            @Override
             public T next() {
                 return cachedDownstreamIterator.next();
             }
 
+            @Override
             public void remove() {
                 cachedDownstreamIterator.remove();
                 distribution[index]--;

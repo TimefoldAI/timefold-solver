@@ -92,6 +92,7 @@ public sealed interface Indexer<T>
 
     /**
      * Iterator which picks elements randomly.
+     * If the iterator has elements, it is endless and may return the same value multiple times.
      * Selection probability is uniform over all elements for the given composite key.
      * By calling {@link Iterator#remove()},
      * the element is removed never to be returned again by this iterator.
