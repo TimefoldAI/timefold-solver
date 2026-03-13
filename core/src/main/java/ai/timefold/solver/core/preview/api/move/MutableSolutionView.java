@@ -131,7 +131,6 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      *        Acceptable values range from zero to one less than list size.
      *        All values after the index are shifted to the left.
      * @return the removed value
-     * @throws IndexOutOfBoundsException if the index is out of bounds
      */
     <Entity_, Value_> Value_ unassignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity, int index);
@@ -171,11 +170,43 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      *        All values at or after the index are shifted to the right.
      *        To append to the end of the list, use the list size as index.
      * @return the value that was moved
-     * @throws IndexOutOfBoundsException if either index is out of bounds
      * @throws IllegalArgumentException if sourceEntity == destinationEntity
      */
     <Entity_, Value_> Value_ moveValueBetweenLists(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ sourceEntity, int sourceIndex, Entity_ destinationEntity, int destinationIndex);
+
+    /**
+     * Replaces a value in one entity's {@link PlanningListVariable planning list variable} with a value taken from another.
+     * The value is removed from {@code sourceEntity} at {@code sourceIndex}, shifting all later values to the left.
+     * The removed value is then assigned to {@code destinationEntity} at {@code destinationIndex},
+     * overwriting the pre-existing value and unassigning it.
+     * This means that the sourceEntity's list will be one item shorter after the move,
+     * while the destinationEntity's list size remains unchanged.
+     *
+     * @param variableMetaModel Describes the variable to be changed.
+     * @param sourceEntity The entity from which the replacement value will be taken and removed.
+     * @param sourceIndex The index in the sourceEntity's list variable which contains the value to be moved and
+     *        removed;
+     *        Acceptable values range from zero to one less than the source list size.
+     *        All values at or after the index are shifted to the left.
+     * @param destinationEntity The entity in which the value at {@code destinationIndex} will be replaced (overwritten).
+     * @param destinationIndex The index in the destinationEntity's list variable whose current value will be overwritten;
+     *        Acceptable values range from zero to one less than the destination list size.
+     * @return the value that was replaced
+     * @see #moveValueBetweenLists(PlanningListVariableMetaModel, Object, int, Object, int) Similar operation that moves the
+     *      value to the destination without removing the pre-existing value.
+     */
+    <Entity_, Value_> Value_ replaceValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ sourceEntity, int sourceIndex, Entity_ destinationEntity, int destinationIndex);
+
+    /**
+     * As defined by {@link #replaceValue(PlanningListVariableMetaModel, Object, int, Object, int)},
+     * but using {@link PositionInList} to specify the positions.
+     */
+    default <Entity_, Value_> Value_ replaceValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            PositionInList source, PositionInList destination) {
+        return replaceValue(variableMetaModel, source.entity(), source.index(), destination.entity(), destination.index());
+    }
 
     /**
      * As defined by {@link #moveValueBetweenLists(PlanningListVariableMetaModel, Object, int, Object, int)},
@@ -205,13 +236,46 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      *        Acceptable values range from zero to one less than list size.
      *        All values at or after the index are shifted to the right.
      * @return the value that was moved
-     * @throws IndexOutOfBoundsException if either index is out of bounds
      * @throws IllegalArgumentException if sourceIndex == destinationIndex
+     * @see #replaceValue(PlanningListVariableMetaModel, Object, int, int) Similar operation that replaces the value at
+     *      the destination index instead.
      * @see #shiftValue(PlanningListVariableMetaModel, Object, int, int) Equivalent operation using offset calculation instead
      *      of index arithmetics.
      */
     <Entity_, Value_> Value_ moveValueInList(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ sourceEntity, int sourceIndex, int destinationIndex);
+
+    /**
+     * Moves a value within one entity's {@link PlanningListVariable planning list variable}.
+     * Behaves as if the value is first put in the destinationIndex,
+     * and then removed from the sourceIndex, shifting all later values to the left
+     * The value previously at the destinationIndex is unassigned.
+     *
+     * @param variableMetaModel Describes the variable to be changed.
+     * @param entity The entity in which the value at {@code destinationIndex} will be replaced (overwritten).
+     * @param sourceIndex The index in the entity's list variable which contains the value to be moved and removed;
+     *        Acceptable values range from zero to one less than the list size.
+     *        All values at or after the index are shifted to the left.
+     * @param destinationIndex The index in the entity's list variable whose current value will be overwritten;
+     *        Acceptable values range from zero to one less than the list size.
+     * @return the value that was replaced
+     * @throws IllegalArgumentException if sourceIndex == destinationIndex
+     * @see #moveValueInList(PlanningListVariableMetaModel, Object, int, int) Similar operation that moves the value to the
+     *      destination index instead.
+     * @see #shiftValue(PlanningListVariableMetaModel, Object, int, int) Equivalent operation using offset calculation instead
+     *      of index arithmetic.
+     */
+    <Entity_, Value_> Value_ replaceValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity, int sourceIndex, int destinationIndex);
+
+    /**
+     * As defined by {@link #replaceValue(PlanningListVariableMetaModel, Object, int, int)},
+     * but using {@link PositionInList} to specify the source position.
+     */
+    default <Entity_, Value_> Value_ replaceValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            PositionInList source, int destinationIndex) {
+        return replaceValue(variableMetaModel, source.entity(), source.index(), destinationIndex);
+    }
 
     /**
      * Moves a value within one entity's {@link PlanningListVariable planning list variable},
@@ -225,7 +289,6 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      *        The offset must not be zero.
      *        The offset must not move the value out of bounds.
      * @return the value that was moved
-     * @throws IndexOutOfBoundsException if either index is out of bounds
      * @throws IllegalArgumentException if sourceIndex == destinationIndex
      * @see #moveValueInList(PlanningListVariableMetaModel, Object, int, int) Equivalent operation using index arithmetics
      *      instead of offset calculation.
@@ -252,7 +315,6 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * @param rightEntity The second entity whose variable value is to be swapped.
      * @param rightIndex The index in the right entity's list variable which contains the other value to be swapped;
      *        Acceptable values range from zero to one less than list size.
-     * @throws IndexOutOfBoundsException if either index is out of bounds
      * @throws IllegalArgumentException if leftEntity == rightEntity while leftIndex == rightIndex
      */
     <Entity_, Value_> void swapValuesBetweenLists(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
@@ -267,7 +329,6 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      *        Acceptable values range from zero to one less than list size.
      * @param rightIndex The index in the entity's list variable which contains the other value to be swapped;
      *        Acceptable values range from zero to one less than list size.
-     * @throws IndexOutOfBoundsException if either index is out of bounds
      * @throws IllegalArgumentException if leftIndex == rightIndex
      */
     <Entity_, Value_> void swapValuesInList(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
