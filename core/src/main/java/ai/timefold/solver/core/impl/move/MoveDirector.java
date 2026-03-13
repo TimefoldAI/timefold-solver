@@ -200,26 +200,23 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public <Entity_, Value_> Value_ replaceValueBetweenLists(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity, int sourceIndex,
-            Entity_ replacementEntity, int replacementIndex) {
-        if (sourceEntity == replacementEntity) {
-            throw new IllegalArgumentException(
-                    "Source entity (%s) and replacement entity (%s) must be different when replacing values between lists."
-                            .formatted(sourceEntity, replacementEntity));
+    public <Entity_, Value_> Value_ replaceValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ sourceEntity, int sourceIndex, Entity_ destinationEntity, int destinationIndex) {
+        if (destinationEntity == sourceEntity) {
+            return replaceValue(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
         }
 
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
-        var toReplace = (Value_) variableDescriptor.getElement(sourceEntity, sourceIndex);
+        var toReplace = (Value_) variableDescriptor.getElement(destinationEntity, destinationIndex);
         externalScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, toReplace);
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex + 1);
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
-        externalScoreDirector.beforeListVariableChanged(variableDescriptor, replacementEntity, replacementIndex,
-                replacementIndex + 1);
-        var toMove = variableDescriptor.removeElement(replacementEntity, replacementIndex);
-        variableDescriptor.setElement(sourceEntity, sourceIndex, toMove);
-        externalScoreDirector.afterListVariableChanged(variableDescriptor, replacementEntity, replacementIndex,
-                replacementIndex);
-        externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
+        var toMove = variableDescriptor.removeElement(sourceEntity, sourceIndex);
+        variableDescriptor.setElement(destinationEntity, destinationIndex, toMove);
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex + 1);
         externalScoreDirector.afterListVariableElementUnassigned(variableDescriptor, toReplace);
         externalScoreDirector.triggerVariableListeners();
         return toReplace;
@@ -260,30 +257,33 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public <Entity_, Value_> Value_ replaceValueInList(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity, int sourceIndex,
-            int replacementIndex) {
-        if (sourceIndex == replacementIndex) {
+    public <Entity_, Value_> Value_ replaceValue(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity, int sourceIndex,
+            int destinationIndex) {
+        if (sourceIndex == destinationIndex) {
             throw new IllegalArgumentException(
-                    "When replacing values in the same list, sourceIndex (%d) and replacementIndex (%d) must be different."
-                            .formatted(sourceIndex, replacementIndex));
-        } else if (sourceIndex < 0 || replacementIndex < 0) {
-            throw new IndexOutOfBoundsException("The sourceIndex (%d) and replacementIndex (%d) must both be >= 0."
-                    .formatted(sourceIndex, replacementIndex));
+                    "When replacing values in the same list, sourceIndex (%d) and destinationIndex (%d) must be different."
+                            .formatted(sourceIndex, destinationIndex));
+        } else if (sourceIndex < 0 || destinationIndex < 0) {
+            throw new IndexOutOfBoundsException("The sourceIndex (%d) and destinationIndex (%d) must both be >= 0."
+                    .formatted(sourceIndex, destinationIndex));
         }
 
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
-        var fromIndex = Math.min(sourceIndex, replacementIndex);
-        var toIndex = Math.max(sourceIndex, replacementIndex) + 1;
-        var list = variableDescriptor.getValue(sourceEntity);
-        var toReplace = (Value_) list.get(replacementIndex);
+        var fromIndex = Math.min(sourceIndex, destinationIndex);
+        var toIndex = Math.max(sourceIndex, destinationIndex) + 1;
+        var list = variableDescriptor.getValue(entity);
+        var toReplace = (Value_) list.get(destinationIndex);
         externalScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, toReplace);
-        externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
-        list.set(replacementIndex, list.get(sourceIndex));
-        // Remove from sourceIndex after setting the replacement to preserve index validity,
-        // as the replacement may occur after the source position.
-        list.remove(sourceIndex);
-        externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex - 1);
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
+        if (destinationIndex > sourceIndex) {
+            // Remove from sourceIndex after setting the destination to preserve index validity.
+            list.set(destinationIndex, list.get(sourceIndex));
+            list.remove(sourceIndex);
+        } else {
+            list.set(destinationIndex, list.remove(sourceIndex));
+        }
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex - 1);
         externalScoreDirector.afterListVariableElementUnassigned(variableDescriptor, toReplace);
         externalScoreDirector.triggerVariableListeners();
         return toReplace;

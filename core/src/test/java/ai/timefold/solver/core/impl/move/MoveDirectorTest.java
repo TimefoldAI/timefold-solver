@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.move;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -51,7 +52,6 @@ import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -509,7 +509,7 @@ class MoveDirectorTest {
 
             var moveDirector = new MoveDirector<>(scoreDirector).ephemeral();
             // Try to assign value1 which is already assigned - should fail.
-            Assertions.assertThatThrownBy(() -> moveDirector.assignValueAndAdd(variableMetaModel, value1, entity, 1))
+            assertThatThrownBy(() -> moveDirector.assignValueAndAdd(variableMetaModel, value1, entity, 1))
                     .isInstanceOf(IllegalStateException.class);
             moveDirector.close();
         }
@@ -713,7 +713,7 @@ class MoveDirectorTest {
 
             var moveDirector = new MoveDirector<>(scoreDirector).ephemeral();
             // Try to assign a list containing value1 (already assigned) - should fail.
-            Assertions.assertThatThrownBy(
+            assertThatThrownBy(
                     () -> moveDirector.assignValuesAndAdd(variableMetaModel, List.of(value1, unassigned1), entity, 1))
                     .isInstanceOf(IllegalStateException.class);
             moveDirector.close();
@@ -744,7 +744,7 @@ class MoveDirectorTest {
 
             var moveDirector = new MoveDirector<>(scoreDirector).ephemeral();
             // Try to assign value1 which is already assigned - should fail.
-            Assertions.assertThatThrownBy(() -> moveDirector.assignValueAndSet(variableMetaModel, value1, entity, 1))
+            assertThatThrownBy(() -> moveDirector.assignValueAndSet(variableMetaModel, value1, entity, 1))
                     .isInstanceOf(IllegalStateException.class);
             moveDirector.close();
         }
@@ -997,7 +997,7 @@ class MoveDirectorTest {
 
             var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
             var moveDirector = new MoveDirector<>(mockScoreDirector);
-            Assertions.assertThatThrownBy(() -> moveDirector.shiftValue(variableMetaModel, entity, 0, 0))
+            assertThatThrownBy(() -> moveDirector.shiftValue(variableMetaModel, entity, 0, 0))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("offset (0) must not be zero");
         }
@@ -1385,7 +1385,7 @@ class MoveDirectorTest {
             // value3 is unassigned; value1 takes its position.
             var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
             var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
-            var replaced = moveDirector.replaceValueInList(variableMetaModel, entity, 0, 2);
+            var replaced = moveDirector.replaceValue(variableMetaModel, entity, 0, 2);
             assertThat(replaced).isSameAs(value3);
             assertThat(entity.getValueList()).containsExactly(value2, value1);
             verify(mockScoreDirector).beforeListVariableElementUnassigned(variableDescriptor, value3);
@@ -1406,7 +1406,7 @@ class MoveDirectorTest {
             // Replace at replacementIndex=0 using sourceIndex=2 (sourceIndex > replacementIndex).
             // value1 is unassigned; value3 takes its position.
             moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
-            replaced = moveDirector.replaceValueInList(variableMetaModel, entity, 2, 0);
+            replaced = moveDirector.replaceValue(variableMetaModel, entity, 2, 0);
             assertThat(replaced).isSameAs(value1);
             assertThat(entity.getValueList()).containsExactly(value3, value2);
             verify(mockScoreDirector).beforeListVariableElementUnassigned(variableDescriptor, value1);
@@ -1432,7 +1432,7 @@ class MoveDirectorTest {
             var entity = new TestdataListEntity("A", new TestdataListValue("value1"), new TestdataListValue("value2"));
             var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
             var moveDirector = new MoveDirector<>(mockScoreDirector);
-            Assertions.assertThatThrownBy(() -> moveDirector.replaceValueInList(variableMetaModel, entity, 1, 1))
+            assertThatThrownBy(() -> moveDirector.replaceValue(variableMetaModel, entity, 1, 1))
                     .isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -1444,7 +1444,7 @@ class MoveDirectorTest {
             var entity = new TestdataListEntity("A", new TestdataListValue("value1"), new TestdataListValue("value2"));
             var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
             var moveDirector = new MoveDirector<>(mockScoreDirector);
-            Assertions.assertThatThrownBy(() -> moveDirector.replaceValueInList(variableMetaModel, entity, -1, 1))
+            assertThatThrownBy(() -> moveDirector.replaceValue(variableMetaModel, entity, -1, 1))
                     .isInstanceOf(IndexOutOfBoundsException.class);
         }
 
@@ -1470,7 +1470,7 @@ class MoveDirectorTest {
             // valueA2 is unassigned; valueB3 moves into entityA; entityB shrinks by one.
             var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
             var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
-            var replaced = moveDirector.replaceValueBetweenLists(variableMetaModel, entityA, 1, entityB, 2);
+            var replaced = moveDirector.replaceValue(variableMetaModel, entityB, 2, entityA, 1);
             assertThat(replaced).isSameAs(valueA2);
             assertThat(entityA.getValueList()).containsExactly(valueA1, valueB3, valueA3);
             assertThat(entityB.getValueList()).containsExactly(valueB1, valueB2);
@@ -1492,18 +1492,6 @@ class MoveDirectorTest {
             verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityB, 2, 3);
             verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityA, 1, 2);
             verify(mockScoreDirector).afterListVariableElementAssigned(variableDescriptor, valueA2);
-        }
-
-        @Test
-        void replaceValueBetweenListsThrowsOnSameEntity() {
-            var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor().getMetaModel();
-            var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
-                    .listVariable("valueList", TestdataListValue.class);
-            var entity = new TestdataListEntity("A", new TestdataListValue("value1"), new TestdataListValue("value2"));
-            var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
-            var moveDirector = new MoveDirector<>(mockScoreDirector);
-            Assertions.assertThatThrownBy(() -> moveDirector.replaceValueBetweenLists(variableMetaModel, entity, 0, entity, 1))
-                    .isInstanceOf(IllegalArgumentException.class);
         }
 
     }
