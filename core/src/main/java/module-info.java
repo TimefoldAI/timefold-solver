@@ -153,8 +153,6 @@ module ai.timefold.solver.core {
             ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.director.incremental to ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
-    exports ai.timefold.solver.core.impl.score.stream to ai.timefold.solver.jackson,
-            ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.stream.common
             to ai.timefold.solver.quarkus, ai.timefold.solver.spring.boot.autoconfigure;
     exports ai.timefold.solver.core.impl.score.stream.collector

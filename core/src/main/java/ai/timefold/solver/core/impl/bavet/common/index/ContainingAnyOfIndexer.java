@@ -1,14 +1,15 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.SequencedCollection;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -16,7 +17,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
+import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.util.CompositeListEntry;
 import ai.timefold.solver.core.impl.util.ListEntry;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -25,10 +27,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * As defined by {@link UnfinishedJoiners#containingAnyOf(Function, Function)}
+ * As defined by {@link Joiners#containingAnyOf(Function, Function)}
  */
 @NullMarked
-final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
+final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends SequencedCollection<Key_>> implements Indexer<T> {
 
     private final KeyUnpacker<KeyCollection_> modifyKeyUnpacker;
     private final KeyUnpacker<KeyCollection_> queryKeyUnpacker;
@@ -187,12 +189,22 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
 
     @Override
     public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+        return randomIterator(queryCompositeKey, workingRandom, null);
     }
 
     @Override
-    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, Predicate<T> filter) {
-        throw new UnsupportedOperationException("Not yet implemented.");
+    public Iterator<T> randomIterator(Object queryCompositeKey, RandomGenerator workingRandom, @Nullable Predicate<T> filter) {
+        var indexKeyCollection = queryKeyUnpacker.apply(queryCompositeKey);
+        if (indexKeyCollection.isEmpty()) {
+            return Collections.emptyIterator();
+        }
+        if (filter == null) {
+            return new RandomIterator(indexKeyCollection, workingRandom,
+                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom));
+        } else {
+            return new RandomIterator(indexKeyCollection, workingRandom,
+                    downstreamIndexer -> downstreamIndexer.randomIterator(queryCompositeKey, workingRandom, filter));
+        }
     }
 
     @Override
@@ -224,11 +236,13 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
             if (next != null) {
                 return true;
             }
-            if (downstreamIterator != null && downstreamIterator.hasNext()) {
-                var tuple = downstreamIterator.next();
-                if (distinctingSet.add(tuple)) {
-                    next = tuple;
-                    return true;
+            if (downstreamIterator != null) {
+                while (downstreamIterator.hasNext()) {
+                    var tuple = downstreamIterator.next();
+                    if (distinctingSet.add(tuple)) {
+                        next = tuple;
+                        return true;
+                    }
                 }
             }
             while (indexerIterator.hasNext()) {
@@ -257,6 +271,152 @@ final class ContainingAnyOfIndexer<T, Key_, KeyCollection_ extends Collection<Ke
             var result = next;
             next = null;
             return result;
+        }
+    }
+
+    private final class RandomIterator implements Iterator<T> {
+
+        private final List<DownstreamIterator> downstreamIteratorList;
+        private final RandomGenerator workingRandom;
+        /**
+         * How many elements are remaining for each {@link Iterator} in
+         * {@link #downstreamIteratorList}. Used with
+         * {@link RandomUtils#sampleWithDistribution(RandomGenerator, int, int[])} to
+         * fairly select an iterator (so selecting an iterator with more elements is
+         * more likely).
+         */
+        private final int[] distribution;
+        /**
+         * Sum of all values in {@link #distribution}. Used with
+         * {@link RandomUtils#sampleWithDistribution(RandomGenerator, int, int[])} to
+         * fairly select an iterator (so selecting an iterator with more elements is
+         * more likely).
+         */
+        private int distributionSum;
+        private @Nullable T next = null;
+        private @Nullable T current = null;
+
+        // These are nullable as an optimization for fast-step algorithms which
+        // will only call next() once.
+        private @Nullable Set<T> removedSet;
+        private @Nullable DownstreamIterator currentIterator = null;
+
+        private class DownstreamIterator implements Iterator<T> {
+            private final int index;
+            private final Iterator<T> cachedDownstreamIterator;
+
+            public DownstreamIterator(Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction, int index,
+                    Key_ key) {
+                this.index = index;
+                var indexer = downstreamIndexerMap.get(key);
+                this.cachedDownstreamIterator = downstreamIndexerIteratorFunction.apply(indexer);
+                distribution[index] = indexer.size(key);
+                distributionSum += distribution[index];
+            }
+
+            @Override
+            public boolean hasNext() {
+                return cachedDownstreamIterator.hasNext();
+            }
+
+            @Override
+            public T next() {
+                return cachedDownstreamIterator.next();
+            }
+
+            @Override
+            public void remove() {
+                cachedDownstreamIterator.remove();
+                distribution[index]--;
+                distributionSum--;
+            }
+        }
+
+        public RandomIterator(KeyCollection_ indexKeyCollection, RandomGenerator workingRandom,
+                Function<Indexer<T>, Iterator<T>> downstreamIndexerIteratorFunction) {
+            this.downstreamIteratorList = new ArrayList<>(indexKeyCollection.size());
+            this.workingRandom = workingRandom;
+            this.distribution = new int[indexKeyCollection.size()];
+            var index = 0;
+            for (var indexKey : indexKeyCollection) {
+                this.downstreamIteratorList.add(new DownstreamIterator(downstreamIndexerIteratorFunction, index, indexKey));
+                index++;
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (next != null) {
+                return true;
+            }
+            if (currentIterator != null) {
+                while (currentIterator.hasNext()) {
+                    next = currentIterator.next();
+                    if (removedSet == null || !removedSet.contains(next)) {
+                        return true;
+                    } else {
+                        currentIterator.remove();
+                        // We do not remove the current iterator from the list
+                        // if the current iterator has no more elements, since then we
+                        // would need to resize the distribution array.
+                        // The current iterator will never be picked if it has no more
+                        // elements, since it would have a weight of 0 in the sample.
+                    }
+                }
+            }
+            while (distributionSum > 0) {
+                var selectedIndex = RandomUtils.sampleWithDistribution(workingRandom, distributionSum, distribution);
+                currentIterator = downstreamIteratorList.get(selectedIndex);
+                if (!currentIterator.hasNext()) {
+                    continue;
+                }
+
+                next = currentIterator.next();
+                if (removedSet == null || !removedSet.contains(next)) {
+                    return true;
+                } else {
+                    currentIterator.remove();
+                    // We do not remove the current iterator from the list
+                    // if the current iterator has no more elements, since then we
+                    // would need to resize the distribution array.
+                    // The current iterator will never be picked if it has no more
+                    // elements, since it would have a weight of 0 in the sample.
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            current = next;
+            next = null;
+            return current;
+        }
+
+        @Override
+        public void remove() {
+            // Since we have multiple downstream iterators, and they may have
+            // duplicates, we need to keep track of removed elements ourselves
+            if (current == null) {
+                throw new IllegalStateException("next() must be called before remove().");
+            }
+            if (removedSet == null) {
+                removedSet = new HashSet<>();
+            }
+            removedSet.add(current);
+            currentIterator.remove();
+            if (!currentIterator.hasNext()) {
+                currentIterator = null;
+                // We do not remove the current iterator from the list
+                // if the current iterator has no more elements, since then we
+                // would need to resize the distribution array.
+                // The current iterator will never be picked if it has no more
+                // elements, since it would have a weight of 0 in the sample.
+            }
+            current = null;
         }
     }
 

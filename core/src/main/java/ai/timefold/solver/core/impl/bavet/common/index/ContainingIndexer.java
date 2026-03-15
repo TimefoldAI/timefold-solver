@@ -1,19 +1,19 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.SequencedCollection;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
-import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
+import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.util.CompositeListEntry;
 import ai.timefold.solver.core.impl.util.ListEntry;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -22,10 +22,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * As defined by {@link UnfinishedJoiners#containing(Function, Function)}
+ * As defined by {@link Joiners#containing(Function, Function)}
  */
 @NullMarked
-final class ContainingIndexer<T, Key_, KeyCollection_ extends Collection<Key_>> implements Indexer<T> {
+final class ContainingIndexer<T, Key_, KeyCollection_ extends SequencedCollection<Key_>> implements Indexer<T> {
 
     private final KeyUnpacker<KeyCollection_> modifyKeyUnpacker;
     private final KeyUnpacker<Key_> queryKeyUnpacker;

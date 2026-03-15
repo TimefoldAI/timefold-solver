@@ -7,16 +7,20 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
+import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.score.stream.UnfinishedJoiners;
+import ai.timefold.solver.core.impl.neighborhood.stream.joiner.DefaultBiNeighborhoodsJoiner;
 
 import org.junit.jupiter.api.Test;
 
 class ContainingIndexerTest extends AbstractIndexerTest {
 
     private final DefaultBiJoiner<TestWorker, TestJob> joiner =
-            (DefaultBiJoiner<TestWorker, TestJob>) UnfinishedJoiners.containing(TestWorker::skills, TestJob::skill)
+            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.containing(TestWorker::skills, TestJob::skill)
                     .and(Joiners.equal(TestWorker::department, TestJob::department));
+
+    private final DefaultBiNeighborhoodsJoiner<TestWorker, TestJob> randomAccessSingleJoiner =
+            new DefaultBiNeighborhoodsJoiner<>(TestWorker::skills, JoinerType.CONTAINING, TestJob::skill);
 
     @Test
     void isRemovable() {
@@ -75,10 +79,13 @@ class ContainingIndexerTest extends AbstractIndexerTest {
         var bethXZ1 = putTuple(indexer, List.of("X", "Z"), "1");
         var carlXY2 = putTuple(indexer, List.of("X", "Y"), "2");
         var ednaYZ1 = putTuple(indexer, List.of("Y", "Z"), "1");
+        @SuppressWarnings("unused")
         var zero1 = putTuple(indexer, List.of(), "1");
 
         assertForEach(indexer, "X", "1").containsExactlyInAnyOrder(annXY1, bethXZ1);
         assertForEach(indexer, "Y", "1").containsExactlyInAnyOrder(annXY1, ednaYZ1);
+        assertForEach(indexer, "X", "2").containsExactlyInAnyOrder(carlXY2);
+        assertForEach(indexer, "Y", "2").containsExactlyInAnyOrder(carlXY2);
         assertForEach(indexer, "Z", "1").containsExactlyInAnyOrder(bethXZ1, ednaYZ1);
         assertForEach(indexer, "AAA", "1").isEmpty();
         assertForEach(indexer, "X", "999").isEmpty();
@@ -88,8 +95,8 @@ class ContainingIndexerTest extends AbstractIndexerTest {
     }
 
     private final DefaultBiJoiner<TestWorker, TestJob> containedInComboJoiner =
-            (DefaultBiJoiner<TestWorker, TestJob>) UnfinishedJoiners.containing(TestWorker::skills, TestJob::skill)
-                    .and(UnfinishedJoiners.containedIn(TestWorker::affinity, TestJob::affinities));
+            (DefaultBiJoiner<TestWorker, TestJob>) Joiners.containing(TestWorker::skills, TestJob::skill)
+                    .and(Joiners.containedIn(TestWorker::affinity, TestJob::affinities));
 
     @Test
     void forEach_containedInCombo() {
@@ -104,6 +111,29 @@ class ContainingIndexerTest extends AbstractIndexerTest {
         assertForEach(indexer, "Y", List.of("1", "2")).containsExactlyInAnyOrder(annXY1, bethXY2, ednaYZ1);
 
         assertForEach(indexer, "X", List.of()).isEmpty();
+    }
+
+    @Test
+    void randomIterator() {
+        var indexer = new IndexerFactory<>(randomAccessSingleJoiner).buildIndexer(true);
+
+        var annXY1 = putContainingIndexer(indexer, List.of("X", "Y"));
+        var bethXZ1 = putContainingIndexer(indexer, List.of("X", "Z"));
+        var carlXY2 = putContainingIndexer(indexer, List.of("X", "Y"));
+        var zero1 = putContainingIndexer(indexer, List.of());
+
+        assertThat(randomIterableForQuery(indexer, "X"))
+                .containsExactlyInAnyOrder(annXY1, bethXZ1, carlXY2);
+        assertThat(randomIterableForQuery(indexer, "Y"))
+                .containsExactlyInAnyOrder(annXY1, carlXY2);
+        assertThat(randomIterableForQuery(indexer, "Z"))
+                .containsExactlyInAnyOrder(bethXZ1);
+
+        var list1 = randomListForQuery(indexer, 0, "X");
+        // seed 0 and 1 has the same list, but 2 is different
+        var list2 = randomListForQuery(indexer, 2, "X");
+        assertThat(list1).containsExactlyInAnyOrderElementsOf(list2);
+        assertThat(list1).isNotEqualTo(list2);
     }
 
     record TestWorker(String name, List<String> skills, String department, String affinity) {
