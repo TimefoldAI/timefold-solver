@@ -52,7 +52,7 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatch(new Pair<>("M", 1)));
+        assertScore(scoreDirector, assertMatch(new Pair<>("M", 1L)));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -83,7 +83,7 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatchWithScore(-10, 10));
+        assertScore(scoreDirector, assertMatchWithScore(-10, 10L));
 
         // Incremental
         Stream.of(entity1, entity2).forEach(entity -> {
@@ -107,14 +107,14 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatchWithScore(-2, 2));
+        assertScore(scoreDirector, assertMatchWithScore(-2, 2L));
 
         // Incremental
         TestdataLavishEntity entity = solution.getFirstEntity();
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, 1));
+        assertScore(scoreDirector, assertMatchWithScore(-1, 1L));
     }
 
     @TestTemplate
@@ -153,7 +153,7 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
                         .forEachUniquePair(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
                         // Stream of all unique entity bi tuples that share a group
                         .groupBy((a, b) -> a.getEntityGroup(), countBi())
-                        .groupBy(toMap((g, c) -> g, (g, c) -> c, Integer::sum))
+                        .groupBy(toMap((g, c) -> g, (g, c) -> c, Long::sum))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
@@ -161,7 +161,7 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getFirstEntityGroup(), 3, solution.getEntityGroupList().get(1), 1)));
+                        asMap(solution.getFirstEntityGroup(), 3L, solution.getEntityGroupList().get(1), 1L)));
 
         // Incremental
         TestdataLavishEntity entity = solution.getFirstEntity();
@@ -170,7 +170,7 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getFirstEntityGroup(), 1, solution.getEntityGroupList().get(1), 1)));
+                        asMap(solution.getFirstEntityGroup(), 1L, solution.getEntityGroupList().get(1), 1L)));
     }
 
     @TestTemplate
@@ -185,7 +185,7 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
                                 filtering((a, b, c) -> !Objects.equals(a, c) && !Objects.equals(b, c)))
                         // Stream of all unique entity tri tuples that share a group
                         .groupBy((a, b, c) -> a.getEntityGroup(), countTri())
-                        .groupBy(toMap((g, c) -> g, (g, c) -> c, Integer::sum))
+                        .groupBy(toMap((g, c) -> g, (g, c) -> c, Long::sum))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
@@ -193,7 +193,7 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getFirstEntityGroup(), 3, solution.getEntityGroupList().get(1), 3)));
+                        asMap(solution.getFirstEntityGroup(), 3L, solution.getEntityGroupList().get(1), 3L)));
 
         // Incremental
         TestdataLavishEntity entity = solution.getFirstEntity();
@@ -202,7 +202,7 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getEntityGroupList().get(1), 3)));
+                        asMap(solution.getEntityGroupList().get(1), 3L)));
     }
 
     @TestTemplate
@@ -221,7 +221,7 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
                                         && !Objects.equals(c, d)))
                         // Stream of all unique entity quad tuples that share a group
                         .groupBy((a, b, c, d) -> a.getEntityGroup(), countQuad())
-                        .groupBy(toMap((g, c) -> g, (g, c) -> c, Integer::sum))
+                        .groupBy(toMap((g, c) -> g, (g, c) -> c, Long::sum))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
@@ -229,7 +229,7 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getFirstEntityGroup(), 12, solution.getEntityGroupList().get(1), 12)));
+                        asMap(solution.getFirstEntityGroup(), 12L, solution.getEntityGroupList().get(1), 12L)));
 
         // Incremental
         TestdataLavishEntity entity = solution.getFirstEntity();
@@ -238,7 +238,7 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getEntityGroupList().get(1), 12)));
+                        asMap(solution.getEntityGroupList().get(1), 12L)));
     }
 
     @TestTemplate
@@ -259,14 +259,14 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity.getEntityGroup(), 1),
-                assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+                assertMatchWithScore(-1, entity.getEntityGroup(), 1L),
+                assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
     }
 
     @TestTemplate
@@ -291,14 +291,14 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity.getEntityGroup(), 1),
-                assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+                assertMatchWithScore(-1, entity.getEntityGroup(), 1L),
+                assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
     }
 
     @TestTemplate
@@ -327,14 +327,14 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity.getEntityGroup(), 1),
-                assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+                assertMatchWithScore(-1, entity.getEntityGroup(), 1L),
+                assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
     }
 
     @TestTemplate
@@ -356,14 +356,14 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1 }),
-                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1L }),
+                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
     }
 
     @TestTemplate
@@ -390,14 +390,14 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1 }),
-                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1L }),
+                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
     }
 
     @TestTemplate
@@ -427,14 +427,14 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1 }),
-                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1L }),
+                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
     }
 
     @TestTemplate
@@ -460,15 +460,15 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2),
-                assertMatchWithScore(-2, entityGroup1, 2));
+                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L),
+                assertMatchWithScore(-2, entityGroup1, 2L));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup1);
         solution.getEntityGroupList().remove(entityGroup1);
         scoreDirector.afterProblemFactRemoved(entityGroup1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2));
+                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L));
     }
 
     @TestTemplate
@@ -495,15 +495,15 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2),
-                assertMatchWithScore(-2, entityGroup1, 2));
+                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L),
+                assertMatchWithScore(-2, entityGroup1, 2L));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup1);
         solution.getEntityGroupList().remove(entityGroup1);
         scoreDirector.afterProblemFactRemoved(entityGroup1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2));
+                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L));
     }
 
     @TestTemplate
@@ -530,15 +530,15 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3),
-                assertMatchWithScore(-3, entityGroup1, 3));
+                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3L),
+                assertMatchWithScore(-3, entityGroup1, 3L));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup1);
         solution.getEntityGroupList().remove(entityGroup1);
         scoreDirector.afterProblemFactRemoved(entityGroup1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3));
+                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3L));
     }
 
     @TestTemplate

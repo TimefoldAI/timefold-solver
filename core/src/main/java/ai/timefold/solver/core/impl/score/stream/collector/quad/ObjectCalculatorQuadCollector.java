@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
         implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
         permits AverageReferenceQuadCollector, ConnectedRangesQuadConstraintCollector,
-        ConsecutiveSequencesQuadConstraintCollector, CountDistinctIntQuadCollector, CountDistinctLongQuadCollector,
+        ConsecutiveSequencesQuadConstraintCollector, CountDistinctQuadCollector,
         SumReferenceQuadCollector {
 
     protected final QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Input_> mapper;

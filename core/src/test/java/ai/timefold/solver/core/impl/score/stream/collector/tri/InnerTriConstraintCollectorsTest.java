@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.tri;
 
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.compose;
-import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.countLongTri;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.max;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.min;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.asMap;
@@ -44,41 +43,7 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void count() {
-        TriConstraintCollector<Integer, Integer, Integer, ?, Integer> collector = ConstraintCollectors.countTri();
-        Object container = collector.supplier().get();
-
-        // Default state.
-        assertResult(collector, container, 0);
-        // Add first value, we have one now.
-        int firstValueA = 2;
-        int firstValueB = 1;
-        int firstValueC = 3;
-        Runnable firstRetractor = accumulate(collector, container, firstValueA, firstValueB, firstValueC);
-        assertResult(collector, container, 1);
-        // Add second value, we have two now.
-        int secondValueA = 1;
-        int secondValueB = 2;
-        int secondValueC = 3;
-        Runnable secondRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC);
-        assertResult(collector, container, 2);
-        // Add third value, same as the second. We now have three values, two of which are the same.
-        Runnable thirdRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC);
-        assertResult(collector, container, 3);
-        // Retract one instance of the second value; we only have two values now.
-        secondRetractor.run();
-        assertResult(collector, container, 2);
-        // Retract final instance of the second value; we only have one value now.
-        thirdRetractor.run();
-        assertResult(collector, container, 1);
-        // Retract last value; there are no values now.
-        firstRetractor.run();
-        assertResult(collector, container, 0);
-    }
-
-    @Override
-    @Test
-    public void countLong() {
-        TriConstraintCollector<Integer, Integer, Integer, ?, Long> collector = countLongTri();
+        TriConstraintCollector<Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors.countTri();
         Object container = collector.supplier().get();
 
         // Default state.
@@ -112,43 +77,8 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void countDistinct() {
-        TriConstraintCollector<Integer, Integer, Integer, ?, Integer> collector = ConstraintCollectors
-                .countDistinct((a, b, c) -> a + b + c);
-        Object container = collector.supplier().get();
-
-        // Default state.
-        assertResult(collector, container, 0);
-        // Add first value, we have one now.
-        int firstValueA = 2;
-        int firstValueB = 3;
-        int firstValueC = 4;
-        Runnable firstRetractor = accumulate(collector, container, firstValueA, firstValueB, firstValueC);
-        assertResult(collector, container, 1);
-        // Add second value, we have two now.
-        int secondValueA = 1;
-        int secondValueB = 2;
-        int secondValueC = 3;
-        Runnable secondRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC);
-        assertResult(collector, container, 2);
-        // Add third value, same as the second. We now have two distinct values.
-        Runnable thirdRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC);
-        assertResult(collector, container, 2);
-        // Retract one instance of the second value; we still only have two distinct values.
-        secondRetractor.run();
-        assertResult(collector, container, 2);
-        // Retract final instance of the second value; we only have one value now.
-        thirdRetractor.run();
-        assertResult(collector, container, 1);
-        // Retract last value; there are no values now.
-        firstRetractor.run();
-        assertResult(collector, container, 0);
-    }
-
-    @Override
-    @Test
-    public void countDistinctLong() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors
-                .countDistinctLong((a, b, c) -> a + b + c);
+                .countDistinct((a, b, c) -> a + b + c);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -182,43 +112,8 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void sum() {
-        TriConstraintCollector<Integer, Integer, Integer, ?, Integer> collector = ConstraintCollectors
-                .sum((a, b, c) -> a + b + c);
-        Object container = collector.supplier().get();
-
-        // Default state.
-        assertResult(collector, container, 0);
-        // Add first value, we have one now.
-        int firstValueA = 2;
-        int firstValueB = 3;
-        int firstValueC = 1;
-        Runnable firstRetractor = accumulate(collector, container, firstValueA, firstValueB, firstValueC);
-        assertResult(collector, container, 6);
-        // Add second value, we have two now.
-        int secondValueA = 4;
-        int secondValueB = 5;
-        int secondValueC = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC);
-        assertResult(collector, container, 16);
-        // Add third value, same as the second. We now have three values, two of which are the same.
-        Runnable thirdRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC);
-        assertResult(collector, container, 26);
-        // Retract one instance of the second value; we only have two values now.
-        secondRetractor.run();
-        assertResult(collector, container, 16);
-        // Retract final instance of the second value; we only have one value now.
-        thirdRetractor.run();
-        assertResult(collector, container, 6);
-        // Retract last value; there are no values now.
-        firstRetractor.run();
-        assertResult(collector, container, 0);
-    }
-
-    @Override
-    @Test
-    public void sumLong() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors
-                .sumLong((a, b, c) -> a + b + c);
+                .sum((a, b, c) -> (long) (a + b + c));
         Object container = collector.supplier().get();
 
         // Default state.
@@ -233,7 +128,6 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
         int secondValueA = 4;
         int secondValueB = 5;
         int secondValueC = 1;
-        int secondSum = secondValueA + secondValueB + secondValueC;
         Runnable secondRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC);
         assertResult(collector, container, 16L);
         // Add third value, same as the second. We now have three values, two of which are the same.
@@ -528,38 +422,7 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
     @Test
     public void average() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Double> collector =
-                ConstraintCollectors.average((i, i2, i3) -> i + i2 + i3);
-        Object container = collector.supplier().get();
-
-        // Default state.
-        assertResult(collector, container, null);
-        // Add first value, we have one now.
-        int firstValue = 4;
-        Runnable firstRetractor = accumulate(collector, container, firstValue, 0, 0);
-        assertResult(collector, container, 4.0D);
-        // Add second value, we have two now.
-        int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue, 0, 0);
-        assertResult(collector, container, 2.5D);
-        // Add third value, same as the second. We now have three values, two of which are the same.
-        Runnable thirdRetractor = accumulate(collector, container, secondValue, 0, 0);
-        assertResult(collector, container, 2.0D);
-        // Retract one instance of the second value; we only have two values now.
-        secondRetractor.run();
-        assertResult(collector, container, 2.5D);
-        // Retract final instance of the second value; we only have one value now.
-        thirdRetractor.run();
-        assertResult(collector, container, 4.0);
-        // Retract last value; there are no values now.
-        firstRetractor.run();
-        assertResult(collector, container, null);
-    }
-
-    @Override
-    @Test
-    public void averageLong() {
-        TriConstraintCollector<Integer, Integer, Integer, ?, Double> collector =
-                ConstraintCollectors.averageLong((i, i2, i3) -> i + i2 + i3);
+                ConstraintCollectors.average((i, i2, i3) -> (long) (i + i2 + i3));
         Object container = collector.supplier().get();
 
         // Default state.
@@ -1011,36 +874,36 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void compose4() {
-        TriConstraintCollector<Integer, Integer, Integer, ?, Quadruple<Integer, Integer, Integer, Double>> collector =
+        TriConstraintCollector<Integer, Integer, Integer, ?, Quadruple<Long, Integer, Integer, Double>> collector =
                 compose(ConstraintCollectors.countTri(),
                         min((i, i2, i3) -> i + i2 + i3, i -> i),
                         max((i, i2, i3) -> i + i2 + i3, i -> i),
-                        ConstraintCollectors.average((i, i2, i3) -> i + i2 + i3),
+                        ConstraintCollectors.average((i, i2, i3) -> (long) (i + i2 + i3)),
                         Quadruple::new);
         Object container = collector.supplier().get();
 
         // Default state.
-        assertResult(collector, container, new Quadruple<>(0, null, null, null));
+        assertResult(collector, container, new Quadruple<>(0L, null, null, null));
         // Add first value.
         int firstValue = 4;
         Runnable firstRetractor = accumulate(collector, container, firstValue, 0, 0);
-        assertResult(collector, container, new Quadruple<>(1, 4, 4, 4D));
+        assertResult(collector, container, new Quadruple<>(1L, 4, 4, 4D));
         // Add second value, lesser than the first.
         int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue, 0, 0);
-        assertResult(collector, container, new Quadruple<>(2, 1, 4, 2.5D));
+        assertResult(collector, container, new Quadruple<>(2L, 1, 4, 2.5D));
         // Add third value, same as the second.
         Runnable thirdRetractor = accumulate(collector, container, secondValue, 0, 0);
-        assertResult(collector, container, new Quadruple<>(3, 1, 4, 2D));
+        assertResult(collector, container, new Quadruple<>(3L, 1, 4, 2D));
         // Retract one instance of the second value.
         secondRetractor.run();
-        assertResult(collector, container, new Quadruple<>(2, 1, 4, 2.5D));
+        assertResult(collector, container, new Quadruple<>(2L, 1, 4, 2.5D));
         // Retract final instance of the second value.
         thirdRetractor.run();
-        assertResult(collector, container, new Quadruple<>(1, 4, 4, 4D));
+        assertResult(collector, container, new Quadruple<>(1L, 4, 4, 4D));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResult(collector, container, new Quadruple<>(0, null, null, null));
+        assertResult(collector, container, new Quadruple<>(0L, null, null, null));
     }
 
     @Override
@@ -1172,27 +1035,27 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
         var container = collector.supplier().get();
 
         // Default state.
-        assertResult(collector, container, 0);
+        assertResult(collector, container, 0L);
         // Add first value, we have one now.
         var firstValue = 2;
         var firstRetractor = accumulate(collector, container, firstValue, 0, 0);
-        assertResult(collector, container, 10);
+        assertResult(collector, container, 10L);
         // Add second value, we have two now.
         var secondValue = 1;
         var secondRetractor = accumulate(collector, container, secondValue, 0, 0);
-        assertResult(collector, container, 20);
+        assertResult(collector, container, 20L);
         // Add third value, same as the second. We now have three values, two of which are the same.
         var thirdRetractor = accumulate(collector, container, secondValue, 0, 0);
-        assertResult(collector, container, 30);
+        assertResult(collector, container, 30L);
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResult(collector, container, 20);
+        assertResult(collector, container, 20L);
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResult(collector, container, 10);
+        assertResult(collector, container, 10L);
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResult(collector, container, 0);
+        assertResult(collector, container, 0L);
     }
 
     private static <A, B, C, Container_, Result_> Runnable accumulate(

@@ -9,15 +9,15 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
 
 import org.jspecify.annotations.NonNull;
 
-final class CountLongQuadCollector<A, B, C, D> implements QuadConstraintCollector<A, B, C, D, LongCounter, Long> {
-    private final static CountLongQuadCollector<?, ?, ?, ?> INSTANCE = new CountLongQuadCollector<>();
+final class CountQuadCollector<A, B, C, D> implements QuadConstraintCollector<A, B, C, D, LongCounter, Long> {
+    private final static CountQuadCollector<?, ?, ?, ?> INSTANCE = new CountQuadCollector<>();
 
-    private CountLongQuadCollector() {
+    private CountQuadCollector() {
     }
 
     @SuppressWarnings("unchecked")
-    static <A, B, C, D> CountLongQuadCollector<A, B, C, D> getInstance() {
-        return (CountLongQuadCollector<A, B, C, D>) INSTANCE;
+    static <A, B, C, D> CountQuadCollector<A, B, C, D> getInstance() {
+        return (CountQuadCollector<A, B, C, D>) INSTANCE;
     }
 
     @Override

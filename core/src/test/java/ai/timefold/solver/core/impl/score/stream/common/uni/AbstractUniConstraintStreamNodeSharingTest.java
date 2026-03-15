@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
@@ -551,8 +551,8 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
     @Override
     @TestTemplate
     public void sameParentDifferentCollectorFunctionGroupBy() {
-        ToIntFunction<TestdataEntity> sumFunction1 = a -> 0;
-        ToIntFunction<TestdataEntity> sumFunction2 = a -> 1;
+        ToLongFunction<TestdataEntity> sumFunction1 = a -> 0;
+        ToLongFunction<TestdataEntity> sumFunction2 = a -> 1;
 
         assertThat(baseStream.groupBy(ConstraintCollectors.sum(sumFunction1)))
                 .isNotSameAs(baseStream.groupBy(ConstraintCollectors.sum(sumFunction2)));
@@ -570,7 +570,7 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
     @Override
     @TestTemplate
     public void sameParentSameCollectorGroupBy() {
-        ToIntFunction<TestdataEntity> sumFunction = a -> 0;
+        ToLongFunction<TestdataEntity> sumFunction = a -> 0;
 
         assertThat(baseStream.groupBy(ConstraintCollectors.sum(sumFunction)))
                 .isSameAs(baseStream.groupBy(ConstraintCollectors.sum(sumFunction)));

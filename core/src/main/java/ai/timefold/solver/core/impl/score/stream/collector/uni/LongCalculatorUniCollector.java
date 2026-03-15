@@ -12,7 +12,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 abstract sealed class LongCalculatorUniCollector<A, Output_, Calculator_ extends LongCalculator<Output_>>
-        implements UniConstraintCollector<A, Calculator_, Output_> permits AverageLongUniCollector, SumLongUniCollector {
+        implements UniConstraintCollector<A, Calculator_, Output_> permits AverageUniCollector, SumUniCollector {
     private final ToLongFunction<? super A> mapper;
 
     public LongCalculatorUniCollector(ToLongFunction<? super A> mapper) {

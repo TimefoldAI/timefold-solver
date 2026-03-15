@@ -9,15 +9,15 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
 
 import org.jspecify.annotations.NonNull;
 
-final class CountLongTriCollector<A, B, C> implements TriConstraintCollector<A, B, C, LongCounter, Long> {
-    private final static CountLongTriCollector<?, ?, ?> INSTANCE = new CountLongTriCollector<>();
+final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C, LongCounter, Long> {
+    private final static CountTriCollector<?, ?, ?> INSTANCE = new CountTriCollector<>();
 
-    private CountLongTriCollector() {
+    private CountTriCollector() {
     }
 
     @SuppressWarnings("unchecked")
-    static <A, B, C> CountLongTriCollector<A, B, C> getInstance() {
-        return (CountLongTriCollector<A, B, C>) INSTANCE;
+    static <A, B, C> CountTriCollector<A, B, C> getInstance() {
+        return (CountTriCollector<A, B, C>) INSTANCE;
     }
 
     @Override

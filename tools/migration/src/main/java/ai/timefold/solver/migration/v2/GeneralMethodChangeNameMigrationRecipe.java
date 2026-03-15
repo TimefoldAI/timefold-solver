@@ -86,7 +86,29 @@ public class GeneralMethodChangeNameMigrationRecipe extends AbstractRecipe {
                         "reward", true, false),
                 new ChangeMethodName(
                         "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream impactLong(..)",
-                        "impact", true, false));
+                        "impact", true, false),
+                // ConstraintCollectors – Long suffix removed
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.ConstraintCollectors countLong()",
+                        "count", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.ConstraintCollectors countLongBi()",
+                        "countBi", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.ConstraintCollectors countLongTri()",
+                        "countTri", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.ConstraintCollectors countLongQuad()",
+                        "countQuad", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.ConstraintCollectors countDistinctLong(..)",
+                        "countDistinct", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.ConstraintCollectors sumLong(..)",
+                        "sum", true, false),
+                new ChangeMethodName(
+                        "ai.timefold.solver.core.api.score.stream.ConstraintCollectors averageLong(..)",
+                        "average", true, false));
 
     }
 }

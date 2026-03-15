@@ -187,7 +187,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                                 filtering((a, b, c) -> !Objects.equals(a, c) && !Objects.equals(b, c)))
                         // Stream of all unique entity tri tuples that share a group
                         .groupBy((a, b, c) -> a.getEntityGroup(), countTri())
-                        .groupBy(toMap((g, c) -> g, (g, c) -> c, Integer::sum))
+                        .groupBy(toMap((g, c) -> g, (g, c) -> c, Long::sum))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
@@ -223,7 +223,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                                         && !Objects.equals(c, d)))
                         // Stream of all unique entity quad tuples that share a group
                         .groupBy((a, b, c, d) -> a.getEntityGroup(), countQuad())
-                        .groupBy(toMap((g, c) -> g, (g, c) -> c, Integer::sum))
+                        .groupBy(toMap((g, c) -> g, (g, c) -> c, Long::sum))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 

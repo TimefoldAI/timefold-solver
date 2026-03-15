@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
         implements UniConstraintCollector<A, Calculator_, Output_>
         permits AverageReferenceUniCollector, ConnectedRangesUniConstraintCollector, ConsecutiveSequencesUniConstraintCollector,
-        CountDistinctIntUniCollector, CountDistinctLongUniCollector, SumReferenceUniCollector {
+        CountDistinctUniCollector, SumReferenceUniCollector {
 
     protected final Function<? super A, ? extends Input_> mapper;
 

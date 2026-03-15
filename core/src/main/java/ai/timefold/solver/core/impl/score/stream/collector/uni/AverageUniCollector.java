@@ -7,8 +7,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongAverageCalculator
 
 import org.jspecify.annotations.NonNull;
 
-final class AverageLongUniCollector<A> extends LongCalculatorUniCollector<A, Double, LongAverageCalculator> {
-    AverageLongUniCollector(ToLongFunction<? super A> mapper) {
+final class AverageUniCollector<A> extends LongCalculatorUniCollector<A, Double, LongAverageCalculator> {
+    AverageUniCollector(ToLongFunction<? super A> mapper) {
         super(mapper);
     }
 

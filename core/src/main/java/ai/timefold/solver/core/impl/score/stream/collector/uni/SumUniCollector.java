@@ -1,14 +1,14 @@
-package ai.timefold.solver.core.impl.score.stream.collector.bi;
+package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.function.Supplier;
-import java.util.function.ToLongBiFunction;
+import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.impl.score.stream.collector.LongSumCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-final class SumLongBiCollector<A, B> extends LongCalculatorBiCollector<A, B, Long, LongSumCalculator> {
-    SumLongBiCollector(ToLongBiFunction<? super A, ? super B> mapper) {
+final class SumUniCollector<A> extends LongCalculatorUniCollector<A, Long, LongSumCalculator> {
+    SumUniCollector(ToLongFunction<? super A> mapper) {
         super(mapper);
     }
 

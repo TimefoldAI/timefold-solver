@@ -10,15 +10,15 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-final class CountLongUniCollector<A> implements UniConstraintCollector<A, LongCounter, Long> {
-    private final static CountLongUniCollector<?> INSTANCE = new CountLongUniCollector<>();
+final class CountUniCollector<A> implements UniConstraintCollector<A, LongCounter, Long> {
+    private final static CountUniCollector<?> INSTANCE = new CountUniCollector<>();
 
-    private CountLongUniCollector() {
+    private CountUniCollector() {
     }
 
     @SuppressWarnings("unchecked")
-    static <A> CountLongUniCollector<A> getInstance() {
-        return (CountLongUniCollector<A>) INSTANCE;
+    static <A> CountUniCollector<A> getInstance() {
+        return (CountUniCollector<A>) INSTANCE;
     }
 
     @Override

@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
         implements TriConstraintCollector<A, B, C, Calculator_, Output_>
         permits AverageReferenceTriCollector, ConnectedRangesTriConstraintCollector, ConsecutiveSequencesTriConstraintCollector,
-        CountDistinctIntTriCollector, CountDistinctLongTriCollector, SumReferenceTriCollector {
+        CountDistinctTriCollector, SumReferenceTriCollector {
     protected final TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper;
 
     public ObjectCalculatorTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper) {

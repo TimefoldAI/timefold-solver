@@ -9,15 +9,15 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
 
 import org.jspecify.annotations.NonNull;
 
-final class CountLongBiCollector<A, B> implements BiConstraintCollector<A, B, LongCounter, Long> {
-    private final static CountLongBiCollector<?, ?> INSTANCE = new CountLongBiCollector<>();
+final class CountBiCollector<A, B> implements BiConstraintCollector<A, B, LongCounter, Long> {
+    private final static CountBiCollector<?, ?> INSTANCE = new CountBiCollector<>();
 
-    private CountLongBiCollector() {
+    private CountBiCollector() {
     }
 
     @SuppressWarnings("unchecked")
-    static <A, B> CountLongBiCollector<A, B> getInstance() {
-        return (CountLongBiCollector<A, B>) INSTANCE;
+    static <A, B> CountBiCollector<A, B> getInstance() {
+        return (CountBiCollector<A, B>) INSTANCE;
     }
 
     @Override

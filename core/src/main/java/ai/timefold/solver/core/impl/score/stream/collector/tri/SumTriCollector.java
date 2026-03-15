@@ -7,8 +7,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongSumCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-final class SumLongTriCollector<A, B, C> extends LongCalculatorTriCollector<A, B, C, Long, LongSumCalculator> {
-    SumLongTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
+final class SumTriCollector<A, B, C> extends LongCalculatorTriCollector<A, B, C, Long, LongSumCalculator> {
+    SumTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
         super(mapper);
     }
 
