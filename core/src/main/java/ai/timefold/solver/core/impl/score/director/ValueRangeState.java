@@ -370,7 +370,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
      * The record holds a reference to {@link ValueRange},
      * a precomputed hash to avoid recalculating it every time.
      */
-    private record HashedValueRange<T>(ValueRange<T> item, int hash) {
+    record HashedValueRange<T>(ValueRange<T> item, int hash) {
 
         public static <Value_> HashedValueRange<Value_> of(ValueRange<Value_> valueRange) {
             return new HashedValueRange<>(valueRange, valueRange.hashCode());

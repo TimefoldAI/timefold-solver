@@ -45,6 +45,18 @@ public class MathUtils {
         return Math.round(scale * getLogInBase(base, value));
     }
 
+    /**
+     * Returns a scaled approximation of a log.
+     *
+     * @param scale What to scale the result by. Typically, a power of 10.
+     * @param base The base of the log
+     * @param value The parameter to the log function
+     * @return A value approximately equal to {@code scale * log_base(value)}, rounded to the nearest integer.
+     */
+    public static long getScaledApproximateLog(long scale, long base, double value) {
+        return Math.round(scale * getLogInBase(base, value));
+    }
+
     public static double getLogInBase(double base, double value) {
         return Math.log(value) / Math.log(base);
     }
