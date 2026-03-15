@@ -7,9 +7,9 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongDistinctCountCalc
 
 import org.jspecify.annotations.NonNull;
 
-final class CountDistinctLongTriCollector<A, B, C, Mapped_>
+final class CountDistinctTriCollector<A, B, C, Mapped_>
         extends ObjectCalculatorTriCollector<A, B, C, Mapped_, Long, Mapped_, LongDistinctCountCalculator<Mapped_>> {
-    CountDistinctLongTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper) {
+    CountDistinctTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper) {
         super(mapper);
     }
 

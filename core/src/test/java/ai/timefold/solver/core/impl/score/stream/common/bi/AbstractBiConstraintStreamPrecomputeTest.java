@@ -434,7 +434,7 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Pair<>(entityGroup, 1)),
+        assertPrecompute(solution, List.of(new Pair<>(entityGroup, 1L)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .filter(entity -> entity.getEntityGroup() != null)
                         .groupBy(TestdataLavishEntity::getEntityGroup, ConstraintCollectors.count()));

@@ -731,10 +731,7 @@ private Constraint speakerAvailability(ConstraintFactory factory) {
 ----
 ====
 
-The count is collected in an `int`. Variants of this collector:
-
-* `countLong()` collects a `long` value instead of an `int` value.
-
+The count is collected in a `long`.
 To count a bi, tri or quad stream, use `countBi()`, `countTri()` or `countQuad()` respectively,
 because - unlike the other built-in collectors - they aren't overloaded methods due to Java's generics erasure.
 
@@ -763,9 +760,7 @@ private Constraint roomCount(ConstraintFactory factory) {
 
 ====
 
-The distinct count is collected in an `int`. Variants of this collector:
-
-* `countDistinctLong()` collects a `long` value instead of an `int` value.
+The distinct count is collected in a `long`.
 
 
 [#collectorsSum]
@@ -792,13 +787,13 @@ private Constraint totalServiceDuration(ConstraintFactory constraintFactory) {
 ----
 ====
 
-The sum is collected in an `int`. Variants of this collector:
+The sum is collected in a `long`.
+Other variants of this collector:
 
-* `sumLong()` collects a `long` value instead of an `int` value.
-* `sumBigDecimal()` collects a `java.math.BigDecimal` value instead of an `int` value.
-* `sumBigInteger()` collects a `java.math.BigInteger` value instead of an `int` value.
-* `sumDuration()` collects a `java.time.Duration` value instead of an `int` value.
-* `sumPeriod()` collects a `java.time.Period` value instead of an `int` value.
+* `sumBigDecimal()` collects a `java.math.BigDecimal` value.
+* `sumBigInteger()` collects a `java.math.BigInteger` value.
+* `sumDuration()` collects a `java.time.Duration` value.
+* `sumPeriod()` collects a `java.time.Period` value.
 * a generic `sum()` variant for summing up custom types
 
 
@@ -829,12 +824,11 @@ private Constraint averageServiceDuration(ConstraintFactory constraintFactory) {
 ====
 
 The average is collected as a `double`, and the average of no elements is `null`.
-Variants of this collector:
+Other variants of this collector:
 
-* `averageLong()` collects a `long` value instead of an `int` value.
-* `averageBigDecimal()` collects a `java.math.BigDecimal` value instead of an `int` value, resulting in a `BigDecimal` average.
-* `averageBigInteger()` collects a `java.math.BigInteger` value instead of an `int` value, resulting in a `BigDecimal` average.
-* `averageDuration()` collects a `java.time.Duration` value instead of an `int` value, resulting in a `Duration` average.
+* `averageBigDecimal()` collects a `java.math.BigDecimal` value, resulting in a `BigDecimal` average.
+* `averageBigInteger()` collects a `java.math.BigInteger` value, resulting in a `BigDecimal` average.
+* `averageDuration()` collects a `java.time.Duration` value, resulting in a `Duration` average.
 
 
 [#collectorsMinMax]

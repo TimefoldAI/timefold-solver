@@ -47,47 +47,17 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void count() {
-        UniConstraintCollector<Integer, ?, Integer> collector = ConstraintCollectors.count();
-        Object container = collector.supplier().get();
-
-        // Default state.
-        assertResult(collector, container, 0);
-        // Add first value, we have one now.
-        int firstValue = 2;
-        Runnable firstRetractor = accumulate(collector, container, firstValue);
-        assertResult(collector, container, 1);
-        // Add second value, we have two now.
-        int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, 2);
-        // Add third value, same as the second. We now have three values, two of which are the same.
-        Runnable thirdRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, 3);
-        // Retract one instance of the second value; we only have two values now.
-        secondRetractor.run();
-        assertResult(collector, container, 2);
-        // Retract final instance of the second value; we only have one value now.
-        thirdRetractor.run();
-        assertResult(collector, container, 1);
-        // Retract last value; there are no values now.
-        firstRetractor.run();
-        assertResult(collector, container, 0);
-    }
-
-    @Override
-    @Test
-    public void countLong() {
-        UniConstraintCollector<Long, ?, Long> collector = ConstraintCollectors.countLong();
+        UniConstraintCollector<Integer, ?, Long> collector = ConstraintCollectors.count();
         Object container = collector.supplier().get();
 
         // Default state.
         assertResult(collector, container, 0L);
         // Add first value, we have one now.
-        long firstValue = 2;
+        int firstValue = 2;
         Runnable firstRetractor = accumulate(collector, container, firstValue);
         assertResult(collector, container, 1L);
         // Add second value, we have two now.
-        long secondValue = 1;
+        int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue);
         assertResult(collector, container, 2L);
         // Add third value, same as the second. We now have three values, two of which are the same.
@@ -107,53 +77,23 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void countDistinct() {
-        UniConstraintCollector<Integer, ?, Integer> collector = ConstraintCollectors.countDistinct();
-        Object container = collector.supplier().get();
-
-        // Default state.
-        assertResult(collector, container, 0);
-        // Add first value, we have one now.
-        int firstValue = 2;
-        Runnable firstRetractor = accumulate(collector, container, firstValue);
-        assertResult(collector, container, 1);
-        // Add second value, we have two now.
-        int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, 2);
-        // Add third value, same as the second. We now have two distinct values.
-        Runnable thirdRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, 2);
-        // Retract one instance of the second value; we still only have two distinct values.
-        secondRetractor.run();
-        assertResult(collector, container, 2);
-        // Retract final instance of the second value; we only have one value now.
-        thirdRetractor.run();
-        assertResult(collector, container, 1);
-        // Retract last value; there are no values now.
-        firstRetractor.run();
-        assertResult(collector, container, 0);
-    }
-
-    @Override
-    @Test
-    public void countDistinctLong() {
-        UniConstraintCollector<Long, ?, Long> collector = ConstraintCollectors.countDistinctLong(Function.identity());
+        UniConstraintCollector<Integer, ?, Long> collector = ConstraintCollectors.countDistinct();
         Object container = collector.supplier().get();
 
         // Default state.
         assertResult(collector, container, 0L);
         // Add first value, we have one now.
-        long firstValue = 2;
+        int firstValue = 2;
         Runnable firstRetractor = accumulate(collector, container, firstValue);
         assertResult(collector, container, 1L);
         // Add second value, we have two now.
-        long secondValue = 1;
+        int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue);
         assertResult(collector, container, 2L);
-        // Add third value, same as the second. We still have two distinct values.
+        // Add third value, same as the second. We now have two distinct values.
         Runnable thirdRetractor = accumulate(collector, container, secondValue);
         assertResult(collector, container, 2L);
-        // Retract one instance of the second value. We still have two distinct values.
+        // Retract one instance of the second value; we still only have two distinct values.
         secondRetractor.run();
         assertResult(collector, container, 2L);
         // Retract final instance of the second value; we only have one value now.
@@ -167,47 +107,17 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void sum() {
-        UniConstraintCollector<Integer, ?, Integer> collector = ConstraintCollectors.sum(i -> i);
-        Object container = collector.supplier().get();
-
-        // Default state.
-        assertResult(collector, container, 0);
-        // Add first value, we have one now.
-        int firstValue = 2;
-        Runnable firstRetractor = accumulate(collector, container, firstValue);
-        assertResult(collector, container, 2);
-        // Add second value, we have two now.
-        int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, 3);
-        // Add third value, same as the second. We now have three values, two of which are the same.
-        Runnable thirdRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, 4);
-        // Retract one instance of the second value; we only have two values now.
-        secondRetractor.run();
-        assertResult(collector, container, 3);
-        // Retract final instance of the second value; we only have one value now.
-        thirdRetractor.run();
-        assertResult(collector, container, 2);
-        // Retract last value; there are no values now.
-        firstRetractor.run();
-        assertResult(collector, container, 0);
-    }
-
-    @Override
-    @Test
-    public void sumLong() {
-        UniConstraintCollector<Long, ?, Long> collector = ConstraintCollectors.sumLong(l -> l);
+        UniConstraintCollector<Integer, ?, Long> collector = ConstraintCollectors.sum(i -> (long) i);
         Object container = collector.supplier().get();
 
         // Default state.
         assertResult(collector, container, 0L);
         // Add first value, we have one now.
-        long firstValue = 2;
+        int firstValue = 2;
         Runnable firstRetractor = accumulate(collector, container, firstValue);
         assertResult(collector, container, 2L);
         // Add second value, we have two now.
-        long secondValue = 1;
+        int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue);
         assertResult(collector, container, 3L);
         // Add third value, same as the second. We now have three values, two of which are the same.
@@ -467,37 +377,7 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void average() {
-        UniConstraintCollector<Integer, ?, Double> collector = ConstraintCollectors.average(i -> i);
-        Object container = collector.supplier().get();
-
-        // Default state.
-        assertResult(collector, container, null);
-        // Add first value, we have one now.
-        int firstValue = 4;
-        Runnable firstRetractor = accumulate(collector, container, firstValue);
-        assertResult(collector, container, 4.0D);
-        // Add second value, we have two now.
-        int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, 2.5D);
-        // Add third value, same as the second. We now have three values, two of which are the same.
-        Runnable thirdRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, 2.0D);
-        // Retract one instance of the second value; we only have two values now.
-        secondRetractor.run();
-        assertResult(collector, container, 2.5D);
-        // Retract final instance of the second value; we only have one value now.
-        thirdRetractor.run();
-        assertResult(collector, container, 4.0);
-        // Retract last value; there are no values now.
-        firstRetractor.run();
-        assertResult(collector, container, null);
-    }
-
-    @Override
-    @Test
-    public void averageLong() {
-        UniConstraintCollector<Integer, ?, Double> collector = ConstraintCollectors.averageLong(i -> i);
+        UniConstraintCollector<Integer, ?, Double> collector = ConstraintCollectors.average(i -> (long) i);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -939,34 +819,34 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void compose4() {
-        UniConstraintCollector<Integer, ?, Quadruple<Integer, Integer, Integer, Double>> collector =
+        UniConstraintCollector<Integer, ?, Quadruple<Long, Integer, Integer, Double>> collector =
                 compose(ConstraintCollectors.count(), min(i -> i), max(i -> i),
                         ConstraintCollectors.average(i -> i),
-                        (QuadFunction<Integer, Integer, Integer, Double, Quadruple<Integer, Integer, Integer, Double>>) Quadruple::new);
+                        (QuadFunction<Long, Integer, Integer, Double, Quadruple<Long, Integer, Integer, Double>>) Quadruple::new);
         Object container = collector.supplier().get();
 
         // Default state.
-        assertResult(collector, container, new Quadruple<>(0, null, null, null));
+        assertResult(collector, container, new Quadruple<>(0L, null, null, null));
         // Add first value.
         int firstValue = 4;
         Runnable firstRetractor = accumulate(collector, container, firstValue);
-        assertResult(collector, container, new Quadruple<>(1, 4, 4, 4D));
+        assertResult(collector, container, new Quadruple<>(1L, 4, 4, 4D));
         // Add second value, lesser than the first.
         int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, new Quadruple<>(2, 1, 4, 2.5D));
+        assertResult(collector, container, new Quadruple<>(2L, 1, 4, 2.5D));
         // Add third value, same as the second.
         Runnable thirdRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, new Quadruple<>(3, 1, 4, 2D));
+        assertResult(collector, container, new Quadruple<>(3L, 1, 4, 2D));
         // Retract one instance of the second value.
         secondRetractor.run();
-        assertResult(collector, container, new Quadruple<>(2, 1, 4, 2.5D));
+        assertResult(collector, container, new Quadruple<>(2L, 1, 4, 2.5D));
         // Retract final instance of the second value.
         thirdRetractor.run();
-        assertResult(collector, container, new Quadruple<>(1, 4, 4, 4D));
+        assertResult(collector, container, new Quadruple<>(1L, 4, 4, 4D));
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResult(collector, container, new Quadruple<>(0, null, null, null));
+        assertResult(collector, container, new Quadruple<>(0L, null, null, null));
     }
 
     @Override
@@ -1103,27 +983,27 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var container = collector.supplier().get();
 
         // Default state.
-        assertResult(collector, container, 0);
+        assertResult(collector, container, 0L);
         // Add first value, we have one now.
         var firstValue = 2;
         var firstRetractor = accumulate(collector, container, firstValue);
-        assertResult(collector, container, 10);
+        assertResult(collector, container, 10L);
         // Add second value, we have two now.
         var secondValue = 1;
         var secondRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, 20);
+        assertResult(collector, container, 20L);
         // Add third value, same as the second. We now have three values, two of which are the same.
         var thirdRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, 30);
+        assertResult(collector, container, 30L);
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResult(collector, container, 20);
+        assertResult(collector, container, 20L);
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResult(collector, container, 10);
+        assertResult(collector, container, 10L);
         // Retract last value; there are no values now.
         firstRetractor.run();
-        assertResult(collector, container, 0);
+        assertResult(collector, container, 0L);
     }
 
     private static <A, Container_, Result_> Runnable accumulate(

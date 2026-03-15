@@ -244,7 +244,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
         var value = new TestdataLavishValue();
         solution.getValueList().add(value);
 
-        assertPrecompute(solution, List.of(new Triple<>(entityGroup, 1, 1)),
+        assertPrecompute(solution, List.of(new Triple<>(entityGroup, 1L, 1L)),
                 pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
                         .filter(entity -> entity.getEntityGroup() != null)
                         .groupBy(TestdataLavishEntity::getEntityGroup,

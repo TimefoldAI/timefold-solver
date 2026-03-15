@@ -7,8 +7,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongSumCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-final class SumLongQuadCollector<A, B, C, D> extends LongCalculatorQuadCollector<A, B, C, D, Long, LongSumCalculator> {
-    SumLongQuadCollector(ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
+final class SumQuadCollector<A, B, C, D> extends LongCalculatorQuadCollector<A, B, C, D, Long, LongSumCalculator> {
+    SumQuadCollector(ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
         super(mapper);
     }
 

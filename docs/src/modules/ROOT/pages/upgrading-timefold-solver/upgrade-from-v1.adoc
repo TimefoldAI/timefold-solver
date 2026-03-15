@@ -210,6 +210,13 @@ removed (`getConstraintStreamImplType()`, `setConstraintStreamImplType()`, `with
 * In Spring Boot, property `timefold.solver.solve-length` renamed to `timefold.solver.solve.duration` in `application.properties`.
 * In Quarkus, property `quarkus.timefold.solver.solve-length` renamed to `quarkus.timefold.solver.solve.duration` in `application.properties`.
 
+==== Constraint Collector `Int` Variants Removed
+
+* `countLong()` renamed to `count()` (now returns `long`).
+* `countDistinctLong(fn)` renamed to `countDistinct(fn)`.
+* `sumLong(fn)` renamed to `sum(fn)`.
+* `averageLong(fn)` renamed to `average(fn)`.
+
 ==== Assorted other changes
 
 * `@PlanningId` moved from `ai.timefold.solver.core.api.domain.lookup` to `ai.timefold.solver.core.api.domain.common`.
@@ -590,6 +597,25 @@ Manual review and adjustments may still be necessary.
 `HardSoftLongScore` and `HardSoftBigDecimalScore` are now `HardSoftScore` and `HardSoftBigDecimalScore` respectively,
 and the same for all other score variants.
 The long variants (`HardSoftLongScore`, `HardMediumSoftLongScore`, `SimpleLongScore`, `BendableLongScore`) have been merged into their `int` counterparts as `int`-based scores are no longer supported.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `count()` and `countDistinct()` now return `Long` instead of `Integer`
+[%collapsible%open]
+====
+`ConstraintCollectors.count()` and `ConstraintCollectors.countDistinct(...)` previously returned `Integer`.
+They now return `Long`.
+Any code assigning the result to an `Integer` variable or using it as an `int` must be updated to use `Long` or `long`.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `sum(ToIntFunction)` removed; use `sum(ToLongFunction)`
+[%collapsible%open]
+====
+`ConstraintCollectors.sum(ToIntFunction)` has been removed.
+Replace it with `sum(ToLongFunction)` and update the lambda accordingly, e.g. `sum(Visit::getServiceDuration)` where `getServiceDuration()` returns `int` must be changed to return `long`, or wrapped: `sum(v -> (long) v.getServiceDuration())`.
 ====
 
 '''

@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongCalculator;
 import org.jspecify.annotations.NonNull;
 
 abstract sealed class LongCalculatorTriCollector<A, B, C, Output_, Calculator_ extends LongCalculator<Output_>>
-        implements TriConstraintCollector<A, B, C, Calculator_, Output_> permits AverageLongTriCollector, SumLongTriCollector {
+        implements TriConstraintCollector<A, B, C, Calculator_, Output_> permits AverageTriCollector, SumTriCollector {
     private final ToLongTriFunction<? super A, ? super B, ? super C> mapper;
 
     public LongCalculatorTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {

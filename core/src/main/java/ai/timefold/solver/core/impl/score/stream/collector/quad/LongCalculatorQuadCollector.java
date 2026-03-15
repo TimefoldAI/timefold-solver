@@ -12,7 +12,7 @@ import org.jspecify.annotations.NonNull;
 
 abstract sealed class LongCalculatorQuadCollector<A, B, C, D, Output_, Calculator_ extends LongCalculator<Output_>>
         implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
-        permits AverageLongQuadCollector, SumLongQuadCollector {
+        permits AverageQuadCollector, SumQuadCollector {
     private final ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper;
 
     public LongCalculatorQuadCollector(ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {

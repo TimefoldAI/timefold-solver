@@ -28,12 +28,8 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
 public class InnerUniConstraintCollectors {
-    public static <A> UniConstraintCollector<A, ?, Double> average(ToIntFunction<? super A> mapper) {
-        return new AverageIntUniCollector<>(mapper);
-    }
-
     public static <A> UniConstraintCollector<A, ?, Double> average(ToLongFunction<? super A> mapper) {
-        return new AverageLongUniCollector<>(mapper);
+        return new AverageUniCollector<>(mapper);
     }
 
     public static <A> UniConstraintCollector<A, ?, BigDecimal> averageBigDecimal(
@@ -88,22 +84,13 @@ public class InnerUniConstraintCollectors {
         return new ConditionalUniCollector<>(predicate, delegate);
     }
 
-    public static <A> UniConstraintCollector<A, ?, Integer> count() {
-        return CountIntUniCollector.getInstance();
+    public static <A> UniConstraintCollector<A, ?, Long> count() {
+        return CountUniCollector.getInstance();
     }
 
-    public static <A, Mapped_> UniConstraintCollector<A, ?, Integer> countDistinct(
+    public static <A, Mapped_> UniConstraintCollector<A, ?, Long> countDistinct(
             Function<? super A, ? extends Mapped_> mapper) {
-        return new CountDistinctIntUniCollector<>(mapper);
-    }
-
-    public static <A, Mapped_> UniConstraintCollector<A, ?, Long> countDistinctLong(
-            Function<? super A, ? extends Mapped_> mapper) {
-        return new CountDistinctLongUniCollector<>(mapper);
-    }
-
-    public static <A> UniConstraintCollector<A, ?, Long> countLong() {
-        return CountLongUniCollector.getInstance();
+        return new CountDistinctUniCollector<>(mapper);
     }
 
     public static <A, Result_ extends Comparable<? super Result_>> UniConstraintCollector<A, ?, Result_> max(
@@ -140,12 +127,8 @@ public class InnerUniConstraintCollectors {
         return new MinPropertyUniCollector<>(mapper, propertyMapper);
     }
 
-    public static <A> UniConstraintCollector<A, ?, Integer> sum(ToIntFunction<? super A> mapper) {
-        return new SumIntUniCollector<>(mapper);
-    }
-
     public static <A> UniConstraintCollector<A, ?, Long> sum(ToLongFunction<? super A> mapper) {
-        return new SumLongUniCollector<>(mapper);
+        return new SumUniCollector<>(mapper);
     }
 
     public static <A, Result_> UniConstraintCollector<A, ?, Result_> sum(Function<? super A, ? extends Result_> mapper,

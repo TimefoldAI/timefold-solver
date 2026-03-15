@@ -15,7 +15,6 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
-import java.util.function.ToIntBiFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongBiFunction;
 
@@ -28,12 +27,8 @@ import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
 public class InnerBiConstraintCollectors {
-    public static <A, B> BiConstraintCollector<A, B, ?, Double> average(ToIntBiFunction<? super A, ? super B> mapper) {
-        return new AverageIntBiCollector<>(mapper);
-    }
-
     public static <A, B> BiConstraintCollector<A, B, ?, Double> average(ToLongBiFunction<? super A, ? super B> mapper) {
-        return new AverageLongBiCollector<>(mapper);
+        return new AverageBiCollector<>(mapper);
     }
 
     static <A, B, Mapped_, Average_> BiConstraintCollector<A, B, ?, Average_> average(
@@ -95,22 +90,13 @@ public class InnerBiConstraintCollectors {
         return new ConditionalBiCollector<>(predicate, delegate);
     }
 
-    public static <A, B> BiConstraintCollector<A, B, ?, Integer> count() {
-        return CountIntBiCollector.getInstance();
+    public static <A, B> BiConstraintCollector<A, B, ?, Long> count() {
+        return CountBiCollector.getInstance();
     }
 
-    public static <A, B, Mapped_> BiConstraintCollector<A, B, ?, Integer> countDistinct(
+    public static <A, B, Mapped_> BiConstraintCollector<A, B, ?, Long> countDistinct(
             BiFunction<? super A, ? super B, ? extends Mapped_> mapper) {
-        return new CountDistinctIntBiCollector<>(mapper);
-    }
-
-    public static <A, B, Mapped_> BiConstraintCollector<A, B, ?, Long> countDistinctLong(
-            BiFunction<? super A, ? super B, ? extends Mapped_> mapper) {
-        return new CountDistinctLongBiCollector<>(mapper);
-    }
-
-    public static <A, B> BiConstraintCollector<A, B, ?, Long> countLong() {
-        return CountLongBiCollector.getInstance();
+        return new CountDistinctBiCollector<>(mapper);
     }
 
     public static <A, B, Result_ extends Comparable<? super Result_>> BiConstraintCollector<A, B, ?, Result_> max(
@@ -149,12 +135,8 @@ public class InnerBiConstraintCollectors {
         return new MinPropertyBiCollector<>(mapper, propertyMapper);
     }
 
-    public static <A, B> BiConstraintCollector<A, B, ?, Integer> sum(ToIntBiFunction<? super A, ? super B> mapper) {
-        return new SumIntBiCollector<>(mapper);
-    }
-
     public static <A, B> BiConstraintCollector<A, B, ?, Long> sum(ToLongBiFunction<? super A, ? super B> mapper) {
-        return new SumLongBiCollector<>(mapper);
+        return new SumBiCollector<>(mapper);
     }
 
     public static <A, B, Result_> BiConstraintCollector<A, B, ?, Result_> sum(

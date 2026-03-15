@@ -7,9 +7,9 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongDistinctCountCalc
 
 import org.jspecify.annotations.NonNull;
 
-final class CountDistinctLongQuadCollector<A, B, C, D, Mapped_>
+final class CountDistinctQuadCollector<A, B, C, D, Mapped_>
         extends ObjectCalculatorQuadCollector<A, B, C, D, Mapped_, Long, Mapped_, LongDistinctCountCalculator<Mapped_>> {
-    CountDistinctLongQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper) {
+    CountDistinctQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper) {
         super(mapper);
     }
 
