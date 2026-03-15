@@ -54,7 +54,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatch(new Pair<>("M", 1)));
+        assertScore(scoreDirector, assertMatch(new Pair<>("M", 1L)));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
@@ -85,7 +85,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatchWithScore(-10, 10));
+        assertScore(scoreDirector, assertMatchWithScore(-10, 10L));
 
         // Incremental
         Stream.of(entity1, entity2).forEach(entity -> {
@@ -109,14 +109,14 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
-        assertScore(scoreDirector, assertMatchWithScore(-2, 2));
+        assertScore(scoreDirector, assertMatchWithScore(-2, 2L));
 
         // Incremental
         TestdataLavishEntity entity = solution.getFirstEntity();
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, 1));
+        assertScore(scoreDirector, assertMatchWithScore(-1, 1L));
     }
 
     @TestTemplate
@@ -195,7 +195,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getFirstEntityGroup(), 3, solution.getEntityGroupList().get(1), 3)));
+                        asMap(solution.getFirstEntityGroup(), 3L, solution.getEntityGroupList().get(1), 3L)));
 
         // Incremental
         TestdataLavishEntity entity = solution.getFirstEntity();
@@ -204,7 +204,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getEntityGroupList().get(1), 3)));
+                        asMap(solution.getEntityGroupList().get(1), 3L)));
     }
 
     @TestTemplate
@@ -231,7 +231,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getFirstEntityGroup(), 12, solution.getEntityGroupList().get(1), 12)));
+                        asMap(solution.getFirstEntityGroup(), 12L, solution.getEntityGroupList().get(1), 12L)));
 
         // Incremental
         TestdataLavishEntity entity = solution.getFirstEntity();
@@ -240,7 +240,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getEntityGroupList().get(1), 12)));
+                        asMap(solution.getEntityGroupList().get(1), 12L)));
     }
 
     @TestTemplate
@@ -261,14 +261,14 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity.getEntityGroup(), 1),
-                assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+                assertMatchWithScore(-1, entity.getEntityGroup(), 1L),
+                assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
     }
 
     @TestTemplate
@@ -293,14 +293,14 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity.getEntityGroup(), 1),
-                assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+                assertMatchWithScore(-1, entity.getEntityGroup(), 1L),
+                assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
     }
 
     @TestTemplate
@@ -329,14 +329,14 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, entity.getEntityGroup(), 1),
-                assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+                assertMatchWithScore(-1, entity.getEntityGroup(), 1L),
+                assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1));
+        assertScore(scoreDirector, assertMatchWithScore(-1, entity2.getEntityGroup(), 1L));
     }
 
     @TestTemplate
@@ -358,14 +358,14 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1 }),
-                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1L }),
+                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
     }
 
     @TestTemplate
@@ -391,14 +391,14 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1 }),
-                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1L }),
+                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
     }
 
     @TestTemplate
@@ -428,14 +428,14 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1 }),
-                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+                assertMatchWithScore(-1, new Object[] { entity.getEntityGroup().toString(), 1L }),
+                assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
 
         // Incremental
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
-        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1 }));
+        assertScore(scoreDirector, assertMatchWithScore(-1, new Object[] { entity2.getEntityGroup().toString(), 1L }));
     }
 
     @TestTemplate
@@ -461,15 +461,15 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2),
-                assertMatchWithScore(-2, entityGroup1, 2));
+                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L),
+                assertMatchWithScore(-2, entityGroup1, 2L));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup1);
         solution.getEntityGroupList().remove(entityGroup1);
         scoreDirector.afterProblemFactRemoved(entityGroup1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2));
+                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L));
     }
 
     @TestTemplate
@@ -496,15 +496,15 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2),
-                assertMatchWithScore(-2, entityGroup1, 2));
+                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L),
+                assertMatchWithScore(-2, entityGroup1, 2L));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup1);
         solution.getEntityGroupList().remove(entityGroup1);
         scoreDirector.afterProblemFactRemoved(entityGroup1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2));
+                assertMatchWithScore(-2, solution.getFirstEntityGroup(), 2L));
     }
 
     @TestTemplate
@@ -531,15 +531,15 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3),
-                assertMatchWithScore(-3, entityGroup1, 3));
+                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3L),
+                assertMatchWithScore(-3, entityGroup1, 3L));
 
         // Incremental
         scoreDirector.beforeProblemFactRemoved(entityGroup1);
         solution.getEntityGroupList().remove(entityGroup1);
         scoreDirector.afterProblemFactRemoved(entityGroup1);
         assertScore(scoreDirector,
-                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3));
+                assertMatchWithScore(-3, solution.getFirstEntityGroup(), 3L));
     }
 
     @TestTemplate
