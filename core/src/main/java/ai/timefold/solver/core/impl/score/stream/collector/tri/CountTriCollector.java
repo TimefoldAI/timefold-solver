@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
 import org.jspecify.annotations.NonNull;
 
 final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C, LongCounter, Long> {
-    private final static CountTriCollector<?, ?, ?> INSTANCE = new CountTriCollector<>();
+    private static final CountTriCollector<?, ?, ?> INSTANCE = new CountTriCollector<>();
 
     private CountTriCollector() {
     }

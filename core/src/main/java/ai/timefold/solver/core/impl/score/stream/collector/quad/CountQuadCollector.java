@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
 import org.jspecify.annotations.NonNull;
 
 final class CountQuadCollector<A, B, C, D> implements QuadConstraintCollector<A, B, C, D, LongCounter, Long> {
-    private final static CountQuadCollector<?, ?, ?, ?> INSTANCE = new CountQuadCollector<>();
+    private static final CountQuadCollector<?, ?, ?, ?> INSTANCE = new CountQuadCollector<>();
 
     private CountQuadCollector() {
     }

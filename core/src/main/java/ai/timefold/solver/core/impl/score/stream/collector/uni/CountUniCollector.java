@@ -11,7 +11,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 final class CountUniCollector<A> implements UniConstraintCollector<A, LongCounter, Long> {
-    private final static CountUniCollector<?> INSTANCE = new CountUniCollector<>();
+    private static final CountUniCollector<?> INSTANCE = new CountUniCollector<>();
 
     private CountUniCollector() {
     }

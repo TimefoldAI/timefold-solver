@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
 import org.jspecify.annotations.NonNull;
 
 final class CountBiCollector<A, B> implements BiConstraintCollector<A, B, LongCounter, Long> {
-    private final static CountBiCollector<?, ?> INSTANCE = new CountBiCollector<>();
+    private static final CountBiCollector<?, ?> INSTANCE = new CountBiCollector<>();
 
     private CountBiCollector() {
     }
