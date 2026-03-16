@@ -72,8 +72,6 @@ jobs:
       group: downstream-enterprise-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
     timeout-minutes: 120
-    env:
-      TIMEFOLD_ENTERPRISE_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
     steps:
       # Clone timefold-solver
       # No need to check for stale repo, as GitHub merges the main repo into the fork automatically.
@@ -119,6 +117,8 @@ jobs:
       - name: Build and test timefold-solver-enterprise
         working-directory: ./timefold-solver-enterprise
         shell: bash
+        env:
+          TIMEFOLD_ENTERPRISE_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
         run: ./mvnw -B clean verify
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
