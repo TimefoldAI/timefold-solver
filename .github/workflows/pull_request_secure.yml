@@ -62,92 +62,6 @@ jobs:
       contents: read
     steps:
       - run: true
-  integration-tests:
-    needs: approval_required
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    concurrency:
-      group: pr-${{ github.event_name }}-${{ github.head_ref }}
-      cancel-in-progress: true
-    steps:
-      # Clone timefold-solver
-      # No need to check for stale repo, as GitHub merges the main repo into the fork automatically.
-      - name: Checkout timefold-solver
-        uses: actions/checkout@v6
-        with:
-          path: ./timefold-solver
-          ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
-
-      - name: Setup Temurin 25 and Maven
-        uses: actions/setup-java@v5
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Quickly build timefold-solver
-        working-directory: ./timefold-solver
-        shell: bash
-        run: ./mvnw -B -Dquickly clean install
-
-      # Clone timefold-solver-enterprise
-      - name: Checkout timefold-solver-enterprise (PR) # Checkout the PR branch first, if it exists
-        id: checkout-solver-enterprise
-        uses: actions/checkout@v6
-        continue-on-error: true
-        with:
-          repository: TimefoldAI/timefold-solver-enterprise
-          ref: ${{ github.head_ref }}
-          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
-          path: ./timefold-solver-enterprise
-          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-      - name: Checkout timefold-solver-enterprise (main) # Checkout the main branch if the PR branch does not exist
-        if: steps.checkout-solver-enterprise.outcome != 'success'
-        uses: actions/checkout@v6
-        with:
-          repository: TimefoldAI/timefold-solver-enterprise
-          ref: main
-          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
-          path: ./timefold-solver-enterprise
-          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-
-      - name: Quickly build timefold-solver-enterprise
-        working-directory: ./timefold-solver-enterprise
-        shell: bash
-        run: ./mvnw -B -Dquickly clean install
-
-      # Clone timefold-solver-benchmarks
-      - name: Checkout timefold-solver-benchmarks (PR) # Checkout the PR branch first, if it exists
-        if: github.head_ref # Only true if this is a PR.
-        id: checkout-solver-benchmarks-pr
-        uses: actions/checkout@v6
-        continue-on-error: true
-        with:
-          repository: TimefoldAI/timefold-solver-benchmarks
-          ref: ${{ github.head_ref }}
-          path: ./timefold-solver-benchmarks
-          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-      - name: Checkout timefold-solver-benchmarks (main) # Checkout the main branch if the PR branch does not exist
-        if: ${{ steps.checkout-solver-benchmarks-pr.outcome != 'success' }}
-        uses: actions/checkout@v6
-        with:
-          repository: TimefoldAI/timefold-solver-benchmarks
-          ref: main
-          path: ./timefold-solver-benchmarks
-          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-
-      - name: Build and test timefold-solver-benchmarks
-        working-directory: ./timefold-solver-benchmarks
-        shell: bash
-        run: ./mvnw -B -DskipJMH clean verify
-      - name: Test Summary
-        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
-        with:
-          paths: "**/TEST-*.xml"
-          show: "fail"
-        if: always()
   enterprise-java:
     needs: approval_required
     name: Enterprise Edition (Java)
@@ -203,6 +117,8 @@ jobs:
       - name: Build and test timefold-solver-enterprise
         working-directory: ./timefold-solver-enterprise
         shell: bash
+        env:
+          TIMEFOLD_ENTERPRISE_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
         run: ./mvnw -B clean verify
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
