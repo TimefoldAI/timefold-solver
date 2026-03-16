@@ -213,7 +213,7 @@
           </dependencies>
           <executions>
             <execution>
-              <id>enforce-no-logback-test-in-main</id>
+              <id>enforcement</id>
               <goals>
                 <goal>enforce</goal>
               </goals>
@@ -225,30 +225,9 @@
                       <file>${project.basedir}/src/main/filtered-resources/logback-test.xml</file>
                     </files>
                   </requireFilesDontExist>
-                </rules>
-              </configuration>
-            </execution>
-            <execution>
-              <id>no-managed-deps</id>
-              <goals>
-                <goal>enforce</goal>
-              </goals>
-              <configuration>
-                <rules>
-                  <requireManagedDeps implementation="org.commonjava.maven.enforcer.rule.EnforceManagedDepsRule">
+                  <requireManagedDeps>
                     <checkProfiles>true</checkProfiles>
-                    <failOnViolation>true</failOnViolation>
                   </requireManagedDeps>
-                </rules>
-              </configuration>
-            </execution>
-            <execution>
-              <id>ban-forbidden-dependencies</id>
-              <goals>
-                <goal>enforce</goal>
-              </goals>
-              <configuration>
-                <rules>
                   <bannedDependencies>
                     <excludes combine.children="append">
                       <!-- Ban forbidden logging deps (we only use SLF4J + Logback) -->
@@ -262,17 +241,6 @@
                       <exclude>org.mockito:mockito-all</exclude><!-- Use mockito-core instead -->
                     </excludes>
                   </bannedDependencies>
-                </rules>
-                <fail>true</fail>
-              </configuration>
-            </execution>
-            <execution>
-              <id>ban-duplicated-classes</id>
-              <goals>
-                <goal>enforce</goal>
-              </goals>
-              <configuration>
-                <rules>
                   <banDuplicateClasses>
                     <ignoreClasses>
                       <!-- ignoring java 9 compatible class for modules -->
@@ -297,19 +265,9 @@
                     <findAllDuplicates>true</findAllDuplicates>
                     <ignoreWhenIdentical>true</ignoreWhenIdentical>
                   </banDuplicateClasses>
-                </rules>
-                <fail>${enforcer.failOnDuplicatedClasses}</fail>
-              </configuration>
-            </execution>
-            <execution>
-              <id>no-duplicate-declared-dependencies</id>
-              <goals>
-                <goal>enforce</goal>
-              </goals>
-              <configuration>
-                <rules>
                   <banDuplicatePomDependencyVersions/>
                 </rules>
+                <fail>true</fail>
               </configuration>
             </execution>
           </executions>
