@@ -228,19 +228,18 @@
                   <requireManagedDeps>
                     <checkProfiles>true</checkProfiles>
                   </requireManagedDeps>
-                  <bannedDependencies>
-                    <excludes combine.children="append">
-                      <!-- Ban forbidden logging deps (we only use SLF4J + Logback) -->
-                      <!-- In case of transitive dependency, exclude it and use 'org.slf4j:jcl-over-slf4j' instead -->
-                      <exclude>commons-logging:commons-log*</exclude>
-                      <!-- In case of transitive dependency, exclude it and use 'org.apache.logging.log4j:log4j-to-slf4j' instead -->
-                      <exclude>log4j:log4j</exclude>
-                      <!-- In case of transitive dependency, exclude it and use 'org.javassist:javassist' instead -->
-                      <exclude>javassist:javassist</exclude>
-                      <exclude>org.apache.cxf:cxf-bundle-jaxrs</exclude>
-                      <exclude>org.mockito:mockito-all</exclude><!-- Use mockito-core instead -->
-                    </excludes>
-                  </bannedDependencies>
+                  <banDuplicatePomDependencyVersions/>
+                </rules>
+                <fail>true</fail>
+              </configuration>
+            </execution>
+            <execution>
+              <id>enforcement-duplicate-classes</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
                   <banDuplicateClasses>
                     <ignoreClasses>
                       <!-- ignoring java 9 compatible class for modules -->
@@ -265,9 +264,8 @@
                     <findAllDuplicates>true</findAllDuplicates>
                     <ignoreWhenIdentical>true</ignoreWhenIdentical>
                   </banDuplicateClasses>
-                  <banDuplicatePomDependencyVersions/>
                 </rules>
-                <fail>true</fail>
+                <fail>${enforcer.failOnDuplicatedClasses}</fail>
               </configuration>
             </execution>
           </executions>
