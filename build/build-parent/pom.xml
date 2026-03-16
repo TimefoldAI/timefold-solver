@@ -208,12 +208,12 @@
             <dependency>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>extra-enforcer-rules</artifactId>
-              <version>1.11.0</version>
+              <version>1.12.0</version>
             </dependency>
           </dependencies>
           <executions>
             <execution>
-              <id>enforce-no-logback-test-in-main</id>
+              <id>enforcement</id>
               <goals>
                 <goal>enforce</goal>
               </goals>
@@ -225,49 +225,16 @@
                       <file>${project.basedir}/src/main/filtered-resources/logback-test.xml</file>
                     </files>
                   </requireFilesDontExist>
-                </rules>
-              </configuration>
-            </execution>
-            <execution>
-              <id>no-managed-deps</id>
-              <goals>
-                <goal>enforce</goal>
-              </goals>
-              <configuration>
-                <rules>
-                  <requireManagedDeps implementation="org.commonjava.maven.enforcer.rule.EnforceManagedDepsRule">
+                  <requireManagedDeps>
                     <checkProfiles>true</checkProfiles>
-                    <failOnViolation>true</failOnViolation>
                   </requireManagedDeps>
-                </rules>
-              </configuration>
-            </execution>
-            <execution>
-              <id>ban-forbidden-dependencies</id>
-              <goals>
-                <goal>enforce</goal>
-              </goals>
-              <configuration>
-                <rules>
-                  <bannedDependencies>
-                    <excludes combine.children="append">
-                      <!-- Ban forbidden logging deps (we only use SLF4J + Logback) -->
-                      <!-- In case of transitive dependency, exclude it and use 'org.slf4j:jcl-over-slf4j' instead -->
-                      <exclude>commons-logging:commons-log*</exclude>
-                      <!-- In case of transitive dependency, exclude it and use 'org.apache.logging.log4j:log4j-to-slf4j' instead -->
-                      <exclude>log4j:log4j</exclude>
-                      <!-- In case of transitive dependency, exclude it and use 'org.javassist:javassist' instead -->
-                      <exclude>javassist:javassist</exclude>
-                      <exclude>org.apache.cxf:cxf-bundle-jaxrs</exclude>
-                      <exclude>org.mockito:mockito-all</exclude><!-- Use mockito-core instead -->
-                    </excludes>
-                  </bannedDependencies>
+                  <banDuplicatePomDependencyVersions/>
                 </rules>
                 <fail>true</fail>
               </configuration>
             </execution>
             <execution>
-              <id>ban-duplicated-classes</id>
+              <id>enforcement-duplicate-classes</id>
               <goals>
                 <goal>enforce</goal>
               </goals>
@@ -299,17 +266,6 @@
                   </banDuplicateClasses>
                 </rules>
                 <fail>${enforcer.failOnDuplicatedClasses}</fail>
-              </configuration>
-            </execution>
-            <execution>
-              <id>no-duplicate-declared-dependencies</id>
-              <goals>
-                <goal>enforce</goal>
-              </goals>
-              <configuration>
-                <rules>
-                  <banDuplicatePomDependencyVersions/>
-                </rules>
               </configuration>
             </execution>
           </executions>
