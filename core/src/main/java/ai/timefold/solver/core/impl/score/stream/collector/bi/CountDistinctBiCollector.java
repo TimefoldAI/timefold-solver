@@ -7,9 +7,9 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongDistinctCountCalc
 
 import org.jspecify.annotations.NonNull;
 
-final class CountDistinctLongBiCollector<A, B, Mapped_>
+final class CountDistinctBiCollector<A, B, Mapped_>
         extends ObjectCalculatorBiCollector<A, B, Mapped_, Long, Mapped_, LongDistinctCountCalculator<Mapped_>> {
-    CountDistinctLongBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper) {
+    CountDistinctBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper) {
         super(mapper);
     }
 

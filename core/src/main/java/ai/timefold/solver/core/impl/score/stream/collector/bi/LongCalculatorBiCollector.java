@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongCalculator;
 import org.jspecify.annotations.NonNull;
 
 abstract sealed class LongCalculatorBiCollector<A, B, Output_, Calculator_ extends LongCalculator<Output_>>
-        implements BiConstraintCollector<A, B, Calculator_, Output_> permits AverageLongBiCollector, SumLongBiCollector {
+        implements BiConstraintCollector<A, B, Calculator_, Output_> permits AverageBiCollector, SumBiCollector {
     private final ToLongBiFunction<? super A, ? super B> mapper;
 
     public LongCalculatorBiCollector(ToLongBiFunction<? super A, ? super B> mapper) {

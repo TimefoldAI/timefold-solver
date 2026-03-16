@@ -210,6 +210,13 @@ removed (`getConstraintStreamImplType()`, `setConstraintStreamImplType()`, `with
 * In Spring Boot, property `timefold.solver.solve-length` renamed to `timefold.solver.solve.duration` in `application.properties`.
 * In Quarkus, property `quarkus.timefold.solver.solve-length` renamed to `quarkus.timefold.solver.solve.duration` in `application.properties`.
 
+==== Constraint Collector `Int` Variants Removed
+
+* `countLong()` renamed to `count()` (now returns `long`).
+* `countDistinctLong(fn)` renamed to `countDistinct(fn)`.
+* `sumLong(fn)` renamed to `sum(fn)`.
+* `averageLong(fn)` renamed to `average(fn)`.
+
 ==== Assorted other changes
 
 * `@PlanningId` moved from `ai.timefold.solver.core.api.domain.lookup` to `ai.timefold.solver.core.api.domain.common`.
@@ -861,6 +868,24 @@ Various previously deprecated static methods on `ConstraintCollectors` have been
 - Specialized `min()` and `max()` overloads that took a `Comparator` argument;
 use the remaining overloads, which take a `Comparable` mapping instead.
 - `toCollection()`; prefer `toList()` or `toSet()` instead.
+====
+
+'''
+
+.icon:eye[] `count()` and `countDistinct()` now return `Long` instead of `Integer`
+[%collapsible%open]
+====
+`ConstraintCollectors.count()` and `ConstraintCollectors.countDistinct(...)` previously returned `Integer`.
+They now return `Long`.
+====
+
+'''
+
+.icon:eye[] `sum(ToIntFunction)` removed
+[%collapsible%open]
+====
+`ConstraintCollectors.sum(ToIntFunction)` has been removed.
+Replace it with `sum(ToLongFunction)` and update the lambda accordingly.
 ====
 
 '''

@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 abstract sealed class ObjectCalculatorBiCollector<A, B, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
         implements BiConstraintCollector<A, B, Calculator_, Output_>
         permits AverageReferenceBiCollector, ConnectedRangesBiConstraintCollector, ConsecutiveSequencesBiConstraintCollector,
-        CountDistinctIntBiCollector, CountDistinctLongBiCollector, SumReferenceBiCollector {
+        CountDistinctBiCollector, SumReferenceBiCollector {
     protected final BiFunction<? super A, ? super B, ? extends Input_> mapper;
 
     public ObjectCalculatorBiCollector(BiFunction<? super A, ? super B, ? extends Input_> mapper) {

@@ -7,9 +7,9 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongDistinctCountCalc
 
 import org.jspecify.annotations.NonNull;
 
-final class CountDistinctLongUniCollector<A, Mapped_>
+final class CountDistinctUniCollector<A, Mapped_>
         extends ObjectCalculatorUniCollector<A, Mapped_, Long, Mapped_, LongDistinctCountCalculator<Mapped_>> {
-    CountDistinctLongUniCollector(Function<? super A, ? extends Mapped_> mapper) {
+    CountDistinctUniCollector(Function<? super A, ? extends Mapped_> mapper) {
         super(mapper);
     }
 

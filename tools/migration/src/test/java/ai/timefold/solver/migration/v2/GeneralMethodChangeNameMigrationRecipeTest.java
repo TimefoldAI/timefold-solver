@@ -107,6 +107,20 @@ class GeneralMethodChangeNameMigrationRecipeTest implements RewriteTest {
                                            public void rewardLong(Object constraintWeight, ToLongFunction matchWeigher) {}
                                            public void impactLong(Object constraintWeight) {}
                                            public void impactLong(Object constraintWeight, ToLongFunction matchWeigher) {}
+                                        }""",
+                                """
+                                        package ai.timefold.solver.core.api.score.stream;
+
+                                        import java.util.function.ToLongFunction;
+
+                                        public class ConstraintCollectors {
+                                           public static Object countLong() { return null; }
+                                           public static Object countLongBi() { return null; }
+                                           public static Object countLongTri() { return null; }
+                                           public static Object countLongQuad() { return null; }
+                                           public static Object countDistinctLong(ToLongFunction fn) { return null; }
+                                           public static Object sumLong(ToLongFunction fn) { return null; }
+                                           public static Object averageLong(ToLongFunction fn) { return null; }
                                         }"""));
     }
 
@@ -244,6 +258,43 @@ class GeneralMethodChangeNameMigrationRecipeTest implements RewriteTest {
                                     stream4.reward(null, null);
                                     stream4.impact(null);
                                     stream4.impact(null, null);
+                                }
+                        }"""));
+    }
+
+    @Test
+    void migrateConstraintCollectors() {
+        rewriteRun(java(
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
+
+                        public class Test {
+                                void validate() {
+                                    ConstraintCollectors.countLong();
+                                    ConstraintCollectors.countLongBi();
+                                    ConstraintCollectors.countLongTri();
+                                    ConstraintCollectors.countLongQuad();
+                                    ConstraintCollectors.countDistinctLong(null);
+                                    ConstraintCollectors.sumLong(null);
+                                    ConstraintCollectors.averageLong(null);
+                                }
+                        }""",
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
+
+                        public class Test {
+                                void validate() {
+                                    ConstraintCollectors.count();
+                                    ConstraintCollectors.countBi();
+                                    ConstraintCollectors.countTri();
+                                    ConstraintCollectors.countQuad();
+                                    ConstraintCollectors.countDistinct(null);
+                                    ConstraintCollectors.sum(null);
+                                    ConstraintCollectors.average(null);
                                 }
                         }"""));
     }

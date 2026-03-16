@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.QuadPredicate;
-import ai.timefold.solver.core.api.function.ToIntQuadFunction;
+import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.Joiners;
@@ -336,8 +336,8 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
     @Override
     @TestTemplate
     public void sameParentDifferentCollectorFunctionGroupBy() {
-        ToIntQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction1 = (a, b, c, d) -> 0;
-        ToIntQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction2 = (a, b, c, d) -> 0;
+        ToLongQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction1 = (a, b, c, d) -> 0;
+        ToLongQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction2 = (a, b, c, d) -> 0;
 
         assertThat(baseStream.groupBy(ConstraintCollectors.sum(sumFunction1)))
                 .isNotSameAs(baseStream.groupBy(ConstraintCollectors.sum(sumFunction2)));
@@ -356,7 +356,7 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
     @Override
     @TestTemplate
     public void sameParentSameCollectorGroupBy() {
-        ToIntQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction = (a, b, c, d) -> 0;
+        ToLongQuadFunction<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> sumFunction = (a, b, c, d) -> 0;
 
         assertThat(baseStream.groupBy(ConstraintCollectors.sum(sumFunction)))
                 .isSameAs(baseStream.groupBy(ConstraintCollectors.sum(sumFunction)));
