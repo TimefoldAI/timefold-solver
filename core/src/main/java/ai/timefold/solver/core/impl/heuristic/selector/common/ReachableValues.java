@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
@@ -93,6 +94,14 @@ public final class ReachableValues<Entity_, Value_> {
             onDemandRandomAccessValue[itemValue.ordinal] = valueList;
         }
         return valueList;
+    }
+
+    public Set<Entity_> extractAllEntitiesAsSet() {
+        return entitiesIndex.indexMap().keySet();
+    }
+
+    public Set<Value_> extractAllValuesAsSet() {
+        return valuesIndex.indexMap().keySet();
     }
 
     public int getSize() {

@@ -523,6 +523,7 @@ class SwapMoveSelectorTest {
         var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("B", List.of(v2, v3), List.of(v2, v3));
         var e3 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("C", List.of(v1, v4), List.of(v1, v3, v4));
         solution.setEntityList(List.of(e1, e2, e3));
+        solution.setSolutionValueRange(List.of(v1));
 
         var scoreDirector =
                 mockScoreDirector(TestdataAllowsUnassignedMultiVarEntityProvidingSolution.buildSolutionDescriptor());

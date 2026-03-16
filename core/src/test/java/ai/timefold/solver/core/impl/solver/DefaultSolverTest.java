@@ -1903,6 +1903,8 @@ class DefaultSolverTest {
         var v1 = new TestdataValue("1");
         var v2 = new TestdataValue("2");
         var v3 = new TestdataValue("3");
+
+        problem.setSolutionValueRange(List.of(v1));
         // The entity has been assigned a value v3 for the second value range,
         // which is not included in the entity's value ranges
         var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("e1", List.of(v1, v2, v3), v3, List.of(v1, v2), v3,

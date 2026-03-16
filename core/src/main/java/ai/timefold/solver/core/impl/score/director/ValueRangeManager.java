@@ -180,7 +180,7 @@ public final class ValueRangeManager<Solution_> {
             AbstractValueRangeDescriptor<Solution_> abstractValueRangeDescriptor, Entity_ entity,
             @Nullable SelectionSorter<Solution_, Value_> sorter) {
         ValueRangeState<Solution_, Entity_, Value_> descriptor = fromDescriptor(abstractValueRangeDescriptor);
-        return descriptor.getFromEntity(entity, getInitializationStatistics().genuineEntityCount(), sorter);
+        return descriptor.getFromEntity(entity, sorter);
     }
 
     public long countOnSolution(AbstractValueRangeDescriptor<Solution_> abstractValueRangeDescriptor, Solution_ solution) {

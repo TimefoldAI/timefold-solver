@@ -1,57 +1,50 @@
 package ai.timefold.solver.core.impl.score.director;
 
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
-
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.util.MathUtils;
-import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class ListValueRangeStatistics {
-    private final Map<ValueRangeState.HashedValueRange<?>, MutableInt> valueRangeToInstanceCount;
+public class ListValueRangeStatistics<Solution_> {
+    @Nullable
+    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
+    private final ValueRangeManager<Solution_> valueRangeManager;
 
-    public ListValueRangeStatistics() {
-        valueRangeToInstanceCount = new HashMap<>();
+    public ListValueRangeStatistics(@Nullable ListVariableDescriptor<Solution_> listVariableDescriptor,
+            ValueRangeManager<Solution_> valueRangeManager) {
+        this.listVariableDescriptor = listVariableDescriptor;
+        this.valueRangeManager = valueRangeManager;
     }
 
-    public void addValueRange(ValueRange<?> valueRange) {
-        var hashedValueRange = ValueRangeState.HashedValueRange.of(valueRange);
-        valueRangeToInstanceCount
-                .computeIfAbsent(hashedValueRange, ignored -> new MutableInt(0))
-                .increment();
-    }
-
-    public long computeListProblemScaleLog(boolean allowsUnassignedValues, long logBase) {
-        var valueToRangeCount = new IdentityHashMap<Object, MutableInt>();
-        // Unassigned values are treated as if they are assigned to a virtual entity to simplify calculations
-        var entityCount = allowsUnassignedValues ? 1 : 0;
-        for (var entry : valueRangeToInstanceCount.entrySet()) {
-            var iterator = entry.getKey().item().createOriginalIterator();
-            var valueRangeInstanceCount = entry.getValue().intValue();
-            entityCount += valueRangeInstanceCount;
-            while (iterator.hasNext()) {
-                var value = iterator.next();
-                valueToRangeCount.computeIfAbsent(value, ignored -> new MutableInt(0))
-                        .add(valueRangeInstanceCount);
-
-            }
-        }
-
-        if (entityCount == 0) {
+    public long computeListProblemScaleLog(long logBase) {
+        if (listVariableDescriptor == null) {
+            // No list variable
             return 0L;
         }
+        var allowsUnassignedValues = listVariableDescriptor.allowsUnassignedValues();
+        var reachableValues = valueRangeManager.getReachableValues(listVariableDescriptor);
+        var entityCount = reachableValues.extractAllEntitiesAsSet().size();
+        if (entityCount == 0) {
+            // No entities
+            return 0L;
+        }
+        if (allowsUnassignedValues) {
+            // Unassigned values are treated as if they are assigned to a virtual entity to simplify calculations
+            entityCount++;
+        }
 
-        var valueCount = valueToRangeCount.size();
+        var valueSet = reachableValues.extractAllValuesAsSet();
+        var valueCount = valueSet.size();
         var validPercentageLog = 0L;
         var additionalCount = allowsUnassignedValues ? 1 : 0;
-        for (var validEntityCount : valueToRangeCount.values()) {
+
+        for (var value : valueSet) {
             validPercentageLog += MathUtils.getScaledApproximateLog(MathUtils.LOG_PRECISION, logBase,
-                    (validEntityCount.doubleValue() + additionalCount) / entityCount);
+                    ((double) reachableValues.extractEntitiesAsList(value).size() + additionalCount) / entityCount);
         }
+
         return MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, logBase,
                 valueCount, entityCount) + validPercentageLog;
     }

@@ -1,32 +1,25 @@
 package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Set;
-
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.ListValueRangeStatistics;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.util.MathUtils;
 
-public class ProblemScaleTracker {
+public class ProblemScaleTracker<Solution_> {
     private final long logBase;
-    private final Set<Object> visitedAnchorSet = Collections.newSetFromMap(new IdentityHashMap<>());
-    private final ListValueRangeStatistics listValueRangeStatistics = new ListValueRangeStatistics();
+    private final ListValueRangeStatistics<Solution_> listValueRangeStatistics;
     private long basicProblemScaleLog = 0L;
-    private boolean listAllowsUnassignedValues = false;
 
-    public ProblemScaleTracker(long logBase) {
+    public ProblemScaleTracker(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            ValueRangeManager<Solution_> valueRangeManager,
+            long logBase) {
         this.logBase = logBase;
+        this.listValueRangeStatistics = new ListValueRangeStatistics<>(listVariableDescriptor, valueRangeManager);
     }
 
     // Simple getters
     public long getProblemScaleLog() {
-        return basicProblemScaleLog + listValueRangeStatistics.computeListProblemScaleLog(listAllowsUnassignedValues, logBase);
-    }
-
-    public void processListValueRange(boolean listAllowsUnassignedValues, ValueRange<?> valueRange) {
-        this.listAllowsUnassignedValues |= listAllowsUnassignedValues;
-        listValueRangeStatistics.addValueRange(valueRange);
+        return basicProblemScaleLog + listValueRangeStatistics.computeListProblemScaleLog(logBase);
     }
 
     public void addBasicProblemScale(long count) {

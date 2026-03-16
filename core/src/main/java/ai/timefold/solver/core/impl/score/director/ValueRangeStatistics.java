@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.score.director;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -10,7 +8,6 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.ProblemScaleTracker;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.util.MathUtils;
@@ -28,6 +25,10 @@ final class ValueRangeStatistics<Solution_> {
     private final Solution_ solution;
     private @Nullable SolutionInitializationStatistics cachedInitializationStatistics = null;
     private @Nullable ProblemSizeStatistics cachedProblemSizeStatistics = null;
+
+    // Negative if not calculated, non-negative if cached
+    private long cachedApproximateValueCount = -1L;
+    private double cachedProblemScale = -1.0;
 
     ValueRangeStatistics(ValueRangeManager<Solution_> valueRangeManager, SolutionDescriptor<Solution_> solutionDescriptor,
             Solution_ solution) {
@@ -57,18 +58,37 @@ final class ValueRangeStatistics<Solution_> {
         var notInAnyListValueCount = new MutableInt();
         var genuineEntityCount = new MutableInt();
         var shadowEntityCount = new MutableInt();
+        var approximateValueCount = new MutableLong();
+        var maxValueRangeSize = new MutableLong(0L);
 
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor != null) {
             var countOnSolution =
                     (int) valueRangeManager.countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), solution);
             notInAnyListValueCount.add(countOnSolution);
+            maxValueRangeSize.setValue(countOnSolution);
+            if (listVariableDescriptor.canExtractValueRangeFromSolution()) {
+                approximateValueCount.add(countOnSolution);
+            }
             if (!listVariableDescriptor.allowsUnassignedValues()) {
                 // We count every possibly unassigned element in every list variable.
                 // And later we subtract the assigned elements.
                 unassignedValueCount.add(countOnSolution);
             }
         }
+
+        for (var basicVariable : solutionDescriptor.getBasicVariableDescriptorList()) {
+            if (basicVariable.canExtractValueRangeFromSolution()) {
+                var countOnSolution = valueRangeManager.countOnSolution(basicVariable.getValueRangeDescriptor(), solution);
+                approximateValueCount.add(countOnSolution);
+                if (maxValueRangeSize.longValue() < countOnSolution) {
+                    maxValueRangeSize.setValue(countOnSolution);
+                }
+            }
+        }
+
+        var logBase = (maxValueRangeSize.longValue() < 2) ? 10 : maxValueRangeSize.longValue();
+        var problemScaleTracker = new ProblemScaleTracker<>(listVariableDescriptor, valueRangeManager, logBase);
 
         solutionDescriptor.visitAllEntities(solution, entity -> {
             var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
@@ -79,11 +99,20 @@ final class ValueRangeStatistics<Solution_> {
                     uninitializedEntityCount.increment();
                     uninitializedVariableCount.add(uninitializedVariableCountForEntity);
                 }
+                processProblemScale(valueRangeManager, entityDescriptor, entity, problemScaleTracker);
             } else {
                 shadowEntityCount.increment();
             }
             if (finisher != null) {
                 finisher.accept(entity);
+            }
+
+            for (var genuineVariable : entityDescriptor.getGenuineVariableDescriptorList()) {
+                if (genuineVariable instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                        && !basicVariableDescriptor.canExtractValueRangeFromSolution()) {
+                    approximateValueCount
+                            .add(valueRangeManager.countOnEntity(basicVariableDescriptor.getValueRangeDescriptor(), entity));
+                }
             }
             if (!entityDescriptor.hasAnyListVariables()) {
                 return;
@@ -94,6 +123,10 @@ final class ValueRangeStatistics<Solution_> {
             if (!listVariableDescriptor.allowsUnassignedValues() && listVariableEntityDescriptor.matchesEntity(entity)) {
                 unassignedValueCount.subtract(countOnEntity);
             }
+            if (!listVariableDescriptor.canExtractValueRangeFromSolution()) {
+                approximateValueCount
+                        .add(valueRangeManager.countOnEntity(listVariableDescriptor.getValueRangeDescriptor(), entity));
+            }
             // TODO maybe detect duplicates and elements that are outside the value range
         });
         var statistics = new SolutionInitializationStatistics(genuineEntityCount.intValue(),
@@ -103,44 +136,36 @@ final class ValueRangeStatistics<Solution_> {
         if (cachedInitializationStatistics == null) {
             this.cachedInitializationStatistics = statistics;
         }
+        cachedApproximateValueCount = approximateValueCount.longValue();
+        var problemScaleLogAsLong = problemScaleTracker.getProblemScaleLog();
+        var scale = (problemScaleLogAsLong / (double) MathUtils.LOG_PRECISION) / MathUtils.getLogInBase(logBase, 10d);
+        if (Double.isNaN(scale) || Double.isInfinite(scale)) {
+            cachedProblemScale = 0.0;
+        } else {
+            cachedProblemScale = scale;
+        }
         return statistics;
     }
 
     public ProblemSizeStatistics getProblemSizeStatistics() {
+        if (cachedProblemScale < 0) {
+            computeInitializationStatistics(null, false);
+        }
         if (cachedProblemSizeStatistics == null) {
             cachedProblemSizeStatistics = new ProblemSizeStatistics(
                     solutionDescriptor.getGenuineEntityCount(solution),
                     solutionDescriptor.getGenuineVariableCount(solution),
-                    getApproximateValueCount(),
-                    getProblemScale());
+                    cachedApproximateValueCount,
+                    cachedProblemScale);
         }
         return cachedProblemSizeStatistics;
     }
 
     long getApproximateValueCount() {
-        var genuineVariableDescriptorSet =
-                Collections.newSetFromMap(new IdentityHashMap<GenuineVariableDescriptor<Solution_>, Boolean>());
-        solutionDescriptor.visitAllEntities(solution, entity -> {
-            var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
-            if (entityDescriptor.isGenuine()) {
-                genuineVariableDescriptorSet.addAll(entityDescriptor.getGenuineVariableDescriptorList());
-            }
-        });
-        var out = new MutableLong();
-        for (var variableDescriptor : genuineVariableDescriptorSet) {
-            var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-            if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
-                out.add(valueRangeManager.countOnSolution(valueRangeDescriptor, solution));
-            } else {
-                solutionDescriptor.visitEntitiesByEntityClass(solution,
-                        variableDescriptor.getEntityDescriptor().getEntityClass(),
-                        entity -> {
-                            out.add(valueRangeManager.countOnEntity(valueRangeDescriptor, entity));
-                            return false;
-                        });
-            }
+        if (cachedApproximateValueCount == -1) {
+            computeInitializationStatistics(null, false);
         }
-        return out.longValue();
+        return cachedApproximateValueCount;
     }
 
     /**
@@ -157,61 +182,14 @@ final class ValueRangeStatistics<Solution_> {
      *         Returns {@code 0} if the calculation results in NaN or infinity.
      */
     double getProblemScale() {
-        var logBase = Math.max(2, getMaximumValueRangeSize());
-        var problemScaleTracker = new ProblemScaleTracker(logBase);
-        solutionDescriptor.visitAllEntities(solution, entity -> {
-            var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
-            if (entityDescriptor.isGenuine()) {
-                processProblemScale(valueRangeManager, entityDescriptor, entity, problemScaleTracker);
-            }
-        });
-        var result = problemScaleTracker.getProblemScaleLog();
-        var scale = (result / (double) MathUtils.LOG_PRECISION) / MathUtils.getLogInBase(logBase, 10d);
-        if (Double.isNaN(scale) || Double.isInfinite(scale)) {
-            return 0;
+        if (cachedProblemScale < 0) {
+            computeInitializationStatistics(null, false);
         }
-        return scale;
-    }
-
-    /**
-     * Calculates the maximum value range size across all entities in the working solution.
-     * <p>
-     * The "maximum value range size" is defined as the largest number of possible values
-     * for any genuine variable across all entities.
-     * This is determined by inspecting the value range descriptors of each variable in each entity.
-     *
-     * @return The maximum value range size, or 0 if no genuine variables are found.
-     */
-    long getMaximumValueRangeSize() {
-        return solutionDescriptor.extractAllEntitiesStream(solution)
-                .mapToLong(entity -> {
-                    var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
-                    return entityDescriptor.isGenuine()
-                            ? getMaximumValueCount(entityDescriptor, entity)
-                            : 0L;
-                })
-                .max()
-                .orElse(0L);
-    }
-
-    private long getMaximumValueCount(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        var maximumValueCount = 0L;
-        for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
-            if (variableDescriptor.canExtractValueRangeFromSolution()) {
-                maximumValueCount = Math.max(maximumValueCount,
-                        valueRangeManager.countOnSolution(variableDescriptor.getValueRangeDescriptor(), solution));
-            } else {
-                maximumValueCount =
-                        Math.max(maximumValueCount,
-                                valueRangeManager.countOnEntity(variableDescriptor.getValueRangeDescriptor(), entity));
-            }
-        }
-        return maximumValueCount;
-
+        return cachedProblemScale;
     }
 
     private void processProblemScale(ValueRangeManager<Solution_> valueRangeManager,
-            EntityDescriptor<Solution_> entityDescriptor, Object entity, ProblemScaleTracker tracker) {
+            EntityDescriptor<Solution_> entityDescriptor, Object entity, ProblemScaleTracker<Solution_> tracker) {
         for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
             var valueCount = variableDescriptor.canExtractValueRangeFromSolution()
                     ? valueRangeManager.countOnSolution(variableDescriptor.getValueRangeDescriptor(), solution)
@@ -223,8 +201,7 @@ final class ValueRangeStatistics<Solution_> {
                     }
                 }
                 case ListVariableDescriptor<Solution_> listVariableDescriptor -> {
-                    tracker.processListValueRange(listVariableDescriptor.allowsUnassignedValues(),
-                            valueRangeManager.getFromEntity(listVariableDescriptor.getValueRangeDescriptor(), entity));
+                    // Intentionally empty, we don't need to process it here
                 }
                 default -> throw new IllegalStateException("Unhandled subclass of %s encountered (%s)."
                         .formatted(VariableDescriptor.class.getSimpleName(), variableDescriptor.getClass().getSimpleName()));
