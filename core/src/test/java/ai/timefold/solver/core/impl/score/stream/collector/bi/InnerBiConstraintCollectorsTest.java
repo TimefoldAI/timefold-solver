@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.collector.bi;
 
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.compose;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.countBi;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.max;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.min;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.asMap;
@@ -44,7 +45,7 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
     @Override
     @Test
     public void count() {
-        BiConstraintCollector<Integer, Integer, ?, Long> collector = ConstraintCollectors.countBi();
+        BiConstraintCollector<Integer, Integer, ?, Long> collector = countBi();
         Object container = collector.supplier().get();
 
         // Default state.
@@ -108,8 +109,7 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
     @Override
     @Test
     public void sum() {
-        BiConstraintCollector<Integer, Integer, ?, Long> collector =
-                ConstraintCollectors.sum((a, b) -> (long) Integer.sum(a, b));
+        BiConstraintCollector<Integer, Integer, ?, Long> collector = ConstraintCollectors.sum(Integer::sum);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -407,8 +407,7 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
     @Override
     @Test
     public void average() {
-        BiConstraintCollector<Integer, Integer, ?, Double> collector =
-                ConstraintCollectors.average((a, b) -> (long) Integer.sum(a, b));
+        BiConstraintCollector<Integer, Integer, ?, Double> collector = ConstraintCollectors.average(Integer::sum);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -882,10 +881,10 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
     @Test
     public void compose4() {
         BiConstraintCollector<Integer, Integer, ?, Quadruple<Long, Integer, Integer, Double>> collector =
-                compose(ConstraintCollectors.countBi(),
+                compose(countBi(),
                         min(Integer::sum, i -> i),
                         max(Integer::sum, i -> i),
-                        ConstraintCollectors.average((a, b) -> (long) Integer.sum(a, b)),
+                        ConstraintCollectors.average(Integer::sum),
                         Quadruple::new);
         Object container = collector.supplier().get();
 
@@ -1037,7 +1036,7 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
     @Override
     @Test
     public void collectAndThen() {
-        var collector = ConstraintCollectors.collectAndThen(ConstraintCollectors.countBi(), i -> i * 10);
+        var collector = ConstraintCollectors.collectAndThen(countBi(), i -> i * 10);
         var container = collector.supplier().get();
 
         // Default state.

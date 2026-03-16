@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.collector.tri;
 
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.compose;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.countTri;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.max;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.min;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.asMap;
@@ -43,7 +44,7 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void count() {
-        TriConstraintCollector<Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors.countTri();
+        TriConstraintCollector<Integer, Integer, Integer, ?, Long> collector = countTri();
         Object container = collector.supplier().get();
 
         // Default state.
@@ -112,8 +113,7 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void sum() {
-        TriConstraintCollector<Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors
-                .sum((a, b, c) -> (long) (a + b + c));
+        TriConstraintCollector<Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors.sum((a, b, c) -> a + b + c);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -128,6 +128,7 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
         int secondValueA = 4;
         int secondValueB = 5;
         int secondValueC = 1;
+        int secondSum = secondValueA + secondValueB + secondValueC;
         Runnable secondRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC);
         assertResult(collector, container, 16L);
         // Add third value, same as the second. We now have three values, two of which are the same.
@@ -422,7 +423,7 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
     @Test
     public void average() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Double> collector =
-                ConstraintCollectors.average((i, i2, i3) -> (long) (i + i2 + i3));
+                ConstraintCollectors.average((i, i2, i3) -> i + i2 + i3);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -875,10 +876,10 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
     @Test
     public void compose4() {
         TriConstraintCollector<Integer, Integer, Integer, ?, Quadruple<Long, Integer, Integer, Double>> collector =
-                compose(ConstraintCollectors.countTri(),
+                compose(countTri(),
                         min((i, i2, i3) -> i + i2 + i3, i -> i),
                         max((i, i2, i3) -> i + i2 + i3, i -> i),
-                        ConstraintCollectors.average((i, i2, i3) -> (long) (i + i2 + i3)),
+                        ConstraintCollectors.average((i, i2, i3) -> i + i2 + i3),
                         Quadruple::new);
         Object container = collector.supplier().get();
 
@@ -1031,7 +1032,7 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void collectAndThen() {
-        var collector = ConstraintCollectors.collectAndThen(ConstraintCollectors.countTri(), i -> i * 10);
+        var collector = ConstraintCollectors.collectAndThen(countTri(), i -> i * 10);
         var container = collector.supplier().get();
 
         // Default state.

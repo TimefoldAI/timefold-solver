@@ -601,25 +601,6 @@ The long variants (`HardSoftLongScore`, `HardMediumSoftLongScore`, `SimpleLongSc
 
 '''
 
-.icon:info-circle[role=yellow] `count()` and `countDistinct()` now return `Long` instead of `Integer`
-[%collapsible%open]
-====
-`ConstraintCollectors.count()` and `ConstraintCollectors.countDistinct(...)` previously returned `Integer`.
-They now return `Long`.
-Any code assigning the result to an `Integer` variable or using it as an `int` must be updated to use `Long` or `long`.
-====
-
-'''
-
-.icon:info-circle[role=yellow] `sum(ToIntFunction)` removed; use `sum(ToLongFunction)`
-[%collapsible%open]
-====
-`ConstraintCollectors.sum(ToIntFunction)` has been removed.
-Replace it with `sum(ToLongFunction)` and update the lambda accordingly, e.g. `sum(Visit::getServiceDuration)` where `getServiceDuration()` returns `int` must be changed to return `long`, or wrapped: `sum(v -> (long) v.getServiceDuration())`.
-====
-
-'''
-
 .icon:info-circle[role=yellow] `Score` can no longer be uninitialized
 [%collapsible%open]
 ====
@@ -887,6 +868,24 @@ Various previously deprecated static methods on `ConstraintCollectors` have been
 - Specialized `min()` and `max()` overloads that took a `Comparator` argument;
 use the remaining overloads, which take a `Comparable` mapping instead.
 - `toCollection()`; prefer `toList()` or `toSet()` instead.
+====
+
+'''
+
+.icon:eye[] `count()` and `countDistinct()` now return `Long` instead of `Integer`
+[%collapsible%open]
+====
+`ConstraintCollectors.count()` and `ConstraintCollectors.countDistinct(...)` previously returned `Integer`.
+They now return `Long`.
+====
+
+'''
+
+.icon:eye[] `sum(ToIntFunction)` removed
+[%collapsible%open]
+====
+`ConstraintCollectors.sum(ToIntFunction)` has been removed.
+Replace it with `sum(ToLongFunction)` and update the lambda accordingly.
 ====
 
 '''

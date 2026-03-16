@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.collector.quad;
 
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.compose;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.countQuad;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.max;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.min;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.asMap;
@@ -43,7 +44,7 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
     @Override
     @Test
     public void count() {
-        QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors.countQuad();
+        QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Long> collector = countQuad();
         Object container = collector.supplier().get();
 
         // Default state.
@@ -121,7 +122,7 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
     @Test
     public void sum() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Long> collector = ConstraintCollectors
-                .sum((a, b, c, d) -> (long) (a + b + c + d));
+                .sum((a, b, c, d) -> a + b + c + d);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -131,26 +132,28 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
         int firstValueB = 3;
         int firstValueC = 1;
         int firstValueD = 4;
+        long firstSum = firstValueA + firstValueB + firstValueC + firstValueD;
         Runnable firstRetractor = accumulate(collector, container, firstValueA, firstValueB, firstValueC, firstValueD);
-        assertResult(collector, container, 10L);
+        assertResult(collector, container, firstSum);
         // Add second value, we have two now.
         int secondValueA = 4;
         int secondValueB = 5;
         int secondValueC = 1;
         int secondValueD = 2;
+        long secondSum = secondValueA + secondValueB + secondValueC + secondValueD;
         Runnable secondRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC,
                 secondValueD);
-        assertResult(collector, container, 22L);
+        assertResult(collector, container, firstSum + secondSum);
         // Add third value, same as the second. We now have three values, two of which are the same.
         Runnable thirdRetractor = accumulate(collector, container, secondValueA, secondValueB, secondValueC,
                 secondValueD);
-        assertResult(collector, container, 34L);
+        assertResult(collector, container, firstSum + 2 * secondSum);
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResult(collector, container, 22L);
+        assertResult(collector, container, firstSum + secondSum);
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResult(collector, container, 10L);
+        assertResult(collector, container, firstSum);
         // Retract last value; there are no values now.
         firstRetractor.run();
         assertResult(collector, container, 0L);
@@ -450,7 +453,7 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
     @Test
     public void average() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Double> collector =
-                ConstraintCollectors.average((i, i2, i3, i4) -> (long) (i + i2 + i3 + i4));
+                ConstraintCollectors.average((i, i2, i3, i4) -> i + i2 + i3 + i4);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -910,10 +913,10 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
     @Test
     public void compose4() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Quadruple<Long, Integer, Integer, Double>> collector =
-                compose(ConstraintCollectors.countQuad(),
+                compose(countQuad(),
                         min((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
                         max((i, i2, i3, i4) -> i + i2 + i3 + i4, i -> i),
-                        ConstraintCollectors.average((i, i2, i3, i4) -> (long) (i + i2 + i3 + i4)),
+                        ConstraintCollectors.average((i, i2, i3, i4) -> i + i2 + i3 + i4),
                         Quadruple::new);
         Object container = collector.supplier().get();
 
@@ -1067,7 +1070,7 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
     @Override
     @Test
     public void collectAndThen() {
-        var collector = ConstraintCollectors.collectAndThen(ConstraintCollectors.countQuad(), i -> i * 10);
+        var collector = ConstraintCollectors.collectAndThen(countQuad(), i -> i * 10);
         var container = collector.supplier().get();
 
         // Default state.
