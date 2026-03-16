@@ -26,11 +26,12 @@ see https://timefold.ai/pricing[Timefold Pricing].
 
 To switch from Timefold Solver Community Edition to Enterprise Edition,
 https://timefold.ai/contact[contact us first] to obtain an Enterprise License.
-This license is represented by a file named `timefold-solver-enterprise-license.pem`,
+This license is represented by a file named `timefold-enterprise-license.pem`,
 which you can introduce to your project by one of the following methods:
 
+* Store the license's PEM string in the `TIMEFOLD_ENTERPRISE_LICENSE` environment variable.
+* Store the absolute path to the file in `TIMEFOLD_ENTERPRISE_LICENSE_PATH` environment variable.
 * Place the file in the user's home directory.
-* Store the path to the file in `TIMEFOLD_ENTERPRISE_LICENSE` system property.
 * Place the file in the root of your application classpath.
 
 Having done that, replace references to Community Edition artifacts by their Enterprise Edition counterparts
