@@ -42,7 +42,7 @@ public class ListValueRangeStatistics<Solution_> {
 
         for (var value : valueSet) {
             validPercentageLog += MathUtils.getScaledApproximateLog(MathUtils.LOG_PRECISION, logBase,
-                    ((double) reachableValues.extractEntitiesAsList(value).size() + additionalCount) / entityCount);
+                    ((double) reachableValues.getReachableEntitiesSize(value) + additionalCount) / entityCount);
         }
 
         return MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, logBase,

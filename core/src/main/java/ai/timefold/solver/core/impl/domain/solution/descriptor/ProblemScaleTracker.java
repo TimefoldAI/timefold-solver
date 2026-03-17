@@ -9,6 +9,7 @@ public class ProblemScaleTracker<Solution_> {
     private final long logBase;
     private final ListValueRangeStatistics<Solution_> listValueRangeStatistics;
     private long basicProblemScaleLog = 0L;
+    private long cachedTotalProblemScaleLog = -1L;
 
     public ProblemScaleTracker(ListVariableDescriptor<Solution_> listVariableDescriptor,
             ValueRangeManager<Solution_> valueRangeManager,
@@ -17,9 +18,12 @@ public class ProblemScaleTracker<Solution_> {
         this.listValueRangeStatistics = new ListValueRangeStatistics<>(listVariableDescriptor, valueRangeManager);
     }
 
-    // Simple getters
     public long getProblemScaleLog() {
-        return basicProblemScaleLog + listValueRangeStatistics.computeListProblemScaleLog(logBase);
+        if (cachedTotalProblemScaleLog != -1L) {
+            return cachedTotalProblemScaleLog;
+        }
+        cachedTotalProblemScaleLog = basicProblemScaleLog + listValueRangeStatistics.computeListProblemScaleLog(logBase);
+        return cachedTotalProblemScaleLog;
     }
 
     public void addBasicProblemScale(long count) {

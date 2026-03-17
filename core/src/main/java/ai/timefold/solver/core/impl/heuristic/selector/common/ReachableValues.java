@@ -83,6 +83,14 @@ public final class ReachableValues<Entity_, Value_> {
         return entityList;
     }
 
+    public int getReachableEntitiesSize(Object value) {
+        var itemValue = fetchItemValue(value);
+        if (itemValue == null) {
+            return 0;
+        }
+        return itemValue.getReachableEntitySize();
+    }
+
     public List<Value_> extractValuesAsList(Object value) {
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
@@ -191,6 +199,10 @@ public final class ReachableValues<Entity_, Value_> {
 
         boolean containsValue(int valueIndex) {
             return valueBitSet.get(valueIndex);
+        }
+
+        int getReachableEntitySize() {
+            return entityBitSet.cardinality();
         }
 
         List<Entity_> getRandomAccessEntityList(List<Entity_> allEntities) {
