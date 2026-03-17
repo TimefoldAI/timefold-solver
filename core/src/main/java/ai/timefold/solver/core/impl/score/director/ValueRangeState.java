@@ -139,9 +139,9 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
         return sortableValueRange.sort(SelectionSorterAdapter.of(cachedWorkingSolution, sorter));
     }
 
-    public ValueRange<Value_> getFromEntity(Entity_ entity, int entityCount,
+    public ValueRange<Value_> getFromEntity(Entity_ entity,
             @Nullable SelectionSorter<Solution_, Value_> sorter) {
-        var entityMap = ensureEntityMapIsInitialized(entityCount);
+        var entityMap = ensureEntityMapIsInitialized();
         var item = entityMap.get(entity);
         // No item, we set the left side by default
         if (item == null) {
@@ -149,11 +149,11 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
             entityMap.put(entity, newItem);
             if (newItem.entity() != null && newItem.leftItem() == null && newItem.rightItem() == null) {
                 // Placeholder for another entity
-                return getFromEntity(Objects.requireNonNull(newItem.entity()), entityCount, sorter);
+                return getFromEntity(Objects.requireNonNull(newItem.entity()), sorter);
             }
             return Objects.requireNonNull(newItem.leftItem());
         }
-        var valueRange = pickValueBySorter(item, sorter, (p, s) -> getFromEntity(p, entityCount, s));
+        var valueRange = pickValueBySorter(item, sorter, (p, s) -> getFromEntity(p, s));
         if (valueRange != null) {
             return valueRange;
         }
@@ -177,10 +177,10 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
     }
 
     private Map<Entity_, ValueRangeItem<Solution_, Entity_, ValueRange<Value_>, Value_>>
-            ensureEntityMapIsInitialized(int entityCount) {
+            ensureEntityMapIsInitialized() {
         if (fromEntityMap == null) {
-            fromEntityMap = new IdentityHashMap<>(entityCount);
-            valueRangeDeduplicationCache = HashMap.newHashMap(entityCount);
+            fromEntityMap = new IdentityHashMap<>();
+            valueRangeDeduplicationCache = new HashMap<>();
         }
         return fromEntityMap;
     }
@@ -284,7 +284,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
         var valueIndexItem = new ReachableValuesIndex<>(valueIndexMap, reachableValueList);
         for (var i = 0; i < entityList.size(); i++) {
             var entity = entityList.get(i);
-            var valueRange = getFromEntity(entity, entityList.size(), null);
+            var valueRange = getFromEntity(entity, null);
             loadEntityValueRange(i, valueIndexMap, valueRange, reachableValueList);
         }
         var sorterAdapter = sorter != null ? SelectionSorterAdapter.of(cachedWorkingSolution, sorter) : null;
@@ -370,7 +370,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
      * The record holds a reference to {@link ValueRange},
      * a precomputed hash to avoid recalculating it every time.
      */
-    private record HashedValueRange<T>(ValueRange<T> item, int hash) {
+    record HashedValueRange<T>(ValueRange<T> item, int hash) {
 
         public static <Value_> HashedValueRange<Value_> of(ValueRange<Value_> valueRange) {
             return new HashedValueRange<>(valueRange, valueRange.hashCode());

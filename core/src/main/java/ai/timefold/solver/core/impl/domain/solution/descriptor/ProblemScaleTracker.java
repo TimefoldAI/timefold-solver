@@ -1,72 +1,29 @@
 package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Set;
-
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.ListValueRangeStatistics;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.util.MathUtils;
 
-public class ProblemScaleTracker {
+public class ProblemScaleTracker<Solution_> {
     private final long logBase;
-    private final Set<Object> visitedAnchorSet = Collections.newSetFromMap(new IdentityHashMap<>());
-
+    private final ListValueRangeStatistics<Solution_> listValueRangeStatistics;
     private long basicProblemScaleLog = 0L;
-    private int listPinnedValueCount = 0;
-    private int listTotalEntityCount = 0;
-    private int listMovableEntityCount = 0;
-    private int listTotalValueCount = 0;
+    private long cachedTotalProblemScaleLog = -1L;
 
-    public ProblemScaleTracker(long logBase) {
+    public ProblemScaleTracker(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            ValueRangeManager<Solution_> valueRangeManager,
+            long logBase) {
         this.logBase = logBase;
+        this.listValueRangeStatistics = new ListValueRangeStatistics<>(listVariableDescriptor, valueRangeManager);
     }
 
-    // Simple getters
-    public long getBasicProblemScaleLog() {
-        return basicProblemScaleLog;
-    }
-
-    public int getListPinnedValueCount() {
-        return listPinnedValueCount;
-    }
-
-    public int getListTotalEntityCount() {
-        return listTotalEntityCount;
-    }
-
-    public int getListMovableEntityCount() {
-        return listMovableEntityCount;
-    }
-
-    public int getListTotalValueCount() {
-        return listTotalValueCount;
-    }
-
-    public void setListTotalValueCount(int listTotalValueCount) {
-        this.listTotalValueCount = listTotalValueCount;
-    }
-
-    // Complex methods
-    public boolean isAnchorVisited(Object anchor) {
-        if (visitedAnchorSet.contains(anchor)) {
-            return true;
+    public long getProblemScaleLog() {
+        if (cachedTotalProblemScaleLog != -1L) {
+            return cachedTotalProblemScaleLog;
         }
-        visitedAnchorSet.add(anchor);
-        return false;
-    }
-
-    public void addListValueCount(int count) {
-        listTotalValueCount += count;
-    }
-
-    public void addPinnedListValueCount(int count) {
-        listPinnedValueCount += count;
-    }
-
-    public void incrementListEntityCount(boolean isMovable) {
-        listTotalEntityCount++;
-        if (isMovable) {
-            listMovableEntityCount++;
-        }
+        cachedTotalProblemScaleLog = basicProblemScaleLog + listValueRangeStatistics.computeListProblemScaleLog(logBase);
+        return cachedTotalProblemScaleLog;
     }
 
     public void addBasicProblemScale(long count) {
