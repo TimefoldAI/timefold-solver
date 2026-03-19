@@ -127,7 +127,7 @@ class DefaultSolverFactoryTest {
                 SolverConfig.createFromXmlResource("ai/timefold/solver/core/config/solver/testdataSolverConfig.xml")
                         .withRandomFactoryClass(RandomFactory.class)
                         .withRandomSeed(1000L);
-        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride<>()))
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride()))
                 .hasMessageContaining("The solverConfig with randomFactoryClass ")
                 .hasMessageContaining("has a non-null randomType (null) or a non-null randomSeed (1000).");
     }
@@ -137,7 +137,7 @@ class DefaultSolverFactoryTest {
         SolverConfig solverConfig =
                 SolverConfig.createFromXmlResource("ai/timefold/solver/core/config/solver/testdataSolverConfig.xml")
                         .withMoveThreadCount("-1");
-        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride<>()))
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride()))
                 .hasMessageContaining("The moveThreadCount")
                 .hasMessageContaining("resulted in a resolvedMoveThreadCount")
                 .hasMessageContaining("that is lower than 1.");
@@ -151,7 +151,7 @@ class DefaultSolverFactoryTest {
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
                         .withConstraintProviderClass(TestdataConstraintProvider.class)
                         .withConstraintStreamProfilingEnabled(true));
-        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride<>()))
+        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride()))
                 .hasMessageContainingAll("Constraint profiling",
                         "remove constraintStreamProfilingEnabled from the solver configuration");
     }

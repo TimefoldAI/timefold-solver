@@ -115,7 +115,7 @@ public interface SolverJobBuilder<Solution_> {
      * @param solverConfigOverride allows overriding the default behavior of {@link Solver}
      * @return this
      */
-    SolverJobBuilder<Solution_> withConfigOverride(SolverConfigOverride<Solution_> solverConfigOverride);
+    SolverJobBuilder<Solution_> withConfigOverride(SolverConfigOverride solverConfigOverride);
 
     /**
      * Submits a planning problem to solve and returns immediately. The planning problem is solved on a solver {@link Thread},

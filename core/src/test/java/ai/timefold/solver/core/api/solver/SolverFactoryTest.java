@@ -144,7 +144,7 @@ class SolverFactoryTest {
     void createAndOverrideSettings() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-        SolverConfigOverride<TestdataSolution> configOverride = mock(SolverConfigOverride.class);
+        SolverConfigOverride configOverride = mock(SolverConfigOverride.class);
         var terminationConfig = new TerminationConfig();
         terminationConfig.withSpentLimit(Duration.ofSeconds(60));
         doReturn(terminationConfig).when(configOverride).getTerminationConfig();

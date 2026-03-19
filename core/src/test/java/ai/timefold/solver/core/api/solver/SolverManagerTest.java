@@ -591,7 +591,7 @@ class SolverManagerTest {
             assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.05);
 
             // Spent limit overridden by 100L
-            var configOverride = new SolverConfigOverride<TestdataSolution>()
+            var configOverride = new SolverConfigOverride()
                     .withTerminationConfig(new TerminationConfig().withSpentLimit(Duration.ofMillis(100L)));
             solverJob = (DefaultSolverJob<TestdataSolution>) solverManager.solveBuilder()
                     .withProblemId(2L)
@@ -617,7 +617,7 @@ class SolverManagerTest {
             doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
 
             // Override spent limit to 100 milliseconds
-            var configOverride = new SolverConfigOverride<TestdataSolution>()
+            var configOverride = new SolverConfigOverride()
                     .withTerminationSpentLimit(Duration.ofMillis(100L));
             var solverJob = (DefaultSolverJob<TestdataSolution>) solverManager.solveBuilder()
                     .withProblemId(1L)
@@ -642,7 +642,7 @@ class SolverManagerTest {
             try (var solverManager = createDefaultSolverManager(solverConfig)) {
                 var problem = PlannerTestUtils.generateTestdataSolution("s1");
                 // Override unimproved spent limit to 500 milliseconds, keep the longer spent limit
-                var configOverride = new SolverConfigOverride<TestdataSolution>()
+                var configOverride = new SolverConfigOverride()
                         .withTerminationUnimprovedSpentLimit(Duration.ofMillis(500L));
 
                 // create a job so we can see the passed termination

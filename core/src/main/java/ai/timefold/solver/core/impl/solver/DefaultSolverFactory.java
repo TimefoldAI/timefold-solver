@@ -96,7 +96,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     @Override
-    public Solver<Solution_> buildSolver(SolverConfigOverride<Solution_> configOverride) {
+    public Solver<Solution_> buildSolver(SolverConfigOverride configOverride) {
         Objects.requireNonNull(configOverride, "Invalid configOverride (null) given to SolverFactory.");
         var isDaemon = Objects.requireNonNullElse(solverConfig.getDaemon(), false);
 
@@ -178,7 +178,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     private SolverTermination<Solution_> buildTermination(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
-            HeuristicConfigPolicy<Solution_> configPolicy, SolverConfigOverride<Solution_> solverConfigOverride) {
+            HeuristicConfigPolicy<Solution_> configPolicy, SolverConfigOverride solverConfigOverride) {
         var terminationConfig = Objects.requireNonNullElseGet(solverConfigOverride.getTerminationConfig(),
                 () -> Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new));
         return TerminationFactory.<Solution_> create(terminationConfig)

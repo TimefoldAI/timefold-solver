@@ -31,7 +31,7 @@ public final class DefaultSolverJobBuilder<Solution_> implements SolverJobBuilde
     private @Nullable Consumer<FirstInitializedSolutionEvent<Solution_>> initializedSolutionConsumer;
     private @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer;
     private @Nullable BiConsumer<? super Object, ? super Throwable> exceptionHandler;
-    private @Nullable SolverConfigOverride<Solution_> solverConfigOverride;
+    private @Nullable SolverConfigOverride solverConfigOverride;
 
     public DefaultSolverJobBuilder(DefaultSolverManager<Solution_> solverManager) {
         this.solverManager = Objects.requireNonNull(solverManager, "The SolverManager (" + solverManager + ") cannot be null.");
@@ -93,8 +93,7 @@ public final class DefaultSolverJobBuilder<Solution_> implements SolverJobBuilde
     }
 
     @Override
-    public SolverJobBuilder<Solution_>
-            withConfigOverride(SolverConfigOverride<Solution_> solverConfigOverride) {
+    public SolverJobBuilder<Solution_> withConfigOverride(SolverConfigOverride solverConfigOverride) {
         this.solverConfigOverride =
                 Objects.requireNonNull(solverConfigOverride, "Invalid solverConfigOverride (null) given to SolverJobBuilder.");
         return this;
@@ -110,7 +109,7 @@ public final class DefaultSolverJobBuilder<Solution_> implements SolverJobBuilde
         }
         if (solverConfigOverride == null) {
             // The config is required by SolverFactory and it must be initialized
-            this.solverConfigOverride = new SolverConfigOverride<>();
+            this.solverConfigOverride = new SolverConfigOverride();
         }
 
         if (this.bestSolutionConsumer == null) {

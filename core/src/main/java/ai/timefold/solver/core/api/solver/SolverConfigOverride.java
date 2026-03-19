@@ -3,10 +3,10 @@ package ai.timefold.solver.core.api.solver;
 import java.time.Duration;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Includes settings to override default {@link ai.timefold.solver.core.api.solver.Solver} configuration.
@@ -22,15 +22,14 @@ import org.jspecify.annotations.NonNull;
  * it must be called before any specific termination methods like {@link #withTerminationSpentLimit(Duration)}
  * or {@link #withTerminationUnimprovedSpentLimit(Duration)}. This prevents accidental override of previously
  * set specific configurations.
- *
- * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public final class SolverConfigOverride<Solution_> {
+@NullMarked
+public final class SolverConfigOverride {
 
-    private TerminationConfig terminationConfig = null;
+    private @Nullable TerminationConfig terminationConfig = null;
     private boolean hasSpecificTerminationSettings = false;
 
-    public TerminationConfig getTerminationConfig() {
+    public @Nullable TerminationConfig getTerminationConfig() {
         return terminationConfig;
     }
 
@@ -40,13 +39,12 @@ public final class SolverConfigOverride<Solution_> {
      * <p>
      * After calling this method, additional specific termination methods can be chained to further
      * customize the configuration:
-     * 
-     * <pre>{@code
-     * new SolverConfigOverride<MySolution>()
+     * {@snippet :
+     * new SolverConfigOverride()
      *         .withTerminationConfig(new TerminationConfig())
      *         .withTerminationSpentLimit(Duration.ofMinutes(5))
      *         .withTerminationUnimprovedSpentLimit(Duration.ofMinutes(2));
-     * }</pre>
+     * }
      *
      * <p>
      * <strong>Important:</strong> This method must be called before any specific termination methods
@@ -54,19 +52,17 @@ public final class SolverConfigOverride<Solution_> {
      * <p>
      * Calling this method after specific termination settings have been applied will throw an exception
      * to prevent accidental override of those settings.
-     *
-     *
-     * <pre>{@code
-     * new SolverConfigOverride<MySolution>()
+     * {@snippet :
+     * new SolverConfigOverride()
      *         .withTerminationSpentLimit(Duration.ofMinutes(5))
      *         .withTerminationConfig(new TerminationConfig()); // Will throw exception
-     * }</pre>
+     * }
      *
      * @param terminationConfig allows overriding the default termination config of {@link Solver}
      * @return this
      * @throws IllegalStateException if specific termination settings have already been applied
      */
-    public @NonNull SolverConfigOverride<Solution_> withTerminationConfig(@NonNull TerminationConfig terminationConfig) {
+    public SolverConfigOverride withTerminationConfig(TerminationConfig terminationConfig) {
         if (hasSpecificTerminationSettings) {
             throw new IllegalStateException("""
                     Cannot set terminationConfig after specific termination settings
@@ -89,27 +85,26 @@ public final class SolverConfigOverride<Solution_> {
      * update its spent limit setting.
      * <p>
      * Usage examples:
-     * 
-     * <pre>{@code
+     * {@snippet :
      * // Set only spent limit
-     * new SolverConfigOverride<MySolution>()
+     * new SolverConfigOverride()
      *         .withTerminationSpentLimit(Duration.ofMinutes(10));
      *
      * // Combine with unimproved spent limit
-     * new SolverConfigOverride<MySolution>()
+     * new SolverConfigOverride()
      *         .withTerminationSpentLimit(Duration.ofMinutes(10))
      *         .withTerminationUnimprovedSpentLimit(Duration.ofMinutes(3));
      *
      * // Use with base config
-     * new SolverConfigOverride<MySolution>()
+     * new SolverConfigOverride()
      *         .withTerminationConfig(new TerminationConfig())
      *         .withTerminationSpentLimit(Duration.ofMinutes(10));
-     * }</pre>
+     * }
      *
      * @param spentLimit the maximum duration the solver is allowed to run
      * @return this
      */
-    public @NonNull SolverConfigOverride<Solution_> withTerminationSpentLimit(@NonNull Duration spentLimit) {
+    public SolverConfigOverride withTerminationSpentLimit(Duration spentLimit) {
         if (this.terminationConfig == null) {
             this.terminationConfig = new TerminationConfig();
         }
@@ -134,28 +129,26 @@ public final class SolverConfigOverride<Solution_> {
      * update its unimproved spent limit setting.
      * <p>
      * Usage examples:
-     * 
-     * <pre>{@code
+     * {@snippet :
      * // Set only unimproved spent limit
-     * new SolverConfigOverride<MySolution>()
+     * new SolverConfigOverride()
      *         .withTerminationUnimprovedSpentLimit(Duration.ofMinutes(2));
      *
      * // Combine with total spent limit
-     * new SolverConfigOverride<MySolution>()
+     * new SolverConfigOverride()
      *         .withTerminationSpentLimit(Duration.ofMinutes(10))
      *         .withTerminationUnimprovedSpentLimit(Duration.ofMinutes(2));
      *
      * // Use with base config
-     * new SolverConfigOverride<MySolution>()
+     * new SolverConfigOverride()
      *         .withTerminationConfig(new TerminationConfig())
      *         .withTerminationUnimprovedSpentLimit(Duration.ofMinutes(2));
-     * }</pre>
+     * }
      *
      * @param unimprovedSpentLimit the maximum duration the solver is allowed to run without improvement
      * @return this
      */
-    public @NonNull SolverConfigOverride<Solution_>
-            withTerminationUnimprovedSpentLimit(@NonNull Duration unimprovedSpentLimit) {
+    public SolverConfigOverride withTerminationUnimprovedSpentLimit(Duration unimprovedSpentLimit) {
         if (this.terminationConfig == null) {
             this.terminationConfig = new TerminationConfig();
         }

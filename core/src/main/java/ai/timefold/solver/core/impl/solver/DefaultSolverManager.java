@@ -85,7 +85,7 @@ public final class DefaultSolverManager<Solution_> implements SolverManager<Solu
             @Nullable Consumer<FirstInitializedSolutionEvent<Solution_>> initializedSolutionConsumer,
             @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer,
             @Nullable BiConsumer<? super Object, ? super Throwable> exceptionHandler,
-            SolverConfigOverride<Solution_> solverConfigOverride) {
+            SolverConfigOverride solverConfigOverride) {
         return solve(problemId, problemFinder, bestSolutionConsumer, finalBestSolutionConsumer, initializedSolutionConsumer,
                 solverJobStartedConsumer, exceptionHandler, solverConfigOverride);
     }
@@ -96,7 +96,7 @@ public final class DefaultSolverManager<Solution_> implements SolverManager<Solu
             @Nullable Consumer<FirstInitializedSolutionEvent<Solution_>> initializedSolutionConsumer,
             @Nullable Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer,
             @Nullable BiConsumer<? super Object, ? super Throwable> exceptionHandler,
-            SolverConfigOverride<Solution_> configOverride) {
+            SolverConfigOverride configOverride) {
         var solver = solverFactory.buildSolver(configOverride);
         ((DefaultSolver<Solution_>) solver).setMonitorTagMap(Map.of("problem.id", problemId.toString()));
         BiConsumer<? super Object, ? super Throwable> finalExceptionHandler =
