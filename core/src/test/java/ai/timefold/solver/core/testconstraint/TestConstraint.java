@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.testconstraint;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 
@@ -17,7 +17,7 @@ public final class TestConstraint<Solution_, Score_ extends Score<Score_>>
     public TestConstraint(TestConstraintFactory<Solution_, Score_> constraintFactory, String constraintName,
             String constraintGroup, Score_ constraintWeight) {
         super(constraintFactory, ConstraintRef.of(constraintName), "", constraintGroup, constraintWeight,
-                ScoreImpactType.REWARD, null, null);
+                ScoreImpactType.REWARD, null);
     }
 
 }

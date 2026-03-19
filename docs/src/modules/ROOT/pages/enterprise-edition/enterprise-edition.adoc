@@ -1,18 +1,17 @@
-= Enterprise Edition
+= Timefold Solver Enterprise Edition
 :page-aliases: partitioned-search/partitioned-search.adoc
 :doctype: book
 :sectnums:
 :icons: font
 
-Timefold Solver Enterprise Edition is a commercial product that offers additional features,
+_Timefold Solver Enterprise Edition_ is a commercial product that offers <<enterpriseEditionFeatures,additional features>>,
 such as <<nearbySelection,nearby selection>> and <<multithreadedSolving,multi-threaded solving>>.
-These features are essential to scale out to huge datasets.
+These features are essential to scale out to large datasets.
 
-Unlike Timefold Solver Community Edition, the Enterprise Edition is not open-source.
+Unlike _Timefold Solver Community Edition_, the _Timefold Solver Enterprise Edition_ is not open-source.
 We offer free licenses to non-profit organizations and for academic research.
-Everyone else may be entitled to a trial license to evaluate the product before purchasing.
-Please https://timefold.ai/contact[contact Timefold]
-to obtain an Enterprise license.
+Others may be entitled to a trial license to evaluate the product before purchasing.
+Please https://timefold.ai/contact[contact Timefold] to get your Enterprise license.
 
 TIP: Looking for quicker time-to-value?
 Timefold offers https://docs.timefold.ai/[pre-built, fully tuned optimization models], no constraint building required.
@@ -24,8 +23,8 @@ see https://timefold.ai/pricing[Timefold Pricing].
 [#switchToEnterpriseEdition]
 == Switch to Enterprise Edition
 
-To switch from Timefold Solver Community Edition to Enterprise Edition,
-https://timefold.ai/contact[contact us first] to obtain an Enterprise License.
+To switch from the open source _Timefold Solver Community Edition_ to _Enterprise Edition_,
+https://timefold.ai/contact[contact us first] to get your Enterprise License.
 This license is represented by a file named `timefold-enterprise-license.pem`,
 which you can introduce to your project by one of the following methods:
 
@@ -34,11 +33,15 @@ which you can introduce to your project by one of the following methods:
 * Place the file in the user's home directory.
 * Place the file in the root of your application classpath.
 
-Having done that, replace references to Community Edition artifacts by their Enterprise Edition counterparts
+Take care not to leak the license file, for example by committing it to a public repository,
+logging the license file content in logs, or sharing it with unauthorized parties.
+
+Once your license is in place,
+replace references to open-source artifacts by their enterprise counterparts
 as shown in the following table:
 
 |===
-|Community Edition|Enterprise Edition
+|Open source|Enterprise
 
 |`ai.timefold.solver:timefold-solver-bom`
 |`ai.timefold.solver.enterprise:timefold-solver-enterprise-bom`
@@ -46,34 +49,45 @@ as shown in the following table:
 |`ai.timefold.solver:timefold-solver-core`
 |`ai.timefold.solver.enterprise:timefold-solver-enterprise-core`
 
+|`ai.timefold.solver:timefold-solver-jackson`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-jackson`
+
 |`ai.timefold.solver:timefold-solver-quarkus`
 |`ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus`
+
+|`ai.timefold.solver:timefold-solver-quarkus-jackson`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus-jackson`
 
 |`ai.timefold.solver:timefold-solver-spring-boot-starter`
 |`ai.timefold.solver.enterprise:timefold-solver-enterprise-spring-boot-starter`
 |===
 
+If you were not using some of these open source artifacts until now,
+you do not need to add the enterprise counterparts to your project either.
+
 
 [#enterpriseEditionFeatures]
-== Features of Enterprise Edition
+== Features included in Enterprise Edition
 
-The following features are only available in Timefold Solver Enterprise Edition:
+The following features are only available in _Timefold Solver Enterprise Edition_:
 
-* <<nearbySelection,Nearby selection>>,
-* <<multithreadedIncrementalSolving,multi-threaded incremental solving>>,
-* <<partitionedSearch,partitioned search>>,
-* <<automaticNodeSharing,automatic node sharing>>,
-* and <<throttlingBestSolutionEvents, throttling best solution events>>.
+* xref:constraints-and-score/understanding-the-score.adoc[Explainability],
+* <<nearbySelection,Nearby selection>> for faster and better results,
+* <<multithreadedIncrementalSolving,multi-threaded incremental solving>> and <<partitionedSearch,partitioned search>>,
+* <<automaticNodeSharing,automatic node sharing>> for speeding up Constraint Streams,
+* xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[incremental score calculator] for the fastest possible move evaluation,
+* and <<throttlingBestSolutionEvents, throttling of best solution events>> to not overload the consumers such as messaging queues.
 
+We also automatically enable performance optimizations not available in the open-source version,
+leading to significantly improved performance for some use cases, such as:
+
+- Heavy use of xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[custom shadow variables].
 
 [#nearbySelection]
 === Nearby selection
 
-[NOTE]
-====
-This feature is a commercial feature of Timefold Solver Enterprise Edition.
-It is not available in the Community Edition.
-====
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
 In some use cases (such as TSP and VRP, but also in other cases),
 changing entities to nearby values or swapping nearby entities leads to better results faster.
@@ -277,8 +291,8 @@ only set the distribution type (so without a `distributionSizeMaximum` parameter
 === Multi-threaded solving
 
 Multi-threaded solving is a term
-which encapsulates several features that allow Timefold Solver to run on multi-core machines.
-Timefold Solver Enterprise Edition makes multi-threaded solving more powerful by introducing
+which encapsulates several features that allow Timefold Solver to run on multi-core machines,
+such as
 <<multithreadedIncrementalSolving,multi-threaded incremental solving>> and
 <<partitionedSearch,partitioned search>>.
 
@@ -287,11 +301,8 @@ For a primer on multi-threaded solving in general, see xref:using-timefold-solve
 [#multithreadedIncrementalSolving]
 ==== Multi-threaded incremental solving
 
-[NOTE]
-====
-This feature is a commercial feature of Timefold Solver Enterprise Edition.
-It is not available in the Community Edition.
-====
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
 With this feature, the solver can run significantly faster,
 getting you the right solution earlier.
@@ -436,11 +447,8 @@ use `threadFactoryClass` to plug in a <<customThreadFactory,custom thread factor
 [#partitionedSearch]
 ==== Partitioned search
 
-[NOTE]
-====
-This feature is a commercial feature of Timefold Solver Enterprise Edition.
-It is not available in the Community Edition.
-====
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
 [#partitionedSearchAlgorithm]
 ===== Algorithm description
@@ -649,11 +657,8 @@ and the <<partitionedSearch,Partition Search threads>> with it:
 [#automaticNodeSharing]
 === Automatic node sharing
 
-[NOTE]
-====
-This feature is a commercial feature of Timefold Solver Enterprise Edition.
-It is not available in the Community Edition.
-====
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
 When a `ConstraintProvider` does an operation for multiple constraints (such as finding all shifts corresponding to an employee), that work can be shared.
 This can significantly improve move evaluation speed if the repeated operation is computationally expensive:
@@ -850,11 +855,8 @@ From the above, you can see how this feature allows building blocks to share fun
 [#constraintProfiling]
 === Constraint Profiling
 
-[NOTE]
-====
-This feature is a commercial feature of Timefold Solver Enterprise Edition.
-It is not available in the Community Edition.
-====
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
 Profiling allows you to identify which constraints are taking the majority of time spent in score calculation and thus are worth optimizing.
 Unfortunately, traditional profiling tools only report the internal classes used to calculate constraints instead of the constraints themselves. xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint streams] have builtin support for profiling constraints directly.
@@ -1020,11 +1022,8 @@ and average the results.
 [#throttlingBestSolutionEvents]
 === Throttling best solution events in `SolverManager`
 
-[NOTE]
-====
-This feature is a commercial feature of Timefold Solver Enterprise Edition.
-It is not available in the Community Edition.
-====
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
 This feature helps you avoid overloading your system with best solution events,
 especially in the early phase of the solving process when the solver is typically improving the solution very rapidly.
@@ -1081,11 +1080,8 @@ both these consumers will receive the final best solution.
 [#multistageMoves]
 === Multistage Moves
 
-[NOTE]
-====
-This feature is a commercial feature of Timefold Solver Enterprise Edition.
-It is not available in the Community Edition.
-====
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
 Multistage moves are moves composed of one or more stages, where each stage selects a single `Move` to execute.
 

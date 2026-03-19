@@ -179,7 +179,7 @@ counterparts (`SimpleScore`, `HardSoftScore`, `HardMediumSoftScore`, `BendableSc
 ==== Serialization packages flattened
 
 * JPA score converters: per-score-type `ai.timefold.solver.jpa.api.buildin.<type>` packages merged into `ai.timefold.solver.jpa.api.score`.
-* Jackson score serializers: per-score-type packages merged into `ai.timefold.solver.jackson.api.score.buildin`.
+* Jackson score serializers: per-score-type packages merged into `ai.timefold.solver.jackson.api.score`.
 * JAXB score adapters: per-score-type packages merged into `ai.timefold.solver.jaxb.api.score`.
 * Quarkus Jackson score types: per-score-type packages merged into `ai.timefold.solver.quarkus.jackson.score`.
 * Persistence common solution API moved from `ai.timefold.solver.persistence.common.api.domain.solution` to
@@ -295,6 +295,61 @@ We invite you to read the xref:upgrading-timefold-solver/migration-guides/variab
 
 '''
 
+.icon:exclamation-triangle[role=red] Score analysis no longer open-source
+[%collapsible%open]
+====
+`ScoreExplanation` has been removed.
+Use `ScoreAnalysis` instead, which is now provided exclusively by _Timefold Solver Enterprise Edition_.
+
+`ScoreAnalysis` provides the following methods:
+
+* `score()` — the score of the solution
+* `isSolutionInitialized()` — whether the solution is fully initialized
+* `constraintAnalyses()` — list of `ConstraintAnalysis` objects, one per constraint
+* `summarize()` and `summarize(int)` — human-readable score breakdown
+* `getConstraintAnalysis(ConstraintRef)` and `getConstraintAnalysis(String, String)` — look up a specific constraint
+* `diff(ScoreAnalysis)` — compare two score analyses
+
+The following `ScoreExplanation` methods have no direct replacement and must be removed manually:
+
+* `getSolution()` — no replacement
+* `getJustificationList()` — no replacement; use `constraintAnalyses()` and filter `ConstraintAnalysis.matches()` by justification type
+* `getSummary()` — use `ScoreAnalysis.summarize()` instead
+* `getConstraintMatchTotalMap()` — use `ScoreAnalysis.constraintAnalyses()` instead
+
+Add the Timefold Solver Enterprise dependency to your project to use `ScoreAnalysis`.
+There is no automated migration recipe for `ScoreExplanation`; all changes must be made manually.
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] Recommended assignment no longer open-source
+[%collapsible%open]
+====
+The recommended assignment API is unchanged, but it now requires Timefold Solver Enterprise Edition on the classpath.
+
+If you use Jackson serialization, register `TimefoldEnterpriseJacksonModule` in addition to the standard module.
+====
+
+'''
+
+.icon:exclamation-triangle[role=red] Incremental score calculator no longer open-source
+[%collapsible%open]
+====
+`IncrementalScoreCalculator` has moved to Timefold Solver Enterprise Edition.
+`ConstraintMatchAwareIncrementalScoreCalculator` was removed.
+The replacement `AnalyzableIncrementalScoreCalculator` is provided by the Enterprise Edition.
+
+Instead of overriding methods to return constraint matches, implement the `enableConstraintMatch(ConstraintMatchRegistry<Score_>)` method.
+Use `ConstraintMatchRegistry.registerConstraintMatch(ConstraintRef, score, justification)` to register each match;
+it returns a `ConstraintMatchRegistration` whose `cancel()` method removes the match when the assignment changes.
+
+Add the Timefold Solver Enterprise dependency and rewrite the implementation body manually;
+there is no automated migration recipe for this change.
+====
+
+'''
+
 .icon:exclamation-triangle[role=red] `Move` interface refactored
 [%collapsible%open]
 ====
@@ -306,6 +361,14 @@ We realize this change will affect many users, and there is no clear migration p
 The old Move API was never made public, even though it was the only way to implement custom moves.
 With Neighborhoods, this changes, as we are now providing an official and much simplified way of implementing custom moves,
 which we believe is well worth the breaking change.
+====
+
+'''
+
+.icon:info-circle[role=yellow] Planning solution diff no longer open-source
+[%collapsible%open]
+====
+The solution diff API is unchanged, but it now requires Timefold Solver Enterprise Edition on the classpath.
 ====
 
 '''
@@ -404,6 +467,24 @@ After in `*Solution.java`:
     );
 ...
 ----
+====
+
+'''
+
+.icon:info-circle[role=yellow] `Indictment` removed
+[%collapsible%closed]
+====
+The `Indictment` interface has been removed entirely, along with:
+
+* `indictWith()` on `UniConstraintBuilder`, `BiConstraintBuilder`, `TriConstraintBuilder`, and `QuadConstraintBuilder`
+* `getIndictmentMap()` on `ScoreExplanation`
+
+There is no replacement type for `Indictment`.
+Remove all field and variable declarations of type `Indictment`.
+
+To analyze per-entity score impact, use `ScoreAnalysis.constraintAnalyses()` and filter `ConstraintAnalysis.matches()` by justification.
+
+The OpenRewrite migration recipe automatically removes `indictWith()` call sites.
 ====
 
 '''

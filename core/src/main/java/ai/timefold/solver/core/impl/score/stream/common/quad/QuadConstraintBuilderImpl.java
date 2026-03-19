@@ -1,10 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.common.quad;
 
-import java.util.Collection;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
-import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder;
@@ -19,7 +17,6 @@ public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Sc
         implements QuadConstraintBuilder<A, B, C, D, Score_> {
 
     private @Nullable PentaFunction<A, B, C, D, Score_, ConstraintJustification> justificationMapping;
-    private @Nullable QuadFunction<A, B, C, D, Collection<Object>> indictedObjectsMapping;
 
     public QuadConstraintBuilderImpl(QuadConstraintConstructor<A, B, C, D, Score_> constraintConstructor,
             ScoreImpactType impactType, Score_ constraintWeight) {
@@ -41,23 +38,6 @@ public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Sc
         }
         this.justificationMapping =
                 (PentaFunction<A, B, C, D, Score_, ConstraintJustification>) Objects.requireNonNull(justificationMapping);
-        return this;
-    }
-
-    @Override
-    protected @Nullable QuadFunction<A, B, C, D, Collection<Object>> getIndictedObjectsMapping() {
-        return indictedObjectsMapping;
-    }
-
-    @Override
-    public QuadConstraintBuilder<A, B, C, D, Score_>
-            indictWith(QuadFunction<A, B, C, D, Collection<Object>> indictedObjectsMapping) {
-        if (this.indictedObjectsMapping != null) {
-            throw new IllegalStateException("""
-                    Indicted objects' mapping already set (%s).
-                    Maybe the constraint calls indictWith() twice?""".formatted(indictedObjectsMapping));
-        }
-        this.indictedObjectsMapping = Objects.requireNonNull(indictedObjectsMapping);
         return this;
     }
 

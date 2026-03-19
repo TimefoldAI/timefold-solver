@@ -57,47 +57,6 @@ public interface SingleConstraintAssertion {
     }
 
     /**
-     * Asserts that the {@link Constraint} being tested, given a set of facts, results in the given indictments.
-     *
-     * @param indictments the expected indictments.
-     * @throws AssertionError when the expected penalty is not observed
-     */
-    default @NonNull SingleConstraintAssertion indictsWith(@NonNull Object @NonNull... indictments) {
-        return indictsWith(null, indictments);
-    }
-
-    /**
-     * As defined by {@link #indictsWith(Object...)}.
-     *
-     * @param message description of the scenario being asserted
-     * @param indictments the expected indictments.
-     * @throws AssertionError when the expected penalty is not observed
-     */
-    @NonNull
-    SingleConstraintAssertion indictsWith(@Nullable String message, @NonNull Object @NonNull... indictments);
-
-    /**
-     * Asserts that the {@link Constraint} being tested, given a set of facts, results in the given indictments and
-     * nothing else.
-     *
-     * @param indictments the expected indictments.
-     * @throws AssertionError when the expected penalty is not observed
-     */
-    default @NonNull SingleConstraintAssertion indictsWithExactly(@NonNull Object @NonNull... indictments) {
-        return indictsWithExactly(null, indictments);
-    }
-
-    /**
-     * As defined by {@link #indictsWithExactly(Object...)}.
-     *
-     * @param message description of the scenario being asserted
-     * @param indictments the expected indictments.
-     * @throws AssertionError when the expected penalty is not observed
-     */
-    @NonNull
-    SingleConstraintAssertion indictsWithExactly(@Nullable String message, @NonNull Object @NonNull... indictments);
-
-    /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in no impact on the score.
      * <p>
      * This is equivalent to checking that there are neither penalties nor rewards.

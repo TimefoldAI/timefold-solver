@@ -13,7 +13,7 @@ import java.util.Collections;
 
 import ai.timefold.solver.benchmark.impl.loader.FileProblemProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -127,10 +127,10 @@ class PlannerBenchmarkResultTest {
         assertThat(jaxbString.trim()).isEqualToIgnoringWhitespace(originalXml.trim());
     }
 
-    // nested class below are used in the testPlannerBenchmarkResult.xml
+    // nested classes below are used in the testPlannerBenchmarkResult.xml
 
-    private static abstract class DummyIncrementalScoreCalculator
-            implements IncrementalScoreCalculator<TestdataSolution, SimpleScore> {
+    private static abstract class DummyEasyScoreCalculator
+            implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
 
     }
 

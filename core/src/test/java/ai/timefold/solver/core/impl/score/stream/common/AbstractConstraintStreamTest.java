@@ -12,14 +12,15 @@ import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatch;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
 
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 public abstract class AbstractConstraintStreamTest {
 
     protected static final String TEST_CONSTRAINT_NAME = "testConstraintName";
+    protected static final ConstraintRef TEST_CONSTRAINT_REF = new ConstraintRef(TEST_CONSTRAINT_NAME);
 
     protected final ConstraintStreamImplSupport implSupport;
 
@@ -70,7 +72,7 @@ public abstract class AbstractConstraintStreamTest {
             for (var assertableMatch : assertableMatches) {
                 var constraintMatchTotals =
                         scoreDirector.getConstraintMatchTotalMap();
-                var constraintId = assertableMatch.constraintName;
+                var constraintId = assertableMatch.constraintRef;
                 var constraintMatchTotal = constraintMatchTotals.get(constraintId);
                 if (constraintMatchTotal == null) {
                     throw new IllegalStateException("Requested constraint matches for unknown constraint (" +
@@ -86,8 +88,7 @@ public abstract class AbstractConstraintStreamTest {
             for (var constraintMatchTotal : constraintMatchTotalMap.values()) {
                 for (var constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
                     if (Arrays.stream(assertableMatches)
-                            .filter(assertableMatch -> assertableMatch.constraintName
-                                    .equals(constraintMatch.getConstraintRef().constraintName()))
+                            .filter(assertableMatch -> assertableMatch.constraintRef.equals(constraintMatch.getConstraintRef()))
                             .noneMatch(assertableMatch -> assertableMatch.isEqualTo(constraintMatch))) {
                         fail("The constraintMatch (" + constraintMatch + ") is in excess,"
                                 + " it's not in the assertableMatches (" + Arrays.toString(assertableMatches) + ").");
@@ -110,26 +111,26 @@ public abstract class AbstractConstraintStreamTest {
     }
 
     protected static AssertableMatch assertMatch(String constraintName, Object... justifications) {
-        return assertMatchWithScore(-1, constraintName, justifications);
+        return assertMatchWithScore(-1, ConstraintRef.of(constraintName), justifications);
     }
 
     protected static AssertableMatch assertMatchWithScore(int score, Object... justifications) {
-        return assertMatchWithScore(score, TEST_CONSTRAINT_NAME, justifications);
+        return assertMatchWithScore(score, TEST_CONSTRAINT_REF, justifications);
     }
 
-    protected static AssertableMatch assertMatchWithScore(int score, String constraintName, Object... justifications) {
-        return new AssertableMatch(score, constraintName, justifications);
+    protected static AssertableMatch assertMatchWithScore(int score, ConstraintRef constraintRef, Object... justifications) {
+        return new AssertableMatch(score, constraintRef, justifications);
     }
 
     protected static class AssertableMatch {
 
         private final int score;
-        private final String constraintName;
+        private final ConstraintRef constraintRef;
         private final List<Object> justificationList;
 
-        public AssertableMatch(int score, String constraintName, Object... justifications) {
+        public AssertableMatch(int score, ConstraintRef constraintRef, Object... justifications) {
             this.justificationList = Arrays.asList(justifications);
-            this.constraintName = constraintName;
+            this.constraintRef = constraintRef;
             this.score = score;
         }
 
@@ -137,7 +138,7 @@ public abstract class AbstractConstraintStreamTest {
             if (score != ((SimpleScore) constraintMatch.getScore()).score()) {
                 return false;
             }
-            if (!constraintName.equals(constraintMatch.getConstraintRef().constraintName())) {
+            if (!constraintRef.equals(constraintMatch.getConstraintRef())) {
                 return false;
             }
             var justification = constraintMatch.getJustification();
@@ -153,13 +154,13 @@ public abstract class AbstractConstraintStreamTest {
                     Assertions.fail("Expected number of justifications (" + justificationList.size() +
                             ") does not match actual (1; " + justification + ").");
                 }
-                return justification == justificationList.get(0);
+                return justification == justificationList.getFirst();
             }
         }
 
         @Override
         public String toString() {
-            return constraintName + " " + justificationList + "=" + score;
+            return constraintRef + " " + justificationList + "=" + score;
         }
 
     }

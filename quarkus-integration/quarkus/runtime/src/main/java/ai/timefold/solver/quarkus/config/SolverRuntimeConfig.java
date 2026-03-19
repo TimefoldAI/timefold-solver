@@ -29,9 +29,8 @@ public interface SolverRuntimeConfig {
     Optional<Boolean> daemon();
 
     /**
-     * Note: this setting is only available
-     * for <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Timefold Solver
-     * Enterprise Edition</a>.
+     * Note: this setting is only available in Timefold Solver
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Enterprise Edition</a>.
      * Enable multithreaded solving for a single problem, which increases CPU consumption.
      * Defaults to {@value SolverConfig#MOVE_THREAD_COUNT_NONE}.
      * Other options include {@value SolverConfig#MOVE_THREAD_COUNT_AUTO}, a number

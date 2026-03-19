@@ -4,6 +4,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -12,28 +13,27 @@ import org.jspecify.annotations.NullMarked;
  * This is much faster than {@link EasyScoreCalculator} but requires much more code to implement too.
  * <p>
  * Any implementation is naturally stateful.
+ * <p>
+ * Note: Incremental score calculation is exclusive to Timefold Solver Enterprise Edition.
+ * It is not available in the open-source version of Timefold Solver,
+ * and attempts to use it without a valid license will throw exceptions at runtime.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the score type to go with the solution
+ * @see AnalyzableIncrementalScoreCalculator See incremental calculator with support for {@link ScoreAnalysis}.
  */
 @NullMarked
 public interface IncrementalScoreCalculator<Solution_, Score_ extends Score<Score_>> {
 
     /**
-     * There are no {@link #beforeEntityAdded(Object)} and {@link #afterEntityAdded(Object)} calls
-     * for entities that are already present in the workingSolution.
+     * Resets the internal caches and score to match the given working solution.
+     * It is recommended to build the internal caches lazily as the before/after events come in,
+     * as this method may be called several times in a row with the same working solution,
+     * and building the internal caches eagerly can be expensive.
+     *
+     * @param workingSolution the working solution to operate on
      */
     void resetWorkingSolution(Solution_ workingSolution);
-
-    /**
-     * @param entity an instance of a {@link PlanningEntity} class
-     */
-    void beforeEntityAdded(Object entity);
-
-    /**
-     * @param entity an instance of a {@link PlanningEntity} class
-     */
-    void afterEntityAdded(Object entity);
 
     /**
      * @param entity an instance of a {@link PlanningEntity} class
@@ -64,16 +64,6 @@ public interface IncrementalScoreCalculator<Solution_, Score_ extends Score<Scor
 
     default void afterListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex) {
     }
-
-    /**
-     * @param entity an instance of a {@link PlanningEntity} class
-     */
-    void beforeEntityRemoved(Object entity);
-
-    /**
-     * @param entity an instance of a {@link PlanningEntity} class
-     */
-    void afterEntityRemoved(Object entity);
 
     /**
      * This method is only called if the {@link Score} cannot be predicted.

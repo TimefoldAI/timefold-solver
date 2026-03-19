@@ -3,8 +3,6 @@ package ai.timefold.solver.jackson.api.score;
 import java.math.BigDecimal;
 
 import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
-import ai.timefold.solver.jackson.api.score.buildin.SimpleBigDecimalScoreJacksonDeserializer;
-import ai.timefold.solver.jackson.api.score.buildin.SimpleBigDecimalScoreJacksonSerializer;
 
 import org.junit.jupiter.api.Test;
 

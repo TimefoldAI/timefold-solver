@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.bavet;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
@@ -16,10 +16,9 @@ public final class BavetConstraint<Solution_> extends
 
     public BavetConstraint(BavetConstraintFactory<Solution_> constraintFactory, ConstraintRef constraintRef,
             String description, String constraintGroup, Score<?> constraintWeight, ScoreImpactType scoreImpactType,
-            Object justificationMapping, Object indictedObjectsMapping,
-            BavetScoringConstraintStream<Solution_> scoringConstraintStream) {
+            Object justificationMapping, BavetScoringConstraintStream<Solution_> scoringConstraintStream) {
         super(constraintFactory, constraintRef, description, constraintGroup, constraintWeight, scoreImpactType,
-                justificationMapping, indictedObjectsMapping);
+                justificationMapping);
         this.scoringConstraintStream = scoringConstraintStream;
     }
 

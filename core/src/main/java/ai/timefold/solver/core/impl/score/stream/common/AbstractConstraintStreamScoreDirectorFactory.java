@@ -34,9 +34,4 @@ public abstract class AbstractConstraintStreamScoreDirectorFactory<Solution_, Sc
 
     public abstract ConstraintMetaModel getConstraintMetaModel();
 
-    @Override
-    public boolean supportsConstraintMatching() {
-        return true;
-    }
-
 }

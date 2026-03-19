@@ -35,6 +35,7 @@ class GeneralPackageRenameMigrationRecipeTest implements RewriteTest {
                                 "package ai.timefold.solver.jpa.api.score.buildin.simplebigdecimal; public class SimpleBigDecimalScoreConverter {}",
                                 "package ai.timefold.solver.jpa.api.score.buildin.simple; public class SimpleScoreConverter {}",
                                 // Jackson API
+                                "package ai.timefold.solver.jackson.api.score.buildin; public class AbstractScoreJacksonSerializer {}",
                                 "package ai.timefold.solver.jackson.api.score.buildin.bendablebigdecimal; public class BendableBigDecimalScoreJacksonDeserializer {}",
                                 "package ai.timefold.solver.jackson.api.score.buildin.bendable; public class BendableScoreJacksonDeserializer {}",
                                 "package ai.timefold.solver.jackson.api.score.buildin.hardmediumsoftbigdecimal; public class HardMediumSoftBigDecimalScoreJacksonDeserializer {}",
@@ -52,7 +53,8 @@ class GeneralPackageRenameMigrationRecipeTest implements RewriteTest {
                                 "package ai.timefold.solver.jaxb.api.score.buildin.hardsoft; public class HardSoftScoreJaxbAdapter {}",
                                 "package ai.timefold.solver.jaxb.api.score.buildin.simplebigdecimal; public class SimpleBigDecimalScoreJaxbAdapter {}",
                                 "package ai.timefold.solver.jaxb.api.score.buildin.simple; public class SimpleScoreJaxbAdapter {}",
-                                // Jackson API
+                                // Quarkus Jackson API
+                                "package ai.timefold.solver.quarkus.jackson.score.buildin; public class AbstractScoreJacksonSerializer {}",
                                 "package ai.timefold.solver.quarkus.jackson.score.buildin.bendablebigdecimal; public class BendableBigDecimalScoreJacksonDeserializer {}",
                                 "package ai.timefold.solver.quarkus.jackson.score.buildin.bendable; public class BendableScoreJacksonDeserializer {}",
                                 "package ai.timefold.solver.quarkus.jackson.score.buildin.hardmediumsoftbigdecimal; public class HardMediumSoftBigDecimalScoreJacksonDeserializer {}",
@@ -73,7 +75,7 @@ class GeneralPackageRenameMigrationRecipeTest implements RewriteTest {
     }
 
     @Test
-    void migratePersistence() {
+    void migrateJpa() {
         rewriteRun(java(
                 """
                         package timefold;
@@ -131,6 +133,7 @@ class GeneralPackageRenameMigrationRecipeTest implements RewriteTest {
                 """
                         package timefold;
 
+                        import ai.timefold.solver.jackson.api.score.buildin.AbstractScoreJacksonDeserializer;
                         import ai.timefold.solver.jackson.api.score.buildin.bendablebigdecimal.BendableBigDecimalScoreJacksonDeserializer;
                         import ai.timefold.solver.jackson.api.score.buildin.bendable.BendableScoreJacksonDeserializer;
                         import ai.timefold.solver.jackson.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScoreJacksonDeserializer;
@@ -141,6 +144,7 @@ class GeneralPackageRenameMigrationRecipeTest implements RewriteTest {
                         import ai.timefold.solver.jackson.api.score.buildin.simple.SimpleScoreJacksonDeserializer;
 
                         public class Test {
+                                AbstractScoreJacksonDeserializer abstractScoreJacksonDeserializer;
                                 BendableBigDecimalScoreJacksonDeserializer bendableBigDecimalScoreJacksonDeserializer;
                                 BendableScoreJacksonDeserializer bendableScoreJacksonDeserializer;
                                 HardMediumSoftBigDecimalScoreJacksonDeserializer hardMediumSoftBigDecimalScoreJacksonDeserializer;
@@ -153,16 +157,18 @@ class GeneralPackageRenameMigrationRecipeTest implements RewriteTest {
                 """
                         package timefold;
 
-                        import ai.timefold.solver.jackson.api.score.buildin.BendableBigDecimalScoreJacksonDeserializer;
-                        import ai.timefold.solver.jackson.api.score.buildin.BendableScoreJacksonDeserializer;
-                        import ai.timefold.solver.jackson.api.score.buildin.HardMediumSoftBigDecimalScoreJacksonDeserializer;
-                        import ai.timefold.solver.jackson.api.score.buildin.HardMediumSoftScoreJacksonDeserializer;
-                        import ai.timefold.solver.jackson.api.score.buildin.HardSoftBigDecimalScoreJacksonDeserializer;
-                        import ai.timefold.solver.jackson.api.score.buildin.HardSoftScoreJacksonDeserializer;
-                        import ai.timefold.solver.jackson.api.score.buildin.SimpleBigDecimalScoreJacksonDeserializer;
-                        import ai.timefold.solver.jackson.api.score.buildin.SimpleScoreJacksonDeserializer;
+                        import ai.timefold.solver.jackson.api.score.AbstractScoreJacksonDeserializer;
+                        import ai.timefold.solver.jackson.api.score.BendableBigDecimalScoreJacksonDeserializer;
+                        import ai.timefold.solver.jackson.api.score.BendableScoreJacksonDeserializer;
+                        import ai.timefold.solver.jackson.api.score.HardMediumSoftBigDecimalScoreJacksonDeserializer;
+                        import ai.timefold.solver.jackson.api.score.HardMediumSoftScoreJacksonDeserializer;
+                        import ai.timefold.solver.jackson.api.score.HardSoftBigDecimalScoreJacksonDeserializer;
+                        import ai.timefold.solver.jackson.api.score.HardSoftScoreJacksonDeserializer;
+                        import ai.timefold.solver.jackson.api.score.SimpleBigDecimalScoreJacksonDeserializer;
+                        import ai.timefold.solver.jackson.api.score.SimpleScoreJacksonDeserializer;
 
                         public class Test {
+                                AbstractScoreJacksonDeserializer abstractScoreJacksonDeserializer;
                                 BendableBigDecimalScoreJacksonDeserializer bendableBigDecimalScoreJacksonDeserializer;
                                 BendableScoreJacksonDeserializer bendableScoreJacksonDeserializer;
                                 HardMediumSoftBigDecimalScoreJacksonDeserializer hardMediumSoftBigDecimalScoreJacksonDeserializer;
@@ -229,6 +235,7 @@ class GeneralPackageRenameMigrationRecipeTest implements RewriteTest {
                 """
                         package timefold;
 
+                        import ai.timefold.solver.quarkus.jackson.score.buildin.AbstractScoreJacksonDeserializer;
                         import ai.timefold.solver.quarkus.jackson.score.buildin.bendablebigdecimal.BendableBigDecimalScoreJacksonDeserializer;
                         import ai.timefold.solver.quarkus.jackson.score.buildin.bendable.BendableScoreJacksonDeserializer;
                         import ai.timefold.solver.quarkus.jackson.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScoreJacksonDeserializer;
@@ -239,6 +246,7 @@ class GeneralPackageRenameMigrationRecipeTest implements RewriteTest {
                         import ai.timefold.solver.quarkus.jackson.score.buildin.simple.SimpleScoreJacksonDeserializer;
 
                         public class Test {
+                                AbstractScoreJacksonDeserializer abstractScoreJacksonDeserializer;
                                 BendableBigDecimalScoreJacksonDeserializer bendableBigDecimalScoreJacksonDeserializer;
                                 BendableScoreJacksonDeserializer bendableScoreJacksonDeserializer;
                                 HardMediumSoftBigDecimalScoreJacksonDeserializer hardMediumSoftBigDecimalScoreJacksonDeserializer;
@@ -251,6 +259,7 @@ class GeneralPackageRenameMigrationRecipeTest implements RewriteTest {
                 """
                         package timefold;
 
+                        import ai.timefold.solver.quarkus.jackson.score.AbstractScoreJacksonDeserializer;
                         import ai.timefold.solver.quarkus.jackson.score.BendableBigDecimalScoreJacksonDeserializer;
                         import ai.timefold.solver.quarkus.jackson.score.BendableScoreJacksonDeserializer;
                         import ai.timefold.solver.quarkus.jackson.score.HardMediumSoftBigDecimalScoreJacksonDeserializer;
@@ -261,6 +270,7 @@ class GeneralPackageRenameMigrationRecipeTest implements RewriteTest {
                         import ai.timefold.solver.quarkus.jackson.score.SimpleScoreJacksonDeserializer;
 
                         public class Test {
+                                AbstractScoreJacksonDeserializer abstractScoreJacksonDeserializer;
                                 BendableBigDecimalScoreJacksonDeserializer bendableBigDecimalScoreJacksonDeserializer;
                                 BendableScoreJacksonDeserializer bendableScoreJacksonDeserializer;
                                 HardMediumSoftBigDecimalScoreJacksonDeserializer hardMediumSoftBigDecimalScoreJacksonDeserializer;

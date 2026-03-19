@@ -1,28 +1,13 @@
 package ai.timefold.solver.core.impl.score.director;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
-
-import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
-import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
-import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
-import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -35,6 +20,7 @@ import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -50,36 +36,6 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends VariableDescriptorAwareScoreDirector<Solution_>, AutoCloseable {
-
-    static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> getConstraintAnalysis(
-            ConstraintMatchTotal<Score_> constraintMatchTotal, ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy) {
-        return switch (scoreAnalysisFetchPolicy) {
-            case FETCH_ALL -> {
-                // Justification can not be null here, because they are enabled by FETCH_ALL.
-                var deduplicatedConstraintMatchMap = constraintMatchTotal.getConstraintMatchSet().stream()
-                        .collect(groupingBy(c -> (ConstraintJustification) c.getJustification(), toList()));
-                var matchAnalyses = sumMatchesWithSameJustification(constraintMatchTotal, deduplicatedConstraintMatchMap);
-                yield new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(),
-                        constraintMatchTotal.getConstraintWeight(), constraintMatchTotal.getScore(), matchAnalyses);
-            }
-            case FETCH_MATCH_COUNT ->
-                new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
-                        constraintMatchTotal.getScore(), null, constraintMatchTotal.getConstraintMatchCount());
-            case FETCH_SHALLOW ->
-                new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
-                        constraintMatchTotal.getScore(), null);
-        };
-    }
-
-    private static <Score_ extends Score<Score_>> List<MatchAnalysis<Score_>> sumMatchesWithSameJustification(
-            ConstraintMatchTotal<Score_> constraintMatchTotal,
-            Map<ConstraintJustification, List<ConstraintMatch<Score_>>> deduplicatedConstraintMatchMap) {
-        return deduplicatedConstraintMatchMap.entrySet().stream().map(entry -> {
-            var score = entry.getValue().stream().map(ConstraintMatch::getScore).reduce(constraintMatchTotal.getScore().zero(),
-                    Score::add);
-            return new MatchAnalysis<>(constraintMatchTotal.getConstraintRef(), score, entry.getKey());
-        }).toList();
-    }
 
     /**
      * Sets the {@link PlanningSolution working solution} of the {@link ScoreDirector}
@@ -126,8 +82,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     InnerScore<Score_> calculateScore();
 
     /**
-     * @return {@link ConstraintMatchPolicy#ENABLED} if {@link #getConstraintMatchTotalMap()} and {@link #getIndictmentMap()}
-     *         can be called.
+     * @return {@link ConstraintMatchPolicy#ENABLED} if {@link #getConstraintMatchTotalMap()} can be called.
      *         {@link ConstraintMatchPolicy#ENABLED_WITHOUT_JUSTIFICATIONS} if only the former can be called.
      *         {@link ConstraintMatchPolicy#DISABLED} if neither can be called.
      */
@@ -145,28 +100,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      *         If a constraint is present in the problem but resulted in no matches,
      *         it will still be in the map with a {@link ConstraintMatchTotal#getConstraintMatchSet()} size of 0.
      * @throws IllegalStateException if {@link #getConstraintMatchPolicy()} returns {@link ConstraintMatchPolicy#DISABLED}.
-     * @see #getIndictmentMap()
      */
-    Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap();
-
-    /**
-     * Explains the impact of each planning entity or problem fact on the {@link Score}.
-     * An {@link Indictment} is basically the inverse of a {@link ConstraintMatchTotal}:
-     * it is a {@link Score} total for each {@link ConstraintMatch#getJustification() constraint justification}.
-     * <p>
-     * The sum of {@link ConstraintMatchTotal#getScore()} differs from {@link #calculateScore()}
-     * because each {@link ConstraintMatch#getScore()} is counted
-     * for each {@link ConstraintMatch#getJustification() constraint justification}.
-     * <p>
-     * Call {@link #calculateScore()} before calling this method,
-     * unless that method has already been called since the last {@link PlanningVariable} changes.
-     *
-     * @return never null, the key is a {@link ProblemFactCollectionProperty problem fact} or a
-     *         {@link PlanningEntity planning entity}
-     * @throws IllegalStateException unless {@link #getConstraintMatchPolicy()} returns {@link ConstraintMatchPolicy#ENABLED}.
-     * @see #getConstraintMatchTotalMap()
-     */
-    Map<Object, Indictment<Score_>> getIndictmentMap();
+    Map<ConstraintRef, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap();
 
     /**
      * @return used to check {@link #isWorkingEntityListDirty(long)} later on
@@ -389,16 +324,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     default boolean isDerived() {
         return false;
-    }
-
-    default ScoreAnalysis<Score_> buildScoreAnalysis(ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy) {
-        var state = calculateScore();
-        var constraintAnalysisMap = new TreeMap<ConstraintRef, ConstraintAnalysis<Score_>>();
-        for (var constraintMatchTotal : getConstraintMatchTotalMap().values()) {
-            var constraintAnalysis = getConstraintAnalysis(constraintMatchTotal, scoreAnalysisFetchPolicy);
-            constraintAnalysisMap.put(constraintMatchTotal.getConstraintRef(), constraintAnalysis);
-        }
-        return new ScoreAnalysis<>(state.raw(), constraintAnalysisMap, state.isFullyAssigned());
     }
 
     default void beforeEntityAdded(Object entity) {

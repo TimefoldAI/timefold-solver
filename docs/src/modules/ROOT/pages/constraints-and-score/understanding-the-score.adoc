@@ -8,7 +8,10 @@ The score in its pure form is just a number, and does not help us understand the
 It doesn't say which constraints are broken, or what caused them to break.
 To understand the score, it needs to be broken down.
 
-The easiest way to do that during development is to print the score summary:
+NOTE: Explainability is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
+
+The easiest way to break down the score during development is to print the score summary:
 
 [tabs]
 ====
@@ -34,8 +37,10 @@ Explanation of score (0hard/-10343soft):
         ...
 ----
 
-**Note:**  
-The number of matches shown per constraint can be controlled by calling `analyze(vehicleRoutePlan).summarize(topLimit)`, where `topLimit` is the maximum number of matches to display for each constraint. For example, `summarize(5)` will show up to 5 matches per constraint. To show all matches use `Integer.MAX_VALUE` as parameter.
+The number of matches shown per constraint can be controlled by calling `analyze(vehicleRoutePlan).summarize(topLimit)`,
+where `topLimit` is the maximum number of matches to display for each constraint.
+For example, `summarize(5)` will show up to 5 matches per constraint.
+To show all matches use `Integer.MAX_VALUE` as parameter.
 
 [IMPORTANT]
 ====
@@ -49,15 +54,12 @@ In the string above, there are some previously unexplained concepts.
 * A _Constraint match_ is created every time a constraint causes a change to the score.
 * _Justifications_ are user-defined objects that implement the `ai.timefold.solver.core.api.score.stream.ConstraintJustification` interface, which carry meaningful information about a constraint match, such as its name and any metadata that the user chooses to expose.
 Justifications are most easily available via <<scoreAnalysis,score analysis>>.
-* _Indicted objects_ are objects which were directly involved in causing a constraint to match.
-For example, if your constraints penalize each vehicle, then there will be one `ai.timefold.solver.core.api.score.constraint.Indictment` instance per vehicle, carrying the vehicle as an indicted object.
-Indictments are typically used for xref:indictmentHeatMap[heat map visualization].
 
 [NOTE]
 ====
 xref:constraints-and-score/score-calculation.adoc[Constraint Streams API] can analyze the score natively.
 xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental Java score calculation] requires
-xref:constraints-and-score/score-calculation.adoc#constraintMatchAwareIncrementalScoreCalculator[implementing an extra interface].
+xref:constraints-and-score/score-calculation.adoc#analyzableIncrementalScoreCalculator[implementing an extra interface].
 xref:constraints-and-score/score-calculation.adoc#easyScoreCalculation[Easy Java score calculation] does not support score explanation.
 ====
 
@@ -158,7 +160,7 @@ constraintAnalysis.matches().forEach(matchAnalysis -> {
 ====
 
 Each match is accompanied by the score difference it caused, and a justification object (see above).
-Typically, the scoring engine creates justification objects automatically by using the results of xref:constraints-and-score/score-calculation.adoc#constraintStreamsCustomizingJustificationsAndIndictments[Constraint Streams' `justifyWith(...)` call].
+Typically, the scoring engine creates justification objects automatically by using the results of xref:constraints-and-score/score-calculation.adoc#constraintStreamsCustomizingJustifications[Constraint Streams' `justifyWith(...)` call].
 
 [#scoreAnalysisDiff]
 === Identifying changes between two solutions
@@ -228,11 +230,9 @@ In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the de
 [#solutionDiff]
 == Solution Diff: What changed between now and then?
 
-[IMPORTANT]
-====
-The solution diff is available as a xref:upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview feature].
+IMPORTANT: The solution diff is exclusive to Timefold Solver Enterprise Edition.
+It is also only available as a xref:upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview feature].
 It may be subject to change and must be enabled in the solver configuration by setting: `<enablePreviewFeature>PLANNING_SOLUTION_DIFF</enablePreviewFeature>`
-====
 
 Using the `SolutionManager` API, you can compare two solutions provided by the solver, and find out what changed between them:
 
@@ -260,46 +260,5 @@ as well as the old and new values of the changed variables.
 
 It also has a useful `toString()` for a quick overview of the changes.
 Do not attempt to parse this string or expose it in services, its format is not stable and is subject to change.
-
-
-[#indictmentHeatMap]
-== Heat map: Visualize the hot planning entities
-
-To show a heat map in the UI that highlights the planning entities and problem facts have an impact on the ``Score``, get the `Indictment` map from the ``ScoreExplanation``:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-SolutionManager<VehicleRoutePlan, HardSoftScore> solutionManager = SolutionManager.create(solverFactory);
-ScoreExplanation<VehicleRoutePlan, HardSoftScore> scoreExplanation = solutionManager.explain(vehicleRoutePlan);
-Map<Object, Indictment<HardSoftScore>> indictmentMap = scoreExplanation.getIndictmentMap();
-for (Visit visit : vehicleRoutePlan.getVisits()) {
-    Indictment<HardSoftScore> indictment = indictmentMap.get(visit);
-    if (indictment == null) {
-        continue;
-    }
-    // The score impact of that planning entity
-    HardSoftScore totalScore = indictment.getScore();
-
-    for (ConstraintMatch<HardSoftScore> constraintMatch : indictment.getConstraintMatchSet()) {
-        String constraintName = constraintMatch.getConstraintName();
-        HardSoftScore score = constraintMatch.getScore();
-        ...
-    }
-}
-----
-====
-
-[NOTE]
-====
-`ScoreExplanation` should only be used for processing indictments.
-For analyzing the score and processing constraint matches, use <<scoreAnalysis,score analysis>> instead, which is faster and JSON-friendly.
-====
-
-Each `Indictment` is the sum of all constraints where that justification object is involved with.
-The sum of all the `Indictment.getScoreTotal()` differs from the overall score, because multiple ``Indictment``s can share the same `ConstraintMatch`.
 
 image::constraints-and-score/understanding-the-score/scoreVisualization.png[align="center"]

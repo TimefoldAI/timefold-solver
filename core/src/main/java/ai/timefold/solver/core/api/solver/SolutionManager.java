@@ -10,12 +10,10 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.impl.domain.variable.ShadowVariableUpdateHelper;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
@@ -23,12 +21,14 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A stateless service to help calculate {@link Score}, {@link ConstraintMatchTotal},
- * {@link Indictment}, etc.
+ * A stateless service to help calculate {@link Score}, {@link ConstraintMatchTotal}, etc.
  * <p>
  * To create a {@link SolutionManager} instance, use {@link #create(SolverFactory)}.
  * <p>
  * These methods are thread-safe unless explicitly stated otherwise.
+ * <p>
+ * Some of these methods require Timefold Solver Enterprise Edition.
+ * All of them are clearly marked as such in their respective Javadocs.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the actual score type
@@ -117,26 +117,6 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
     }
 
     /**
-     * As defined by {@link #explain(Object, SolutionUpdatePolicy)},
-     * using {@link SolutionUpdatePolicy#UPDATE_ALL}.
-     */
-    default ScoreExplanation<Solution_, Score_> explain(Solution_ solution) {
-        return explain(solution, UPDATE_ALL);
-    }
-
-    /**
-     * Calculates and retrieves {@link ConstraintMatchTotal}s and {@link Indictment}s necessary for describing the
-     * quality of a particular solution.
-     * For a simplified, faster and JSON-friendly alternative, see {@link #analyze(Object)}}.
-     *
-     * @param solutionUpdatePolicy if unsure, pick {@link SolutionUpdatePolicy#UPDATE_ALL}
-     * @throws IllegalStateException when constraint matching is disabled or not supported by the underlying score
-     *         calculator, such as {@link EasyScoreCalculator}.
-     * @see SolutionUpdatePolicy Description of individual policies with respect to performance trade-offs.
-     */
-    ScoreExplanation<Solution_, Score_> explain(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy);
-
-    /**
      * As defined by {@link #analyze(Object, ScoreAnalysisFetchPolicy, SolutionUpdatePolicy)},
      * using {@link SolutionUpdatePolicy#UPDATE_ALL} and {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
      */
@@ -154,7 +134,9 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
 
     /**
      * Calculates and retrieves information about which constraints contributed to the solution's score.
-     * This is a faster, JSON-friendly version of {@link #explain(Object)}.
+     * <p>
+     * Note: {@link ScoreAnalysis Score analysis} is exclusive to Timefold Solver Enterprise Edition.
+     * This method will throw an exception if the binaries can't be found.
      *
      * @param solution must be fully initialized otherwise an exception is thrown
      * @param fetchPolicy if unsure, pick {@link ScoreAnalysisFetchPolicy#FETCH_MATCH_COUNT}
@@ -181,7 +163,10 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * There are no guarantees for backward compatibility;
      * its signature or the types it operates on and returns may change or be removed without prior notice,
      * although we will strive to avoid this as much as possible.
-     * 
+     * <p>
+     * Note: Solution diff is exclusive to Timefold Solver Enterprise Edition.
+     * This method will throw an exception if the binaries can't be found.
+     *
      * @param oldSolution The solution to use as a base for comparison.
      * @param newSolution The solution to compare against the base.
      * @return A diff object containing information about the differences between the two solutions.
@@ -282,6 +267,9 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * If instead the proposition function returned Ann and Bob directly, the immutable planning variables,
      * this problem would have been avoided.
      * Alternatively, the proposition function could have returned a defensive copy of the Shift.
+     * <p>
+     * Note: Recommendations are exclusive to Timefold Solver Enterprise Edition.
+     * This method will throw an exception if the binaries can't be found.
      *
      * @param solution for basic variable, must be fully initialized or have a single entity unassigned.
      *        For list variable, all values must be assigned to some list, with the optional exception of one.

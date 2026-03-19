@@ -40,7 +40,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         var solution = TestdataSolution.generateSolution(1, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
-        var value = solution.getValueList().get(0);
+        var value = solution.getValueList().getFirst();
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -101,7 +101,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         var solution = TestdataSolution.generateSolution(1, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
-        var value = solution.getValueList().get(0);
+        var value = solution.getValueList().getFirst();
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -154,7 +154,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         var solution = TestdataSolution.generateSolution(1, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
-        var value = solution.getValueList().get(0);
+        var value = solution.getValueList().getFirst();
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -201,7 +201,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         var solution = TestdataSolution.generateSolution(1, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
-        var value = solution.getValueList().get(0);
+        var value = solution.getValueList().getFirst();
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -263,7 +263,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         var solution = TestdataSolution.generateSolution(1, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
-        var value = solution.getValueList().get(0);
+        var value = solution.getValueList().getFirst();
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -320,7 +320,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         var solution = TestdataSolution.generateSolution(1, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
-        var value = solution.getValueList().get(0);
+        var value = solution.getValueList().getFirst();
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -374,7 +374,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         var solution = TestdataSolution.generateSolution(1, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
-        var value = solution.getValueList().get(0);
+        var value = solution.getValueList().getFirst();
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -423,7 +423,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
         var solution = TestdataSolution.generateSolution(1, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
-        var value = solution.getValueList().get(0);
+        var value = solution.getValueList().getFirst();
         entity1.setValue(null);
         entity2.setValue(value);
 

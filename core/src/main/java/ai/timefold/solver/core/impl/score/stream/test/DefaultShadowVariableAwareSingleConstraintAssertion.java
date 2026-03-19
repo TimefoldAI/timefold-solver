@@ -29,8 +29,7 @@ public final class DefaultShadowVariableAwareSingleConstraintAssertion<Solution_
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
             scoreDirector.setWorkingSolution(solution);
-            update(scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap(),
-                    scoreDirector.getIndictmentMap());
+            update(scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap());
             toggleInitialized();
             return this;
         }

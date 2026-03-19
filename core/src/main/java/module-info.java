@@ -11,7 +11,6 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.api.function;
     exports ai.timefold.solver.core.api.score;
     exports ai.timefold.solver.core.api.score.analysis;
-    exports ai.timefold.solver.core.api.score.constraint;
     exports ai.timefold.solver.core.api.score.stream;
     exports ai.timefold.solver.core.api.score.stream.common;
     exports ai.timefold.solver.core.api.score.stream.uni;
@@ -151,8 +150,6 @@ module ai.timefold.solver.core {
             ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.director.easy to ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
-    exports ai.timefold.solver.core.impl.score.director.incremental to ai.timefold.solver.benchmark,
-            ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.stream.common
             to ai.timefold.solver.quarkus, ai.timefold.solver.spring.boot.autoconfigure;
     exports ai.timefold.solver.core.impl.score.stream.collector
@@ -168,7 +165,8 @@ module ai.timefold.solver.core {
             ai.timefold.solver.quarkus,
             ai.timefold.solver.quarkus.deployment, ai.timefold.solver.quarkus.integration.test,
             ai.timefold.solver.quarkus.jackson,
-            ai.timefold.solver.enterprise.core;
+            ai.timefold.solver.enterprise.core, ai.timefold.solver.enterprise.jackson,
+            ai.timefold.solver.enterprise.quarkus.jackson;
     exports ai.timefold.solver.core.impl.solver.monitoring to ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.scope to
@@ -184,8 +182,10 @@ module ai.timefold.solver.core {
 
     // enterprise-specific exports
     exports ai.timefold.solver.core.impl.bavet.common to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.constructionheuristic to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.constructionheuristic.decider to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.constructionheuristic.decider.forager to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.constructionheuristic.placer to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.domain.variable to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.domain.variable.supply to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.domain.variable.listener.support to ai.timefold.solver.enterprise.core;

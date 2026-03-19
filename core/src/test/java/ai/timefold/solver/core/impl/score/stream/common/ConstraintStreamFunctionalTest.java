@@ -220,5 +220,4 @@ public interface ConstraintStreamFunctionalTest {
 
     void failWithMultipleJustifications();
 
-    void failWithMultipleIndictments();
 }

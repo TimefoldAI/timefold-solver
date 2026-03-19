@@ -19,6 +19,9 @@ import org.jspecify.annotations.Nullable;
  * This interface is not intended to be implemented by users.
  * The default implementation has a default {@code toString()} method that prints a summary of the differences.
  * Do not attempt to parse that string - it is subject to change in the future.
+ * <p>
+ * Note: Solution diff is exclusive to Timefold Solver Enterprise Edition.
+ * This interface has no use without the Enterprise Edition.
  *
  * @param <Solution_>
  */

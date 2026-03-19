@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -30,12 +29,12 @@ import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamFunctionalTest;
@@ -3108,13 +3107,9 @@ public abstract class AbstractUniConstraintStreamTest
         if (!implSupport.constraintMatchPolicy().isJustificationEnabled())
             return;
 
-        assertThat(scoreDirector.getIndictmentMap())
-                .containsOnlyKeys(entityList);
-
         var constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
-        assertThat(constraintMatchTotalMap)
-                .containsOnlyKeys(TEST_CONSTRAINT_NAME);
-        var constraintMatchTotal = constraintMatchTotalMap.get(TEST_CONSTRAINT_NAME);
+        assertThat(constraintMatchTotalMap).containsOnlyKeys(TEST_CONSTRAINT_REF);
+        var constraintMatchTotal = constraintMatchTotalMap.get(TEST_CONSTRAINT_REF);
         assertThat(constraintMatchTotal.getConstraintMatchSet())
                 .hasSize(entityList.size());
         List<ConstraintMatch<Score_>> constraintMatchList = new ArrayList<>(constraintMatchTotal.getConstraintMatchSet());
@@ -3125,11 +3120,8 @@ public abstract class AbstractUniConstraintStreamTest
                 var justification = constraintMatch.getJustification();
                 softly.assertThat(justification)
                         .isInstanceOf(DefaultConstraintJustification.class);
-                var castJustification =
-                        (DefaultConstraintJustification) justification;
+                var castJustification = (DefaultConstraintJustification) justification;
                 softly.assertThat(castJustification.getFacts())
-                        .containsExactly(entity);
-                softly.assertThat(constraintMatch.getIndictedObjectList())
                         .containsExactly(entity);
             });
         }
@@ -3306,7 +3298,6 @@ public abstract class AbstractUniConstraintStreamTest
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                        .indictWith(Set::of)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
@@ -3319,13 +3310,10 @@ public abstract class AbstractUniConstraintStreamTest
         if (!implSupport.constraintMatchPolicy().isJustificationEnabled())
             return;
 
-        assertThat(scoreDirector.getIndictmentMap())
-                .containsOnlyKeys(entityList);
-
         var constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
         assertThat(constraintMatchTotalMap)
-                .containsOnlyKeys(TEST_CONSTRAINT_NAME);
-        var constraintMatchTotal = constraintMatchTotalMap.get(TEST_CONSTRAINT_NAME);
+                .containsOnlyKeys(TEST_CONSTRAINT_REF);
+        var constraintMatchTotal = constraintMatchTotalMap.get(TEST_CONSTRAINT_REF);
         assertThat(constraintMatchTotal.getConstraintMatchSet())
                 .hasSize(entityList.size());
         List<ConstraintMatch<Score_>> constraintMatchList = new ArrayList<>(constraintMatchTotal.getConstraintMatchSet());
@@ -3336,11 +3324,8 @@ public abstract class AbstractUniConstraintStreamTest
                 var justification = constraintMatch.getJustification();
                 softly.assertThat(justification)
                         .isInstanceOf(TestConstraintJustification.class);
-                var castJustification =
-                        (TestConstraintJustification<Score_>) justification;
+                var castJustification = (TestConstraintJustification<Score_>) justification;
                 softly.assertThat(castJustification.getFacts())
-                        .containsExactly(entity);
-                softly.assertThat(constraintMatch.getIndictedObjectList())
                         .containsExactly(entity);
             });
         }
@@ -3355,7 +3340,6 @@ public abstract class AbstractUniConstraintStreamTest
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE, entity -> 2)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                        .indictWith(Set::of)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
@@ -3373,7 +3357,6 @@ public abstract class AbstractUniConstraintStreamTest
                         factory -> new Constraint[] { factory.forEach(TestdataEntity.class)
                                 .penalizeBigDecimal(SimpleBigDecimalScore.ONE, entity -> BigDecimal.valueOf(2))
                                 .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                                .indictWith(Set::of)
                                 .asConstraint(TEST_CONSTRAINT_NAME) });
 
         scoreDirector.setWorkingSolution(solution);
@@ -3390,7 +3373,6 @@ public abstract class AbstractUniConstraintStreamTest
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .reward(SimpleScore.ONE)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                        .indictWith(Set::of)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
@@ -3407,7 +3389,6 @@ public abstract class AbstractUniConstraintStreamTest
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .reward(SimpleScore.ONE, entity -> 2)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                        .indictWith(Set::of)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
@@ -3426,7 +3407,6 @@ public abstract class AbstractUniConstraintStreamTest
                                 factory.forEach(TestdataEntity.class)
                                         .rewardBigDecimal(SimpleBigDecimalScore.ONE, entity -> BigDecimal.valueOf(2))
                                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                                        .indictWith(Set::of)
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
@@ -3444,7 +3424,6 @@ public abstract class AbstractUniConstraintStreamTest
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                        .indictWith(Set::of)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
@@ -3461,7 +3440,6 @@ public abstract class AbstractUniConstraintStreamTest
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE, entity -> 2)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                        .indictWith(Set::of)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
@@ -3481,7 +3459,6 @@ public abstract class AbstractUniConstraintStreamTest
                                         .impactBigDecimal(SimpleBigDecimalScore.ONE,
                                                 entity -> BigDecimal.valueOf(2))
                                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                                        .indictWith(Set::of)
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
@@ -3499,7 +3476,6 @@ public abstract class AbstractUniConstraintStreamTest
                 factory -> factory.forEach(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE, entity -> -2)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                        .indictWith(Set::of)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
@@ -3519,7 +3495,6 @@ public abstract class AbstractUniConstraintStreamTest
                                         .impactBigDecimal(SimpleBigDecimalScore.ONE,
                                                 entity -> BigDecimal.valueOf(-2))
                                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                                        .indictWith(Set::of)
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
@@ -3536,22 +3511,8 @@ public abstract class AbstractUniConstraintStreamTest
                         .penalize(SimpleScore.ONE, entity -> 2)
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
                         .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                        .indictWith(Set::of)
                         .asConstraint(TEST_CONSTRAINT_NAME)))
                 .hasMessageContaining("Maybe the constraint calls justifyWith() twice?");
-    }
-
-    @Override
-    @TestTemplate
-    public void failWithMultipleIndictments() {
-        assertThatCode(() -> buildScoreDirector(
-                factory -> factory.forEach(TestdataLavishEntity.class)
-                        .penalize(SimpleScore.ONE, entity -> 2)
-                        .justifyWith((a, score) -> new TestConstraintJustification<>(score, a))
-                        .indictWith(Set::of)
-                        .indictWith(Set::of)
-                        .asConstraint(TEST_CONSTRAINT_NAME)))
-                .hasMessageContaining("Maybe the constraint calls indictWith() twice?");
     }
 
     // ************************************************************************
@@ -3631,7 +3592,7 @@ public abstract class AbstractUniConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
-                assertMatch("Always penalize", entityList.get(0)));
+                assertMatch("Always penalize", entityList.getFirst()));
     }
 
 }

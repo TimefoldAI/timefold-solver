@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.common.uni;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToLongFunction;
@@ -25,10 +23,6 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
 
     static <A> BiFunction<A, Score<?>, DefaultConstraintJustification> createDefaultJustificationMapping() {
         return (a, score) -> DefaultConstraintJustification.of(score, a);
-    }
-
-    static <A> Function<A, Collection<?>> createDefaultIndictedObjectsMapping() {
-        return Collections::singletonList;
     }
 
     RetrievalSemantics getRetrievalSemantics();

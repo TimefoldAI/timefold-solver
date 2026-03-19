@@ -2,11 +2,9 @@ package ai.timefold.solver.core.impl.score.director;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -16,9 +14,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
-import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
-import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -67,7 +62,6 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
         implements InnerScoreDirector<Solution_, Score_> {
 
-    private static final int CONSTRAINT_MATCH_DISPLAY_LIMIT = 8;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final Factory_ scoreDirectorFactory;
@@ -281,8 +275,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var entityClassToEntitySetMap = new HashMap<Class<?>, Set<Object>>();
         Consumer<Object> entityValidator = entity -> {
             var entityDescriptor = scoreDirectorFactory.validateEntity(this, entity);
-            var newEntity = entityClassToEntitySetMap.computeIfAbsent(entityDescriptor.getEntityClass(),
-                    k -> new HashSet<>())
+            var newEntity = entityClassToEntitySetMap.computeIfAbsent(entityDescriptor.getEntityClass(), k -> new HashSet<>())
                     .add(entity);
             if (!newEntity) {
                 throw new IllegalStateException("""
@@ -366,19 +359,18 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (solutionTracker != null) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
-        var result = moveDirector.executeTemporary(move,
-                (score, undoMove) -> {
-                    if (solutionTracker != null) {
-                        solutionTracker.setAfterMoveSolution(workingSolution);
-                    }
-                    if (assertMoveScoreFromScratch) {
-                        assertWorkingScoreFromScratch(score, move);
-                    }
-                    if (consumer != null) {
-                        consumer.accept(moveDirector);
-                    }
-                    return score;
-                });
+        var result = moveDirector.executeTemporary(move, (score, undoMove) -> {
+            if (solutionTracker != null) {
+                solutionTracker.setAfterMoveSolution(workingSolution);
+            }
+            if (assertMoveScoreFromScratch) {
+                assertWorkingScoreFromScratch(score, move);
+            }
+            if (consumer != null) {
+                consumer.accept(moveDirector);
+            }
+            return score;
+        });
         return Objects.requireNonNull(result);
     }
 
@@ -394,7 +386,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public Solution_ cloneSolution(Solution_ originalSolution) {
-        SolutionDescriptor<Solution_> solutionDescriptor = getSolutionDescriptor();
+        var solutionDescriptor = getSolutionDescriptor();
         var originalScore = solutionDescriptor.getScore(originalSolution);
         var cloneSolution = solutionDescriptor.getSolutionCloner().cloneSolution(originalSolution);
         var cloneScore = solutionDescriptor.getScore(cloneSolution);
@@ -676,7 +668,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void assertExpectedWorkingScore(InnerScore<Score_> expectedWorkingScore, Object completedAction) {
-        InnerScore<Score_> workingScore = calculateScore();
+        var workingScore = calculateScore();
         if (!expectedWorkingScore.equals(workingScore)) {
             throw new ScoreCorruptionException("""
                     Score corruption (%s): the expectedWorkingScore (%s) is not the workingScore (%s) \
@@ -710,24 +702,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
     }
 
-    /**
-     * @param predicted true if the score was predicted and might have been calculated on another thread
-     * @return never null
-     */
-    protected String buildShadowVariableAnalysis(boolean predicted) {
-        var violationMessage = variableListenerSupport.createShadowVariablesViolationMessage();
-        var workingLabel = predicted ? "working" : "corrupted";
-        if (violationMessage == null) {
-            return """
-                    Shadow variable corruption in the %s scoreDirector:
-                      None""".formatted(workingLabel);
-        }
-        return """
-                Shadow variable corruption in the %s scoreDirector:
-                %s
-                  Maybe there is a bug in the updater of those shadow variable(s).""".formatted(workingLabel, violationMessage);
-    }
-
     @Override
     public void assertWorkingScoreFromScratch(InnerScore<Score_> workingScore, Object completedAction) {
         assertScoreFromScratch(workingScore, completedAction, false);
@@ -749,8 +723,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
             if (!innerScore.equals(uncorruptedInnerScore)) {
-                String scoreCorruptionAnalysis = buildScoreCorruptionAnalysis(uncorruptedScoreDirector, predicted);
-                String shadowVariableAnalysis = buildShadowVariableAnalysis(predicted);
+                var corruptionAnalyzer = new CorruptionAnalyzer<>(this);
+                var scoreCorruptionAnalysis = corruptionAnalyzer.analyzeScore(uncorruptedScoreDirector, predicted);
+                var shadowVariableAnalysis = corruptionAnalyzer.analyzeShadowVariables(predicted);
                 throw new ScoreCorruptionException("""
                         Score corruption (%s): the %s (%s) is not the uncorruptedScore (%s) after completedAction (%s):
                         %s
@@ -875,8 +850,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             if (value == null) {
                 continue;
             }
-            var valueRange = scoreDirector.getValueRangeManager()
-                    .getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
+            var valueRange =
+                    scoreDirector.getValueRangeManager().getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
             if (!valueRange.contains(value)) {
                 throw new IllegalStateException(
                         "The value (%s) from the planning variable (%s) has been assigned to the entity (%s), but it is outside of the related value range %s."
@@ -890,8 +865,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (valueList.isEmpty()) {
             return;
         }
-        var valueRange = scoreDirector.getValueRangeManager()
-                .getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
+        var valueRange =
+                scoreDirector.getValueRangeManager().getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
         for (var value : valueList) {
             if (value == null) {
                 continue;
@@ -904,135 +879,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
     }
 
-    /**
-     * @param uncorruptedScoreDirector never null
-     * @param predicted true if the score was predicted and might have been calculated on another thread
-     * @return never null
-     */
-    protected String buildScoreCorruptionAnalysis(InnerScoreDirector<Solution_, Score_> uncorruptedScoreDirector,
-            boolean predicted) {
-        if (!getConstraintMatchPolicy().isEnabled() || !uncorruptedScoreDirector.getConstraintMatchPolicy().isEnabled()) {
-            return """
-                    Score corruption analysis could not be generated because either corrupted constraintMatchPolicy (%s) \
-                    or uncorrupted constraintMatchPolicy (%s) is %s.
-                      Check your score constraints manually.""".formatted(constraintMatchPolicy,
-                    uncorruptedScoreDirector.getConstraintMatchPolicy(), ConstraintMatchPolicy.DISABLED);
-        }
-
-        var corruptedAnalysis = buildScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_ALL);
-        var uncorruptedAnalysis = uncorruptedScoreDirector.buildScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_ALL);
-
-        var excessSet = new LinkedHashSet<MatchAnalysis<Score_>>();
-        var missingSet = new LinkedHashSet<MatchAnalysis<Score_>>();
-
-        uncorruptedAnalysis.constraintMap().forEach((constraintRef, uncorruptedConstraintAnalysis) -> {
-            var uncorruptedConstraintMatches = emptyMatchAnalysisIfNull(uncorruptedConstraintAnalysis);
-            var corruptedConstraintMatches = emptyMatchAnalysisIfNull(corruptedAnalysis.constraintMap().get(constraintRef));
-            if (corruptedConstraintMatches.isEmpty()) {
-                missingSet.addAll(uncorruptedConstraintMatches);
-            } else {
-                updateExcessAndMissingConstraintMatches(uncorruptedConstraintMatches, corruptedConstraintMatches, excessSet,
-                        missingSet);
-            }
-        });
-
-        corruptedAnalysis.constraintMap().forEach((constraintRef, corruptedConstraintAnalysis) -> {
-            var corruptedConstraintMatches = emptyMatchAnalysisIfNull(corruptedConstraintAnalysis);
-            var uncorruptedConstraintMatches = emptyMatchAnalysisIfNull(uncorruptedAnalysis.constraintMap().get(constraintRef));
-            if (uncorruptedConstraintMatches.isEmpty()) {
-                excessSet.addAll(corruptedConstraintMatches);
-            } else {
-                updateExcessAndMissingConstraintMatches(uncorruptedConstraintMatches, corruptedConstraintMatches, excessSet,
-                        missingSet);
-            }
-        });
-
-        var analysis = new StringBuilder();
-        analysis.append("Score corruption analysis:\n");
-        // If predicted, the score calculation might have happened on another thread, so a different ScoreDirector
-        // so there is no guarantee that the working ScoreDirector is the corrupted ScoreDirector
-        var workingLabel = predicted ? "working" : "corrupted";
-        appendAnalysis(analysis, workingLabel, "should not be there", excessSet);
-        appendAnalysis(analysis, workingLabel, "are missing", missingSet);
-        if (!missingSet.isEmpty() || !excessSet.isEmpty()) {
-            analysis.append("""
-                      Maybe there is a bug in the score constraints of those ConstraintMatch(s).
-                      Maybe a score constraint doesn't select all the entities it depends on,
-                        but discovers some transitively through a reference from the selected entity.
-                        This corrupts incremental score calculation,
-                        because the constraint is not re-evaluated if the transitively discovered entity changes.
-                    """.stripTrailing());
-        } else {
-            if (predicted) {
-                analysis.append("""
-                          If multi-threaded solving is active:
-                            - the working scoreDirector is probably not the corrupted scoreDirector.
-                            - maybe the rebase() method of the move is bugged.
-                            - maybe a VariableListener affected the moveThread's workingSolution after doing and undoing a move,
-                              but this didn't happen here on the solverThread, so we can't detect it.
-                        """.stripTrailing());
-            } else {
-                analysis.append("  Impossible state. Maybe this is a bug in the scoreDirector (%s).".formatted(getClass()));
-            }
-        }
-        return analysis.toString();
-    }
-
-    private static <Score_ extends Score<Score_>> List<MatchAnalysis<Score_>>
-            emptyMatchAnalysisIfNull(@Nullable ConstraintAnalysis<Score_> constraintAnalysis) {
-        if (constraintAnalysis == null) {
-            return Collections.emptyList();
-        }
-        var matches = constraintAnalysis.matches();
-        if (matches == null) {
-            return Collections.emptyList();
-        }
-        return matches;
-    }
-
-    private void appendAnalysis(StringBuilder analysis, String workingLabel, String suffix,
-            Set<MatchAnalysis<Score_>> matches) {
-        if (matches.isEmpty()) {
-            analysis.append("""
-                      The %s scoreDirector has no ConstraintMatch(es) which %s.
-                    """.formatted(workingLabel, suffix));
-        } else {
-            analysis.append("""
-                      The %s scoreDirector has %s ConstraintMatch(es) which %s:
-                    """.formatted(workingLabel, matches.size(), suffix));
-            matches.stream().sorted().limit(CONSTRAINT_MATCH_DISPLAY_LIMIT).forEach(match -> analysis.append("""
-                        %s/%s=%s
-                    """.formatted(match.constraintRef().constraintName(), match.justification(), match.score())));
-            if (matches.size() >= CONSTRAINT_MATCH_DISPLAY_LIMIT) {
-                analysis.append("""
-                            ... %s more
-                        """.formatted(matches.size() - CONSTRAINT_MATCH_DISPLAY_LIMIT));
-            }
-        }
-    }
-
-    private void updateExcessAndMissingConstraintMatches(List<MatchAnalysis<Score_>> uncorruptedList,
-            List<MatchAnalysis<Score_>> corruptedList, Set<MatchAnalysis<Score_>> excessSet,
-            Set<MatchAnalysis<Score_>> missingSet) {
-        iterateAndAddIfFound(corruptedList, uncorruptedList, excessSet);
-        iterateAndAddIfFound(uncorruptedList, corruptedList, missingSet);
-    }
-
-    private void iterateAndAddIfFound(List<MatchAnalysis<Score_>> referenceList, List<MatchAnalysis<Score_>> lookupList,
-            Set<MatchAnalysis<Score_>> targetSet) {
-        if (referenceList.isEmpty()) {
-            return;
-        }
-        var lookupSet = new LinkedHashSet<>(lookupList); // Guaranteed to not contain duplicates anyway.
-        for (var reference : referenceList) {
-            if (!lookupSet.contains(reference)) {
-                targetSet.add(reference);
-            }
-        }
-    }
-
-    protected boolean isConstraintConfiguration(Object problemFactOrEntity) {
-        var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
+    private boolean isConstraintConfiguration(Object problemFactOrEntity) {
+        var solutionDescriptor = getSolutionDescriptor();
         var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
         if (constraintWeightSupplier == null) {
             return false;

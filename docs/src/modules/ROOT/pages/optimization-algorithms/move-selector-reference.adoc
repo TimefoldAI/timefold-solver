@@ -803,13 +803,11 @@ Mimic selection is useful to create <<cartesianProductMoveSelector,a composite m
 [#nearbySelectionTeaser]
 ==== Nearby selection
 
-[NOTE]
-====
-Nearby selection is a commercial feature of xref:enterprise-edition/enterprise-edition.adoc[Timefold Solver Enterprise Edition].
-====
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
 Read about nearby selection in the xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby selection section]
-of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition manual].
+of xref:enterprise-edition/enterprise-edition.adoc[Timefold Solver Enterprise Edition].
 
 [#basicMoveSelectors]
 == Move selectors for basic variables
@@ -1175,11 +1173,8 @@ As always, benchmarking is recommended to find the optimal value for your use ca
 [#multistageMoveSelector]
 === `MultistageMoveSelector`
 
-[NOTE]
-====
-This feature is a commercial feature of Timefold Solver Enterprise Edition.
-It is not available in the Community Edition.
-====
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
 The `multistageMoveSelector` selects a multistage move to execute from a `BasicVariableStageProvider`.
 
@@ -1454,11 +1449,8 @@ As always, benchmarking is recommended to find the optimal value for your use ca
 [#listMultistageMoveSelector]
 === `ListMultistageMoveSelector`
 
-[NOTE]
-====
-This feature is a commercial feature of Timefold Solver Enterprise Edition.
-It is not available in the Community Edition.
-====
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
 The `listMultistageMoveSelector` selects a multistage move to execute from a `ListVariableStageProvider`.
 

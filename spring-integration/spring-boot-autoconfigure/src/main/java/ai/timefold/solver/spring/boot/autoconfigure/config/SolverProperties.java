@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -31,9 +32,8 @@ public class SolverProperties {
     private Boolean daemon;
 
     /**
-     * Note: this setting is only available
-     * for <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Timefold Solver
-     * Enterprise Edition</a>.
+     * Note: this setting is only available in Timefold Solver
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Enterprise Edition</a>.
      * Enable multithreaded solving for a single problem, which increases CPU consumption.
      * Defaults to "NONE".
      * Other options include "AUTO", a number or formula based on the available processor count.
@@ -50,12 +50,11 @@ public class SolverProperties {
     private Boolean constraintStreamProfilingEnabled;
 
     /**
-     * Note: this setting is only available
-     * for <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Timefold Solver
-     * Enterprise Edition</a>.
-     * Enable rewriting the {@link ai.timefold.solver.core.api.score.stream.ConstraintProvider} class
+     * Note: this setting is only available in Timefold Solver
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Enterprise Edition</a>.
+     * Enable rewriting the {@link ConstraintProvider} class
      * so nodes share lambdas when possible, improving performance.
-     * When enabled, breakpoints placed in the {@link ai.timefold.solver.core.api.score.stream.ConstraintProvider}
+     * When enabled, breakpoints placed in the {@link ConstraintProvider}
      * will no longer be triggered.
      * Defaults to "false".
      */

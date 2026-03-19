@@ -1,11 +1,18 @@
 package ai.timefold.solver.core.enterprise;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.api.solver.RecommendedAssignment;
+import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -17,11 +24,13 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.Multistage
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListMultistageMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
+import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -36,8 +45,17 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
+
+import org.jspecify.annotations.Nullable;
 
 public interface TimefoldSolverEnterpriseService {
 
@@ -49,10 +67,9 @@ public interface TimefoldSolverEnterpriseService {
 
     }
 
-    String SOLVER_NAME = "Timefold Solver";
-    String COMMUNITY_NAME = "Community Edition";
+    String COMMUNITY_NAME = "Timefold Solver Community Edition";
     String COMMUNITY_COORDINATES = "ai.timefold.solver:timefold-solver-core";
-    String ENTERPRISE_NAME = "Enterprise Edition";
+    String ENTERPRISE_NAME = "Timefold Solver Enterprise Edition";
     String ENTERPRISE_COORDINATES = "ai.timefold.solver.enterprise:timefold-solver-enterprise-core";
     String DEVELOPMENT_SNAPSHOT = "Development Snapshot";
 
@@ -99,14 +116,21 @@ public interface TimefoldSolverEnterpriseService {
                     No valid Timefold Enterprise License was found.
                     Please contact Timefold to obtain a valid license,
                     or if you believe that this message was given in error.""", cause);
+        } catch (EnterpriseProductException cause) {
+            throw new IllegalStateException("""
+                    Valid Timefold Enterprise License was found, but it does not entitle you to run "%s".
+                    Maybe %s.
+                    Please contact Timefold to obtain an applicable license,
+                    or if you believe that this message was given in error."""
+                    .formatted(feature.getName(), feature.getWorkaround()), cause);
         } catch (Exception cause) {
             throw new IllegalStateException("""
-                    %s requested but %s %s could not be loaded.
+                    A feature of Enterprise Edition "%s" was requested but it could not be loaded.
                     Maybe add the %s dependency, or %s.
-                    Note: %s %s is a commercial product.
-                    Visit https://timefold.ai to find out more, or contact Timefold customer support.""".formatted(
-                    feature.getName(), SOLVER_NAME, ENTERPRISE_NAME, feature.getWorkaround(), ENTERPRISE_COORDINATES,
-                    SOLVER_NAME, ENTERPRISE_NAME), cause);
+                    Please contact Timefold to obtain an applicable license,
+                    or if you believe that this message was given in error."""
+                    .formatted(feature.getName(), ENTERPRISE_COORDINATES, feature.getWorkaround()),
+                    cause);
         }
     }
 
@@ -115,6 +139,14 @@ public interface TimefoldSolverEnterpriseService {
             return builder.apply(load());
         } catch (Exception e) {
             return defaultValue.get();
+        }
+    }
+
+    static <T> @Nullable T loadOrNull(Function<TimefoldSolverEnterpriseService, T> builder) {
+        try {
+            return builder.apply(load());
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -165,6 +197,22 @@ public interface TimefoldSolverEnterpriseService {
 
     InnerConstraintProfiler buildConstraintProfiler();
 
+    <Solution_, Score_ extends Score<Score_>> AbstractScoreDirectorFactory<Solution_, Score_, ?>
+            buildIncrementalScoreDirectorFactory(ScoreDirectorFactoryConfig config,
+                    SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode);
+
+    <Score_ extends Score<Score_>> ScoreAnalysis<Score_> analyze(InnerScore<Score_> state,
+            Map<ConstraintRef, ConstraintMatchTotal<Score_>> constraintMatchTotalMap, ScoreAnalysisFetchPolicy fetchPolicy);
+
+    <Solution_> PlanningSolutionDiff<Solution_> solutionDiff(PlanningSolutionMetaModel<Solution_> metaModel,
+            Solution_ oldSolution, Solution_ newSolution);
+
+    <Solution_, Score_ extends Score<Score_>, In_, Out_>
+            Function<InnerScoreDirector<Solution_, Score_>, List<RecommendedAssignment<Out_, Score_>>> buildRecommender(
+                    DefaultSolverFactory<Solution_> solverFactory, Solution_ solution, In_ evaluatedEntityOrElement,
+                    Function<In_, @Nullable Out_> propositionFunction,
+                    ScoreAnalysisFetchPolicy fetchPolicy);
+
     enum Feature {
         MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),
         PARTITIONED_SEARCH("Partitioned search", "remove partitioned search phase from solver configuration"),
@@ -172,7 +220,11 @@ public interface TimefoldSolverEnterpriseService {
         AUTOMATIC_NODE_SHARING("Automatic node sharing", "remove automatic node sharing from solver configuration"),
         MULTISTAGE_MOVE("Multistage move selector",
                 "remove multistageMoveSelector and/or listMultistageMoveSelector from the solver configuration"),
-        CONSTRAINT_PROFILING("Constraint profiling", "remove constraintStreamProfilingEnabled from the solver configuration");
+        CONSTRAINT_PROFILING("Constraint profiling", "remove constraintStreamProfilingEnabled from the solver configuration"),
+        SCORE_ANALYSIS("Score analysis", "do not use SolutionManager's analyze() method"),
+        RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method"),
+        INCREMENTAL_SCORE_CALCULATOR("Incremental score calculator",
+                "remove incrementalScoreCalculatorClass and incrementalScoreCalculatorCustomProperties from the solver configuration");
 
         private final String name;
         private final String workaround;
@@ -205,6 +257,18 @@ public interface TimefoldSolverEnterpriseService {
         }
 
         public EnterpriseLicenseException(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+    }
+
+    final class EnterpriseProductException extends RuntimeException {
+
+        public EnterpriseProductException(String message) {
+            super(message);
+        }
+
+        public EnterpriseProductException(String message, Throwable cause) {
             super(message, cause);
         }
 

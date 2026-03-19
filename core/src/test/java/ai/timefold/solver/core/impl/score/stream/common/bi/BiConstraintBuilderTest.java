@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.common.bi;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.stream.AbstractConstraintBuilderTest;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
@@ -19,10 +19,9 @@ class BiConstraintBuilderTest extends AbstractConstraintBuilderTest {
     protected AbstractConstraintBuilder<SimpleScore> of(String constraintName, String constraintGroup) {
         return new BiConstraintBuilderImpl<>(
                 (constraintName1, constraintDescription, constraintGroup1, constraintWeight, impactType,
-                        objectSimpleScoreObjectBiFunction,
-                        objectCollectionFunction) -> new BavetConstraint<>(CONSTRAINT_FACTORY,
+                        objectSimpleScoreObjectBiFunction) -> new BavetConstraint<>(CONSTRAINT_FACTORY,
                                 ConstraintRef.of(constraintName1), constraintDescription, constraintGroup1, constraintWeight,
-                                impactType, objectSimpleScoreObjectBiFunction, objectCollectionFunction, null),
+                                impactType, objectSimpleScoreObjectBiFunction, null),
                 ScoreImpactType.PENALTY, SimpleScore.ONE);
     }
 }

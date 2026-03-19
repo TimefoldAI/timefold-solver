@@ -1,48 +1,31 @@
 package ai.timefold.solver.spring.boot.autoconfigure.dummy.list.constraints.incremental;
 
-import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
-public class DummySpringListIncrementalScore implements IncrementalScoreCalculator {
+@NullMarked
+public class DummySpringListIncrementalScore
+        implements IncrementalScoreCalculator<Object, SimpleScore> {
+
     @Override
-    public void resetWorkingSolution(@NonNull Object workingSolution) {
+    public void resetWorkingSolution(Object workingSolution) {
 
     }
 
     @Override
-    public void beforeEntityAdded(@NonNull Object entity) {
+    public void beforeVariableChanged(Object entity, String variableName) {
 
     }
 
     @Override
-    public void afterEntityAdded(@NonNull Object entity) {
+    public void afterVariableChanged(Object entity, String variableName) {
 
     }
 
     @Override
-    public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
-    }
-
-    @Override
-    public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
-    }
-
-    @Override
-    public void beforeEntityRemoved(@NonNull Object entity) {
-
-    }
-
-    @Override
-    public void afterEntityRemoved(@NonNull Object entity) {
-
-    }
-
-    @Override
-    public @NonNull Score calculateScore() {
+    public SimpleScore calculateScore() {
         return null;
     }
 }

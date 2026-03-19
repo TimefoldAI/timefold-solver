@@ -72,7 +72,7 @@ The following figure illustrates this xref:constraints-and-score/performance.ado
 image::constraints-and-score/score-calculation/constraintStreamIncrementalCalculation.png[align="center"]
 
 Constraint Streams API also has advanced support for xref:constraints-and-score/understanding-the-score.adoc[score explanation]
-through xref:constraintStreamsCustomizingJustificationsAndIndictments[custom justifications and indictments].
+through xref:constraintStreamsCustomizingJustifications[custom justifications].
 
 image::constraints-and-score/score-calculation/constraintStreamJustification.png[align="center"]
 
@@ -352,11 +352,12 @@ By replacing the keyword `penalize` by `reward` in the name of these building bl
 affect score in the opposite direction.
 
 
+[#constraintStreamsCustomizingJustifications]
 [#constraintStreamsCustomizingJustificationsAndIndictments]
-==== Customizing justifications and indictments
+==== Customizing justifications
 
 One of important Timefold Solver features is its ability to xref:constraints-and-score/understanding-the-score.adoc[explain the score] of solutions it produced
-through the use of justifications and indictments.
+through the use of justifications.
 By default, each constraint is justified with `ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification`,
 and the final tuple makes up the indicted objects.
 For example, in the following constraint, the indicted objects will be of type `Vehicle` and an `Integer`:
@@ -377,33 +378,8 @@ Java::
                 .asConstraint("vehicleCapacity");
     }
 ----
-
-
 ====
 
-For the purposes of creating a xref:constraints-and-score/understanding-the-score.adoc#indictmentHeatMap[heat map], the `Vehicle` is very important, but the naked `Integer` carries no semantics.
-We can remove it by providing the `indictWith(...)` method with a custom indictment mapping:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    protected Constraint vehicleCapacity(ConstraintFactory factory) {
-        return factory.forEach(Customer.class)
-                .filter(customer -> customer.getVehicle() != null)
-                .groupBy(Customer::getVehicle, sum(Customer::getDemand))
-                .filter((vehicle, demand) -> demand > vehicle.getCapacity())
-                .penalizeLong(HardSoftScore.ONE_HARD,
-                        (vehicle, demand) -> demand - vehicle.getCapacity())
-                .indictWith((vehicle, demand) -> List.of(vehicle))
-                .asConstraint("vehicleCapacity");
-    }
-----
-====
-
-The same mechanism can also be used to transform any of the indicted objects to any other object.
 To present the constraint matches to the user or to send them over the wire where they can be further processed,
 use the `justifyWith(...)` method to provide a custom constraint justification:
 
@@ -422,7 +398,6 @@ Java::
                         (vehicle, demand) -> demand - vehicle.getCapacity())
                 .justifyWith((vehicle, demand, score) ->
                     new VehicleDemandOveruse(vehicle, demand, score))
-                .indictWith((vehicle, demand) -> List.of(vehicle))
                 .asConstraint("vehicleCapacity");
     }
 ----
@@ -1880,8 +1855,8 @@ Java::
 
 [NOTE]
 ====
-You can also use methods `justifiesWith(...)`, `justifiesWithExactly(...)`, `indictsWith(...)` and `indictsWithExactly(...)`
-to validate the expected constraint justifications and indictments mapped by the constraint definition.
+You can also use methods `justifiesWith(...)` and `justifiesWithExactly(...)`
+to validate the expected constraint justifications mapped by the constraint definition.
 ====
 
 Finally, the `penalizesBy(...)` call completes the test,
@@ -1897,7 +1872,7 @@ If the tested constraints depend on shadow variables,
 it is your responsibility to either assign the correct values beforehand,
 or to call `settingAllShadowVariables()` to have them automatically updated.
 
-When executing `justifiesWith(...)`, `justifiesWithExactly(...)`, `indictsWith(...)` and `indictsWithExactly(...)`,
+When executing `justifiesWith(...)` and `justifiesWithExactly(...)`,
 comparisons are made using the standard method `equals` on the fact problem instances.
 
 [#constraintStreamsTestingAllConstraints]
@@ -2058,17 +2033,21 @@ add the `easyScoreCalculatorCustomProperties` element and use xref:using-timefol
 [#incrementalScoreCalculation]
 === Incremental score calculation
 
-A way to implement your score calculation incrementally in a supported programming language.
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
-* Advantages:
-** Very fast and scalable; currently the fastest if implemented correctly.
-* Disadvantages:
-** Hard to write
-*** A scalable implementation heavily uses maps, indexes etc.
+A way to implement your score calculation incrementally in Java.
+
+Advantages::
+- Very fast and scalable; possibly an order of magnitude faster than <<constraintStreams,Constraint Streams>>,if implemented correctly.
+Disadvantages::
+- Difficult to write; a scalable implementation heavily uses maps, indexes etc.
 You have to learn, design, write and improve all these performance optimizations yourself.
-Why not have <<constraintStreams,constraint streams>> do the hard work for you?
-** Hard to read
-*** Regular score constraint changes can lead to high maintenance costs.
+- Difficult to maintain; regular constraint changes can lead to high maintenance costs.
+
+Considering the significant development and maintenance effort required to implement an incremental score calculator,
+we recommend using <<constraintStreams,Constraint Streams>> unless its incremental performance characteristics doesn't match your needs.
+This is unlikely for any but the biggest of problems.
 
 To start using an Incremental score calculator,
 implement all the methods of the interface `IncrementalScoreCalculator`:
@@ -2115,7 +2094,7 @@ Configure it in the solver configuration:
 [IMPORTANT]
 ====
 Incremental score calculator code can be difficult to write and to review.
-xref:constraints-and-score/overview.adoc#invalidScoreDetection[Assert its correctness] by using an ``EasyScoreCalculator`` to fulfill
+xref:constraints-and-score/overview.adoc#invalidScoreDetection[Assert its correctness] by using <<constraintStreams,Constraint Streams>> to fulfill
 the assertions triggered by the ``environmentMode``.
 ====
 
@@ -2134,26 +2113,56 @@ add the `incrementalScoreCalculatorCustomProperties` element and use xref:using-
 ----
 
 
-[#constraintMatchAwareIncrementalScoreCalculator]
-==== `ConstraintMatchAwareIncrementalScoreCalculator`
+[#analyzableIncrementalScoreCalculator]
+==== Incremental score calculator and score analysis
 
 To add support for xref:constraints-and-score/understanding-the-score.adoc[score analysis],
-optionally also implement the `ConstraintMatchAwareIncrementalScoreCalculator` interface:
+implement the `AnalyzableIncrementalScoreCalculator` interface instead of `IncrementalScoreCalculator`:
 
 [source,java,options="nowrap"]
 ----
-public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score_ extends Score<Score_>> {
+public interface AnalyzableIncrementalScoreCalculator<Solution_, Score_ extends Score<Score_>>
+    extends IncrementalScoreCalculator<Solution_, Score_> {
 
-    void resetWorkingSolution(Solution_ workingSolution, boolean constraintMatchEnabled);
+    void enableConstraintMatch(ConstraintMatchRegistry<Score_> constraintMatchRegistry);
 
-    Collection<ConstraintMatchTotal<Score_>> getConstraintMatchTotals();
-
-    Map<Object, Indictment<Score_>> getIndictmentMap();
 }
 ----
 
-Typically it means creating one `ConstraintMatchTotal` per constraint type
-and calling `addConstraintMatch()` for each constraint match.
-`getConstraintMatchTotals()` code often duplicates some logic of the normal `IncrementalScoreCalculator` methods.
-Constraint Streams doesn't have this disadvantage, because they are aware of constraint matches by design,
-without any extra domain-specific code.
+The solver will call this method exactly once,
+letting your implementation know that it should start tracking constraint matches.
+The `ConstraintMatchRegistry` instance passed to this method provides the API for tracking constraint matches:
+
+[source,java,options="nowrap"]
+----
+public interface ConstraintMatchRegistry<Score_ extends Score<Score_>> {
+
+    ConstraintMatchRegistration<Score_> registerConstraintMatch(ConstraintRef constraintRef, Score_ score,
+            ConstraintJustification justification);
+
+    ...
+
+}
+----
+
+You can notify the solver of a new constraint match by calling `registerConstraintMatch()`.
+This method takes three parameters:
+- `constraintRef` is a reference to the constraint which is being matched.
+- `score` is the score impact of the match.
+- `justification` is an object which explains the reason for the match. It is an optional argument.
+
+The method will return a `ConstraintMatchRegistration` instance, which provides the API for updating and retracting the match:
+
+[source,java,options="nowrap"]
+----
+public interface ConstraintMatchRegistration<Score_ extends Score<Score_>> {
+
+    void cancel();
+
+    ...
+}
+----
+
+By calling `cancel()`, you can notify the solver that a previously registered match is no longer valid.
+Once `resetWorkingSolution()` is called on the incremental score calculator,
+all registered matches are automatically canceled.

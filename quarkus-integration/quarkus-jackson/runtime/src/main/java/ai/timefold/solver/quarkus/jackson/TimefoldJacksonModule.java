@@ -10,21 +10,12 @@ import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.api.solver.RecommendedAssignment;
 import ai.timefold.solver.core.impl.domain.solution.DefaultConstraintWeightOverrides;
-import ai.timefold.solver.core.impl.solver.DefaultRecommendedAssignment;
-import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningEntityDiff;
-import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
-import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningVariableDiff;
-import ai.timefold.solver.quarkus.jackson.diff.PlanningEntityDiffJacksonSerializer;
-import ai.timefold.solver.quarkus.jackson.diff.PlanningSolutionDiffJacksonSerializer;
-import ai.timefold.solver.quarkus.jackson.diff.PlanningVariableDiffJacksonSerializer;
 import ai.timefold.solver.quarkus.jackson.domain.solution.ConstraintWeightOverridesSerializer;
 import ai.timefold.solver.quarkus.jackson.score.BendableBigDecimalScoreJacksonDeserializer;
 import ai.timefold.solver.quarkus.jackson.score.BendableBigDecimalScoreJacksonSerializer;
@@ -44,7 +35,6 @@ import ai.timefold.solver.quarkus.jackson.score.SimpleBigDecimalScoreJacksonDese
 import ai.timefold.solver.quarkus.jackson.score.SimpleBigDecimalScoreJacksonSerializer;
 import ai.timefold.solver.quarkus.jackson.score.SimpleScoreJacksonDeserializer;
 import ai.timefold.solver.quarkus.jackson.score.SimpleScoreJacksonSerializer;
-import ai.timefold.solver.quarkus.jackson.score.analysis.ScoreAnalysisJacksonSerializer;
 import ai.timefold.solver.quarkus.jackson.score.constraint.ConstraintRefJacksonDeserializer;
 import ai.timefold.solver.quarkus.jackson.score.constraint.ConstraintRefJacksonSerializer;
 import ai.timefold.solver.quarkus.jackson.score.stream.common.BreakJacksonDeserializer;
@@ -56,9 +46,7 @@ import ai.timefold.solver.quarkus.jackson.score.stream.common.SequenceChainJacks
 import ai.timefold.solver.quarkus.jackson.score.stream.common.SequenceJacksonDeserializer;
 import ai.timefold.solver.quarkus.jackson.score.stream.common.SequenceJacksonSerializer;
 import ai.timefold.solver.quarkus.jackson.solution.JacksonSolutionFileIO;
-import ai.timefold.solver.quarkus.jackson.solver.RecommendedAssignmentJacksonSerializer;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -80,9 +68,13 @@ public class TimefoldJacksonModule extends SimpleModule {
 
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public TimefoldJacksonModule() {
-        super("Timefold");
+        this("Timefold");
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected TimefoldJacksonModule(String name) {
+        super(name);
         // For non-subtype Score fields/properties, we also need to record the score type
         addSerializer(Score.class, new PolymorphicScoreJacksonSerializer());
         addDeserializer(Score.class, new PolymorphicScoreJacksonDeserializer());
@@ -104,15 +96,9 @@ public class TimefoldJacksonModule extends SimpleModule {
         addSerializer(BendableBigDecimalScore.class, new BendableBigDecimalScoreJacksonSerializer());
         addDeserializer(BendableBigDecimalScore.class, new BendableBigDecimalScoreJacksonDeserializer());
 
-        // Score analysis
+        // Constraint weights
         addSerializer(ConstraintRef.class, new ConstraintRefJacksonSerializer());
         addDeserializer(ConstraintRef.class, new ConstraintRefJacksonDeserializer());
-        addSerializer(ScoreAnalysis.class, new ScoreAnalysisJacksonSerializer());
-        var serializer = (JsonSerializer) new RecommendedAssignmentJacksonSerializer<>();
-        addSerializer(RecommendedAssignment.class, serializer);
-        addSerializer(DefaultRecommendedAssignment.class, serializer);
-
-        // Constraint weights
         addSerializer(ConstraintWeightOverrides.class, new ConstraintWeightOverridesSerializer());
         addSerializer(DefaultConstraintWeightOverrides.class, new ConstraintWeightOverridesSerializer());
 
@@ -125,11 +111,6 @@ public class TimefoldJacksonModule extends SimpleModule {
         addDeserializer(SequenceChain.class, new SequenceChainJacksonDeserializer<>());
         addSerializer(LoadBalance.class, new LoadBalanceJacksonSerializer());
         addDeserializer(LoadBalance.class, new LoadBalanceJacksonDeserializer<>());
-
-        // Solution diff
-        addSerializer(PlanningSolutionDiff.class, new PlanningSolutionDiffJacksonSerializer());
-        addSerializer(PlanningEntityDiff.class, new PlanningEntityDiffJacksonSerializer());
-        addSerializer(PlanningVariableDiff.class, new PlanningVariableDiffJacksonSerializer());
     }
 
 }

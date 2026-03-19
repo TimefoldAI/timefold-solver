@@ -1,10 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.bi;
 
-import static ai.timefold.solver.core.impl.score.stream.common.bi.InnerBiConstraintStream.createDefaultIndictedObjectsMapping;
 import static ai.timefold.solver.core.impl.score.stream.common.bi.InnerBiConstraintStream.createDefaultJustificationMapping;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -478,9 +476,9 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
             BavetScoringConstraintStream<Solution_> stream, ScoreImpactType impactType, Score_ constraintWeight) {
         return new BiConstraintBuilderImpl<>(
                 (constraintName, constraintDescription, constraintGroup, constraintWeight_, impactType_,
-                        justificationMapping, indictedObjectsMapping) -> buildConstraint(constraintName,
+                        justificationMapping) -> buildConstraint(constraintName,
                                 constraintDescription, constraintGroup, constraintWeight_, impactType_, justificationMapping,
-                                indictedObjectsMapping, stream),
+                                stream),
                 impactType, constraintWeight);
     }
 
@@ -494,11 +492,6 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     @Override
     protected final TriFunction<A, B, Score<?>, DefaultConstraintJustification> getDefaultJustificationMapping() {
         return createDefaultJustificationMapping();
-    }
-
-    @Override
-    protected final BiFunction<A, B, Collection<?>> getDefaultIndictedObjectsMapping() {
-        return createDefaultIndictedObjectsMapping();
     }
 
 }

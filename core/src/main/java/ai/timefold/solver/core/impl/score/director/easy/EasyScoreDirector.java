@@ -5,12 +5,12 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.ScoreExplanation;
+import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
@@ -21,8 +21,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Easy java implementation of {@link ScoreDirector}, which recalculates the {@link Score}
  * of the {@link PlanningSolution working solution} every time. This is non-incremental calculation, which is slow.
- * This score director implementation does not support {@link ScoreExplanation#getConstraintMatchTotalMap()} and
- * {@link ScoreExplanation#getIndictmentMap()}.
+ * This score director implementation does not support {@link ScoreAnalysis}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the score type to go with the solution
@@ -60,23 +59,11 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
     /**
      * {@link ConstraintMatch}s are not supported by this {@link ScoreDirector} implementation.
      *
-     * @throws IllegalStateException always
      * @return throws {@link IllegalStateException}
+     * @throws IllegalStateException always
      */
     @Override
-    public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
-        throw new IllegalStateException("%s is not supported by %s."
-                .formatted(ConstraintMatch.class.getSimpleName(), EasyScoreDirector.class.getSimpleName()));
-    }
-
-    /**
-     * {@link ConstraintMatch}s are not supported by this {@link ScoreDirector} implementation.
-     *
-     * @throws IllegalStateException always
-     * @return throws {@link IllegalStateException}
-     */
-    @Override
-    public Map<Object, Indictment<Score_>> getIndictmentMap() {
+    public Map<ConstraintRef, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
         throw new IllegalStateException("%s is not supported by %s."
                 .formatted(ConstraintMatch.class.getSimpleName(), EasyScoreDirector.class.getSimpleName()));
     }

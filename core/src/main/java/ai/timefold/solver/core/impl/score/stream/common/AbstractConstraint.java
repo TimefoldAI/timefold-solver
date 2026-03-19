@@ -6,8 +6,8 @@ import java.util.regex.Pattern;
 
 import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefinition;
 
@@ -27,7 +27,6 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     private final ScoreImpactType scoreImpactType;
     // Constraint is not generic in uni/bi/..., therefore these can not be typed.
     private final Object justificationMapping;
-    private final Object indictedObjectsMapping;
 
     /**
      *
@@ -37,11 +36,10 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
      * @param constraintGroup never null
      * @param scoreImpactType never null
      * @param justificationMapping never null
-     * @param indictedObjectsMapping never null
      */
     protected AbstractConstraint(ConstraintFactory_ constraintFactory, ConstraintRef constraintRef, String description,
             String constraintGroup, Score<?> defaultConstraintWeight, ScoreImpactType scoreImpactType,
-            Object justificationMapping, Object indictedObjectsMapping) {
+            Object justificationMapping) {
         this.constraintFactory = Objects.requireNonNull(constraintFactory);
         this.constraintRef = Objects.requireNonNull(constraintRef);
         this.description = Objects.requireNonNull(description);
@@ -57,7 +55,6 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         this.defaultConstraintWeight = defaultConstraintWeight;
         this.scoreImpactType = Objects.requireNonNull(scoreImpactType);
         this.justificationMapping = justificationMapping; // May be omitted in test code.
-        this.indictedObjectsMapping = indictedObjectsMapping; // May be omitted in test code.
     }
 
     @SuppressWarnings("unchecked")
@@ -84,17 +81,6 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         }
         AbstractConstraint.validateWeight(solutionDescriptor, constraintRef, (Score_) defaultConstraintWeight);
         return (Score_) defaultConstraintWeight;
-    }
-
-    public final void assertCorrectImpact(int impact) {
-        if (impact >= 0) {
-            return;
-        }
-        if (scoreImpactType != ScoreImpactType.MIXED) {
-            throw new IllegalStateException("Negative match weight (" + impact + ") for constraint ("
-                    + constraintRef + "). " +
-                    "Check constraint provider implementation.");
-        }
     }
 
     public final void assertCorrectImpact(long impact) {
@@ -146,11 +132,6 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     public <JustificationMapping_> JustificationMapping_ getJustificationMapping() {
         // It is the job of the code constructing the constraint to ensure that this cast is correct.
         return (JustificationMapping_) justificationMapping;
-    }
-
-    public <IndictedObjectsMapping_> IndictedObjectsMapping_ getIndictedObjectsMapping() {
-        // It is the job of the code constructing the constraint to ensure that this cast is correct.
-        return (IndictedObjectsMapping_) indictedObjectsMapping;
     }
 
     public static <Solution_, Score_ extends Score<Score_>> void validateWeight(

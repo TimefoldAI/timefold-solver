@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.Set;
 
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 
 import org.jspecify.annotations.NullMarked;
 
