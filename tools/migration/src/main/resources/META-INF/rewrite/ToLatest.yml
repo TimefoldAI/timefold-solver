@@ -26,4 +26,5 @@ recipeList:
   - ai.timefold.solver.migration.v2.TestingAPIsMigrationRecipe
   - ai.timefold.solver.migration.v2.GeneralDependencyDeleteMigrationRecipe
   - ai.timefold.solver.migration.v2.GeneralPackageRenameMigrationRecipe
+  - ai.timefold.solver.migration.v2.SolverConfigOverrideSolutionDeletionMigrationRecipe
   - org.openrewrite.java.RemoveUnusedImports
