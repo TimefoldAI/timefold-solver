@@ -251,4 +251,56 @@ class ValueTabuAcceptorTest {
         return moveScope;
     }
 
+    @Test
+    void unassignedPlanningValue() {
+        var acceptor = new ValueTabuAcceptor<>("");
+        acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(2));
+        acceptor.setAspirationEnabled(true);
+
+        var v0 = new TestdataValue("v0");
+        var v1 = new TestdataValue("v1");
+
+        var solverScope = new SolverScope<>();
+        solverScope.setInitializedBestScore(SimpleScore.ZERO);
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        acceptor.phaseStarted(phaseScope);
+
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+
+        // Build a move scope with a null planning value
+        var moveScopeWithNull = buildMoveScope(stepScope0, 0, v0, null, v1);
+
+        // Should accept the move (no tabu yet)
+        assertThat(acceptor.isAccepted(moveScopeWithNull)).isTrue();
+
+        // stepEnded() calls adjustTabuList() which fills the tabu list
+        stepScope0.setStep(moveScopeWithNull.getMove());
+        acceptor.stepEnded(stepScope0);
+        phaseScope.setLastCompletedStepScope(stepScope0);
+
+        // Null value should not be accepted (they are still tracked as tabu)
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, 0, v0))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, 0, v1))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, 0, new TestdataValue[] { null }))).isFalse();
+
+        // push the null out of the tabu list
+        stepScope1.setStep(buildMoveScope(stepScope1, v0).getMove());
+        acceptor.stepEnded(stepScope1);
+        phaseScope.setLastCompletedStepScope(stepScope1);
+
+        var stepScope2 = new LocalSearchStepScope<>(phaseScope);
+        stepScope2.setStep(buildMoveScope(stepScope2, v1).getMove());
+        acceptor.stepEnded(stepScope2);
+        phaseScope.setLastCompletedStepScope(stepScope2);
+
+        // Null value should be accepted, as the moves pushed it out of the tabu list.
+        var stepScope3 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, 0, v0))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, 0, v1))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, 0, new TestdataValue[] { null }))).isTrue();
+
+        acceptor.phaseEnded(phaseScope);
+    }
+
 }
