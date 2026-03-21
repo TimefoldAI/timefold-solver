@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size.FixedTabuSizeStrategy;
@@ -248,6 +250,63 @@ class ValueTabuAcceptorTest {
         when(move.getPlanningValues()).thenReturn(Arrays.asList(values));
         var moveScope = new LocalSearchMoveScope<Solution_>(stepScope, 0, move);
         moveScope.setInitializedScore(SimpleScore.of(score));
+        return moveScope;
+    }
+
+    @Test
+    void nullablePlanningValue() {
+        // ValueTabuAcceptor should handle null planning values (nullable planning variables)
+        // Previously threw NullPointerException when trying to add null to ArrayDeque
+        var acceptor = new ValueTabuAcceptor<>("");
+        acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(2));
+        acceptor.setAspirationEnabled(true);
+
+        var v0 = new TestdataValue("v0");
+        var v1 = new TestdataValue("v1");
+
+        var solverScope = new SolverScope<>();
+        solverScope.setInitializedBestScore(SimpleScore.ZERO);
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        acceptor.phaseStarted(phaseScope);
+
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+
+        // Build a move scope with a null planning value (nullable planning variable)
+        var moveScopeWithNull = buildMoveScopeWithNull(stepScope0, v0, null, v1);
+
+        // Should accept the move (no tabu yet)
+        assertThat(acceptor.isAccepted(moveScopeWithNull)).isTrue();
+
+        // After fix: should NOT throw NullPointerException
+        // stepEnded() calls adjustTabuList() which should skip null values
+        stepScope0.setStep(moveScopeWithNull.getMove());
+        acceptor.stepEnded(stepScope0);
+        phaseScope.setLastCompletedStepScope(stepScope0);
+
+        // Verify that v0 and v1 are now tabu, but null was skipped
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScopeWithNull(stepScope1, v0))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScopeWithNull(stepScope1, v1))).isFalse();
+        // null values should still be accepted (they are not tracked as tabu)
+        assertThat(acceptor.isAccepted(buildMoveScopeWithNull(stepScope1, null))).isTrue();
+
+        acceptor.phaseEnded(phaseScope);
+    }
+
+    private static <Solution_> LocalSearchMoveScope<Solution_> buildMoveScopeWithNull(
+            LocalSearchStepScope<Solution_> stepScope, TestdataValue... values) {
+        var move = mock(Move.class);
+        // Create a list that may contain null values (ArrayList explicitly allows null)
+        List<TestdataValue> valueList = new ArrayList<>();
+        // Handle single-null varargs edge case: method(null) passes null as the array, not [null]
+        if (values != null) {
+            for (TestdataValue v : values) {
+                valueList.add(v);
+            }
+        }
+        when(move.getPlanningValues()).thenReturn(valueList);
+        var moveScope = new LocalSearchMoveScope<Solution_>(stepScope, 0, move);
+        moveScope.setInitializedScore(SimpleScore.ZERO);
         return moveScope;
     }
 

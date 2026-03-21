@@ -109,6 +109,10 @@ public abstract class AbstractTabuAcceptor<Solution_> extends AbstractAcceptor<S
         }
         // Add the new tabu(s)
         for (var tabu : tabus) {
+            // Skip null planning values (unassigned state)
+            if (tabu == null) {
+                continue;
+            }
             // Push tabu to the end of the line
             if (tabuToStepIndexMap.containsKey(tabu)) {
                 tabuToStepIndexMap.remove(tabu);
