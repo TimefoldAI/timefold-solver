@@ -6,7 +6,10 @@ import java.util.Collections;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
-public class MoveTabuAcceptor<Solution_> extends AbstractTabuAcceptor<Solution_> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+public final class MoveTabuAcceptor<Solution_> extends AbstractTabuAcceptor<Solution_> {
 
     public MoveTabuAcceptor(String logIndentation) {
         super(logIndentation);
@@ -17,12 +20,12 @@ public class MoveTabuAcceptor<Solution_> extends AbstractTabuAcceptor<Solution_>
     // ************************************************************************
 
     @Override
-    protected Collection<Object> findTabu(LocalSearchMoveScope<Solution_> moveScope) {
+    protected Collection<? extends Object> findTabu(LocalSearchMoveScope<Solution_> moveScope) {
         return Collections.singletonList(moveScope.getMove());
     }
 
     @Override
-    protected Collection<Object> findNewTabu(LocalSearchStepScope<Solution_> stepScope) {
+    protected Collection<? extends Object> findNewTabu(LocalSearchStepScope<Solution_> stepScope) {
         return Collections.singletonList(stepScope.getStep());
     }
 
