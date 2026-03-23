@@ -16,15 +16,15 @@ include::../../_attributes.adoc[]
 This guide walks you through the process of creating a Spring Boot application
 with https://timefold.ai[Timefold]'s constraint solving Artificial Intelligence (AI).
 
-include::../shared/whatyoubuild.adoc[]
+include::../shared/_whatyoubuild.adoc[]
 
-include::../shared/solutionsourcecode.adoc[]
+include::../shared/_solutionsourcecode.adoc[]
 
 == Prerequisites
 
 To complete this guide, you need:
 
-include::../shared/java-prerequisites.adoc[]
+include::../shared/_java-prerequisites.adoc[]
 
 == The build file and the dependencies
 
@@ -33,9 +33,9 @@ Use https://start.spring.io/[start.spring.io] to generate an application with th
 * Spring Web (`spring-boot-starter-web`)
 * Timefold Solver (`timefold-solver-spring-boot-starter`)
 
-include::../shared/school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
-include::../shared/school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
-include::../shared/school-timetabling/school-timetabling-solution.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-model.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-constraints.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-solution.adoc[leveloffset=+1]
 
 == Create the solver service
 
@@ -266,7 +266,7 @@ To test each constraint in isolation, use a `ConstraintVerifier` in unit tests.
 It tests each constraint's corner cases in isolation from the other tests,
 which lowers maintenance when adding a new constraint with proper test coverage.
 
-include::../shared/constrainttests.adoc[]
+include::../shared/_constrainttests.adoc[]
 
 This test verifies that the constraint `TimetableConstraintProvider::roomConflict`,
 when given three lessons in the same room, where two lessons have the same timeslot,

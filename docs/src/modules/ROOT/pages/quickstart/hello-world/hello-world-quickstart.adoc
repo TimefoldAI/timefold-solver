@@ -87,7 +87,7 @@ To complete this guide, you need:
 Java/Kotlin::
 +
 --
-include::../shared/java-prerequisites.adoc[]
+include::../shared/_java-prerequisites.adoc[]
 --
 ====
 
@@ -223,9 +223,9 @@ test {
 --
 ====
 
-include::../shared/school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
-include::../shared/school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
-include::../shared/school-timetabling/school-timetabling-solution.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-model.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-constraints.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-solution.adoc[leveloffset=+1]
 
 == Create the application
 
@@ -675,7 +675,7 @@ To see any output in the console, logging must be configured properly.
 Java/Kotlin::
 +
 --
-include::../shared/java-logback-config.adoc[]
+include::../shared/_java-logback-config.adoc[]
 --
 ====
 

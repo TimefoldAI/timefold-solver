@@ -282,7 +282,7 @@ Following properties are supported in the Quarkus `application.properties`:
 
 :property_prefix: quarkus.
 :solver_name_prefix:
-include::config-properties.adoc[]
+include::_config-properties.adoc[]
 
 [#integrationWithQuarkusManagedResources]
 === Injecting managed resources
@@ -444,7 +444,7 @@ Following properties are supported:
 
 :property_prefix: quarkus.
 :solver_name_prefix: <solverName>.
-include::config-properties.adoc[]
+include::_config-properties.adoc[]
 
 ==== Working with multiple Solvers
 
@@ -640,7 +640,7 @@ These properties are supported in Spring's `application.properties`:
 
 :property_prefix:
 :solver_name_prefix:
-include::config-properties.adoc[]
+include::_config-properties.adoc[]
 
 [#integrationWithSpringBootManagedResources]
 === Injecting managed resources
@@ -809,7 +809,7 @@ Following properties are supported:
 
 :property_prefix:
 :solver_name_prefix: <solverName>.
-include::config-properties.adoc[]
+include::_config-properties.adoc[]
 
 ==== Working with multiple Solvers
 
