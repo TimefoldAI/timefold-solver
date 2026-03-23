@@ -19,15 +19,15 @@ include::../../_attributes.adoc[]
 This guide walks you through the process of creating a https://quarkus.io/[Quarkus] application
 with https://timefold.ai[Timefold]'s constraint solving Artificial Intelligence (AI).
 
-include::../shared/whatyoubuild.adoc[]
+include::../shared/_whatyoubuild.adoc[]
 
-include::../shared/solutionsourcecode.adoc[]
+include::../shared/_solutionsourcecode.adoc[]
 
 == Prerequisites
 
 To complete this guide, you need:
 
-include::../shared/java-prerequisites.adoc[]
+include::../shared/_java-prerequisites.adoc[]
 
 == The build file and the dependencies
 
@@ -44,9 +44,9 @@ Clicking the link above will automatically select the dependencies for you on *c
 * Timefold Solver (`timefold-solver-quarkus`)
 * Timefold Solver Jackson (`timefold-solver-quarkus-jackson`)
 
-include::../shared/school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
-include::../shared/school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
-include::../shared/school-timetabling/school-timetabling-solution.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-model.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-constraints.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-solution.adoc[leveloffset=+1]
 
 == Create the solver service
 
@@ -207,7 +207,7 @@ $ gradle --console=plain quarkusDev
 
 ====
 
-include::../shared/try-the-application.adoc[]
+include::../shared/_try-the-application.adoc[]
 
 [NOTE]
 ====
@@ -252,7 +252,7 @@ Add the subsequent dependency to your `build.gradle`:
 --
 ====
 
-include::../shared/constrainttests.adoc[]
+include::../shared/_constrainttests.adoc[]
 
 ==== Test the solver
 
