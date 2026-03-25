@@ -32,7 +32,7 @@ public class DefaultRandomFactory implements RandomFactory {
     public RandomGenerator createRandom() {
         switch (randomType) {
             case JDK:
-                return randomSeed == null ? new Random() : new Random(randomSeed);
+                return randomSeed == null ? new DelegatingSplittableRandomGenerator(new Random().nextLong()) : new DelegatingSplittableRandomGenerator(randomSeed);
             case MERSENNE_TWISTER:
                 return new RandomAdaptor(randomSeed == null ? new MersenneTwister() : new MersenneTwister(randomSeed));
             case WELL512A:
