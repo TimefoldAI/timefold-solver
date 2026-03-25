@@ -1,9 +1,8 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu;
 
-import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.Deque;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
@@ -13,28 +12,33 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Abstract superclass for all Tabu Acceptors.
  *
  * @see Acceptor
  */
-public abstract class AbstractTabuAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
+@NullMarked
+public abstract sealed class AbstractTabuAcceptor<Solution_>
+        extends AbstractAcceptor<Solution_>
+        permits EntityTabuAcceptor, MoveTabuAcceptor, ValueTabuAcceptor {
 
-    protected final String logIndentation;
+    private final String logIndentation;
 
-    protected TabuSizeStrategy<Solution_> tabuSizeStrategy = null;
-    protected TabuSizeStrategy<Solution_> fadingTabuSizeStrategy = null;
-    protected boolean aspirationEnabled = true;
+    private @Nullable TabuSizeStrategy<Solution_> tabuSizeStrategy = null;
+    private @Nullable TabuSizeStrategy<Solution_> fadingTabuSizeStrategy = null;
+    private boolean aspirationEnabled = true;
 
-    protected boolean assertTabuHashCodeCorrectness = false;
+    private boolean assertTabuHashCodeCorrectness = false;
 
-    protected Map<Object, Integer> tabuToStepIndexMap;
-    protected Deque<Object> tabuSequenceDeque;
+    private Map<@Nullable Object, Integer> tabuToStepIndexMap = Collections.emptyMap(); // Avoid @Nullable.
 
-    protected int workingTabuSize = -1;
-    protected int workingFadingTabuSize = -1;
+    private int workingTabuSize = -1;
+    private int workingFadingTabuSize = -1;
 
-    public AbstractTabuAcceptor(String logIndentation) {
+    protected AbstractTabuAcceptor(String logIndentation) {
         this.logIndentation = logIndentation;
     }
 
@@ -67,15 +71,13 @@ public abstract class AbstractTabuAcceptor<Solution_> extends AbstractAcceptor<S
         workingFadingTabuSize = fadingTabuSizeStrategy == null ? 0
                 : fadingTabuSizeStrategy.determineTabuSize(lastCompletedStepScope);
         var totalTabuListSize = workingTabuSize + workingFadingTabuSize; // is at least 1
-        tabuToStepIndexMap = new HashMap<>(totalTabuListSize);
-        tabuSequenceDeque = new ArrayDeque<>();
+        tabuToStepIndexMap = LinkedHashMap.newLinkedHashMap(totalTabuListSize);
     }
 
     @Override
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        tabuToStepIndexMap = null;
-        tabuSequenceDeque = null;
+        tabuToStepIndexMap = Collections.emptyMap();
         workingTabuSize = -1;
         workingFadingTabuSize = -1;
     }
@@ -89,34 +91,35 @@ public abstract class AbstractTabuAcceptor<Solution_> extends AbstractAcceptor<S
         adjustTabuList(stepScope.getStepIndex(), findNewTabu(stepScope));
     }
 
-    protected void adjustTabuList(int tabuStepIndex, Collection<? extends Object> tabus) {
+    protected void adjustTabuList(int tabuStepIndex, Collection<@Nullable Object> tabus) {
         var totalTabuListSize = workingTabuSize + workingFadingTabuSize; // is at least 1
-        // Remove the oldest tabu(s)
-        for (var it = tabuSequenceDeque.iterator(); it.hasNext();) {
+        // Remove the oldest tabu(s).
+        var it = tabuToStepIndexMap.keySet().iterator();
+        while (it.hasNext()) {
             var oldTabu = it.next();
             var oldTabuStepIndexInteger = tabuToStepIndexMap.get(oldTabu);
             if (oldTabuStepIndexInteger == null) {
-                throw new IllegalStateException("HashCode stability violation: the hashCode() of tabu ("
-                        + oldTabu + ") of class (" + oldTabu.getClass()
-                        + ") changed during planning, since it was inserted in the tabu Map or Set.");
+                // oldTabu not null here, as null is a valid key and therefore has a valid corresponding value.
+                throw createHashcodeStabilityViolationException(oldTabu);
             }
             var oldTabuStepCount = tabuStepIndex - oldTabuStepIndexInteger; // at least 1
             if (oldTabuStepCount < totalTabuListSize) {
                 break;
             }
             it.remove();
-            tabuToStepIndexMap.remove(oldTabu);
         }
         // Add the new tabu(s)
         for (var tabu : tabus) {
-            // Push tabu to the end of the line
-            if (tabuToStepIndexMap.containsKey(tabu)) {
-                tabuToStepIndexMap.remove(tabu);
-                tabuSequenceDeque.remove(tabu);
-            }
+            // Push tabu to the end of the line; remove+put has that effect in LinkedHashMap.
+            tabuToStepIndexMap.remove(tabu);
             tabuToStepIndexMap.put(tabu, tabuStepIndex);
-            tabuSequenceDeque.add(tabu);
         }
+    }
+
+    private static IllegalStateException createHashcodeStabilityViolationException(Object tabu) {
+        return new IllegalStateException(
+                "HashCode stability violation: the hashCode() of tabu (%s) of class (%s) changed during planning, since it was inserted in the tabu Map."
+                        .formatted(tabu, tabu.getClass()));
     }
 
     @Override
@@ -162,19 +165,16 @@ public abstract class AbstractTabuAcceptor<Solution_> extends AbstractAcceptor<S
                 maximumTabuStepIndex = Math.max(tabuStepIndexInteger, maximumTabuStepIndex);
             }
             if (assertTabuHashCodeCorrectness) {
-                for (var tabu : tabuSequenceDeque) {
+                for (var tabu : tabuToStepIndexMap.keySet()) {
                     // tabu and checkingTabu can be null with a planning variable which allows unassigned values
                     if (tabu != null && tabu.equals(checkingTabu)) {
                         if (tabu.hashCode() != checkingTabu.hashCode()) {
-                            throw new IllegalStateException("HashCode/equals contract violation: tabu (" + tabu
-                                    + ") of class (" + tabu.getClass()
-                                    + ") and checkingTabu (" + checkingTabu
-                                    + ") are equals() but have a different hashCode().");
+                            throw new IllegalStateException(
+                                    "HashCode/equals contract violation: tabu (%s) of class (%s) and checkingTabu (%s) are equals() but have a different hashCode()."
+                                            .formatted(tabu, tabu.getClass(), checkingTabu));
                         }
                         if (tabuStepIndexInteger == null) {
-                            throw new IllegalStateException("HashCode stability violation: the hashCode() of tabu ("
-                                    + tabu + ") of class (" + tabu.getClass()
-                                    + ") changed during planning, since it was inserted in the tabu Map or Set.");
+                            throw createHashcodeStabilityViolationException(tabu);
                         }
                     }
                 }
@@ -193,8 +193,16 @@ public abstract class AbstractTabuAcceptor<Solution_> extends AbstractAcceptor<S
         return (workingFadingTabuSize - fadingTabuStepCount) / ((double) (workingFadingTabuSize + 1));
     }
 
-    protected abstract Collection<? extends Object> findTabu(LocalSearchMoveScope<Solution_> moveScope);
+    /**
+     * @param moveScope
+     * @return some tabu lists allow null, some don't; children will override
+     */
+    protected abstract Collection<@Nullable Object> findTabu(LocalSearchMoveScope<Solution_> moveScope);
 
-    protected abstract Collection<? extends Object> findNewTabu(LocalSearchStepScope<Solution_> stepScope);
+    /**
+     * @param stepScope
+     * @return some tabu lists allow null, some don't; children will override
+     */
+    protected abstract Collection<@Nullable Object> findNewTabu(LocalSearchStepScope<Solution_> stepScope);
 
 }
