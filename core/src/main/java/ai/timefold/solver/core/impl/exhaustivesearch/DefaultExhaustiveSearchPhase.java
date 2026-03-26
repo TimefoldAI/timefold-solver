@@ -63,8 +63,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
         while (!expandableNodeQueue.isEmpty() && !phaseTermination.isPhaseTerminated(phaseScope)) {
             var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
-            var node = expandableNodeQueue.last();
-            expandableNodeQueue.remove(node);
+            var node = expandableNodeQueue.removeLast();
             stepScope.setExpandingNode(node);
             stepStarted(stepScope);
             decider.restoreWorkingSolution(stepScope, assertWorkingSolutionScoreFromScratch,

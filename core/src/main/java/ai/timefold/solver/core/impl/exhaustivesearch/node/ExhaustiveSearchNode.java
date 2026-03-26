@@ -22,7 +22,6 @@ public class ExhaustiveSearchNode<Solution_> {
      * @see ScoreBounder#calculateOptimisticBound(ScoreDirector, InnerScore)
      */
     private InnerScore<?> optimisticBound;
-    private boolean expandable = false;
 
     public ExhaustiveSearchNode(ExhaustiveSearchLayer layer, ExhaustiveSearchNode<Solution_> parent) {
         this.layer = layer;
@@ -78,14 +77,6 @@ public class ExhaustiveSearchNode<Solution_> {
 
     public void setOptimisticBound(InnerScore<?> optimisticBound) {
         this.optimisticBound = optimisticBound;
-    }
-
-    public boolean isExpandable() {
-        return expandable;
-    }
-
-    public void setExpandable(boolean expandable) {
-        this.expandable = expandable;
     }
 
     // ************************************************************************
