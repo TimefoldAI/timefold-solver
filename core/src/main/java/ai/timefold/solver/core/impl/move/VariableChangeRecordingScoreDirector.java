@@ -16,6 +16,7 @@ import ai.timefold.solver.core.impl.score.director.RevertableScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -25,7 +26,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
         implements RevertableScoreDirector<Solution_> {
 
     private final @Nullable InnerScoreDirector<Solution_, Score_> backingScoreDirector;
-    private final List<ChangeAction<Solution_>> variableChanges;
+    private List<ChangeAction<Solution_>> variableChanges;
 
     /*
      * The fromIndex of afterListVariableChanged must match the fromIndex of its beforeListVariableChanged call.
@@ -66,9 +67,13 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public List<ChangeAction<Solution_>> copyChanges() {
-        return List.copyOf(variableChanges);
+    public Move<Solution_> createUndoMove() {
+        // The list would normally be copied here to prevent any outside modification.
+        // However, copying this list on the hot path would be a major performance issue.
+        // Instead, the list is passed as a reference here, and instead of it being cleared by undoChanges(),
+        // the reference is replaced; that way, the move does not actually share the list with anyone,
+        // and copying of its contents can be avoided.
+        return new RecordedUndoMove<>(variableChanges);
     }
 
     @Override
@@ -83,7 +88,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
             changeAction.undo(backingScoreDirector);
         }
         Objects.requireNonNull(backingScoreDirector).triggerVariableListeners();
-        variableChanges.clear();
+        variableChanges = new LinkedList<>(); // Do not clear the list, as createUndoMove() may hold a reference to it.
         if (cache != null) {
             cache.clear();
         }
