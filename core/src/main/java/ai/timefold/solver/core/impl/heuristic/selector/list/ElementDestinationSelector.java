@@ -5,15 +5,14 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.ConcatenatingIterator;
+import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.MappingIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
@@ -136,27 +135,27 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             }
             if (isExhaustiveSearch) {
                 // The exhaustive search method requires elements to be placed only at the end of the entity's list
-                Stream<ElementPosition> stream = StreamSupport.stream(entitySelector.spliterator(), false)
-                        .map(entity -> ElementPosition.of(entity, listVariableDescriptor.getListSize(entity)));
-                return stream.iterator();
+                return new MappingIterator<>(entitySelector.iterator(),
+                        entity -> ElementPosition.of(entity, listVariableDescriptor.getListSize(entity)));
             } else {
                 // Start with the first unpinned value of each entity, or zero if no pinning.
                 // Entity selector is guaranteed to return only unpinned entities.
-                Stream<ElementPosition> stream = StreamSupport.stream(entitySelector.spliterator(), false)
-                        .map(entity -> ElementPosition.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity)));
+                var entityIterator = new MappingIterator<>(entitySelector.iterator(),
+                        entity -> ElementPosition.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity)));
                 // Filter guarantees that we only get values that are actually in one of the lists.
                 // Value selector guarantees only unpinned values.
-                // Simplify tests.
-                stream = Stream.concat(stream,
-                        StreamSupport.stream(valueSelector.spliterator(), false)
-                                .map(v -> listVariableStateSupply.getElementPosition(v).ensureAssigned())
-                                .map(positionInList -> ElementPosition.of(positionInList.entity(),
-                                        positionInList.index() + 1)));
-                // If the list variable allows unassigned values, add the option of unassigning.
+                var valueIterator = new MappingIterator<>(valueSelector.iterator(),
+                        v -> {
+                            var pos = listVariableStateSupply.getElementPosition(v).ensureAssigned();
+                            return ElementPosition.of(pos.entity(), pos.index() + 1);
+                        });
                 if (listVariableDescriptor.allowsUnassignedValues()) {
-                    stream = Stream.concat(stream, Stream.of(ElementPosition.unassigned()));
+                    // If the list variable allows unassigned values, add the option of unassigning.
+                    return new ConcatenatingIterator<>(entityIterator, valueIterator,
+                            Collections.singletonList(ElementPosition.unassigned()).iterator());
+                } else {
+                    return new ConcatenatingIterator<>(entityIterator, valueIterator);
                 }
-                return stream.iterator();
             }
         }
     }
@@ -175,12 +174,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     }
 
     public Iterator<Object> endingIterator() {
-        return Stream.concat(
-                StreamSupport.stream(Spliterators.spliterator(entitySelector.endingIterator(), entitySelector.getSize(), 0),
-                        false),
-                StreamSupport.stream(Spliterators.spliterator(valueSelector.endingIterator(null), valueSelector.getSize(), 0),
-                        false))
-                .iterator();
+        return new ConcatenatingIterator<>(entitySelector.endingIterator(), valueSelector.endingIterator(null));
     }
 
     @Override
