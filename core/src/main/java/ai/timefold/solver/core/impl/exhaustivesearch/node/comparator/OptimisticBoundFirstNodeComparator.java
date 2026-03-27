@@ -31,26 +31,18 @@ public class OptimisticBoundFirstNodeComparator<Solution_> implements Comparator
         Score aScore = a.getScore().raw();
         Score bScore = b.getScore().raw();
         var scoreComparison = aScore.compareTo(bScore);
-        if (scoreComparison < 0) {
-            return -1;
-        } else if (scoreComparison > 0) {
-            return 1;
+        if (scoreComparison != 0) {
+            return scoreComparison;
         }
         // Investigate deeper first
-        var aDepth = a.getDepth();
-        var bDepth = b.getDepth();
-        if (aDepth < bDepth) {
-            return -1;
-        } else if (aDepth > bDepth) {
-            return 1;
+        var depthComparison = Integer.compare(a.getDepth(), b.getDepth());
+        if (depthComparison != 0) {
+            return depthComparison;
         }
         // Investigate higher parent breadth index first (to reduce on the churn on workingSolution)
-        var aParentBreadth = a.getParentBreadth();
-        var bParentBreadth = b.getParentBreadth();
-        if (aParentBreadth < bParentBreadth) {
-            return -1;
-        } else if (aParentBreadth > bParentBreadth) {
-            return 1;
+        var parentBreadthComparison = Long.compare(a.getParentBreadth(), b.getParentBreadth());
+        if (parentBreadthComparison != 0) {
+            return parentBreadthComparison;
         }
         // Investigate lower breadth index first (to respect ValueSortingManner)
         return Long.compare(b.getBreadth(), a.getBreadth());
