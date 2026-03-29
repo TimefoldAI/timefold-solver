@@ -24,7 +24,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ extends Score<Score_>>
         implements ExhaustiveSearchPhaseLifecycleListener<Solution_>
-        permits BasicExhaustiveSearchDecider, ListVariableExhaustiveSearchDecider, MixedVariableExhaustiveSearchDecider {
+        permits BasicVariableExhaustiveSearchDecider, ListVariableExhaustiveSearchDecider,
+        MixedVariableExhaustiveSearchDecider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractExhaustiveSearchDecider.class);
 

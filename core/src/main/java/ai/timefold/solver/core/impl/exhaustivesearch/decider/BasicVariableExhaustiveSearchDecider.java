@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.exhaustivesearch.decider;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
@@ -16,10 +15,10 @@ import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 
-public final class BasicExhaustiveSearchDecider<Solution_, Score_ extends Score<Score_>>
+public final class BasicVariableExhaustiveSearchDecider<Solution_, Score_ extends Score<Score_>>
         extends AbstractExhaustiveSearchDecider<Solution_, Score_> {
 
-    public BasicExhaustiveSearchDecider(String logIndentation, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+    public BasicVariableExhaustiveSearchDecider(String logIndentation, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             PhaseTermination<Solution_> termination, EntitySelector<Solution_> sourceEntitySelector,
             ManualEntityMimicRecorder<Solution_> manualEntityMimicRecorder, MoveRepository<Solution_> moveRepository,
             boolean scoreBounderEnabled, ScoreBounder<?> scoreBounder) {
@@ -65,34 +64,39 @@ public final class BasicExhaustiveSearchDecider<Solution_, Score_ extends Score<
         return reinitializeVariableCount > 0;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void restoreWorkingSolution(ExhaustiveSearchStepScope<Solution_> stepScope,
             boolean assertWorkingSolutionScoreFromScratch, boolean assertExpectedWorkingSolutionScore) {
         var phaseScope = stepScope.getPhaseScope();
         var oldNode = phaseScope.getLastCompletedStepScope().getExpandingNode();
         var newNode = stepScope.getExpandingNode();
-        var oldMoveList = new ArrayList<Move<Solution_>>(oldNode.getDepth());
-        var newMoveList = new ArrayList<Move<Solution_>>(newNode.getDepth());
+        var oldMoveArray = new Move[oldNode.getDepth()];
+        var newMoveArray = new Move[newNode.getDepth()];
+        var oldMoveCount = 0;
+        var newMoveCount = 0;
         while (oldNode != newNode) {
             var oldDepth = oldNode.getDepth();
             var newDepth = newNode.getDepth();
             if (oldDepth < newDepth) {
-                newMoveList.add(newNode.getMove());
+                newMoveArray[newMoveArray.length - newMoveCount++ - 1] = newNode.getMove(); // Build this in reverse.
                 newNode = newNode.getParent();
             } else {
-                oldMoveList.add(oldNode.getUndoMove());
+                oldMoveArray[oldMoveCount++] = oldNode.getUndoMove();
                 oldNode = oldNode.getParent();
             }
         }
-        var restoreMoveList = new ArrayList<Move<Solution_>>(oldMoveList.size() + newMoveList.size());
-        restoreMoveList.addAll(oldMoveList);
-        Collections.reverse(newMoveList);
-        restoreMoveList.addAll(newMoveList);
-        if (restoreMoveList.isEmpty()) {
-            // No moves to restore, so the working solution is already correct
+        var totalCount = newMoveCount + oldMoveCount;
+        if (totalCount == 0) {
+            // No moves to restore, so the working solution is already correct.
             return;
         }
+        // Build a composite move of both arrays.
+        var moves = Arrays.copyOf(oldMoveArray, totalCount);
+        System.arraycopy(newMoveArray, newMoveArray.length - newMoveCount, moves, oldMoveCount, newMoveCount);
+        var restoreMoveList = Arrays.<Move<Solution_>> asList(moves);
         var compositeMove = Moves.compose(restoreMoveList);
+        // Execute the move.
         phaseScope.getScoreDirector().executeMove(compositeMove);
         var startingStepScore = stepScope.<Score_> getStartingStepScore();
         phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(),

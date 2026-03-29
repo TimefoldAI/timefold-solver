@@ -26,7 +26,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.AbstractExhaustiveSearchDecider;
-import ai.timefold.solver.core.impl.exhaustivesearch.decider.BasicExhaustiveSearchDecider;
+import ai.timefold.solver.core.impl.exhaustivesearch.decider.BasicVariableExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.ListVariableExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.MixedVariableExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.TrendBasedScoreBounder;
@@ -195,7 +195,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                     termination, sourceEntitySelector, manualEntityMimicRecorder,
                     new MoveSelectorBasedMoveRepository<>(moveSelector), scoreBounderEnabled, scoreBounder);
         } else {
-            decider = new BasicExhaustiveSearchDecider<>(configPolicy.getLogIndentation(), bestSolutionRecaller,
+            decider = new BasicVariableExhaustiveSearchDecider<>(configPolicy.getLogIndentation(), bestSolutionRecaller,
                     termination, sourceEntitySelector, manualEntityMimicRecorder,
                     new MoveSelectorBasedMoveRepository<>(moveSelector), scoreBounderEnabled, scoreBounder);
 

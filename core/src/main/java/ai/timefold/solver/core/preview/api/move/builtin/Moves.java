@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.preview.api.move.builtin;
 
+import java.util.Arrays;
 import java.util.List;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -72,7 +73,7 @@ public final class Moves {
      */
     @SafeVarargs
     public static <Solution_> Move<Solution_> compose(Move<Solution_>... moves) {
-        return CompositeMove.buildMove(moves);
+        return CompositeMove.buildMove(Arrays.asList(moves));
     }
 
     // ************************************************************************
