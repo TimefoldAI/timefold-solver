@@ -473,6 +473,51 @@ class ElementDestinationSelectorTest {
     }
 
     @Test
+    void randomAllEntitiesPinned() {
+        var v1 = new TestdataPinnedUnassignedValuesListValue("1"); // assigned to a (pinned entity)
+        var v2 = new TestdataPinnedUnassignedValuesListValue("2"); // unassigned
+        var v3 = new TestdataPinnedUnassignedValuesListValue("3"); // unassigned
+        var a = new TestdataPinnedUnassignedValuesListEntity("A", v1);
+        var b = new TestdataPinnedUnassignedValuesListEntity("B");
+        a.setPlanningPinToIndex(1);
+        b.setPlanningPinToIndex(1);
+
+        var solution = new TestdataPinnedUnassignedValuesListSolution();
+        solution.setEntityList(List.of(a, b));
+        solution.setValueList(List.of(v1, v2, v3));
+        SolutionManager.updateShadowVariables(solution);
+
+        var scoreDirector = mockScoreDirector(TestdataPinnedUnassignedValuesListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        // No available entities because all of them are pinned
+        var entitySelector = mockEntitySelector(TestdataPinnedUnassignedValuesListEntity.buildEntityDescriptor());
+        // v2 and v3 are unassigned → unassigned destination is generated, leading to no-change move
+        // v1 is assigned to a pinned entity → unassigned destination is generated
+        var valueSelector = TestdataListUtils.mockNeverEndingIterableValueSelector(
+                TestdataPinnedUnassignedValuesListEntity.buildVariableDescriptorForValueList(), v3, v2, v1);
+        var replayingValueSelector = TestdataListUtils.mockNeverEndingIterableValueSelector(
+                TestdataPinnedUnassignedValuesListEntity.buildVariableDescriptorForValueList(), v3, v2, v1);
+
+        var selector = new ElementDestinationSelector<>(entitySelector, replayingValueSelector, valueSelector, true, false);
+
+        var solverScope = new SolverScope<TestdataPinnedUnassignedValuesListSolution>();
+        solverScope.setScoreDirector(scoreDirector);
+        solverScope.setWorkingRandom(new Random(0));
+        selector.solvingStarted(solverScope);
+        selector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
+
+        // Initial state:
+        // - A [1] (fully pinned)
+        // - B []   (fully pinned)
+        assertCodesOfNeverEndingIterableSelector(selector, entitySelector.getSize(),
+                "UnassignedLocation",
+                "UnassignedLocation",
+                "UnassignedLocation",
+                "UnassignedLocation");
+    }
+
+    @Test
     void emptyIfThereAreNoEntities() {
         var v1 = new TestdataListValue("1");
         var v2 = new TestdataListValue("2");

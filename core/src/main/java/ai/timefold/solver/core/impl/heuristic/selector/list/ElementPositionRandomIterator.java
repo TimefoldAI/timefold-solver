@@ -72,9 +72,16 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                 // and the entity iterator must discard the previous entity
                 tryUpdateEntityIterator();
             }
-            return entityIterator.hasNext();
+            // There will be a valid destination if the entity iterator has a next element 
+            // or if there is at least one assigned value, which would result in an unassigning move.
+            return entityIterator.hasNext()
+                    || (allowsUnassignedValues && (valueSelector.getSize() - listVariableStateSupply.getUnassignedCount()) > 0);
         }
-        return selectedValue != null && entityIterator.hasNext();
+        // There will be a valid destination if the entity iterator has a next element
+        // or if there is at least one assigned value, which would result in an unassigning move.
+        return selectedValue != null
+                && (entityIterator.hasNext() || (allowsUnassignedValues
+                        && (valueSelector.getSize() - listVariableStateSupply.getUnassignedCount()) > 0));
     }
 
     @Override
@@ -96,7 +103,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
         // to account for the unassigned destination, which is an extra element.
         var entityBoundary = allowsUnassignedValues ? entitySize + 1 : entitySize;
         var random = RandomUtils.nextLong(workingRandom, allowsUnassignedValues ? totalSize + 1 : totalSize);
-        if (allowsUnassignedValues && random == 0) {
+        if (allowsUnassignedValues && (random == 0 || !entityIterator.hasNext())) {
             // We have already excluded all unassigned elements,
             // the only way to get an unassigned destination is to explicitly add it.
             return ElementPosition.unassigned();
