@@ -7,7 +7,8 @@ module ai.timefold.solver.quarkus {
     exports ai.timefold.solver.quarkus.gizmo;
 
     requires transitive ai.timefold.solver.core;
-    requires arc;
+    requires io.quarkus.arc;
+    requires io.quarkus.core;
     requires io.smallrye.config;
     requires io.vertx.core;
     requires jakarta.cdi;
@@ -16,6 +17,5 @@ module ai.timefold.solver.quarkus {
     requires org.graalvm.nativeimage;
     requires org.jboss.logging;
     requires org.jspecify;
-    requires quarkus.core;
 
 }
