@@ -65,10 +65,6 @@ public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseSc
     // Calculated methods
     // ************************************************************************
 
-    public int getDepthSize() {
-        return layerList.size();
-    }
-
     public <Score_ extends Score<Score_>> void registerPessimisticBound(InnerScore<Score_> pessimisticBound) {
         var castBestPessimisticBound = this.<Score_> getBestPessimisticBound();
         if (pessimisticBound.compareTo(castBestPessimisticBound) > 0) {
@@ -84,7 +80,6 @@ public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseSc
 
     public void addExpandableNode(ExhaustiveSearchNode<Solution_> moveNode) {
         expandableNodeQueue.add(moveNode);
-        moveNode.setExpandable(true);
     }
 
 }

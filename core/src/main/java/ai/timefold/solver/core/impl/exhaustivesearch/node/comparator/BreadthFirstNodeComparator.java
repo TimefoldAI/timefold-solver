@@ -27,29 +27,22 @@ public class BreadthFirstNodeComparator<Solution_> implements Comparator<Exhaust
     @Override
     public int compare(ExhaustiveSearchNode<Solution_> a, ExhaustiveSearchNode<Solution_> b) {
         // Investigate shallower nodes first
-        var aDepth = a.getDepth();
-        var bDepth = b.getDepth();
-        if (aDepth < bDepth) {
-            return 1;
-        } else if (aDepth > bDepth) {
-            return -1;
+        var depthComparison = Integer.compare(a.getDepth(), b.getDepth());
+        if (depthComparison != 0) {
+            return -depthComparison;
         }
         // Investigate better score first (ignore initScore to avoid depth first ordering)
         Score aScore = a.getScore().raw();
         Score bScore = b.getScore().raw();
         var scoreComparison = aScore.compareTo(bScore);
-        if (scoreComparison < 0) {
-            return -1;
-        } else if (scoreComparison > 0) {
-            return 1;
+        if (scoreComparison != 0) {
+            return scoreComparison;
         }
         if (scoreBounderEnabled) {
             // Investigate better optimistic bound first
             var optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
-            if (optimisticBoundComparison < 0) {
-                return -1;
-            } else if (optimisticBoundComparison > 0) {
-                return 1;
+            if (optimisticBoundComparison != 0) {
+                return optimisticBoundComparison;
             }
         }
         // No point to investigating higher parent breadth index first (no impact on the churn on workingSolution)

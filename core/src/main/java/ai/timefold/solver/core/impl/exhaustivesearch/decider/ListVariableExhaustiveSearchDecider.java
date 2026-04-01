@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.exhaustivesearch.decider;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -102,33 +101,54 @@ public final class ListVariableExhaustiveSearchDecider<Solution_, Score_ extends
     public void restoreWorkingSolution(ExhaustiveSearchStepScope<Solution_> stepScope,
             boolean assertWorkingSolutionScoreFromScratch, boolean assertExpectedWorkingSolutionScore) {
         var phaseScope = stepScope.getPhaseScope();
-        //First, undo all previous changes
-        var undoNode = phaseScope.getLastCompletedStepScope().getExpandingNode();
-        var unassignMoveList = new ArrayList<Move<Solution_>>();
-        while (undoNode.getUndoMove() != null) {
-            unassignMoveList.add(undoNode.getUndoMove());
-            undoNode = undoNode.getParent();
-        }
-        // Next, rebuild the solution starting from the current search element
-        var assignNode = stepScope.getExpandingNode();
-        var assignMoveList = new ArrayList<Move<Solution_>>();
-        while (assignNode.getMove() != null) {
-            assignMoveList.add(assignNode.getMove());
-            assignNode = assignNode.getParent();
-        }
-        Collections.reverse(assignMoveList);
-        var allMoves = new ArrayList<Move<Solution_>>(unassignMoveList.size() + assignMoveList.size());
-        allMoves.addAll(unassignMoveList);
-        allMoves.addAll(assignMoveList);
-        if (allMoves.isEmpty()) {
-            // No moves to restore, so the working solution is already correct
+        //First, undo all previous changes.
+        var unassignMoves = listAllUndoMoves(phaseScope.getLastCompletedStepScope().getExpandingNode());
+        // Next, rebuild the solution starting from the current search element.
+        var assignMoves = listAllMovesInReverseOrder(stepScope.getExpandingNode());
+        var totalLength = unassignMoves.length + assignMoves.length;
+        if (totalLength == 0) {
+            // No moves to restore, so the working solution is already correct.
             return;
         }
-        var compositeMove = Moves.compose(allMoves);
+        // Build a composite move of both arrays.
+        var moves = Arrays.copyOf(unassignMoves, unassignMoves.length + assignMoves.length);
+        System.arraycopy(assignMoves, 0, moves, unassignMoves.length, assignMoves.length);
+        var compositeMove = Moves.compose(moves);
+        // Execute the move.
         phaseScope.getScoreDirector().executeMove(compositeMove);
         var score = phaseScope.<Score_> calculateScore();
         stepScope.getExpandingNode().setScore(score);
         phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(), score.raw());
+    }
+
+    private static <Solution_> Move<Solution_>[] listAllUndoMoves(ExhaustiveSearchNode<Solution_> node) {
+        return listAllUndoMoves(node, 0);
+    }
+
+    private static <Solution_> Move<Solution_>[] listAllUndoMoves(ExhaustiveSearchNode<Solution_> node, int depth) {
+        var undoMove = node.getUndoMove();
+        if (undoMove != null) {
+            var array = listAllUndoMoves(node.getParent(), depth + 1);
+            array[depth] = undoMove;
+            return array;
+        } else {
+            return new Move[depth];
+        }
+    }
+
+    private static <Solution_> Move<Solution_>[] listAllMovesInReverseOrder(ExhaustiveSearchNode<Solution_> node) {
+        return listAllMovesInReverseOrder(node, 0);
+    }
+
+    private static <Solution_> Move<Solution_>[] listAllMovesInReverseOrder(ExhaustiveSearchNode<Solution_> node, int depth) {
+        var move = node.getMove();
+        if (move != null) {
+            var array = listAllMovesInReverseOrder(node.getParent(), depth + 1);
+            array[array.length - depth - 1] = move;
+            return array;
+        } else {
+            return new Move[depth];
+        }
     }
 
     // ************************************************************************

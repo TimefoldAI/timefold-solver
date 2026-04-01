@@ -29,7 +29,7 @@ final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     Move<Solution_> createUndoMove() {
-        return new RecordedUndoMove<>(getVariableChangeRecordingScoreDirector().copyChanges());
+        return getVariableChangeRecordingScoreDirector().createUndoMove();
     }
 
     @Override

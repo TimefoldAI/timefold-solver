@@ -12,12 +12,9 @@ public class OriginalOrderNodeComparator<Solution_> implements Comparator<Exhaus
     @Override
     public int compare(ExhaustiveSearchNode<Solution_> a, ExhaustiveSearchNode<Solution_> b) {
         // Investigate deeper first
-        int aDepth = a.getDepth();
-        int bDepth = b.getDepth();
-        if (aDepth < bDepth) {
-            return -1;
-        } else if (aDepth > bDepth) {
-            return 1;
+        var depthComparison = Integer.compare(a.getDepth(), b.getDepth());
+        if (depthComparison != 0) {
+            return depthComparison;
         }
         // Investigate lower breadth index first (to respect ValueSortingManner)
         return Long.compare(b.getBreadth(), a.getBreadth());

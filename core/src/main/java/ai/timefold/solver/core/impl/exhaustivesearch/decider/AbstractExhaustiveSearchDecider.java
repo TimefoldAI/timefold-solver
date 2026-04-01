@@ -24,7 +24,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ extends Score<Score_>>
         implements ExhaustiveSearchPhaseLifecycleListener<Solution_>
-        permits BasicExhaustiveSearchDecider, ListVariableExhaustiveSearchDecider, MixedVariableExhaustiveSearchDecider {
+        permits BasicVariableExhaustiveSearchDecider, ListVariableExhaustiveSearchDecider,
+        MixedVariableExhaustiveSearchDecider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractExhaustiveSearchDecider.class);
 
@@ -123,9 +124,8 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
             }
         }
         var nodeScore = moveNode.getScore();
-        LOGGER.trace("{}        Move treeId ({}), score ({}), expandable ({}), move ({}).",
-                logIndentation, executionPoint.treeId(), nodeScore == null ? "null" : nodeScore, moveNode.isExpandable(),
-                moveNode.getMove());
+        LOGGER.trace("{}        Move treeId ({}), score ({}), move ({}).",
+                logIndentation, executionPoint.treeId(), nodeScore == null ? "null" : nodeScore, moveNode.getMove());
     }
 
     private void processMove(ExhaustiveSearchStepScope<Solution_> stepScope,
@@ -204,7 +204,7 @@ public abstract sealed class AbstractExhaustiveSearchDecider<Solution_, Score_ e
 
     protected void initStartNode(ExhaustiveSearchPhaseScope<Solution_> phaseScope,
             ExhaustiveSearchLayer layer) {
-        var startLayer = layer == null ? phaseScope.getLayerList().get(0) : layer;
+        var startLayer = layer == null ? phaseScope.getLayerList().getFirst() : layer;
         var startNode = new ExhaustiveSearchNode<Solution_>(startLayer, null);
 
         if (scoreBounderEnabled) {
