@@ -24,7 +24,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private final RandomGenerator workingRandom;
     private final long totalSize;
     private final boolean allowsUnassignedValues;
-    private final boolean maybeAssignedMovableValues;
+    private final boolean maybeMovableValues;
     private Iterator<Object> valueIterator;
     private Object selectedValue;
     private boolean hasNextValue = false;
@@ -32,7 +32,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     public ElementPositionRandomIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             EntitySelector<Solution_> entitySelector, Iterator<Object> replayingValueIterator,
             IterableValueSelector<Solution_> valueSelector, RandomGenerator workingRandom, long totalSize,
-            boolean allowsUnassignedValues, boolean maybeAssignedMovableValues) {
+            boolean allowsUnassignedValues, boolean maybeMovableValues) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         this.entitySelector = entitySelector;
@@ -46,7 +46,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                     .formatted(totalSize));
         }
         this.allowsUnassignedValues = allowsUnassignedValues;
-        this.maybeAssignedMovableValues = maybeAssignedMovableValues;
+        this.maybeMovableValues = maybeMovableValues;
         this.valueIterator = null;
     }
 
@@ -78,13 +78,13 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
             // There will be a valid destination if the entity iterator has a next element 
             // or if there is at least one non-pinned assigned value,
             // which would result in an unassigning move.
-            return entityIterator.hasNext() || maybeAssignedMovableValues;
+            return entityIterator.hasNext() || maybeMovableValues;
         }
         // There will be a valid destination if the entity iterator has a next element
         // or if there is at least one non-pinned assigned value,
         // which would result in an unassigning move.
         return selectedValue != null
-                && (entityIterator.hasNext() || maybeAssignedMovableValues);
+                && (entityIterator.hasNext() || maybeMovableValues);
     }
 
     @Override

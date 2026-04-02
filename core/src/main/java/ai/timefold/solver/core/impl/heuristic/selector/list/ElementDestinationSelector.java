@@ -126,11 +126,11 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             var totalValueSize = valueSelector.getSize()
                     - (allowsUnassignedValues ? listVariableStateSupply.getUnassignedCount() : 0);
             var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
-            var maybeAssignedMovableValues =
+            var maybeMovableValues =
                     allowsUnassignedValues && totalValueSize > 0;
             return new ElementPositionRandomIterator<>(listVariableStateSupply, entitySelector,
                     replayingValueSelector != null ? replayingValueSelector.iterator() : null, valueSelector, workingRandom,
-                    totalSize, allowsUnassignedValues, maybeAssignedMovableValues);
+                    totalSize, allowsUnassignedValues, maybeMovableValues);
         } else {
             if (entitySelector.getSize() == 0) {
                 return Collections.emptyIterator();

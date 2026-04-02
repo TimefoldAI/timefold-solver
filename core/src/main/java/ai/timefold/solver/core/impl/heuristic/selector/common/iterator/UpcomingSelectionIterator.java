@@ -41,6 +41,12 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
 
     @Override
     public S next() {
+        if (recheckUpcomingSelection) {
+            upcomingSelection = createUpcomingSelection();
+            // We ensure that the variable remains consistent if "discardUpcomingSelection" was called previously.
+            hasUpcomingSelection = upcomingSelection != null;
+            recheckUpcomingSelection = false;
+        }
         if (!hasUpcomingSelection) {
             throw new NoSuchElementException();
         }
