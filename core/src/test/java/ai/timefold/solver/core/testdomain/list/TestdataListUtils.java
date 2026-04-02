@@ -387,13 +387,10 @@ public final class TestdataListUtils {
             this.values = Objects.requireNonNull(values);
         }
 
-        public boolean hasUpcomingSelection() {
-            return hasUpcomingSelection;
-        }
-
         @Override
         protected Selection_ createUpcomingSelection() {
-            if (index >= values.length) {
+            if (index >= values.length || values[index] == null) {
+                index++;
                 return noUpcomingSelection();
             }
             return values[index++];

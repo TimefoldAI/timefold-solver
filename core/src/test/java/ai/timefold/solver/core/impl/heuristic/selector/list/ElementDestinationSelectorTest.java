@@ -22,6 +22,7 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertEmptyNeverEnd
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -664,6 +666,7 @@ class ElementDestinationSelectorTest {
     @Test
     void discardOldValuesAndResetState() {
         var v1 = new TestdataListEntityProvidingValue("V1");
+        var v2 = new TestdataListEntityProvidingValue("V2");
         var a = new TestdataListEntityProvidingEntity("A", List.of(), List.of());
         var solution = new TestdataListEntityProvidingSolution();
         solution.setEntityList(List.of(a));
@@ -672,26 +675,28 @@ class ElementDestinationSelectorTest {
         scoreDirector.setWorkingSolution(solution);
 
         var entitySelector = mockEntitySelector(a);
-        var entityIterator = mockUpcomingSelectionIterator(a);
+        var entityIterator = mockUpcomingSelectionIterator(a, null, a);
         doReturn(entityIterator).when(entitySelector).iterator();
         var valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1);
         IterableValueSelector<TestdataListEntityProvidingSolution> replayingValueSelector =
-                mockReplayingValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1);
+                mockReplayingValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1, v1, v2);
 
         var selector = new ElementDestinationSelector<>(entitySelector, replayingValueSelector, valueSelector, true, false);
         // Value 0 makes the iterator to always request an entity from the related iterator
-        var random = new TestRandom(0);
+        var random = new TestRandom(0, 0);
         solvingStarted(selector, scoreDirector, random);
         var iterator = selector.iterator();
-        assertThat(entityIterator.hasNext()).isTrue();
+        // entityIterator returns a
         assertThat(iterator.hasNext()).isTrue();
-        iterator.next();
-        // No more values and the iterator is exhausted
+        assertThat(iterator.next()).isNotNull();
+        // entityIterator gets null and call noUpcomingSelection
         assertThat(iterator.hasNext()).isFalse();
-        assertThat(entityIterator.hasNext()).isFalse();
-        assertThat(entityIterator.hasUpcomingSelection()).isFalse();
-        // Reset
-        entityIterator.discardUpcomingSelection();
-        assertThat(entityIterator.hasUpcomingSelection()).isTrue();
+        assertThatCode(iterator::next).isInstanceOf(NoSuchElementException.class);
+        // replayingValueSelector returns v2, discardUpcomingSelection is called, and entityIterator returns a again
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next()).isNotNull();
+        // iterator exhausted again
+        assertThat(iterator.hasNext()).isFalse();
+        assertThatCode(iterator::next).isInstanceOf(NoSuchElementException.class);
     }
 }

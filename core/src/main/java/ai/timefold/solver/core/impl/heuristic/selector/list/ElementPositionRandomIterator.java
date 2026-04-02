@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -96,6 +97,9 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
 
     @Override
     public ElementPosition next() {
+        if (!hasNextValue) {
+            throw new NoSuchElementException();
+        }
         this.hasNextValue = false;
         // This code operates under the assumption that the entity selector already filtered out all immovable entities.
         // At this point, entities are only partially pinned, or not pinned at all.
