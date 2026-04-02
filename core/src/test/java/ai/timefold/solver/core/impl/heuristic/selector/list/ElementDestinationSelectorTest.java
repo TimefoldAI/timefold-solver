@@ -12,6 +12,7 @@ import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getPinne
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntitySelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockIterableFromEntityPropertyValueSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockIterableValueSelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockUpcomingSelectionIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfIterableSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingIterableSelector;
@@ -21,6 +22,7 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertEmptyNeverEnd
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -28,6 +30,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -473,6 +476,51 @@ class ElementDestinationSelectorTest {
     }
 
     @Test
+    void randomAllEntitiesPinned() {
+        var v1 = new TestdataPinnedUnassignedValuesListValue("1"); // assigned to a (pinned entity)
+        var v2 = new TestdataPinnedUnassignedValuesListValue("2"); // unassigned
+        var v3 = new TestdataPinnedUnassignedValuesListValue("3"); // unassigned
+        var a = new TestdataPinnedUnassignedValuesListEntity("A", v1);
+        var b = new TestdataPinnedUnassignedValuesListEntity("B");
+        a.setPlanningPinToIndex(1);
+        b.setPlanningPinToIndex(1);
+
+        var solution = new TestdataPinnedUnassignedValuesListSolution();
+        solution.setEntityList(List.of(a, b));
+        solution.setValueList(List.of(v1, v2, v3));
+        SolutionManager.updateShadowVariables(solution);
+
+        var scoreDirector = mockScoreDirector(TestdataPinnedUnassignedValuesListSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        // No available entities because all of them are pinned
+        var entitySelector = mockEntitySelector(TestdataPinnedUnassignedValuesListEntity.buildEntityDescriptor());
+        // v2 and v3 are unassigned → unassigned destination is generated, leading to no-change move
+        // v1 is assigned to a pinned entity → unassigned destination is generated
+        var valueSelector = TestdataListUtils.mockNeverEndingIterableValueSelector(
+                TestdataPinnedUnassignedValuesListEntity.buildVariableDescriptorForValueList(), v3, v2, v1);
+        var replayingValueSelector = TestdataListUtils.mockNeverEndingIterableValueSelector(
+                TestdataPinnedUnassignedValuesListEntity.buildVariableDescriptorForValueList(), v3, v2, v1);
+
+        var selector = new ElementDestinationSelector<>(entitySelector, replayingValueSelector, valueSelector, true, false);
+
+        var solverScope = new SolverScope<TestdataPinnedUnassignedValuesListSolution>();
+        solverScope.setScoreDirector(scoreDirector);
+        solverScope.setWorkingRandom(new Random(0));
+        selector.solvingStarted(solverScope);
+        selector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
+
+        // Initial state:
+        // - A [1] (fully pinned)
+        // - B []   (fully pinned)
+        assertCodesOfNeverEndingIterableSelector(selector, entitySelector.getSize(),
+                "UnassignedLocation",
+                "UnassignedLocation",
+                "UnassignedLocation",
+                "UnassignedLocation");
+    }
+
+    @Test
     void emptyIfThereAreNoEntities() {
         var v1 = new TestdataListValue("1");
         var v2 = new TestdataListValue("2");
@@ -613,5 +661,42 @@ class ElementDestinationSelectorTest {
         // Even using only the value selector,
         // the entity iterator must discard the previous entity during the hasNext() calls
         verify(entityIterator, times(1)).discardUpcomingSelection();
+    }
+
+    @Test
+    void discardOldValuesAndResetState() {
+        var v1 = new TestdataListEntityProvidingValue("V1");
+        var v2 = new TestdataListEntityProvidingValue("V2");
+        var a = new TestdataListEntityProvidingEntity("A", List.of(), List.of());
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(a));
+
+        var scoreDirector = mockScoreDirector(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var entitySelector = mockEntitySelector(a);
+        var entityIterator = mockUpcomingSelectionIterator(a, null, a);
+        doReturn(entityIterator).when(entitySelector).iterator();
+        var valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1);
+        IterableValueSelector<TestdataListEntityProvidingSolution> replayingValueSelector =
+                mockReplayingValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1, v1, v2);
+
+        var selector = new ElementDestinationSelector<>(entitySelector, replayingValueSelector, valueSelector, true, false);
+        // Value 0 makes the iterator to always request an entity from the related iterator
+        var random = new TestRandom(0, 0);
+        solvingStarted(selector, scoreDirector, random);
+        var iterator = selector.iterator();
+        // entityIterator returns a
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next()).isNotNull();
+        // entityIterator gets null and call noUpcomingSelection
+        assertThat(iterator.hasNext()).isFalse();
+        assertThatCode(iterator::next).isInstanceOf(NoSuchElementException.class);
+        // replayingValueSelector returns v2, discardUpcomingSelection is called, and entityIterator returns a again
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next()).isNotNull();
+        // iterator exhausted again
+        assertThat(iterator.hasNext()).isFalse();
+        assertThatCode(iterator::next).isInstanceOf(NoSuchElementException.class);
     }
 }

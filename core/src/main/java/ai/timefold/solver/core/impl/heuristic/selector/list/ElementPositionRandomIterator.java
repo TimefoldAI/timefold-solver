@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -23,6 +24,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private final Random workingRandom;
     private final long totalSize;
     private final boolean allowsUnassignedValues;
+    private final boolean maybeAssignedMovableValues;
     private Iterator<Object> valueIterator;
     private Object selectedValue;
     private boolean hasNextValue = false;
@@ -30,7 +32,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     public ElementPositionRandomIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             EntitySelector<Solution_> entitySelector, Iterator<Object> replayingValueIterator,
             IterableValueSelector<Solution_> valueSelector, Random workingRandom, long totalSize,
-            boolean allowsUnassignedValues) {
+            boolean allowsUnassignedValues, boolean maybeAssignedMovableValues) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         this.entitySelector = entitySelector;
@@ -44,6 +46,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                     .formatted(totalSize));
         }
         this.allowsUnassignedValues = allowsUnassignedValues;
+        this.maybeAssignedMovableValues = maybeAssignedMovableValues;
         this.valueIterator = null;
     }
 
@@ -72,9 +75,16 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                 // and the entity iterator must discard the previous entity
                 tryUpdateEntityIterator();
             }
-            return entityIterator.hasNext();
+            // There will be a valid destination if the entity iterator has a next element 
+            // or if there is at least one non-pinned assigned value,
+            // which would result in an unassigning move.
+            return entityIterator.hasNext() || maybeAssignedMovableValues;
         }
-        return selectedValue != null && entityIterator.hasNext();
+        // There will be a valid destination if the entity iterator has a next element
+        // or if there is at least one non-pinned assigned value,
+        // which would result in an unassigning move.
+        return selectedValue != null
+                && (entityIterator.hasNext() || maybeAssignedMovableValues);
     }
 
     @Override
@@ -88,6 +98,9 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
 
     @Override
     public ElementPosition next() {
+        if (!hasNextValue) {
+            throw new NoSuchElementException();
+        }
         this.hasNextValue = false;
         // This code operates under the assumption that the entity selector already filtered out all immovable entities.
         // At this point, entities are only partially pinned, or not pinned at all.
@@ -96,7 +109,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
         // to account for the unassigned destination, which is an extra element.
         var entityBoundary = allowsUnassignedValues ? entitySize + 1 : entitySize;
         var random = RandomUtils.nextLong(workingRandom, allowsUnassignedValues ? totalSize + 1 : totalSize);
-        if (allowsUnassignedValues && random == 0) {
+        if (allowsUnassignedValues && (random == 0 || !entityIterator.hasNext())) {
             // We have already excluded all unassigned elements,
             // the only way to get an unassigned destination is to explicitly add it.
             return ElementPosition.unassigned();
