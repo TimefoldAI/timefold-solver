@@ -558,7 +558,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class,
                         Joiners.equal(TestdataLavishEntity::getEntityGroup),
-                        Joiners.filtering((e1, e2) -> !e1.getCode().contains("My"))) // Filtering() caused PLANNER-2139.
+                        Joiners.filtering((e1, e2) -> !e1.getCode().contains("My")))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
@@ -575,7 +575,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
     }
 
     @TestTemplate
-    void groupByThenJoinThenGroupBy() { // PLANNER-2270
+    void groupByThenJoinThenGroupBy() {
         assertThatCode(() -> buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                 .groupBy(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getValue)
                 .join(TestdataLavishEntity.class)

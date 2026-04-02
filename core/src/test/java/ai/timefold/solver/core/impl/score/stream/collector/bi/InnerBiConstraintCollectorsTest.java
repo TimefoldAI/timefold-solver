@@ -656,7 +656,7 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
     }
 
     @Test
-    public void toMapDuplicates() { // PLANNER-2271
+    public void toMapDuplicates() {
         BiConstraintCollector<String, Integer, ?, Map<String, Set<Integer>>> collector =
                 ConstraintCollectors.toMap((a, b) -> a, (a, b) -> b);
         Object container = collector.supplier().get();

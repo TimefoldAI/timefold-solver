@@ -28,7 +28,6 @@ public final class CollectionUtils {
         /*
          * Some move implementations on the hot path rely heavily on list reversal.
          * As such, the following implementation was benchmarked to perform as well as possible for lists of all sizes.
-         * See PLANNER-2808 for details.
          */
         switch (originalList.size()) {
             case 0 -> {
