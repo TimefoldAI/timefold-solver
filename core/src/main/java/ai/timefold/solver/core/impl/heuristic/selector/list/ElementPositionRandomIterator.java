@@ -76,11 +76,13 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                 tryUpdateEntityIterator();
             }
             // There will be a valid destination if the entity iterator has a next element 
-            // or if there is at least one assigned value, which would result in an unassigning move.
+            // or if there is at least one non-pinned assigned value,
+            // which would result in an unassigning move.
             return entityIterator.hasNext() || maybeAssignedMovableValues;
         }
         // There will be a valid destination if the entity iterator has a next element
-        // or if there is at least one assigned value, which would result in an unassigning move.
+        // or if there is at least one non-pinned assigned value,
+        // which would result in an unassigning move.
         return selectedValue != null
                 && (entityIterator.hasNext() || maybeAssignedMovableValues);
     }
