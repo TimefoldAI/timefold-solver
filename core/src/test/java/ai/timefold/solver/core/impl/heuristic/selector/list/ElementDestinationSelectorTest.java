@@ -519,7 +519,7 @@ class ElementDestinationSelectorTest {
 
         // First, we select v1, which is pinned, and the entity iterator does not return a feasible destination.
         // However, the value selector has another assigned value,
-        // which makes maybeAssignedNonPinnedMovableValues in ElementDestinationSelector to be set to true
+        // which makes maybeMovableValues in ElementDestinationSelector to be set to true
         // We always return 0 to meet the bailout size,
         // and then return 1 to ensure the entity is selected by destination iterator
         var random = new TestRandom(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
