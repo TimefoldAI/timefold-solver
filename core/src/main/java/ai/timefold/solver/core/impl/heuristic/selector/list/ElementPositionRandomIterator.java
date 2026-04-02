@@ -32,7 +32,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     public ElementPositionRandomIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             EntitySelector<Solution_> entitySelector, Iterator<Object> replayingValueIterator,
             IterableValueSelector<Solution_> valueSelector, RandomGenerator workingRandom, long totalSize,
-            boolean allowsUnassignedValues) {
+            boolean allowsUnassignedValues, boolean maybeAssignedMovableValues) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         this.entitySelector = entitySelector;
@@ -46,8 +46,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                     .formatted(totalSize));
         }
         this.allowsUnassignedValues = allowsUnassignedValues;
-        this.maybeAssignedMovableValues =
-                allowsUnassignedValues && (valueSelector.getSize() - listVariableStateSupply.getUnassignedCount()) > 0;
+        this.maybeAssignedMovableValues = maybeAssignedMovableValues;
         this.valueIterator = null;
     }
 
