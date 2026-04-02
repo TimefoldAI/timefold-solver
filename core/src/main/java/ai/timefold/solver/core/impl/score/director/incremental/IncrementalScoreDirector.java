@@ -154,8 +154,6 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
         super.afterVariableChanged(variableDescriptor, entity);
     }
 
-    // TODO Add support for list variable (https://issues.redhat.com/browse/PLANNER-2711).
-
     @Override
     public void beforeListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
         incrementalScoreCalculator.beforeListVariableElementAssigned(variableDescriptor.getVariableName(), element);

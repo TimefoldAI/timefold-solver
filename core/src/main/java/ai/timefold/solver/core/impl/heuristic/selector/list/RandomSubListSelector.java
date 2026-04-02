@@ -106,7 +106,6 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
 
     @Override
     public Iterator<SubList> iterator() {
-        // TODO make this incremental https://issues.redhat.com/browse/PLANNER-2507
         var biggestListSize = 0;
         for (var entity : ((Iterable<Object>) entitySelector::endingIterator)) {
             biggestListSize = Math.max(biggestListSize, listVariableDescriptor.getUnpinnedSubListSize(entity));
