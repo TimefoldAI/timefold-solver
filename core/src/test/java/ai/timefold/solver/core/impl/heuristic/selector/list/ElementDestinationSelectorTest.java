@@ -35,14 +35,20 @@ import java.util.Random;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.FromSolutionEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueRangeSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.ManualValueMimicRecorder;
+import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListUtils;
@@ -59,6 +65,8 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.pinned.TestdataPinn
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.pinned.TestdataListUnassignedPinnedEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
@@ -476,48 +484,62 @@ class ElementDestinationSelectorTest {
     }
 
     @Test
-    void randomAllEntitiesPinned() {
-        var v1 = new TestdataPinnedUnassignedValuesListValue("1"); // assigned to a (pinned entity)
-        var v2 = new TestdataPinnedUnassignedValuesListValue("2"); // unassigned
-        var v3 = new TestdataPinnedUnassignedValuesListValue("3"); // unassigned
-        var a = new TestdataPinnedUnassignedValuesListEntity("A", v1);
-        var b = new TestdataPinnedUnassignedValuesListEntity("B");
-        a.setPlanningPinToIndex(1);
-        b.setPlanningPinToIndex(1);
-
-        var solution = new TestdataPinnedUnassignedValuesListSolution();
+    void refreshReachableEntities() {
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var a = new TestdataListUnassignedPinnedEntityProvidingEntity("A", List.of(v1)); // Pinned
+        var b = new TestdataListUnassignedPinnedEntityProvidingEntity("B", List.of(v2)); // Not pinned
+        // a is pinned
+        a.setPinned(true);
+        a.setValueList(List.of(v1));
+        b.setValueList(List.of(v2));
+        var solution = new TestdataListUnassignedPinnedEntityProvidingSolution();
         solution.setEntityList(List.of(a, b));
-        solution.setValueList(List.of(v1, v2, v3));
         SolutionManager.updateShadowVariables(solution);
 
-        var scoreDirector = mockScoreDirector(TestdataPinnedUnassignedValuesListSolution.buildSolutionDescriptor());
+        var scoreDirector = mockScoreDirector(TestdataListUnassignedPinnedEntityProvidingSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
 
-        // No available entities because all of them are pinned
-        var entitySelector = mockEntitySelector(TestdataPinnedUnassignedValuesListEntity.buildEntityDescriptor());
-        // v2 and v3 are unassigned → unassigned destination is generated, leading to no-change move
-        // v1 is assigned to a pinned entity → unassigned destination is generated
-        var valueSelector = TestdataListUtils.mockNeverEndingIterableValueSelector(
-                TestdataPinnedUnassignedValuesListEntity.buildVariableDescriptorForValueList(), v3, v2, v1);
-        var replayingValueSelector = TestdataListUtils.mockNeverEndingIterableValueSelector(
-                TestdataPinnedUnassignedValuesListEntity.buildVariableDescriptorForValueList(), v3, v2, v1);
+        // Value selector
+        var listVariableDescriptor = TestdataListUnassignedPinnedEntityProvidingEntity.buildVariableDescriptorForValueList();
+        var iterableValueSelector = mockIterableValueSelector(listVariableDescriptor, v1, v2);
+        var mimicRecorder = new ManualValueMimicRecorder<>(iterableValueSelector);
+        var replayingValueSelector = new MimicReplayingValueSelector<>(mimicRecorder);
+        // Entity selector with non-pinned entity filtered by value
+        var entityDescriptor = TestdataListUnassignedPinnedEntityProvidingEntity.buildEntityDescriptor();
+        var entitySelector = new FromSolutionEntitySelector<>(entityDescriptor, SelectionCacheType.PHASE, true);
+        var filteringEntity = new FilteringEntityByValueSelector<>(entitySelector, replayingValueSelector, true, false);
+        var pinningFilterFunction = entityDescriptor.getEffectiveMovableEntityFilter();
+        var nonPinnedEntitySelector = FilteringEntitySelector.of(filteringEntity, SelectionFilter
+                .compose((director, selection) -> pinningFilterFunction.test(director.getWorkingSolution(), selection)));
+        // Destination selector with non-pinned entity selector filtered by value
+        var selector =
+                new ElementDestinationSelector<>(nonPinnedEntitySelector, replayingValueSelector, iterableValueSelector, true,
+                        false);
 
-        var selector = new ElementDestinationSelector<>(entitySelector, replayingValueSelector, valueSelector, true, false);
-
-        var solverScope = new SolverScope<TestdataPinnedUnassignedValuesListSolution>();
-        solverScope.setScoreDirector(scoreDirector);
-        solverScope.setWorkingRandom(new Random(0));
-        selector.solvingStarted(solverScope);
-        selector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
-
-        // Initial state:
-        // - A [1] (fully pinned)
-        // - B []   (fully pinned)
-        assertCodesOfNeverEndingIterableSelector(selector, entitySelector.getSize(),
-                "UnassignedLocation",
-                "UnassignedLocation",
-                "UnassignedLocation",
-                "UnassignedLocation");
+        // First, we select v1, which is pinned, and the entity iterator does not return a feasible destination.
+        // However, the value selector has another assigned value,
+        // which makes maybeMovableValues in ElementDestinationSelector to be set to true
+        // We always return 0 to meet the bailout size,
+        // and then return 1 to ensure the entity is selected by destination iterator
+        var random = new TestRandom(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+        var solverScope = solvingStarted(selector, scoreDirector, random);
+        phaseStarted(selector, solverScope);
+        var iterator = selector.iterator();
+        mimicRecorder.setRecordedValue(v1);
+        assertThat(iterator.hasNext()).isTrue();
+        // The expected position is unassigned as v1 has no feasible destination
+        assertThat(iterator.next()).isSameAs(ElementPosition.unassigned());
+        // Next, we select v2, which is not pinned, and the entity iterator returns a feasible destination.
+        // This will cause the iterator to call tryUpdateEntityIterator, and reload the entity list
+        // b is the only reachable non-pinned entity for v2
+        mimicRecorder.setRecordedValue(v2);
+        assertThat(iterator.hasNext()).isTrue();
+        var position = iterator.next().ensureAssigned();
+        var entity = position.entity();
+        var index = position.index();
+        assertThat(entity).isSameAs(b);
+        assertThat(index).isSameAs(0);
     }
 
     @Test
