@@ -54,6 +54,8 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
 
     public void discardUpcomingSelection() {
         upcomingCreated = false;
+        upcomingSelection = null;
+        hasUpcomingSelection = true;
     }
 
     @Override
