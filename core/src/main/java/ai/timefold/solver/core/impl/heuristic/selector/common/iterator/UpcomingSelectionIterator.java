@@ -25,8 +25,7 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
     private boolean recheckUpcomingSelection = false;
     protected S upcomingSelection;
 
-    @Override
-    public boolean hasNext() {
+    private void readAndRecheckUpcomingValue() {
         if (!upcomingCreated) {
             upcomingSelection = createUpcomingSelection();
             upcomingCreated = true;
@@ -36,14 +35,20 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
                 recheckUpcomingSelection = false;
             }
         }
+    }
+
+    @Override
+    public boolean hasNext() {
+        readAndRecheckUpcomingValue();
         return hasUpcomingSelection;
     }
 
     @Override
     public S next() {
-        if (!hasNext()) {
+        if (!hasUpcomingSelection) {
             throw new NoSuchElementException();
         }
+        readAndRecheckUpcomingValue();
         upcomingCreated = false;
         return upcomingSelection;
     }
