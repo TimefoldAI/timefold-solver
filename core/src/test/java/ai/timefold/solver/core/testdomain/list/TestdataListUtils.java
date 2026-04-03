@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
@@ -21,6 +22,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelectorFactory;
@@ -222,6 +224,10 @@ public final class TestdataListUtils {
         return mockNeverEndingDestinationSelector(locationsInList.length, locationsInList);
     }
 
+    public static <Selection_> MockedUpcomingSelectionIterator<Selection_> mockUpcomingSelectionIterator(Selection_... values) {
+        return new MockedUpcomingSelectionIterator<>(values);
+    }
+
     public static <Solution_> DestinationSelector<Solution_> mockNeverEndingDestinationSelector(long size,
             ElementPosition... locationsInList) {
         var destinationSelector = mock(DestinationSelector.class);
@@ -380,6 +386,25 @@ public final class TestdataListUtils {
         doReturn(ClassInstanceCache.create()).when(configPolicy).getClassInstanceCache();
         return DestinationSelectorFactory.<S> create(destinationSelectorConfig)
                 .buildDestinationSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, randomSelection, "any", false);
+    }
+
+    public static class MockedUpcomingSelectionIterator<Selection_> extends UpcomingSelectionIterator<Selection_> {
+
+        private final Selection_[] values;
+        private int index = 0;
+
+        public MockedUpcomingSelectionIterator(Selection_[] values) {
+            this.values = Objects.requireNonNull(values);
+        }
+
+        @Override
+        protected Selection_ createUpcomingSelection() {
+            if (index >= values.length || values[index] == null) {
+                index++;
+                return noUpcomingSelection();
+            }
+            return values[index++];
+        }
     }
 
     private static <T> Iterator<T> cyclicIterator(List<T> elements) {

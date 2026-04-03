@@ -129,7 +129,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
             return new ElementPositionRandomIterator<>(listVariableStateSupply, entitySelector,
                     replayingValueSelector != null ? replayingValueSelector.iterator() : null, valueSelector, workingRandom,
-                    totalSize, allowsUnassignedValues);
+                    totalSize, allowsUnassignedValues, allowsUnassignedValues && totalValueSize > 0);
         } else {
             if (entitySelector.getSize() == 0) {
                 return Collections.emptyIterator();
