@@ -79,7 +79,7 @@ jobs:
           token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Install pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
       - name: Use Aikido Sec Safe Chain
         run: |
           pnpm install -g @aikidosec/safe-chain@1.1.7
