@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.api.score.stream;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

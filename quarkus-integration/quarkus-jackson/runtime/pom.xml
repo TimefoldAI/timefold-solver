@@ -83,11 +83,6 @@
               <goal>extension-descriptor</goal>
             </goals>
             <phase>compile</phase>
-            <configuration>
-              <capabilities>
-                <provides>ai.timefold.solver.timefold-quarkus-jackson</provides>
-              </capabilities>
-            </configuration>
           </execution>
         </executions>
       </plugin>

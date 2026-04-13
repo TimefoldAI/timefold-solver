@@ -3,8 +3,6 @@ package ai.timefold.solver.core.api.score.stream;
 import java.util.Collection;
 import java.util.Set;
 
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
-
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 

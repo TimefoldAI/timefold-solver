@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.director;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.List;
 import java.util.Map;
@@ -10,16 +9,16 @@ import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.testdomain.constraintweightoverrides.TestdataConstraintWeightOverridesSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractScoreDirectorSemanticsTest {
 
-    private final SolutionDescriptor<TestdataConstraintWeightOverridesSolution> constraintConfigurationSolutionDescriptor =
+    protected final SolutionDescriptor<TestdataConstraintWeightOverridesSolution> constraintConfigurationSolutionDescriptor =
             TestdataConstraintWeightOverridesSolution.buildSolutionDescriptor();
     private final SolutionDescriptor<TestdataPinnedListSolution> pinnedListSolutionDescriptor =
             TestdataPinnedListSolution.buildSolutionDescriptor();
@@ -87,22 +86,24 @@ public abstract class AbstractScoreDirectorSemanticsTest {
 
         // Create score director, calculate score.
         var solution1 = TestdataConstraintWeightOverridesSolution.generateSolution(1, 1);
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
+        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                .withConstraintMatchPolicy(
+                        scoreDirectorFactory instanceof EasyScoreDirectorFactory ? ConstraintMatchPolicy.DISABLED
+                                : ConstraintMatchPolicy.ENABLED)
+                .build()) {
             scoreDirector.setWorkingSolution(solution1);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1.raw()).isEqualTo(SimpleScore.ONE);
 
             // Set new solution with a different constraint weight, calculate score.
             var solution2 = TestdataConstraintWeightOverridesSolution.generateSolution(1, 1);
-            solution2.setConstraintWeightOverrides(
-                    ConstraintWeightOverrides.of(Map.of("First weight", SimpleScore.of(2))));
+            solution2.setConstraintWeightOverrides(ConstraintWeightOverrides.of(Map.of("First weight", SimpleScore.of(2))));
             scoreDirector.setWorkingSolution(solution2);
             var score2 = scoreDirector.calculateScore();
             assertThat(score2.raw()).isEqualTo(SimpleScore.of(2));
 
             // Set new solution with a disabled constraint, calculate score.
-            solution2.setConstraintWeightOverrides(
-                    ConstraintWeightOverrides.of(Map.of("First weight", SimpleScore.ZERO)));
+            solution2.setConstraintWeightOverrides(ConstraintWeightOverrides.of(Map.of("First weight", SimpleScore.ZERO)));
             scoreDirector.setWorkingSolution(solution2);
             var score3 = scoreDirector.calculateScore();
             assertThat(score3.raw()).isEqualTo(SimpleScore.ZERO);
@@ -117,7 +118,11 @@ public abstract class AbstractScoreDirectorSemanticsTest {
 
         // Create score director, calculate score with a given constraint configuration.
         var solution = TestdataConstraintWeightOverridesSolution.generateSolution(1, 1);
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
+        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                .withConstraintMatchPolicy(
+                        scoreDirectorFactory instanceof EasyScoreDirectorFactory ? ConstraintMatchPolicy.DISABLED
+                                : ConstraintMatchPolicy.ENABLED)
+                .build()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1.raw()).isEqualTo(SimpleScore.ONE);
@@ -125,8 +130,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             // Change constraint configuration on the current working solution.
             var weightOverrides = solution.getConstraintWeightOverrides();
             scoreDirector.beforeProblemPropertyChanged(weightOverrides);
-            solution.setConstraintWeightOverrides(
-                    ConstraintWeightOverrides.of(Map.of("First weight", SimpleScore.of(2))));
+            solution.setConstraintWeightOverrides(ConstraintWeightOverrides.of(Map.of("First weight", SimpleScore.of(2))));
             scoreDirector.afterProblemPropertyChanged(weightOverrides);
             var score2 = scoreDirector.calculateScore();
             assertThat(score2.raw()).isEqualTo(SimpleScore.of(2));
@@ -134,47 +138,11 @@ public abstract class AbstractScoreDirectorSemanticsTest {
     }
 
     @Test
-    void constraintPresentEvenIfNoMatches() {
-        var scoreDirectorFactory =
-                buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
-        // Need constraint match support for this.
-        Assumptions.assumeTrue(scoreDirectorFactory.supportsConstraintMatching());
-
-        // Create score director, calculate score with a given constraint configuration.
-        var solution = TestdataConstraintWeightOverridesSolution.generateSolution(1, 1);
-        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
-                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                .build()) {
-            scoreDirector.setWorkingSolution(solution);
-            var score1 = scoreDirector.calculateScore();
-            assertSoftly(softly -> {
-                softly.assertThat(score1.isFullyAssigned()).isTrue();
-                softly.assertThat(score1.raw().score()).isEqualTo(1);
-                softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
-                        .containsOnlyKeys("First weight");
-            });
-
-            // Make sure nothing matches, but the constraint is still present.
-            var entity = scoreDirector.getWorkingSolution().getEntityList().get(0);
-            scoreDirector.beforeVariableChanged(entity, "value");
-            entity.setValue(null);
-            scoreDirector.afterVariableChanged(entity, "value");
-            var score2 = scoreDirector.calculateScore();
-            assertSoftly(softly -> {
-                softly.assertThat(score2.isFullyAssigned()).isFalse();
-                softly.assertThat(score2.raw().score()).isZero();
-                softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
-                        .containsOnlyKeys("First weight");
-            });
-        }
-    }
-
-    @Test
     void listVariableEntityPinningSupported() {
         var scoreDirectorFactory = buildScoreDirectorFactoryWithListVariableEntityPin(pinnedListSolutionDescriptor);
         var solution = TestdataPinnedListSolution.generateUninitializedSolution(2, 2);
-        var firstEntity = solution.getEntityList().get(0);
-        firstEntity.setValueList(List.of(solution.getValueList().get(0)));
+        var firstEntity = solution.getEntityList().getFirst();
+        firstEntity.setValueList(List.of(solution.getValueList().getFirst()));
         firstEntity.setPinned(true);
 
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
@@ -195,11 +163,10 @@ public abstract class AbstractScoreDirectorSemanticsTest {
 
     @Test
     void listVariableIndexPinningSupported() {
-        var scoreDirectorFactory =
-                buildScoreDirectorFactoryWithListVariablePinIndex(pinnedWithIndexListSolutionDescriptor);
+        var scoreDirectorFactory = buildScoreDirectorFactoryWithListVariablePinIndex(pinnedWithIndexListSolutionDescriptor);
         var solution = TestdataPinnedWithIndexListSolution.generateUninitializedSolution(3, 3);
-        var firstEntity = solution.getEntityList().get(0);
-        firstEntity.setValueList(List.of(solution.getValueList().get(0)));
+        var firstEntity = solution.getEntityList().getFirst();
+        firstEntity.setValueList(List.of(solution.getValueList().getFirst()));
         firstEntity.setPinned(true);
         var secondEntity = solution.getEntityList().get(1);
         secondEntity.setValueList(List.of(solution.getValueList().get(1)));

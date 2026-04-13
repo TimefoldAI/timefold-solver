@@ -2,7 +2,7 @@ package ai.timefold.solver.benchmark.impl.statistic.subsingle.constraintmatchtot
 
 import ai.timefold.solver.benchmark.impl.statistic.StatisticPoint;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 
 public class ConstraintMatchTotalBestScoreStatisticPoint extends StatisticPoint {
 

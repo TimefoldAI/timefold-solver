@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

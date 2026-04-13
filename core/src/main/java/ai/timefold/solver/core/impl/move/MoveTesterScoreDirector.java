@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.Map;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
@@ -31,12 +31,7 @@ final class MoveTesterScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
-        return Collections.emptyMap();
-    }
-
-    @Override
-    public Map<Object, Indictment<Score_>> getIndictmentMap() {
+    public Map<ConstraintRef, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
         return Collections.emptyMap();
     }
 

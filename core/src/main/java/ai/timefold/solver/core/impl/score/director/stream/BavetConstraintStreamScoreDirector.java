@@ -7,12 +7,12 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
@@ -97,7 +97,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     }
 
     @Override
-    public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
+    public Map<ConstraintRef, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
         if (!constraintMatchPolicy.isEnabled()) {
             throw new IllegalStateException("When constraint matching is disabled, this method should not be called.");
         } else if (workingSolution == null) {
@@ -105,18 +105,6 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
                     "The method setWorkingSolution() must be called before the method getConstraintMatchTotalMap().");
         }
         return session.getConstraintMatchTotalMap();
-    }
-
-    @Override
-    public Map<Object, Indictment<Score_>> getIndictmentMap() {
-        if (!constraintMatchPolicy.isJustificationEnabled()) {
-            throw new IllegalStateException(
-                    "When constraint matching with justifications is disabled, this method should not be called.");
-        } else if (workingSolution == null) {
-            throw new IllegalStateException(
-                    "The method setWorkingSolution() must be called before the method getIndictmentMap().");
-        }
-        return session.getIndictmentMap();
     }
 
     @Override

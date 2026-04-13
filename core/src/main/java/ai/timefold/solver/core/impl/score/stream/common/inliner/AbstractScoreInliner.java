@@ -2,20 +2,17 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
-import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.definition.BendableBigDecimalScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.BendableScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.HardMediumSoftBigDecimalScoreDefinition;
@@ -71,8 +68,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
     protected final ConstraintMatchPolicy constraintMatchPolicy;
     protected final Map<Constraint, Score_> constraintWeightMap;
     private final Map<Constraint, ElementAwareLinkedList<ConstraintMatchCarrier<Score_>>> constraintMatchMap;
-    private @Nullable Map<String, ConstraintMatchTotal<Score_>> constraintIdToConstraintMatchTotalMap = null;
-    private @Nullable Map<Object, Indictment<Score_>> indictmentMap = null;
+    private @Nullable Map<ConstraintRef, ConstraintMatchTotal<Score_>> constraintIdToConstraintMatchTotalMap = null;
 
     protected AbstractScoreInliner(Map<Constraint, Score_> constraintWeightMap, ConstraintMatchPolicy constraintMatchPolicy) {
         this.constraintMatchPolicy = constraintMatchPolicy;
@@ -152,14 +148,13 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
 
     private void clearMaps() {
         constraintIdToConstraintMatchTotalMap = null;
-        indictmentMap = null;
     }
 
     public ConstraintMatchPolicy getConstraintMatchPolicy() {
         return constraintMatchPolicy;
     }
 
-    public final Map<String, ConstraintMatchTotal<Score_>> getConstraintIdToConstraintMatchTotalMap() {
+    public final Map<ConstraintRef, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
         if (!constraintMatchPolicy.isEnabled()) {
             throw new IllegalStateException("Impossible state: Method called while constraint matching is disabled.");
         } else if (constraintIdToConstraintMatchTotalMap == null) {
@@ -169,62 +164,19 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
     }
 
     private void rebuildConstraintMatchTotals() {
-        var constraintIdToConstraintMatchTotalMap = new TreeMap<String, ConstraintMatchTotal<Score_>>();
+        var constraintIdToConstraintMatchTotalMap = new TreeMap<ConstraintRef, ConstraintMatchTotal<Score_>>();
         for (var entry : constraintMatchMap.entrySet()) {
             var constraint = entry.getKey();
             var constraintMatchTotal =
-                    new DefaultConstraintMatchTotal<>(constraint.getConstraintRef(), constraintWeightMap.get(constraint));
+                    new ConstraintMatchTotal<>(constraint.getConstraintRef(), constraintWeightMap.get(constraint));
             for (var carrier : entry.getValue()) {
                 // Constraint match instances are only created here when we actually need them.
                 var constraintMatch = carrier.get();
                 constraintMatchTotal.addConstraintMatch(constraintMatch);
             }
-            constraintIdToConstraintMatchTotalMap.put(constraint.getConstraintRef().constraintName(), constraintMatchTotal);
+            constraintIdToConstraintMatchTotalMap.put(constraint.getConstraintRef(), constraintMatchTotal);
         }
         this.constraintIdToConstraintMatchTotalMap = constraintIdToConstraintMatchTotalMap;
-    }
-
-    public final Map<Object, Indictment<Score_>> getIndictmentMap() {
-        if (!constraintMatchPolicy.isJustificationEnabled()) {
-            throw new IllegalStateException("Impossible state: Method called while justifications are disabled.");
-        } else if (indictmentMap == null) {
-            rebuildIndictments();
-        }
-        return indictmentMap;
-    }
-
-    private void rebuildIndictments() {
-        var workingIndictmentMap = new LinkedHashMap<Object, Indictment<Score_>>();
-        for (var entry : constraintMatchMap.entrySet()) {
-            for (var carrier : entry.getValue()) {
-                // Constraint match instances are only created here when we actually need them.
-                var constraintMatch = carrier.get();
-                for (var indictedObject : constraintMatch.getIndictedObjectList()) {
-                    if (indictedObject == null) { // Users may have sent null, or it came from the default mapping.
-                        continue;
-                    }
-                    var indictment = getIndictment(workingIndictmentMap, constraintMatch, indictedObject);
-                    /*
-                     * Optimization: In order to not have to go over the indicted object list and remove duplicates,
-                     * we use a method that will silently skip duplicate constraint matches.
-                     * This is harmless because the two identical indicted objects come from the same constraint match.
-                     */
-                    indictment.addConstraintMatchWithoutFail(constraintMatch);
-                }
-            }
-        }
-        indictmentMap = workingIndictmentMap;
-    }
-
-    private DefaultIndictment<Score_> getIndictment(Map<Object, Indictment<Score_>> indictmentMap,
-            ConstraintMatch<Score_> constraintMatch, Object indictedObject) {
-        // Like computeIfAbsent(), but doesn't create a capturing lambda on the hot path.
-        var indictment = (DefaultIndictment<Score_>) indictmentMap.get(indictedObject);
-        if (indictment == null) {
-            indictment = new DefaultIndictment<>(indictedObject, constraintMatch.getScore().zero());
-            indictmentMap.put(indictedObject, indictment);
-        }
-        return indictment;
     }
 
     public Set<Constraint> getConstraints() {

@@ -108,19 +108,39 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
         this.constraintStreamProfilingEnabled = constraintStreamProfilingEnabled;
     }
 
+    /**
+     * Note: Incremental score calculation is exclusive to Timefold Solver Enterprise Edition
+     * It is not available in the open-source version of Timefold Solver,
+     * and attempts to use it without a valid license will throw an exception at runtime.
+     */
     public @Nullable Class<? extends IncrementalScoreCalculator> getIncrementalScoreCalculatorClass() {
         return incrementalScoreCalculatorClass;
     }
 
+    /**
+     * Note: Incremental score calculation is exclusive to Timefold Solver Enterprise Edition
+     * It is not available in the open-source version of Timefold Solver,
+     * and attempts to use it without a valid license will throw an exception at runtime.
+     */
     public void setIncrementalScoreCalculatorClass(
             @Nullable Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass) {
         this.incrementalScoreCalculatorClass = incrementalScoreCalculatorClass;
     }
 
+    /**
+     * Note: Incremental score calculation is exclusive to Timefold Solver Enterprise Edition
+     * It is not available in the open-source version of Timefold Solver,
+     * and attempts to use it without a valid license will throw an exception at runtime.
+     */
     public @Nullable Map<@NonNull String, @NonNull String> getIncrementalScoreCalculatorCustomProperties() {
         return incrementalScoreCalculatorCustomProperties;
     }
 
+    /**
+     * Note: Incremental score calculation is exclusive to Timefold Solver Enterprise Edition
+     * It is not available in the open-source version of Timefold Solver,
+     * and attempts to use it without a valid license will throw an exception at runtime.
+     */
     public void setIncrementalScoreCalculatorCustomProperties(
             @Nullable Map<@NonNull String, @NonNull String> incrementalScoreCalculatorCustomProperties) {
         this.incrementalScoreCalculatorCustomProperties = incrementalScoreCalculatorCustomProperties;
@@ -184,6 +204,11 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
         return this;
     }
 
+    /**
+     * Note: Incremental score calculation is exclusive to Timefold Solver Enterprise Edition
+     * It is not available in the open-source version of Timefold Solver,
+     * and attempts to use it without a valid license will throw an exception at runtime.
+     */
     public @NonNull ScoreDirectorFactoryConfig
             withIncrementalScoreCalculatorClass(
                     @NonNull Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass) {
@@ -191,6 +216,11 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
         return this;
     }
 
+    /**
+     * Note: Incremental score calculation is exclusive to Timefold Solver Enterprise Edition
+     * It is not available in the open-source version of Timefold Solver,
+     * and attempts to use it without a valid license will throw an exception at runtime.
+     */
     public @NonNull ScoreDirectorFactoryConfig
             withIncrementalScoreCalculatorCustomProperties(
                     @NonNull Map<@NonNull String, @NonNull String> incrementalScoreCalculatorCustomProperties) {

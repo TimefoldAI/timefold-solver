@@ -38,11 +38,8 @@ This is often useful for xref:responding-to-change/responding-to-change.adoc#rea
 Defaults to `false`.
 
 {property_prefix}timefold.solver.{solver_name_prefix}move-thread-count::
-Enable multi-threaded solving for a single problem, which increases CPU consumption.
+Enable xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multithreaded incremental solving] for a single problem, which increases CPU consumption.
 Defaults to `NONE`.
-Note that this is a feature of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise edition],
-which is Timefold's commercial offering.
-See xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multithreaded incremental solving].
 
 {property_prefix}timefold.solver.{solver_name_prefix}nearby-distance-meter-class::
 Enable the xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby Selection] quick configuration.

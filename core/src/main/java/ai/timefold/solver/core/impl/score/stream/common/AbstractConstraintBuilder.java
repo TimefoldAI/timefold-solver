@@ -26,14 +26,11 @@ public abstract class AbstractConstraintBuilder<Score_ extends Score<Score_>> im
 
     protected abstract <JustificationMapping_> @Nullable JustificationMapping_ getJustificationMapping();
 
-    protected abstract <IndictedObjectsMapping_> @Nullable IndictedObjectsMapping_ getIndictedObjectsMapping();
-
     @SuppressWarnings("unchecked")
     @Override
     public final Constraint asConstraintDescribed(String constraintName, String constraintDescription, String constraintGroup) {
         return constraintConstructor.apply(sanitize("constraintName", constraintName), constraintDescription,
-                sanitize("constraintGroup", constraintGroup), constraintWeight, impactType, getJustificationMapping(),
-                getIndictedObjectsMapping());
+                sanitize("constraintGroup", constraintGroup), constraintWeight, impactType, getJustificationMapping());
     }
 
     public static String sanitize(String fieldName, String fieldValue) {

@@ -23,8 +23,7 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultShadowVariableMetaModel;
@@ -40,6 +39,7 @@ import ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVaria
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
@@ -336,12 +336,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         }
 
         @Override
-        public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Map<Object, Indictment<Score_>> getIndictmentMap() {
+        public Map<ConstraintRef, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
             throw new UnsupportedOperationException();
         }
 

@@ -101,6 +101,15 @@ public class GeneralMethodDeleteInvocationMigrationRecipe extends AbstractRecipe
                 new RemoveFieldFromMethodInvocationRecipe(
                         "ai.timefold.solver.core.config.solver.SolverConfig getDomainAccessType()"),
                 new RemoveFieldFromMethodInvocationRecipe(
-                        "ai.timefold.solver.core.config.solver.SolverConfig determineDomainAccessType()"));
+                        "ai.timefold.solver.core.config.solver.SolverConfig determineDomainAccessType()"),
+                // indictWith
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.api.score.stream.uni.UniConstraintBuilder indictWith(..)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.api.score.stream.bi.BiConstraintBuilder indictWith(..)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.api.score.stream.tri.TriConstraintBuilder indictWith(..)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder indictWith(..)"));
     }
 }

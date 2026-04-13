@@ -39,20 +39,6 @@ public final class ScoreUtil {
         return scoreTokens;
     }
 
-    public static int parseLevelAsInt(Class<? extends Score<?>> scoreClass, String scoreString, String levelString) {
-        if (levelString.equals("*")) {
-            return Integer.MIN_VALUE;
-        }
-        try {
-            return Integer.parseInt(levelString);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(
-                    "The scoreString (%s) for the scoreClass (%s) has a levelString (%s) which is not a valid integer."
-                            .formatted(scoreString, scoreClass.getSimpleName(), levelString),
-                    e);
-        }
-    }
-
     public static long parseLevelAsLong(Class<? extends Score<?>> scoreClass, String scoreString, String levelString) {
         if (levelString.equals("*")) {
             return Long.MIN_VALUE;

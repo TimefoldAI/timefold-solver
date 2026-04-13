@@ -26,8 +26,6 @@ import java.util.SequencedCollection;
 import java.util.SequencedMap;
 import java.util.SequencedSet;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
@@ -57,8 +55,6 @@ import ai.timefold.solver.core.impl.domain.common.accessor.ReflectionFieldMember
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
-import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
-import ai.timefold.solver.core.impl.domain.solution.OverridesBasedConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
@@ -74,7 +70,6 @@ import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
 import ai.timefold.solver.core.impl.util.MutablePair;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
-import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
@@ -146,11 +141,6 @@ public final class SolutionDescriptor<Solution_> {
             entityDescriptor.processAnnotations(descriptorPolicy);
         }
         solutionDescriptor.afterAnnotationsProcessed(descriptorPolicy);
-        if (solutionDescriptor.constraintWeightSupplier != null) {
-            // The scoreDescriptor is definitely initialized at this point.
-            solutionDescriptor.constraintWeightSupplier.initialize(solutionDescriptor,
-                    descriptorPolicy.getMemberAccessorFactory(), descriptorPolicy.getDomainAccessType());
-        }
         return solutionDescriptor;
     }
 
@@ -321,7 +311,7 @@ public final class SolutionDescriptor<Solution_> {
                                 "The solutionClass (%s) has a field of type (%s) which was already found on its parent class."
                                         .formatted(lineageClass, ConstraintWeightOverrides.class));
                     }
-                    constraintWeightSupplier = OverridesBasedConstraintWeightSupplier.create(this, descriptorPolicy,
+                    constraintWeightSupplier = ConstraintWeightSupplier.create(this, descriptorPolicy,
                             constraintWeightFieldList.getFirst());
                 }
                 default ->
@@ -1106,70 +1096,6 @@ public final class SolutionDescriptor<Solution_> {
      */
     public <Score_ extends Score<Score_>> void setScore(Solution_ solution, Score_ score) {
         this.<Score_> getScoreDescriptor().setScore(solution, score);
-    }
-
-    public PlanningSolutionDiff<Solution_> diff(Solution_ oldSolution, Solution_ newSolution) {
-        // Genuine entities first, then sort by class name.
-        var oldEntities = sortEntitiesForDiff(oldSolution);
-        var newEntities = sortEntitiesForDiff(newSolution);
-
-        var removedOldEntities = new LinkedHashSet<>(oldEntities.size());
-        var oldToNewEntities = new LinkedHashMap<>(newEntities.size());
-        for (var entry : oldEntities.entrySet()) {
-            var entityClassName = entry.getKey();
-            for (var oldEntity : entry.getValue()) {
-                var newEntity = newEntities.getOrDefault(entityClassName, Collections.emptySet()).stream()
-                        .filter(e -> Objects.equals(e, oldEntity))
-                        .findFirst()
-                        .orElse(null);
-                if (newEntity == null) {
-                    removedOldEntities.add(oldEntity);
-                } else {
-                    oldToNewEntities.put(oldEntity, newEntity);
-                }
-            }
-        }
-
-        var addedNewEntities = newEntities.values().stream().flatMap(Collection::stream)
-                .filter(newEntity -> !oldToNewEntities.containsValue(newEntity))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        // Genuine variables first, then sort by ordinal.
-        var variableDescriptorComparator = Comparator
-                .<VariableDescriptor<Solution_>, String> comparing(
-                        variableDescriptor -> variableDescriptor instanceof GenuineVariableDescriptor<Solution_> ? "0" : "1")
-                .thenComparingInt(VariableDescriptor::getOrdinal);
-        var solutionDiff = new DefaultPlanningSolutionDiff<>(getMetaModel(), oldSolution, newSolution, removedOldEntities,
-                addedNewEntities);
-        for (var entry : oldToNewEntities.entrySet()) {
-            var oldEntity = entry.getKey();
-            var newEntity = entry.getValue();
-            var entityDescriptor = findEntityDescriptorOrFail(oldEntity.getClass());
-            var entityDiff = new DefaultPlanningEntityDiff<>(solutionDiff, entry.getKey());
-            entityDescriptor.getVariableDescriptorMap().values().stream().sorted(variableDescriptorComparator)
-                    .flatMap(variableDescriptor -> {
-                        var oldValue = variableDescriptor.getValue(oldEntity);
-                        var newValue = variableDescriptor.getValue(newEntity);
-                        if (Objects.equals(oldValue, newValue)) {
-                            return Stream.empty();
-                        }
-                        var variableMetaModel = entityDiff.entityMetaModel().variable(variableDescriptor.getVariableName());
-                        var variableDiff = new DefaultPlanningVariableDiff<>(entityDiff, variableMetaModel, oldValue, newValue);
-                        return Stream.of(variableDiff);
-                    }).forEach(entityDiff::addVariableDiff);
-            if (!entityDiff.variableDiffs().isEmpty()) {
-                solutionDiff.addEntityDiff(entityDiff);
-            }
-        }
-        return solutionDiff;
-    }
-
-    private SortedMap<String, Set<Object>> sortEntitiesForDiff(Solution_ solution) {
-        return getEntityDescriptors().stream().map(descriptor -> descriptor.extractEntities(solution))
-                .flatMap(Collection::stream)
-                // TreeMap and LinkedHashSet for fully reproducible ordering of entities and variables.
-                .collect(Collectors.groupingBy(s -> s.getClass().getCanonicalName(), TreeMap::new,
-                        Collectors.toCollection(LinkedHashSet::new)));
     }
 
     @Override

@@ -84,11 +84,11 @@ There are several ways of running the solver in parallel:
 
 * *xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[Multi-threaded incremental solving]*:
 Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
-This is an exclusive feature of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition].
+This is exclusively available in the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition] of Timefold Solver.
 
 * *xref:enterprise-edition/enterprise-edition.adoc#partitionedSearch[Partitioned search]*:
 Split 1 dataset in multiple parts and solve them independently.
-This is an exclusive feature of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition].
+This is exclusively available in the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition] of Timefold Solver.
 * *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
 ** Not recommended: This is a marginal gain for a high cost of hardware resources.
 ** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
@@ -740,7 +740,7 @@ The final best solution consumer,
 which is called at the end of the solving process,
 can be set using `withFinalBestSolutionEventConsumer(...)`.
 Additionally,
-an improved solution consumer capable of throttling events is available in the xref:enterprise-edition/enterprise-edition.adoc#throttlingBestSolutionEvents[Enterprise Edition].
+an improved solution consumer capable of throttling events is available in the xref:enterprise-edition/enterprise-edition.adoc#throttlingBestSolutionEvents[Enterprise Edition] of the Timefold Solver.
 
 [WARNING]
 ====
@@ -861,5 +861,5 @@ Users of our xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition]
 may use the xref:enterprise-edition/enterprise-edition.adoc#throttlingBestSolutionEvents[throttling feature]
 to limit the number of best solution events fired over any period of time.
 
-Community Edition users may implement their own throttling mechanism within the `Consumer` itself.
+Open-source users may implement their own throttling mechanism within the `Consumer` itself.
 ====

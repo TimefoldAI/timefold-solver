@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.ScoreImpact;

@@ -1,8 +1,6 @@
 package ai.timefold.solver.jackson.api.score;
 
 import ai.timefold.solver.core.api.score.BendableScore;
-import ai.timefold.solver.jackson.api.score.buildin.BendableScoreJacksonDeserializer;
-import ai.timefold.solver.jackson.api.score.buildin.BendableScoreJacksonSerializer;
 
 import org.junit.jupiter.api.Test;
 

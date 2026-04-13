@@ -1,8 +1,6 @@
 package ai.timefold.solver.jackson.api.score;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
-import ai.timefold.solver.jackson.api.score.buildin.HardSoftScoreJacksonDeserializer;
-import ai.timefold.solver.jackson.api.score.buildin.HardSoftScoreJacksonSerializer;
 
 import org.junit.jupiter.api.Test;
 

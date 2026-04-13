@@ -1,6 +1,6 @@
 package ai.timefold.solver.jackson.api.score.constraint;
 
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;

@@ -42,11 +42,8 @@ Luckily, defining constraints in Timefold Solver is very flexible through the fo
 Take the time to acquaint yourself with the first three techniques.
 Once you understand them, formalizing most business constraints becomes straightforward.
 
-[NOTE]
-====
-Do not presume that your business knows all its score constraints in advance.
+NOTE: Do not presume that your business knows all its score constraints in advance.
 Expect score constraints to be added, changed or removed after the first releases.
-====
 
 
 [#scoreConstraintSignum]
@@ -418,7 +415,7 @@ There are several ways to calculate the `Score` of a solution:
 * **xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]**:
 Implement each constraint as a separate Constraint Stream.
 Fast and scalable.
-* **xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental score calculator]** (not recommended):
+* **xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental score calculator]**:
 Implement multiple low-level methods.
 Fast and scalable.
 Very difficult to implement and maintain.
@@ -428,12 +425,15 @@ Implement all constraints together in a single method.
 Does not scale.
 Does not support xref:constraints-and-score/understanding-the-score.adoc[score explanations].
 
+NOTE: Incremental score calculator is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
+
 Every score calculation type can work with any Score definition (such as ``HardSoftScore`` or ``HardMediumSoftScore``).
 All score calculation types are object-oriented and can reuse existing Java code.
 
 [IMPORTANT]
 ====
-The score calculation must be read-only.
+The score calculation must be deterministic and free of side-effects.
 It must not change the planning entities or the problem facts in any way.
 For example, it must not call a setter method on a planning entity in the score calculation.
 
@@ -443,7 +443,6 @@ As a result, there is no guarantee that changes applied during score calculation
 
 To update planning entities when the planning variable change, use xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables] instead.
 ====
-
 
 [#initializingScoreTrend]
 === `InitializingScoreTrend`

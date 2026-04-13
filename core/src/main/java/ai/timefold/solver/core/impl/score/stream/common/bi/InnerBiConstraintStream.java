@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.common.bi;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.ToLongBiFunction;
 
@@ -23,10 +21,6 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
 
     static <A, B> TriFunction<A, B, Score<?>, DefaultConstraintJustification> createDefaultJustificationMapping() {
         return (a, b, score) -> DefaultConstraintJustification.of(score, a, b);
-    }
-
-    static <A, B> BiFunction<A, B, Collection<?>> createDefaultIndictedObjectsMapping() {
-        return Arrays::asList;
     }
 
     RetrievalSemantics getRetrievalSemantics();

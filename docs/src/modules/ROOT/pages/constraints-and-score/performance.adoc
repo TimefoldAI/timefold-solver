@@ -306,7 +306,7 @@ The code on the hot path of your application needs to be as fast as possible.
 * Avoid using `java.util.Stream` or any other form of explicit iteration in constraints, as that is much slower.
 
 [#enableAutomaticNodeSharing]
-== Enable automatic node sharing (Enterprise Edition only)
+== Enable automatic node sharing
 If you are using the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition], you should xref:enterprise-edition/enterprise-edition.adoc#automaticNodeSharing[enable automatic node sharing] as it can significantly speed up score calculation.
 
 [#benchmark]
@@ -317,11 +317,8 @@ JVM performance may differ by as much as 20% between runs. To decide whether you
 
 == Constraint Profiling
 
-[NOTE]
-====
-This feature is a commercial feature of Timefold Solver Enterprise Edition.
-It is not available in the Community Edition.
-====
+NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
+It is not available in the open source version.
 
 xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint streams] have builtin support for xref:enterprise-edition/enterprise-edition.adoc#constraintProfiling[profiling constraints].
 Profiling constraints allows you to identify which constraints are taking the majority of the time spent in score calculation and thus are worth optimizing.

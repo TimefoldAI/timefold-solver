@@ -6,9 +6,11 @@ import java.util.concurrent.Callable;
 
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
+import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolutionUpdatePolicy;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 
@@ -123,11 +125,12 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
             var isConstraintMatchEnabled = solver.getSolverScope().getScoreDirector().getConstraintMatchPolicy()
                     .isEnabled();
             if (isConstraintMatchEnabled) { // Easy calculator fails otherwise.
-                var scoreExplanation =
-                        solutionManager.explain(solution, SolutionUpdatePolicy.NO_UPDATE);
-                subSingleBenchmarkResult.setScoreExplanationSummary(scoreExplanation.getSummary());
+                var scoreExplanation = TimefoldSolverEnterpriseService.loadOrNull(b -> solutionManager.analyze(solution,
+                        ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT, SolutionUpdatePolicy.NO_UPDATE));
+                if (scoreExplanation != null) { // Avoid hard fail when Enterprise is not present.
+                    subSingleBenchmarkResult.setScoreExplanationSummary(scoreExplanation.summarize());
+                }
             }
-
             problemBenchmarkResult.writeSolution(subSingleBenchmarkResult, solution);
         }
         MDC.remove(NAME_MDC);

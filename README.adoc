@@ -59,16 +59,16 @@ $ ./mvnw clean install -Dquickly
 == Contribute
 
 This is an open source project, and you are more than welcome to contribute!
-For more, see link:CONTRIBUTING.adoc[Contributing].
+For more, see link:CONTRIBUTING.md[Contributing].
 
 == Editions
 
 There are two editions of Timefold Solver:
 
-- Timefold Solver Community Edition (this repo).
-- Timefold Solver Enterprise Edition, a https://timefold.ai/pricing[licensed version] of Timefold Solver.
+- _Timefold Solver Community Edition_ (this repo).
+- _Timefold Solver Enterprise Edition_, a https://timefold.ai/pricing[licensed version] of Timefold Solver.
 
-=== Key Features of Timefold Solver Enterprise Edition (EE)
+=== Key Features of Timefold Solver Enterprise Edition
 
 - **Multi-threaded Solving:** Experience enhanced performance with multi-threaded solving capabilities.
 - **Nearby Selection:** Get better solutions quicker, especially with spatial problems.
@@ -76,8 +76,8 @@ There are two editions of Timefold Solver:
 
 === Licensing and Usage
 
-Unlike the Apache-2.0 licensed Community Edition in this repo,
-the Enterprise Edition is not open source.
+Unlike the Apache-2.0 licensed _Community Edition_ in this repo,
+the _Enterprise Edition_ is not open source.
 If you wish to use the Enterprise Edition in a production environment,
 please https://timefold.ai/contact[contact Timefold] to obtain the appropriate license.
 
