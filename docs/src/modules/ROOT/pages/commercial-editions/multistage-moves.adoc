@@ -1,7 +1,7 @@
 [#multistageMoves]
 = Multistage Moves
 
-include::.only-enterprise.adoc[]
+include::./.only-enterprise.adoc[]
 
 Multistage moves are moves composed of one or more stages, where each stage selects a single `Move` to execute.
 

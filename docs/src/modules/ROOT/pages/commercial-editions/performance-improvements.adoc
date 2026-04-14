@@ -5,7 +5,7 @@ Timefold Solver Enterprise brings many performance improvements. These are short
 [#fasterCustomShadowVariables]
 == Faster shadow variables
 
-include::.only-enterprise.adoc[]
+include::./.only-enterprise.adoc[]
 
 Updates to shadow variables happen incrementally with Timefold Solver Enterprise.
 For models making intensive use of xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[shadow variables], this should be visible as a serious performance improvement out-of-the-box.
@@ -15,7 +15,7 @@ This is enabled by default and doesn't require any special considerations.
 [#automaticNodeSharing]
 == Node sharing
 
-include::.only-enterprise.adoc[]
+include::./.only-enterprise.adoc[]
 
 When a `ConstraintProvider` does an operation for multiple constraints (such as finding all shifts corresponding to an employee), that work can be shared.
 This can significantly improve move evaluation speed if the repeated operation is computationally expensive:
