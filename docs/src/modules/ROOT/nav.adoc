@@ -47,5 +47,6 @@
 ** xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[Multithreaded solving]
 ** xref:using-timefold-solver/running-the-solver.adoc#partitionedSearch[Partitioned search]
 ** xref:constraints-and-score/performance.adoc#constraintProfiling[Constraint profiling]
+** xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental score calculation]
 ** xref:commercial-editions/multistage-moves.adoc[leveloffset=+1]
 ** xref:using-timefold-solver/running-the-solver.adoc#throttlingBestSolutionEvents[Throttling best solution events]

@@ -13,7 +13,7 @@ A correctly configured and active license key is required in order for our comme
 [#solverObtainLicenseKey]
 === Obtaining a license key
 
-<TODO>
+Contact us through our https://timefold.ai/talk-to-us[webform].
 
 [NOTE]
 ====
@@ -71,8 +71,11 @@ as shown in the following table:
 If you were not using some of these open source artifacts until now,
 you do not need to add the enterprise counterparts to your project either.
 
-[#enterpriseLimitations]
-== Limitations
+== Troubleshooting
 
-Blabla, Automatic Node Sharing puts some limitations. (Disable for now)
+After migrating to a commercial edition, most projects work out of the box.
 
+When using the Enterprise version, automatic node sharing is the only feature that places additional restrictions on your code.
+If you run into unexpected behavior, try xref:commercial-editions/performance-improvements.adoc#automaticNodeSharingConfiguration[disabling that feature] or align your code to xref:commercial-editions/performance-improvements.adoc#automaticNodeSharingRestrictions[comply].
+
+If that did not resolve the issue, link:https://timefold.ai/contact[contact Timefold support].

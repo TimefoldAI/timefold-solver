@@ -1363,8 +1363,7 @@ As always, benchmarking is recommended to find the optimal value for your use ca
 [#multistageMoveSelector]
 === `MultistageMoveSelector`
 
-NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
-It is not available in the open source version.
+include::../commercial-editions/_only-enterprise.adoc[]
 
 The `multistageMoveSelector` selects a multistage move to execute from a `BasicVariableStageProvider`.
 
@@ -1639,8 +1638,7 @@ As always, benchmarking is recommended to find the optimal value for your use ca
 [#listMultistageMoveSelector]
 === `ListMultistageMoveSelector`
 
-NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
-It is not available in the open source version.
+include::../commercial-editions/_only-enterprise.adoc[]
 
 The `listMultistageMoveSelector` selects a multistage move to execute from a `ListVariableStageProvider`.
 

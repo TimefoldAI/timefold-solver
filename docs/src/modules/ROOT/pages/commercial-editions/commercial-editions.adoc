@@ -11,7 +11,6 @@ These features are essential to scale out to large datasets and build trust with
 
 Unlike _Timefold Solver Community Edition_, these commercial editions are not open-source.
 We offer free trials as well as free licenses to non-profit organizations, start-ups and for academic research.
-Please check out LINK TODO to get your commercial licenses.
 
 TIP: Looking for quicker time-to-value?
 Timefold offers https://docs.timefold.ai/[pre-built, fully tuned optimization models], no constraint building required.
@@ -42,6 +41,9 @@ Just plug into our API and start optimizing immediately.
 | | | ✓
 
 | xref:constraints-and-score/performance.adoc#constraintProfiling[Constraint profiling]
+| | | ✓
+
+| xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental score calculation]
 | | | ✓
 
 | xref:commercial-editions/multistage-moves.adoc[Multistage moves]
