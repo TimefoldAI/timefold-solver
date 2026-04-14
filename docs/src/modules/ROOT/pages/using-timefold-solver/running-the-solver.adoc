@@ -988,7 +988,7 @@ For example, if set to `4`, submitting five problems
 has four problems solving immediately, and the fifth one starts when another one ends.
 If those problems solve for 5 minutes each, the fifth problem takes 10 minutes to finish.
 By default, `parallelSolverCount` is set to `AUTO`, which resolves to half the CPU cores,
-regardless of the xref:commercial-editions/commercial-editions.adoc#enterpriseMultithreadedSolving[`moveThreadCount`] of the solvers.
+regardless of the xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[`moveThreadCount`] of the solvers.
 
 To retrieve the best solution, after solving terminates normally, use `SolverJob.getFinalBestSolution()`:
 
@@ -1093,7 +1093,7 @@ The final best solution consumer,
 which is called at the end of the solving process,
 can be set using `withFinalBestSolutionEventConsumer(...)`.
 Additionally,
-an improved solution consumer capable of throttling events is available in the xref:commercial-editions/commercial-editions.adoc#throttlingBestSolutionEvents[Enterprise Edition] of the Timefold Solver.
+an improved solution consumer capable of throttling events is available in the xref:using-timefold-solver/running-the-solver.adoc#throttlingBestSolutionEvents[Enterprise Edition] of the Timefold Solver.
 
 [WARNING]
 ====
@@ -1268,7 +1268,7 @@ Best solution events may be triggered in a rapid succession,
 especially at the start of solving.
 
 Users of our xref:commercial-editions/commercial-editions.adoc[Enterprise Edition]
-may use the xref:commercial-editions/commercial-editions.adoc#throttlingBestSolutionEvents[throttling feature]
+may use the xref:using-timefold-solver/running-the-solver.adoc#throttlingBestSolutionEvents[throttling feature]
 to limit the number of best solution events fired over any period of time.
 
 Open-source users may implement their own throttling mechanism within the `Consumer` itself.

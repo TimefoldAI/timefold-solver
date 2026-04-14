@@ -420,7 +420,7 @@ INFO:: How much time spent in score calculation is spent by each constraint (tot
 | 2: Teacher time efficiency                         |     6.19 s |  23.15 % |
 ----
 +
-xref:commercial-editions/commercial-editions.adoc#nodeSharing[When node sharing] is used, the time spent will be reported with "Work shared by", with the numbers identifying constraints that shared the work.
+xref:commercial-editions/performance-improvements.adoc#nodeSharing[When node sharing] is used, the time spent will be reported with "Work shared by", with the numbers identifying constraints that shared the work.
 In the example below, work was shared by constraints 1 to 6:
 +
 [source,text]

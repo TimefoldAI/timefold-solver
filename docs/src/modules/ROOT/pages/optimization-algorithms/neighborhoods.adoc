@@ -96,7 +96,7 @@ that the user can optionally override to gain access to additional solver featur
 
 `Move rebase(Lookup lookup)`::
 This method creates a copy of the move that is applicable to a different working solution.
-This is only necessary when the solver is configured to use xref:commercial-editions/commercial-editions.adoc#multithreadedSolving[multi-threaded solving].
+This is only necessary when the solver is configured to use xref:using-timefold-solver/running-the-solver.adoc#multithreadedSolving[multi-threaded solving].
 `String describe()`::
 This method returns an identifier for the move type, which is used by parts of xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[the benchmarker]
 to separate results by move type.

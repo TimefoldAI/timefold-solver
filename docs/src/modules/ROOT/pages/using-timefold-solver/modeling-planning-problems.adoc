@@ -222,7 +222,7 @@ Alternatively, you can sometimes also introduce <<cachedProblemFact,_a cached pr
 === `@PlanningId`
 
 For some functionality
-(such as xref:commercial-editions/commercial-editions.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
+(such as xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
 and xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning]),
 Timefold Solver needs to map problem facts and planning entities to an ID.
 Timefold Solver uses that ID to _rebase_ a move from one thread's solution state to another's.
