@@ -12,8 +12,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
@@ -31,6 +35,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMove
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
+import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -55,6 +60,8 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.sort.TestdataAllowsUnassignedListSortableEntity;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.sort.TestdataAllowsUnassignedListSortableSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
@@ -82,6 +89,8 @@ import ai.timefold.solver.core.testdomain.sort.factory.TestdataFactorySortableSo
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
+import ai.timefold.solver.core.testdomain.unassignedvar.sort.TestdataAllowsUnassignedSortableEntity;
+import ai.timefold.solver.core.testdomain.unassignedvar.sort.TestdataAllowsUnassignedSortableSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
@@ -1329,6 +1338,38 @@ class DefaultConstructionHeuristicPhaseTest {
     }
 
     @Test
+    void penalizeBasicVariable() {
+        var solverConfig =
+                PlannerTestUtils
+                        .buildSolverConfig(TestdataAllowsUnassignedSortableSolution.class,
+                                TestdataAllowsUnassignedSortableEntity.class)
+                        .withConstraintProviderClass(PenalizeAssignedConstraintProvider.class)
+                        .withPhases(new ConstructionHeuristicPhaseConfig()
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
+        solverConfig.getScoreDirectorFactoryConfig().setEasyScoreCalculatorClass(null);
+        var problem = TestdataAllowsUnassignedSortableSolution.generateSolution(1, 1, false);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution).isNotNull();
+        assertThat(solution.getEntityList().getFirst().getValue()).isNull();
+    }
+
+    @Test
+    void penalizeListVariable() {
+        var solverConfig =
+                PlannerTestUtils
+                        .buildSolverConfig(TestdataAllowsUnassignedListSortableSolution.class,
+                                TestdataAllowsUnassignedListSortableEntity.class)
+                        .withConstraintProviderClass(ListPenalizeAssignedConstraintProvider.class)
+                        .withPhases(new ConstructionHeuristicPhaseConfig()
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
+        solverConfig.getScoreDirectorFactoryConfig().setEasyScoreCalculatorClass(null);
+        var problem = TestdataAllowsUnassignedListSortableSolution.generateSolution(1, 1, false);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution).isNotNull();
+        assertThat(solution.getEntityList().getFirst().getValueList()).isEmpty();
+    }
+
+    @Test
     void failConstructionHeuristicEntityRange() {
         var solverConfig =
                 PlannerTestUtils
@@ -1495,5 +1536,35 @@ class DefaultConstructionHeuristicPhaseTest {
     private record ConstructionHeuristicTestConfig(ConstructionHeuristicPhaseConfig config, int[] expected,
             boolean shuffle) {
 
+    }
+
+    public static class PenalizeAssignedConstraintProvider implements ConstraintProvider {
+
+        @Override
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
+            return new Constraint[] { penalizeAssigned(constraintFactory) };
+        }
+
+        Constraint penalizeAssigned(ConstraintFactory constraintFactory) {
+            return constraintFactory.forEach(TestdataAllowsUnassignedSortableEntity.class)
+                    .filter(entity -> entity.getValue() != null)
+                    .penalize(HardSoftScore.ONE_HARD)
+                    .asConstraint("penalize assigned");
+        }
+    }
+
+    public static class ListPenalizeAssignedConstraintProvider implements ConstraintProvider {
+
+        @Override
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
+            return new Constraint[] { penalizeAssigned(constraintFactory) };
+        }
+
+        Constraint penalizeAssigned(ConstraintFactory constraintFactory) {
+            return constraintFactory.forEach(TestdataAllowsUnassignedListSortableEntity.class)
+                    .filter(entity -> !entity.getValueList().isEmpty())
+                    .penalize(HardSoftScore.ONE_HARD)
+                    .asConstraint("penalize assigned");
+        }
     }
 }

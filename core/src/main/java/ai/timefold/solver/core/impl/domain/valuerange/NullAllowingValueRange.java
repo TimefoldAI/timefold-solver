@@ -53,7 +53,7 @@ public final class NullAllowingValueRange<T> extends AbstractValueRange<T> {
 
     @Override
     public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
-        return childValueRange.sort(sorter);
+        return new NullAllowingValueRange<>(childValueRange.sort(sorter));
     }
 
     @Override
