@@ -100,7 +100,7 @@ image::using-timefold-solver/running-the-solver/multiThreadingStrategies.png[ali
 [#multithreadedIncrementalSolving]
 ==== Multi-threaded incremental solving
 
-include::../commercial-editions/.only-enterprise.adoc[]
+include::../commercial-editions/_only-enterprise.adoc[]
 
 With this feature, the solver can run significantly faster,
 getting you the right solution earlier.
@@ -245,7 +245,7 @@ use `threadFactoryClass` to plug in a <<customThreadFactory,custom thread factor
 [#partitionedSearch]
 ==== Partitioned search
 
-include::../commercial-editions/.only-enterprise.adoc[]
+include::../commercial-editions/_only-enterprise.adoc[]
 
 [#partitionedSearchAlgorithm]
 ===== Algorithm description
@@ -1104,7 +1104,7 @@ These instances are still utilized during the solving process, and any modificat
 [#throttlingBestSolutionEvents]
 ==== Throttling best solution events in `SolverManager`
 
-include::../commercial-editions/.only-enterprise.adoc[]
+include::../commercial-editions/_only-enterprise.adoc[]
 
 This feature helps you avoid overloading your system with best solution events,
 especially in the early phase of the solving process when the solver is typically improving the solution very rapidly.

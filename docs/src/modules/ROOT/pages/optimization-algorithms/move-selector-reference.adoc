@@ -802,7 +802,7 @@ Mimic selection is useful to create <<cartesianProductMoveSelector,a composite m
 [#nearbySelection]
 === Nearby selection
 
-include::../commercial-editions/.only-enterprise.adoc[]
+include::../commercial-editions/_only-enterprise.adoc[]
 
 In some use cases (such as TSP and VRP, but also in other cases),
 changing entities to nearby values or swapping nearby entities leads to better results faster.

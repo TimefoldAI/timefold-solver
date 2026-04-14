@@ -318,7 +318,7 @@ JVM performance may differ by as much as 20% between runs. To decide whether you
 [#constraintProfiling]
 == Constraint Profiling
 
-include::../commercial-editions/.only-enterprise.adoc[]
+include::../commercial-editions/_only-enterprise.adoc[]
 
 Profiling allows you to identify which constraints are taking the majority of time spent in score calculation and thus are worth optimizing.
 Unfortunately, traditional profiling tools only report the internal classes used to calculate constraints instead of the constraints themselves. xref:./score-calculation.adoc#constraintStreams[Constraint streams] have builtin support for profiling constraints directly.

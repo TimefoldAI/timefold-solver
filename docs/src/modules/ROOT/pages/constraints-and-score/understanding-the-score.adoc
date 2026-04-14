@@ -8,7 +8,7 @@ The score in its pure form is just a number, and does not help us understand the
 It doesn't say which constraints are broken, or what caused them to break.
 To understand the score, it needs to be broken down.
 
-include::../commercial-editions/.only-plus-and-enterprise.adoc[]
+include::../commercial-editions/_only-plus-and-enterprise.adoc[]
 
 The easiest way to break down the score during development is to print the score summary:
 
