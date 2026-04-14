@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.api.score.stream;
 
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
+import ai.timefold.solver.core.impl.score.stream.common.DefaultConstraintMetadata;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -9,40 +10,23 @@ public interface ConstraintBuilder {
 
     /**
      * Builds a {@link Constraint} from the constraint stream.
-     * The constraint will be placed in the {@link Constraint#DEFAULT_CONSTRAINT_GROUP default constraint group}.
+     * Shorthand for {@link #asConstraint(ConstraintMetadata)}.
      *
-     * @param constraintName shows up in {@link ScoreAnalysis}
+     * @param id shows up in {@link ScoreAnalysis}
      */
-    default Constraint asConstraint(String constraintName) {
-        return asConstraintDescribed(constraintName, "");
-    }
-
-    /**
-     * As defined by {@link #asConstraintDescribed(String, String, String)},
-     * placing the constraint in the {@link Constraint#DEFAULT_CONSTRAINT_GROUP default constraint group}.
-     *
-     * @param constraintName shows up in {@link ScoreAnalysis}
-     * @param constraintDescription can contain any character, but it is recommended to keep it short and concise.
-     */
-    default Constraint asConstraintDescribed(String constraintName, String constraintDescription) {
-        return asConstraintDescribed(constraintName, constraintDescription, Constraint.DEFAULT_CONSTRAINT_GROUP);
+    default Constraint asConstraint(String id) {
+        return asConstraint(new DefaultConstraintMetadata(id));
     }
 
     /**
      * Builds a {@link Constraint} from the constraint stream.
-     * Both the constraint name and the constraint group are only allowed
-     * to contain alphanumeric characters, " ", "-" or "_".
-     * The constraint description can contain any character, but it is recommended to keep it short and concise.
-     * <p>
-     * Unlike the constraint name and group,
-     * the constraint description is unlikely to be used externally as an identifier,
-     * and therefore doesn't need to be URL-friendly, or protected against injection attacks.
+     * {@link ConstraintMetadata#id()} is called exactly once at this point;
+     * the returned value is validated and snapshotted as the constraint's permanent identity.
+     * Subsequent changes to the description's {@link ConstraintMetadata#id()} return value are ignored.
      *
-     * @param constraintName shows up in {@link ScoreAnalysis}
-     * @param constraintDescription can contain any character, but it is recommended to keep it short and concise.
-     * @param constraintGroup not used by the solver directly, but may be used by external tools to group constraints together,
-     *        such as by their source or by their purpose
+     * @param metadata identifies and describes the constraint;
+     *        {@link ConstraintMetadata#id()} shows up in {@link ScoreAnalysis}
      */
-    Constraint asConstraintDescribed(String constraintName, String constraintDescription, String constraintGroup);
+    Constraint asConstraint(ConstraintMetadata metadata);
 
 }

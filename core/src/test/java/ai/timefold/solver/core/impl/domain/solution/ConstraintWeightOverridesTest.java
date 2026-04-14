@@ -34,8 +34,8 @@ class ConstraintWeightOverridesTest {
         var secondAndFirst = ConstraintWeightOverrides.of(Map.of(
                 SECOND_WEIGHT, SimpleScore.ONE,
                 FIRST_WEIGHT, SimpleScore.ZERO));
-        assertThat(firstAndSecond.getKnownConstraintNames())
-                .containsExactly(secondAndFirst.getKnownConstraintNames().toArray(new String[0]));
+        assertThat(firstAndSecond.getKnownConstraintIds())
+                .containsExactly(secondAndFirst.getKnownConstraintIds().toArray(new String[0]));
     }
 
     @Test

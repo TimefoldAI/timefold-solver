@@ -37,7 +37,7 @@ public class ConstraintMatchTotalStepScoreStatisticPoint extends StatisticPoint 
 
     @Override
     public String toCsvLine() {
-        return buildCsvLineWithStrings(timeMillisSpent, constraintRef.constraintName(), Integer.toString(constraintMatchCount),
+        return buildCsvLineWithStrings(timeMillisSpent, constraintRef.id(), Integer.toString(constraintMatchCount),
                 scoreTotal.toString());
     }
 

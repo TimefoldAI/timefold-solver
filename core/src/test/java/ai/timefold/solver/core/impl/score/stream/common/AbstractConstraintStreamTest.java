@@ -33,8 +33,8 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 @Execution(ExecutionMode.CONCURRENT)
 public abstract class AbstractConstraintStreamTest {
 
-    protected static final String TEST_CONSTRAINT_NAME = "testConstraintName";
-    protected static final ConstraintRef TEST_CONSTRAINT_REF = new ConstraintRef(TEST_CONSTRAINT_NAME);
+    protected static final String TEST_CONSTRAINT_ID = "testConstraintId";
+    protected static final ConstraintRef TEST_CONSTRAINT_REF = new ConstraintRef(TEST_CONSTRAINT_ID);
 
     protected final ConstraintStreamImplSupport implSupport;
 
@@ -110,8 +110,8 @@ public abstract class AbstractConstraintStreamTest {
         return assertMatchWithScore(-1, justifications);
     }
 
-    protected static AssertableMatch assertMatch(String constraintName, Object... justifications) {
-        return assertMatchWithScore(-1, ConstraintRef.of(constraintName), justifications);
+    protected static AssertableMatch assertMatch(String constraintId, Object... justifications) {
+        return assertMatchWithScore(-1, ConstraintRef.of(constraintId), justifications);
     }
 
     protected static AssertableMatch assertMatchWithScore(int score, Object... justifications) {

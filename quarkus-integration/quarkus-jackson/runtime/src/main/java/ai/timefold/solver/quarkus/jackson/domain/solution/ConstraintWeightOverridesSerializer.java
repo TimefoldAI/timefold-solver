@@ -17,9 +17,9 @@ public final class ConstraintWeightOverridesSerializer<Score_ extends Score<Scor
     public void serialize(ConstraintWeightOverrides<Score_> constraintWeightOverrides, JsonGenerator generator,
             SerializerProvider serializerProvider) throws IOException {
         generator.writeStartObject();
-        for (var constraintName : constraintWeightOverrides.getKnownConstraintNames()) {
-            var weight = Objects.requireNonNull(constraintWeightOverrides.getConstraintWeight(constraintName));
-            generator.writeStringField(constraintName, weight.toString());
+        for (var constraintId : constraintWeightOverrides.getKnownConstraintIds()) {
+            var weight = Objects.requireNonNull(constraintWeightOverrides.getConstraintWeight(constraintId));
+            generator.writeStringField(constraintId, weight.toString());
         }
         generator.writeEndObject();
     }

@@ -101,7 +101,7 @@ public interface ScoreAnalysis<Score_ extends Score<Score_>> {
      * @return null if no constraint matches of such constraint are present
      */
     @Nullable
-    ConstraintAnalysis<Score_> getConstraintAnalysis(String constraintName);
+    ConstraintAnalysis<Score_> getConstraintAnalysis(String constraintId);
 
     /**
      * Compare this {@link ScoreAnalysis} to another {@link ScoreAnalysis}

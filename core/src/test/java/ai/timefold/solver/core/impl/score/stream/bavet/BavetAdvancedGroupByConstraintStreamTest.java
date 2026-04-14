@@ -50,7 +50,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy(Pair::new)
                         .filter(pair -> !pair.key().equals("G"))
                         .penalize(SimpleScore.ONE, Pair::value)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -81,7 +81,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy(count())
                         .filter(count -> count == 10)
                         .penalize(SimpleScore.ONE, i -> i)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -105,7 +105,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy(toSet())
                         .groupBy(sum(Set::size))
                         .penalize(SimpleScore.ONE, count -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -128,7 +128,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy(TestdataLavishEntity::getEntityGroup)
                         .groupBy(toSet())
                         .penalize(SimpleScore.ONE, Set::size)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         TestdataLavishEntity entity1 = solution.getFirstEntity();
         TestdataLavishEntity entity2 = solution.getEntityList().get(1);
@@ -157,7 +157,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy((a, b) -> a.getEntityGroup(), countBi())
                         .groupBy(ConstraintCollectors.toList((a, b) -> a))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -189,7 +189,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy((a, b, c) -> a.getEntityGroup(), countTri())
                         .groupBy(toMap((g, c) -> g, (g, c) -> c, Long::sum))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -225,7 +225,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy((a, b, c, d) -> a.getEntityGroup(), countQuad())
                         .groupBy(toMap((g, c) -> g, (g, c) -> c, Long::sum))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -253,7 +253,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy((a, b) -> a.getEntityGroup())
                         .groupBy(Function.identity(), count())
                         .penalize(SimpleScore.ONE, (group, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         TestdataLavishEntity entity = solution.getFirstEntity();
         TestdataLavishEntity entity2 = solution.getEntityList().get(1);
@@ -285,7 +285,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy((a, b, c) -> a.getEntityGroup())
                         .groupBy(Function.identity(), count())
                         .penalize(SimpleScore.ONE, (group, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         TestdataLavishEntity entity = solution.getFirstEntity();
         TestdataLavishEntity entity2 = solution.getEntityList().get(1);
@@ -321,7 +321,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy((a, b, c, d) -> a.getEntityGroup())
                         .groupBy(Function.identity(), count())
                         .penalize(SimpleScore.ONE, (group, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         TestdataLavishEntity entity = solution.getFirstEntity();
         TestdataLavishEntity entity2 = solution.getEntityList().get(1);
@@ -350,7 +350,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy(Function.identity(), count())
                         .groupBy((group, count) -> group.toString(), countBi())
                         .penalize(SimpleScore.ONE, (groupName, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         TestdataLavishEntity entity = solution.getFirstEntity();
         TestdataLavishEntity entity2 = solution.getEntityList().get(1);
@@ -383,7 +383,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy(Function.identity(), count())
                         .groupBy((group, count) -> group.toString(), countBi())
                         .penalize(SimpleScore.ONE, (groupName, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         TestdataLavishEntity entity = solution.getFirstEntity();
         TestdataLavishEntity entity2 = solution.getEntityList().get(1);
@@ -420,7 +420,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy(Function.identity(), count())
                         .groupBy((group, count) -> group.toString(), countBi())
                         .penalize(SimpleScore.ONE, (groupName, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         TestdataLavishEntity entity = solution.getFirstEntity();
         TestdataLavishEntity entity2 = solution.getEntityList().get(1);
@@ -456,7 +456,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .groupBy(TestdataLavishEntity::getEntityGroup, count())
                         .ifExists(TestdataLavishEntityGroup.class, equal((groupA, count) -> groupA, Function.identity()))
                         .penalize(SimpleScore.ONE, (groupA, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -491,7 +491,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                                 equal(TestdataLavishEntity::getEntityGroup, Function.identity()))
                         .groupBy(TestdataLavishEntity::getEntityGroup, count())
                         .penalize(SimpleScore.ONE, (groupA, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -526,7 +526,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                                 equal((e1, e2) -> e1.getEntityGroup(), Function.identity()))
                         .groupBy((e1, e2) -> e1.getEntityGroup(), countBi())
                         .penalize(SimpleScore.ONE, (groupA, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -560,7 +560,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         Joiners.equal(TestdataLavishEntity::getEntityGroup),
                         Joiners.filtering((e1, e2) -> !e1.getCode().contains("My")))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -583,7 +583,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         (group, value, entity) -> entity,
                         sum((group, count, entity) -> 1))
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME))).doesNotThrowAnyException();
+                .asConstraint(TEST_CONSTRAINT_ID))).doesNotThrowAnyException();
     }
 
 }

@@ -145,7 +145,7 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
         var constraint = sink.constraint();
         var metadata = getBaseDOTProperties("#3423a6", true);
         metadata.put("label", "<B>%s</B><BR />(Weight: %s)"
-                .formatted(constraint.getConstraintRef().constraintName(), constraint.extractConstraintWeight(solution)));
+                .formatted(constraint.getConstraintRef().id(), constraint.extractConstraintWeight(solution)));
         return mergeMetadata(metadata);
     }
 

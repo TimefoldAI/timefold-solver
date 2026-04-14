@@ -62,19 +62,19 @@ public final class ConstraintWeightSupplier<Solution_, Score_ extends Score<Scor
      * @param userDefinedConstraints never null
      */
     public void validate(@Nullable Solution_ workingSolution, Set<ConstraintRef> userDefinedConstraints) {
-        var userDefinedConstraintNames =
-                userDefinedConstraints.stream().map(ConstraintRef::constraintName).collect(Collectors.toSet());
+        var userDefinedConstraintIds =
+                userDefinedConstraints.stream().map(ConstraintRef::id).collect(Collectors.toSet());
         // Constraint verifier is known to cause null here.
         var overrides = workingSolution == null ? ConstraintWeightOverrides.none()
                 : Objects.requireNonNull(getConstraintWeights(workingSolution));
-        var supportedConstraints = overrides.getKnownConstraintNames();
+        var supportedConstraints = overrides.getKnownConstraintIds();
         var excessiveConstraints = supportedConstraints.stream()
-                .filter(constraintName -> !userDefinedConstraintNames.contains(constraintName)).collect(Collectors.toSet());
+                .filter(constraintId -> !userDefinedConstraintIds.contains(constraintId)).collect(Collectors.toSet());
         if (!excessiveConstraints.isEmpty()) {
             throw new IllegalStateException("""
                     The constraint weight overrides contain the following constraints (%s) \
                     that are not in the user-defined constraints (%s).
-                    Maybe check your %s for missing constraints.""".formatted(excessiveConstraints, userDefinedConstraintNames,
+                    Maybe check your %s for missing constraints.""".formatted(excessiveConstraints, userDefinedConstraintIds,
                     ConstraintProvider.class.getSimpleName()));
         }
         // Constraints are allowed to be missing; the default value provided by the ConstraintProvider will be used.
@@ -107,7 +107,7 @@ public final class ConstraintWeightSupplier<Solution_, Score_ extends Score<Scor
         if (workingSolution == null) { // ConstraintVerifier is known to cause null here.
             return null;
         }
-        var weight = getConstraintWeights(workingSolution).getConstraintWeight(constraintRef.constraintName());
+        var weight = getConstraintWeights(workingSolution).getConstraintWeight(constraintRef.id());
         if (weight == null) { // This is fine; use default value from ConstraintProvider.
             return null;
         }

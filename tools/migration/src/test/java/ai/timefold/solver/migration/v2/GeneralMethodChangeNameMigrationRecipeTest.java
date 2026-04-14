@@ -174,7 +174,7 @@ class GeneralMethodChangeNameMigrationRecipeTest implements RewriteTest {
                                 UnionMoveSelectorConfig unionMoveSelectorConfig;
                                 public void test() {
                                     benchmark.benchmark();
-                                    constraint.getConstraintRef().constraintName();
+                                    constraint.getConstraintRef().id();
                                     solver.isEveryProblemChangeProcessed();
                                     bestSolutionChangedEvent.isEveryProblemChangeProcessed();
                                     cartesianProductMoveSelectorConfig.getMoveSelectorList();

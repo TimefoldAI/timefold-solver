@@ -13,6 +13,6 @@ public final class ConstraintRefJacksonSerializer extends JsonSerializer<Constra
     @Override
     public void serialize(ConstraintRef constraintRef, JsonGenerator generator, SerializerProvider serializers)
             throws IOException {
-        generator.writeString(constraintRef.constraintName());
+        generator.writeString(constraintRef.id());
     }
 }

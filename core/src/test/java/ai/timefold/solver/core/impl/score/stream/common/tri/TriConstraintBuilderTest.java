@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.common.tri;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
-import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.stream.AbstractConstraintBuilderTest;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
@@ -16,12 +15,10 @@ class TriConstraintBuilderTest extends AbstractConstraintBuilderTest {
             new BavetConstraintFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.FULL_ASSERT);
 
     @Override
-    protected AbstractConstraintBuilder<SimpleScore> of(String constraintName, String constraintGroup) {
+    protected AbstractConstraintBuilder<SimpleScore> of(String constraintId) {
         return new TriConstraintBuilderImpl<>(
-                (constraintName1, constraintDescription, constraintGroup1, constraintWeight, impactType,
-                        objectSimpleScoreObjectBiFunction) -> new BavetConstraint<>(CONSTRAINT_FACTORY,
-                                ConstraintRef.of(constraintName1), constraintDescription, constraintGroup1, constraintWeight,
-                                impactType, objectSimpleScoreObjectBiFunction, null),
+                (constraintMetadata, constraintWeight, impactType, justificationMapping) -> new BavetConstraint<>(
+                        CONSTRAINT_FACTORY, constraintMetadata, constraintWeight, impactType, justificationMapping, null),
                 ScoreImpactType.PENALTY, SimpleScore.ONE);
     }
 }

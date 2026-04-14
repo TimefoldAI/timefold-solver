@@ -25,9 +25,9 @@ public abstract class AbstractConstraintWeightOverridesDeserializer<Score_ exten
         var resultMap = new LinkedHashMap<String, Score_>();
         JsonNode node = p.readValueAsTree();
         node.properties().iterator().forEachRemaining(entry -> {
-            var constraintName = entry.getKey();
+            var constraintId = entry.getKey();
             var weight = parseScore(entry.getValue().asString());
-            resultMap.put(constraintName, weight);
+            resultMap.put(constraintId, weight);
         });
         return ConstraintWeightOverrides.of(resultMap);
     }

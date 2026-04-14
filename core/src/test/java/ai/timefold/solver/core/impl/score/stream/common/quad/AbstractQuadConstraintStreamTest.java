@@ -80,7 +80,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .filter((e1, e2, value, extra) -> value.getCode().equals("MyValue 1")
                                 && extra.getCode().equals("MyExtra 1"))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -125,7 +125,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .filter((entityA, entityB, entityC, entityD) -> !Objects.equals(entityA, entity2))
                         .filter((entityA, entityB, entityC, entityD) -> !Objects.equals(entityA, entity3))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -148,7 +148,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         TestdataLavishEntity::getEntityGroup))
                 .ifExists(Integer.class)
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME)))
+                .asConstraint(TEST_CONSTRAINT_ID)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(Integer.class.getCanonicalName())
                 .hasMessageContaining("assignable from");
@@ -168,7 +168,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 TestdataLavishEntity::getEntityGroup))
                         .ifExists(TestdataLavishValueGroup.class)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         var valueGroup = solution.getFirstValueGroup();
@@ -204,7 +204,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         filtering((entityA, entityB, entityAGroup, value, valueGroup) -> Objects
                                 .equals(value.getValueGroup(), valueGroup)))
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME));
+                .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -240,7 +240,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 .ifExists(TestdataLavishEntityGroup.class,
                         equal((entityA, entityB, groupA, valueA) -> entityA.getEntityGroup(), identity()))
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME));
+                .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -279,7 +279,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         filtering((entityA, entityB, groupA, valueA, groupB) -> entityA.getCode().contains("MyEntity")
                                 || groupA.getCode().contains("MyEntity")))
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME));
+                .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -310,7 +310,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         TestdataLavishEntity::getEntityGroup))
                 .ifNotExists(Integer.class)
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME)))
+                .asConstraint(TEST_CONSTRAINT_ID)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(Integer.class.getCanonicalName())
                 .hasMessageContaining("assignable from");
@@ -330,7 +330,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 TestdataLavishEntity::getEntityGroup))
                         .ifNotExists(TestdataLavishValueGroup.class)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         var valueGroup = solution.getFirstValueGroup();
@@ -366,7 +366,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         filtering((entityA, entityB, entityAGroup, value, valueGroup) -> Objects
                                 .equals(value.getValueGroup(), valueGroup)))
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME));
+                .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -402,7 +402,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 .ifNotExists(TestdataLavishEntityGroup.class,
                         equal((entityA, entityB, groupA, valueA) -> entityB.getEntityGroup(), identity()))
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME));
+                .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -438,7 +438,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 groupB) -> !(entityA.getCode().contains("MyEntity")
                                         && groupB.getCode().contains("MyEntity"))))
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME));
+                .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -484,7 +484,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 countDistinct(TestdataLavishEntity::getValue))
                         .ifExists(TestdataLavishExtra.class)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -524,7 +524,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 TestdataLavishEntity::getEntityGroup))
                         .groupBy(countQuad())
                         .penalize(SimpleScore.ONE, count -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -551,7 +551,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .groupBy(countQuad(),
                                 countDistinct((e, e2, e3, e4) -> e))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
 
@@ -580,7 +580,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 max((TestdataLavishEntity e, TestdataLavishEntity e2, TestdataLavishEntity e3,
                                         TestdataLavishEntity e4) -> e.getLongProperty()))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
         entity1.setLongProperty(0L);
@@ -617,7 +617,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                         TestdataLavishEntity e4) -> e.getLongProperty()),
                                 toSet((e, e2, e3, e4) -> e))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
         entity1.setLongProperty(0L);
@@ -652,7 +652,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 TestdataLavishEntity::getEntityGroup))
                         .groupBy((entity1, group, value, entity2) -> value)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var value1 = solution.getFirstValue();
         var value2 = solution.getValueList().get(1);
@@ -676,7 +676,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 TestdataLavishEntity::getEntityGroup))
                         .groupBy((entity1, group, value, entity2) -> value, countQuad())
                         .penalize(SimpleScore.ONE, (group, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var value1 = solution.getFirstValue();
         var value2 = solution.getValueList().get(1);
@@ -710,7 +710,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 countQuad(),
                                 toSet((entityA, entityB, entityC, entityD) -> entityA))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
         var entity2 = solution.getEntityList().get(1);
@@ -746,7 +746,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 TestdataLavishEntity entityC, TestdataLavishEntity entityD) -> entityA.getLongProperty()),
                         toSet((entityA, entityB, entityC, entityD) -> entityA))
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME));
+                .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
         entity1.setLongProperty(Long.MAX_VALUE);
@@ -783,7 +783,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 TestdataLavishEntity::getEntityGroup))
                         .groupBy((entity1, group, value, entity2) -> group, (entity1, group, value, entity2) -> value)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -820,7 +820,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .groupBy((entity1, group, value, entity2) -> group, (entity1, group, value, entity2) -> value,
                                 countQuad())
                         .penalize(SimpleScore.ONE, (group, value, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -857,7 +857,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .groupBy((entity1, group, value, entity2) -> group, (entity1, group, value, entity2) -> value,
                                 countQuad(), countQuad())
                         .penalize(SimpleScore.ONE, (group, value, count, sameCount) -> count + sameCount)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -895,7 +895,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 (entity1, group, value, entity2) -> entity2.getEntityGroup(),
                                 (entity1, group, value, entity2) -> value)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -933,7 +933,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 (entity1, group, value, entity2) -> entity2.getEntityGroup(),
                                 (entity1, group, value, entity2) -> group, ConstraintCollectors.countQuad())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -970,7 +970,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 (entity1, group, value, entity2) -> group,
                                 (entity1, group, value, entity2) -> value)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -1005,7 +1005,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 Joiners.equal((entity1, entity2, group) -> entity2.getEntityGroup(), Function.identity()))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
         var entity2 = solution.getEntityList().get(1);
@@ -1033,7 +1033,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 Joiners.equal((entity1, entity2, group) -> entity2.getEntityGroup(), Function.identity()))
                         .map((entity1, entity2, group1, group2) -> asSet(group1, group2))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity = solution.getFirstEntity();
         var group1 = solution.getFirstEntityGroup();
@@ -1066,7 +1066,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 Joiners.equal((entity1, entity2, group) -> entity2.getEntityGroup(), Function.identity()))
                         .map((entity1, entity2, group1, group2) -> asSet(group1, group2))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -1098,7 +1098,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .map((entity1, entity2, group1, group2) -> asSet(group1, group2))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity = solution.getFirstEntity();
         var group1 = solution.getFirstEntityGroup();
@@ -1131,7 +1131,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .map((entity1, entity2, group1, group2) -> asSet(group1, group2))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -1163,7 +1163,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .map((entity1, entity2, group1, group2) -> entity1,
                                 (entity1, entity2, group1, group2) -> entity2)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1193,7 +1193,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 (entity1, entity2, group1, group2) -> entity2,
                                 (entity1, entity2, group1, group2) -> entity1.getLongProperty() + entity2.getLongProperty())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1225,7 +1225,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 (entity1, entity2, group1, group2) -> group1.getCode(),
                                 (entity1, entity2, group1, group2) -> group2.getCode())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1259,7 +1259,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishEntity.class, filtering((a, b, c, d) -> a != d && b != d))
                         .flattenLast(d -> asList(group1, group1, group2))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1297,7 +1297,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishEntity.class, filtering((a, b, c, d) -> a != d && b != d))
                         .flattenLast(d -> asList(group1, group2))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1333,7 +1333,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .flattenLast(d -> asList(group1, group1, group2))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1369,7 +1369,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .flattenLast(d -> asList(group1, group2))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1417,7 +1417,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .concat(factory.forEach(TestdataLavishEntity.class)
                                 .filter(entity -> entity.getValue() == value2))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1468,7 +1468,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 .filter(entity -> entity.getValue() == value2))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1520,7 +1520,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 .join(factory.forEach(TestdataLavishEntity.class)
                                         .filter(entity -> entity.getValue() == value3)))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1573,7 +1573,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                         .filter(entity -> entity.getValue() == value3)))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1627,7 +1627,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 .join(factory.forEach(TestdataLavishEntity.class)
                                         .filter(entity -> entity.getValue() == value1)))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1682,7 +1682,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                         .filter(entity -> entity.getValue() == value1)))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1738,7 +1738,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 .join(factory.forEach(TestdataLavishEntity.class)
                                         .filter(entity -> entity.getValue() == value2)))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1794,7 +1794,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                 .join(factory.forEach(TestdataLavishEntity.class)
                                         .filter(entity -> entity.getValue() == value1)))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1851,7 +1851,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                         .filter(entity -> entity.getValue() == value2)))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1908,7 +1908,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                         .filter(entity -> entity.getValue() == value1)))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1966,7 +1966,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                         (e1, e2, e3, e4) -> e3.getValue().getCode() + e4.getValue().getCode(),
                                         ConstraintCollectors.countQuad()))
                         .penalize(SimpleScore.ONE, (v1, v2, v3, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2019,7 +2019,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .filter((entity, index, index2, index3) -> index == 0)
                         .complement(TestdataLavishEntity.class, e -> Integer.MAX_VALUE, e -> -1, e -> 0)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2048,7 +2048,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-2));
@@ -2067,7 +2067,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                         .join(TestdataValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
                                         .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
                                         .penalizeBigDecimal(SimpleBigDecimalScore.ONE)
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2111,7 +2111,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .penalize(SimpleScore.ONE, (entity, entity2, value, value2) -> 2)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
@@ -2131,7 +2131,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                         .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
                                         .penalizeBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2, value, value2) -> BigDecimal.valueOf(2))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2149,7 +2149,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .reward(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
@@ -2166,7 +2166,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .reward(SimpleScore.ONE, (entity, entity2, value, value2) -> 2)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
@@ -2186,7 +2186,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                         .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
                                         .rewardBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2, value, value2) -> BigDecimal.valueOf(2))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2205,7 +2205,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .impact(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
@@ -2222,7 +2222,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .impact(SimpleScore.ONE, (entity, entity2, value, value2) -> 2)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
@@ -2242,7 +2242,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                         .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
                                         .impactBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2, value, value2) -> BigDecimal.valueOf(2))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2260,7 +2260,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2) -> entity.getValue(), identity()))
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .impact(SimpleScore.ONE, (entity, entity2, value, value2) -> -2)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
@@ -2280,7 +2280,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                         .join(TestdataValue.class, equal((entity, entity2, value) -> value, identity()))
                                         .impactBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2, value, value2) -> BigDecimal.valueOf(-2))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2299,7 +2299,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .penalize(SimpleScore.ONE)
                         .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-2));
@@ -2343,7 +2343,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .penalize(SimpleScore.ONE, (entity, entity2, value, value2) -> 2)
                         .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
@@ -2365,7 +2365,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                                 (entity, entity2, value, value2) -> BigDecimal.valueOf(2))
                                         .justifyWith(
                                                 (a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2384,7 +2384,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .reward(SimpleScore.ONE)
                         .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
@@ -2402,7 +2402,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .reward(SimpleScore.ONE, (entity, entity2, value, value2) -> 2)
                         .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
@@ -2424,7 +2424,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                                 (entity, entity2, value, value2) -> BigDecimal.valueOf(2))
                                         .justifyWith(
                                                 (a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2443,7 +2443,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .impact(SimpleScore.ONE)
                         .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
@@ -2461,7 +2461,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .impact(SimpleScore.ONE, (entity, entity2, value, value2) -> 2)
                         .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
@@ -2483,7 +2483,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                                 (entity, entity2, value, value2) -> BigDecimal.valueOf(2))
                                         .justifyWith(
                                                 (a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2502,7 +2502,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .join(TestdataLavishValue.class, equal((entity, entity2, value) -> value, identity()))
                         .impact(SimpleScore.ONE, (entity, entity2, value, value2) -> -2)
                         .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
@@ -2524,7 +2524,7 @@ public abstract class AbstractQuadConstraintStreamTest
                                                 (entity, entity2, value, value2) -> BigDecimal.valueOf(-2))
                                         .justifyWith(
                                                 (a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2542,7 +2542,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .penalize(SimpleScore.ONE, (entity, entity2, value, value2) -> 2)
                         .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
                         .justifyWith((a, b, c, d, score) -> new TestConstraintJustification<>(score, a, b, c, d))
-                        .asConstraint(TEST_CONSTRAINT_NAME)))
+                        .asConstraint(TEST_CONSTRAINT_ID)))
                 .hasMessageContaining("Maybe the constraint calls justifyWith() twice?");
     }
 

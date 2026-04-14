@@ -1,15 +1,15 @@
 package ai.timefold.solver.core.api.score.stream;
 
 import java.util.Collection;
-import java.util.Set;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Provides information about the known constraints.
  * Works in combination with {@link ConstraintProvider}.
  */
+@NullMarked
 public interface ConstraintMetaModel {
 
     /**
@@ -18,30 +18,23 @@ public interface ConstraintMetaModel {
      * @return null if such constraint does not exist
      */
     @Nullable
-    Constraint getConstraint(@NonNull ConstraintRef constraintRef);
+    Constraint getConstraint(ConstraintRef constraintRef);
+
+    /**
+     * Returns the constraint with the given id.
+     * Convenience shorthand for {@link #getConstraint(ConstraintRef)}.
+     *
+     * @return null if such constraint does not exist
+     */
+    default @Nullable Constraint getConstraint(String id) {
+        return getConstraint(ConstraintRef.of(id));
+    }
 
     /**
      * Returns all constraints defined in the {@link ConstraintProvider}.
      *
      * @return iteration order is undefined
      */
-    @NonNull
     Collection<Constraint> getConstraints();
-
-    /**
-     * Returns all constraints from {@link #getConstraints()} that belong to the given group.
-     *
-     * @return iteration order is undefined
-     */
-    @NonNull
-    Collection<Constraint> getConstraintsPerGroup(@NonNull String constraintGroup);
-
-    /**
-     * Returns constraint groups with at least one constraint in it.
-     *
-     * @return iteration order is undefined
-     */
-    @NonNull
-    Set<String> getConstraintGroups();
 
 }

@@ -51,7 +51,7 @@ public abstract class AbstractUniConstraintStreamPrecomputeTest extends Abstract
                 buildScoreDirector(factory -> factory.precompute(data -> data.forEachUnfiltered(TestdataLavishEntity.class)
                         .filter(entity -> entity.getEntityGroup() == entityGroup))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         Mockito.reset(entity1);
@@ -105,7 +105,7 @@ public abstract class AbstractUniConstraintStreamPrecomputeTest extends Abstract
                 buildScoreDirector(factory -> factory.precompute(entityStreamSupplier)
                         .ifExists(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -200,7 +200,7 @@ public abstract class AbstractUniConstraintStreamPrecomputeTest extends Abstract
                 buildScoreDirector(factory -> factory.precompute(entityStreamSupplier)
                         .ifExists(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);

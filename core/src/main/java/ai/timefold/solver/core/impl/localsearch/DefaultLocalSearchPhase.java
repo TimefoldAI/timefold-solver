@@ -188,8 +188,8 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
             if (scoreDirector.getConstraintMatchPolicy().isEnabled()) {
                 for (ConstraintMatchTotal<?> constraintMatchTotal : scoreDirector.getConstraintMatchTotalMap()
                         .values()) {
-                    var tags = solverScope.getMonitoringTags().and("constraint.name",
-                            constraintMatchTotal.getConstraintRef().constraintName());
+                    var tags = solverScope.getMonitoringTags().and("constraint.id",
+                            constraintMatchTotal.getConstraintRef().id());
                     collectConstraintMatchTotalMetrics(SolverMetric.CONSTRAINT_MATCH_TOTAL_BEST_SCORE, tags,
                             constraintMatchTotalTagsToBestCount,
                             constraintMatchTotalBestScoreMap, constraintMatchTotal, scoreDefinition, solverScope);

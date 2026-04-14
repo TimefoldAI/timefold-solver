@@ -79,7 +79,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .join(TestdataLavishValue.class, equal(TestdataLavishEntity::getValue, Function.identity()))
                         .filter((entity, value) -> value.getCode().equals("MyValue 1"))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -119,7 +119,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 .filter((entityA, entityB) -> !Objects.equals(entityA, entity2))
                 .filter((entityA, entityB) -> !Objects.equals(entityA, entity3))
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME));
+                .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -153,7 +153,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                                     return true;
                                                 }))
                                         .penalize(SimpleScore.ONE)
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         })) {
 
             scoreDirector.setWorkingSolution(solution);
@@ -220,7 +220,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                                     return true;
                                                 }))
                                         .penalize(SimpleScore.ONE)
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         })) {
 
             scoreDirector.setWorkingSolution(solution);
@@ -286,7 +286,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .join(TestdataLavishValue.class, equal(TestdataLavishEntity::getValue, Function.identity()))
                         .join(TestdataLavishExtra.class)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -344,7 +344,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .join(TestdataLavishExtra.class,
                                 equal((entity, value) -> entity.getStringProperty(), TestdataLavishExtra::getStringProperty))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -397,7 +397,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .join(TestdataLavishExtra.class,
                                 equal((entity, value) -> entity.getStringProperty(), TestdataLavishExtra::getStringProperty))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -457,7 +457,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 equal((entity, value) -> entity.getStringProperty(), TestdataLavishExtra::getStringProperty),
                                 equal((entity, value) -> entity.getIntegerProperty(), TestdataLavishExtra::getIntegerProperty))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -485,7 +485,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         equal(TestdataLavishEntity::getValue, Function.identity()))
                 .join(TestdataLavishExtra.class)
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME)))
+                .asConstraint(TEST_CONSTRAINT_ID)))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -509,7 +509,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 equal(TestdataLavishEntity::getValue, Function.identity()),
                                 filtering((entity, value) -> value.getCode().contains("1")))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -553,7 +553,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 countDistinct(TestdataLavishEntity::getValue))
                         .join(TestdataLavishExtra.class)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -584,7 +584,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         assertThatThrownBy(() -> buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                 .ifExists(Integer.class)
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME)))
+                .asConstraint(TEST_CONSTRAINT_ID)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(Integer.class.getCanonicalName())
                 .hasMessageContaining("assignable from");
@@ -611,7 +611,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                                     return true;
                                                 }))
                                         .penalize(SimpleScore.ONE)
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         })) {
 
             scoreDirector.setWorkingSolution(solution);
@@ -674,7 +674,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                                     return true;
                                                 }))
                                         .penalize(SimpleScore.ONE)
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         })) {
 
             scoreDirector.setWorkingSolution(solution);
@@ -727,7 +727,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishValueGroup.class)
                         .ifExists(TestdataLavishEntityGroup.class)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -760,7 +760,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 filtering((entityA, entityB, group) -> Objects.equals(group, entityA.getEntityGroup()) &&
                                         Objects.equals(group, entityB.getEntityGroup())))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -792,7 +792,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .ifExists(TestdataLavishEntityGroup.class,
                                 equal((entityA, entityB) -> entityA.getEntityGroup(), Function.identity()))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -829,7 +829,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 filtering((entityA, entityB, group) -> entityA.getCode().contains("MyEntity") ||
                                         group.getCode().contains("MyEntity")))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -860,7 +860,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .ifExists(TestdataLavishEntity.class,
                                 filtering((a, b, c) -> a != c && b != c))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector);
@@ -872,7 +872,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         assertThatThrownBy(() -> buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                 .ifNotExists(Integer.class)
                 .penalize(SimpleScore.ONE)
-                .asConstraint(TEST_CONSTRAINT_NAME)))
+                .asConstraint(TEST_CONSTRAINT_ID)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(Integer.class.getCanonicalName())
                 .hasMessageContaining("assignable from");
@@ -889,7 +889,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishValueGroup.class)
                         .ifNotExists(TestdataLavishEntityGroup.class)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -922,7 +922,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 filtering((entityA, entityB, group) -> Objects.equals(group, entityA.getEntityGroup()) &&
                                         Objects.equals(group, entityB.getEntityGroup())))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -958,7 +958,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .ifNotExists(TestdataLavishEntityGroup.class,
                                 equal((entityA, entityB) -> entityA.getEntityGroup(), Function.identity()))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -991,7 +991,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 filtering((entityA, entityB, group) -> entityA.getCode().contains("MyEntity") ||
                                         group.getCode().contains("MyEntity")))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1026,7 +1026,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .ifNotExists(TestdataLavishEntity.class,
                                 filtering((a, b, c) -> a != c && b != c))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1064,7 +1064,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 countDistinct(TestdataLavishEntity::getValue))
                         .ifExists(TestdataLavishExtra.class)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1104,7 +1104,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
                         .groupBy((entityA, entityB) -> entityA.getEntityGroup())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1131,7 +1131,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .groupBy((entityA, entityB) -> entityA.toString(), countBi())
                         .filter((entity, count) -> count > 4)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1159,7 +1159,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 countBi(),
                                 toSet((entityA, entityB) -> entityA))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
         var entity2 = solution.getEntityList().get(1);
@@ -1191,7 +1191,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 max((TestdataLavishEntity entityA, TestdataLavishEntity entityB) -> entityA.getLongProperty()),
                                 toSet((entityA, entityB) -> entityA))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
         entity1.setLongProperty(Long.MAX_VALUE);
@@ -1225,7 +1225,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .groupBy(countBi())
                         .penalize(SimpleScore.ONE, count -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1248,7 +1248,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .groupBy(countBi(),
                                 countDistinct((e, e2) -> e))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
 
@@ -1273,7 +1273,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 min((TestdataLavishEntity e, TestdataLavishEntity e2) -> e.getLongProperty()),
                                 max((TestdataLavishEntity e, TestdataLavishEntity e2) -> e.getLongProperty()))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
         entity1.setLongProperty(0L);
@@ -1306,7 +1306,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 max((TestdataLavishEntity e, TestdataLavishEntity e2) -> e.getLongProperty()),
                                 toSet((e, e2) -> e))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
         entity1.setLongProperty(0L);
@@ -1336,7 +1336,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .groupBy((a, b) -> a.getEntityGroup(), (a, b) -> b.getEntityGroup())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getEntityGroupList().get(0);
         var group2 = solution.getEntityGroupList().get(1);
@@ -1367,7 +1367,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .groupBy((a, b) -> a.getEntityGroup(), (a, b) -> b.getEntityGroup(), countBi())
                         .penalize(SimpleScore.ONE, (entityGroup1, entityGroup2, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -1401,7 +1401,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .groupBy((a, b) -> a.getEntityGroup(), (a, b) -> b.getEntityGroup(), countBi(), countBi())
                         .penalize(SimpleScore.ONE,
                                 (entityGroup1, entityGroup2, count, sameCount) -> count + sameCount)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -1433,7 +1433,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .groupBy((a, b) -> a.getEntityGroup(), (a, b) -> b.getEntityGroup(), (a, b) -> a.getValue())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getEntityGroupList().get(0);
         var group2 = solution.getEntityGroupList().get(1);
@@ -1466,7 +1466,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .groupBy((a, b) -> a.getEntityGroup(), (a, b) -> b.getEntityGroup(), (a, b) -> a.getValue(),
                                 ConstraintCollectors.countBi())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getEntityGroupList().get(0);
         var group2 = solution.getEntityGroupList().get(1);
@@ -1499,7 +1499,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .groupBy((a, b) -> a.getEntityGroup(), (a, b) -> b.getEntityGroup(), (a, b) -> a.getValue(),
                                 (a, b) -> b.getValue())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getEntityGroupList().get(0);
         var group2 = solution.getEntityGroupList().get(1);
@@ -1531,7 +1531,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var entity1 = solution.getFirstEntity();
         var entity2 = solution.getEntityList().get(1);
@@ -1553,7 +1553,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .map((a, b) -> asSet(a.getEntityGroup(), b.getEntityGroup())) // 3 entities, 2 groups => duplicates.
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -1583,7 +1583,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .map((a, b) -> asSet(a.getEntityGroup(), b.getEntityGroup())) // 3 entities, 3 groups => no duplicates.
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -1615,7 +1615,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .map((a, b) -> asSet(a.getEntityGroup(), b.getEntityGroup())) // 3 entities, 2 groups => duplicates.
                         .distinct() // Duplicate copies removed here.
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -1645,7 +1645,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .map((a, b) -> asSet(a.getEntityGroup(), b.getEntityGroup())) // 3 entities, 3 groups => no duplicates.
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -1677,7 +1677,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .map((a, b) -> a.getEntityGroup(),
                                 (a, b) -> b.getEntityGroup())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -1709,7 +1709,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 (a, b) -> b.getEntityGroup(),
                                 (a, b) -> a.getLongProperty() + b.getLongProperty())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var group2 = solution.getEntityGroupList().get(1);
@@ -1745,7 +1745,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 (a, b) -> a.getValue(),
                                 (a, b) -> b.getValue())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var group1 = solution.getFirstEntityGroup();
         var value1 = solution.getFirstValue();
@@ -1777,7 +1777,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .expand((a, b) -> a.getLongProperty() + b.getLongProperty())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var sum01 = solution.getFirstEntity().getLongProperty() + solution.getEntityList().get(1).getLongProperty();
         var sum02 = solution.getFirstEntity().getLongProperty() + solution.getEntityList().get(2).getLongProperty();
@@ -1809,7 +1809,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .expand((a, b) -> a.getLongProperty() + b.getLongProperty(),
                                 (a, b) -> a.getEntityGroup().getCode() + b.getEntityGroup().getCode())
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         var sum01 = solution.getFirstEntity().getLongProperty() + solution.getEntityList().get(1).getLongProperty();
         var sum02 = solution.getFirstEntity().getLongProperty() + solution.getEntityList().get(2).getLongProperty();
@@ -1850,7 +1850,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .flatten((a, b) -> asList(a.getEntityGroup(), b.getEntityGroup(), group2))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1879,7 +1879,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .flattenLast(b -> asList(b.getEntityGroup(), group1, group2))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1917,7 +1917,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .flattenLast(b -> singleton(b.getEntityGroup()))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1948,7 +1948,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .flattenLast(b -> asList(b.getEntityGroup(), group1, group2))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -1981,7 +1981,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .flattenLast(b -> singleton(b.getEntityGroup()))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2023,7 +2023,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .concat(factory.forEach(TestdataLavishEntity.class)
                                 .filter(entity -> entity.getValue() == value2))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2070,7 +2070,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 .filter(entity -> entity.getValue() == value2))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2118,7 +2118,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 .join(factory.forEach(TestdataLavishEntity.class)
                                         .filter(entity -> entity.getValue() == value3)))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2166,7 +2166,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 .join(factory.forEach(TestdataLavishEntity.class)
                                         .filter(entity -> entity.getValue() == value2)))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2215,7 +2215,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                         .filter(entity -> entity.getValue() == value3)))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2264,7 +2264,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                         .filter(entity -> entity.getValue() == value2)))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2312,7 +2312,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 .join(factory.forEach(TestdataLavishEntity.class)
                                         .filter(entity -> entity.getValue() == value1)))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2363,7 +2363,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                         .filter(entity -> entity.getValue() == value1)))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2415,7 +2415,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 .join(factory.forEach(TestdataLavishEntity.class)
                                         .filter(entity -> entity.getValue() == value2)))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2468,7 +2468,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                         .filter(entity -> entity.getValue() == value2)))
                         .distinct()
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2520,7 +2520,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                         (e1, e2) -> e2.getValue(),
                                         ConstraintCollectors.countBi()))
                         .penalize(SimpleScore.ONE, (v1, v2, count) -> count)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2572,7 +2572,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .filter((entity, index) -> index == 0)
                         .complement(TestdataLavishEntity.class, e -> Integer.MAX_VALUE)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         // From scratch
         scoreDirector.setWorkingSolution(solution);
@@ -2599,7 +2599,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var scoreDirector = buildScoreDirector(
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-21));
@@ -2616,7 +2616,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         factory -> new Constraint[] {
                                 factory.forEachUniquePair(TestdataEntity.class)
                                         .penalizeBigDecimal(SimpleBigDecimalScore.ONE)
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2656,7 +2656,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var scoreDirector = buildScoreDirector(
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE, (entity, entity2) -> 2)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-42));
@@ -2674,7 +2674,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 factory.forEachUniquePair(TestdataEntity.class)
                                         .penalizeBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2) -> BigDecimal.valueOf(2))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2690,7 +2690,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var scoreDirector = buildScoreDirector(
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .reward(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(21));
@@ -2705,7 +2705,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var scoreDirector = buildScoreDirector(
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .reward(SimpleScore.ONE, (entity, entity2) -> 2)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(42));
@@ -2723,7 +2723,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 factory.forEachUniquePair(TestdataEntity.class)
                                         .rewardBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2) -> BigDecimal.valueOf(2))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2739,7 +2739,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var scoreDirector = buildScoreDirector(
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(21));
@@ -2754,7 +2754,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var scoreDirector = buildScoreDirector(
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE, (entity, entity2) -> 2)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(42));
@@ -2772,7 +2772,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 factory.forEachUniquePair(TestdataEntity.class)
                                         .impactBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2) -> BigDecimal.valueOf(2))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2788,7 +2788,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var scoreDirector = buildScoreDirector(
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE, (entity, entity2) -> -2)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-42));
@@ -2806,7 +2806,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 factory.forEachUniquePair(TestdataEntity.class)
                                         .impactBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2) -> BigDecimal.valueOf(-2))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2823,7 +2823,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE)
                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-21));
@@ -2865,7 +2865,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .penalize(SimpleScore.ONE, (entity, entity2) -> 2)
                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-42));
@@ -2884,7 +2884,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                         .penalizeBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2) -> BigDecimal.valueOf(2))
                                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2901,7 +2901,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .reward(SimpleScore.ONE)
                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(21));
@@ -2917,7 +2917,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .reward(SimpleScore.ONE, (entity, entity2) -> 2)
                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(42));
@@ -2936,7 +2936,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                         .rewardBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2) -> BigDecimal.valueOf(2))
                                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -2953,7 +2953,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE)
                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(21));
@@ -2969,7 +2969,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE, (entity, entity2) -> 2)
                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(42));
@@ -2988,7 +2988,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                         .impactBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2) -> BigDecimal.valueOf(2))
                                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -3005,7 +3005,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 factory -> factory.forEachUniquePair(TestdataLavishEntity.class)
                         .impact(SimpleScore.ONE, (entity, entity2) -> -2)
                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-42));
@@ -3024,7 +3024,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                         .impactBigDecimal(SimpleBigDecimalScore.ONE,
                                                 (entity, entity2) -> BigDecimal.valueOf(-2))
                                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                                        .asConstraint(TEST_CONSTRAINT_ID)
                         });
 
         scoreDirector.setWorkingSolution(solution);
@@ -3040,7 +3040,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .penalize(SimpleScore.ONE, (entity, entity2) -> 2)
                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
                         .justifyWith((a, b, score) -> new TestConstraintJustification<>(score, a, b))
-                        .asConstraint(TEST_CONSTRAINT_NAME)))
+                        .asConstraint(TEST_CONSTRAINT_ID)))
                 .hasMessageContaining("Maybe the constraint calls justifyWith() twice?");
     }
 
@@ -3065,7 +3065,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
                         .join(TestdataLavishEntity.class, equal(TestdataLavishEntity::getBigDecimalProperty))
                         .penalize(SimpleScore.ONE)
-                        .asConstraint(TEST_CONSTRAINT_NAME));
+                        .asConstraint(TEST_CONSTRAINT_ID));
 
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,

@@ -314,23 +314,7 @@ The purpose of constraint streams is to build up a xref:constraints-and-score/ov
 To do this, every constraint stream must contain a call to either a `penalize()` or a `reward()`
 building block.
 The `penalize()` building block makes the score worse and the `reward()` building block improves the score.
-
 Each constraint stream is then terminated by calling `asConstraint()` method, which finally builds the constraint.
-Constraints have several components:
-
-- Constraint name is the human-readable descriptive name for the constraint,
-which must be unique within the entire `ConstraintProvider` implementation.
-- Constraint weight is a constant score value indicating how much every breach of the constraint affects the score.
-Valid examples include `SimpleScore.ONE`, `HardSoftScore.ONE_HARD` and `HardMediumSoftScore.of(1, 2, 3)`.
-- Constraint match weigher is an optional function indicating how many times the constraint weight should be applied in
-the score.
-The penalty or reward score impact is the constraint weight multiplied by the match weight.
-The default value is `1`.
-
-[NOTE]
-====
-Constraints with zero constraint weight are automatically disabled and do not impose any performance penalty.
-====
 
 The Constraint Streams API supports many different types of penalties.
 Browse the API in your IDE for the full list of method overloads.
@@ -341,15 +325,52 @@ constraint stream.
 The score type must be the same type as used on the `@PlanningScore` annotated member on the planning solution.
 - Dynamic penalty (`penalize(SimpleScore.ONE, Shift::getHours)`) makes the score worse by the number
 of hours in every matching `Shift` in the constraint stream.
-This is an example of using a constraint match weigher.
-- Configurable penalty (`penalizeConfigurable()`) makes the score worse using constraint weights
-defined in xref:constraints-and-score/constraint-configuration.adoc#constraintConfiguration[constraint configuration].
-- Configurable dynamic penalty(`penalizeConfigurable(Shift::getHours)`) makes the score worse using
-constraint weights defined in xref:constraints-and-score/constraint-configuration.adoc#constraintConfiguration[constraint configuration], multiplied by the number of hours in
-every matching `Shift` in the constraint stream.
+This is an example of using a constraint match weight.
 
 By replacing the keyword `penalize` by `reward` in the name of these building blocks, you get operations that
 affect score in the opposite direction.
+
+[#constraintAnatomy]
+==== Anatomy of a constraint
+
+Constraints have several components:
+
+- Constraint ID is a short(ish) name for the constraint,
+which must be unique within the entire `ConstraintProvider` implementation.
+It is validated to not include most special characters.
+- Constraint weight is a constant score value indicating how much every breach of the constraint affects the score.
+Valid examples include `SimpleScore.ONE`, `HardSoftScore.ONE_HARD` and `HardMediumSoftScore.of(1, 2, 3)`.
+The penalty or reward score impact is the constraint weight multiplied by the match weight.
+The default value is `1`.
+
+NOTE: Constraints with zero weight are automatically disabled and do not impose any performance penalty.
+
+[#constraintMetadata]
+===== Attaching metadata to constraints
+
+`asConstraint(String id)` is a shorthand that creates a simple `ConstraintMetadata` carrying only the constraint ID.
+For richer metadata, implement the `ConstraintMetadata` interface and pass it to `asConstraint(ConstraintMetadata)`:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    public record MyConstraintMetadata(String id, String displayName) implements ConstraintMetadata {
+    }
+
+    private Constraint penalizeEveryShift(ConstraintFactory factory) {
+        return factory.forEach(Shift.class)
+                .penalize(HardSoftScore.ONE_SOFT)
+                .asConstraint(new MyConstraintMetadata("penalizeEveryShift", "Penalize every shift"));
+    }
+----
+====
+
+The ID is snapshotted at build time via `ConstraintMetadata#id()`;
+any subsequent mutation of the ID does not affect the constraint's identity.
+The full metadata are accessible at runtime via `Constraint#getConstraintMetadata()`.
 
 
 [#constraintStreamsCustomizingJustifications]

@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
-import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetadata;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
@@ -104,14 +104,13 @@ public abstract class BavetAbstractConstraintStream<Solution_>
         }
     }
 
-    protected <Score_ extends Score<Score_>> Constraint buildConstraint(String constraintName, String description,
-            String constraintGroup, Score_ constraintWeight, ScoreImpactType impactType, Object justificationFunction,
+    protected <Score_ extends Score<Score_>> Constraint buildConstraint(ConstraintMetadata description,
+            Score_ constraintWeight, ScoreImpactType impactType, Object justificationFunction,
             BavetScoringConstraintStream<Solution_> stream) {
         var resolvedJustificationMapping =
                 Objects.requireNonNullElseGet(justificationFunction, this::getDefaultJustificationMapping);
         var isConstraintWeightConfigurable = constraintWeight == null;
-        var constraintRef = ConstraintRef.of(constraintName);
-        var constraint = new BavetConstraint<>(constraintFactory, constraintRef, description, constraintGroup,
+        var constraint = new BavetConstraint<>(constraintFactory, description,
                 isConstraintWeightConfigurable ? null : constraintWeight, impactType, resolvedJustificationMapping,
                 stream);
         stream.setConstraint(constraint);

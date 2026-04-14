@@ -89,7 +89,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
 
     @Override
     public String toString() {
-        return "%s/%s=%s".formatted(getConstraintRef().constraintName(), justification, score);
+        return "%s/%s=%s".formatted(getConstraintRef().id(), justification, score);
     }
 
 }
