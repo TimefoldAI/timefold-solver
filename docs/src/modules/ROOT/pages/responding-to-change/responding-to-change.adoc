@@ -607,6 +607,8 @@ but do accept infeasible solutions too.
 [#assignmentRecommendationAPI]
 == Responding to adhoc changes
 
+include::../commercial-editions/.only-plus-and-enterprise.adoc[]
+
 With <<realTimePlanning,real-time planning>>, we can respond to a continuous stream of external changes.
 However, it is often necessary to respond to adhoc changes too,
 for example when a call center operator needs to arrange an appointment with a customer.

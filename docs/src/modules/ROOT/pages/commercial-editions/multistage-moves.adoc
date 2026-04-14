@@ -1,0 +1,15 @@
+[#multistageMoves]
+= Multistage Moves
+
+include::.only-enterprise.adoc[]
+
+Multistage moves are moves composed of one or more stages, where each stage selects a single `Move` to execute.
+
+Each stage has access to either a `BasicVariableMoveEvaluator` or a `ListVariableMoveEvaluator`, which allows the stage to evaluate moves without executing them.
+
+Stages are selected from either a `BasicVariableStageProvider` or a `ListVariableStageProvider`, which is initialized from the working solution at phase start.
+
+Multistage moves are configured from either a xref:optimization-algorithms/move-selector-reference.adoc#multistageMoveSelector[MultistageMoveSelectorConfig]
+or a xref:optimization-algorithms/move-selector-reference.adoc#listMultistageMoveSelector[ListMultistageMoveSelectorConfig].
+
+Multistage moves are useful for creating specialized ruin-and-recreate moves where the valid values that won't violate hard constraints can be determined in advance.

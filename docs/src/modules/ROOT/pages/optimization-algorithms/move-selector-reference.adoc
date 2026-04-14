@@ -802,8 +802,7 @@ Mimic selection is useful to create <<cartesianProductMoveSelector,a composite m
 [#nearbySelection]
 === Nearby selection
 
-NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
-It is not available in the open source version.
+include::../commercial-editions/.only-enterprise.adoc[]
 
 In some use cases (such as TSP and VRP, but also in other cases),
 changing entities to nearby values or swapping nearby entities leads to better results faster.
