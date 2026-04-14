@@ -82,13 +82,13 @@ which is often the case in xref:responding-to-change/responding-to-change.adoc[r
 
 There are several ways of running the solver in parallel:
 
-* *xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[Multi-threaded incremental solving]*:
+* *xref:commercial-editions/commercial-editions.adoc#multithreadedIncrementalSolving[Multi-threaded incremental solving]*:
 Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
-This is exclusively available in the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition] of Timefold Solver.
+This is exclusively available in the xref:commercial-editions/commercial-editions.adoc[Enterprise Edition] of Timefold Solver.
 
-* *xref:enterprise-edition/enterprise-edition.adoc#partitionedSearch[Partitioned search]*:
+* *xref:commercial-editions/commercial-editions.adoc#partitionedSearch[Partitioned search]*:
 Split 1 dataset in multiple parts and solve them independently.
-This is exclusively available in the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition] of Timefold Solver.
+This is exclusively available in the xref:commercial-editions/commercial-editions.adoc[Enterprise Edition] of Timefold Solver.
 * *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
 ** Not recommended: This is a marginal gain for a high cost of hardware resources.
 ** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
@@ -635,7 +635,7 @@ For example, if set to `4`, submitting five problems
 has four problems solving immediately, and the fifth one starts when another one ends.
 If those problems solve for 5 minutes each, the fifth problem takes 10 minutes to finish.
 By default, `parallelSolverCount` is set to `AUTO`, which resolves to half the CPU cores,
-regardless of the xref:enterprise-edition/enterprise-edition.adoc#enterpriseMultithreadedSolving[`moveThreadCount`] of the solvers.
+regardless of the xref:commercial-editions/commercial-editions.adoc#enterpriseMultithreadedSolving[`moveThreadCount`] of the solvers.
 
 To retrieve the best solution, after solving terminates normally, use `SolverJob.getFinalBestSolution()`:
 
@@ -740,7 +740,7 @@ The final best solution consumer,
 which is called at the end of the solving process,
 can be set using `withFinalBestSolutionEventConsumer(...)`.
 Additionally,
-an improved solution consumer capable of throttling events is available in the xref:enterprise-edition/enterprise-edition.adoc#throttlingBestSolutionEvents[Enterprise Edition] of the Timefold Solver.
+an improved solution consumer capable of throttling events is available in the xref:commercial-editions/commercial-editions.adoc#throttlingBestSolutionEvents[Enterprise Edition] of the Timefold Solver.
 
 [WARNING]
 ====
@@ -857,8 +857,8 @@ and does not want to wait any longer for a better one, call `SolverManager.termi
 Best solution events may be triggered in a rapid succession,
 especially at the start of solving.
 
-Users of our xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition]
-may use the xref:enterprise-edition/enterprise-edition.adoc#throttlingBestSolutionEvents[throttling feature]
+Users of our xref:commercial-editions/commercial-editions.adoc[Enterprise Edition]
+may use the xref:commercial-editions/commercial-editions.adoc#throttlingBestSolutionEvents[throttling feature]
 to limit the number of best solution events fired over any period of time.
 
 Open-source users may implement their own throttling mechanism within the `Consumer` itself.

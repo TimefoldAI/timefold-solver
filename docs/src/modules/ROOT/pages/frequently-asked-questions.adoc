@@ -10,9 +10,9 @@ This license is very liberal and allows reuse for commercial purposes.
 Read http://www.apache.org/foundation/licence-FAQ.html#WhatDoesItMEAN[the layman's explanation].
 
 _Timefold Solver Enterprise Edition_ is a commercial product
-that offers xref:enterprise-edition/enterprise-edition.adoc#features[additional features]
+that offers xref:commercial-editions/commercial-editions.adoc#features[additional features]
 to scale out to very large datasets.
-To find out more, see xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition section] of this documentation.
+To find out more, see xref:commercial-editions/commercial-editions.adoc[Enterprise Edition section] of this documentation.
 
 == Does Timefold offer pre-built models?
 

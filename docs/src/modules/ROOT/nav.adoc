@@ -38,4 +38,14 @@
 ** Migration Guides
 *** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
 *** xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
-* xref:enterprise-edition/enterprise-edition.adoc[leveloffset=+1]
+* xref:commercial-editions/commercial-editions.adoc[leveloffset=+1]
+** xref:commercial-editions/installation.adoc[leveloffset=+1]
+** Automatic Performance Improvements (Node sharing, DSVs...)
+** xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection]
+** Multi-threaded Solving
+** Partitioned Search
+** Constraint Profiling
+** Throttling Events
+** Multistage Moves
+
+

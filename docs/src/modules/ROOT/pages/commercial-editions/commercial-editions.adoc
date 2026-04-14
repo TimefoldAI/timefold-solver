@@ -1,70 +1,21 @@
-= Timefold Solver Enterprise Edition
-:page-aliases: partitioned-search/partitioned-search.adoc
+= Plus/Enterprise Editions
+:page-aliases: partitioned-search/partitioned-search.adoc, \
+    enterprise-edition/enterprise-edition.adoc
 :doctype: book
 :sectnums:
 :icons: font
 
-_Timefold Solver Enterprise Edition_ is a commercial product that offers <<enterpriseEditionFeatures,additional features>>,
-such as <<nearbySelection,nearby selection>> and <<multithreadedSolving,multi-threaded solving>>.
-These features are essential to scale out to large datasets.
+_Timefold Solver Plus_ and _Timefold Solver Enterprise_ are commercial products which offer <<enterpriseEditionFeatures,additional features>>,
+such as <<scoreAnalysis,score analysis>>, <<nearbySelection,nearby selection>> and <<multithreadedSolving,multi-threaded solving>>.
+These features are essential to scale out to large datasets and build trust with your users.
 
-Unlike _Timefold Solver Community Edition_, the _Timefold Solver Enterprise Edition_ is not open-source.
-We offer free licenses to non-profit organizations and for academic research.
-Others may be entitled to a trial license to evaluate the product before purchasing.
-Please https://timefold.ai/contact[contact Timefold] to get your Enterprise license.
+Unlike _Timefold Solver Community Edition_, these commercial editions are not open-source.
+We offer free trials as well as free licenses to non-profit organizations, start-ups and for academic research.
+Please check out LINK TODO to get your commercial licenses.
 
 TIP: Looking for quicker time-to-value?
 Timefold offers https://docs.timefold.ai/[pre-built, fully tuned optimization models], no constraint building required.
 Just plug into our API and start optimizing immediately.
-
-For a high-level overview of the differences between Timefold offerings,
-see https://timefold.ai/pricing[Timefold Pricing].
-
-[#switchToEnterpriseEdition]
-== Switch to Enterprise Edition
-
-To switch from the open source _Timefold Solver Community Edition_ to _Enterprise Edition_,
-https://timefold.ai/contact[contact us first] to get your Enterprise License.
-This license is represented by a file named `timefold-enterprise-license.pem`,
-which you can introduce to your project by one of the following methods:
-
-* Store the license's PEM string in the `TIMEFOLD_ENTERPRISE_LICENSE` environment variable.
-* Store the absolute path to the file in `TIMEFOLD_ENTERPRISE_LICENSE_PATH` environment variable.
-* Place the file in the user's home directory.
-* Place the file in the root of your application classpath.
-
-Take care not to leak the license file, for example by committing it to a public repository,
-logging the license file content in logs, or sharing it with unauthorized parties.
-
-Once your license is in place,
-replace references to open-source artifacts by their enterprise counterparts
-as shown in the following table:
-
-|===
-|Open source|Enterprise
-
-|`ai.timefold.solver:timefold-solver-bom`
-|`ai.timefold.solver.enterprise:timefold-solver-enterprise-bom`
-
-|`ai.timefold.solver:timefold-solver-core`
-|`ai.timefold.solver.enterprise:timefold-solver-enterprise-core`
-
-|`ai.timefold.solver:timefold-solver-jackson`
-|`ai.timefold.solver.enterprise:timefold-solver-enterprise-jackson`
-
-|`ai.timefold.solver:timefold-solver-quarkus`
-|`ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus`
-
-|`ai.timefold.solver:timefold-solver-quarkus-jackson`
-|`ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus-jackson`
-
-|`ai.timefold.solver:timefold-solver-spring-boot-starter`
-|`ai.timefold.solver.enterprise:timefold-solver-enterprise-spring-boot-starter`
-|===
-
-If you were not using some of these open source artifacts until now,
-you do not need to add the enterprise counterparts to your project either.
-
 
 [#enterpriseEditionFeatures]
 == Features included in Enterprise Edition
@@ -82,208 +33,6 @@ We also automatically enable performance optimizations not available in the open
 leading to significantly improved performance for some use cases, such as:
 
 - Heavy use of xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[custom shadow variables].
-
-[#nearbySelection]
-=== Nearby selection
-
-NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
-It is not available in the open source version.
-
-In some use cases (such as TSP and VRP, but also in other cases),
-changing entities to nearby values or swapping nearby entities leads to better results faster.
-
-image::enterprise-edition/nearbySelectionMotivation.png[align="center"]
-
-This can *heavily increase scalability* and improve solution quality:
-
-image::enterprise-edition/nearbySelectionValueProposition.png[align="center"]
-
-Nearby selection increases the probability of selecting an entity or value which is nearby to the first entity being moved in that move.
-
-image::enterprise-edition/nearbySelectionRandomDistribution.png[align="center"]
-
-The distance between two entities or values is domain specific.
-Therefore, implement the `NearbyDistanceMeter` interface:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-public interface NearbyDistanceMeter<Origin_, Desination_> {
-
-    double getNearbyDistance(Origin_ origin, Destination_ destination);
-
-}
-----
-====
-
-In a nutshell, when nearby selection is used in a list move selector,
-`Origin_` is always a planning value (for example `Customer`)
-but `Destination_` can be either a planning value or a planning entity.
-That means that in VRP the distance meter must be able to handle both `Customer` and `Vehicle` as the `Destination_` argument:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer, LocationAware> {
-
-    public double getNearbyDistance(Customer origin, LocationAware destination) {
-        return origin.getDistanceTo(destination);
-    }
-
-}
-----
-====
-
-[NOTE]
-====
-`NearbyDistanceMeter` implementations are expected to be stateless.
-The solver may choose to reuse them in different contexts.
-
-The Nearby configuration is not enabled for the Construction Heuristics
-because the method will analyze all possible moves.
-Adding Nearby in this situation would only result in unnecessary costs
-involving the generation of the distance matrix and sorting operations without taking advantage of the feature.
-====
-
-==== Nearby selection with a list variable
-
-To quickly configure nearby selection with a planning list variable,
-add `nearbyDistanceMeterClass` element to your configuration file.
-The following enables nearby selection with a list variable
-for the local search:
-
-[source,xml,options="nowrap"]
-----
-<?xml version="1.0" encoding="UTF-8"?>
-<solver xmlns="https://timefold.ai/xsd/solver">
-    ...
-    <nearbyDistanceMeterClass>org.acme.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-    ...
-</solver>
-----
-
-By default, the following move selectors are included:
-xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change],
-xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap],
-Change with Nearby,
-Swap with Nearby,
-and xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelector[2-OPT] with Nearby.
-
-===== Advanced configuration for local search
-
-To customize the move selectors,
-add a `nearbySelection` element in the `destinationSelector`, `valueSelector` or `subListSelector`
-and use xref:optimization-algorithms/move-selector-reference.adoc#mimicSelection[mimic selection]
-to specify which destination, value, or subList should be nearby the selection.
-
-[source,xml,options="nowrap"]
-----
-    <unionMoveSelector>
-      <listChangeMoveSelector>
-        <valueSelector id="valueSelector1"/>
-        <destinationSelector>
-          <nearbySelection>
-            <originValueSelector mimicSelectorRef="valueSelector1"/>
-            <nearbyDistanceMeterClass>org.acme.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-          </nearbySelection>
-        </destinationSelector>
-      </listChangeMoveSelector>
-      <listSwapMoveSelector>
-        <valueSelector id="valueSelector2"/>
-        <secondaryValueSelector>
-          <nearbySelection>
-            <originValueSelector mimicSelectorRef="valueSelector2"/>
-            <nearbyDistanceMeterClass>org.acme.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-          </nearbySelection>
-        </secondaryValueSelector>
-      </listSwapMoveSelector>
-      <subListChangeMoveSelector>
-        <selectReversingMoveToo>true</selectReversingMoveToo>
-        <subListSelector id="subListSelector3"/>
-        <destinationSelector>
-          <nearbySelection>
-            <originSubListSelector mimicSelectorRef="subListSelector3"/>
-            <nearbyDistanceMeterClass>org.acme.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-          </nearbySelection>
-        </destinationSelector>
-      </subListChangeMoveSelector>
-      <subListSwapMoveSelector>
-        <selectReversingMoveToo>true</selectReversingMoveToo>
-        <subListSelector id="subListSelector4"/>
-        <secondarySubListSelector>
-          <nearbySelection>
-            <originSubListSelector mimicSelectorRef="subListSelector4"/>
-            <nearbyDistanceMeterClass>org.acme.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
-          </nearbySelection>
-        </secondarySubListSelector>
-      </subListSwapMoveSelector>
-    </unionMoveSelector>
-----
-
-==== Power-tweaking distribution type
-
-The solver allows you to tweak the distribution type of the nearby selection,
-or how likely are the nearest elements to be selected based on their distance from the current.
-
-[NOTE]
-====
-Only tweak the default settings if you are prepared
-to back your choices by extensive xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[benchmarking].
-====
-
-The following ``NearbySelectionDistributionType``s are supported:
-
-* `PARABOLIC_DISTRIBUTION` (default): Nearest elements are selected with a higher probability.
-+
-[source,xml,options="nowrap"]
-----
-  <nearbySelection>
-    <parabolicDistributionSizeMaximum>80</parabolicDistributionSizeMaximum>
-  </nearbySelection>
-----
-+
-A `distributionSizeMaximum` parameter should not be 1 because if the nearest is already the planning value of the current entity,
-then the only move that is selectable is not doable.
-To allow every element to be selected regardless of the number of entities,
-only set the distribution type (so without a `distributionSizeMaximum` parameter):
-+
-[source,xml,options="nowrap"]
-----
-  <nearbySelection>
-    <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
-  </nearbySelection>
-----
-* ``BLOCK_DISTRIBUTION``: Only the n nearest are selected, with an equal probability. For example, select the 20 nearest:
-+
-[source,xml,options="nowrap"]
-----
-  <nearbySelection>
-    <blockDistributionSizeMaximum>20</blockDistributionSizeMaximum>
-  </nearbySelection>
-----
-* ``LINEAR_DISTRIBUTION``: Nearest elements are selected with a higher probability. The probability decreases linearly.
-+
-[source,xml,options="nowrap"]
-----
-  <nearbySelection>
-    <linearDistributionSizeMaximum>40</linearDistributionSizeMaximum>
-  </nearbySelection>
-----
-* ``BETA_DISTRIBUTION``: Selection according to a beta distribution. Slows down the solver significantly.
-+
-[source,xml,options="nowrap"]
-----
-  <nearbySelection>
-    <betaDistributionAlpha>1</betaDistributionAlpha>
-    <betaDistributionBeta>5</betaDistributionBeta>
-  </nearbySelection>
-----
 
 
 [#multithreadedSolving]
@@ -958,7 +707,7 @@ INFO:: How much time spent in score calculation is spent by each constraint (tot
 | 2: Teacher time efficiency                         |     6.19 s |  23.15 % |
 ----
 +
-xref:enterprise-edition/enterprise-edition.adoc#nodeSharing[When node sharing] is used, the time spent will be reported with "Work shared by", with the numbers identifying constraints that shared the work.
+xref:commercial-editions/commercial-editions.adoc#nodeSharing[When node sharing] is used, the time spent will be reported with "Work shared by", with the numbers identifying constraints that shared the work.
 In the example below, work was shared by constraints 1 to 6:
 +
 [source,text]
