@@ -890,13 +890,13 @@ This does not measure the amount of memory used by a solver; two solvers on the 
 Measures the score impact of each constraint on the best solution Timefold Solver found so far.
 There are separate meters for each level of the score, with tags for each constraint.
 For instance, for a `HardSoftScore` for a constraint "Minimize Cost",
-there are `timefold.solver.constraint.match.best.score.hard.score` and `timefold.solver.constraint.match.best.score.soft.score` meters with a tag "constraint.name=Minimize Cost".
+there are `timefold.solver.constraint.match.best.score.hard.score` and `timefold.solver.constraint.match.best.score.soft.score` meters with a tag "constraint.id=Minimize Cost".
 
 - `CONSTRAINT_MATCH_TOTAL_STEP_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.step.score.*"):
 Measures the score impact of each constraint on the current step.
 There are separate meters for each level of the score, with tags for each constraint.
 For instance, for a `HardSoftScore` for a constraint "Minimize Cost",
-there are `timefold.solver.constraint.match.step.score.hard.score` and `timefold.solver.constraint.match.step.score.soft.score` meters with a tag "constraint.name=Minimize Cost".
+there are `timefold.solver.constraint.match.step.score.hard.score` and `timefold.solver.constraint.match.step.score.soft.score` meters with a tag "constraint.id=Minimize Cost".
 
 - `PICKED_MOVE_TYPE_BEST_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.best.score.diff.*"):
 Measures how much a particular move type improves the best solution.

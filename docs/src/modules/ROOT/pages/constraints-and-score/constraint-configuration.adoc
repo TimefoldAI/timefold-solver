@@ -135,6 +135,9 @@ as opposed to its original `1hard`.
 The `Service finished after max end time` constraint has a weight of `0hard`,
 and therefore will be disabled entirely.
 
+NOTE: The string keys passed to `ConstraintWeightOverrides.of(...)` must match the constraint ID,
+which is the value given to `asConstraint(...)` when building your constraints.
+
 In this way, you can solve the same problem
 by applying different constraint weights to each instance.
 Once solved, you can compare the results

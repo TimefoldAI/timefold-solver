@@ -86,10 +86,9 @@ Applies to all built-in score types and `IBendableScore`.
 
 * `ConstraintFactory.getDefaultConstraintPackage()` removed.
 * `Constraint.getConstraintPackage()` removed.
-* `ConstraintRef.of(packageName, constraintName)` → `ConstraintRef.of(constraintName)` (package argument removed).
-* `Constraint.getConstraintId()` replaced by `getConstraintRef().constraintId()`.
-* `Constraint.getConstraintName()` replaced by `getConstraintRef().constraintName()`.
-* Same renames apply to `ConstraintMatch` and `ConstraintMatchTotal`.
+* `ConstraintRef.of(packageName, constraintName)` → `ConstraintRef.of(constraintId)` (package argument removed).
+* `Constraint.getConstraintId()` replaced by `getConstraintRef().id()`.
+* `Constraint.getConstraintName()` removed.
 
 ==== Constraint Stream terminal methods refactored
 
@@ -97,12 +96,15 @@ Applies to all built-in score types and `IBendableScore`.
 (and their `Configurable`/`Long`/`BigDecimal` variants, across Uni/Bi/Tri/Quad streams)
 are replaced by a two-call chain:
 `penalize(score).asConstraint(constraintName)`, moving the constraint name out of the scoring method and into a dedicated
-`asConstraint()` call.
+`asConstraint()`.
 * Where the old form passed both a package and a name (`penalize(pkg, name, score)`), the package argument is no longer available for `asConstraint()`: `penalize(score).asConstraint(name)`.
 * `ConstraintBuilder.asConstraint(packageName, constraintName)` → `asConstraint(constraintName)`
 (two-arg form collapsed to one).
 * `penalizeLong(..)`, `rewardLong(..)`, `impactLong(..)` on all stream types (Uni/Bi/Tri/Quad) renamed to `penalize(..)`,
 `reward(..)`, `impact(..)`.
+* "Constraint name" was renamed to "Constraint ID".
+* "Constraint description" and "Constraint group" were removed,
+replaced by a more flexible `ConstraintMetadata`.
 
 ==== `SolverManager` API: Builder pattern replaces overloaded `solve()` methods
 
@@ -407,12 +409,12 @@ to allow the solver to access them via reflection.
 
 '''
 
-.icon:info-circle[role=yellow] Constraint name now strictly validated
+.icon:info-circle[role=yellow] Constraint ID now strictly validated
 [%collapsible%open]
 ====
-Constraint names are now validated more strictly.
-Constraint names must be non-null, non-empty, and must not contain slashes and other special characters.
-If your constraint names do not comply, an exception will be thrown at solver initialization.
+Constraint IDs are now validated more strictly.
+They must be non-null, non-empty, and must not contain slashes and other special characters.
+If your constraint IDs do not comply, an exception will be thrown at solver initialization.
 ====
 
 '''
@@ -938,6 +940,23 @@ Additionally, constraint packages have been fully removed.
 `ConstraintRef.of(String, String)` (package + name) has been replaced by `ConstraintRef.of(String)` (name only).
 Methods to retrieve the package name of a constraint have been removed from every other place where they existed,
 most notably from `ConstraintAnalysis` and `Constraint`.
+====
+
+'''
+
+.icon:eye[] `ConstraintMetadata` replaces string-based constraint description and group APIs
+[%collapsible%closed]
+====
+The old `asConstraintDescribed(String name, String description)` and `asConstraintDescribed(String name, String group, String description)` methods have been removed.
+Use `asConstraint(String id)` (description dropped) or implement the `ConstraintMetadata` interface and call `asConstraint(ConstraintMetadata)` to carry additional metadata.
+
+The following methods have also been renamed or removed:
+
+* `ConstraintRef.constraintName()` → `ConstraintRef.id()`
+* `ConstraintAnalysis.constraintName()` → `ConstraintAnalysis.constraintId()`
+* `Constraint.getConstraintGroup()` removed — constraint groups are no longer supported.
+* `Constraint.getDescription()` returning `String` removed — use `Constraint.getConstraintMetadata()` returning `ConstraintMetadata` instead.
+* `ConstraintMetaModel.getConstraintsPerGroup(...)` and `ConstraintMetaModel.getConstraintGroups()` removed.
 ====
 
 '''

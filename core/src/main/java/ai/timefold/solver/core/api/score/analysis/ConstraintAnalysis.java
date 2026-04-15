@@ -52,11 +52,13 @@ public interface ConstraintAnalysis<Score_ extends Score<Score_>> {
     int matchCount();
 
     /**
-     * Return name of the constraint that this analysis is for.
+     * Return id of the constraint that this analysis is for.
      *
-     * @return equal to {@code constraintRef.constraintName()}
+     * @return equal to {@code constraintRef.id()}
      */
-    String constraintName();
+    default String constraintId() {
+        return constraintRef().id();
+    }
 
     /**
      * Returns a diagnostic text that explains part of the score quality through the {@link ConstraintAnalysis} API.

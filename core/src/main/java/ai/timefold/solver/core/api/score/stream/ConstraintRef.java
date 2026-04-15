@@ -9,24 +9,24 @@ import org.jspecify.annotations.NullMarked;
  * <p>
  * If you need an instance created, use {@link ConstraintRef#of(String)} and not the record's constructors.
  *
- * @param constraintName The constraint name. It must be unique.
+ * @param id The constraint id. It must be unique.
  */
 @NullMarked
-public record ConstraintRef(String constraintName)
+public record ConstraintRef(String id)
         implements
             Comparable<ConstraintRef> {
 
-    public static ConstraintRef of(String constraintName) {
-        return new ConstraintRef(constraintName);
+    public static ConstraintRef of(String id) {
+        return new ConstraintRef(id);
     }
 
     public ConstraintRef {
-        constraintName = AbstractConstraintBuilder.sanitize("constraintName", constraintName);
+        id = AbstractConstraintBuilder.sanitize("id", id);
     }
 
     @Override
     public int compareTo(ConstraintRef other) {
-        return constraintName.compareTo(other.constraintName);
+        return id.compareTo(other.id);
     }
 
 }

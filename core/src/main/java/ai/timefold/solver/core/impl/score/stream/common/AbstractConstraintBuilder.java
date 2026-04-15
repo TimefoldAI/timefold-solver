@@ -5,6 +5,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintBuilder;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetadata;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -28,9 +29,8 @@ public abstract class AbstractConstraintBuilder<Score_ extends Score<Score_>> im
 
     @SuppressWarnings("unchecked")
     @Override
-    public final Constraint asConstraintDescribed(String constraintName, String constraintDescription, String constraintGroup) {
-        return constraintConstructor.apply(sanitize("constraintName", constraintName), constraintDescription,
-                sanitize("constraintGroup", constraintGroup), constraintWeight, impactType, getJustificationMapping());
+    public final Constraint asConstraint(ConstraintMetadata metadata) {
+        return constraintConstructor.apply(metadata, constraintWeight, impactType, getJustificationMapping());
     }
 
     public static String sanitize(String fieldName, String fieldValue) {

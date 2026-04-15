@@ -420,10 +420,9 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     private <Score_ extends Score<Score_>> QuadConstraintBuilderImpl<A, B, C, D, Score_> newTerminator(
             BavetScoringConstraintStream<Solution_> stream, Score_ constraintWeight, ScoreImpactType impactType) {
         return new QuadConstraintBuilderImpl<>(
-                (constraintName, constraintDescription, constraintGroup, constraintWeight_, impactType_,
-                        justificationMapping) -> buildConstraint(constraintName,
-                                constraintDescription, constraintGroup, constraintWeight_, impactType_, justificationMapping,
-                                stream),
+                (description, constraintWeight_, impactType_,
+                        justificationMapping) -> buildConstraint(description,
+                                constraintWeight_, impactType_, justificationMapping, stream),
                 impactType, constraintWeight);
     }
 

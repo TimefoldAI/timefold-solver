@@ -3,6 +3,7 @@ package ai.timefold.solver.migration;
 import java.util.List;
 
 import ai.timefold.solver.migration.v2.ConstraintArgRemovalMigrationRecipe;
+import ai.timefold.solver.migration.v2.ConstraintMetadataMigrationRecipe;
 import ai.timefold.solver.migration.v2.GeneralDependencyDeleteMigrationRecipe;
 import ai.timefold.solver.migration.v2.GeneralMethodChangeNameMigrationRecipe;
 import ai.timefold.solver.migration.v2.GeneralMethodDeleteInvocationMigrationRecipe;
@@ -39,6 +40,7 @@ public final class ToLatestRecipe extends AbstractRecipe {
                 new ToLatestV1Recipe(),
                 new ChangeVersionRecipe(),
                 new ConstraintArgRemovalMigrationRecipe(),
+                new ConstraintMetadataMigrationRecipe(),
                 new PlanningSolutionAnnotationCleanupMigrationRecipe(),
                 new GeneralMethodDeleteInvocationMigrationRecipe(),
                 new GeneralMethodChangeNameMigrationRecipe(),

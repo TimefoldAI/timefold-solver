@@ -2,56 +2,43 @@ package ai.timefold.solver.core.impl.score.stream.common;
 
 import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetadata;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefinition;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public abstract class AbstractConstraint<Solution_, Constraint_ extends AbstractConstraint<Solution_, Constraint_, ConstraintFactory_>, ConstraintFactory_ extends InnerConstraintFactory<Solution_, Constraint_>>
         implements Constraint {
 
-    private static final String CONSTRAINT_GROUP_REGEX = "^[\\p{L}][\\p{L}\\p{N}\\p{M}_-]*$";
-    private static final Pattern CONSTRAINT_GROUP_REGEX_PATTERN = Pattern.compile(CONSTRAINT_GROUP_REGEX);
-
     private final ConstraintFactory_ constraintFactory;
     private final ConstraintRef constraintRef;
-    private final String description;
-    private final String constraintGroup;
+    private final ConstraintMetadata constraintMetadata;
     private final Score<?> defaultConstraintWeight;
     private final ScoreImpactType scoreImpactType;
     // Constraint is not generic in uni/bi/..., therefore these can not be typed.
-    private final Object justificationMapping;
+    private final @Nullable Object justificationMapping;
 
     /**
      *
      * @param constraintFactory never null
-     * @param constraintRef never null
-     * @param description never null
-     * @param constraintGroup never null
+     * @param constraintMetadata never null
      * @param scoreImpactType never null
      * @param justificationMapping never null
      */
-    protected AbstractConstraint(ConstraintFactory_ constraintFactory, ConstraintRef constraintRef, String description,
-            String constraintGroup, Score<?> defaultConstraintWeight, ScoreImpactType scoreImpactType,
-            Object justificationMapping) {
+    protected AbstractConstraint(ConstraintFactory_ constraintFactory, ConstraintMetadata constraintMetadata,
+            Score<?> defaultConstraintWeight, ScoreImpactType scoreImpactType,
+            @Nullable Object justificationMapping) {
         this.constraintFactory = Objects.requireNonNull(constraintFactory);
-        this.constraintRef = Objects.requireNonNull(constraintRef);
-        this.description = Objects.requireNonNull(description);
-        this.constraintGroup = Objects.requireNonNull(constraintGroup);
-        var matcher = CONSTRAINT_GROUP_REGEX_PATTERN.matcher(constraintGroup);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("""
-                    The constraintGroup (%s) contains invalid characters.
-                    Only alphanumeric characters, "-" and "_" are allowed.
-                    The string must start with an alphabetic character.
-                    """.formatted(constraintGroup));
-        }
+        this.constraintMetadata = Objects.requireNonNull(constraintMetadata);
+        this.constraintRef = ConstraintRef.of(constraintMetadata.id());
         this.defaultConstraintWeight = defaultConstraintWeight;
         this.scoreImpactType = Objects.requireNonNull(scoreImpactType);
         this.justificationMapping = justificationMapping; // May be omitted in test code.
@@ -111,15 +98,11 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     }
 
     @Override
-    public @NonNull String getDescription() {
-        return description;
+    public ConstraintMetadata getConstraintMetadata() {
+        return constraintMetadata;
     }
 
-    @Override
-    public @NonNull String getConstraintGroup() {
-        return constraintGroup;
-    }
-
+    @SuppressWarnings("unchecked")
     @Override
     public <Score_ extends Score<Score_>> Score_ getConstraintWeight() {
         return adjustConstraintWeight((Score_) defaultConstraintWeight);
@@ -129,19 +112,19 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         return scoreImpactType;
     }
 
-    public <JustificationMapping_> JustificationMapping_ getJustificationMapping() {
+    /**
+     *
+     * @return maybe null, in test code
+     * @param <JustificationMapping_> user-defined type
+     */
+    @SuppressWarnings("unchecked")
+    public <JustificationMapping_> @Nullable JustificationMapping_ getJustificationMapping() {
         // It is the job of the code constructing the constraint to ensure that this cast is correct.
         return (JustificationMapping_) justificationMapping;
     }
 
     public static <Solution_, Score_ extends Score<Score_>> void validateWeight(
             SolutionDescriptor<Solution_> solutionDescriptor, ConstraintRef constraintRef, Score_ constraintWeight) {
-        if (constraintWeight == null) {
-            throw new IllegalArgumentException("""
-                    The constraintWeight (null) for constraint (%s) must not be null.
-                    Maybe check your constraint implementation."""
-                    .formatted(constraintRef));
-        }
         var scoreDescriptor = solutionDescriptor.<Score_> getScoreDescriptor();
         if (!constraintWeight.getClass().isAssignableFrom(constraintWeight.getClass())) {
             throw new IllegalArgumentException("""

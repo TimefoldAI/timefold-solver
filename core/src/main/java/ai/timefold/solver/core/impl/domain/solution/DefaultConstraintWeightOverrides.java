@@ -21,12 +21,12 @@ public record DefaultConstraintWeightOverrides<Score_ extends Score<Score_>>(Map
     }
 
     @Override
-    public @Nullable Score_ getConstraintWeight(String constraintName) {
-        return constraintWeightMap.get(constraintName);
+    public @Nullable Score_ getConstraintWeight(String constraintId) {
+        return constraintWeightMap.get(constraintId);
     }
 
     @Override
-    public Set<String> getKnownConstraintNames() {
+    public Set<String> getKnownConstraintIds() {
         return Collections.unmodifiableSet(constraintWeightMap.keySet());
     }
 
