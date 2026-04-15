@@ -106,16 +106,16 @@ class NullAllowingCountableValueRangeTest {
                 new ComparatorFactorySelectionSorter<>(solution -> integerComparator, SelectionSorterOrder.DESCENDING));
         assertAllElementsOfIterator(((CountableValueRange<Integer>) new NullAllowingCountableValueRange<>(
                 (new ListValueRange<>(Arrays.asList(-15, 25, 0, 1, -1)))).sort(ascComparatorSorter)).createOriginalIterator(),
-                -15, -1, 0, 1, 25);
+                null, -15, -1, 0, 1, 25);
         assertAllElementsOfIterator(((CountableValueRange<Integer>) new NullAllowingCountableValueRange<>(
                 (new ListValueRange<>(Arrays.asList(-15, 25, 0, 1, -1)))).sort(ascComparatorFactorySorter))
-                .createOriginalIterator(), -15, -1, 0, 1, 25);
+                .createOriginalIterator(), null, -15, -1, 0, 1, 25);
         assertAllElementsOfIterator(((CountableValueRange<Integer>) new NullAllowingCountableValueRange<>(
                 (new ListValueRange<>(Arrays.asList(-15, 25, 0, 1, -1)))).sort(descComparatorSorter)).createOriginalIterator(),
-                25, 1, 0, -1, -15);
+                null, 25, 1, 0, -1, -15);
         assertAllElementsOfIterator(((CountableValueRange<Integer>) new NullAllowingCountableValueRange<>(
                 (new ListValueRange<>(Arrays.asList(-15, 25, 0, 1, -1)))).sort(descComparatorFactorySorter))
-                .createOriginalIterator(), 25, 1, 0, -1, -15);
+                .createOriginalIterator(), null, 25, 1, 0, -1, -15);
     }
 
 }

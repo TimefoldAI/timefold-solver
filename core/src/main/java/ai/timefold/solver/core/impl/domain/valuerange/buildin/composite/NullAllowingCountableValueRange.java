@@ -55,7 +55,8 @@ public final class NullAllowingCountableValueRange<T> extends AbstractCountableV
 
     @Override
     public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
-        return childValueRange.sort(sorter);
+        var sortedRange = (CountableValueRange<T>) childValueRange.sort(sorter);
+        return new NullAllowingCountableValueRange<>(sortedRange);
     }
 
     @Override
