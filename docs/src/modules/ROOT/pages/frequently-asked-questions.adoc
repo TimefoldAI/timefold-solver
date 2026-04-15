@@ -10,7 +10,7 @@ This license is very liberal and allows reuse for commercial purposes.
 Read http://www.apache.org/foundation/licence-FAQ.html#WhatDoesItMEAN[the layman's explanation].
 
 _Timefold Solver Plus and Enterprise editions_ are commercial products
-that offers xref:commercial-editions/commercial-editions.adoc[additional features]
+that offer xref:commercial-editions/commercial-editions.adoc[additional features]
 to scale out to very large datasets.
 To find out more, see xref:commercial-editions/commercial-editions.adoc[Plus / Enterprise Edition section] of this documentation.
 
