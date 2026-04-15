@@ -40,7 +40,8 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
 
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
     private Map<String, String> constraintProviderCustomProperties = null;
-    private AutomaticNodeSharing constraintStreamAutomaticNodeSharing;
+    @Nullable
+    private EnableAutomaticNodeSharing constraintStreamAutomaticNodeSharing;
     private Boolean constraintStreamProfilingEnabled;
 
     private Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass = null;
@@ -92,11 +93,12 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
         this.constraintProviderCustomProperties = constraintProviderCustomProperties;
     }
 
-    public @Nullable AutomaticNodeSharing getConstraintStreamAutomaticNodeSharing() {
+    public @Nullable EnableAutomaticNodeSharing getConstraintStreamAutomaticNodeSharing() {
         return constraintStreamAutomaticNodeSharing;
     }
 
-    public void setConstraintStreamAutomaticNodeSharing(@Nullable AutomaticNodeSharing constraintStreamAutomaticNodeSharing) {
+    public void
+            setConstraintStreamAutomaticNodeSharing(@Nullable EnableAutomaticNodeSharing constraintStreamAutomaticNodeSharing) {
         this.constraintStreamAutomaticNodeSharing = constraintStreamAutomaticNodeSharing;
     }
 
@@ -193,7 +195,7 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
     }
 
     public @NonNull ScoreDirectorFactoryConfig
-            withConstraintStreamAutomaticNodeSharing(@NonNull AutomaticNodeSharing constraintStreamAutomaticNodeSharing) {
+            withConstraintStreamAutomaticNodeSharing(@NonNull EnableAutomaticNodeSharing constraintStreamAutomaticNodeSharing) {
         this.constraintStreamAutomaticNodeSharing = constraintStreamAutomaticNodeSharing;
         return this;
     }

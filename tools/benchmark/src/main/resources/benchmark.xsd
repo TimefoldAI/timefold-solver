@@ -446,7 +446,7 @@
           <xs:element minOccurs="0" name="constraintProviderCustomProperties" type="tns:jaxbAdaptedMap"/>
                               
           
-          <xs:element minOccurs="0" name="constraintStreamAutomaticNodeSharing" type="tns:automaticNodeSharing"/>
+          <xs:element minOccurs="0" name="constraintStreamAutomaticNodeSharing" type="tns:enableAutomaticNodeSharing"/>
                               
           
           <xs:element minOccurs="0" name="constraintStreamProfilingEnabled" type="xs:boolean"/>
@@ -2570,7 +2570,7 @@
   </xs:simpleType>
       
   
-  <xs:simpleType name="automaticNodeSharing">
+  <xs:simpleType name="enableAutomaticNodeSharing">
             
     
     <xs:restriction base="xs:string">
