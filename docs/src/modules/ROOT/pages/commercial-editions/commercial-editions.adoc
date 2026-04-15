@@ -55,4 +55,3 @@ xref:commercial-editions/installation.adoc#solverObtainLicenseKey[See: How to ob
 | | ✓
 
 |===
-```
