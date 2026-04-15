@@ -20,7 +20,7 @@ include::./_only-enterprise.adoc[]
 When a `ConstraintProvider` does an operation for multiple constraints (such as finding all shifts corresponding to an employee), that work can be shared.
 This can significantly improve move evaluation speed if the repeated operation is computationally expensive:
 
-image::enterprise-edition/nodeSharingValueProposition.png[align="center"]
+image::commercial-editions/nodeSharingValueProposition.png[align="center"]
 
 IMPORTANT: Debugging breakpoints put inside your constraints will not be respected, because the `ConstraintProvider` class will be transformed when this feature is enabled.
 

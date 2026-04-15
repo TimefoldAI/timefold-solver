@@ -807,15 +807,15 @@ include::../commercial-editions/_only-enterprise.adoc[]
 In some use cases (such as TSP and VRP, but also in other cases),
 changing entities to nearby values or swapping nearby entities leads to better results faster.
 
-image::enterprise-edition/nearbySelectionMotivation.png[align="center"]
+image::optimization-algorithms/move-selector-reference/nearbySelectionMotivation.png[align="center"]
 
 This can *heavily increase scalability* and improve solution quality:
 
-image::enterprise-edition/nearbySelectionValueProposition.png[align="center"]
+image::optimization-algorithms/move-selector-reference/nearbySelectionValueProposition.png[align="center"]
 
 Nearby selection increases the probability of selecting an entity or value which is nearby to the first entity being moved in that move.
 
-image::enterprise-edition/nearbySelectionRandomDistribution.png[align="center"]
+image::optimization-algorithms/move-selector-reference/nearbySelectionRandomDistribution.png[align="center"]
 
 The distance between two entities or values is domain specific.
 Therefore, implement the `NearbyDistanceMeter` interface:
