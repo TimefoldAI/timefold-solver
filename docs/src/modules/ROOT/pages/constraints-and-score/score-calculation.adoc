@@ -2033,8 +2033,7 @@ add the `easyScoreCalculatorCustomProperties` element and use xref:using-timefol
 [#incrementalScoreCalculation]
 === Incremental score calculation
 
-NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
-It is not available in the open source version.
+include::../commercial-editions/_only-enterprise.adoc[]
 
 A way to implement your score calculation incrementally in Java.
 

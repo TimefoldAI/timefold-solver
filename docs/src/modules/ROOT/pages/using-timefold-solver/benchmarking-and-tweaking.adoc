@@ -1067,7 +1067,7 @@ for example when running benchmarks on an application server or a cloud platform
 </plannerBenchmark>
 ----
 
-NOTE: This feature is independent of xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
+NOTE: This feature is independent of xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
 and can be used in the open source version of Timefold Solver.
 
 

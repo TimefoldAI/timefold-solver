@@ -1,5 +1,5 @@
 [#understandingTheScore]
-= Understanding the score
+= Understanding the score (Score Analysis)
 :doctype: book
 :sectnums:
 :icons: font
@@ -8,8 +8,7 @@ The score in its pure form is just a number, and does not help us understand the
 It doesn't say which constraints are broken, or what caused them to break.
 To understand the score, it needs to be broken down.
 
-NOTE: Explainability is exclusive to Timefold Solver Enterprise Edition.
-It is not available in the open source version.
+include::../commercial-editions/_only-plus-and-enterprise.adoc[]
 
 The easiest way to break down the score during development is to print the score summary:
 

@@ -1,0 +1,56 @@
+= Plus/Enterprise Editions
+:page-aliases: partitioned-search/partitioned-search.adoc, \
+    enterprise-edition/enterprise-edition.adoc
+:doctype: book
+:icons: font
+
+_Timefold Solver Plus_ and _Timefold Solver Enterprise_ are commercial products which offer additional features,
+such as xref:constraints-and-score/understanding-the-score.adoc[score analysis], xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection] and xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[multithreaded solving].
+These features are essential to scale out to large datasets and build trust with your users.
+
+Unlike _Timefold Solver Community Edition_, these commercial editions are not open-source.
+
+TIP: Looking for quicker time-to-value?
+Timefold offers https://docs.timefold.ai/[pre-built, fully tuned optimization models], no constraint building required.
+Just plug into our API and start optimizing immediately.
+
+We offer free trials to everyone as well as free licenses to non-profit organizations, start-ups and for academic research.
+xref:commercial-editions/installation.adoc#solverObtainLicenseKey[See: How to obtain a license key?]
+
+== Feature Comparison
+
+[cols="4,^1,^1", options="header"]
+|===
+| Feature | Plus | Enterprise
+
+| xref:constraints-and-score/understanding-the-score.adoc[Score Analysis]
+| ✓ | ✓
+
+| xref:responding-to-change/responding-to-change.adoc#assignmentRecommendationAPI[Recommendation API]
+| ✓ | ✓
+
+| xref:commercial-editions/performance-improvements.adoc[Performance improvements]
+| | ✓
+
+| xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection]
+| | ✓
+
+| xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[Multithreaded solving]
+| | ✓
+
+| xref:using-timefold-solver/running-the-solver.adoc#partitionedSearch[Partitioned search]
+| | ✓
+
+| xref:constraints-and-score/performance.adoc#constraintProfiling[Constraint profiling]
+| | ✓
+
+| xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental score calculation]
+| | ✓
+
+| xref:commercial-editions/multistage-moves.adoc[Multistage moves]
+| | ✓
+
+| xref:using-timefold-solver/running-the-solver.adoc#throttlingBestSolutionEvents[Throttling best solution events]
+| | ✓
+
+|===

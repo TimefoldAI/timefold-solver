@@ -1,0 +1,81 @@
+= Installing Timefold Solver Plus & Enterprise
+
+In order to work with the commercial editions of Timefold Solver, 2 actions need to be taken:
+
+- <<solverLicenseKey,Configure a license key>>;
+- <<enterpriseArtifacts,Use the Enterprise artifacts>>;
+
+[#solverLicenseKey]
+== License Key
+
+A correctly configured and active license key is required in order for our commercial versions to function.
+
+[#solverObtainLicenseKey]
+=== Obtaining a license key
+
+Contact us through our https://timefold.ai/talk-to-us[webform].
+
+[NOTE]
+====
+Take care not to leak the license file, for example by committing it to a public repository,
+logging the license file content in logs, or sharing it with unauthorized parties.
+====
+
+[#solverSetupLicenseKey]
+=== Set up your license key
+
+After obtaining your license file (.pem) you can introduce it to your project by one of the following methods:
+
+* Store the license's PEM string in the `TIMEFOLD_ENTERPRISE_LICENSE` environment variable.
+* Store the absolute path to the file in `TIMEFOLD_ENTERPRISE_LICENSE_PATH` environment variable.
+* Place the file in the user's home directory.
+* Place the file in the root of your application classpath.
+
+[#enterpriseArtifacts]
+== Use the enterprise artifacts
+
+The commercial edition uses different artifacts than our open-source version.
+These artifacts are available from Maven Central, so no additional repositories need to be configured.
+
+[NOTE]
+====
+To avoid operational complexity, both Plus and Enterprise editions of Timefold Solver use the `enterprise` artifacts.
+Features for your licensed version are enabled based on the provided license key.
+====
+
+Replace references to open-source artifacts by their `enterprise` counterparts
+as shown in the following table:
+
+|===
+|Open source|Enterprise
+
+|`ai.timefold.solver:timefold-solver-bom`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-bom`
+
+|`ai.timefold.solver:timefold-solver-core`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-core`
+
+|`ai.timefold.solver:timefold-solver-jackson`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-jackson`
+
+|`ai.timefold.solver:timefold-solver-quarkus`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus`
+
+|`ai.timefold.solver:timefold-solver-quarkus-jackson`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-quarkus-jackson`
+
+|`ai.timefold.solver:timefold-solver-spring-boot-starter`
+|`ai.timefold.solver.enterprise:timefold-solver-enterprise-spring-boot-starter`
+|===
+
+If you were not using some of these open source artifacts until now,
+you do not need to add the enterprise counterparts to your project either.
+
+== Troubleshooting
+
+After migrating to a commercial edition, most projects work out of the box.
+
+When using the Enterprise version, automatic node sharing is the only feature that places additional restrictions on your code.
+If you run into unexpected behavior, try xref:commercial-editions/performance-improvements.adoc#automaticNodeSharingConfiguration[disabling that feature] or align your code to xref:commercial-editions/performance-improvements.adoc#automaticNodeSharingRestrictions[comply].
+
+If that did not resolve the issue, link:https://timefold.ai/contact[contact Timefold support].

@@ -799,16 +799,206 @@ A replaying selector must reference a recorder's id with a ``mimicSelectorRef``:
 
 Mimic selection is useful to create <<cartesianProductMoveSelector,a composite move>> from two moves that affect the same entity.
 
+[#nearbySelection]
+=== Nearby selection
 
-[#nearbySelectionTeaser]
-==== Nearby selection
+include::../commercial-editions/_only-enterprise.adoc[]
 
-NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
-It is not available in the open source version.
+In some use cases (such as TSP and VRP, but also in other cases),
+changing entities to nearby values or swapping nearby entities leads to better results faster.
 
-Read about nearby selection in the xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby selection section]
-of xref:enterprise-edition/enterprise-edition.adoc[Timefold Solver Enterprise Edition].
+image::optimization-algorithms/move-selector-reference/nearbySelectionMotivation.png[align="center"]
 
+This can *heavily increase scalability* and improve solution quality:
+
+image::optimization-algorithms/move-selector-reference/nearbySelectionValueProposition.png[align="center"]
+
+Nearby selection increases the probability of selecting an entity or value which is nearby to the first entity being moved in that move.
+
+image::optimization-algorithms/move-selector-reference/nearbySelectionRandomDistribution.png[align="center"]
+
+The distance between two entities or values is domain specific.
+Therefore, implement the `NearbyDistanceMeter` interface:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public interface NearbyDistanceMeter<Origin_, Destination_> {
+
+    double getNearbyDistance(Origin_ origin, Destination_ destination);
+
+}
+----
+====
+
+In a nutshell, when nearby selection is used in a list move selector,
+`Origin_` is always a planning value (for example `Customer`)
+but `Destination_` can be either a planning value or a planning entity.
+That means that in VRP the distance meter must be able to handle both `Customer` and `Vehicle` as the `Destination_` argument:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer, LocationAware> {
+
+    public double getNearbyDistance(Customer origin, LocationAware destination) {
+        return origin.getDistanceTo(destination);
+    }
+
+}
+----
+====
+
+[NOTE]
+====
+`NearbyDistanceMeter` implementations are expected to be stateless.
+The solver may choose to reuse them in different contexts.
+
+The Nearby configuration is not enabled for the Construction Heuristics
+because the method will analyze all possible moves.
+Adding Nearby in this situation would only result in unnecessary costs
+involving the generation of the distance matrix and sorting operations without taking advantage of the feature.
+====
+
+==== Nearby selection with a list variable
+
+To quickly configure nearby selection with a planning list variable,
+add `nearbyDistanceMeterClass` element to your configuration file.
+The following enables nearby selection with a list variable
+for the local search:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<solver xmlns="https://timefold.ai/xsd/solver">
+    ...
+    <nearbyDistanceMeterClass>org.acme.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+    ...
+</solver>
+----
+
+By default, the following move selectors are included:
+xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change],
+xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap],
+Change with Nearby,
+Swap with Nearby,
+and xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelector[2-OPT] with Nearby.
+
+===== Advanced configuration for local search
+
+To customize the move selectors,
+add a `nearbySelection` element in the `destinationSelector`, `valueSelector` or `subListSelector`
+and use xref:optimization-algorithms/move-selector-reference.adoc#mimicSelection[mimic selection]
+to specify which destination, value, or subList should be nearby the selection.
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <listChangeMoveSelector>
+        <valueSelector id="valueSelector1"/>
+        <destinationSelector>
+          <nearbySelection>
+            <originValueSelector mimicSelectorRef="valueSelector1"/>
+            <nearbyDistanceMeterClass>org.acme.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+          </nearbySelection>
+        </destinationSelector>
+      </listChangeMoveSelector>
+      <listSwapMoveSelector>
+        <valueSelector id="valueSelector2"/>
+        <secondaryValueSelector>
+          <nearbySelection>
+            <originValueSelector mimicSelectorRef="valueSelector2"/>
+            <nearbyDistanceMeterClass>org.acme.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+          </nearbySelection>
+        </secondaryValueSelector>
+      </listSwapMoveSelector>
+      <subListChangeMoveSelector>
+        <selectReversingMoveToo>true</selectReversingMoveToo>
+        <subListSelector id="subListSelector3"/>
+        <destinationSelector>
+          <nearbySelection>
+            <originSubListSelector mimicSelectorRef="subListSelector3"/>
+            <nearbyDistanceMeterClass>org.acme.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+          </nearbySelection>
+        </destinationSelector>
+      </subListChangeMoveSelector>
+      <subListSwapMoveSelector>
+        <selectReversingMoveToo>true</selectReversingMoveToo>
+        <subListSelector id="subListSelector4"/>
+        <secondarySubListSelector>
+          <nearbySelection>
+            <originSubListSelector mimicSelectorRef="subListSelector4"/>
+            <nearbyDistanceMeterClass>org.acme.vehiclerouting.domain.solver.nearby.CustomerNearbyDistanceMeter</nearbyDistanceMeterClass>
+          </nearbySelection>
+        </secondarySubListSelector>
+      </subListSwapMoveSelector>
+    </unionMoveSelector>
+----
+
+==== Power-tweaking distribution type
+
+The solver allows you to tweak the distribution type of the nearby selection,
+or how likely are the nearest elements to be selected based on their distance from the current.
+
+[NOTE]
+====
+Only tweak the default settings if you are prepared
+to back your choices by extensive xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[benchmarking].
+====
+
+The following ``NearbySelectionDistributionType``s are supported:
+
+* `PARABOLIC_DISTRIBUTION` (default): Nearest elements are selected with a higher probability.
++
+[source,xml,options="nowrap"]
+----
+  <nearbySelection>
+    <parabolicDistributionSizeMaximum>80</parabolicDistributionSizeMaximum>
+  </nearbySelection>
+----
++
+A `distributionSizeMaximum` parameter should not be 1 because if the nearest is already the planning value of the current entity,
+then the only move that is selectable is not doable.
+To allow every element to be selected regardless of the number of entities,
+only set the distribution type (so without a `distributionSizeMaximum` parameter):
++
+[source,xml,options="nowrap"]
+----
+  <nearbySelection>
+    <nearbySelectionDistributionType>PARABOLIC_DISTRIBUTION</nearbySelectionDistributionType>
+  </nearbySelection>
+----
+* ``BLOCK_DISTRIBUTION``: Only the n nearest are selected, with an equal probability. For example, select the 20 nearest:
++
+[source,xml,options="nowrap"]
+----
+  <nearbySelection>
+    <blockDistributionSizeMaximum>20</blockDistributionSizeMaximum>
+  </nearbySelection>
+----
+* ``LINEAR_DISTRIBUTION``: Nearest elements are selected with a higher probability. The probability decreases linearly.
++
+[source,xml,options="nowrap"]
+----
+  <nearbySelection>
+    <linearDistributionSizeMaximum>40</linearDistributionSizeMaximum>
+  </nearbySelection>
+----
+* ``BETA_DISTRIBUTION``: Selection according to a beta distribution. Slows down the solver significantly.
++
+[source,xml,options="nowrap"]
+----
+  <nearbySelection>
+    <betaDistributionAlpha>1</betaDistributionAlpha>
+    <betaDistributionBeta>5</betaDistributionBeta>
+  </nearbySelection>
+----
 [#basicMoveSelectors]
 == Move selectors for basic variables
 
@@ -1088,7 +1278,7 @@ opening up a new part of the solution space.
 
 [NOTE]
 ====
-If xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection] is enabled,
+If xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection] is enabled,
 the `RuinRecreateMove` is likely to underperform
 as it won't be able to rebuild the solution using nearby selection.
 This almost always results in worse solutions than those that were originally ruined,
@@ -1173,8 +1363,7 @@ As always, benchmarking is recommended to find the optimal value for your use ca
 [#multistageMoveSelector]
 === `MultistageMoveSelector`
 
-NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
-It is not available in the open source version.
+include::../commercial-editions/_only-enterprise.adoc[]
 
 The `multistageMoveSelector` selects a multistage move to execute from a `BasicVariableStageProvider`.
 
@@ -1376,7 +1565,7 @@ opening up a new part of the solution space.
 
 [NOTE]
 ====
-If xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection] is enabled,
+If xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection] is enabled,
 the `ListRuinRecreateMove` is likely to underperform
 as it won't be able to rebuild the solution using nearby selection.
 This almost always results in worse solutions than those that were originally ruined,
@@ -1449,8 +1638,7 @@ As always, benchmarking is recommended to find the optimal value for your use ca
 [#listMultistageMoveSelector]
 === `ListMultistageMoveSelector`
 
-NOTE: This feature is exclusive to Timefold Solver Enterprise Edition.
-It is not available in the open source version.
+include::../commercial-editions/_only-enterprise.adoc[]
 
 The `listMultistageMoveSelector` selects a multistage move to execute from a `ListVariableStageProvider`.
 

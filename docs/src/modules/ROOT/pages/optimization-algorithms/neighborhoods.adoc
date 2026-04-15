@@ -96,7 +96,7 @@ that the user can optionally override to gain access to additional solver featur
 
 `Move rebase(Lookup lookup)`::
 This method creates a copy of the move that is applicable to a different working solution.
-This is only necessary when the solver is configured to use xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving].
+This is only necessary when the solver is configured to use xref:using-timefold-solver/running-the-solver.adoc#multithreadedSolving[multi-threaded solving].
 `String describe()`::
 This method returns an identifier for the move type, which is used by parts of xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[the benchmarker]
 to separate results by move type.
@@ -586,7 +586,7 @@ and the process of sampling is repeated each time the solver requests a new move
 The sampling phase currently only supports applying filtering and a limited selection of joiners,
 found in the `ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners` class.
 More advanced selection strategies,
-such as xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection],
+such as xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection],
 are likely to materialize here in the future as well.
 
 [#neighborhoodsMoveGeneration]
@@ -790,6 +790,6 @@ and only then use that particular method to generate the move.
 
 The coexistence of Move Selectors and Neighborhoods is an issue we are actively working on.
 We will also work on adding more advanced moves in the default neighborhood,
-such as 2-opt, 3-opt and xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection].
+such as 2-opt, 3-opt and xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection].
 The Neighborhoods API is still far from being a full replacement of Move Selectors.
 

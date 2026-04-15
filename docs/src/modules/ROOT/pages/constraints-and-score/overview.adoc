@@ -425,9 +425,6 @@ Implement all constraints together in a single method.
 Does not scale.
 Does not support xref:constraints-and-score/understanding-the-score.adoc[score explanations].
 
-NOTE: Incremental score calculator is exclusive to Timefold Solver Enterprise Edition.
-It is not available in the open source version.
-
 Every score calculation type can work with any Score definition (such as ``HardSoftScore`` or ``HardMediumSoftScore``).
 All score calculation types are object-oriented and can reuse existing Java code.
 

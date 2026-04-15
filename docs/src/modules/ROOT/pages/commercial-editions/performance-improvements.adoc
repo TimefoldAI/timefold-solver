@@ -1,0 +1,91 @@
+= Performance Improvements
+
+Timefold Solver Enterprise brings many performance improvements. These are shortly described here.
+
+[#fasterCustomShadowVariables]
+== Faster shadow variables
+
+include::./_only-enterprise.adoc[]
+
+Updates to shadow variables happen incrementally with Timefold Solver Enterprise.
+For models making intensive use of xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[shadow variables], this should be visible as a serious performance improvement out-of-the-box.
+
+This is enabled by default and doesn't require any special considerations.
+
+[#automaticNodeSharing]
+== Node sharing
+
+include::./_only-enterprise.adoc[]
+
+When a `ConstraintProvider` does an operation for multiple constraints (such as finding all shifts corresponding to an employee), that work can be shared.
+This can significantly improve move evaluation speed if the repeated operation is computationally expensive:
+
+image::commercial-editions/nodeSharingValueProposition.png[align="center"]
+
+IMPORTANT: Debugging breakpoints put inside your constraints will not be respected, because the `ConstraintProvider` class will be transformed when this feature is enabled.
+
+[#automaticNodeSharingRestrictions]
+=== Restrictions
+
+To use automatic node sharing outside Quarkus, your `ConstraintProvider` class must oblige by several restrictions so a valid subclass can be generated:
+
+- The `ConstraintProvider` class cannot be final.
+- The `ConstraintProvider` class cannot have any final methods.
+- The `ConstraintProvider` class cannot access any protected classes, methods or fields.
+
+[#automaticNodeSharingConfiguration]
+=== Configuration
+
+Node sharing is automatically enabled when running Timefold Solver Enterprise.
+You can disable the feature by changing the following settings.
+
+[tabs]
+====
+XML::
+
+* Add `<constraintStreamAutomaticNodeSharing>false</constraintStreamAutomaticNodeSharing>` in your `solverConfig.xml`:
++
+[source,xml,options="nowrap"]
+----
+<!-- ... -->
+<scoreDirectorFactory>
+  <constraintProviderClass>org.acme.MyConstraintProvider</constraintProviderClass>
+  <constraintStreamAutomaticNodeSharing>false</constraintStreamAutomaticNodeSharing>
+</scoreDirectorFactory>
+<!-- ... -->
+----
+
+Spring Boot::
+
+Set the property `timefold.solver.constraint-stream-automatic-node-sharing` to `false` in `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+timefold.solver.constraint-stream-automatic-node-sharing=false
+----
+
+Quarkus::
+
+Set the property `quarkus.timefold.solver.constraint-stream-automatic-node-sharing` to `false` in `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+quarkus.timefold.solver.constraint-stream-automatic-node-sharing=false
+----
+====
+
+[#nodeSharing]
+=== What is node sharing?
+
+When using xref:constraints-and-score/score-calculation.adoc#constraintStreams[constraint streams], each xref:constraints-and-score/score-calculation.adoc#constraintStreamsBuildingBlocks[building block] forms a node in the score calculation network.
+When two building blocks are functionally equivalent, they can share the same node in the network.
+Sharing nodes allows the operation to be performed only once instead of multiple times, improving the performance of the solver.
+To be functionally equivalent, the following must be true:
+
+* The building blocks must represent the same operation.
+
+* The building blocks must have functionally equivalent parent building blocks.
+
+* The building blocks must have functionally equivalent inputs.
+
+When all of the above is the case, Timefold Solver can rewrite the `ConstraintProvider` code at runtime to benefit from the performance improvements node sharing brings.

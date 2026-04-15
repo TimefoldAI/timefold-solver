@@ -899,7 +899,7 @@ With three or more variables, it's possible to combine the cartesian product and
 [#otherScalingTechniquesInConstructionHeuristics]
 === Other scaling techniques in construction heuristics
 
-xref:enterprise-edition/enterprise-edition.adoc#partitionedSearch[Partitioned Search] reduces the number of moves per step.
+xref:using-timefold-solver/running-the-solver.adoc#partitionedSearch[Partitioned Search] reduces the number of moves per step.
 On top of that, it runs the Construction Heuristic on the partitions in parallel.
 It is supported to only partition the Construction Heuristic phase.
 

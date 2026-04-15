@@ -607,6 +607,8 @@ but do accept infeasible solutions too.
 [#assignmentRecommendationAPI]
 == Responding to adhoc changes
 
+include::../commercial-editions/_only-plus-and-enterprise.adoc[]
+
 With <<realTimePlanning,real-time planning>>, we can respond to a continuous stream of external changes.
 However, it is often necessary to respond to adhoc changes too,
 for example when a call center operator needs to arrange an appointment with a customer.
@@ -748,7 +750,7 @@ But problems with the same publication deadline, solved by different organizatio
 are also initially better off with multi-stage planning, because of Conway's law
 and the high risk associated with unifying such groups.
 
-Similarly to xref:enterprise-edition/enterprise-edition.adoc#partitionedSearch[Partitioned Search], multi-stage planning leads to suboptimal results.
+Similarly to xref:using-timefold-solver/running-the-solver.adoc#partitionedSearch[Partitioned Search], multi-stage planning leads to suboptimal results.
 Nevertheless, it might be beneficial in order to simplify the maintenance, ownership, and help to start a project.
 
 Do not confuse multi-stage planning with xref:optimization-algorithms/optimization-algorithms.adoc#solverPhase[multi-phase solving].
