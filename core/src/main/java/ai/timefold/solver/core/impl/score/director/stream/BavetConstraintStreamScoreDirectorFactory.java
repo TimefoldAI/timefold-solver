@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.config.score.director.EnableAutomaticNodeSharing;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -49,20 +48,16 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     private static Class<? extends ConstraintProvider> getConstraintProviderClass(ScoreDirectorFactoryConfig config,
             Class<? extends ConstraintProvider> providedConstraintProviderClass) {
         var automaticNodeSharing = Objects.requireNonNullElse(config.getConstraintStreamAutomaticNodeSharing(),
-                EnableAutomaticNodeSharing.AUTO);
-        return switch (automaticNodeSharing) {
-            case OFF -> providedConstraintProviderClass;
-            case ON -> {
-                var enterpriseService =
-                        TimefoldSolverEnterpriseService
-                                .loadOrFail(TimefoldSolverEnterpriseService.Feature.AUTOMATIC_NODE_SHARING);
-                yield enterpriseService.createNodeSharer().buildNodeSharedConstraintProvider(providedConstraintProviderClass);
-            }
-            case AUTO -> TimefoldSolverEnterpriseService.loadOrDefault(
+                true);
+
+        if (automaticNodeSharing) {
+            return TimefoldSolverEnterpriseService.loadOrDefault(
                     enterpriseService -> enterpriseService.createNodeSharer()
                             .buildNodeSharedConstraintProvider(providedConstraintProviderClass),
                     () -> providedConstraintProviderClass);
-        };
+        } else {
+            return providedConstraintProviderClass;
+        }
     }
 
     private final BavetConstraintSessionFactory<Solution_, Score_> constraintSessionFactory;

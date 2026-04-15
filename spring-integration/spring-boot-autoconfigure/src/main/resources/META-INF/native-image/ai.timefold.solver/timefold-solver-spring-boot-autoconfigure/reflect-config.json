@@ -576,10 +576,6 @@
     ]
   },
   {
-    "name": "ai.timefold.solver.core.config.score.director.EnableAutomaticNodeSharing",
-    "allDeclaredFields": true
-  },
-  {
     "name": "ai.timefold.solver.core.config.solver.PreviewFeature",
     "allDeclaredFields": true
   },

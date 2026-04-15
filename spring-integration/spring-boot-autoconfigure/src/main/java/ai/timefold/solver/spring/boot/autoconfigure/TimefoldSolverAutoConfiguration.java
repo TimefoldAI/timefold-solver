@@ -31,7 +31,6 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.core.config.score.director.EnableAutomaticNodeSharing;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
@@ -264,33 +263,19 @@ public class TimefoldSolverAutoConfiguration
             SolverConfig solverConfig, SolverProperties solverProperties) {
         applyScoreDirectorFactoryProperties(entityScanner, solverConfig);
         if (solverProperties.getConstraintStreamAutomaticNodeSharing() != null) {
-            Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
-                    .setConstraintStreamAutomaticNodeSharing(switch (Objects.requireNonNullElse(
-                            solverProperties.getConstraintStreamAutomaticNodeSharing(),
-                            EnableAutomaticNodeSharing.AUTO)) {
-                        case ON -> {
-                            if (NativeDetector.inNativeImage()) {
-                                throw new UnsupportedOperationException(
-                                        "Constraint stream automatic node sharing is unsupported in a Spring native image.");
-                            }
-                            yield EnableAutomaticNodeSharing.ON;
-                        }
-                        case OFF -> EnableAutomaticNodeSharing.OFF;
-                        case AUTO -> {
-                            if (NativeDetector.inNativeImage()) {
-                                if (TimefoldSolverEnterpriseService.loadOrDefault(
-                                        ignored -> true,
-                                        () -> false)) {
-                                    // We are in enterprise, so log a note
-                                    LOG.debug("""
-                                            Constraint stream automatic node sharing was disabled because it \
-                                            is unsupported in a Spring native image.""");
-                                }
-                                yield EnableAutomaticNodeSharing.OFF;
-                            }
-                            yield EnableAutomaticNodeSharing.AUTO;
-                        }
-                    });
+            if (NativeDetector.inNativeImage()) {
+                if (solverProperties.getConstraintStreamAutomaticNodeSharing()) {
+                    // We are in enterprise, so log a note
+                    LOG.debug("""
+                            Constraint stream automatic node sharing was disabled because it \
+                            is unsupported in a Spring native image.""");
+                }
+                Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
+                        .setConstraintStreamAutomaticNodeSharing(false);
+            } else {
+                Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
+                        .setConstraintStreamAutomaticNodeSharing(solverProperties.getConstraintStreamAutomaticNodeSharing());
+            }
         } else if (NativeDetector.inNativeImage()) {
             // Explicitly set it to disabled in a native image if unspecified so
             // the solver does not try to node share when enterprise is used.
@@ -303,7 +288,7 @@ public class TimefoldSolverAutoConfiguration
                         is unsupported in a Spring native image.""");
             }
             Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
-                    .setConstraintStreamAutomaticNodeSharing(EnableAutomaticNodeSharing.OFF);
+                    .setConstraintStreamAutomaticNodeSharing(false);
         }
         if (solverProperties.getConstraintStreamProfilingEnabled() != null) {
             Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())

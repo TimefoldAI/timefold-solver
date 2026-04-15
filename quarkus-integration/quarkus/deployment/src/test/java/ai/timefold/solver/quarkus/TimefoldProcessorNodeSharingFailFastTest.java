@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.core.config.score.director.EnableAutomaticNodeSharing;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusEntity;
@@ -33,7 +32,7 @@ public class TimefoldProcessorNodeSharingFailFastTest {
 
     @Test
     void isEnabledInSolverConfig() {
-        assertEquals(EnableAutomaticNodeSharing.ON,
+        assertEquals(true,
                 solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamAutomaticNodeSharing());
     }
 

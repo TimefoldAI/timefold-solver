@@ -134,21 +134,6 @@ class TimefoldSolverConstraintAutoConfigurationTest {
     }
 
     @Test
-    void nodeSharingFailFastInNativeImage() {
-        try (var nativeDetectorMock = Mockito.mockStatic(NativeDetector.class)) {
-            nativeDetectorMock.when(NativeDetector::inNativeImage).thenReturn(true);
-            fakeNativeWithNodeSharingContextRunner
-                    .run(context -> {
-                        Throwable startupFailure = context.getStartupFailure();
-                        assertThat(startupFailure)
-                                .isInstanceOf(UnsupportedOperationException.class)
-                                .hasMessageContainingAll("node sharing", "unsupported", "native");
-                    });
-        }
-
-    }
-
-    @Test
     void nodeSharingDisabledWorksInNativeImage() {
         try (var nativeDetectorMock = Mockito.mockStatic(NativeDetector.class)) {
             nativeDetectorMock.when(NativeDetector::inNativeImage).thenReturn(true);

@@ -4,7 +4,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.config.score.director.EnableAutomaticNodeSharing;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
@@ -58,11 +57,11 @@ public interface SolverBuildTimeConfig {
      * so nodes share lambdas when possible, improving performance.
      * When enabled, breakpoints placed in the {@link ConstraintProvider}
      * will no longer be triggered.
-     * Defaults to "false".
+     * Defaults to "true".
      * <p>
      * Note: this setting is only available in Timefold Solver
      * <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Enterprise Edition</a>.
      */
     // Build time - modifies the ConstraintProvider class if set
-    Optional<EnableAutomaticNodeSharing> constraintStreamAutomaticNodeSharing();
+    Optional<Boolean> constraintStreamAutomaticNodeSharing();
 }
