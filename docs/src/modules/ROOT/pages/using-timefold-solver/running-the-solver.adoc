@@ -193,7 +193,7 @@ Setting `moveThreadCount` to `AUTO` allows Timefold Solver to decide how many mo
 This formula is based on experience and does not hog all CPU cores on a multi-core machine.
 
 A `moveThreadCount` of `4` xref:integration/integration.adoc#sizingHardwareAndSoftware[saturates almost 5 CPU cores].
-the 4 move threads fill up 4 CPU cores completely
+The 4 move threads fill up 4 CPU cores completely
 and the solver thread uses most of another CPU core.
 
 The following ``moveThreadCount``s are supported:
