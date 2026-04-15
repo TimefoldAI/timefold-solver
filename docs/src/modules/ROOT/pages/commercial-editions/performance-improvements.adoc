@@ -40,7 +40,7 @@ To use automatic node sharing outside Quarkus, your `ConstraintProvider` class m
 [#automaticNodeSharingConfiguration]
 === Configuration
 
-Node sharing is automatically enabled when running Timefold Enterprise Edition.
+Node sharing is automatically enabled when running Timefold Solver Enterprise.
 You can disable the feature by changing the following settings.
 
 [tabs]
