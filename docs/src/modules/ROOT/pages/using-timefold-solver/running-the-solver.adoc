@@ -84,11 +84,10 @@ There are several ways of running the solver in parallel:
 
 * *xref:#multithreadedIncrementalSolving[Multi-threaded incremental solving]*:
 Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
-This is exclusively available in the xref:commercial-editions/commercial-editions.adoc[Enterprise Edition] of Timefold Solver.
 
 * *xref:#partitionedSearch[Partitioned search]*:
 Split 1 dataset in multiple parts and solve them independently.
-This is exclusively available in the xref:commercial-editions/commercial-editions.adoc[Enterprise Edition] of Timefold Solver.
+
 * *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
 ** Not recommended: This is a marginal gain for a high cost of hardware resources.
 ** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.

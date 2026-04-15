@@ -299,7 +299,7 @@ We invite you to read the xref:upgrading-timefold-solver/migration-guides/variab
 [%collapsible%open]
 ====
 `ScoreExplanation` has been removed.
-Use `ScoreAnalysis` instead, which is now provided exclusively by _Timefold Solver Enterprise Edition_.
+Use `ScoreAnalysis` instead, which is now provided exclusively by _Timefold Solver Plus and Enterprise Editions_.
 
 `ScoreAnalysis` provides the following methods:
 
