@@ -5,8 +5,7 @@
 :icons: font
 
 _Timefold Solver Plus_ and _Timefold Solver Enterprise_ are commercial products which offer additional features,
-such as xref:constraints-and-score/understanding-the-score.adoc[score analysis], xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection] and xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[multithreaded solving]
-.
+such as xref:constraints-and-score/understanding-the-score.adoc[score analysis], xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection] and xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[multithreaded solving].
 These features are essential to scale out to large datasets and build trust with your users.
 
 Unlike _Timefold Solver Community Edition_, these commercial editions are not open-source.
