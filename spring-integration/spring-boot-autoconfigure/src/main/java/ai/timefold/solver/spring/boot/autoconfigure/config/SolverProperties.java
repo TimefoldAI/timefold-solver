@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.config.score.director.AutomaticNodeSharing;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -56,9 +57,9 @@ public class SolverProperties {
      * so nodes share lambdas when possible, improving performance.
      * When enabled, breakpoints placed in the {@link ConstraintProvider}
      * will no longer be triggered.
-     * Defaults to "false".
+     * Defaults to "AUTO".
      */
-    private Boolean constraintStreamAutomaticNodeSharing;
+    private AutomaticNodeSharing constraintStreamAutomaticNodeSharing;
 
     /**
      * Configuration of the random seed.
@@ -128,11 +129,11 @@ public class SolverProperties {
         this.constraintStreamProfilingEnabled = constraintStreamProfilingEnabled;
     }
 
-    public Boolean getConstraintStreamAutomaticNodeSharing() {
+    public AutomaticNodeSharing getConstraintStreamAutomaticNodeSharing() {
         return constraintStreamAutomaticNodeSharing;
     }
 
-    public void setConstraintStreamAutomaticNodeSharing(Boolean constraintStreamAutomaticNodeSharing) {
+    public void setConstraintStreamAutomaticNodeSharing(AutomaticNodeSharing constraintStreamAutomaticNodeSharing) {
         this.constraintStreamAutomaticNodeSharing = constraintStreamAutomaticNodeSharing;
     }
 

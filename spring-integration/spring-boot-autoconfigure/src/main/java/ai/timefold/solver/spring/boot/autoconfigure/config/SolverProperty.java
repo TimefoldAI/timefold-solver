@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.config.score.director.AutomaticNodeSharing;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -44,7 +45,7 @@ public enum SolverProperty {
             SolverProperties::setConstraintStreamProfilingEnabled,
             value -> Boolean.valueOf(value.toString())),
     CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING("constraint-stream-automatic-node-sharing",
-            SolverProperties::setConstraintStreamAutomaticNodeSharing, value -> Boolean.valueOf(value.toString())),
+            SolverProperties::setConstraintStreamAutomaticNodeSharing, value -> AutomaticNodeSharing.valueOf(value.toString())),
     RANDOM_SEED("random-seed", SolverProperties::setRandomSeed, value -> Long.parseLong(value.toString())),
     TERMINATION("termination", SolverProperties::setTermination, value -> {
         if (value instanceof TerminationProperties terminationProperties) {

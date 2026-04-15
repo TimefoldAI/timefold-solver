@@ -53,13 +53,13 @@ class TimefoldSolverConstraintAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(NormalSpringTestConfiguration.class)
-                .withPropertyValues("timefold.solver.%s=true"
+                .withPropertyValues("timefold.solver.%s=ON"
                         .formatted(SolverProperty.CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING.getPropertyName()));
         fakeNativeWithoutNodeSharingContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(NormalSpringTestConfiguration.class)
-                .withPropertyValues("timefold.solver.%s=false"
+                .withPropertyValues("timefold.solver.%s=OFF"
                         .formatted(SolverProperty.CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING.getPropertyName()));
         testFilteredClassLoader =
                 new FilteredClassLoader(new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL));

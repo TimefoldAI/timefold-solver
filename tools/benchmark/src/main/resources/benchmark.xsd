@@ -446,7 +446,7 @@
           <xs:element minOccurs="0" name="constraintProviderCustomProperties" type="tns:jaxbAdaptedMap"/>
                               
           
-          <xs:element minOccurs="0" name="constraintStreamAutomaticNodeSharing" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="constraintStreamAutomaticNodeSharing" type="tns:automaticNodeSharing"/>
                               
           
           <xs:element minOccurs="0" name="constraintStreamProfilingEnabled" type="xs:boolean"/>
@@ -2562,6 +2562,27 @@
                   
       
       <xs:enumeration value="PICKED_MOVE_TYPE_STEP_SCORE_DIFF"/>
+                
+    
+    </xs:restriction>
+          
+  
+  </xs:simpleType>
+      
+  
+  <xs:simpleType name="automaticNodeSharing">
+            
+    
+    <xs:restriction base="xs:string">
+                  
+      
+      <xs:enumeration value="ON"/>
+                  
+      
+      <xs:enumeration value="OFF"/>
+                  
+      
+      <xs:enumeration value="AUTO"/>
                 
     
     </xs:restriction>

@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.config.score.director.AutomaticNodeSharing;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
@@ -63,5 +64,5 @@ public interface SolverBuildTimeConfig {
      * <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Enterprise Edition</a>.
      */
     // Build time - modifies the ConstraintProvider class if set
-    Optional<Boolean> constraintStreamAutomaticNodeSharing();
+    Optional<AutomaticNodeSharing> constraintStreamAutomaticNodeSharing();
 }

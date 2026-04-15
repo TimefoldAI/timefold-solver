@@ -1,8 +1,11 @@
 package ai.timefold.solver.quarkus;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import jakarta.inject.Inject;
+
+import ai.timefold.solver.core.config.score.director.AutomaticNodeSharing;
+import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusSolution;
@@ -23,18 +26,15 @@ public class TimefoldProcessorNodeSharingFailFastTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class,
                             TestdataQuarkusSolution.class, TestdataQuarkusConstraintProvider.class)
-                    .addAsResource("ai/timefold/solver/quarkus/solverConfigWithNodeSharing.xml"))
-            .assertException(exception -> {
-                assertThat(exception).isInstanceOf(IllegalStateException.class)
-                        .hasMessageContainingAll(
-                                "enabled automatic node sharing via SolverConfig, which is not allowed.",
-                                "Enable automatic node sharing with the property",
-                                "quarkus.timefold.solver.constraint-stream-automatic-node-sharing=true");
-            });
+                    .addAsResource("ai/timefold/solver/quarkus/solverConfigWithNodeSharing.xml"));
+
+    @Inject
+    SolverConfig solverConfig;
 
     @Test
-    void test() {
-        fail("Should not call this method.");
+    void isEnabledInSolverConfig() {
+        assertEquals(AutomaticNodeSharing.ON,
+                solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamAutomaticNodeSharing());
     }
 
 }

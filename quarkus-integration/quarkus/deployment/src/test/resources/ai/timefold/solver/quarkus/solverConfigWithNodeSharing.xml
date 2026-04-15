@@ -2,6 +2,6 @@
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
   <scoreDirectorFactory>
-    <constraintStreamAutomaticNodeSharing>true</constraintStreamAutomaticNodeSharing>
+    <constraintStreamAutomaticNodeSharing>ON</constraintStreamAutomaticNodeSharing>
   </scoreDirectorFactory>
 </solver>
