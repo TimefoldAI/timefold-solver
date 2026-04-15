@@ -362,7 +362,7 @@ Constraint profiling will log its results to the `ai.timefold.solver.enterprise.
 For the report to be generated, xref:using-timefold-solver/running-the-solver.adoc#logging[the particular logging levels must be configured and enabled].
 
 IMPORTANT: Constraint profiling is only supported for xref:constraints-and-score/score-calculation.adoc#constraintStreams[constraint stream score calculation]
-when <<multithreadedSolving,multi-threaded solving>> is disabled.
+when xref:using-timefold-solver/running-the-solver.adoc#multithreadedSolving[multi-threaded solving] is disabled.
 
 === Understanding the report
 
