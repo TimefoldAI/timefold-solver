@@ -826,7 +826,7 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
-public interface NearbyDistanceMeter<Origin_, Desination_> {
+public interface NearbyDistanceMeter<Origin_, Destination_> {
 
     double getNearbyDistance(Origin_ origin, Destination_ destination);
 
