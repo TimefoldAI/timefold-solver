@@ -1,7 +1,7 @@
 package ai.timefold.solver.quarkus;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
@@ -52,7 +52,7 @@ class TimefoldProcessorDuplicateCascadingShadowVariableSolveTest {
         var solverJob = solverManager.solve(1L, problem);
         var solution = solverJob.getFinalBestSolution();
         assertNotNull(solution);
-        assertTrue(solution.getScore().score() == -3);
+        assertEquals(-3, solution.getScore().score());
     }
 
 }
