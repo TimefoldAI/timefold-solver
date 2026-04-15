@@ -22,20 +22,16 @@ This can significantly improve move evaluation speed if the repeated operation i
 
 image::enterprise-edition/nodeSharingValueProposition.png[align="center"]
 
-[IMPORTANT]
-====
-Debugging breakpoints put inside your constraints will not be respected, because the `ConstraintProvider` class will be transformed when this feature is enabled.
-====
+IMPORTANT: Debugging breakpoints put inside your constraints will not be respected, because the `ConstraintProvider` class will be transformed when this feature is enabled.
 
 [#automaticNodeSharingRestrictions]
-[IMPORTANT]
-====
+=== Restrictions
+
 To use automatic node sharing outside Quarkus, your `ConstraintProvider` class must oblige by several restrictions so a valid subclass can be generated:
 
 - The `ConstraintProvider` class cannot be final.
 - The `ConstraintProvider` class cannot have any final methods.
 - The `ConstraintProvider` class cannot access any protected classes, methods or fields.
-====
 
 [#automaticNodeSharingConfiguration]
 === Configuration

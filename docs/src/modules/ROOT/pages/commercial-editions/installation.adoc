@@ -39,7 +39,7 @@ These artifacts are available from Maven Central, so no additional repositories 
 
 [NOTE]
 ====
-To avoid operational complexity, all _commercial_ versions of Timefold Solver use the `enterprise` artifacts.
+To avoid operational complexity, both Plus and Enterprise editions of Timefold Solver use the `enterprise` artifacts.
 Features for your licensed version are enabled based on the provided license key.
 ====
 
