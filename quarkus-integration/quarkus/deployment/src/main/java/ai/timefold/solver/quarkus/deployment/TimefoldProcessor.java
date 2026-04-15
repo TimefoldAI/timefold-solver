@@ -952,7 +952,15 @@ class TimefoldProcessor {
             Set<Class<?>> reflectiveClassSet) {
         // Use mvn quarkus:dev -Dquarkus.debug.generated-classes-dir=dump-classes
         // to dump generated classes
-        var classOutput = new GeneratedClassGizmo2Adaptor(generatedClasses, generatedResources, true);
+        var createdClassSet = new LinkedHashSet<String>();
+        var classOutput = new GeneratedClassGizmo2Adaptor(createdClass -> {
+            // It would be more error-prone to find all locations where
+            // duplicate classes can be made, so instead, allow the duplicate
+            // classes but do not send them to the downstream producer
+            if (createdClassSet.add(createdClass.binaryName())) {
+                generatedClasses.produce(createdClass);
+            }
+        }, generatedResources, true);
         var beanClassOutput = new GeneratedBeanGizmo2Adaptor(generatedBeans);
 
         var generatedMemberAccessorsClassNameSet = new HashSet<String>();
