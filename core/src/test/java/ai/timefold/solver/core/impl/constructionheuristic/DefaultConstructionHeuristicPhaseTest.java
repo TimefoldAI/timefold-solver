@@ -35,6 +35,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMove
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
+import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -1339,33 +1340,27 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @Test
     void penalizeBasicVariable() {
-        var solverConfig =
-                PlannerTestUtils
-                        .buildSolverConfig(TestdataAllowsUnassignedSortableSolution.class,
-                                TestdataAllowsUnassignedSortableEntity.class)
-                        .withConstraintProviderClass(PenalizeAssignedConstraintProvider.class)
-                        .withPhases(new ConstructionHeuristicPhaseConfig()
-                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
-        solverConfig.getScoreDirectorFactoryConfig().setEasyScoreCalculatorClass(null);
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataAllowsUnassignedSortableSolution.class)
+                .withEntityClasses(TestdataAllowsUnassignedSortableEntity.class)
+                .withConstraintProviderClass(PenalizeAssignedConstraintProvider.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
         var problem = TestdataAllowsUnassignedSortableSolution.generateSolution(1, 1, false);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
-        assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().getFirst().getValue()).isNull();
     }
 
     @Test
     void penalizeListVariable() {
-        var solverConfig =
-                PlannerTestUtils
-                        .buildSolverConfig(TestdataAllowsUnassignedListSortableSolution.class,
-                                TestdataAllowsUnassignedListSortableEntity.class)
-                        .withConstraintProviderClass(ListPenalizeAssignedConstraintProvider.class)
-                        .withPhases(new ConstructionHeuristicPhaseConfig()
-                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
-        solverConfig.getScoreDirectorFactoryConfig().setEasyScoreCalculatorClass(null);
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataAllowsUnassignedListSortableSolution.class)
+                .withEntityClasses(TestdataAllowsUnassignedListSortableEntity.class)
+                .withConstraintProviderClass(ListPenalizeAssignedConstraintProvider.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(3)));
         var problem = TestdataAllowsUnassignedListSortableSolution.generateSolution(1, 1, false);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
-        assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().getFirst().getValueList()).isEmpty();
     }
 
@@ -1547,7 +1542,6 @@ class DefaultConstructionHeuristicPhaseTest {
 
         Constraint penalizeAssigned(ConstraintFactory constraintFactory) {
             return constraintFactory.forEach(TestdataAllowsUnassignedSortableEntity.class)
-                    .filter(entity -> entity.getValue() != null)
                     .penalize(HardSoftScore.ONE_HARD)
                     .asConstraint("penalize assigned");
         }
