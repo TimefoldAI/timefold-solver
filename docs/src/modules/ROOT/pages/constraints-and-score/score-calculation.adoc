@@ -72,7 +72,7 @@ The following figure illustrates this xref:constraints-and-score/performance.ado
 image::constraints-and-score/score-calculation/constraintStreamIncrementalCalculation.png[align="center"]
 
 Constraint Streams API also has advanced support for xref:constraints-and-score/understanding-the-score.adoc[score explanation]
-through xref:constraintStreamsCustomizingJustifications[custom justifications].
+through <<constraintStreamsCustomizingJustifications,custom justifications>>.
 
 image::constraints-and-score/score-calculation/constraintStreamJustification.png[align="center"]
 
@@ -374,7 +374,6 @@ The full metadata are accessible at runtime via `Constraint#getConstraintMetadat
 
 
 [#constraintStreamsCustomizingJustifications]
-[#constraintStreamsCustomizingJustificationsAndIndictments]
 ==== Customizing justifications
 
 One of important Timefold Solver features is its ability to xref:constraints-and-score/understanding-the-score.adoc[explain the score] of solutions it produced
