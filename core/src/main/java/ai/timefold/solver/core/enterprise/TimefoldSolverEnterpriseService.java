@@ -73,6 +73,11 @@ public interface TimefoldSolverEnterpriseService {
     String ENTERPRISE_COORDINATES = "ai.timefold.solver.enterprise:timefold-solver-enterprise-core";
     String DEVELOPMENT_SNAPSHOT = "Development Snapshot";
 
+    /**
+     *
+     * @return A string in the format of
+     *         "Timefold Solver (Community|Enterprise) Edition v(999-SNAPSHOT|Development Snapshot|x.y.z)".
+     */
     static String identifySolverVersion() {
         var packaging = COMMUNITY_NAME;
         try {
