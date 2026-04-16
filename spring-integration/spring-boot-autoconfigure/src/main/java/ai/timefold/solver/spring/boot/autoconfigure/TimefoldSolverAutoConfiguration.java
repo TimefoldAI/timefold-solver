@@ -35,6 +35,7 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.spring.boot.autoconfigure.config.DiminishedReturnsProperties;
@@ -261,14 +262,33 @@ public class TimefoldSolverAutoConfiguration
     private void applyScoreDirectorFactoryProperties(IncludeAbstractClassesEntityScanner entityScanner,
             SolverConfig solverConfig, SolverProperties solverProperties) {
         applyScoreDirectorFactoryProperties(entityScanner, solverConfig);
-        if (solverProperties.getConstraintStreamAutomaticNodeSharing() != null
-                && solverProperties.getConstraintStreamAutomaticNodeSharing()) {
+        if (solverProperties.getConstraintStreamAutomaticNodeSharing() != null) {
             if (NativeDetector.inNativeImage()) {
-                throw new UnsupportedOperationException(
-                        "Constraint stream automatic node sharing is unsupported in a Spring native image.");
+                if (solverProperties.getConstraintStreamAutomaticNodeSharing()) {
+                    // We are in enterprise, so log a note
+                    LOG.debug("""
+                            Constraint stream automatic node sharing was disabled because it \
+                            is unsupported in a Spring native image.""");
+                }
+                Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
+                        .setConstraintStreamAutomaticNodeSharing(false);
+            } else {
+                Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
+                        .setConstraintStreamAutomaticNodeSharing(solverProperties.getConstraintStreamAutomaticNodeSharing());
+            }
+        } else if (NativeDetector.inNativeImage()) {
+            // Explicitly set it to disabled in a native image if unspecified so
+            // the solver does not try to node share when enterprise is used.
+            if (TimefoldSolverEnterpriseService.loadOrDefault(
+                    ignored -> true,
+                    () -> false)) {
+                // We are in enterprise, so log a note
+                LOG.debug("""
+                        Constraint stream automatic node sharing was disabled because it \
+                        is unsupported in a Spring native image.""");
             }
             Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
-                    .setConstraintStreamAutomaticNodeSharing(true);
+                    .setConstraintStreamAutomaticNodeSharing(false);
         }
         if (solverProperties.getConstraintStreamProfilingEnabled() != null) {
             Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())

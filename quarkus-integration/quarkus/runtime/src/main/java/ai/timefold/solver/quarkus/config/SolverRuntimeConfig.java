@@ -30,7 +30,7 @@ public interface SolverRuntimeConfig {
 
     /**
      * Note: this setting is only available in Timefold Solver
-     * <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Enterprise Edition</a>.
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/commercial-editions/commercial-editions">Enterprise Edition</a>.
      * Enable multithreaded solving for a single problem, which increases CPU consumption.
      * Defaults to {@value SolverConfig#MOVE_THREAD_COUNT_NONE}.
      * Other options include {@value SolverConfig#MOVE_THREAD_COUNT_AUTO}, a number

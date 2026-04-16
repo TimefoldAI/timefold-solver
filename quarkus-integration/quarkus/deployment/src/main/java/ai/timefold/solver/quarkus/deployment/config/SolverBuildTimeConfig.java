@@ -31,7 +31,7 @@ public interface SolverBuildTimeConfig {
      * Enable the Nearby Selection quick configuration.
      * <p>
      * Note: this setting is only available in Timefold Solver
-     * <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Enterprise Edition</a>.
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/commercial-editions/commercial-editions">Enterprise Edition</a>.
      */
     // Build time - visited by SolverConfig.visitReferencedClasses
     // which generates the constructor used by Quarkus
@@ -48,7 +48,7 @@ public interface SolverBuildTimeConfig {
      * If constraint profiling is enabled. Defaults to false.
      * <p>
      * Note: this setting is only available in Timefold Solver
-     * <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Enterprise Edition</a>.
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/commercial-editions/commercial-editions">Enterprise Edition</a>.
      */
     Optional<Boolean> constraintStreamProfilingEnabled();
 
@@ -57,10 +57,11 @@ public interface SolverBuildTimeConfig {
      * so nodes share lambdas when possible, improving performance.
      * When enabled, breakpoints placed in the {@link ConstraintProvider}
      * will no longer be triggered.
-     * Defaults to "false".
+     * Defaults to "true"; the solver may decide to disable it regardless,
+     * if it turns out the feature can not be supported in a given environment.
      * <p>
      * Note: this setting is only available in Timefold Solver
-     * <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Enterprise Edition</a>.
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/commercial-editions/commercial-editions">Enterprise Edition</a>.
      */
     // Build time - modifies the ConstraintProvider class if set
     Optional<Boolean> constraintStreamAutomaticNodeSharing();

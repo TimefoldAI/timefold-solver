@@ -36,7 +36,6 @@ class TimefoldSolverConstraintAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
     private final ApplicationContextRunner multiConstraintProviderRunner;
-    private final ApplicationContextRunner fakeNativeWithNodeSharingContextRunner;
     private final ApplicationContextRunner fakeNativeWithoutNodeSharingContextRunner;
     private final FilteredClassLoader testFilteredClassLoader;
 
@@ -49,12 +48,6 @@ class TimefoldSolverConstraintAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(MultipleConstraintSpringTestConfiguration.class);
-        fakeNativeWithNodeSharingContextRunner = new ApplicationContextRunner()
-                .withConfiguration(
-                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(NormalSpringTestConfiguration.class)
-                .withPropertyValues("timefold.solver.%s=true"
-                        .formatted(SolverProperty.CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING.getPropertyName()));
         fakeNativeWithoutNodeSharingContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
@@ -131,21 +124,6 @@ class TimefoldSolverConstraintAutoConfigurationTest {
         AssertionsForClassTypes.assertThatCode(() -> multiConstraintProviderRunner
                 .run(context -> context.getBean(SolverFactory.class)))
                 .doesNotThrowAnyException();
-    }
-
-    @Test
-    void nodeSharingFailFastInNativeImage() {
-        try (var nativeDetectorMock = Mockito.mockStatic(NativeDetector.class)) {
-            nativeDetectorMock.when(NativeDetector::inNativeImage).thenReturn(true);
-            fakeNativeWithNodeSharingContextRunner
-                    .run(context -> {
-                        Throwable startupFailure = context.getStartupFailure();
-                        assertThat(startupFailure)
-                                .isInstanceOf(UnsupportedOperationException.class)
-                                .hasMessageContainingAll("node sharing", "unsupported", "native");
-                    });
-        }
-
     }
 
     @Test

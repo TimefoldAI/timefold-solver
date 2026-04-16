@@ -260,7 +260,6 @@ class TimefoldProcessor {
 
         // Step 2 - validate all SolverConfig definitions
         assertNoMemberAnnotationWithoutClassAnnotation(indexView);
-        assertNodeSharingDisabled(solverConfigMap);
         assertSolverConfigSolutionClasses(indexView, solverConfigMap);
         assertSolverConfigEntityClasses(indexView);
         assertSolverConfigConstraintClasses(indexView, solverConfigMap);
@@ -385,22 +384,6 @@ class TimefoldProcessor {
             throw new IllegalStateException(
                     "Unused classes ([%s]) found with a @%s annotation.".formatted(String.join(", ", unusedSolutionClassList),
                             PlanningSolution.class.getSimpleName()));
-        }
-    }
-
-    private void assertNodeSharingDisabled(Map<String, SolverConfig> solverConfigMap) {
-        for (var entry : solverConfigMap.entrySet()) {
-            var solverConfig = entry.getValue();
-            var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
-            if (scoreDirectorFactoryConfig != null &&
-                    Boolean.TRUE.equals(scoreDirectorFactoryConfig.getConstraintStreamAutomaticNodeSharing())) {
-                throw new IllegalStateException("""
-                        SolverConfig %s enabled automatic node sharing via SolverConfig, which is not allowed.
-                        Enable automatic node sharing with the property %s instead."""
-                        .formatted(
-                                entry.getKey(),
-                                "quarkus.timefold.solver.constraint-stream-automatic-node-sharing=true"));
-            }
         }
     }
 
@@ -813,6 +796,11 @@ class TimefoldProcessor {
                     }
                     solverConfig.withNearbyDistanceMeterClass((Class<? extends NearbyDistanceMeter<?, ?>>) clazz);
                 });
+
+        timefoldBuildTimeConfig.getSolverConfig(solverName)
+                .flatMap(SolverBuildTimeConfig::constraintStreamAutomaticNodeSharing)
+                .ifPresent(automaticNodeSharing -> solverConfig.getScoreDirectorFactoryConfig()
+                        .withConstraintStreamAutomaticNodeSharing(automaticNodeSharing));
         // Termination properties are set at runtime
     }
 
