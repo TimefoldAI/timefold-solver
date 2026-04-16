@@ -275,6 +275,21 @@ To use Timefold Solver with Quarkus, read the xref:quickstart/quarkus/quarkus-qu
 If you are starting a new project, visit the https://code.quarkus.io/[code.quarkus.io] and select
 the _Timefold AI constraint solver_ extension before generating your application.
 
+[#integrationWithQuarkusVersionPolicy]
+=== Supported Quarkus versions
+
+The following version policy applies:
+
+- **On the solver `main` line:**
+Timefold Solver targets the **latest Quarkus release** and the **latest Quarkus LTS release**.
+Support for the latest LTS is provided on a **best-effort basis**.
+When Quarkus releases a new major version (v4), Timefold Solver will follow.
+
+- **On the solver `1.x` line:**
+Timefold Solver `1.x` targets the **latest Quarkus LTS release**.
+When a new LTS is released for Quarkus v3, Timefold Solver 1.x will upgrade to it.
+**Quarkus v4 will not be supported on the 1.x line.**
+
 [#integrationWithQuarkusProperties]
 === Available configuration properties
 
