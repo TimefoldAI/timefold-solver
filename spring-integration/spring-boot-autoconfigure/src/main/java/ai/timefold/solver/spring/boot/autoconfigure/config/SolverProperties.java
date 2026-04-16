@@ -33,7 +33,7 @@ public class SolverProperties {
 
     /**
      * Note: this setting is only available in Timefold Solver
-     * <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Enterprise Edition</a>.
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/commercial-editions/commercial-editions">Enterprise Edition</a>.
      * Enable multithreaded solving for a single problem, which increases CPU consumption.
      * Defaults to "NONE".
      * Other options include "AUTO", a number or formula based on the available processor count.
@@ -51,12 +51,13 @@ public class SolverProperties {
 
     /**
      * Note: this setting is only available in Timefold Solver
-     * <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Enterprise Edition</a>.
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/commercial-editions/commercial-editions">Enterprise Edition</a>.
      * Enable rewriting the {@link ConstraintProvider} class
      * so nodes share lambdas when possible, improving performance.
      * When enabled, breakpoints placed in the {@link ConstraintProvider}
      * will no longer be triggered.
-     * Defaults to "true".
+     * Defaults to "true"; the solver may decide to disable it regardless,
+     * if it turns out the feature can not be supported in a given environment.
      */
     private Boolean constraintStreamAutomaticNodeSharing;
 

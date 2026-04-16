@@ -36,7 +36,6 @@ class TimefoldSolverConstraintAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
     private final ApplicationContextRunner multiConstraintProviderRunner;
-    private final ApplicationContextRunner fakeNativeWithNodeSharingContextRunner;
     private final ApplicationContextRunner fakeNativeWithoutNodeSharingContextRunner;
     private final FilteredClassLoader testFilteredClassLoader;
 
@@ -49,17 +48,11 @@ class TimefoldSolverConstraintAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(MultipleConstraintSpringTestConfiguration.class);
-        fakeNativeWithNodeSharingContextRunner = new ApplicationContextRunner()
-                .withConfiguration(
-                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(NormalSpringTestConfiguration.class)
-                .withPropertyValues("timefold.solver.%s=ON"
-                        .formatted(SolverProperty.CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING.getPropertyName()));
         fakeNativeWithoutNodeSharingContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(NormalSpringTestConfiguration.class)
-                .withPropertyValues("timefold.solver.%s=OFF"
+                .withPropertyValues("timefold.solver.%s=false"
                         .formatted(SolverProperty.CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING.getPropertyName()));
         testFilteredClassLoader =
                 new FilteredClassLoader(new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL));
