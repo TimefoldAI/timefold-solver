@@ -40,10 +40,8 @@ jobs:
         shell: bash
         env:
           VERSION: ${{ github.event.inputs.version }}
-          SOURCE_BRANCH: ${{ github.event.inputs.sourceBranch }}
         run: |
           version="$VERSION"
-          sourceBranch="$SOURCE_BRANCH"
           if [[ "$version" != 1.* ]]; then
             echo "The version input '$version' is invalid. This workflow only supports versions starting with '1.'."
             exit 1
