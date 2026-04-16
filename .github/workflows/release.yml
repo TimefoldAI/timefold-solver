@@ -36,6 +36,26 @@ jobs:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
       attestations: write  # IMPORTANT: mandatory for attestations
     steps:
+      - name: Validate source branch and the version
+        shell: bash
+        run: |
+          version='${{ github.event.inputs.version }}'
+          sourceBranch='${{ github.event.inputs.sourceBranch }}'
+          case "$version" in
+            1.*)
+              if [[ "$sourceBranch" != 1.* ]]; then
+                echo "The version input '$version' requires sourceBranch input starting with '1.', but got '$sourceBranch'."
+                exit 1
+              fi
+              ;;
+            2.*)
+              if [[ "$sourceBranch" != 'main' && "$sourceBranch" != 2.* ]]; then
+                echo "The version input '$version' requires sourceBranch input 'main' or starting with '2.', but got '$sourceBranch'."
+                exit 1
+              fi
+              ;;
+          esac
+
       - name: Checkout timefold-solver
         uses: actions/checkout@v6
         with:
