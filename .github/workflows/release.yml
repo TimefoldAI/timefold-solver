@@ -38,23 +38,16 @@ jobs:
     steps:
       - name: Validate source branch and the version
         shell: bash
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+          SOURCE_BRANCH: ${{ github.event.inputs.sourceBranch }}
         run: |
-          version='${{ github.event.inputs.version }}'
-          sourceBranch='${{ github.event.inputs.sourceBranch }}'
-          case "$version" in
-            1.*)
-              if [[ "$sourceBranch" != 1.* ]]; then
-                echo "The version input '$version' requires sourceBranch input starting with '1.', but got '$sourceBranch'."
-                exit 1
-              fi
-              ;;
-            2.*)
-              if [[ "$sourceBranch" != 'main' && "$sourceBranch" != 2.* ]]; then
-                echo "The version input '$version' requires sourceBranch input 'main' or starting with '2.', but got '$sourceBranch'."
-                exit 1
-              fi
-              ;;
-          esac
+          version="$VERSION"
+          sourceBranch="$SOURCE_BRANCH"
+          if [[ "$version" != 2.* ]]; then
+            echo "The version input '$version' is invalid. This workflow only supports versions starting with '2.'."
+            exit 1
+          fi
 
       - name: Checkout timefold-solver
         uses: actions/checkout@v6
