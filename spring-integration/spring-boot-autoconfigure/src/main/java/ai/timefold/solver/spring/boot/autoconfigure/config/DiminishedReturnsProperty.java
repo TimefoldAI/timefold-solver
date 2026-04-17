@@ -7,6 +7,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.time.Duration;
+
 
 import org.springframework.boot.convert.DurationStyle;
 
@@ -15,19 +17,19 @@ public enum DiminishedReturnsProperty {
         value -> {
             if (value instanceof Boolean b) return b;
             if (value instanceof String s) return Boolean.parseBoolean(s);
-            throw new IllegalArgumentException("Cannot convert " + value + " to Boolean");
+            throw new IllegalArgumentException("Cannot convert (%s) to Boolean".formatted(value));
         }),
     SLIDING_WINDOW_DURATION("sliding-window-duration", DiminishedReturnsProperties::setSlidingWindowDuration,
         value -> {
-            if (value instanceof java.time.Duration d) return d;
+            if (value instanceof Duration d) return d;
             if (value instanceof String s) return DurationStyle.detectAndParse(s);
-            throw new IllegalArgumentException("Cannot convert " + value + " to Duration");
+            throw new IllegalArgumentException("Cannot convert (%s) to Duration".formatted(value));
         }),
     MINIMUM_IMPROVEMENT_RATIO("minimum-improvement-ratio", DiminishedReturnsProperties::setMinimumImprovementRatio,
         value -> {
             if (value instanceof Number n) return n.doubleValue();
             if (value instanceof String s) return Double.valueOf(s);
-            throw new IllegalArgumentException("Cannot convert " + value + " to Double");
+            throw new IllegalArgumentException("Cannot convert (%s) to Double".formatted(value));
         }),;
 
     private final String propertyName;
