@@ -12,11 +12,23 @@ import org.springframework.boot.convert.DurationStyle;
 
 public enum DiminishedReturnsProperty {
     ENABLED("enabled", DiminishedReturnsProperties::setEnabled,
-            value -> Boolean.parseBoolean((String) value)),
+        value -> {
+            if (value instanceof Boolean b) return b;
+            if (value instanceof String s) return Boolean.parseBoolean(s);
+            throw new IllegalArgumentException("Cannot convert " + value + " to Boolean");
+        }),
     SLIDING_WINDOW_DURATION("sliding-window-duration", DiminishedReturnsProperties::setSlidingWindowDuration,
-            value -> DurationStyle.detectAndParse((String) value)),
+        value -> {
+            if (value instanceof java.time.Duration d) return d;
+            if (value instanceof String s) return DurationStyle.detectAndParse(s);
+            throw new IllegalArgumentException("Cannot convert " + value + " to Duration");
+        }),
     MINIMUM_IMPROVEMENT_RATIO("minimum-improvement-ratio", DiminishedReturnsProperties::setMinimumImprovementRatio,
-            value -> Double.valueOf((String) value)),;
+        value -> {
+            if (value instanceof Number n) return n.doubleValue();
+            if (value instanceof String s) return Double.valueOf(s);
+            throw new IllegalArgumentException("Cannot convert " + value + " to Double");
+        }),;
 
     private final String propertyName;
     private final BiConsumer<DiminishedReturnsProperties, Object> propertyUpdater;
