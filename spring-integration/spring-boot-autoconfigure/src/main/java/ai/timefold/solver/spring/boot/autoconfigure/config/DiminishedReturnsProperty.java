@@ -1,5 +1,6 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
@@ -7,30 +8,34 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.time.Duration;
-
 
 import org.springframework.boot.convert.DurationStyle;
 
 public enum DiminishedReturnsProperty {
     ENABLED("enabled", DiminishedReturnsProperties::setEnabled,
-        value -> {
-            if (value instanceof Boolean b) return b;
-            if (value instanceof String s) return Boolean.parseBoolean(s);
-            throw new IllegalArgumentException("Cannot convert (%s) to Boolean".formatted(value));
-        }),
+            value -> {
+                if (value instanceof Boolean b)
+                    return b;
+                if (value instanceof String s)
+                    return Boolean.parseBoolean(s);
+                throw new IllegalArgumentException("Cannot convert (%s) to Boolean".formatted(value));
+            }),
     SLIDING_WINDOW_DURATION("sliding-window-duration", DiminishedReturnsProperties::setSlidingWindowDuration,
-        value -> {
-            if (value instanceof Duration d) return d;
-            if (value instanceof String s) return DurationStyle.detectAndParse(s);
-            throw new IllegalArgumentException("Cannot convert (%s) to Duration".formatted(value));
-        }),
+            value -> {
+                if (value instanceof Duration d)
+                    return d;
+                if (value instanceof String s)
+                    return DurationStyle.detectAndParse(s);
+                throw new IllegalArgumentException("Cannot convert (%s) to Duration".formatted(value));
+            }),
     MINIMUM_IMPROVEMENT_RATIO("minimum-improvement-ratio", DiminishedReturnsProperties::setMinimumImprovementRatio,
-        value -> {
-            if (value instanceof Number n) return n.doubleValue();
-            if (value instanceof String s) return Double.valueOf(s);
-            throw new IllegalArgumentException("Cannot convert (%s) to Double".formatted(value));
-        }),;
+            value -> {
+                if (value instanceof Number n)
+                    return n.doubleValue();
+                if (value instanceof String s)
+                    return Double.valueOf(s);
+                throw new IllegalArgumentException("Cannot convert (%s) to Double".formatted(value));
+            }),;
 
     private final String propertyName;
     private final BiConsumer<DiminishedReturnsProperties, Object> propertyUpdater;
