@@ -11,6 +11,11 @@ import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.Neighborho
 
 import org.jspecify.annotations.NullMarked;
 
+/**
+ * For each entity with a non-null value, creates a move to assign it a different non-null value.
+ * Null-to-non-null (assign) moves are handled by {@code AssignMoveProvider}.
+ * Non-null-to-null (unassign) moves are handled by {@code UnassignMoveProvider}.
+ */
 @NullMarked
 public class ChangeMoveProvider<Solution_, Entity_, Value_>
         implements MoveProvider<Solution_> {
@@ -25,8 +30,12 @@ public class ChangeMoveProvider<Solution_, Entity_, Value_>
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var nodeSharingSupportFunctions =
                 ((DefaultMoveStreamFactory<Solution_>) moveStreamFactory).getNodeSharingSupportFunctions(variableMetaModel);
-        return moveStreamFactory.pick(moveStreamFactory.forEach(variableMetaModel.entity().type(), false))
-                .pick(moveStreamFactory.forEach(variableMetaModel.type(), variableMetaModel.allowsUnassigned()),
+        var entities = moveStreamFactory.forEach(variableMetaModel.entity().type(), false);
+        if (variableMetaModel.allowsUnassigned()) {
+            entities = entities.filter(nodeSharingSupportFunctions.assignedValueFilter());
+        }
+        return moveStreamFactory.pick(entities)
+                .pick(moveStreamFactory.forEach(variableMetaModel.type(), false),
                         NeighborhoodsJoiners.filtering(nodeSharingSupportFunctions.differentValueFilter()),
                         NeighborhoodsJoiners.filtering(nodeSharingSupportFunctions.valueInRangeFilter()))
                 .asMove((solution, entity, value) -> Moves.change(variableMetaModel, Objects.requireNonNull(entity), value));

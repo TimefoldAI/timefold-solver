@@ -18,6 +18,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaM
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
+import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
@@ -105,6 +106,14 @@ public final class DefaultMoveStreamFactory<Solution_>
     }
 
     @Override
+    public <Entity_, Value_> UniEnumeratingStream<Solution_, Value_>
+            forEachUnassignedValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+        var nodeSharingSupportFunctions = getNodeSharingSupportFunctions(variableMetaModel);
+        return forEach(variableMetaModel.type(), false)
+                .filter(nodeSharingSupportFunctions.unassignedValueFilter);
+    }
+
+    @Override
     public <Entity_, Value_> UniEnumeratingStream<Solution_, PositionInList>
             forEachDestination(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         var unpinnedEntities = forEach(variableMetaModel.entity().type(), false);
@@ -130,7 +139,7 @@ public final class DefaultMoveStreamFactory<Solution_>
         if (!variableMetaModel.allowsUnassignedValues()) {
             return (UniEnumeratingStream) forEachDestination(variableMetaModel);
         }
-        var unpinnedEntities = forEach(variableMetaModel.entity().type(), true);
+        var unpinnedEntities = forEach(variableMetaModel.entity().type(), false);
         // Stream with unpinned values, which are assigned to any list variable;
         // always includes null so that we can later create a position at the end of the list,
         // i.e. with no value after it.
@@ -165,11 +174,13 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     public record NodeSharingSupportFunctions<Solution_, Entity_, Value_>(
             PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            UniNeighborhoodsPredicate<Solution_, Entity_> assignedValueFilter,
             BiNeighborhoodsPredicate<Solution_, Entity_, Value_> differentValueFilter,
             BiNeighborhoodsPredicate<Solution_, Entity_, Value_> valueInRangeFilter) {
 
         public NodeSharingSupportFunctions(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
             this(variableMetaModel,
+                    (solutionView, entity) -> solutionView.getValue(variableMetaModel, entity) != null,
                     (solutionView, entity, value) -> !Objects.equals(solutionView.getValue(variableMetaModel, entity), value),
                     (solutionView, entity, value) -> solutionView.isValueInRange(variableMetaModel, entity, value));
         }
@@ -181,7 +192,9 @@ public final class DefaultMoveStreamFactory<Solution_>
             UniNeighborhoodsPredicate<Solution_, Value_> unpinnedValueFilter,
             UniNeighborhoodsPredicate<Solution_, Value_> assignedValueOrNullFilter,
             UniNeighborhoodsPredicate<Solution_, Value_> assignedValueFilter,
+            UniNeighborhoodsPredicate<Solution_, Value_> unassignedValueFilter,
             BiNeighborhoodsPredicate<Solution_, Entity_, Value_> valueInRangeFilter,
+            BiNeighborhoodsPredicate<Solution_, Value_, PositionInList> valueInRangeFilterForPosition,
             BiNeighborhoodsMapper<Solution_, Entity_, Value_, ElementPosition> toElementPositionMapper,
             BiNeighborhoodsMapper<Solution_, Entity_, Value_, PositionInList> toPositionInListMapper) {
 
@@ -192,11 +205,20 @@ public final class DefaultMoveStreamFactory<Solution_>
                     (solutionView, value) -> value == null
                             || solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList,
                     (solutionView, value) -> solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList,
+                    (solutionView, value) -> solutionView.getPositionOf(variableMetaModel, value) instanceof UnassignedElement,
                     (solutionView, entity, value) -> {
-                        if (entity == null || value == null) {
+                        if (value == null) {
                             // Necessary for the null to survive until the later stage,
-                            // where we will use it as a special marker to either unassign the value,
-                            // or move it to the end of list.
+                            // where we will use it as a special marker to move it to the end of list.
+                            return true;
+                        }
+                        return solutionView.isValueInRange(variableMetaModel, entity, value);
+                    },
+                    (solutionView, value, positionInList) -> {
+                        Entity_ entity = positionInList.entity();
+                        if (value == null) {
+                            // Necessary for the null to survive until the later stage,
+                            // where we will use it as a special marker to move it to the end of list.
                             return true;
                         }
                         return solutionView.isValueInRange(variableMetaModel, entity, value);

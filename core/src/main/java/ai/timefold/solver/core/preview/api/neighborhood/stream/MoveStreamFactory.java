@@ -88,6 +88,15 @@ public interface MoveStreamFactory<Solution_> {
             forEachAssignedValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel);
 
     /**
+     * Enumerate all values not assigned to any entity's {@link PlanningListVariable}.
+     *
+     * @param variableMetaModel the meta model of the list variable to enumerate
+     * @return enumerating stream with all values as defined above
+     */
+    <Entity_, Value_> UniEnumeratingStream<Solution_, Value_>
+            forEachUnassignedValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel);
+
+    /**
      * Enumerate all possible positions of a list variable to which a value can be assigned.
      * This will include one position past the current end of the list, allowing for assigning at the end of a list.
      * It will not include any pinned positions or fully pinned entities, as well as {@link UnassignedElement}.

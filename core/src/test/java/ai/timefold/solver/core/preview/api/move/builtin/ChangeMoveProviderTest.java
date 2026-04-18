@@ -32,47 +32,31 @@ class ChangeMoveProviderTest {
 
         var solution = TestdataSolution.generateSolution(2, 2);
         var firstEntity = solution.getEntityList().get(0);
-        firstEntity.setValue(null);
         var secondEntity = solution.getEntityList().get(1);
-        secondEntity.setValue(null);
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
+        firstEntity.setValue(firstValue);
+        secondEntity.setValue(secondValue);
 
         var moveList = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(move -> (ChangeMove<TestdataSolution, TestdataEntity, TestdataValue>) move);
-        assertThat(moveList).hasSize(4);
+        assertThat(moveList).hasSize(2);
 
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
             softly.assertThat(firstMove.getPlanningEntities())
                     .containsExactly(firstEntity);
             softly.assertThat(firstMove.getPlanningValues())
-                    .containsExactly(firstValue);
+                    .containsExactly(secondValue);
         });
 
         var secondMove = moveList.get(1);
         assertSoftly(softly -> {
             softly.assertThat(secondMove.getPlanningEntities())
-                    .containsExactly(firstEntity);
+                    .containsExactly(secondEntity);
             softly.assertThat(secondMove.getPlanningValues())
-                    .containsExactly(secondValue);
-        });
-
-        var thirdMove = moveList.get(2);
-        assertSoftly(softly -> {
-            softly.assertThat(thirdMove.getPlanningEntities())
-                    .containsExactly(secondEntity);
-            softly.assertThat(thirdMove.getPlanningValues())
                     .containsExactly(firstValue);
-        });
-
-        var fourthMove = moveList.get(3);
-        assertSoftly(softly -> {
-            softly.assertThat(fourthMove.getPlanningEntities())
-                    .containsExactly(secondEntity);
-            softly.assertThat(fourthMove.getPlanningValues())
-                    .containsExactly(secondValue);
         });
     }
 
@@ -88,48 +72,32 @@ class ChangeMoveProviderTest {
         solution.setValueListNotInValueRange(Collections.singletonList(valueNotInValueRange));
 
         var firstEntity = solution.getEntityList().get(0);
-        firstEntity.setValue(null);
         var secondEntity = solution.getEntityList().get(1);
-        secondEntity.setValue(null);
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
+        firstEntity.setValue(firstValue);
+        secondEntity.setValue(secondValue);
 
         var moveList = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(
                         move -> (ChangeMove<TestdataIncompleteValueRangeSolution, TestdataIncompleteValueRangeEntity, TestdataValue>) move);
-        assertThat(moveList).hasSize(4);
+        assertThat(moveList).hasSize(2);
 
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
             softly.assertThat(firstMove.getPlanningEntities())
                     .containsExactly(firstEntity);
             softly.assertThat(firstMove.getPlanningValues())
-                    .containsExactly(firstValue);
+                    .containsExactly(secondValue);
         });
 
         var secondMove = moveList.get(1);
         assertSoftly(softly -> {
             softly.assertThat(secondMove.getPlanningEntities())
-                    .containsExactly(firstEntity);
+                    .containsExactly(secondEntity);
             softly.assertThat(secondMove.getPlanningValues())
-                    .containsExactly(secondValue);
-        });
-
-        var thirdMove = moveList.get(2);
-        assertSoftly(softly -> {
-            softly.assertThat(thirdMove.getPlanningEntities())
-                    .containsExactly(secondEntity);
-            softly.assertThat(thirdMove.getPlanningValues())
                     .containsExactly(firstValue);
-        });
-
-        var fourthMove = moveList.get(3);
-        assertSoftly(softly -> {
-            softly.assertThat(fourthMove.getPlanningEntities())
-                    .containsExactly(secondEntity);
-            softly.assertThat(fourthMove.getPlanningValues())
-                    .containsExactly(secondValue);
         });
     }
 
@@ -142,7 +110,7 @@ class ChangeMoveProviderTest {
         var solution = TestdataEntityProvidingSolution.generateSolution(2, 2);
         var firstEntity = solution.getEntityList().get(0);
         var secondEntity = solution.getEntityList().get(1);
-        var firstValue = firstEntity.getValueRange().get(0);
+        var firstValue = firstEntity.getValueRange().getFirst();
 
         // One move is expected:
         // - firstEntity is already assigned to firstValue, the only possible value; skip.
@@ -154,7 +122,7 @@ class ChangeMoveProviderTest {
                         move -> (ChangeMove<TestdataEntityProvidingSolution, TestdataEntityProvidingEntity, TestdataValue>) move);
         assertThat(moveList).hasSize(1);
 
-        var firstMove = moveList.get(0);
+        var firstMove = moveList.getFirst();
         assertSoftly(softly -> {
             softly.assertThat(firstMove.getPlanningEntities())
                     .containsExactly(secondEntity);
@@ -171,46 +139,25 @@ class ChangeMoveProviderTest {
                 .basicVariable();
 
         var solution = TestdataAllowsUnassignedEntityProvidingSolution.generateSolution(2, 2);
-        var firstEntity = solution.getEntityList().get(0);
         var secondEntity = solution.getEntityList().get(1);
-        var firstValue = firstEntity.getValueRange().get(0);
+        var firstValue = solution.getEntityList().get(0).getValueRange().getFirst();
 
-        // Three moves are expected:
-        // - Assign firstEntity to null,
-        //   as it is currently assigned to firstValue, and the value range only contains firstValue.
-        // - Assign secondEntity to null and to firstValue,
-        //   as it is currently assigned to secondValue, and the value range only contains firstValue.
-        // Null is not in the value range, but as documented,
-        // null is added automatically to value ranges when allowsUnassigned is true.
+        // One move is expected:
+        // - secondEntity is assigned to secondValue, and the value range only contains firstValue;
+        //   so a change to firstValue is generated.
+        // - firstEntity is assigned to firstValue, same as its only possible non-null value; no change.
+        // Null (unassign) moves are not generated by ChangeMoveProvider.
         var moveList = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(
                         move -> (ChangeMove<TestdataAllowsUnassignedEntityProvidingSolution, TestdataAllowsUnassignedEntityProvidingEntity, TestdataValue>) move);
-        assertThat(moveList).hasSize(3);
+        assertThat(moveList).hasSize(1);
 
-        var firstMove = moveList.get(0);
+        var firstMove = moveList.getFirst();
         assertSoftly(softly -> {
             softly.assertThat(firstMove.getPlanningEntities())
-                    .containsExactly(firstEntity);
+                    .containsExactly(secondEntity);
             softly.assertThat(firstMove.getPlanningValues())
-                    .hasSize(1)
-                    .containsNull();
-        });
-
-        var secondMove = moveList.get(1);
-        assertSoftly(softly -> {
-            softly.assertThat(secondMove.getPlanningEntities())
-                    .containsExactly(secondEntity);
-            softly.assertThat(secondMove.getPlanningValues())
-                    .hasSize(1)
-                    .containsNull();
-        });
-
-        var thirdMove = moveList.get(2);
-        assertSoftly(softly -> {
-            softly.assertThat(thirdMove.getPlanningEntities())
-                    .containsExactly(secondEntity);
-            softly.assertThat(thirdMove.getPlanningValues())
                     .containsExactly(firstValue);
         });
     }
@@ -222,53 +169,25 @@ class ChangeMoveProviderTest {
                 .basicVariable();
 
         var solution = TestdataAllowsUnassignedSolution.generateSolution(2, 2);
-        var firstEntity = solution.getEntityList().get(0); // Assigned to null.
         var secondEntity = solution.getEntityList().get(1); // Assigned to secondValue.
-        var firstValue = solution.getValueList().get(0); // Not assigned to any entity.
-        var secondValue = solution.getValueList().get(1);
+        var firstValue = solution.getValueList().getFirst(); // Not assigned to any entity.
 
-        // Filters out moves that would change the value to the value the entity already has.
-        // Therefore this will have 4 moves (2 entities * 2 values) as opposed to 6 (2 entities * 3 values).
+        // First entity is assigned to null, so it is filtered out by ChangeMoveProvider.
+        // Second entity is assigned to secondValue, so the only applicable move assigns to firstValue.
+        // Null (unassign) moves are not generated by ChangeMoveProvider.
         var moveList = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
                 .using(solution)
                 .getMovesAsList(
                         move -> (ChangeMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue>) move);
-        assertThat(moveList).hasSize(4);
+        assertThat(moveList).hasSize(1);
 
-        // First entity is assigned to null, therefore the applicable moves assign to firstValue and secondValue.
-        var firstMove = moveList.get(0);
+        var firstMove = moveList.getFirst();
         assertSoftly(softly -> {
             softly.assertThat(firstMove.getPlanningEntities())
-                    .containsExactly(firstEntity);
+                    .containsExactly(secondEntity);
             softly.assertThat(firstMove.getPlanningValues())
                     .containsExactly(firstValue);
         });
-
-        var secondMove = moveList.get(1);
-        assertSoftly(softly -> {
-            softly.assertThat(secondMove.getPlanningEntities())
-                    .containsExactly(firstEntity);
-            softly.assertThat(secondMove.getPlanningValues())
-                    .containsExactly(secondValue);
-        });
-
-        // Second entity is assigned to secondValue, therefore the applicable moves assign to null and firstValue.
-        var thirdMove = moveList.get(2);
-        assertSoftly(softly -> {
-            softly.assertThat(thirdMove.getPlanningEntities())
-                    .containsExactly(secondEntity);
-            softly.assertThat(thirdMove.getPlanningValues())
-                    .containsExactly(new TestdataValue[] { null });
-        });
-
-        var fourthMove = moveList.get(3);
-        assertSoftly(softly -> {
-            softly.assertThat(fourthMove.getPlanningEntities())
-                    .containsExactly(secondEntity);
-            softly.assertThat(fourthMove.getPlanningValues())
-                    .containsExactly(firstValue);
-        });
-
     }
 
 }
