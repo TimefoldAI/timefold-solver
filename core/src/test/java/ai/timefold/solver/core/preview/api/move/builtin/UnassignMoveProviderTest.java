@@ -8,6 +8,8 @@ import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
+import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 
@@ -16,6 +18,31 @@ import org.junit.jupiter.api.Test;
 
 @NullMarked
 class UnassignMoveProviderTest {
+
+    @Test
+    void pinnedEntitySkipped() {
+        var solutionMetaModel = TestdataPinnedAllowsUnassignedSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedAllowsUnassignedEntity.class)
+                .basicVariable("value", TestdataValue.class);
+
+        var solution = TestdataPinnedAllowsUnassignedSolution.generateSolution(2, 2);
+        var firstEntity = solution.getEntityList().get(0);
+        var secondEntity = solution.getEntityList().get(1);
+        firstEntity.setPinned(true);
+
+        // firstEntity is pinned → no unassign moves. Only secondEntity can be unassigned.
+        var moveList = NeighborhoodTester.build(new UnassignMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsList(
+                        move -> (ChangeMove<TestdataPinnedAllowsUnassignedSolution, TestdataPinnedAllowsUnassignedEntity, TestdataValue>) move);
+        assertThat(moveList).hasSize(1);
+
+        var firstMove = moveList.getFirst();
+        assertSoftly(softly -> {
+            softly.assertThat(firstMove.getPlanningEntities()).containsExactly(secondEntity);
+            softly.assertThat(firstMove.getPlanningValues()).containsExactly((Object) null);
+        });
+    }
 
     @Test
     void unassignedEntitySkipped() {

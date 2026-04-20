@@ -9,6 +9,8 @@ import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
@@ -158,6 +160,31 @@ class ChangeMoveProviderTest {
                     .containsExactly(secondEntity);
             softly.assertThat(firstMove.getPlanningValues())
                     .containsExactly(firstValue);
+        });
+    }
+
+    @Test
+    void pinnedEntitySkipped() {
+        var solutionMetaModel = TestdataPinnedSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedEntity.class)
+                .basicVariable();
+
+        var solution = TestdataPinnedSolution.generateSolution(2, 2);
+        var firstEntity = solution.getEntityList().get(0);
+        var secondEntity = solution.getEntityList().get(1);
+        var firstValue = solution.getValueList().getFirst();
+        firstEntity.setPinned(true);
+
+        // firstEntity is pinned; only secondEntity can change to firstValue.
+        var moveList = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsList(move -> (ChangeMove<TestdataPinnedSolution, TestdataPinnedEntity, TestdataValue>) move);
+        assertThat(moveList).hasSize(1);
+
+        var firstMove = moveList.getFirst();
+        assertSoftly(softly -> {
+            softly.assertThat(firstMove.getPlanningEntities()).containsExactly(secondEntity);
+            softly.assertThat(firstMove.getPlanningValues()).containsExactly(firstValue);
         });
     }
 

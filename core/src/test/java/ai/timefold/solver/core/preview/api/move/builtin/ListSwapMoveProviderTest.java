@@ -8,6 +8,8 @@ import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListEntity;
+import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 
@@ -16,6 +18,23 @@ import org.junit.jupiter.api.Test;
 
 @NullMarked
 class ListSwapMoveProviderTest {
+
+    @Test
+    void pinnedEntitySkipped() {
+        var solutionMetaModel = TestdataPinnedListSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedListEntity.class)
+                .listVariable();
+
+        var solution = TestdataPinnedListSolution.generateInitializedSolution(2, 2);
+        solution.getEntityList().getFirst().setPinned(true);
+
+        // firstEntity is pinned → no swaps involving its values.
+        // secondEntity's only potential swap partner is the pinned firstEntity → 0 moves.
+        var moveList = NeighborhoodTester.build(new ListSwapMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsList();
+        assertThat(moveList).isEmpty();
+    }
 
     @Test
     void fromSolution() {

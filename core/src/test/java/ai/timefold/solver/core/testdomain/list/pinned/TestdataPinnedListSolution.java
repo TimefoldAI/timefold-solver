@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 
 @PlanningSolution
 public class TestdataPinnedListSolution {
@@ -20,6 +21,10 @@ public class TestdataPinnedListSolution {
                 TestdataPinnedListSolution.class,
                 TestdataPinnedListEntity.class,
                 TestdataPinnedListValue.class);
+    }
+
+    public static PlanningSolutionMetaModel<TestdataPinnedListSolution> buildMetaModel() {
+        return buildSolutionDescriptor().getMetaModel();
     }
 
     public static TestdataPinnedListSolution generateInitializedSolution(int valueCount, int entityCount) {

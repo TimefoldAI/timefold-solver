@@ -8,6 +8,9 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.unassignedvar.TestdataPinnedAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.testdomain.list.pinned.unassignedvar.TestdataPinnedAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.unassignedvar.TestdataPinnedAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
@@ -17,6 +20,39 @@ import org.junit.jupiter.api.Test;
 
 @NullMarked
 class ListUnassignMoveProviderTest {
+
+    @Test
+    void pinnedEntitySkipped() {
+        var solutionMetaModel = TestdataPinnedAllowsUnassignedValuesListSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedAllowsUnassignedValuesListEntity.class)
+                .listVariable();
+
+        var solution = TestdataPinnedAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 2);
+        var firstEntity = solution.getEntityList().get(0);
+        var secondEntity = solution.getEntityList().get(1);
+        var firstValue = solution.getValueList().get(0);
+        var secondValue = solution.getValueList().get(1);
+        firstEntity.getValueList().add(firstValue);
+        secondEntity.getValueList().add(secondValue);
+        SolutionManager.updateShadowVariables(solution);
+        firstEntity.setPinned(true);
+
+        // firstEntity is pinned → firstValue cannot be unassigned from it.
+        // Only secondValue from secondEntity can be unassigned.
+        var moveList = NeighborhoodTester.build(new ListUnassignMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsList(
+                        move -> (ListUnassignMove<TestdataPinnedAllowsUnassignedValuesListSolution, TestdataPinnedAllowsUnassignedValuesListEntity, TestdataPinnedAllowsUnassignedValuesListValue>) move);
+        assertThat(moveList).hasSize(1);
+
+        var firstMove = moveList.getFirst();
+        assertSoftly(softly -> {
+            softly.assertThat(firstMove.getSourceEntity()).isEqualTo(secondEntity);
+            softly.assertThat(firstMove.getSourceIndex()).isEqualTo(0);
+            softly.assertThat(firstMove.getPlanningEntities()).containsExactly(secondEntity);
+            softly.assertThat(firstMove.getPlanningValues()).containsExactly(secondValue);
+        });
+    }
 
     @Test
     void fromSolution() {

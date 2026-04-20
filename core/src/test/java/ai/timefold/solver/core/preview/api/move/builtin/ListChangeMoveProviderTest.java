@@ -10,6 +10,8 @@ import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListEntity;
+import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
@@ -22,6 +24,24 @@ import org.junit.jupiter.api.Test;
 
 @NullMarked
 class ListChangeMoveProviderTest {
+
+    @Test
+    void pinnedEntitySkipped() {
+        var solutionMetaModel = TestdataPinnedListSolution.buildMetaModel();
+        var variableMetaModel = solutionMetaModel.genuineEntity(TestdataPinnedListEntity.class)
+                .listVariable();
+
+        var solution = TestdataPinnedListSolution.generateInitializedSolution(2, 2);
+        var firstEntity = solution.getEntityList().getFirst();
+        firstEntity.setPinned(true);
+
+        // firstEntity is pinned → values can't leave it AND nothing can be moved to it.
+        // secondEntity has one value but its only valid destination is firstEntity (which is pinned).
+        var moveList = NeighborhoodTester.build(new ListChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsList();
+        assertThat(moveList).isEmpty();
+    }
 
     @Test
     void fromSolution() {
