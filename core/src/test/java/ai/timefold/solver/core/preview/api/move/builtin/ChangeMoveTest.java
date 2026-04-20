@@ -14,7 +14,7 @@ class ChangeMoveTest {
     @Test
     void changeMoveExecutesPermanently() {
         var solution = TestdataSolution.generateSolution(3, 2);
-        var entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().getFirst();
         var newValue = solution.getValueList().get(2); // Different value
 
         var solutionMetaModel = TestdataSolution.buildMetaModel();
@@ -33,7 +33,7 @@ class ChangeMoveTest {
     @Test
     void changeMoveToNull() {
         var solution = TestdataSolution.generateSolution(2, 1);
-        var entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().getFirst();
 
         var solutionMetaModel = TestdataSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataEntity.class)
@@ -79,7 +79,7 @@ class ChangeMoveTest {
     @Test
     void changeMoveExecutesTemporarilyWithUndo() {
         var solution = TestdataSolution.generateSolution(3, 1);
-        var entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().getFirst();
         var originalValue = entity.getValue();
         var newValue = solution.getValueList().get(2);
 

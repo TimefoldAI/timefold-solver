@@ -2,9 +2,12 @@ package ai.timefold.solver.core.impl.neighborhood.stream.sampling;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.impl.neighborhood.stream.UniMoveStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.joiner.BiNeighborhoodsJoinerComber;
+import ai.timefold.solver.core.preview.api.neighborhood.UniMoveConstructor;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.sampling.BiSamplingStream;
@@ -31,6 +34,11 @@ public final class DefaultUniSamplingStream<Solution_, A> implements InnerUniSam
         var comber = BiNeighborhoodsJoinerComber.<Solution_, A, B> comb(joiners);
         return new DefaultBiSamplingStream<>(dataset,
                 ((AbstractUniEnumeratingStream<Solution_, B>) uniEnumeratingStream).createRightDataset(comber));
+    }
+
+    @Override
+    public MoveStream<Solution_> asMove(UniMoveConstructor<Solution_, A> moveConstructor) {
+        return new UniMoveStream<>(dataset, Objects.requireNonNull(moveConstructor));
     }
 
 }

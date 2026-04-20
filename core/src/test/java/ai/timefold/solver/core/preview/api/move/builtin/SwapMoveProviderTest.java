@@ -3,12 +3,19 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import java.util.List;
+
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.neighborhood.test.NeighborhoodTester;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -122,6 +129,59 @@ class SwapMoveProviderTest {
                     .containsOnly(e2, e3);
             softly.assertThat(move4.getPlanningValues())
                     .containsOnly(v2, v1, otherV2, otherV1);
+        });
+    }
+
+    @Test
+    void pinnedEntitySkipped() {
+        var solutionMetaModel = TestdataPinnedSolution.buildMetaModel();
+        var entityMetaModel = solutionMetaModel.entity(TestdataPinnedEntity.class);
+
+        var solution = TestdataPinnedSolution.generateSolution(2, 2);
+        solution.getEntityList().getFirst().setPinned(true);
+
+        // With only 2 entities and one pinned, there is no valid swap partner.
+        var moveList = NeighborhoodTester.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsList();
+        assertThat(moveList).isEmpty();
+    }
+
+    @Test
+    void fromEntity() {
+        var solutionMetaModel = TestdataEntityProvidingSolution.buildMetaModel();
+        var entityMetaModel = solutionMetaModel.entity(TestdataEntityProvidingEntity.class);
+
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var e1 = new TestdataEntityProvidingEntity("e1", List.of(v1, v2));
+        e1.setValue(v1);
+        var e2 = new TestdataEntityProvidingEntity("e2", List.of(v1, v2));
+        e2.setValue(v2);
+        var e3 = new TestdataEntityProvidingEntity("e3", List.of(v3));
+        e3.setValue(v3);
+        var solution = new TestdataEntityProvidingSolution("s1");
+        solution.setEntityList(List.of(e1, e2, e3));
+
+        // e1(v1, range={v1,v2}) ↔ e2(v2, range={v1,v2}): valid swap; produced twice.
+        // e1 ↔ e3: v3 not in e1's range → excluded.
+        // e2 ↔ e3: v3 not in e2's range → excluded.
+        var moveList = NeighborhoodTester.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
+                .using(solution)
+                .getMovesAsList(move -> (SwapMove<TestdataEntityProvidingSolution, TestdataEntityProvidingEntity>) move);
+        assertThat(moveList).hasSize(2);
+
+        var move0 = moveList.get(0);
+        assertSoftly(softly -> {
+            softly.assertThat(move0.getPlanningEntities()).containsOnly(e1, e2);
+            softly.assertThat(move0.getPlanningValues()).containsOnly(v1, v2);
+        });
+
+        var move1 = moveList.get(1);
+        assertSoftly(softly -> {
+            softly.assertThat(move1.getPlanningEntities()).containsOnly(e1, e2);
+            softly.assertThat(move1.getPlanningValues()).containsOnly(v1, v2);
         });
     }
 

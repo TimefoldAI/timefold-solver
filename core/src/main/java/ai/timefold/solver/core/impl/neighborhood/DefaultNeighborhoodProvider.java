@@ -3,10 +3,14 @@ package ai.timefold.solver.core.impl.neighborhood;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.preview.api.move.builtin.AssignMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.ChangeMoveProvider;
+import ai.timefold.solver.core.preview.api.move.builtin.ListAssignMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.ListChangeMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.ListSwapMoveProvider;
+import ai.timefold.solver.core.preview.api.move.builtin.ListUnassignMoveProvider;
 import ai.timefold.solver.core.preview.api.move.builtin.SwapMoveProvider;
+import ai.timefold.solver.core.preview.api.move.builtin.UnassignMoveProvider;
 import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
 import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
@@ -14,8 +18,6 @@ import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Currently only includes change and swap moves.
- *
  * @param <Solution_>
  */
 @NullMarked
@@ -31,11 +33,22 @@ public final class DefaultNeighborhoodProvider<Solution_> implements Neighborhoo
                     // TODO Implement 2-opt and 3-opt moves for list variables.
                     builder.add(new ListChangeMoveProvider<>(listVariableMetaModel));
                     builder.add(new ListSwapMoveProvider<>(listVariableMetaModel));
+                    if (listVariableMetaModel.allowsUnassignedValues()) {
+                        builder.add(new ListAssignMoveProvider<>(listVariableMetaModel));
+                        builder.add(new ListUnassignMoveProvider<>(listVariableMetaModel));
+                    }
                 } else if (variableMetaModel instanceof PlanningVariableMetaModel<Solution_, ?, ?> basicVariableMetaModel) {
                     hasBasicVariable = true;
                     builder.add(new ChangeMoveProvider<>(basicVariableMetaModel));
+                    if (basicVariableMetaModel.allowsUnassigned()) {
+                        builder.add(new AssignMoveProvider<>(basicVariableMetaModel));
+                        builder.add(new UnassignMoveProvider<>(basicVariableMetaModel));
+                    }
                 }
             }
+            // Swap move is the only move which switches all variables of an entity,
+            // and not just one variable.
+            // It only needs to be included once per entity.
             if (hasBasicVariable) {
                 builder.add(new SwapMoveProvider<>(entityMetaModel));
             }

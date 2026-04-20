@@ -14,8 +14,8 @@ class ListAssignMoveTest {
     @Test
     void listAssignMoveExecutesPermanently() {
         var solution = TestdataListSolution.generateUninitializedSolution(3, 2);
-        var entity = solution.getEntityList().get(0);
-        var value = solution.getValueList().get(0);
+        var entity = solution.getEntityList().getFirst();
+        var value = solution.getValueList().getFirst();
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
@@ -27,13 +27,13 @@ class ListAssignMoveTest {
                 .execute(assignMove);
 
         assertThat(entity.getValueList()).hasSize(1);
-        assertThat(entity.getValueList().get(0)).isEqualTo(value);
+        assertThat(entity.getValueList().getFirst()).isEqualTo(value);
     }
 
     @Test
     void listAssignMoveMultipleValues() {
         var solution = TestdataListSolution.generateUninitializedSolution(4, 1);
-        var entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().getFirst();
         var value1 = solution.getValueList().get(0);
         var value2 = solution.getValueList().get(1);
         var value3 = solution.getValueList().get(2);
@@ -91,8 +91,8 @@ class ListAssignMoveTest {
     @Test
     void listAssignMoveExecutesTemporarilyWithUndo() {
         var solution = TestdataListSolution.generateUninitializedSolution(2, 1);
-        var entity = solution.getEntityList().get(0);
-        var value = solution.getValueList().get(0);
+        var entity = solution.getEntityList().getFirst();
+        var value = solution.getValueList().getFirst();
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
@@ -105,7 +105,7 @@ class ListAssignMoveTest {
                 .executeTemporarily(assignMove, view -> {
                     // During temporary execution, value should be assigned
                     assertThat(entity.getValueList()).hasSize(1);
-                    assertThat(entity.getValueList().get(0)).isEqualTo(value);
+                    assertThat(entity.getValueList().getFirst()).isEqualTo(value);
                 });
 
         // After undo, list should be empty again
@@ -115,7 +115,7 @@ class ListAssignMoveTest {
     @Test
     void listAssignMoveTemporaryMultipleValues() {
         var solution = TestdataListSolution.generateUninitializedSolution(3, 1);
-        var entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().getFirst();
         var value1 = solution.getValueList().get(0);
         var value2 = solution.getValueList().get(1);
         var value3 = solution.getValueList().get(2);

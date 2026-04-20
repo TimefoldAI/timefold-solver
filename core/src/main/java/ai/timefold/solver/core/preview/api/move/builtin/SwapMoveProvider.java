@@ -51,7 +51,7 @@ public class SwapMoveProvider<Solution_, Entity_>
         this.entityMetaModel = switch (entityMetaModels.size()) {
             case 0 -> throw new IllegalArgumentException("The variableMetaModelList (%s) is empty."
                     .formatted(variableMetaModelList));
-            case 1 -> entityMetaModels.get(0);
+            case 1 -> entityMetaModels.getFirst();
             default -> throw new IllegalArgumentException(
                     "The variableMetaModelList (%s) contains variables from multiple entity classes."
                             .formatted(variableMetaModelList));
