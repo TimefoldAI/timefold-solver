@@ -66,7 +66,7 @@ For more, see link:CONTRIBUTING.md[Contributing].
 There are two editions of Timefold Solver:
 
 - _Timefold Solver Community Edition_ (this repo).
-- _Timefold Solver Enterprise Edition_, a https://timefold.ai/pricing[licensed version] of Timefold Solver.
+- _Timefold Solver Enterprise Edition_, a https://licenses.timefold.ai/[licensed version] of Timefold Solver.
 
 === Key Features of Timefold Solver Enterprise Edition
 
@@ -79,7 +79,7 @@ There are two editions of Timefold Solver:
 Unlike the Apache-2.0 licensed _Community Edition_ in this repo,
 the _Enterprise Edition_ is not open source.
 If you wish to use the Enterprise Edition in a production environment,
-please https://timefold.ai/contact[contact Timefold] to obtain the appropriate license.
+https://licenses.timefold.ai/[obtain the appropriate license].
 
 == Legal notice
 

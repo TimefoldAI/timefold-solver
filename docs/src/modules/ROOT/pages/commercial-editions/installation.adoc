@@ -13,7 +13,7 @@ A correctly configured and active license key is required in order for our comme
 [#solverObtainLicenseKey]
 === Obtaining a license key
 
-Contact us through our https://timefold.ai/talk-to-us[webform].
+Generate your license key using https://licenses.timefold.ai/[Timefold License Manager].
 
 [NOTE]
 ====

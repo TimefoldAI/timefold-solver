@@ -14,7 +14,7 @@ For more, see [Contributing](https://github.com/TimefoldAI/timefold-solver/blob/
 
 Should your business need to scale to truly massive data sets or require enterprise-grade support,
 check out [_Timefold Solver Enterprise Edition_](https://docs.timefold.ai/timefold-solver/latest/enterprise-edition/enterprise-edition). 
-Enterprise Edition requires [a license](https://timefold.ai/pricing). 
+Enterprise Edition requires [a license](https://licenses.timefold.ai/). 
 
 # How to use Timefold Solver
 
