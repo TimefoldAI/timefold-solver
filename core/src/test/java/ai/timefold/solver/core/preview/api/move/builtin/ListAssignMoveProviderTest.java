@@ -104,12 +104,14 @@ class ListAssignMoveProviderTest {
         var move2 = getListAssignMove(moveList, 1);
         assertSoftly(softly -> {
             softly.assertThat(move2.getDestinationEntity()).isEqualTo(e2);
+            softly.assertThat(move2.getDestinationIndex()).isEqualTo(1);
             softly.assertThat(move2.getPlanningValues()).containsExactly(v3);
         });
 
         var move3 = getListAssignMove(moveList, 2);
         assertSoftly(softly -> {
             softly.assertThat(move3.getDestinationEntity()).isEqualTo(e2);
+            softly.assertThat(move3.getDestinationIndex()).isEqualTo(0);
             softly.assertThat(move3.getPlanningValues()).containsExactly(v3);
         });
     }

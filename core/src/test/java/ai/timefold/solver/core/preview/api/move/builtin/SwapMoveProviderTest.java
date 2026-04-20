@@ -164,7 +164,7 @@ class SwapMoveProviderTest {
         var solution = new TestdataEntityProvidingSolution("s1");
         solution.setEntityList(List.of(e1, e2, e3));
 
-        // e1(v1, range={v1,v2}) ↔ e2(v2, range={v1,v2}): valid swap.
+        // e1(v1, range={v1,v2}) ↔ e2(v2, range={v1,v2}): valid swap; produced twice.
         // e1 ↔ e3: v3 not in e1's range → excluded.
         // e2 ↔ e3: v3 not in e2's range → excluded.
         var moveList = NeighborhoodTester.build(new SwapMoveProvider<>(entityMetaModel), solutionMetaModel)
