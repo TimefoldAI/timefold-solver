@@ -139,7 +139,8 @@ public final class DefaultMoveStreamFactory<Solution_>
         if (!variableMetaModel.allowsUnassignedValues()) {
             return (UniEnumeratingStream) forEachDestination(variableMetaModel);
         }
-        var unpinnedEntities = forEach(variableMetaModel.entity().type(), false);
+        // We include null, as that signifies the future unassigned element.
+        var unpinnedEntities = forEach(variableMetaModel.entity().type(), true);
         // Stream with unpinned values, which are assigned to any list variable;
         // always includes null so that we can later create a position at the end of the list,
         // i.e. with no value after it.

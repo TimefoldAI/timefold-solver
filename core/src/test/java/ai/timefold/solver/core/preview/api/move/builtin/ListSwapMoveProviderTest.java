@@ -106,7 +106,7 @@ class ListSwapMoveProviderTest {
         var e1 = solution.getEntityList().get(0);
         var e2 = solution.getEntityList().get(1);
         e1.getValueList().clear();
-        var initiallyAssignedValue = e2.getValueRange().get(0);
+        var initiallyAssignedValue = e2.getValueRange().getFirst();
         e2.getValueList().add(initiallyAssignedValue);
         SolutionManager.updateShadowVariables(solution);
 

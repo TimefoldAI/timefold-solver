@@ -34,7 +34,7 @@ class ListChangeMoveTest {
         @Test
         void moveFromFirstToLast() {
             var solution = TestdataListSolution.generateInitializedSolution(3, 1);
-            var entity = solution.getEntityList().get(0);
+            var entity = solution.getEntityList().getFirst();
             var value1 = entity.getValueList().get(0);
             var value2 = entity.getValueList().get(1);
             var value3 = entity.getValueList().get(2);
@@ -61,7 +61,7 @@ class ListChangeMoveTest {
         @Test
         void moveFromLastToFirst() {
             var solution = TestdataListSolution.generateInitializedSolution(3, 1);
-            var entity = solution.getEntityList().get(0);
+            var entity = solution.getEntityList().getFirst();
             var value1 = entity.getValueList().get(0);
             var value2 = entity.getValueList().get(1);
             var value3 = entity.getValueList().get(2);
@@ -88,7 +88,7 @@ class ListChangeMoveTest {
         @Test
         void moveMiddleToFirst() {
             var solution = TestdataListSolution.generateInitializedSolution(3, 1);
-            var entity = solution.getEntityList().get(0);
+            var entity = solution.getEntityList().getFirst();
             var value1 = entity.getValueList().get(0);
             var value2 = entity.getValueList().get(1);
             var value3 = entity.getValueList().get(2);
@@ -115,7 +115,7 @@ class ListChangeMoveTest {
         @Test
         void moveMiddleToLast() {
             var solution = TestdataListSolution.generateInitializedSolution(3, 1);
-            var entity = solution.getEntityList().get(0);
+            var entity = solution.getEntityList().getFirst();
             var value1 = entity.getValueList().get(0);
             var value2 = entity.getValueList().get(1);
             var value3 = entity.getValueList().get(2);
@@ -152,8 +152,8 @@ class ListChangeMoveTest {
 
             var initialEntity1Size = entity1.getValueList().size();
             var initialEntity2Size = entity2.getValueList().size();
-            var valueToMove = entity1.getValueList().get(0);
-            var entity2FirstValue = entity2.getValueList().get(0);
+            var valueToMove = entity1.getValueList().getFirst();
+            var entity2FirstValue = entity2.getValueList().getFirst();
 
             var solutionMetaModel = TestdataListSolution.buildMetaModel();
             var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)

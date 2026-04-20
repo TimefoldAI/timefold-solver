@@ -71,7 +71,7 @@ class CompositeMoveTest {
     @Test
     void compositeMoveWithSingleSubMove() {
         var solution = TestdataSolution.generateSolution(2, 1);
-        var entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().getFirst();
         var newValue = solution.getValueList().get(1);
 
         var solutionMetaModel = TestdataSolution.buildMetaModel();

@@ -14,7 +14,7 @@ class ListSwapMoveTest {
     @Test
     void listSwapMoveWithinSameEntity() {
         var solution = TestdataListSolution.generateInitializedSolution(3, 1);
-        var entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().getFirst();
         var value1 = entity.getValueList().get(0);
         var value2 = entity.getValueList().get(1);
         var value3 = entity.getValueList().get(2);
@@ -42,8 +42,8 @@ class ListSwapMoveTest {
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
 
-        var value1 = entity1.getValueList().get(0);
-        var value2 = entity2.getValueList().get(0);
+        var value1 = entity1.getValueList().getFirst();
+        var value2 = entity2.getValueList().getFirst();
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
         var variableMetaModel = solutionMetaModel.genuineEntity(TestdataListEntity.class)
@@ -56,15 +56,15 @@ class ListSwapMoveTest {
                 .execute(swapMove);
 
         // Assert - values should be swapped
-        assertThat(entity1.getValueList().get(0)).isEqualTo(value2);
-        assertThat(entity2.getValueList().get(0)).isEqualTo(value1);
+        assertThat(entity1.getValueList().getFirst()).isEqualTo(value2);
+        assertThat(entity2.getValueList().getFirst()).isEqualTo(value1);
     }
 
     @Test
     void listSwapMoveAdjacentPositions() {
         // Arrange
         var solution = TestdataListSolution.generateInitializedSolution(4, 1);
-        var entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().getFirst();
         var value1 = entity.getValueList().get(1);
         var value2 = entity.getValueList().get(2);
 
@@ -117,7 +117,7 @@ class ListSwapMoveTest {
     @Test
     void listSwapMoveExecutesTemporarilyWithUndo() {
         var solution = TestdataListSolution.generateInitializedSolution(3, 1);
-        var entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().getFirst();
         var originalList = entity.getValueList().stream().toList();
 
         var solutionMetaModel = TestdataListSolution.buildMetaModel();
@@ -157,8 +157,8 @@ class ListSwapMoveTest {
                 .using(solution)
                 .executeTemporarily(swapMove, view -> {
                     // Values should be swapped
-                    assertThat(entity1.getValueList().get(0)).isEqualTo(originalList2.get(0));
-                    assertThat(entity2.getValueList().get(0)).isEqualTo(originalList1.get(0));
+                    assertThat(entity1.getValueList().getFirst()).isEqualTo(originalList2.getFirst());
+                    assertThat(entity2.getValueList().getFirst()).isEqualTo(originalList1.getFirst());
                 });
 
         // Both lists should be restored

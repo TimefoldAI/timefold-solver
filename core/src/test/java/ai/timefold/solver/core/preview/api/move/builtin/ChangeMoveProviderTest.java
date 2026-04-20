@@ -35,7 +35,6 @@ class ChangeMoveProviderTest {
         var secondEntity = solution.getEntityList().get(1);
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
-        firstEntity.setValue(firstValue);
         secondEntity.setValue(secondValue);
 
         var moveList = NeighborhoodTester.build(new ChangeMoveProvider<>(variableMetaModel), solutionMetaModel)
