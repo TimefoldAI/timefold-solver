@@ -46,6 +46,9 @@ public final class DefaultNeighborhoodProvider<Solution_> implements Neighborhoo
                     }
                 }
             }
+            // Swap move is the only move which switches all variables of an entity,
+            // and not just one variable.
+            // It only needs to be included once per entity.
             if (hasBasicVariable) {
                 builder.add(new SwapMoveProvider<>(entityMetaModel));
             }

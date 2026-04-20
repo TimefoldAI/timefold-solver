@@ -32,7 +32,7 @@ final class UniOriginalMoveIterator<Solution_, A> implements Iterator<Move<Solut
         if (nextMove != null) {
             return true;
         }
-        if (tupleIterator == null) {
+        if (tupleIterator == null) { // Only create a possibly expensive instance when we actually need it.
             tupleIterator = context.getDatasetInstance().iterator();
         }
         if (!tupleIterator.hasNext()) {

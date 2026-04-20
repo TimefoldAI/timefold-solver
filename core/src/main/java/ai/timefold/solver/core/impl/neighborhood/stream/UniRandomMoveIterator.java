@@ -20,19 +20,23 @@ import org.jspecify.annotations.Nullable;
 final class UniRandomMoveIterator<Solution_, A> implements Iterator<Move<Solution_>> {
 
     private final UniMoveStreamContext<Solution_, A> context;
-    private final Iterator<UniTuple<A>> tupleIterator;
+    private final RandomGenerator workingRandom;
+    private @Nullable Iterator<UniTuple<A>> tupleIterator;
 
     private @Nullable Move<Solution_> nextMove;
 
     public UniRandomMoveIterator(UniMoveStreamContext<Solution_, A> context, RandomGenerator workingRandom) {
         this.context = Objects.requireNonNull(context);
-        this.tupleIterator = context.getDatasetInstance().randomIterator(Objects.requireNonNull(workingRandom));
+        this.workingRandom = Objects.requireNonNull(workingRandom);
     }
 
     @Override
     public boolean hasNext() {
         if (nextMove != null) {
             return true;
+        }
+        if (tupleIterator == null) { // Only create a possibly expensive instance when we actually need it.
+            tupleIterator = context.getDatasetInstance().randomIterator(Objects.requireNonNull(workingRandom));
         }
         if (!tupleIterator.hasNext()) {
             return false;
