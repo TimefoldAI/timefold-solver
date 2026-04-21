@@ -118,7 +118,7 @@ jobs:
         working-directory: ./timefold-solver-enterprise
         shell: bash
         env:
-          TIMEFOLD_ENTERPRISE_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
+          TIMEFOLD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
         run: ./mvnw -B clean verify
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
