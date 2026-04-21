@@ -115,19 +115,19 @@ public interface TimefoldSolverEnterpriseService {
             return load();
         } catch (EnterpriseLicenseException cause) {
             throw new IllegalStateException("""
-                    No valid Timefold Enterprise License was found.
+                    No valid Timefold License was found.
                     Please contact Timefold to obtain a valid license,
                     or if you believe that this message was given in error.""", cause);
         } catch (EnterpriseProductException cause) {
             throw new IllegalStateException("""
-                    Valid Timefold Enterprise License was found, but it does not entitle you to run "%s".
+                    Valid Timefold License was found, but it does not entitle you to run "%s".
                     Maybe %s.
                     Please contact Timefold to obtain an applicable license,
                     or if you believe that this message was given in error."""
                     .formatted(feature.getName(), feature.getWorkaround()), cause);
         } catch (Exception cause) {
             throw new IllegalStateException("""
-                    A feature of Enterprise Edition "%s" was requested but it could not be loaded.
+                    A commercial feature "%s" was requested but it could not be loaded.
                     Maybe add the %s dependency, or %s.
                     Please contact Timefold to obtain an applicable license,
                     or if you believe that this message was given in error."""
