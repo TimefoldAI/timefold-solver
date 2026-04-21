@@ -65,7 +65,6 @@ public interface TimefoldSolverEnterpriseService {
     }
 
     String COMMUNITY_NAME = "Timefold Solver Community Edition";
-    String COMMUNITY_COORDINATES = "ai.timefold.solver:timefold-solver-core";
     String ENTERPRISE_NAME = "Timefold Solver Enterprise Edition";
     String ENTERPRISE_COORDINATES = "ai.timefold.solver.enterprise:timefold-solver-enterprise-core";
     String DEVELOPMENT_SNAPSHOT = "Development Snapshot";

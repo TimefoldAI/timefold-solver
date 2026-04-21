@@ -25,9 +25,6 @@ public interface AnalyzableIncrementalScoreCalculator<Solution_, Score_ extends 
      * Tells this implementation whether constraint matching should be enabled or not.
      * Will be called by the solver before the first call to {@link #resetWorkingSolution}
      * and not again.
-     * <p>
-     * Has no effect in Timefold Solver Community Edition,
-     * as score analysis is only available in Enterprise Edition.
      *
      * @param constraintMatchRegistry use for registering constraint matches
      */
