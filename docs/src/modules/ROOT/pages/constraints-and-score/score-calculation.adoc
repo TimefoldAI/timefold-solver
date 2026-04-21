@@ -2053,8 +2053,6 @@ add the `easyScoreCalculatorCustomProperties` element and use xref:using-timefol
 [#incrementalScoreCalculation]
 === Incremental score calculation
 
-include::../commercial-editions/_only-enterprise.adoc[]
-
 A way to implement your score calculation incrementally in Java.
 
 Advantages::
@@ -2134,6 +2132,8 @@ add the `incrementalScoreCalculatorCustomProperties` element and use xref:using-
 
 [#analyzableIncrementalScoreCalculator]
 ==== Incremental score calculator and score analysis
+
+include::../commercial-editions/_only-plus-and-enterprise.adoc[]
 
 To add support for xref:constraints-and-score/understanding-the-score.adoc[score analysis],
 implement the `AnalyzableIncrementalScoreCalculator` interface instead of `IncrementalScoreCalculator`:

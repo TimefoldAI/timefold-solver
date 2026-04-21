@@ -24,13 +24,11 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.Multistage
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListMultistageMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
-import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -46,7 +44,6 @@ import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForag
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
-import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
@@ -202,10 +199,6 @@ public interface TimefoldSolverEnterpriseService {
 
     InnerConstraintProfiler buildConstraintProfiler();
 
-    <Solution_, Score_ extends Score<Score_>> AbstractScoreDirectorFactory<Solution_, Score_, ?>
-            buildIncrementalScoreDirectorFactory(ScoreDirectorFactoryConfig config,
-                    SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode);
-
     <Score_ extends Score<Score_>> ScoreAnalysis<Score_> analyze(InnerScore<Score_> state,
             Map<ConstraintRef, ConstraintMatchTotal<Score_>> constraintMatchTotalMap, ScoreAnalysisFetchPolicy fetchPolicy);
 
@@ -227,9 +220,7 @@ public interface TimefoldSolverEnterpriseService {
                 "remove multistageMoveSelector and/or listMultistageMoveSelector from the solver configuration"),
         CONSTRAINT_PROFILING("Constraint profiling", "remove constraintStreamProfilingEnabled from the solver configuration"),
         SCORE_ANALYSIS("Score analysis", "do not use SolutionManager's analyze() method"),
-        RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method"),
-        INCREMENTAL_SCORE_CALCULATOR("Incremental score calculator",
-                "remove incrementalScoreCalculatorClass and incrementalScoreCalculatorCustomProperties from the solver configuration");
+        RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method");
 
         private final String name;
         private final String workaround;

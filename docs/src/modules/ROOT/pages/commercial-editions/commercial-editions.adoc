@@ -44,9 +44,6 @@ xref:commercial-editions/installation.adoc#solverObtainLicenseKey[See: How to ob
 | xref:constraints-and-score/performance.adoc#constraintProfiling[Constraint profiling]
 | | ✓
 
-| xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental score calculation]
-| | ✓
-
 | xref:commercial-editions/multistage-moves.adoc[Multistage moves]
 | | ✓
 

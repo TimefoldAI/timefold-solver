@@ -6,9 +6,9 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
@@ -62,10 +62,7 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
         if (config.getEasyScoreCalculatorClass() != null) {
             return EasyScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config, environmentMode);
         } else if (config.getIncrementalScoreCalculatorClass() != null) {
-            var timefoldSolverEnterpriseService = TimefoldSolverEnterpriseService
-                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.INCREMENTAL_SCORE_CALCULATOR);
-            return timefoldSolverEnterpriseService.buildIncrementalScoreDirectorFactory(config, solutionDescriptor,
-                    environmentMode);
+            return IncrementalScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config, environmentMode);
         } else if (config.getConstraintProviderClass() != null) {
             return BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config,
                     environmentMode);

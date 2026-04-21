@@ -319,8 +319,16 @@ The following `ScoreExplanation` methods have no direct replacement and must be 
 * `getSummary()` — use `ScoreAnalysis.summarize()` instead
 * `getConstraintMatchTotalMap()` — use `ScoreAnalysis.constraintAnalyses()` instead
 
-Add the Timefold Solver Enterprise dependency to your project to use `ScoreAnalysis`.
-There is no automated migration recipe for `ScoreExplanation`; all changes must be made manually.
+`IncrementalScoreCalculator` has also seen changes in this area.
+`ConstraintMatchAwareIncrementalScoreCalculator` was removed.
+The replacement `AnalyzableIncrementalScoreCalculator` is provided by the Enterprise Edition.
+
+Instead of overriding methods to return constraint matches, implement the `enableConstraintMatch(ConstraintMatchRegistry<Score_>)` method.
+Use `ConstraintMatchRegistry.registerConstraintMatch(ConstraintRef, score, justification)` to register each match;
+it returns a `ConstraintMatchRegistration` whose `cancel()` method removes the match when the assignment changes.
+
+Add the Timefold Solver Enterprise dependency to your project to use `ScoreAnalysis` or `AnalyzableIncrementalScoreCalculator`.
+There is no automated migration recipe for these changes; all changes must be made manually.
 ====
 
 '''
@@ -331,23 +339,6 @@ There is no automated migration recipe for `ScoreExplanation`; all changes must 
 The recommended assignment API is unchanged, but it now requires Timefold Solver Enterprise Edition on the classpath.
 
 If you use Jackson serialization, register `TimefoldEnterpriseJacksonModule` in addition to the standard module.
-====
-
-'''
-
-.icon:exclamation-triangle[role=red] Incremental score calculator no longer open-source
-[%collapsible%open]
-====
-`IncrementalScoreCalculator` has moved to Timefold Solver Enterprise Edition.
-`ConstraintMatchAwareIncrementalScoreCalculator` was removed.
-The replacement `AnalyzableIncrementalScoreCalculator` is provided by the Enterprise Edition.
-
-Instead of overriding methods to return constraint matches, implement the `enableConstraintMatch(ConstraintMatchRegistry<Score_>)` method.
-Use `ConstraintMatchRegistry.registerConstraintMatch(ConstraintRef, score, justification)` to register each match;
-it returns a `ConstraintMatchRegistration` whose `cancel()` method removes the match when the assignment changes.
-
-Add the Timefold Solver Enterprise dependency and rewrite the implementation body manually;
-there is no automated migration recipe for this change.
 ====
 
 '''

@@ -10,6 +10,10 @@ import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import org.jspecify.annotations.NullMarked;
 
 /**
+ * <p>
+ * Note: Explainability features are exclusive to Timefold Solver Enterprise Edition.
+ * They are not available in the open-source version of Timefold Solver,
+ * and using this class will have no effect there.
  *
  * @param <Score_>
  * @see AnalyzableIncrementalScoreCalculator Adding explainability to incremental score calculator.
