@@ -13,10 +13,6 @@ import org.jspecify.annotations.NullMarked;
  * This is much faster than {@link EasyScoreCalculator} but requires much more code to implement too.
  * <p>
  * Any implementation is naturally stateful.
- * <p>
- * Note: Incremental score calculation is exclusive to Timefold Solver Enterprise Edition.
- * It is not available in the open-source version of Timefold Solver,
- * and attempts to use it without a valid license will throw exceptions at runtime.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the score type to go with the solution

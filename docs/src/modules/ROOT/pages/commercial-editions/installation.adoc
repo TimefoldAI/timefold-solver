@@ -13,23 +13,22 @@ A correctly configured and active license key is required in order for our comme
 [#solverObtainLicenseKey]
 === Obtaining a license key
 
-Contact us through our https://timefold.ai/talk-to-us[webform].
+Generate your license key using https://licenses.timefold.ai/[Timefold License Manager].
 
-[NOTE]
-====
 Take care not to leak the license file, for example by committing it to a public repository,
 logging the license file content in logs, or sharing it with unauthorized parties.
-====
+
+Consult https://timefold.ai/terms[Terms of Use] for details on license key usage and restrictions.
 
 [#solverSetupLicenseKey]
 === Set up your license key
 
-After obtaining your license file (.pem) you can introduce it to your project by one of the following methods:
+After obtaining your license file you can introduce it to your project by one of the following methods:
 
-* Store the license's PEM string in the `TIMEFOLD_ENTERPRISE_LICENSE` environment variable.
-* Store the absolute path to the file in `TIMEFOLD_ENTERPRISE_LICENSE_PATH` environment variable.
-* Place the file in the user's home directory.
-* Place the file in the root of your application classpath.
+* Store the license's PEM string (the contents of the license file) in the `TIMEFOLD_LICENSE` environment variable.
+* Store the absolute path to the file in `TIMEFOLD_LICENSE_PATH` environment variable.
+* Name the file `timefold-license.pem` and place it in the user's home directory. Take care that the file name matches exactly, including letter case.
+* Name the file `timefold-license.pem` and place it in the root of your application classpath. Take care that the file name matches exactly, including letter case.
 
 [#enterpriseArtifacts]
 == Use the enterprise artifacts

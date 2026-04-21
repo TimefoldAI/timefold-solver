@@ -10,7 +10,6 @@ import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import org.jspecify.annotations.NullMarked;
 
 /**
- *
  * @param <Score_>
  * @see AnalyzableIncrementalScoreCalculator Adding explainability to incremental score calculator.
  */

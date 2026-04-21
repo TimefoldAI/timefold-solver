@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
@@ -11,6 +12,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -21,7 +23,11 @@ import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.api.score.calculator.AnalyzableIncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.calculator.ConstraintMatchRegistry;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
+import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
@@ -144,6 +150,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -2198,4 +2205,143 @@ class DefaultSolverTest {
             scoreDirector.afterListVariableChanged(entity, "valueList", 0, entity.getValueList().size());
         }
     }
+
+    @Test
+    void solveIncrementalInitialized() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withIncrementalScoreCalculatorClass(TestdataIncrementalScoreCalculator.class));
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var solution = new TestdataSolution("s1");
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        solution.setValueList(List.of(value1, value2));
+        var entity1 = new TestdataEntity("e1");
+        entity1.setValue(value1);
+        var entity2 = new TestdataEntity("e2");
+        entity2.setValue(value2);
+        solution.setEntityList(List.of(entity1, entity2));
+
+        var bestSolution = solver.solve(solution);
+        assertThat(bestSolution).isNotNull();
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(2));
+    }
+
+    @Test
+    void solveCorruptedIncrementalUninitialized() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withIncrementalScoreCalculatorClass(CorruptedIncrementalScoreCalculator.class));
+
+        var solution = new TestdataSolution("s1");
+        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
+        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
+
+        assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution, false))
+                .hasMessageContaining("Score corruption")
+                .hasMessageContaining("workingScore")
+                .hasMessageContaining("uncorruptedScore")
+                .hasMessageContaining("Score corruption analysis:");
+    }
+
+    @Test
+    void solveCorruptedIncrementalInitialized() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withIncrementalScoreCalculatorClass(CorruptedIncrementalScoreCalculator.class));
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var solution = new TestdataSolution("s1");
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        solution.setValueList(List.of(value1, value2));
+        var entity1 = new TestdataEntity("e1");
+        entity1.setValue(value1);
+        var entity2 = new TestdataEntity("e2");
+        entity2.setValue(value2);
+        solution.setEntityList(List.of(entity1, entity2));
+
+        assertThatThrownBy(() -> solver.solve(solution))
+                .hasMessageContaining("Score corruption")
+                .hasMessageContaining("workingScore")
+                .hasMessageContaining("uncorruptedScore")
+                .hasMessageContaining("Score corruption analysis:");
+    }
+
+    @NullMarked
+    public static class CorruptedIncrementalScoreCalculator
+            implements AnalyzableIncrementalScoreCalculator<TestdataSolution, SimpleScore> {
+
+        private @Nullable ConstraintMatchRegistry<SimpleScore> constraintMatchRegistry;
+
+        @Override
+        public void resetWorkingSolution(TestdataSolution workingSolution) {
+            Objects.requireNonNull(constraintMatchRegistry)
+                    .registerConstraintMatch(ConstraintRef.of("b"), SimpleScore.of(1));
+        }
+
+        @Override
+        public void beforeVariableChanged(Object entity, String variableName) {
+            // Ignore
+        }
+
+        @Override
+        public void afterVariableChanged(Object entity, String variableName) {
+            // Ignore
+        }
+
+        @Override
+        public SimpleScore calculateScore() {
+            var random = new Random();
+            return SimpleScore.of(random.nextInt(1000));
+        }
+
+        @Override
+        public void enableConstraintMatch(ConstraintMatchRegistry<SimpleScore> constraintMatchRegistry) {
+            this.constraintMatchRegistry = constraintMatchRegistry;
+        }
+    }
+
+    @NullMarked
+    public static class TestdataIncrementalScoreCalculator
+            implements IncrementalScoreCalculator<TestdataSolution, SimpleScore> {
+
+        private int initializedEntityCount;
+
+        @Override
+        public void resetWorkingSolution(TestdataSolution workingSolution) {
+            initializedEntityCount = 0;
+            for (var entity : workingSolution.getEntityList()) {
+                if (entity.getValue() != null) {
+                    initializedEntityCount++;
+                }
+            }
+        }
+
+        @Override
+        public void beforeVariableChanged(Object entity, String variableName) {
+            if (((TestdataEntity) entity).getValue() != null) {
+                initializedEntityCount--;
+            }
+        }
+
+        @Override
+        public void afterVariableChanged(Object entity, String variableName) {
+            if (((TestdataEntity) entity).getValue() != null) {
+                initializedEntityCount++;
+            }
+        }
+
+        @Override
+        public SimpleScore calculateScore() {
+            return SimpleScore.of(initializedEntityCount);
+        }
+    }
+
 }
