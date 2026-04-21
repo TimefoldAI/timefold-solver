@@ -321,13 +321,14 @@ The following `ScoreExplanation` methods have no direct replacement and must be 
 
 `IncrementalScoreCalculator` has also seen changes in this area.
 `ConstraintMatchAwareIncrementalScoreCalculator` was removed.
-The replacement `AnalyzableIncrementalScoreCalculator` is provided by the Enterprise Edition.
+The replacement `AnalyzableIncrementalScoreCalculator` is provided by the Plus and Enterprise editions.
 
 Instead of overriding methods to return constraint matches, implement the `enableConstraintMatch(ConstraintMatchRegistry<Score_>)` method.
 Use `ConstraintMatchRegistry.registerConstraintMatch(ConstraintRef, score, justification)` to register each match;
 it returns a `ConstraintMatchRegistration` whose `cancel()` method removes the match when the assignment changes.
 
-Add the Timefold Solver Enterprise dependency to your project to use `ScoreAnalysis` or `AnalyzableIncrementalScoreCalculator`.
+To use `ScoreAnalysis` or `AnalyzableIncrementalScoreCalculator`,
+xref:commercial-editions/installation.adoc[install either of the commercial editions].
 There is no automated migration recipe for these changes; all changes must be made manually.
 ====
 

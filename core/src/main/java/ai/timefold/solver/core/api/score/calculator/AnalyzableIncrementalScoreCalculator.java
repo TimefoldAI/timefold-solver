@@ -11,8 +11,8 @@ import org.jspecify.annotations.NullMarked;
  * Any implementation is naturally stateful.
  * <p>
  * Note: Explainability features are exclusive to Timefold Solver Enterprise Edition.
- * They are not available in the open-source version of Timefold Solver,
- * and using this interface will have no effect there.
+ * Implementing this interface in Community Edition may still bring benefits
+ * in terms of score corruption analysis.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the score type to go with the solution
