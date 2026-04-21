@@ -185,7 +185,7 @@ class IncrementalScoreDirectorTest {
                     .build()) {
                 scoreDirector.setWorkingSolution(new Object());
                 registration[0].cancel();
-                assertThatIllegalStateException().isThrownBy(() -> registration[0].cancel())
+                assertThatIllegalStateException().isThrownBy(registration[0]::cancel)
                         .withMessageContaining("canceled once");
             }
         }

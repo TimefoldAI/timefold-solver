@@ -108,11 +108,6 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     // ************************************************************************
 
     @Override
-    public void beforeEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        super.beforeEntityAdded(entityDescriptor, entity);
-    }
-
-    @Override
     public void afterEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
         resetWorkingSolutionAndMaps(workingSolution);
         super.afterEntityAdded(entityDescriptor, entity);
@@ -169,11 +164,6 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        super.beforeEntityRemoved(entityDescriptor, entity);
-    }
-
-    @Override
     public void afterEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
         resetWorkingSolutionAndMaps(workingSolution);
         super.afterEntityRemoved(entityDescriptor, entity);
@@ -195,19 +185,9 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void beforeProblemPropertyChanged(Object problemFactOrEntity) {
-        super.beforeProblemPropertyChanged(problemFactOrEntity);
-    }
-
-    @Override
     public void afterProblemPropertyChanged(Object problemFactOrEntity) {
         resetWorkingSolutionAndMaps(workingSolution);
         super.afterProblemPropertyChanged(problemFactOrEntity);
-    }
-
-    @Override
-    public void beforeProblemFactRemoved(Object problemFact) {
-        super.beforeProblemFactRemoved(problemFact);
     }
 
     @Override
