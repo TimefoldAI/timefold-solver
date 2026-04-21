@@ -15,11 +15,10 @@ A correctly configured and active license key is required in order for our comme
 
 Generate your license key using https://licenses.timefold.ai/[Timefold License Manager].
 
-[NOTE]
-====
 Take care not to leak the license file, for example by committing it to a public repository,
 logging the license file content in logs, or sharing it with unauthorized parties.
-====
+
+Consult https://timefold.ai/terms[Terms of Use] for details on license key usage and restrictions.
 
 [#solverSetupLicenseKey]
 === Set up your license key
