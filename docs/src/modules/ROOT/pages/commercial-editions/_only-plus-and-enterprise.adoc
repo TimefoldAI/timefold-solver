@@ -1,1 +1,1 @@
-NOTE: This feature is exclusive to Timefold Solver Plus and Enterprise Editions.
+NOTE: This feature is exclusive to xref:commercial-editions/commercial-editions.adoc[Timefold Solver Plus and Enterprise Editions.]
