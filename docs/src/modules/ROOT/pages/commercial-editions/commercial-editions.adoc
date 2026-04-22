@@ -14,8 +14,10 @@ TIP: Looking for quicker time-to-value?
 Timefold offers https://docs.timefold.ai/[pre-built, fully tuned optimization models], no constraint building required.
 Just plug into our API and start optimizing immediately.
 
-We offer free trials to everyone as well as free licenses to non-profit organizations, start-ups and for academic research.
-xref:commercial-editions/installation.adoc#solverObtainLicenseKey[See: How to obtain a license key?]
+== Free trials and licenses
+
+We offer free trials to everyone as well as free licenses to non-profit organizations and for academic research.
+See our https://licenses.timefold.ai/[license portal] to get your license, then follow the xref:commercial-editions/installation.adoc[installation guide] to get started.
 
 == Feature Comparison
 
