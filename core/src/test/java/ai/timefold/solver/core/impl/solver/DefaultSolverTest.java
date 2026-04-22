@@ -1397,8 +1397,8 @@ class DefaultSolverTest {
 
         var solution = PlannerTestUtils.solve(solverConfig, problem);
 
-        assertThat(solution.getEntityList().getFirst().getValue().getCode()).isEqualTo("v1");
-        assertThat(solution.getEntityList().get(1).getValue().getCode()).isEqualTo("v2");
+        assertThat(solution.getEntityList().getFirst().getValue().getCode()).isEqualTo("v2");
+        assertThat(solution.getEntityList().get(1).getValue().getCode()).isEqualTo("v1");
 
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(-2));
     }
