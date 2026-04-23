@@ -254,5 +254,6 @@ module ai.timefold.solver.core {
     requires org.jspecify;
     requires org.slf4j;
     requires io.quarkus.gizmo2;
+    requires java.desktop;
 
 }

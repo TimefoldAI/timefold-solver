@@ -1,15 +1,18 @@
 package ai.timefold.solver.core.impl.util;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
+import org.apache.commons.math3.util.FastMath;
 
 public class MathUtils {
+
     public static final long LOG_PRECISION = 1_000_000L;
+    private static final int FACTORIAL_MAX_N = 20;
+    private static final long[] FACTORIAL_CACHE = new long[FACTORIAL_MAX_N - 1]; // 0 and 1 are hard-coded.
 
     private MathUtils() {
     }
 
-    public static long getPossibleArrangementsScaledApproximateLog(long scale, long base,
-            int listSize, int partitions) {
+    public static long getPossibleArrangementsScaledApproximateLog(long scale, long base, int listSize, int partitions) {
         double result;
         if (listSize == 0 || partitions == 0) {
             // Only one way to divide an empty list, and the log of 1 is 0
@@ -20,12 +23,11 @@ public class MathUtils {
             // If it a single partition, it the same as the number of permutations.
             // If it two partitions, it the same as the number of permutations of a list of size
             // n + 1 (where we add an element to seperate the two partitions)
-            result = CombinatoricsUtils.factorialLog(listSize + partitions - 1);
+            result = factorialLog(listSize + partitions - 1);
         } else {
             // If it n > 2 partitions, (listSize + partitions - 1)! will overcount by
             // a multiple of (partitions - 1)!
-            result = CombinatoricsUtils.factorialLog(listSize + partitions - 1)
-                    - CombinatoricsUtils.factorialLog(partitions - 1);
+            result = factorialLog(listSize + partitions - 1) - factorialLog(partitions - 1);
         }
 
         // Need to change base to use the given base
@@ -34,7 +36,7 @@ public class MathUtils {
 
     /**
      * Returns a scaled approximation of a log
-     * 
+     *
      * @param scale What to scale the result by. Typically, a power of 10.
      * @param base The base of the log
      * @param value The parameter to the log function
@@ -65,4 +67,35 @@ public class MathUtils {
         // Avoid divide by zero exception on a fast CPU
         return count * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
     }
+
+    public static long factorial(int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("Factorial of %d is undefined."
+                    .formatted(n));
+        } else if (n > FACTORIAL_MAX_N) {
+            throw new IllegalArgumentException("Factorial of %d is too large to fit in a long."
+                    .formatted(n));
+        }
+        return switch (n) {
+            case 0, 1 -> 1;
+            default -> {
+                if (FACTORIAL_CACHE[n - 2] == 0L) {
+                    FACTORIAL_CACHE[n - 2] = n * factorial(n - 1);
+                }
+                yield FACTORIAL_CACHE[n - 2];
+            }
+        };
+    }
+
+    private static double factorialLog(int n) {
+        if (n <= FACTORIAL_MAX_N) {
+            return Math.log(factorial(n));
+        }
+        var logSum = 0.0d;
+        for (var i = 2; i <= n; i++) {
+            logSum += Math.log(i);
+        }
+        return logSum;
+    }
+
 }

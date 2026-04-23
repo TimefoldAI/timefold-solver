@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
@@ -187,7 +188,7 @@ final class KOptUtils {
         for (var i = 1; i < k; i++) {
             for (var j = 0; j <= i; j++) {
                 var sign = ((k + j - 1) % 2 == 0) ? 1 : -1;
-                totalTypes += sign * CombinatoricsUtils.binomialCoefficient(i, j) * CombinatoricsUtils.factorial(j) * (1L << j);
+                totalTypes += sign * CombinatoricsUtils.binomialCoefficient(i, j) * MathUtils.factorial(j) * (1L << j);
             }
         }
         return totalTypes;
