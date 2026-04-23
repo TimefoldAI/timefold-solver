@@ -109,11 +109,11 @@ public class MathUtils {
      * <Strong>Preconditions</strong>:
      * <ul>
      * <li>{@code 0 <= k <= n } (otherwise
-     * {@code MathIllegalArgumentException} is thrown)</li>
+     * {@link IllegalArgumentException} is thrown)</li>
      * <li>The result is small enough to fit into a {@code long}. The
      * largest value of {@code n} for which all coefficients are
      * {@code  < Long.MAX_VALUE} is 66. If the computed value exceeds
-     * {@code Long.MAX_VALUE} a {@code MathArithMeticException} is
+     * {@code Long.MAX_VALUE} a {@link ArithmeticException} is
      * thrown.</li>
      * </ul>
      * </p>
