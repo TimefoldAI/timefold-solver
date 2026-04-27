@@ -1,10 +1,13 @@
 package ai.timefold.solver.core.impl.score.stream.collector.connected_ranges;
 
+import java.util.Collection;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
+import java.util.function.ToIntBiFunction;
+import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRange;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
@@ -249,6 +252,38 @@ public final class ConnectedRangeChainImpl<Range_, Point_ extends Comparable<Poi
     @Override
     public @NonNull Iterable<RangeGap<Point_, Difference_>> getGaps() {
         return (Iterable) startSplitPointToNextGap.values();
+    }
+
+    /**
+     * Get the maximum sum of a function amongst distinct ranges of overlapping values
+     * amongst all points contained by this {@link ConnectedRangeChain}.
+     *
+     * @return get the maximum sum of a function amongst distinct ranges of overlapping values
+     *         for any point contained by this {@link ConnectedRangeChain}.
+     */
+    public int getMaximumValue(ToIntFunction<? super Range_> functionSupplier) {
+        var max = 0;
+        for (ConnectedRange<Range_, Point_, Difference_> range : getConnectedRanges()) {
+            max = Math.max(range.getMaximumValue(functionSupplier), max);
+        }
+        return max;
+    }
+
+    /**
+     * Get the maximum sum of a function amongst distinct ranges of overlapping values
+     * amongst all points contained by this {@link ConnectedRangeChain}. This method allows you to use
+     * a function that takes all active ranges as an input. Use {@link ::getMaximumValue} if possible
+     * for efficiency.
+     *
+     * @return get the maximum sum of a function amongst distinct ranges of overlapping values
+     *         for any point contained by this {@link ConnectedRangeChain}.
+     */
+    public int getMaximumValueForDistinctRanges(ToIntBiFunction<Collection<? super Range_>, Difference_> functionSupplier) {
+        var max = 0;
+        for (ConnectedRange<Range_, Point_, Difference_> range : getConnectedRanges()) {
+            max = Math.max(range.getMaximumValueForDistinctRanges(functionSupplier), max);
+        }
+        return max;
     }
 
     @Override

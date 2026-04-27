@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.collector.connected_ranges;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +68,10 @@ class ConnectedRangeTrackerTest {
         return new ConnectedRangeTracker<>(TestRange::getStart, TestRange::getEnd, (a, b) -> b - a);
     }
 
+    static int rangeMaxFunction(Collection<? super TestRange> ranges, int length) {
+        return 100 * ranges.size() / length;
+    }
+
     @Test
     void testNonConsecutiveRanges() {
         ConnectedRangeTracker<TestRange, Integer, Integer> tree = getIntegerConnectedRangeTracker();
@@ -96,6 +101,10 @@ class ConnectedRangeTrackerTest {
         assertThat(connectedRangeList.get(2).getMinimumOverlap()).isEqualTo(1);
         assertThat(connectedRangeList.get(2).getMaximumOverlap()).isEqualTo(1);
 
+        assertThat(connectedRangeList.get(2).getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(connectedRangeList.get(2).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(50);
+
         verifyGaps(tree);
     }
 
@@ -116,6 +125,14 @@ class ConnectedRangeTrackerTest {
         assertThat(connectedRangeList.get(0)).containsExactly(new TestRange(0, 2), new TestRange(2, 4), new TestRange(4, 7));
         assertThat(connectedRangeList.get(0).getMinimumOverlap()).isEqualTo(1);
         assertThat(connectedRangeList.get(0).getMaximumOverlap()).isEqualTo(1);
+        assertThat(connectedRangeList.get(0).getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(connectedRangeList.get(0).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(50);
+
+        assertThat(tree.getConnectedRangeChain().getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(tree.getConnectedRangeChain().getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(50);
+
         verifyGaps(tree);
     }
 
@@ -135,9 +152,20 @@ class ConnectedRangeTrackerTest {
         assertThat(connectedRangeList.get(0)).containsExactly(a.getValue(), a.getValue());
         assertThat(connectedRangeList.get(0).getMinimumOverlap()).isEqualTo(2);
         assertThat(connectedRangeList.get(0).getMaximumOverlap()).isEqualTo(2);
+        assertThat(connectedRangeList.get(0).getMaximumValue(i -> 1)).isEqualTo(2);
+        assertThat(connectedRangeList.get(0).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
         assertThat(connectedRangeList.get(1)).containsExactly(b.getValue());
         assertThat(connectedRangeList.get(1).getMinimumOverlap()).isEqualTo(1);
         assertThat(connectedRangeList.get(1).getMaximumOverlap()).isEqualTo(1);
+        assertThat(connectedRangeList.get(1).getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(connectedRangeList.get(1).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(33);
+
+        assertThat(tree.getConnectedRangeChain().getMaximumValue(i -> 1)).isEqualTo(2);
+        assertThat(tree.getConnectedRangeChain().getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
+
         verifyGaps(tree);
     }
 
@@ -221,16 +249,29 @@ class ConnectedRangeTrackerTest {
         assertThat(connectedRanges.get(0).hasOverlap()).isTrue();
         assertThat(connectedRanges.get(0).getMinimumOverlap()).isEqualTo(1);
         assertThat(connectedRanges.get(0).getMaximumOverlap()).isEqualTo(2);
+        assertThat(connectedRanges.get(0).getMaximumValue(i -> 1)).isEqualTo(2);
+        assertThat(connectedRanges.get(0).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(200);
 
         assertThat(connectedRanges.get(1)).containsExactly(d.getValue());
         assertThat(connectedRanges.get(1).hasOverlap()).isFalse();
         assertThat(connectedRanges.get(1).getMinimumOverlap()).isEqualTo(1);
         assertThat(connectedRanges.get(1).getMaximumOverlap()).isEqualTo(1);
+        assertThat(connectedRanges.get(1).getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(connectedRanges.get(1).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
 
         assertThat(connectedRanges.get(2)).containsExactly(e.getValue(), removedTestRange2);
         assertThat(connectedRanges.get(2).hasOverlap()).isTrue();
         assertThat(connectedRanges.get(2).getMinimumOverlap()).isEqualTo(2);
         assertThat(connectedRanges.get(2).getMaximumOverlap()).isEqualTo(2);
+        assertThat(connectedRanges.get(2).getMaximumValue(i -> 1)).isEqualTo(2);
+        assertThat(connectedRanges.get(2).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
+
+        assertThat(tree.getConnectedRangeChain().getMaximumValue(i -> 1)).isEqualTo(2);
+        assertThat(tree.getConnectedRangeChain().getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(200);
 
         verifyGaps(tree);
 
@@ -247,16 +288,29 @@ class ConnectedRangeTrackerTest {
         assertThat(connectedRanges.get(0).hasOverlap()).isFalse();
         assertThat(connectedRanges.get(0).getMinimumOverlap()).isEqualTo(1);
         assertThat(connectedRanges.get(0).getMaximumOverlap()).isEqualTo(1);
+        assertThat(connectedRanges.get(0).getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(connectedRanges.get(0).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
 
         assertThat(connectedRanges.get(1)).containsExactly(d.getValue());
         assertThat(connectedRanges.get(1).hasOverlap()).isFalse();
         assertThat(connectedRanges.get(1).getMinimumOverlap()).isEqualTo(1);
         assertThat(connectedRanges.get(1).getMaximumOverlap()).isEqualTo(1);
+        assertThat(connectedRanges.get(1).getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(connectedRanges.get(1).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
 
         assertThat(connectedRanges.get(2)).containsExactly(e.getValue(), removedTestRange2);
         assertThat(connectedRanges.get(2).hasOverlap()).isTrue();
         assertThat(connectedRanges.get(2).getMinimumOverlap()).isEqualTo(2);
         assertThat(connectedRanges.get(2).getMaximumOverlap()).isEqualTo(2);
+        assertThat(connectedRanges.get(2).getMaximumValue(i -> 1)).isEqualTo(2);
+        assertThat(connectedRanges.get(2).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
+
+        assertThat(tree.getConnectedRangeChain().getMaximumValue(i -> 1)).isEqualTo(2);
+        assertThat(tree.getConnectedRangeChain().getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
 
         verifyGaps(tree);
 
@@ -272,16 +326,29 @@ class ConnectedRangeTrackerTest {
         assertThat(connectedRanges.get(0).hasOverlap()).isFalse();
         assertThat(connectedRanges.get(0).getMinimumOverlap()).isEqualTo(1);
         assertThat(connectedRanges.get(0).getMaximumOverlap()).isEqualTo(1);
+        assertThat(connectedRanges.get(0).getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(connectedRanges.get(0).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
 
         assertThat(connectedRanges.get(1)).containsExactly(d.getValue());
         assertThat(connectedRanges.get(1).hasOverlap()).isFalse();
         assertThat(connectedRanges.get(1).getMinimumOverlap()).isEqualTo(1);
         assertThat(connectedRanges.get(1).getMaximumOverlap()).isEqualTo(1);
+        assertThat(connectedRanges.get(1).getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(connectedRanges.get(1).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
 
         assertThat(connectedRanges.get(2)).containsExactly(e.getValue());
         assertThat(connectedRanges.get(2).hasOverlap()).isFalse();
         assertThat(connectedRanges.get(2).getMinimumOverlap()).isEqualTo(1);
         assertThat(connectedRanges.get(2).getMaximumOverlap()).isEqualTo(1);
+        assertThat(connectedRanges.get(2).getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(connectedRanges.get(2).getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(50);
+
+        assertThat(tree.getConnectedRangeChain().getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(tree.getConnectedRangeChain().getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
 
         verifyGaps(tree);
         Range<TestRange, Integer> g = tree.getRange(new TestRange(6, 7));
@@ -298,6 +365,10 @@ class ConnectedRangeTrackerTest {
         assertThat(connectedRanges.get(1).hasOverlap()).isFalse();
         assertThat(connectedRanges.get(1).getMinimumOverlap()).isEqualTo(1);
         assertThat(connectedRanges.get(1).getMaximumOverlap()).isEqualTo(1);
+
+        assertThat(tree.getConnectedRangeChain().getMaximumValue(i -> 1)).isEqualTo(1);
+        assertThat(tree.getConnectedRangeChain().getMaximumValueForDistinctRanges(ConnectedRangeTrackerTest::rangeMaxFunction))
+                .isEqualTo(100);
     }
 
     void verifyGaps(ConnectedRangeTracker<TestRange, Integer, Integer> tree) {
