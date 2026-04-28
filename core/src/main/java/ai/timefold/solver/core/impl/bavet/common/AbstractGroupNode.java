@@ -185,10 +185,6 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             insert(tuple);
             return;
         }
-        if (hasCollector) {
-            Runnable undoAccumulator = tuple.getStore(undoStoreIndex);
-            undoAccumulator.run();
-        }
         if (!hasMultipleGroups) {
             updateGroup(tuple, oldGroup);
             return;
@@ -198,13 +194,22 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         if (Objects.equals(oldUserSuppliedGroupKey, newUserSuppliedGroupKey)) {
             updateGroup(tuple, oldGroup);
         } else {
+            if (hasCollector) {
+                Runnable undoAccumulator = tuple.removeStore(undoStoreIndex);
+                undoAccumulator.run();
+            }
             killTuple(oldGroup);
             createTuple(tuple, newUserSuppliedGroupKey);
         }
     }
 
     private void updateGroup(InTuple_ tuple, Group<OutTuple_, ResultContainer_> oldGroup) { // No need to change parentCount because it is the same group
-        var outTuple = accumulate(tuple, oldGroup);
+        if (hasCollector) {
+            Runnable undoAccumulator = tuple.getStore(undoStoreIndex);
+            undoAccumulator.run();
+            tuple.setStore(undoStoreIndex, accumulate(oldGroup.getResultContainer(), tuple));
+        }
+        var outTuple = oldGroup.getTuple();
         switch (outTuple.getState()) {
             case CREATING, UPDATING -> {
                 // Already in the correct state.
