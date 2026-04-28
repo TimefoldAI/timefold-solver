@@ -7,6 +7,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
+import java.util.function.Supplier;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
@@ -21,7 +23,6 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
-import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.AbstractFromConfigFactory;
@@ -36,8 +37,7 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
-import ai.timefold.solver.core.impl.solver.random.DefaultRandomFactory;
-import ai.timefold.solver.core.impl.solver.random.RandomFactory;
+import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecallerFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -133,7 +133,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
         var moveThreadCount = resolveMoveThreadCount(true);
         var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);
-        var randomFactory = buildRandomFactory(environmentMode);
+        var randomFactory = buildRandomSupplier(environmentMode);
         var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
 
         var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
@@ -153,7 +153,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withMoveThreadBufferSize(solverConfig.getMoveThreadBufferSize())
                 .withThreadFactoryClass(solverConfig.getThreadFactoryClass())
                 .withNearbyDistanceMeterClass(solverConfig.getNearbyDistanceMeterClass())
-                .withRandom(randomFactory.createRandom())
+                .withRandom(randomFactory.get())
                 .withInitializingScoreTrend(scoreDirectorFactory.getInitializingScoreTrend())
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(ClassInstanceCache.create())
@@ -212,25 +212,15 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         return scoreDirectorFactoryFactory.buildScoreDirectorFactory(environmentMode, solutionDescriptor);
     }
 
-    public RandomFactory buildRandomFactory(EnvironmentMode environmentMode_) {
-        var randomFactoryClass = solverConfig.getRandomFactoryClass();
-        if (randomFactoryClass != null) {
-            var randomType = solverConfig.getRandomType();
-            var randomSeed = solverConfig.getRandomSeed();
-            if (randomType != null || randomSeed != null) {
-                throw new IllegalArgumentException(
-                        "The solverConfig with randomFactoryClass (%s) has a non-null randomType (%s) or a non-null randomSeed (%s)."
-                                .formatted(randomFactoryClass, randomType, randomSeed));
-            }
-            return ConfigUtils.newInstance(solverConfig, "randomFactoryClass", randomFactoryClass);
+    public Supplier<RandomGenerator> buildRandomSupplier(EnvironmentMode environmentMode_) {
+        var randomSeed_ = solverConfig.getRandomSeed();
+        if (randomSeed_ == null && environmentMode_ != EnvironmentMode.NON_REPRODUCIBLE) {
+            randomSeed_ = DEFAULT_RANDOM_SEED;
         } else {
-            var randomType_ = Objects.requireNonNullElse(solverConfig.getRandomType(), RandomType.JDK);
-            var randomSeed_ = solverConfig.getRandomSeed();
-            if (solverConfig.getRandomSeed() == null && environmentMode_ != EnvironmentMode.NON_REPRODUCIBLE) {
-                randomSeed_ = DEFAULT_RANDOM_SEED;
-            }
-            return new DefaultRandomFactory(randomType_, randomSeed_);
+            randomSeed_ = RandomGenerator.getDefault().nextLong();
         }
+        Long finalRandomSeed_ = randomSeed_;
+        return () -> new DelegatingSplittableRandomGenerator(finalRandomSeed_);
     }
 
     public List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,

@@ -104,9 +104,9 @@ public class DefaultConstructionHeuristicPhase<Solution_>
                                 stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow());
                     }
                 } else {
-                    throw new IllegalStateException("The step index (" + stepScope.getStepIndex()
-                            + ") has selected move count (" + stepScope.getSelectedMoveCount()
-                            + ") but failed to pick a nextStep (" + stepScope.getStep() + ").");
+                    throw new IllegalStateException(
+                            "The step index (%d) has selected move count (%d) but failed to pick a nextStep (%s).".formatted(
+                                    stepScope.getStepIndex(), stepScope.getSelectedMoveCount(), stepScope.getStep()));
                 }
                 // Although stepStarted has been called, stepEnded is not called for this step.
                 earlyTerminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
@@ -190,11 +190,16 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         phaseScope.endingNow();
         if (decider.isLoggingEnabled() && logger.isInfoEnabled()) {
             logger.info(
-                    "{}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), step total ({}).",
+                    """
+                            {}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}), \
+                            {}move evaluation speed ({}/sec), step total ({}).""",
                     logIndentation,
                     phaseIndex,
                     phaseScope.calculateSolverTimeMillisSpentUpToNow(),
                     phaseScope.getBestScore().raw(),
+                    // Multithreaded solving uses "effective" move evaluation speed, since not all evaluated moves
+                    // are foraged
+                    (decider.getClass().equals(ConstructionHeuristicDecider.class)) ? "" : "effective ",
                     phaseScope.getPhaseMoveEvaluationSpeed(),
                     phaseScope.getNextStepIndex());
         }

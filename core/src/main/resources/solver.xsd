@@ -17,11 +17,7 @@
                     
           <xs:element minOccurs="0" name="daemon" type="xs:boolean"/>
                     
-          <xs:element minOccurs="0" name="randomType" type="tns:randomType"/>
-                    
           <xs:element minOccurs="0" name="randomSeed" type="xs:long"/>
-                    
-          <xs:element minOccurs="0" name="randomFactoryClass" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="moveThreadCount" type="xs:string"/>
                     
@@ -1471,30 +1467,6 @@
       
   </xs:simpleType>
     
-  <xs:simpleType name="randomType">
-        
-    <xs:restriction base="xs:string">
-            
-      <xs:enumeration value="JDK"/>
-            
-      <xs:enumeration value="MERSENNE_TWISTER"/>
-            
-      <xs:enumeration value="WELL512A"/>
-            
-      <xs:enumeration value="WELL1024A"/>
-            
-      <xs:enumeration value="WELL19937A"/>
-            
-      <xs:enumeration value="WELL19937C"/>
-            
-      <xs:enumeration value="WELL44497A"/>
-            
-      <xs:enumeration value="WELL44497B"/>
-          
-    </xs:restriction>
-      
-  </xs:simpleType>
-    
   <xs:simpleType name="solverMetric">
         
     <xs:restriction base="xs:string">
@@ -1828,6 +1800,30 @@
       <xs:enumeration value="STRATEGIC_OSCILLATION_BY_LEVEL"/>
             
       <xs:enumeration value="STRATEGIC_OSCILLATION_BY_LEVEL_ON_BEST_SCORE"/>
+          
+    </xs:restriction>
+      
+  </xs:simpleType>
+    
+  <xs:simpleType name="randomType">
+        
+    <xs:restriction base="xs:string">
+            
+      <xs:enumeration value="JDK"/>
+            
+      <xs:enumeration value="MERSENNE_TWISTER"/>
+            
+      <xs:enumeration value="WELL512A"/>
+            
+      <xs:enumeration value="WELL1024A"/>
+            
+      <xs:enumeration value="WELL19937A"/>
+            
+      <xs:enumeration value="WELL19937C"/>
+            
+      <xs:enumeration value="WELL44497A"/>
+            
+      <xs:enumeration value="WELL44497B"/>
           
     </xs:restriction>
       

@@ -100,8 +100,9 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         super.phaseEnded(phaseScope);
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
-        logger.info("{}Exhaustive Search phase ({}) ended: time spent ({}), best score ({}),"
-                + " move evaluation speed ({}/sec), step total ({}).",
+        logger.info("""
+                {}Exhaustive Search phase ({}) ended: time spent ({}), best score ({}),\
+                move evaluation speed ({}/sec), step total ({}).""",
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),

@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
@@ -29,7 +31,6 @@ import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.Corrup
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
-import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -186,14 +187,14 @@ class EnvironmentModeTest {
     }
 
     private void assertReproducibility(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
-        assertGeneratingSameNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomFactory(),
-                ((DefaultSolver<TestdataSolution>) solver2).getRandomFactory());
+        assertGeneratingSameNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomSupplier(),
+                ((DefaultSolver<TestdataSolution>) solver2).getRandomSupplier());
         assertSameScoreSeries(solver1, solver2);
     }
 
     private void assertNonReproducibility(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
-        assertGeneratingDifferentNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomFactory(),
-                ((DefaultSolver<TestdataSolution>) solver2).getRandomFactory());
+        assertGeneratingDifferentNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomSupplier(),
+                ((DefaultSolver<TestdataSolution>) solver2).getRandomSupplier());
         assertDifferentScoreSeries(solver1, solver2);
     }
 
@@ -241,9 +242,9 @@ class EnvironmentModeTest {
                 }));
     }
 
-    private void assertGeneratingSameNumbers(RandomFactory factory1, RandomFactory factory2) {
-        var random = factory1.createRandom();
-        var random2 = factory2.createRandom();
+    private void assertGeneratingSameNumbers(Supplier<RandomGenerator> factory1, Supplier<RandomGenerator> factory2) {
+        var random = factory1.get();
+        var random2 = factory2.get();
 
         assertSoftly(softly -> IntStream.range(0, NUMBER_OF_RANDOM_NUMBERS_GENERATED)
                 .forEach(i -> softly.assertThat(random.nextInt())
@@ -252,9 +253,9 @@ class EnvironmentModeTest {
                         .isEqualTo(random2.nextInt())));
     }
 
-    private void assertGeneratingDifferentNumbers(RandomFactory factory1, RandomFactory factory2) {
-        var random = factory1.createRandom();
-        var random2 = factory2.createRandom();
+    private void assertGeneratingDifferentNumbers(Supplier<RandomGenerator> factory1, Supplier<RandomGenerator> factory2) {
+        var random = factory1.get();
+        var random2 = factory2.get();
 
         assertSoftly(softly -> IntStream.range(0, NUMBER_OF_RANDOM_NUMBERS_GENERATED)
                 .forEach(i -> softly.assertThat(random.nextInt())
