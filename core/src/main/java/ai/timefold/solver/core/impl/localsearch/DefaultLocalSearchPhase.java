@@ -94,16 +94,17 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
                             stepScope.getStepIndex(),
                             stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow());
                 } else if (stepScope.getSelectedMoveCount() == 0L) {
-                    logger.warn("{}    No doable selected move at step index ({}), time spent ({})."
-                            + " Terminating phase early.",
+                    logger.warn("""
+                            {}    No doable selected move at step index ({}), time spent ({}). \
+                            Terminating phase early.""",
                             logIndentation,
                             stepScope.getStepIndex(),
                             stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow());
                 } else {
-                    throw new IllegalStateException("The step index (" + stepScope.getStepIndex()
-                            + ") has accepted/selected move count (" + stepScope.getAcceptedMoveCount() + "/"
-                            + stepScope.getSelectedMoveCount()
-                            + ") but failed to pick a nextStep (" + stepScope.getStep() + ").");
+                    throw new IllegalStateException(
+                            "The step index (%d) has accepted/selected move count (%d/%d) but failed to pick a nextStep (%s)."
+                                    .formatted(stepScope.getStepIndex(), stepScope.getAcceptedMoveCount(),
+                                            stepScope.getSelectedMoveCount(), stepScope.getStep()));
                 }
                 // Although stepStarted has been called, stepEnded is not called for this step
                 break;
@@ -151,8 +152,9 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         if (logger.isDebugEnabled()) {
             if (stepScope.getAcceptedMoveCount() == 0 && phaseTermination.isPhaseTerminated(phaseScope)) {
                 // Terminated early
-                logger.debug("{}    LS step ({}), time spent ({}), score ({}), {} best score ({})," +
-                        " terminated prematurely after selecting {} moves.",
+                logger.debug("""
+                        {}    LS step ({}), time spent ({}), score ({}), {} best score ({}), \
+                        terminated prematurely after selecting {} moves.""",
                         logIndentation,
                         stepScope.getStepIndex(),
                         phaseScope.calculateSolverTimeMillisSpentUpToNow(),
@@ -160,8 +162,9 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
                         (stepScope.getBestScoreImproved() ? "new" : "   "), phaseScope.getBestScore().raw(),
                         stepScope.getSelectedMoveCount());
             } else {
-                logger.debug("{}    LS step ({}), time spent ({}), score ({}), {} best score ({})," +
-                        " accepted/selected move count ({}/{}), picked move ({}).",
+                logger.debug("""
+                        {}    LS step ({}), time spent ({}), score ({}), {} best score ({}), \
+                        accepted/selected move count ({}/{}), picked move ({}).""",
                         logIndentation,
                         stepScope.getStepIndex(),
                         phaseScope.calculateSolverTimeMillisSpentUpToNow(),
@@ -224,12 +227,16 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         super.phaseEnded(phaseScope);
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
-        logger.info("{}Local Search phase ({}) ended: time spent ({}), best score ({}),"
-                + " move evaluation speed ({}/sec), step total ({}).",
+        logger.info("""
+                {}Local Search phase ({}) ended: time spent ({}), best score ({}), \
+                {}move evaluation speed ({}/sec), step total ({}).""",
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),
                 phaseScope.getBestScore().raw(),
+                // Multithreaded solving uses "effective" move evaluation speed, since not all evaluated moves
+                // are foraged
+                (decider.getClass().equals(LocalSearchDecider.class)) ? "" : "effective ",
                 phaseScope.getPhaseMoveEvaluationSpeed(),
                 phaseScope.getNextStepIndex());
     }
