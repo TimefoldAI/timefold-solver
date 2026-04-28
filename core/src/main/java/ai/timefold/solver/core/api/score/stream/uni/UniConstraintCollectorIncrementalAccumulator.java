@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.api.score.stream.uni;
 
-public interface UniConstraintCollectorIncrementalAccumulator<A, ResultContainer_> {
+public interface UniConstraintCollectorIncrementalAccumulator<ResultContainer_, A> {
 
-    UniConstraintCollectorAccumulatedComponent<A, ResultContainer_> accumulate(ResultContainer_ resultContainer, A a);
+    UniConstraintCollectorAccumulatedComponent<ResultContainer_, A> accumulate(ResultContainer_ resultContainer, A a);
 
 }

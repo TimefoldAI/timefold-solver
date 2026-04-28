@@ -17,10 +17,6 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
 
     private final int groupStoreIndex;
     /**
-     * Unused when {@link #hasCollector} is false.
-     */
-    private final int undoStoreIndex;
-    /**
      * Unused when {@link #hasMultipleGroups} is false.
      */
     private final Function<InTuple_, GroupKey_> groupKeyFunction;
@@ -56,12 +52,11 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     private final DynamicPropagationQueue<OutTuple_, Group<OutTuple_, ResultContainer_>> propagationQueue;
     private final boolean useAssertingGroupKey;
 
-    protected AbstractGroupNode(int groupStoreIndex, int undoStoreIndex,
-            Function<InTuple_, GroupKey_> groupKeyFunction, Supplier<ResultContainer_> supplier,
+    protected AbstractGroupNode(int groupStoreIndex, Function<InTuple_, GroupKey_> groupKeyFunction,
+            Supplier<ResultContainer_> supplier,
             Function<ResultContainer_, Result_> finisher,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
         this.groupStoreIndex = groupStoreIndex;
-        this.undoStoreIndex = undoStoreIndex;
         this.groupKeyFunction = groupKeyFunction;
         this.supplier = supplier;
         this.finisher = finisher;
@@ -87,7 +82,7 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     protected AbstractGroupNode(int groupStoreIndex,
             Function<InTuple_, GroupKey_> groupKeyFunction, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle,
             EnvironmentMode environmentMode) {
-        this(groupStoreIndex, -1,
+        this(groupStoreIndex,
                 groupKeyFunction, null, null, nextNodesTupleLifecycle,
                 environmentMode);
     }
@@ -123,8 +118,7 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
 
     private OutTuple_ accumulate(InTuple_ tuple, Group<OutTuple_, ResultContainer_> group) {
         if (hasCollector) {
-            var undoAccumulator = accumulate(group.getResultContainer(), tuple);
-            tuple.setStore(undoStoreIndex, undoAccumulator);
+            groupInsert(group.getResultContainer(), tuple);
         }
         tuple.setStore(groupStoreIndex, group);
         return group.getTuple();
@@ -195,19 +189,20 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             updateGroup(tuple, oldGroup);
         } else {
             if (hasCollector) {
-                Runnable undoAccumulator = tuple.removeStore(undoStoreIndex);
-                undoAccumulator.run();
+                groupRetract(oldGroup.getResultContainer(), tuple);
             }
             killTuple(oldGroup);
             createTuple(tuple, newUserSuppliedGroupKey);
         }
     }
 
-    private void updateGroup(InTuple_ tuple, Group<OutTuple_, ResultContainer_> oldGroup) { // No need to change parentCount because it is the same group
+    private void updateGroup(InTuple_ tuple, Group<OutTuple_, ResultContainer_> oldGroup) {
+        // No need to change parentCount because it is the same group.
         if (hasCollector) {
-            Runnable undoAccumulator = tuple.getStore(undoStoreIndex);
-            undoAccumulator.run();
-            tuple.setStore(undoStoreIndex, accumulate(oldGroup.getResultContainer(), tuple));
+            if (!groupUpdate(oldGroup.getResultContainer(), tuple)) {
+                // Don't propagate as nothing changed.
+                return;
+            }
         }
         var outTuple = oldGroup.getTuple();
         switch (outTuple.getState()) {
@@ -275,13 +270,20 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             return;
         }
         if (hasCollector) {
-            Runnable undoAccumulator = tuple.removeStore(undoStoreIndex);
-            undoAccumulator.run();
+            groupRetract(group.getResultContainer(), tuple);
         }
         killTuple(group);
     }
 
-    protected abstract Runnable accumulate(ResultContainer_ resultContainer, InTuple_ tuple);
+    protected abstract void groupInsert(ResultContainer_ resultContainer, InTuple_ tuple);
+
+    protected boolean groupUpdate(ResultContainer_ resultContainer, InTuple_ tuple) {
+        groupRetract(resultContainer, tuple);
+        groupInsert(resultContainer, tuple);
+        return true;
+    }
+
+    protected abstract void groupRetract(ResultContainer_ resultContainer, InTuple_ tuple);
 
     @Override
     public Propagator getPropagator() {

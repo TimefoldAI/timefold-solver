@@ -74,7 +74,7 @@ public interface UniConstraintCollector<A, ResultContainer_, Result_> {
      *         or to revert it when the fact no longer belongs in the group.
      * @throws UnsupportedOperationException if {@link #isIncremental()} returns false
      */
-    default UniConstraintCollectorIncrementalAccumulator<A, ResultContainer_> incrementalAccumulator() {
+    default UniConstraintCollectorIncrementalAccumulator<ResultContainer_, A> incrementalAccumulator() {
         throw new UnsupportedOperationException();
     }
 
