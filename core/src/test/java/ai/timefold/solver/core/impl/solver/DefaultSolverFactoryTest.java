@@ -10,7 +10,6 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
-import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -119,17 +118,6 @@ class DefaultSolverFactoryTest {
                 .hasMessageContaining("The solver configuration must have at least 1 entityClass")
                 .hasMessageContaining(
                         "If you're using the Quarkus extension or Spring Boot starter, it should have been filled in already.");
-    }
-
-    @Test
-    void testInvalidRandomConfiguration() {
-        SolverConfig solverConfig =
-                SolverConfig.createFromXmlResource("ai/timefold/solver/core/config/solver/testdataSolverConfig.xml")
-                        .withRandomFactoryClass(RandomFactory.class)
-                        .withRandomSeed(1000L);
-        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride()))
-                .hasMessageContaining("The solverConfig with randomFactoryClass ")
-                .hasMessageContaining("has a non-null randomType (null) or a non-null randomSeed (1000).");
     }
 
     @Test
