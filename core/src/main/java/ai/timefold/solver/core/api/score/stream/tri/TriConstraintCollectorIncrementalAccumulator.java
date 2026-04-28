@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.api.score.stream.tri;
 
-public interface TriConstraintCollectorIncrementalAccumulator<A, B, C, ResultContainer_> {
+public interface TriConstraintCollectorIncrementalAccumulator<ResultContainer_, A, B, C> {
 
-    TriConstraintCollectorAccumulatedComponent<A, B, C, ResultContainer_> accumulate(ResultContainer_ resultContainer, A a, B b,
+    TriConstraintCollectorAccumulatedComponent<ResultContainer_, A, B, C> accumulate(ResultContainer_ resultContainer, A a, B b,
             C c);
 
 }

@@ -40,7 +40,7 @@ public interface TriConstraintCollector<A, B, C, ResultContainer_, Result_> {
     /**
      * As defined by {@link UniConstraintCollector#incrementalAccumulator()}, but for {@link TriConstraintStream}.
      */
-    default TriConstraintCollectorIncrementalAccumulator<A, B, C, ResultContainer_> incrementalAccumulator() {
+    default TriConstraintCollectorIncrementalAccumulator<ResultContainer_, A, B, C> incrementalAccumulator() {
         throw new UnsupportedOperationException();
     }
 
