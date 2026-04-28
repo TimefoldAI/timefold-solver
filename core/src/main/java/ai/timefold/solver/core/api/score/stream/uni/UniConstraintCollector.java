@@ -16,7 +16,18 @@ import org.jspecify.annotations.Nullable;
  * Used by {@link UniConstraintStream#groupBy(Function, UniConstraintCollector)}, ...
  * <p>
  * Loosely based on JDK's {@link Collector}, but it returns an undo operation for each accumulation
- * to enable incremental score calculation in {@link ConstraintStream constraint streams}.
+ * to enable incremental score calculation in {@link UniConstraintStream#groupBy(UniConstraintCollector)}.
+ * It has two modes of operation:
+ * <dl>
+ * <dt>Insert+Retract</dt>
+ * <dd>An element cannot be updated - every update is done by full retraction and reinsertion.
+ * This is simpler to implement and therefore it is the default.
+ * Provided by {@link #accumulator()}.</dd>
+ * <dt>Fully incremental</dt>
+ * <dd>An element may be inserted, updated and retracted,
+ * allowing for increased performance when a smart update operation is available.
+ * Enabled by {@link #incrementalAccumulator()}, when {@link #isIncremental()} returns true.</dd>
+ * </dl>
  * <p>
  * It is recommended that if two constraint collectors implement the same functionality,
  * they should {@link Object#equals(Object) be equal}.
@@ -48,14 +59,41 @@ public interface UniConstraintCollector<A, ResultContainer_, Result_> {
      * accumulates it in the result container
      * and returns an undo operation for that accumulation.
      *
-     * @return the undo operation. This lambda is called when the fact no longer matches.
+     * @return the accumulator. Called to insert the match and retract it when it no longer belongs in the group.
+     * @see #incrementalAccumulator() High-performance alternative, disabled by default.
      */
     BiFunction<ResultContainer_, A, Runnable> accumulator();
 
     /**
-     * A lambda that converts the result container into the result.
+     * A high-performance alternative to {@link #accumulator()} that returns an incremental accumulator.
+     * This is more difficult to implement and therefore it is optional.
+     * If implemented, override {@link #isIncremental()} to return true
+     * and {@link #accumulator()} to throw {@link UnsupportedOperationException}.
      *
-     * @return the operation to compute the finished result
+     * @return the accumulator. Called to insert the match, reflect changes
+     *         or to revert it when the fact no longer belongs in the group.
+     * @throws UnsupportedOperationException if {@link #isIncremental()} returns false
+     */
+    default UniConstraintCollectorIncrementalAccumulator<A, ResultContainer_> incrementalAccumulator() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Whether the solver should use {@link #incrementalAccumulator()} instead of {@link #accumulator()}.
+     *
+     * @return defaults to false. Only override to true if {@link #incrementalAccumulator()} is implemented.
+     */
+    default boolean isIncremental() {
+        return false;
+    }
+
+    /**
+     * A lambda that converts the result container into the result.
+     * The result may be null, typically when there is nothing accumulated
+     * and the product in that situation is undefined.
+     * (Such as average of an empty set.)
+     *
+     * @return the operation to compute the finished result;
      */
     Function<ResultContainer_, @Nullable Result_> finisher();
 

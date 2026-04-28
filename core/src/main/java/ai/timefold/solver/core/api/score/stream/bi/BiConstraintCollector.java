@@ -8,7 +8,8 @@ import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * As described by {@link UniConstraintCollector}, only for {@link BiConstraintStream}.
@@ -22,28 +23,36 @@ import org.jspecify.annotations.NonNull;
  *        especially if this value is ever used as a group key.
  * @see ConstraintCollectors
  */
+@NullMarked
 public interface BiConstraintCollector<A, B, ResultContainer_, Result_> {
 
     /**
-     * A lambda that creates the result container, one for each group key combination.
+     * As defined by {@link UniConstraintCollector#supplier()}, but for {@link BiConstraintStream}.
      */
-    @NonNull
     Supplier<ResultContainer_> supplier();
 
     /**
-     * A lambda that extracts data from the matched facts,
-     * accumulates it in the result container
-     * and returns an undo operation for that accumulation.
-     *
-     * @return the undo operation. This lambda is called when the facts no longer matches.
+     * As defined by {@link UniConstraintCollector#accumulator()}, but for {@link BiConstraintStream}.
      */
-    @NonNull
     TriFunction<ResultContainer_, A, B, Runnable> accumulator();
 
     /**
-     * A lambda that converts the result container into the result.
+     * As defined by {@link UniConstraintCollector#incrementalAccumulator()}, but for {@link BiConstraintStream}.
      */
-    @NonNull
-    Function<ResultContainer_, Result_> finisher();
+    default BiConstraintCollectorIncrementalAccumulator<A, B, ResultContainer_> incrementalAccumulator() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * As defined by {@link UniConstraintCollector#isIncremental()}, but for {@link BiConstraintStream}.
+     */
+    default boolean isIncremental() {
+        return false;
+    }
+
+    /**
+     * As defined by {@link UniConstraintCollector#finisher()}, but for {@link BiConstraintStream}.
+     */
+    Function<ResultContainer_, @Nullable Result_> finisher();
 
 }
