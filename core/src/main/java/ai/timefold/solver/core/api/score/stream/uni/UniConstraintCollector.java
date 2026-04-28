@@ -8,7 +8,7 @@ import java.util.stream.Collector;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -28,17 +28,19 @@ import org.jspecify.annotations.Nullable;
  * @param <A> the type of the one and only fact of the tuple in the source {@link UniConstraintStream}
  * @param <ResultContainer_> the mutable accumulation type (often hidden as an implementation detail)
  * @param <Result_> the type of the fact of the tuple in the destination {@link ConstraintStream}.
+ *        Null when the result would be invalid, such as maximum value from an empty container.
  *        It is recommended that this type be deeply immutable.
  *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,
  *        especially if this value is ever used as a group key.
+ *
  * @see ConstraintCollectors
  */
+@NullMarked
 public interface UniConstraintCollector<A, ResultContainer_, Result_> {
 
     /**
      * A lambda that creates the result container, one for each group key combination.
      */
-    @NonNull
     Supplier<ResultContainer_> supplier();
 
     /**
@@ -48,15 +50,13 @@ public interface UniConstraintCollector<A, ResultContainer_, Result_> {
      *
      * @return the undo operation. This lambda is called when the fact no longer matches.
      */
-    @NonNull
     BiFunction<ResultContainer_, A, Runnable> accumulator();
 
     /**
      * A lambda that converts the result container into the result.
      *
-     * @return null when the result would be invalid, such as maximum value from an empty container.
+     * @return the operation to compute the finished result
      */
-    @Nullable
-    Function<ResultContainer_, Result_> finisher();
+    Function<ResultContainer_, @Nullable Result_> finisher();
 
 }
