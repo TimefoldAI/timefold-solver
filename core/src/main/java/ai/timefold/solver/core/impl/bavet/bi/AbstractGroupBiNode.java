@@ -17,12 +17,12 @@ import org.jspecify.annotations.Nullable;
 abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey_, ResultContainer_, Result_>
         extends AbstractGroupNode<BiTuple<OldA, OldB>, OutTuple_, GroupKey_, ResultContainer_, Result_> {
 
-    private final int undoStoreIndex;
+    private final int groupAccumulatorIndex;
     private final @Nullable TriFunction<ResultContainer_, OldA, OldB, Runnable> accumulator;
     private final @Nullable BiConstraintCollectorAccumulator<ResultContainer_, OldA, OldB> incrementalAccumulator;
     private final boolean useIncrementalAccumulator;
 
-    protected AbstractGroupBiNode(int groupStoreIndex, int undoStoreIndex,
+    protected AbstractGroupBiNode(int groupStoreIndex, int groupAccumulatorIndex,
             Function<BiTuple<OldA, OldB>, GroupKey_> groupKeyFunction,
             BiConstraintCollector<OldA, OldB, ResultContainer_, Result_> collector,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
@@ -31,7 +31,7 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
                 collector == null ? null : collector.finisher(),
                 nextNodesTupleLifecycle, environmentMode);
         var hasCollector = collector != null;
-        this.undoStoreIndex = hasCollector ? undoStoreIndex : -1;
+        this.groupAccumulatorIndex = hasCollector ? groupAccumulatorIndex : -1;
         accumulator = hasCollector ? (collector.isIncremental() ? null : collector.accumulator()) : null;
         incrementalAccumulator = hasCollector ? (collector.isIncremental() ? collector.incrementalAccumulator() : null) : null;
         useIncrementalAccumulator = hasCollector && incrementalAccumulator != null;
@@ -40,42 +40,43 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
     protected AbstractGroupBiNode(int groupStoreIndex, Function<BiTuple<OldA, OldB>, GroupKey_> groupKeyFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
         super(groupStoreIndex, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
-        undoStoreIndex = -1;
+        groupAccumulatorIndex = -1;
         accumulator = null;
         incrementalAccumulator = null;
         useIncrementalAccumulator = false;
     }
 
     @Override
-    protected void groupInsert(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
+    protected boolean groupInsert(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
-            var undoAccumulator = incrementalAccumulator.startGroup(resultContainer);
-            undoAccumulator.add(tuple.getA(), tuple.getB());
-            tuple.setStore(undoStoreIndex, undoAccumulator);
+            var groupContents = incrementalAccumulator.startGroup(resultContainer);
+            tuple.setStore(groupAccumulatorIndex, groupContents);
+            return groupContents.add(tuple.getA(), tuple.getB());
         } else {
-            var undoAccumulator = accumulator.apply(resultContainer, tuple.getA(), tuple.getB());
-            tuple.setStore(undoStoreIndex, undoAccumulator);
+            tuple.setStore(groupAccumulatorIndex, accumulator.apply(resultContainer, tuple.getA(), tuple.getB()));
+            return true;
         }
     }
 
     @Override
     protected boolean groupUpdate(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
-            BiConstraintCollectorAccumulatedValue<OldA, OldB> undoAccumulator = tuple.getStore(undoStoreIndex);
-            return undoAccumulator.update(tuple.getA(), tuple.getB());
+            BiConstraintCollectorAccumulatedValue<OldA, OldB> groupContents = tuple.getStore(groupAccumulatorIndex);
+            return groupContents.update(tuple.getA(), tuple.getB());
         } else {
             return super.groupUpdate(resultContainer, tuple);
         }
     }
 
     @Override
-    protected void groupRetract(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
+    protected boolean groupRetract(BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
-            BiConstraintCollectorAccumulatedValue<OldA, OldB> undoAccumulator = tuple.removeStore(undoStoreIndex);
-            undoAccumulator.remove();
+            BiConstraintCollectorAccumulatedValue<OldA, OldB> groupContents = tuple.removeStore(groupAccumulatorIndex);
+            return groupContents.remove();
         } else {
-            Runnable undoAccumulator = tuple.removeStore(undoStoreIndex);
-            undoAccumulator.run();
+            Runnable undo = tuple.removeStore(groupAccumulatorIndex);
+            undo.run();
+            return true;
         }
     }
 }
