@@ -4,39 +4,80 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
+import org.jspecify.annotations.Nullable;
+
 abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, GroupKey_, ResultContainer_, Result_>
         extends AbstractGroupNode<TriTuple<OldA, OldB, OldC>, OutTuple_, GroupKey_, ResultContainer_, Result_> {
 
-    private final QuadFunction<ResultContainer_, OldA, OldB, OldC, Runnable> accumulator;
+    private final int groupAccumulatorIndex;
+    private final @Nullable QuadFunction<ResultContainer_, OldA, OldB, OldC, Runnable> accumulator;
+    private final @Nullable TriConstraintCollectorAccumulator<ResultContainer_, OldA, OldB, OldC> incrementalAccumulator;
+    private final boolean useIncrementalAccumulator;
 
-    protected AbstractGroupTriNode(int groupStoreIndex, int undoStoreIndex,
+    protected AbstractGroupTriNode(int groupStoreIndex, int groupAccumulatorIndex,
             Function<TriTuple<OldA, OldB, OldC>, GroupKey_> groupKeyFunction,
             TriConstraintCollector<OldA, OldB, OldC, ResultContainer_, Result_> collector,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex, groupKeyFunction,
+        super(groupStoreIndex, groupKeyFunction,
                 collector == null ? null : collector.supplier(),
                 collector == null ? null : collector.finisher(),
                 nextNodesTupleLifecycle, environmentMode);
-        accumulator = collector == null ? null : collector.accumulator();
+        var hasCollector = collector != null;
+        this.groupAccumulatorIndex = hasCollector ? groupAccumulatorIndex : -1;
+        accumulator = hasCollector ? (collector.isIncremental() ? null : collector.accumulator()) : null;
+        incrementalAccumulator = hasCollector ? (collector.isIncremental() ? collector.incrementalAccumulator() : null) : null;
+        useIncrementalAccumulator = hasCollector && incrementalAccumulator != null;
     }
 
-    protected AbstractGroupTriNode(int groupStoreIndex,
-            Function<TriTuple<OldA, OldB, OldC>, GroupKey_> groupKeyFunction,
+    protected AbstractGroupTriNode(int groupStoreIndex, Function<TriTuple<OldA, OldB, OldC>, GroupKey_> groupKeyFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex,
-                groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
+        super(groupStoreIndex, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
+        groupAccumulatorIndex = -1;
         accumulator = null;
+        incrementalAccumulator = null;
+        useIncrementalAccumulator = false;
     }
 
     @Override
-    protected final Runnable accumulate(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
-        return accumulator.apply(resultContainer, tuple.getA(), tuple.getB(), tuple.getC());
+    protected boolean groupInsert(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
+        if (useIncrementalAccumulator) {
+            var groupContents = incrementalAccumulator.startGroup(resultContainer);
+            tuple.setStore(groupAccumulatorIndex, groupContents);
+            return groupContents.add(tuple.getA(), tuple.getB(), tuple.getC());
+        } else {
+            tuple.setStore(groupAccumulatorIndex, accumulator.apply(resultContainer, tuple.getA(), tuple.getB(), tuple.getC()));
+            return true;
+        }
+    }
+
+    @Override
+    protected boolean groupUpdate(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
+        if (useIncrementalAccumulator) {
+            TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> groupContents = tuple.getStore(groupAccumulatorIndex);
+            return groupContents.update(tuple.getA(), tuple.getB(), tuple.getC());
+        } else {
+            return super.groupUpdate(resultContainer, tuple);
+        }
+    }
+
+    @Override
+    protected boolean groupRetract(TriTuple<OldA, OldB, OldC> tuple) {
+        if (useIncrementalAccumulator) {
+            TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> groupContents = tuple.removeStore(groupAccumulatorIndex);
+            return groupContents.remove();
+        } else {
+            Runnable undo = tuple.removeStore(groupAccumulatorIndex);
+            undo.run();
+            return true;
+        }
     }
 
 }

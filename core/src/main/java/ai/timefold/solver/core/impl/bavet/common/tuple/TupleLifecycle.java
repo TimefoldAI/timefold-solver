@@ -79,12 +79,12 @@ public interface TupleLifecycle<Tuple_ extends Tuple> {
         if (delegate instanceof AbstractNode node) {
             streamKind = node.getStreamKind();
             qualifier = Qualifier.NODE;
-        } else if (delegate instanceof LeftTupleLifecycleImpl<?> leftTupleLifecycle &&
-                leftTupleLifecycle.leftTupleLifecycle() instanceof AbstractNode node) {
+        } else if (delegate instanceof LeftTupleLifecycleImpl<?>(LeftTupleLifecycle<?> lifecycle)
+                && lifecycle instanceof AbstractNode node) {
             streamKind = node.getStreamKind();
             qualifier = Qualifier.LEFT_INPUT;
-        } else if (delegate instanceof RightTupleLifecycleImpl<?> rightTupleLifecycle &&
-                rightTupleLifecycle.rightTupleLifecycle() instanceof AbstractNode node) {
+        } else if (delegate instanceof RightTupleLifecycleImpl<?>(RightTupleLifecycle<?> tupleLifecycle)
+                && tupleLifecycle instanceof AbstractNode node) {
             streamKind = node.getStreamKind();
             qualifier = Qualifier.RIGHT_INPUT;
         } else if (delegate instanceof RecordingTupleLifecycle<Tuple_>) {
