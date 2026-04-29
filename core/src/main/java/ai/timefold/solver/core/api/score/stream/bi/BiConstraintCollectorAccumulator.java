@@ -16,6 +16,6 @@ public interface BiConstraintCollectorAccumulator<ResultContainer_, A, B> {
      * As defined by {@link UniConstraintCollectorAccumulator#intoGroup(Object)},
      * only for {@link BiConstraintCollector}.
      */
-    BiConstraintCollectorAccumulatedValue<A, B> startGroup(ResultContainer_ resultContainer);
+    BiConstraintCollectorAccumulatedValue<A, B> intoGroup(ResultContainer_ resultContainer);
 
 }

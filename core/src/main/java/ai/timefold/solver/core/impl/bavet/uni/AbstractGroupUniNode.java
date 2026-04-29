@@ -17,12 +17,12 @@ import org.jspecify.annotations.Nullable;
 abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, ResultContainer_, Result_>
         extends AbstractGroupNode<UniTuple<OldA>, OutTuple_, GroupKey_, ResultContainer_, Result_> {
 
-    private final int undoStoreIndex;
+    private final int groupAccumulatorIndex;
     private final @Nullable BiFunction<ResultContainer_, OldA, Runnable> accumulator;
     private final @Nullable UniConstraintCollectorAccumulator<ResultContainer_, OldA> incrementalAccumulator;
     private final boolean useIncrementalAccumulator;
 
-    protected AbstractGroupUniNode(int groupStoreIndex, int undoStoreIndex,
+    protected AbstractGroupUniNode(int groupStoreIndex, int groupAccumulatorIndex,
             Function<UniTuple<OldA>, GroupKey_> groupKeyFunction,
             UniConstraintCollector<OldA, ResultContainer_, Result_> collector,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
@@ -31,7 +31,7 @@ abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, Re
                 collector == null ? null : collector.finisher(),
                 nextNodesTupleLifecycle, environmentMode);
         var hasCollector = collector != null;
-        this.undoStoreIndex = hasCollector ? undoStoreIndex : -1;
+        this.groupAccumulatorIndex = hasCollector ? groupAccumulatorIndex : -1;
         accumulator = hasCollector ? (collector.isIncremental() ? null : collector.accumulator()) : null;
         incrementalAccumulator = hasCollector ? (collector.isIncremental() ? collector.incrementalAccumulator() : null) : null;
         useIncrementalAccumulator = hasCollector && incrementalAccumulator != null;
@@ -40,43 +40,43 @@ abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, Re
     protected AbstractGroupUniNode(int groupStoreIndex, Function<UniTuple<OldA>, GroupKey_> groupKeyFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
         super(groupStoreIndex, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
-        undoStoreIndex = -1;
+        groupAccumulatorIndex = -1;
         accumulator = null;
         incrementalAccumulator = null;
         useIncrementalAccumulator = false;
     }
 
     @Override
-    protected void groupInsert(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
+    protected boolean groupInsert(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
         if (useIncrementalAccumulator) {
-            var undoAccumulator = incrementalAccumulator.intoGroup(resultContainer);
-            undoAccumulator.add(tuple.getA());
-            tuple.setStore(undoStoreIndex, undoAccumulator);
+            var groupContents = incrementalAccumulator.intoGroup(resultContainer);
+            tuple.setStore(groupAccumulatorIndex, groupContents);
+            return groupContents.add(tuple.getA());
         } else {
-            var undoAccumulator = accumulator.apply(resultContainer, tuple.getA());
-            tuple.setStore(undoStoreIndex, undoAccumulator);
+            tuple.setStore(groupAccumulatorIndex, accumulator.apply(resultContainer, tuple.getA()));
+            return true;
         }
     }
 
     @Override
     protected boolean groupUpdate(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
         if (useIncrementalAccumulator) {
-            UniConstraintCollectorAccumulatedValue<OldA> undoAccumulator = tuple.getStore(undoStoreIndex);
-            return undoAccumulator.update(tuple.getA());
+            UniConstraintCollectorAccumulatedValue<OldA> groupContents = tuple.getStore(groupAccumulatorIndex);
+            return groupContents.update(tuple.getA());
         } else {
             return super.groupUpdate(resultContainer, tuple);
         }
     }
 
     @Override
-    protected void groupRetract(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
+    protected boolean groupRetract(UniTuple<OldA> tuple) {
         if (useIncrementalAccumulator) {
-            UniConstraintCollectorAccumulatedValue<OldA> undoAccumulator =
-                    tuple.removeStore(undoStoreIndex);
-            undoAccumulator.remove();
+            UniConstraintCollectorAccumulatedValue<OldA> groupContents = tuple.removeStore(groupAccumulatorIndex);
+            return groupContents.remove();
         } else {
-            Runnable undoAccumulator = tuple.removeStore(undoStoreIndex);
-            undoAccumulator.run();
+            Runnable undo = tuple.removeStore(groupAccumulatorIndex);
+            undo.run();
+            return true;
         }
     }
 

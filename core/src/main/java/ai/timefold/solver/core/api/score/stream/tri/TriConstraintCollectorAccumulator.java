@@ -16,6 +16,6 @@ public interface TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> {
      * As defined by {@link UniConstraintCollectorAccumulator#intoGroup(Object)},
      * only for {@link TriConstraintCollector}.
      */
-    TriConstraintCollectorAccumulatedValue<A, B, C> startGroup(ResultContainer_ resultContainer);
+    TriConstraintCollectorAccumulatedValue<A, B, C> intoGroup(ResultContainer_ resultContainer);
 
 }

@@ -16,6 +16,6 @@ public interface QuadConstraintCollectorAccumulator<ResultContainer_, A, B, C, D
      * As defined by {@link UniConstraintCollectorAccumulator#intoGroup(Object)},
      * only for {@link QuadConstraintCollector}.
      */
-    QuadConstraintCollectorAccumulatedValue<A, B, C, D> startGroup(ResultContainer_ resultContainer);
+    QuadConstraintCollectorAccumulatedValue<A, B, C, D> intoGroup(ResultContainer_ resultContainer);
 
 }
