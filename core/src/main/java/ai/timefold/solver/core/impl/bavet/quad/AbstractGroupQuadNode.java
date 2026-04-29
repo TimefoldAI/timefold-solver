@@ -4,8 +4,8 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedComponent;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorIncrementalAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
@@ -19,7 +19,7 @@ abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends T
 
     private final int undoStoreIndex;
     private final @Nullable PentaFunction<ResultContainer_, OldA, OldB, OldC, OldD, Runnable> accumulator;
-    private final @Nullable QuadConstraintCollectorIncrementalAccumulator<ResultContainer_, OldA, OldB, OldC, OldD> incrementalAccumulator;
+    private final @Nullable QuadConstraintCollectorAccumulator<ResultContainer_, OldA, OldB, OldC, OldD> incrementalAccumulator;
     private final boolean useIncrementalAccumulator;
 
     protected AbstractGroupQuadNode(int groupStoreIndex, int undoStoreIndex,
@@ -51,8 +51,8 @@ abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends T
     @Override
     protected void groupInsert(ResultContainer_ resultContainer, QuadTuple<OldA, OldB, OldC, OldD> tuple) {
         if (useIncrementalAccumulator) {
-            var undoAccumulator =
-                    incrementalAccumulator.accumulate(resultContainer, tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
+            var undoAccumulator = incrementalAccumulator.startGroup(resultContainer);
+            undoAccumulator.add(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
             tuple.setStore(undoStoreIndex, undoAccumulator);
         } else {
             var undoAccumulator = accumulator.apply(resultContainer, tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
@@ -63,9 +63,8 @@ abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends T
     @Override
     protected boolean groupUpdate(ResultContainer_ resultContainer, QuadTuple<OldA, OldB, OldC, OldD> tuple) {
         if (useIncrementalAccumulator) {
-            QuadConstraintCollectorAccumulatedComponent<ResultContainer_, OldA, OldB, OldC, OldD> undoAccumulator =
-                    tuple.getStore(undoStoreIndex);
-            return undoAccumulator.update(resultContainer, tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
+            QuadConstraintCollectorAccumulatedValue<OldA, OldB, OldC, OldD> undoAccumulator = tuple.getStore(undoStoreIndex);
+            return undoAccumulator.update(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
         } else {
             return super.groupUpdate(resultContainer, tuple);
         }
@@ -74,9 +73,8 @@ abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends T
     @Override
     protected void groupRetract(ResultContainer_ resultContainer, QuadTuple<OldA, OldB, OldC, OldD> tuple) {
         if (useIncrementalAccumulator) {
-            QuadConstraintCollectorAccumulatedComponent<ResultContainer_, OldA, OldB, OldC, OldD> undoAccumulator =
-                    tuple.removeStore(undoStoreIndex);
-            undoAccumulator.undo();
+            QuadConstraintCollectorAccumulatedValue<OldA, OldB, OldC, OldD> undoAccumulator = tuple.removeStore(undoStoreIndex);
+            undoAccumulator.remove();
         } else {
             Runnable undoAccumulator = tuple.removeStore(undoStoreIndex);
             undoAccumulator.run();

@@ -4,8 +4,8 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedComponent;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorIncrementalAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
@@ -19,7 +19,7 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
 
     private final int undoStoreIndex;
     private final @Nullable QuadFunction<ResultContainer_, OldA, OldB, OldC, Runnable> accumulator;
-    private final @Nullable TriConstraintCollectorIncrementalAccumulator<ResultContainer_, OldA, OldB, OldC> incrementalAccumulator;
+    private final @Nullable TriConstraintCollectorAccumulator<ResultContainer_, OldA, OldB, OldC> incrementalAccumulator;
     private final boolean useIncrementalAccumulator;
 
     protected AbstractGroupTriNode(int groupStoreIndex, int undoStoreIndex,
@@ -49,7 +49,8 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
     @Override
     protected void groupInsert(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
         if (useIncrementalAccumulator) {
-            var undoAccumulator = incrementalAccumulator.accumulate(resultContainer, tuple.getA(), tuple.getB(), tuple.getC());
+            var undoAccumulator = incrementalAccumulator.startGroup(resultContainer);
+            undoAccumulator.add(tuple.getA(), tuple.getB(), tuple.getC());
             tuple.setStore(undoStoreIndex, undoAccumulator);
         } else {
             var undoAccumulator = accumulator.apply(resultContainer, tuple.getA(), tuple.getB(), tuple.getC());
@@ -60,9 +61,8 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
     @Override
     protected boolean groupUpdate(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
         if (useIncrementalAccumulator) {
-            TriConstraintCollectorAccumulatedComponent<ResultContainer_, OldA, OldB, OldC> undoAccumulator =
-                    tuple.getStore(undoStoreIndex);
-            return undoAccumulator.update(resultContainer, tuple.getA(), tuple.getB(), tuple.getC());
+            TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> undoAccumulator = tuple.getStore(undoStoreIndex);
+            return undoAccumulator.update(tuple.getA(), tuple.getB(), tuple.getC());
         } else {
             return super.groupUpdate(resultContainer, tuple);
         }
@@ -71,9 +71,8 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
     @Override
     protected void groupRetract(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
         if (useIncrementalAccumulator) {
-            TriConstraintCollectorAccumulatedComponent<OldC, ResultContainer_, OldA, OldB> undoAccumulator =
-                    tuple.removeStore(undoStoreIndex);
-            undoAccumulator.undo();
+            TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> undoAccumulator = tuple.removeStore(undoStoreIndex);
+            undoAccumulator.remove();
         } else {
             Runnable undoAccumulator = tuple.removeStore(undoStoreIndex);
             undoAccumulator.run();

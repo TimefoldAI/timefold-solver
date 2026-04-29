@@ -41,7 +41,7 @@ public interface QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> 
     /**
      * As defined by {@link UniConstraintCollector#incrementalAccumulator()}, but for {@link QuadConstraintStream}.
      */
-    default QuadConstraintCollectorIncrementalAccumulator<ResultContainer_, A, B, C, D> incrementalAccumulator() {
+    default QuadConstraintCollectorAccumulator<ResultContainer_, A, B, C, D> incrementalAccumulator() {
         throw new UnsupportedOperationException();
     }
 
