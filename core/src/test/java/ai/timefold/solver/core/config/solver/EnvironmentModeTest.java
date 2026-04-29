@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
@@ -187,14 +186,14 @@ class EnvironmentModeTest {
     }
 
     private void assertReproducibility(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
-        assertGeneratingSameNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomSupplier(),
-                ((DefaultSolver<TestdataSolution>) solver2).getRandomSupplier());
+        assertGeneratingSameNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomGenerator(),
+                ((DefaultSolver<TestdataSolution>) solver2).getRandomGenerator());
         assertSameScoreSeries(solver1, solver2);
     }
 
     private void assertNonReproducibility(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
-        assertGeneratingDifferentNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomSupplier(),
-                ((DefaultSolver<TestdataSolution>) solver2).getRandomSupplier());
+        assertGeneratingDifferentNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomGenerator(),
+                ((DefaultSolver<TestdataSolution>) solver2).getRandomGenerator());
         assertDifferentScoreSeries(solver1, solver2);
     }
 
@@ -242,10 +241,7 @@ class EnvironmentModeTest {
                 }));
     }
 
-    private void assertGeneratingSameNumbers(Supplier<RandomGenerator> factory1, Supplier<RandomGenerator> factory2) {
-        var random = factory1.get();
-        var random2 = factory2.get();
-
+    private void assertGeneratingSameNumbers(RandomGenerator random, RandomGenerator random2) {
         assertSoftly(softly -> IntStream.range(0, NUMBER_OF_RANDOM_NUMBERS_GENERATED)
                 .forEach(i -> softly.assertThat(random.nextInt())
                         .as("Random factories should generate the same results "
@@ -253,15 +249,13 @@ class EnvironmentModeTest {
                         .isEqualTo(random2.nextInt())));
     }
 
-    private void assertGeneratingDifferentNumbers(Supplier<RandomGenerator> factory1, Supplier<RandomGenerator> factory2) {
-        var random = factory1.get();
-        var random2 = factory2.get();
-
+    private void assertGeneratingDifferentNumbers(RandomGenerator random, RandomGenerator random2) {
         assertSoftly(softly -> IntStream.range(0, NUMBER_OF_RANDOM_NUMBERS_GENERATED)
                 .forEach(i -> softly.assertThat(random.nextInt())
-                        .as("Random factories should not generate exactly the same results "
-                                + "in the non-reproducible environment mode. "
-                                + "It can happen but the probability is very low. Run test again")
+                        .as("""
+                                Random factories should not generate exactly the same results \
+                                in the non-reproducible environment mode. \
+                                It can happen but the probability is very low. Run test again""")
                         .isNotEqualTo(random2.nextInt())));
     }
 

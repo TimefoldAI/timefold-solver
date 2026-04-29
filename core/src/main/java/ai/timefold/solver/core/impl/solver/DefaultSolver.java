@@ -66,8 +66,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         return environmentMode;
     }
 
-    public Supplier<RandomGenerator> getRandomSupplier() {
-        return randomFactory;
+    public RandomGenerator getRandomGenerator() {
+        return randomFactory.get();
     }
 
     public ScoreDirectorFactory<Solution_, ?> getScoreDirectorFactory() {

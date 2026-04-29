@@ -354,7 +354,9 @@ public class SolverScope<Solution_> {
         childThreadSolverScope.solverMetricSet = solverMetricSet;
         childThreadSolverScope.startingSolverCount = startingSolverCount;
         // Experiments show that this trick to attain reproducibility doesn't break uniform distribution
-        childThreadSolverScope.workingRandom = new DelegatingSplittableRandomGenerator(workingRandom.nextLong());
+        var delegatingRandom = (DelegatingSplittableRandomGenerator) workingRandom;
+        childThreadSolverScope.workingRandom =
+                new DelegatingSplittableRandomGenerator(delegatingRandom.getSeed(), delegatingRandom.split());
         childThreadSolverScope.scoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
         childThreadSolverScope.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
         resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);

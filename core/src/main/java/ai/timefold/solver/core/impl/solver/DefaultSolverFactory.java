@@ -219,8 +219,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         } else {
             randomSeed_ = RandomGenerator.getDefault().nextLong();
         }
-        Long finalRandomSeed_ = randomSeed_;
-        return () -> new DelegatingSplittableRandomGenerator(finalRandomSeed_);
+        return DelegatingSplittableRandomGenerator.getSupplier(randomSeed_);
     }
 
     public List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,
