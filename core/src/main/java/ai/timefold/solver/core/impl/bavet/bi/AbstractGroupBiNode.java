@@ -4,8 +4,8 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedComponent;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorIncrementalAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
@@ -19,7 +19,7 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
 
     private final int undoStoreIndex;
     private final @Nullable TriFunction<ResultContainer_, OldA, OldB, Runnable> accumulator;
-    private final @Nullable BiConstraintCollectorIncrementalAccumulator<ResultContainer_, OldA, OldB> incrementalAccumulator;
+    private final @Nullable BiConstraintCollectorAccumulator<ResultContainer_, OldA, OldB> incrementalAccumulator;
     private final boolean useIncrementalAccumulator;
 
     protected AbstractGroupBiNode(int groupStoreIndex, int undoStoreIndex,
@@ -49,7 +49,8 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
     @Override
     protected void groupInsert(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
-            var undoAccumulator = incrementalAccumulator.accumulate(resultContainer, tuple.getA(), tuple.getB());
+            var undoAccumulator = incrementalAccumulator.startGroup(resultContainer);
+            undoAccumulator.add(tuple.getA(), tuple.getB());
             tuple.setStore(undoStoreIndex, undoAccumulator);
         } else {
             var undoAccumulator = accumulator.apply(resultContainer, tuple.getA(), tuple.getB());
@@ -60,9 +61,8 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
     @Override
     protected boolean groupUpdate(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
-            BiConstraintCollectorAccumulatedComponent<ResultContainer_, OldA, OldB> undoAccumulator =
-                    tuple.getStore(undoStoreIndex);
-            return undoAccumulator.update(resultContainer, tuple.getA(), tuple.getB());
+            BiConstraintCollectorAccumulatedValue<OldA, OldB> undoAccumulator = tuple.getStore(undoStoreIndex);
+            return undoAccumulator.update(tuple.getA(), tuple.getB());
         } else {
             return super.groupUpdate(resultContainer, tuple);
         }
@@ -71,9 +71,8 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
     @Override
     protected void groupRetract(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
-            BiConstraintCollectorAccumulatedComponent<OldB, ResultContainer_, OldA> undoAccumulator =
-                    tuple.removeStore(undoStoreIndex);
-            undoAccumulator.undo();
+            BiConstraintCollectorAccumulatedValue<OldA, OldB> undoAccumulator = tuple.removeStore(undoStoreIndex);
+            undoAccumulator.remove();
         } else {
             Runnable undoAccumulator = tuple.removeStore(undoStoreIndex);
             undoAccumulator.run();

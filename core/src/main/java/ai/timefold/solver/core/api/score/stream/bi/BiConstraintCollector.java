@@ -39,7 +39,7 @@ public interface BiConstraintCollector<A, B, ResultContainer_, Result_> {
     /**
      * As defined by {@link UniConstraintCollector#incrementalAccumulator()}, but for {@link BiConstraintStream}.
      */
-    default BiConstraintCollectorIncrementalAccumulator<ResultContainer_, A, B> incrementalAccumulator() {
+    default BiConstraintCollectorAccumulator<ResultContainer_, A, B> incrementalAccumulator() {
         throw new UnsupportedOperationException();
     }
 
