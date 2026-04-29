@@ -13,10 +13,10 @@ import org.jspecify.annotations.NullMarked;
  * A {@link RandomGenerator} that delegates to another {@link RandomGenerator.SplittableGenerator}
  * instance. This allows us to change the {@link RandomGenerator} used even when
  * {@link MoveSelector} and other classes to cache the {@link RandomGenerator} in a field.
- *
- * @apiNote To ensure reproducibility, this class can only be used by the {@link Thread}
- *          that created it. Attempting to call any method from another thread will
- *          throw an {@link IllegalStateException}.
+ * <p>
+ * To ensure reproducibility, this class can only be used by the {@link Thread}
+ * that created it. Attempting to call any method from another thread will
+ * throw an {@link IllegalStateException}.
  */
 @NullMarked
 public final class DelegatingSplittableRandomGenerator implements RandomGenerator {
