@@ -1397,8 +1397,9 @@ class DefaultSolverTest {
 
         var solution = PlannerTestUtils.solve(solverConfig, problem);
 
-        assertThat(solution.getEntityList().getFirst().getValue().getCode()).isEqualTo("v1");
-        assertThat(solution.getEntityList().get(1).getValue().getCode()).isEqualTo("v2");
+        assertThat(solution.getEntityList())
+                .map(entity -> entity.getValue().getCode())
+                .containsExactlyInAnyOrder("v1", "v2");
 
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(-2));
     }
@@ -1438,9 +1439,9 @@ class DefaultSolverTest {
 
         var solution = PlannerTestUtils.solve(solverConfig, problem);
 
-        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("a1",
-                "b1");
-        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("a2", "b2");
+        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("b1",
+                "a2");
+        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("b2", "a1");
 
         assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0, -240));
     }

@@ -913,9 +913,9 @@ there are `timefold.solver.move.type.step.score.diff.hard.score` and `timefold.s
 [#randomNumberGenerator]
 == Random number generator
 
-Many heuristics and metaheuristics depend on a pseudorandom number generator for move selection, to resolve score ties, probability based move acceptance, ... During solving, the same `Random` instance is reused to improve reproducibility, performance and uniform distribution of random values.
+Many heuristics and metaheuristics depend on a pseudorandom number generator for move selection, to resolve score ties, probability based move acceptance, ... During solving, the same `RandomGenerator` instance is reused to improve reproducibility, performance and uniform distribution of random values.
 
-To change the random seed of that `Random` instance, specify a ``randomSeed``:
+To change the random seed of that `RandomGenerator` instance, specify a ``randomSeed``:
 
 [source,xml,options="nowrap"]
 ----
@@ -925,26 +925,6 @@ To change the random seed of that `Random` instance, specify a ``randomSeed``:
   ...
 </solver>
 ----
-
-To change the pseudorandom number generator implementation, specify a ``randomType``:
-
-[source,xml,options="nowrap"]
-----
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <randomType>MERSENNE_TWISTER</randomType>
-  ...
-</solver>
-----
-
-The following types are supported:
-
-* `JDK` (default): Standard implementation (``java.util.Random``).
-* ``MERSENNE_TWISTER``: Implementation by http://commons.apache.org/proper/commons-math/userguide/random.html[Commons Math].
-* ``WELL512A``, ``WELL1024A``, ``WELL19937A``, ``WELL19937C``, `WELL44497A` and ``WELL44497B``: Implementation by http://commons.apache.org/proper/commons-math/userguide/random.html[Commons Math].
-
-For most use cases, the randomType has no significant impact on the average quality of the best solution on multiple datasets.
-If you want to confirm this on your use case, use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[benchmarker].
 
 
 [#solverManager]
