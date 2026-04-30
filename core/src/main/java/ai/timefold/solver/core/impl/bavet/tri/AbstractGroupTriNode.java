@@ -47,36 +47,34 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
     }
 
     @Override
-    protected boolean groupInsert(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
+    protected void groupInsert(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
         if (useIncrementalAccumulator) {
             var groupContents = incrementalAccumulator.intoGroup(resultContainer);
             tuple.setStore(groupAccumulatorIndex, groupContents);
-            return groupContents.add(tuple.getA(), tuple.getB(), tuple.getC());
+            groupContents.add(tuple.getA(), tuple.getB(), tuple.getC());
         } else {
             tuple.setStore(groupAccumulatorIndex, accumulator.apply(resultContainer, tuple.getA(), tuple.getB(), tuple.getC()));
-            return true;
         }
     }
 
     @Override
-    protected boolean groupUpdate(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
+    protected void groupUpdate(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
         if (useIncrementalAccumulator) {
             TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> groupContents = tuple.getStore(groupAccumulatorIndex);
-            return groupContents.update(tuple.getA(), tuple.getB(), tuple.getC());
+            groupContents.update(tuple.getA(), tuple.getB(), tuple.getC());
         } else {
-            return super.groupUpdate(resultContainer, tuple);
+            super.groupUpdate(resultContainer, tuple);
         }
     }
 
     @Override
-    protected boolean groupRetract(TriTuple<OldA, OldB, OldC> tuple) {
+    protected void groupRetract(TriTuple<OldA, OldB, OldC> tuple) {
         if (useIncrementalAccumulator) {
             TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> groupContents = tuple.removeStore(groupAccumulatorIndex);
-            return groupContents.remove();
+            groupContents.remove();
         } else {
             Runnable undo = tuple.removeStore(groupAccumulatorIndex);
             undo.run();
-            return true;
         }
     }
 

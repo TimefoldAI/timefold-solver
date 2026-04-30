@@ -53,9 +53,9 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     private final boolean useAssertingGroupKey;
 
     protected AbstractGroupNode(int groupStoreIndex, Function<InTuple_, GroupKey_> groupKeyFunction,
-                                Supplier<ResultContainer_> supplier,
-                                Function<ResultContainer_, Result_> finisher,
-                                TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
+            Supplier<ResultContainer_> supplier,
+            Function<ResultContainer_, Result_> finisher,
+            TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
         this.groupStoreIndex = groupStoreIndex;
         this.groupKeyFunction = groupKeyFunction;
         this.supplier = supplier;
@@ -80,8 +80,8 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     }
 
     protected AbstractGroupNode(int groupStoreIndex,
-                                Function<InTuple_, GroupKey_> groupKeyFunction, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle,
-                                EnvironmentMode environmentMode) {
+            Function<InTuple_, GroupKey_> groupKeyFunction, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle,
+            EnvironmentMode environmentMode) {
         this(groupStoreIndex,
                 groupKeyFunction, null, null, nextNodesTupleLifecycle,
                 environmentMode);
@@ -105,14 +105,10 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
 
     private void createTuple(InTuple_ tuple, GroupKey_ userSuppliedKey) {
         var group = getOrCreateGroup(userSuppliedKey);
-        var needsPropagation = group.parentCount == 1; // Fresh outTuple.
         if (hasCollector) {
-            needsPropagation = groupInsert(group.getResultContainer(), tuple) || needsPropagation;
+            groupInsert(group.getResultContainer(), tuple);
         }
         tuple.setStore(groupStoreIndex, group);
-        if (!needsPropagation) {
-            return;
-        }
         var outTuple = group.getTuple();
         switch (outTuple.getState()) {
             case CREATING, UPDATING -> {
@@ -152,7 +148,7 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         var userSuppliedKey = extractUserSuppliedKey(groupMapKey);
         var outTuple = createOutTuple(userSuppliedKey);
         var group = hasCollector ? Group.create(groupMapKey, supplier.get(), outTuple)
-                : Group.<OutTuple_, ResultContainer_>createWithoutAccumulate(groupMapKey, outTuple);
+                : Group.<OutTuple_, ResultContainer_> createWithoutAccumulate(groupMapKey, outTuple);
         propagationQueue.insert(group);
         return group;
     }
@@ -191,12 +187,11 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         if (Objects.equals(oldUserSuppliedGroupKey, newUserSuppliedGroupKey)) {
             updateGroup(tuple, oldGroup);
         } else {
-            var needsPropagation = false;
             if (hasCollector) {
-                needsPropagation = groupRetract(tuple);
+                groupRetract(tuple);
             }
             var newParentCount = --oldGroup.parentCount;
-            killOutTuple(oldGroup, newParentCount == 0, needsPropagation);
+            killOutTuple(oldGroup, newParentCount == 0);
             createTuple(tuple, newUserSuppliedGroupKey);
         }
     }
@@ -204,12 +199,8 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
     private void updateGroup(InTuple_ tuple, Group<OutTuple_, ResultContainer_> oldGroup) {
         // No need to change parentCount because it is the same group.
         if (hasCollector) {
-            if (!groupUpdate(oldGroup.getResultContainer(), tuple)) {
-                // Don't propagate as nothing changed.
-                return;
-            }
+            groupUpdate(oldGroup.getResultContainer(), tuple);
         }
-        // TODO if it has no collectors, maybe skip the propagation?
         var outTuple = oldGroup.getTuple();
         switch (outTuple.getState()) {
             case CREATING, UPDATING -> {
@@ -226,13 +217,8 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
      *
      * @param group the group which created the outTuple
      * @param killGroup true if the group should be removed from downstream nodes
-     * @param propagateUpdate may be true while killGroup is also true;
-     *        propagating updates is irrelevant if the group is already being killed
      */
-    private void killOutTuple(Group<OutTuple_, ResultContainer_> group, boolean killGroup, boolean propagateUpdate) {
-        if (!killGroup && !propagateUpdate) { // Nothing has changed.
-            return;
-        }
+    private void killOutTuple(Group<OutTuple_, ResultContainer_> group, boolean killGroup) {
         if (killGroup) {
             var groupKey = hasMultipleGroups ? group.getGroupKey() : null;
             var oldGroup = removeGroup(groupKey);
@@ -285,23 +271,21 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        var needsPropagation = false;
         if (hasCollector) {
-            needsPropagation = groupRetract(tuple);
+            groupRetract(tuple);
         }
         var newParentCount = --group.parentCount;
-        killOutTuple(group, newParentCount == 0, needsPropagation);
+        killOutTuple(group, newParentCount == 0);
     }
 
-    protected abstract boolean groupInsert(ResultContainer_ resultContainer, InTuple_ tuple);
+    protected abstract void groupInsert(ResultContainer_ resultContainer, InTuple_ tuple);
 
-    protected boolean groupUpdate(ResultContainer_ resultContainer, InTuple_ tuple) {
-        var retractNeedsPropagation = groupRetract(tuple);
-        var insertNeedsPropagation = groupInsert(resultContainer, tuple);
-        return retractNeedsPropagation || insertNeedsPropagation;
+    protected void groupUpdate(ResultContainer_ resultContainer, InTuple_ tuple) {
+        groupRetract(tuple);
+        groupInsert(resultContainer, tuple);
     }
 
-    protected abstract boolean groupRetract(InTuple_ tuple);
+    protected abstract void groupRetract(InTuple_ tuple);
 
     @Override
     public Propagator getPropagator() {

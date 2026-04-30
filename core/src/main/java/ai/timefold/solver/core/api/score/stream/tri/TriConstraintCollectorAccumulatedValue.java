@@ -16,18 +16,21 @@ public interface TriConstraintCollectorAccumulatedValue<A, B, C> {
      * As defined by {@link UniConstraintCollectorAccumulatedValue#add(Object)},
      * only for {@link TriConstraintCollector}
      */
-    boolean add(@Nullable A a, @Nullable B b, @Nullable C c);
+    void add(@Nullable A a, @Nullable B b, @Nullable C c);
 
     /**
      * As defined by {@link UniConstraintCollectorAccumulatedValue#update(Object)},
      * only for {@link TriConstraintCollector}
      */
-    boolean update(@Nullable A a, @Nullable B b, @Nullable C c);
+    default void update(@Nullable A a, @Nullable B b, @Nullable C c) {
+        remove();
+        add(a, b, c);
+    }
 
     /**
      * As defined by {@link UniConstraintCollectorAccumulatedValue#remove()},
      * only for {@link TriConstraintCollector}
      */
-    boolean remove();
+    void remove();
 
 }

@@ -1715,8 +1715,7 @@ public final class ConstraintCollectors {
                     @NonNull Function<A, PointType_> endExclusiveMap,
                     @NonNull BiFunction<PointType_, PointType_, DifferenceType_> differenceFunction) {
         return InnerUniConstraintCollectors.toConnectedRanges(ConstantLambdaUtils.identity(), startInclusiveMap,
-                endExclusiveMap,
-                differenceFunction);
+                endExclusiveMap, differenceFunction);
     }
 
     /**

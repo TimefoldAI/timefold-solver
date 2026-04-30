@@ -47,36 +47,34 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
     }
 
     @Override
-    protected boolean groupInsert(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
+    protected void groupInsert(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
             var groupContents = incrementalAccumulator.intoGroup(resultContainer);
             tuple.setStore(groupAccumulatorIndex, groupContents);
-            return groupContents.add(tuple.getA(), tuple.getB());
+            groupContents.add(tuple.getA(), tuple.getB());
         } else {
             tuple.setStore(groupAccumulatorIndex, accumulator.apply(resultContainer, tuple.getA(), tuple.getB()));
-            return true;
         }
     }
 
     @Override
-    protected boolean groupUpdate(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
+    protected void groupUpdate(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
             BiConstraintCollectorAccumulatedValue<OldA, OldB> groupContents = tuple.getStore(groupAccumulatorIndex);
-            return groupContents.update(tuple.getA(), tuple.getB());
+            groupContents.update(tuple.getA(), tuple.getB());
         } else {
-            return super.groupUpdate(resultContainer, tuple);
+            super.groupUpdate(resultContainer, tuple);
         }
     }
 
     @Override
-    protected boolean groupRetract(BiTuple<OldA, OldB> tuple) {
+    protected void groupRetract(BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
             BiConstraintCollectorAccumulatedValue<OldA, OldB> groupContents = tuple.removeStore(groupAccumulatorIndex);
-            return groupContents.remove();
+            groupContents.remove();
         } else {
             Runnable undo = tuple.removeStore(groupAccumulatorIndex);
             undo.run();
-            return true;
         }
     }
 }

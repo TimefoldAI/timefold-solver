@@ -47,36 +47,34 @@ abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, Re
     }
 
     @Override
-    protected boolean groupInsert(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
+    protected void groupInsert(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
         if (useIncrementalAccumulator) {
             var groupContents = incrementalAccumulator.intoGroup(resultContainer);
             tuple.setStore(groupAccumulatorIndex, groupContents);
-            return groupContents.add(tuple.getA());
+            groupContents.add(tuple.getA());
         } else {
             tuple.setStore(groupAccumulatorIndex, accumulator.apply(resultContainer, tuple.getA()));
-            return true;
         }
     }
 
     @Override
-    protected boolean groupUpdate(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
+    protected void groupUpdate(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
         if (useIncrementalAccumulator) {
             UniConstraintCollectorAccumulatedValue<OldA> groupContents = tuple.getStore(groupAccumulatorIndex);
-            return groupContents.update(tuple.getA());
+            groupContents.update(tuple.getA());
         } else {
-            return super.groupUpdate(resultContainer, tuple);
+            super.groupUpdate(resultContainer, tuple);
         }
     }
 
     @Override
-    protected boolean groupRetract(UniTuple<OldA> tuple) {
+    protected void groupRetract(UniTuple<OldA> tuple) {
         if (useIncrementalAccumulator) {
             UniConstraintCollectorAccumulatedValue<OldA> groupContents = tuple.removeStore(groupAccumulatorIndex);
-            return groupContents.remove();
+            groupContents.remove();
         } else {
             Runnable undo = tuple.removeStore(groupAccumulatorIndex);
             undo.run();
-            return true;
         }
     }
 

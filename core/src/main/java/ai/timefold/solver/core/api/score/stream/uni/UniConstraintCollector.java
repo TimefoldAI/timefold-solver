@@ -67,8 +67,8 @@ public interface UniConstraintCollector<A, ResultContainer_, Result_> {
     /**
      * A high-performance alternative to {@link #accumulator()} that returns an incremental accumulator.
      * This is more difficult to implement and therefore it is optional.
-     * If implemented, override {@link #isIncremental()} to return true
-     * and {@link #accumulator()} to throw {@link UnsupportedOperationException}.
+     * If implemented, override {@link #isIncremental()} to return true,
+     * which will cause the solver to use this implementation instead of {@link #accumulator()}.
      *
      * @return the accumulator. Called to insert the match, reflect changes
      *         or to revert it when the fact no longer belongs in the group.

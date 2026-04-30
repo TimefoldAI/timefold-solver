@@ -16,18 +16,21 @@ public interface BiConstraintCollectorAccumulatedValue<A, B> {
      * As defined by {@link UniConstraintCollectorAccumulatedValue#add(Object)},
      * only for {@link BiConstraintCollector}
      */
-    boolean add(@Nullable A a, @Nullable B b);
+    void add(@Nullable A a, @Nullable B b);
 
     /**
      * As defined by {@link UniConstraintCollectorAccumulatedValue#update(Object)},
      * only for {@link BiConstraintCollector}
      */
-    boolean update(@Nullable A a, @Nullable B b);
+    default void update(@Nullable A a, @Nullable B b) {
+        remove();
+        add(a, b);
+    }
 
     /**
      * As defined by {@link UniConstraintCollectorAccumulatedValue#remove()},
      * only for {@link BiConstraintCollector}
      */
-    boolean remove();
+    void remove();
 
 }

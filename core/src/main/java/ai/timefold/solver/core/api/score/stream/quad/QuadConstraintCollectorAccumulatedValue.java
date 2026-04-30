@@ -16,18 +16,21 @@ public interface QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
      * As defined by {@link UniConstraintCollectorAccumulatedValue#add(Object)},
      * only for {@link QuadConstraintCollector}
      */
-    boolean add(@Nullable A a, @Nullable B b, @Nullable C c, @Nullable D d);
+    void add(@Nullable A a, @Nullable B b, @Nullable C c, @Nullable D d);
 
     /**
      * As defined by {@link UniConstraintCollectorAccumulatedValue#update(Object)},
      * only for {@link QuadConstraintCollector}
      */
-    boolean update(@Nullable A a, @Nullable B b, @Nullable C c, @Nullable D d);
+    default void update(@Nullable A a, @Nullable B b, @Nullable C c, @Nullable D d) {
+        remove();
+        add(a, b, c, d);
+    }
 
     /**
      * As defined by {@link UniConstraintCollectorAccumulatedValue#remove()},
      * only for {@link QuadConstraintCollector}
      */
-    boolean remove();
+    void remove();
 
 }
