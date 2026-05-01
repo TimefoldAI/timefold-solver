@@ -49,9 +49,9 @@ abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, Re
     @Override
     protected void groupInsert(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
         if (useIncrementalAccumulator) {
-            var groupContents = incrementalAccumulator.intoGroup(resultContainer);
-            tuple.setStore(groupAccumulatorIndex, groupContents);
-            groupContents.add(tuple.getA());
+            var groupElement = incrementalAccumulator.intoGroup(resultContainer);
+            tuple.setStore(groupAccumulatorIndex, groupElement);
+            groupElement.add(tuple.getA());
         } else {
             tuple.setStore(groupAccumulatorIndex, accumulator.apply(resultContainer, tuple.getA()));
         }
@@ -60,8 +60,8 @@ abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, Re
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
         if (useIncrementalAccumulator) {
-            UniConstraintCollectorAccumulatedValue<OldA> groupContents = tuple.getStore(groupAccumulatorIndex);
-            groupContents.update(tuple.getA());
+            UniConstraintCollectorAccumulatedValue<OldA> groupElement = tuple.getStore(groupAccumulatorIndex);
+            groupElement.update(tuple.getA());
         } else {
             super.groupUpdate(resultContainer, tuple);
         }
@@ -70,8 +70,8 @@ abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, Re
     @Override
     protected void groupRetract(UniTuple<OldA> tuple) {
         if (useIncrementalAccumulator) {
-            UniConstraintCollectorAccumulatedValue<OldA> groupContents = tuple.removeStore(groupAccumulatorIndex);
-            groupContents.remove();
+            UniConstraintCollectorAccumulatedValue<OldA> groupElement = tuple.removeStore(groupAccumulatorIndex);
+            groupElement.remove();
         } else {
             Runnable undo = tuple.removeStore(groupAccumulatorIndex);
             undo.run();

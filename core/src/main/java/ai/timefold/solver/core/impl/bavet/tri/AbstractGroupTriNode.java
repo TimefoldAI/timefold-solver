@@ -49,9 +49,9 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
     @Override
     protected void groupInsert(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
         if (useIncrementalAccumulator) {
-            var groupContents = incrementalAccumulator.intoGroup(resultContainer);
-            tuple.setStore(groupAccumulatorIndex, groupContents);
-            groupContents.add(tuple.getA(), tuple.getB(), tuple.getC());
+            var groupElement = incrementalAccumulator.intoGroup(resultContainer);
+            tuple.setStore(groupAccumulatorIndex, groupElement);
+            groupElement.add(tuple.getA(), tuple.getB(), tuple.getC());
         } else {
             tuple.setStore(groupAccumulatorIndex, accumulator.apply(resultContainer, tuple.getA(), tuple.getB(), tuple.getC()));
         }
@@ -60,8 +60,8 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
         if (useIncrementalAccumulator) {
-            TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> groupContents = tuple.getStore(groupAccumulatorIndex);
-            groupContents.update(tuple.getA(), tuple.getB(), tuple.getC());
+            TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> groupElement = tuple.getStore(groupAccumulatorIndex);
+            groupElement.update(tuple.getA(), tuple.getB(), tuple.getC());
         } else {
             super.groupUpdate(resultContainer, tuple);
         }
@@ -70,8 +70,8 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
     @Override
     protected void groupRetract(TriTuple<OldA, OldB, OldC> tuple) {
         if (useIncrementalAccumulator) {
-            TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> groupContents = tuple.removeStore(groupAccumulatorIndex);
-            groupContents.remove();
+            TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> groupElement = tuple.removeStore(groupAccumulatorIndex);
+            groupElement.remove();
         } else {
             Runnable undo = tuple.removeStore(groupAccumulatorIndex);
             undo.run();

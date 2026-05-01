@@ -51,9 +51,9 @@ abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends T
     @Override
     protected void groupInsert(ResultContainer_ resultContainer, QuadTuple<OldA, OldB, OldC, OldD> tuple) {
         if (useIncrementalAccumulator) {
-            var groupContents = incrementalAccumulator.intoGroup(resultContainer);
-            tuple.setStore(groupAccumulatorIndex, groupContents);
-            groupContents.add(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
+            var groupElement = incrementalAccumulator.intoGroup(resultContainer);
+            tuple.setStore(groupAccumulatorIndex, groupElement);
+            groupElement.add(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
         } else {
             tuple.setStore(groupAccumulatorIndex,
                     accumulator.apply(resultContainer, tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD()));
@@ -63,9 +63,9 @@ abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends T
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, QuadTuple<OldA, OldB, OldC, OldD> tuple) {
         if (useIncrementalAccumulator) {
-            QuadConstraintCollectorAccumulatedValue<OldA, OldB, OldC, OldD> groupContents =
+            QuadConstraintCollectorAccumulatedValue<OldA, OldB, OldC, OldD> groupElement =
                     tuple.getStore(groupAccumulatorIndex);
-            groupContents.update(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
+            groupElement.update(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
         } else {
             super.groupUpdate(resultContainer, tuple);
         }
@@ -74,9 +74,9 @@ abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends T
     @Override
     protected void groupRetract(QuadTuple<OldA, OldB, OldC, OldD> tuple) {
         if (useIncrementalAccumulator) {
-            QuadConstraintCollectorAccumulatedValue<OldA, OldB, OldC, OldD> groupContents =
+            QuadConstraintCollectorAccumulatedValue<OldA, OldB, OldC, OldD> groupElement =
                     tuple.removeStore(groupAccumulatorIndex);
-            groupContents.remove();
+            groupElement.remove();
         } else {
             Runnable undo = tuple.removeStore(groupAccumulatorIndex);
             undo.run();

@@ -49,9 +49,9 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
     @Override
     protected void groupInsert(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
-            var groupContents = incrementalAccumulator.intoGroup(resultContainer);
-            tuple.setStore(groupAccumulatorIndex, groupContents);
-            groupContents.add(tuple.getA(), tuple.getB());
+            var groupElement = incrementalAccumulator.intoGroup(resultContainer);
+            tuple.setStore(groupAccumulatorIndex, groupElement);
+            groupElement.add(tuple.getA(), tuple.getB());
         } else {
             tuple.setStore(groupAccumulatorIndex, accumulator.apply(resultContainer, tuple.getA(), tuple.getB()));
         }
@@ -60,8 +60,8 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
-            BiConstraintCollectorAccumulatedValue<OldA, OldB> groupContents = tuple.getStore(groupAccumulatorIndex);
-            groupContents.update(tuple.getA(), tuple.getB());
+            BiConstraintCollectorAccumulatedValue<OldA, OldB> groupElement = tuple.getStore(groupAccumulatorIndex);
+            groupElement.update(tuple.getA(), tuple.getB());
         } else {
             super.groupUpdate(resultContainer, tuple);
         }
@@ -70,8 +70,8 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
     @Override
     protected void groupRetract(BiTuple<OldA, OldB> tuple) {
         if (useIncrementalAccumulator) {
-            BiConstraintCollectorAccumulatedValue<OldA, OldB> groupContents = tuple.removeStore(groupAccumulatorIndex);
-            groupContents.remove();
+            BiConstraintCollectorAccumulatedValue<OldA, OldB> groupElement = tuple.removeStore(groupAccumulatorIndex);
+            groupElement.remove();
         } else {
             Runnable undo = tuple.removeStore(groupAccumulatorIndex);
             undo.run();
