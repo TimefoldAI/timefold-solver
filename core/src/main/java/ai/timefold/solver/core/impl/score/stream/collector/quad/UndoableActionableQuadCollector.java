@@ -24,7 +24,7 @@ abstract sealed class UndoableActionableQuadCollector<A, B, C, D, Input_, Output
     @Override
     public @NonNull PentaFunction<Calculator_, A, B, C, D, Runnable> accumulator() {
         return (calculator, a, b, c, d) -> {
-            final Input_ mapped = mapper.apply(a, b, c, d);
+            var mapped = mapper.apply(a, b, c, d);
             return calculator.insert(mapped);
         };
     }

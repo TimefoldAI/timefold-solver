@@ -35,6 +35,7 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
@@ -1011,6 +1012,13 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         return collector.accumulator().apply((Container_) container, value);
     }
 
+    private static <A, Container_, Result_> UniConstraintCollectorAccumulatedValue<A> insert(
+            UniConstraintCollector<A, Container_, Result_> collector, Object container, A value) {
+        var slot = collector.incrementalAccumulator().intoGroup((Container_) container);
+        slot.add(value);
+        return slot;
+    }
+
     private static <A, Container_, Result_> void assertResult(
             UniConstraintCollector<A, Container_, Result_> collector, Object container, Result_ expectedResult) {
         Result_ actualResult = collector.finisher().apply((Container_) container);
@@ -1036,6 +1044,63 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         assertThat(actualResult.unfairness())
                 .as("Collector (" + collector + ") did not produce expected result.")
                 .isEqualTo(expectedValue);
+    }
+
+    @Test
+    public void countUpdate() {
+        UniConstraintCollector<Long, ?, Long> collector = ConstraintCollectors.count();
+        Object container = collector.supplier().get();
+        var slot = insert(collector, container, 1L);
+        assertResult(collector, container, 1L);
+        slot.update(42L); // no-op for count
+        assertResult(collector, container, 1L);
+        slot.remove();
+        assertResult(collector, container, 0L);
+    }
+
+    @Test
+    public void conditionallyUpdate() {
+        UniConstraintCollector<Integer, Object, Integer> collector =
+                ConstraintCollectors.conditionally((Integer i) -> i > 1, min());
+        Object container = collector.supplier().get();
+        var slot = insert(collector, container, 2); // active (2 > 1)
+        assertResult(collector, container, 2);
+        slot.update(1); // active → inactive (1 is not > 1)
+        assertResult(collector, container, null);
+        slot.update(3); // inactive → active (3 > 1)
+        assertResult(collector, container, 3);
+        slot.update(4); // active → active
+        assertResult(collector, container, 4);
+        slot.remove();
+        assertResult(collector, container, null);
+    }
+
+    @Test
+    public void compose2Update() {
+        UniConstraintCollector<Integer, ?, Pair<Integer, Integer>> collector =
+                compose(min(i -> i), max(i -> i),
+                        (BiFunction<Integer, Integer, Pair<Integer, Integer>>) Pair::new);
+        Object container = collector.supplier().get();
+        var slot1 = insert(collector, container, 2);
+        var slot2 = insert(collector, container, 4);
+        assertResult(collector, container, new Pair<>(2, 4));
+        slot1.update(3); // 2 → 3; min becomes 3
+        assertResult(collector, container, new Pair<>(3, 4));
+        slot2.remove();
+        slot1.remove();
+        assertResult(collector, container, new Pair<>(null, null));
+    }
+
+    @Test
+    public void collectAndThenUpdate() {
+        var collector = ConstraintCollectors.collectAndThen(ConstraintCollectors.count(), i -> i * 10);
+        var container = collector.supplier().get();
+        var slot = insert(collector, container, 1);
+        assertResult(collector, container, 10L);
+        slot.update(99); // count no-op; result unchanged
+        assertResult(collector, container, 10L);
+        slot.remove();
+        assertResult(collector, container, 0L);
     }
 
 }

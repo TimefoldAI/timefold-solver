@@ -24,7 +24,7 @@ abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, C
     @Override
     public @NonNull QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
         return (calculator, a, b, c) -> {
-            final Input_ mapped = mapper.apply(a, b, c);
+            var mapped = mapper.apply(a, b, c);
             return calculator.insert(mapped);
         };
     }

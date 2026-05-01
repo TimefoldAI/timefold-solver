@@ -7,7 +7,9 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.impl.score.stream.collector.CollectorUtils;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -16,12 +18,13 @@ final class ConditionalUniCollector<A, ResultContainer_, Result_>
         implements UniConstraintCollector<A, ResultContainer_, Result_> {
     private final Predicate<A> predicate;
     private final UniConstraintCollector<A, ResultContainer_, Result_> delegate;
-    private final BiFunction<ResultContainer_, A, Runnable> innerAccumulator;
+    private final UniConstraintCollectorAccumulator<ResultContainer_, A> innerIncremental;
 
     ConditionalUniCollector(Predicate<A> predicate, UniConstraintCollector<A, ResultContainer_, Result_> delegate) {
         this.predicate = predicate;
         this.delegate = delegate;
-        this.innerAccumulator = delegate.accumulator();
+        this.innerIncremental = delegate.isIncremental() ? delegate.incrementalAccumulator()
+                : CollectorUtils.toIncrementalUni(delegate.accumulator());
     }
 
     @Override
@@ -31,17 +34,21 @@ final class ConditionalUniCollector<A, ResultContainer_, Result_>
 
     @Override
     public @NonNull BiFunction<ResultContainer_, A, Runnable> accumulator() {
-        return (resultContainer, a) -> {
-            if (predicate.test(a)) {
-                return innerAccumulator.apply(resultContainer, a);
-            } else {
-                return ConstantLambdaUtils.noop();
-            }
-        };
+        return CollectorUtils.fromIncrementalUni(incrementalAccumulator());
     }
 
     @Override
-    public @Nullable Function<ResultContainer_, Result_> finisher() {
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull UniConstraintCollectorAccumulator<ResultContainer_, A> incrementalAccumulator() {
+        return AccumulatedValue::new;
+    }
+
+    @Override
+    public @NonNull Function<ResultContainer_, @Nullable Result_> finisher() {
         return delegate.finisher();
     }
 
@@ -58,5 +65,46 @@ final class ConditionalUniCollector<A, ResultContainer_, Result_>
     @Override
     public int hashCode() {
         return Objects.hash(predicate, delegate);
+    }
+
+    private final class AccumulatedValue implements UniConstraintCollectorAccumulatedValue<A> {
+        private final UniConstraintCollectorAccumulatedValue<A> innerValue;
+        private boolean active = false;
+
+        AccumulatedValue(ResultContainer_ container) {
+            this.innerValue = innerIncremental.intoGroup(container);
+        }
+
+        @Override
+        public void add(A a) {
+            if (!predicate.test(a)) {
+                return;
+            }
+            active = true;
+            innerValue.add(a);
+        }
+
+        @Override
+        public void update(A a) {
+            boolean nowActive = predicate.test(a);
+            if (active && nowActive) {
+                innerValue.update(a);
+            } else if (active) {
+                active = false;
+                innerValue.remove();
+            } else if (nowActive) {
+                active = true;
+                innerValue.add(a);
+            }
+        }
+
+        @Override
+        public void remove() {
+            if (!active) {
+                return;
+            }
+            active = false;
+            innerValue.remove();
+        }
     }
 }

@@ -24,7 +24,7 @@ abstract sealed class UndoableActionableBiCollector<A, B, Input_, Output_, Calcu
     @Override
     public @NonNull TriFunction<Calculator_, A, B, Runnable> accumulator() {
         return (calculator, a, b) -> {
-            final Input_ mapped = mapper.apply(a, b);
+            var mapped = mapper.apply(a, b);
             return calculator.insert(mapped);
         };
     }

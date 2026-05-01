@@ -6,6 +6,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.impl.score.stream.collector.CollectorUtils;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.jspecify.annotations.NonNull;
@@ -20,8 +23,8 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
 
-    private final BiFunction<ResultHolder1_, A, Runnable> firstAccumulator;
-    private final BiFunction<ResultHolder2_, A, Runnable> secondAccumulator;
+    private final UniConstraintCollectorAccumulator<ResultHolder1_, A> firstIncremental;
+    private final UniConstraintCollectorAccumulator<ResultHolder2_, A> secondIncremental;
 
     private final Function<ResultHolder1_, Result1_> firstFinisher;
     private final Function<ResultHolder2_, Result2_> secondFinisher;
@@ -36,8 +39,10 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
         this.firstSupplier = first.supplier();
         this.secondSupplier = second.supplier();
 
-        this.firstAccumulator = first.accumulator();
-        this.secondAccumulator = second.accumulator();
+        this.firstIncremental = first.isIncremental() ? first.incrementalAccumulator()
+                : CollectorUtils.toIncrementalUni(first.accumulator());
+        this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
+                : CollectorUtils.toIncrementalUni(second.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -50,19 +55,21 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
 
     @Override
     public @NonNull BiFunction<Pair<ResultHolder1_, ResultHolder2_>, A, Runnable> accumulator() {
-        return (resultHolder, a) -> composeUndo(firstAccumulator.apply(resultHolder.key(), a),
-                secondAccumulator.apply(resultHolder.value(), a));
-    }
-
-    private static Runnable composeUndo(Runnable first, Runnable second) {
-        return () -> {
-            first.run();
-            second.run();
-        };
+        return CollectorUtils.fromIncrementalUni(incrementalAccumulator());
     }
 
     @Override
-    public @Nullable Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull UniConstraintCollectorAccumulator<Pair<ResultHolder1_, ResultHolder2_>, A> incrementalAccumulator() {
+        return AccumulatedValue::new;
+    }
+
+    @Override
+    public @NonNull Function<Pair<ResultHolder1_, ResultHolder2_>, @Nullable Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.key()),
                 secondFinisher.apply(resultHolder.value()));
     }
@@ -81,5 +88,33 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
     @Override
     public int hashCode() {
         return Objects.hash(first, second, composeFunction);
+    }
+
+    private final class AccumulatedValue implements UniConstraintCollectorAccumulatedValue<A> {
+        private final UniConstraintCollectorAccumulatedValue<A> v1;
+        private final UniConstraintCollectorAccumulatedValue<A> v2;
+
+        AccumulatedValue(Pair<ResultHolder1_, ResultHolder2_> container) {
+            this.v1 = firstIncremental.intoGroup(container.key());
+            this.v2 = secondIncremental.intoGroup(container.value());
+        }
+
+        @Override
+        public void add(A a) {
+            v1.add(a);
+            v2.add(a);
+        }
+
+        @Override
+        public void update(A a) {
+            v1.update(a);
+            v2.update(a);
+        }
+
+        @Override
+        public void remove() {
+            v1.remove();
+            v2.remove();
+        }
     }
 }

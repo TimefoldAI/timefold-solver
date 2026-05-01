@@ -7,6 +7,9 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.impl.score.stream.collector.CollectorUtils;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 import org.jspecify.annotations.NonNull;
@@ -26,10 +29,10 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
     private final Supplier<ResultHolder3_> thirdSupplier;
     private final Supplier<ResultHolder4_> fourthSupplier;
 
-    private final BiFunction<ResultHolder1_, A, Runnable> firstAccumulator;
-    private final BiFunction<ResultHolder2_, A, Runnable> secondAccumulator;
-    private final BiFunction<ResultHolder3_, A, Runnable> thirdAccumulator;
-    private final BiFunction<ResultHolder4_, A, Runnable> fourthAccumulator;
+    private final UniConstraintCollectorAccumulator<ResultHolder1_, A> firstIncremental;
+    private final UniConstraintCollectorAccumulator<ResultHolder2_, A> secondIncremental;
+    private final UniConstraintCollectorAccumulator<ResultHolder3_, A> thirdIncremental;
+    private final UniConstraintCollectorAccumulator<ResultHolder4_, A> fourthIncremental;
 
     private final Function<ResultHolder1_, Result1_> firstFinisher;
     private final Function<ResultHolder2_, Result2_> secondFinisher;
@@ -52,10 +55,14 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
         this.thirdSupplier = third.supplier();
         this.fourthSupplier = fourth.supplier();
 
-        this.firstAccumulator = first.accumulator();
-        this.secondAccumulator = second.accumulator();
-        this.thirdAccumulator = third.accumulator();
-        this.fourthAccumulator = fourth.accumulator();
+        this.firstIncremental = first.isIncremental() ? first.incrementalAccumulator()
+                : CollectorUtils.toIncrementalUni(first.accumulator());
+        this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
+                : CollectorUtils.toIncrementalUni(second.accumulator());
+        this.thirdIncremental = third.isIncremental() ? third.incrementalAccumulator()
+                : CollectorUtils.toIncrementalUni(third.accumulator());
+        this.fourthIncremental = fourth.isIncremental() ? fourth.incrementalAccumulator()
+                : CollectorUtils.toIncrementalUni(fourth.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -76,24 +83,24 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
     @Override
     public @NonNull BiFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, Runnable>
             accumulator() {
-        return (resultHolder, a) -> composeUndo(firstAccumulator.apply(resultHolder.a(), a),
-                secondAccumulator.apply(resultHolder.b(), a),
-                thirdAccumulator.apply(resultHolder.c(), a),
-                fourthAccumulator.apply(resultHolder.d(), a));
-    }
-
-    private static Runnable composeUndo(Runnable first, Runnable second, Runnable third,
-            Runnable fourth) {
-        return () -> {
-            first.run();
-            second.run();
-            third.run();
-            fourth.run();
-        };
+        return CollectorUtils.fromIncrementalUni(incrementalAccumulator());
     }
 
     @Override
-    public @Nullable Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull
+            UniConstraintCollectorAccumulator<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A>
+            incrementalAccumulator() {
+        return AccumulatedValue::new;
+    }
+
+    @Override
+    public @NonNull Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, @Nullable Result_>
+            finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.a()),
                 secondFinisher.apply(resultHolder.b()),
                 thirdFinisher.apply(resultHolder.c()),
@@ -117,5 +124,43 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
     @Override
     public int hashCode() {
         return Objects.hash(first, second, third, fourth, composeFunction);
+    }
+
+    private final class AccumulatedValue implements UniConstraintCollectorAccumulatedValue<A> {
+        private final UniConstraintCollectorAccumulatedValue<A> v1;
+        private final UniConstraintCollectorAccumulatedValue<A> v2;
+        private final UniConstraintCollectorAccumulatedValue<A> v3;
+        private final UniConstraintCollectorAccumulatedValue<A> v4;
+
+        AccumulatedValue(Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_> container) {
+            this.v1 = firstIncremental.intoGroup(container.a());
+            this.v2 = secondIncremental.intoGroup(container.b());
+            this.v3 = thirdIncremental.intoGroup(container.c());
+            this.v4 = fourthIncremental.intoGroup(container.d());
+        }
+
+        @Override
+        public void add(A a) {
+            v1.add(a);
+            v2.add(a);
+            v3.add(a);
+            v4.add(a);
+        }
+
+        @Override
+        public void update(A a) {
+            v1.update(a);
+            v2.update(a);
+            v3.update(a);
+            v4.update(a);
+        }
+
+        @Override
+        public void remove() {
+            v1.remove();
+            v2.remove();
+            v3.remove();
+            v4.remove();
+        }
     }
 }

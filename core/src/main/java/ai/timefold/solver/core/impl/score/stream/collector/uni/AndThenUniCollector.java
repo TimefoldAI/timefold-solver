@@ -6,6 +6,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.impl.score.stream.collector.CollectorUtils;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -15,11 +17,14 @@ final class AndThenUniCollector<A, ResultContainer_, Intermediate_, Result_>
 
     private final UniConstraintCollector<A, ResultContainer_, Intermediate_> delegate;
     private final Function<Intermediate_, Result_> mappingFunction;
+    private final UniConstraintCollectorAccumulator<ResultContainer_, A> innerIncremental;
 
     AndThenUniCollector(UniConstraintCollector<A, ResultContainer_, Intermediate_> delegate,
             Function<Intermediate_, Result_> mappingFunction) {
         this.delegate = Objects.requireNonNull(delegate);
         this.mappingFunction = Objects.requireNonNull(mappingFunction);
+        this.innerIncremental = delegate.isIncremental() ? delegate.incrementalAccumulator()
+                : CollectorUtils.toIncrementalUni(delegate.accumulator());
     }
 
     @Override
@@ -29,11 +34,21 @@ final class AndThenUniCollector<A, ResultContainer_, Intermediate_, Result_>
 
     @Override
     public @NonNull BiFunction<ResultContainer_, A, Runnable> accumulator() {
-        return delegate.accumulator();
+        return CollectorUtils.fromIncrementalUni(incrementalAccumulator());
     }
 
     @Override
-    public @Nullable Function<ResultContainer_, Result_> finisher() {
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull UniConstraintCollectorAccumulator<ResultContainer_, A> incrementalAccumulator() {
+        return innerIncremental;
+    }
+
+    @Override
+    public @NonNull Function<ResultContainer_, @Nullable Result_> finisher() {
         var finisher = delegate.finisher();
         return container -> mappingFunction.apply(finisher.apply(container));
     }
