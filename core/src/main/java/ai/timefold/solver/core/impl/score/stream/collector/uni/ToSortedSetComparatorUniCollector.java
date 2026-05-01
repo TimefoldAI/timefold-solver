@@ -11,7 +11,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.SortedSetUndoableActi
 import org.jspecify.annotations.NonNull;
 
 final class ToSortedSetComparatorUniCollector<A, Mapped_>
-        extends UndoableActionableUniCollector<A, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
+        extends
+        UndoableActionableUniCollector<A, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable.State<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
 
     ToSortedSetComparatorUniCollector(Function<? super A, ? extends Mapped_> mapper,
@@ -21,8 +22,18 @@ final class ToSortedSetComparatorUniCollector<A, Mapped_>
     }
 
     @Override
-    public @NonNull Supplier<SortedSetUndoableActionable<Mapped_>> supplier() {
-        return () -> SortedSetUndoableActionable.orderBy(comparator);
+    public @NonNull Supplier<SortedSetUndoableActionable.State<Mapped_>> supplier() {
+        return () -> new SortedSetUndoableActionable.State<>(comparator);
+    }
+
+    @Override
+    public @NonNull Function<SortedSetUndoableActionable.State<Mapped_>, SortedSet<Mapped_>> finisher() {
+        return SortedSetUndoableActionable.State::result;
+    }
+
+    @Override
+    protected SortedSetUndoableActionable<Mapped_> newUndoableActionable(SortedSetUndoableActionable.State<Mapped_> state) {
+        return new SortedSetUndoableActionable<>(state);
     }
 
     @Override

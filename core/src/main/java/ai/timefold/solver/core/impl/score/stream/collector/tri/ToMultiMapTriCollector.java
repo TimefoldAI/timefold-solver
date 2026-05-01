@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.collector.tri;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
@@ -14,7 +15,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ToMultiMapTriCollector<A, B, C, Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
         extends
-        UndoableActionableTriCollector<A, B, C, Pair<Key_, Value_>, Result_, MapUndoableActionable<Key_, Value_, Set_, Result_>> {
+        UndoableActionableTriCollector<A, B, C, Pair<Key_, Value_>, Result_, MapUndoableActionable.State<Key_, Value_, Set_, Result_>, MapUndoableActionable<Key_, Value_, Set_, Result_>> {
     private final TriFunction<? super A, ? super B, ? super C, ? extends Key_> keyFunction;
     private final TriFunction<? super A, ? super B, ? super C, ? extends Value_> valueFunction;
     private final Supplier<Result_> mapSupplier;
@@ -32,8 +33,19 @@ final class ToMultiMapTriCollector<A, B, C, Key_, Value_, Set_ extends Set<Value
     }
 
     @Override
-    public @NonNull Supplier<MapUndoableActionable<Key_, Value_, Set_, Result_>> supplier() {
-        return () -> MapUndoableActionable.multiMap(mapSupplier, setFunction);
+    public @NonNull Supplier<MapUndoableActionable.State<Key_, Value_, Set_, Result_>> supplier() {
+        return () -> MapUndoableActionable.multiMapState(mapSupplier, setFunction);
+    }
+
+    @Override
+    public @NonNull Function<MapUndoableActionable.State<Key_, Value_, Set_, Result_>, Result_> finisher() {
+        return state -> state.result();
+    }
+
+    @Override
+    protected MapUndoableActionable<Key_, Value_, Set_, Result_> newUndoableActionable(
+            MapUndoableActionable.State<Key_, Value_, Set_, Result_> state) {
+        return new MapUndoableActionable<>(state);
     }
 
     // Don't call super equals/hashCode; the groupingFunction is calculated from keyFunction

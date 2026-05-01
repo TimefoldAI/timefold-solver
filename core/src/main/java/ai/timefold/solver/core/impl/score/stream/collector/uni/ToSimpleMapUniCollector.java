@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ToSimpleMapUniCollector<A, Key_, Value_, Result_ extends Map<Key_, Value_>>
         extends
-        UndoableActionableUniCollector<A, Pair<Key_, Value_>, Result_, MapUndoableActionable<Key_, Value_, Value_, Result_>> {
+        UndoableActionableUniCollector<A, Pair<Key_, Value_>, Result_, MapUndoableActionable.State<Key_, Value_, Value_, Result_>, MapUndoableActionable<Key_, Value_, Value_, Result_>> {
     private final Function<? super A, ? extends Key_> keyFunction;
     private final Function<? super A, ? extends Value_> valueFunction;
     private final Supplier<Result_> mapSupplier;
@@ -31,8 +31,19 @@ final class ToSimpleMapUniCollector<A, Key_, Value_, Result_ extends Map<Key_, V
     }
 
     @Override
-    public @NonNull Supplier<MapUndoableActionable<Key_, Value_, Value_, Result_>> supplier() {
-        return () -> MapUndoableActionable.mergeMap(mapSupplier, mergeFunction);
+    public @NonNull Supplier<MapUndoableActionable.State<Key_, Value_, Value_, Result_>> supplier() {
+        return () -> MapUndoableActionable.mergeMapState(mapSupplier, mergeFunction);
+    }
+
+    @Override
+    public @NonNull Function<MapUndoableActionable.State<Key_, Value_, Value_, Result_>, Result_> finisher() {
+        return MapUndoableActionable.State::result;
+    }
+
+    @Override
+    protected MapUndoableActionable<Key_, Value_, Value_, Result_> newUndoableActionable(
+            MapUndoableActionable.State<Key_, Value_, Value_, Result_> state) {
+        return new MapUndoableActionable<>(state);
     }
 
     // Don't call super equals/hashCode; the groupingFunction is calculated from keyFunction

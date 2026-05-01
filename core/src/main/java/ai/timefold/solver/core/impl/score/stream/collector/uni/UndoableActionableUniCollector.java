@@ -2,36 +2,41 @@ package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.impl.score.stream.collector.CollectorUtils;
 import ai.timefold.solver.core.impl.score.stream.collector.UndoableActionable;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
-abstract sealed class UndoableActionableUniCollector<A, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
-        implements UniConstraintCollector<A, Calculator_, Output_>
+abstract sealed class UndoableActionableUniCollector<A, Input_, Output_, State_, Calculator_ extends UndoableActionable<Input_>>
+        implements UniConstraintCollector<A, State_, Output_>
         permits MaxComparableUniCollector, MaxComparatorUniCollector, MaxPropertyUniCollector, MinComparableUniCollector,
         MinComparatorUniCollector, MinPropertyUniCollector, ToCollectionUniCollector, ToListUniCollector,
         ToMultiMapUniCollector, ToSetUniCollector, ToSimpleMapUniCollector, ToSortedSetComparatorUniCollector {
-    private final Function<? super A, ? extends Input_> mapper;
+    private final java.util.function.Function<? super A, ? extends Input_> mapper;
 
-    public UndoableActionableUniCollector(Function<? super A, ? extends Input_> mapper) {
+    public UndoableActionableUniCollector(java.util.function.Function<? super A, ? extends Input_> mapper) {
         this.mapper = mapper;
     }
 
+    protected abstract Calculator_ newUndoableActionable(State_ state);
+
     @Override
-    public @NonNull BiFunction<Calculator_, A, Runnable> accumulator() {
-        return (calculator, a) -> {
-            final Input_ mapped = mapper.apply(a);
-            return calculator.insert(mapped);
-        };
+    public boolean isIncremental() {
+        return true;
     }
 
     @Override
-    public @Nullable Function<Calculator_, Output_> finisher() {
-        return UndoableActionable::result;
+    public @NonNull BiFunction<State_, A, Runnable> accumulator() {
+        return CollectorUtils.fromIncrementalUni(incrementalAccumulator());
+    }
+
+    @Override
+    public @NonNull UniConstraintCollectorAccumulator<State_, A> incrementalAccumulator() {
+        return AccumulatedValue::new;
     }
 
     @Override
@@ -40,12 +45,35 @@ abstract sealed class UndoableActionableUniCollector<A, Input_, Output_, Calcula
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (UndoableActionableUniCollector<?, ?, ?, ?>) object;
+        var that = (UndoableActionableUniCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(mapper);
+    }
+
+    private final class AccumulatedValue implements UniConstraintCollectorAccumulatedValue<A> {
+        private final Calculator_ calculator;
+
+        AccumulatedValue(State_ state) {
+            this.calculator = newUndoableActionable(state);
+        }
+
+        @Override
+        public void add(A a) {
+            calculator.insert(mapper.apply(a));
+        }
+
+        @Override
+        public void update(A a) {
+            calculator.update(mapper.apply(a));
+        }
+
+        @Override
+        public void remove() {
+            calculator.retract();
+        }
     }
 }

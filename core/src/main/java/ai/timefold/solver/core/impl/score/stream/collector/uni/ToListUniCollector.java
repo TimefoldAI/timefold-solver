@@ -9,13 +9,24 @@ import ai.timefold.solver.core.impl.score.stream.collector.ListUndoableActionabl
 import org.jspecify.annotations.NonNull;
 
 final class ToListUniCollector<A, Mapped_>
-        extends UndoableActionableUniCollector<A, Mapped_, List<Mapped_>, ListUndoableActionable<Mapped_>> {
+        extends
+        UndoableActionableUniCollector<A, Mapped_, List<Mapped_>, ListUndoableActionable.State<Mapped_>, ListUndoableActionable<Mapped_>> {
     ToListUniCollector(Function<? super A, ? extends Mapped_> mapper) {
         super(mapper);
     }
 
     @Override
-    public @NonNull Supplier<ListUndoableActionable<Mapped_>> supplier() {
-        return ListUndoableActionable::new;
+    public @NonNull Supplier<ListUndoableActionable.State<Mapped_>> supplier() {
+        return ListUndoableActionable.State::new;
+    }
+
+    @Override
+    public @NonNull Function<ListUndoableActionable.State<Mapped_>, List<Mapped_>> finisher() {
+        return ListUndoableActionable.State::result;
+    }
+
+    @Override
+    protected ListUndoableActionable<Mapped_> newUndoableActionable(ListUndoableActionable.State<Mapped_> state) {
+        return new ListUndoableActionable<>(state);
     }
 }

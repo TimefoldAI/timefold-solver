@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1318,6 +1319,205 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         assertResult(collector, container, buildConsecutiveUsage(new Interval(8, 12)));
         slot1.remove();
         assertResult(collector, container, buildConsecutiveUsage());
+    }
+
+    @Test
+    public void toListUpdate() {
+        var collector = ConstraintCollectors.<Integer> toList();
+        var container = collector.supplier().get();
+        var slot1 = insert(collector, container, 1);
+        var slot2 = insert(collector, container, 2);
+        assertResult(collector, container, asList(1, 2));
+        slot1.update(3);
+        assertResult(collector, container, asList(3, 2));
+        slot1.update(3); // no short-circuit; re-inserted at end
+        assertResult(collector, container, asList(3, 2));
+        slot2.remove();
+        assertResult(collector, container, singletonList(3));
+        slot1.remove();
+        assertResult(collector, container, emptyList());
+    }
+
+    @Test
+    public void toSetUpdate() {
+        var collector = ConstraintCollectors.<Integer> toSet();
+        var container = collector.supplier().get();
+        var slot1 = insert(collector, container, 1);
+        var slot2 = insert(collector, container, 2);
+        assertResult(collector, container, asSet(1, 2));
+        slot1.update(3);
+        assertResult(collector, container, asSet(2, 3));
+        slot1.update(3); // Objects.equals short-circuit
+        assertResult(collector, container, asSet(2, 3));
+        slot2.remove();
+        assertResult(collector, container, singleton(3));
+        slot1.remove();
+        assertResult(collector, container, emptySet());
+    }
+
+    @Test
+    public void toSortedSetUpdate() {
+        var collector = ConstraintCollectors.<Integer> toSortedSet();
+        var container = collector.supplier().get();
+        var slot1 = insert(collector, container, 1);
+        var slot2 = insert(collector, container, 2);
+        assertResult(collector, container, asSortedSet(1, 2));
+        slot1.update(3);
+        assertResult(collector, container, asSortedSet(2, 3));
+        slot1.update(3); // Objects.equals short-circuit
+        assertResult(collector, container, asSortedSet(2, 3));
+        slot2.remove();
+        assertResult(collector, container, asSortedSet(3));
+        slot1.remove();
+        assertResult(collector, container, emptySortedSet());
+    }
+
+    @Test
+    public void toCollectionUpdate() {
+        var collector = InnerUniConstraintCollectors.<Integer, Integer, ArrayList<Integer>> toCollection(
+                Function.identity(), ArrayList::new);
+        var container = collector.supplier().get();
+        var slot1 = insert(collector, container, 1);
+        var slot2 = insert(collector, container, 2);
+        assertResult(collector, container, new ArrayList<>(asList(1, 2)));
+        slot1.update(3);
+        assertResult(collector, container, new ArrayList<>(asList(2, 3)));
+        slot1.update(3); // no short-circuit; re-inserted at end
+        assertResult(collector, container, new ArrayList<>(asList(2, 3)));
+        slot2.remove();
+        assertResult(collector, container, new ArrayList<>(singletonList(3)));
+        slot1.remove();
+        assertResult(collector, container, new ArrayList<>());
+    }
+
+    @Test
+    public void toMapUpdate() {
+        var collector = ConstraintCollectors.<Integer, Integer, Integer> toMap(
+                Function.identity(), Function.identity());
+        var container = collector.supplier().get();
+        var slot1 = insert(collector, container, 2);
+        var slot2 = insert(collector, container, 1);
+        assertResult(collector, container, asMap(2, singleton(2), 1, singleton(1)));
+        slot1.update(3);
+        assertResult(collector, container, asMap(1, singleton(1), 3, singleton(3)));
+        slot1.update(3); // Objects.equals short-circuit on Pair(3,3)
+        assertResult(collector, container, asMap(1, singleton(1), 3, singleton(3)));
+        slot2.remove();
+        assertResult(collector, container, asMap(3, singleton(3)));
+        slot1.remove();
+        assertResult(collector, container, emptyMap());
+    }
+
+    @Test
+    public void toMapMergedUpdate() {
+        var collector = ConstraintCollectors.<Integer, Integer, Integer> toMap(
+                Function.identity(), Function.identity(), Integer::sum);
+        var container = collector.supplier().get();
+        var slot1 = insert(collector, container, 2);
+        var slot2 = insert(collector, container, 1);
+        assertResult(collector, container, asMap(2, 2, 1, 1));
+        slot1.update(3);
+        assertResult(collector, container, asMap(1, 1, 3, 3));
+        slot1.update(3); // Objects.equals short-circuit on Pair(3,3)
+        assertResult(collector, container, asMap(1, 1, 3, 3));
+        slot2.remove();
+        assertResult(collector, container, asMap(3, 3));
+        slot1.remove();
+        assertResult(collector, container, emptyMap());
+    }
+
+    @Test
+    public void toSortedMapUpdate() {
+        var collector = ConstraintCollectors.<Integer, Integer, Integer> toSortedMap(
+                Function.identity(), Function.identity());
+        var container = collector.supplier().get();
+        var slot1 = insert(collector, container, 2);
+        var slot2 = insert(collector, container, 1);
+        assertResult(collector, container, asSortedMap(1, singleton(1), 2, singleton(2)));
+        slot1.update(3);
+        assertResult(collector, container, asSortedMap(1, singleton(1), 3, singleton(3)));
+        slot1.update(3); // Objects.equals short-circuit on Pair(3,3)
+        assertResult(collector, container, asSortedMap(1, singleton(1), 3, singleton(3)));
+        slot2.remove();
+        assertResult(collector, container, asSortedMap(3, singleton(3)));
+        slot1.remove();
+        assertResult(collector, container, emptySortedMap());
+    }
+
+    @Test
+    public void minComparableUpdate() {
+        UniConstraintCollector<Integer, ?, Integer> collector = min();
+        var container = collector.supplier().get();
+        var slot1 = insert(collector, container, 5);
+        var slot2 = insert(collector, container, 3);
+        assertResult(collector, container, 3);
+        slot2.update(6);
+        assertResult(collector, container, 5);
+        slot2.update(6); // Objects.equals short-circuit
+        assertResult(collector, container, 5);
+        slot1.update(1);
+        assertResult(collector, container, 1);
+        slot2.remove();
+        assertResult(collector, container, 1);
+        slot1.remove();
+        assertResult(collector, container, null);
+    }
+
+    @Test
+    public void maxComparableUpdate() {
+        UniConstraintCollector<Integer, ?, Integer> collector = max();
+        var container = collector.supplier().get();
+        var slot1 = insert(collector, container, 3);
+        var slot2 = insert(collector, container, 5);
+        assertResult(collector, container, 5);
+        slot2.update(2);
+        assertResult(collector, container, 3);
+        slot2.update(2); // Objects.equals short-circuit
+        assertResult(collector, container, 3);
+        slot1.update(7);
+        assertResult(collector, container, 7);
+        slot2.remove();
+        assertResult(collector, container, 7);
+        slot1.remove();
+        assertResult(collector, container, null);
+    }
+
+    @Test
+    public void minNotComparableUpdate() {
+        var collector = min(Function.identity(), o -> (String) o);
+        var container = collector.supplier().get();
+        var slot1 = insert(collector, container, (Object) "b");
+        var slot2 = insert(collector, container, (Object) "a");
+        assertResult(collector, container, "a");
+        slot2.update("c");
+        assertResult(collector, container, "b");
+        slot2.update("c"); // Objects.equals short-circuit
+        assertResult(collector, container, "b");
+        slot1.update("a");
+        assertResult(collector, container, "a");
+        slot2.remove();
+        assertResult(collector, container, "a");
+        slot1.remove();
+        assertResult(collector, container, null);
+    }
+
+    @Test
+    public void maxNotComparableUpdate() {
+        UniConstraintCollector<String, ?, String> collector = max(Function.identity(), o -> o);
+        var container = collector.supplier().get();
+        var slot1 = insert(collector, container, "b");
+        var slot2 = insert(collector, container, "a");
+        assertResult(collector, container, "b");
+        slot2.update("c");
+        assertResult(collector, container, "c");
+        slot2.update("c"); // Objects.equals short-circuit
+        assertResult(collector, container, "c");
+        slot1.update("a");
+        assertResult(collector, container, "c");
+        slot2.remove();
+        assertResult(collector, container, "a");
+        slot1.remove();
+        assertResult(collector, container, null);
     }
 
 }

@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.tri;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
@@ -10,8 +9,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.UndoableActionable;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
-        implements TriConstraintCollector<A, B, C, Calculator_, Output_>
+abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, State_, Calculator_ extends UndoableActionable<Input_>>
+        implements TriConstraintCollector<A, B, C, State_, Output_>
         permits MaxComparableTriCollector, MaxComparatorTriCollector, MaxPropertyTriCollector, MinComparableTriCollector,
         MinComparatorTriCollector, MinPropertyTriCollector, ToCollectionTriCollector, ToListTriCollector,
         ToMultiMapTriCollector, ToSetTriCollector, ToSimpleMapTriCollector, ToSortedSetComparatorTriCollector {
@@ -21,17 +20,15 @@ abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, C
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
-        return (calculator, a, b, c) -> {
-            var mapped = mapper.apply(a, b, c);
-            return calculator.insert(mapped);
-        };
-    }
+    protected abstract Calculator_ newUndoableActionable(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return UndoableActionable::result;
+    public @NonNull QuadFunction<State_, A, B, C, Runnable> accumulator() {
+        return (state, a, b, c) -> {
+            var ua = newUndoableActionable(state);
+            ua.insert(mapper.apply(a, b, c));
+            return ua::retract;
+        };
     }
 
     @Override
@@ -40,7 +37,7 @@ abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, C
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (UndoableActionableTriCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (UndoableActionableTriCollector<?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

@@ -10,7 +10,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.MinMaxUndoableActiona
 import org.jspecify.annotations.NonNull;
 
 final class MinComparatorUniCollector<A, Result_>
-        extends UndoableActionableUniCollector<A, Result_, Result_, MinMaxUndoableActionable<Result_, Result_>> {
+        extends
+        UndoableActionableUniCollector<A, Result_, Result_, MinMaxUndoableActionable.State<Result_, Result_>, MinMaxUndoableActionable<Result_, Result_>> {
     private final Comparator<? super Result_> comparator;
 
     MinComparatorUniCollector(Function<? super A, ? extends Result_> mapper, Comparator<? super Result_> comparator) {
@@ -19,8 +20,19 @@ final class MinComparatorUniCollector<A, Result_>
     }
 
     @Override
-    public @NonNull Supplier<MinMaxUndoableActionable<Result_, Result_>> supplier() {
-        return () -> MinMaxUndoableActionable.minCalculator(comparator);
+    public @NonNull Supplier<MinMaxUndoableActionable.State<Result_, Result_>> supplier() {
+        return () -> MinMaxUndoableActionable.minState(comparator);
+    }
+
+    @Override
+    public @NonNull Function<MinMaxUndoableActionable.State<Result_, Result_>, Result_> finisher() {
+        return MinMaxUndoableActionable.State::result;
+    }
+
+    @Override
+    protected MinMaxUndoableActionable<Result_, Result_> newUndoableActionable(
+            MinMaxUndoableActionable.State<Result_, Result_> state) {
+        return new MinMaxUndoableActionable<>(state);
     }
 
     @Override

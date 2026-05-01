@@ -10,7 +10,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.MinMaxUndoableActiona
 import org.jspecify.annotations.NonNull;
 
 final class MinPropertyTriCollector<A, B, C, Result_, Property_ extends Comparable<? super Property_>>
-        extends UndoableActionableTriCollector<A, B, C, Result_, Result_, MinMaxUndoableActionable<Result_, Property_>> {
+        extends
+        UndoableActionableTriCollector<A, B, C, Result_, Result_, MinMaxUndoableActionable.State<Result_, Property_>, MinMaxUndoableActionable<Result_, Property_>> {
     private final Function<? super Result_, ? extends Property_> propertyMapper;
 
     MinPropertyTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Result_> mapper,
@@ -20,8 +21,19 @@ final class MinPropertyTriCollector<A, B, C, Result_, Property_ extends Comparab
     }
 
     @Override
-    public @NonNull Supplier<MinMaxUndoableActionable<Result_, Property_>> supplier() {
-        return () -> MinMaxUndoableActionable.minCalculator(propertyMapper);
+    public @NonNull Supplier<MinMaxUndoableActionable.State<Result_, Property_>> supplier() {
+        return () -> MinMaxUndoableActionable.minState(propertyMapper);
+    }
+
+    @Override
+    public @NonNull Function<MinMaxUndoableActionable.State<Result_, Property_>, Result_> finisher() {
+        return state -> state.result();
+    }
+
+    @Override
+    protected MinMaxUndoableActionable<Result_, Property_> newUndoableActionable(
+            MinMaxUndoableActionable.State<Result_, Property_> state) {
+        return new MinMaxUndoableActionable<>(state);
     }
 
     @Override

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.collector.quad;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
@@ -12,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ToCollectionQuadCollector<A, B, C, D, Mapped_, Result_ extends Collection<Mapped_>>
         extends
-        UndoableActionableQuadCollector<A, B, C, D, Mapped_, Result_, CustomCollectionUndoableActionable<Mapped_, Result_>> {
+        UndoableActionableQuadCollector<A, B, C, D, Mapped_, Result_, CustomCollectionUndoableActionable.State<Mapped_, Result_>, CustomCollectionUndoableActionable<Mapped_, Result_>> {
     private final IntFunction<Result_> collectionFunction;
 
     ToCollectionQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper,
@@ -22,8 +23,19 @@ final class ToCollectionQuadCollector<A, B, C, D, Mapped_, Result_ extends Colle
     }
 
     @Override
-    public @NonNull Supplier<CustomCollectionUndoableActionable<Mapped_, Result_>> supplier() {
-        return () -> new CustomCollectionUndoableActionable<>(collectionFunction);
+    public @NonNull Supplier<CustomCollectionUndoableActionable.State<Mapped_, Result_>> supplier() {
+        return () -> new CustomCollectionUndoableActionable.State<>(collectionFunction);
+    }
+
+    @Override
+    public @NonNull Function<CustomCollectionUndoableActionable.State<Mapped_, Result_>, Result_> finisher() {
+        return state -> state.result();
+    }
+
+    @Override
+    protected CustomCollectionUndoableActionable<Mapped_, Result_> newUndoableActionable(
+            CustomCollectionUndoableActionable.State<Mapped_, Result_> state) {
+        return new CustomCollectionUndoableActionable<>(state);
     }
 
     @Override

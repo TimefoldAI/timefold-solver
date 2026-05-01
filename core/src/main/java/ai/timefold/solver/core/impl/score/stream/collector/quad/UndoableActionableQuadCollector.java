@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.quad;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
@@ -10,28 +9,27 @@ import ai.timefold.solver.core.impl.score.stream.collector.UndoableActionable;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class UndoableActionableQuadCollector<A, B, C, D, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
-        implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
+abstract sealed class UndoableActionableQuadCollector<A, B, C, D, Input_, Output_, State_, Calculator_ extends UndoableActionable<Input_>>
+        implements QuadConstraintCollector<A, B, C, D, State_, Output_>
         permits MaxComparableQuadCollector, MaxComparatorQuadCollector, MaxPropertyQuadCollector, MinComparableQuadCollector,
         MinComparatorQuadCollector, MinPropertyQuadCollector, ToCollectionQuadCollector, ToListQuadCollector,
         ToMultiMapQuadCollector, ToSetQuadCollector, ToSimpleMapQuadCollector, ToSortedSetComparatorQuadCollector {
     private final QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Input_> mapper;
 
-    public UndoableActionableQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Input_> mapper) {
+    public UndoableActionableQuadCollector(
+            QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Input_> mapper) {
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull PentaFunction<Calculator_, A, B, C, D, Runnable> accumulator() {
-        return (calculator, a, b, c, d) -> {
-            var mapped = mapper.apply(a, b, c, d);
-            return calculator.insert(mapped);
-        };
-    }
+    protected abstract Calculator_ newUndoableActionable(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return UndoableActionable::result;
+    public @NonNull PentaFunction<State_, A, B, C, D, Runnable> accumulator() {
+        return (state, a, b, c, d) -> {
+            var ua = newUndoableActionable(state);
+            ua.insert(mapper.apply(a, b, c, d));
+            return ua::retract;
+        };
     }
 
     @Override
@@ -40,7 +38,7 @@ abstract sealed class UndoableActionableQuadCollector<A, B, C, D, Input_, Output
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (UndoableActionableQuadCollector<?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (UndoableActionableQuadCollector<?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.stream.collector.bi;
 
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
@@ -10,8 +9,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.UndoableActionable;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class UndoableActionableBiCollector<A, B, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
-        implements BiConstraintCollector<A, B, Calculator_, Output_>
+abstract sealed class UndoableActionableBiCollector<A, B, Input_, Output_, State_, Calculator_ extends UndoableActionable<Input_>>
+        implements BiConstraintCollector<A, B, State_, Output_>
         permits MaxComparableBiCollector, MaxComparatorBiCollector, MaxPropertyBiCollector, MinComparableBiCollector,
         MinComparatorBiCollector, MinPropertyBiCollector, ToCollectionBiCollector, ToListBiCollector, ToMultiMapBiCollector,
         ToSetBiCollector, ToSimpleMapBiCollector, ToSortedSetComparatorBiCollector {
@@ -21,17 +20,15 @@ abstract sealed class UndoableActionableBiCollector<A, B, Input_, Output_, Calcu
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull TriFunction<Calculator_, A, B, Runnable> accumulator() {
-        return (calculator, a, b) -> {
-            var mapped = mapper.apply(a, b);
-            return calculator.insert(mapped);
-        };
-    }
+    protected abstract Calculator_ newUndoableActionable(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return UndoableActionable::result;
+    public @NonNull TriFunction<State_, A, B, Runnable> accumulator() {
+        return (state, a, b) -> {
+            var ua = newUndoableActionable(state);
+            ua.insert(mapper.apply(a, b));
+            return ua::retract;
+        };
     }
 
     @Override
@@ -40,7 +37,7 @@ abstract sealed class UndoableActionableBiCollector<A, B, Input_, Output_, Calcu
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (UndoableActionableBiCollector<?, ?, ?, ?, ?>) object;
+        var that = (UndoableActionableBiCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

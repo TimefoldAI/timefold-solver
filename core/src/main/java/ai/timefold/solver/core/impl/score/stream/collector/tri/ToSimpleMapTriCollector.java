@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.collector.tri;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
@@ -13,7 +14,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ToSimpleMapTriCollector<A, B, C, Key_, Value_, Result_ extends Map<Key_, Value_>>
         extends
-        UndoableActionableTriCollector<A, B, C, Pair<Key_, Value_>, Result_, MapUndoableActionable<Key_, Value_, Value_, Result_>> {
+        UndoableActionableTriCollector<A, B, C, Pair<Key_, Value_>, Result_, MapUndoableActionable.State<Key_, Value_, Value_, Result_>, MapUndoableActionable<Key_, Value_, Value_, Result_>> {
     private final TriFunction<? super A, ? super B, ? super C, ? extends Key_> keyFunction;
     private final TriFunction<? super A, ? super B, ? super C, ? extends Value_> valueFunction;
     private final Supplier<Result_> mapSupplier;
@@ -31,8 +32,19 @@ final class ToSimpleMapTriCollector<A, B, C, Key_, Value_, Result_ extends Map<K
     }
 
     @Override
-    public @NonNull Supplier<MapUndoableActionable<Key_, Value_, Value_, Result_>> supplier() {
-        return () -> MapUndoableActionable.mergeMap(mapSupplier, mergeFunction);
+    public @NonNull Supplier<MapUndoableActionable.State<Key_, Value_, Value_, Result_>> supplier() {
+        return () -> MapUndoableActionable.mergeMapState(mapSupplier, mergeFunction);
+    }
+
+    @Override
+    public @NonNull Function<MapUndoableActionable.State<Key_, Value_, Value_, Result_>, Result_> finisher() {
+        return state -> state.result();
+    }
+
+    @Override
+    protected MapUndoableActionable<Key_, Value_, Value_, Result_> newUndoableActionable(
+            MapUndoableActionable.State<Key_, Value_, Value_, Result_> state) {
+        return new MapUndoableActionable<>(state);
     }
 
     // Don't call super equals/hashCode; the groupingFunction is calculated from keyFunction

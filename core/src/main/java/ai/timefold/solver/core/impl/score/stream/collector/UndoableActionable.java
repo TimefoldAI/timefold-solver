@@ -1,9 +1,14 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
-public sealed interface UndoableActionable<Input_, Output_>
+public sealed interface UndoableActionable<Input_>
         permits CustomCollectionUndoableActionable, ListUndoableActionable, MapUndoableActionable, MinMaxUndoableActionable,
         SetUndoableActionable, SortedSetUndoableActionable {
-    Runnable insert(Input_ input);
+    void insert(Input_ input);
 
-    Output_ result();
+    default void update(Input_ input) {
+        retract();
+        insert(input);
+    }
+
+    void retract();
 }

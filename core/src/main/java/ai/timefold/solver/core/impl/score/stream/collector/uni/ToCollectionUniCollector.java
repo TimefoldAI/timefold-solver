@@ -11,7 +11,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.CustomCollectionUndoa
 import org.jspecify.annotations.NonNull;
 
 final class ToCollectionUniCollector<A, Mapped_, Result_ extends Collection<Mapped_>>
-        extends UndoableActionableUniCollector<A, Mapped_, Result_, CustomCollectionUndoableActionable<Mapped_, Result_>> {
+        extends
+        UndoableActionableUniCollector<A, Mapped_, Result_, CustomCollectionUndoableActionable.State<Mapped_, Result_>, CustomCollectionUndoableActionable<Mapped_, Result_>> {
     private final IntFunction<Result_> collectionFunction;
 
     ToCollectionUniCollector(Function<? super A, ? extends Mapped_> mapper,
@@ -21,8 +22,19 @@ final class ToCollectionUniCollector<A, Mapped_, Result_ extends Collection<Mapp
     }
 
     @Override
-    public @NonNull Supplier<CustomCollectionUndoableActionable<Mapped_, Result_>> supplier() {
-        return () -> new CustomCollectionUndoableActionable<>(collectionFunction);
+    public @NonNull Supplier<CustomCollectionUndoableActionable.State<Mapped_, Result_>> supplier() {
+        return () -> new CustomCollectionUndoableActionable.State<>(collectionFunction);
+    }
+
+    @Override
+    public @NonNull Function<CustomCollectionUndoableActionable.State<Mapped_, Result_>, Result_> finisher() {
+        return CustomCollectionUndoableActionable.State::result;
+    }
+
+    @Override
+    protected CustomCollectionUndoableActionable<Mapped_, Result_> newUndoableActionable(
+            CustomCollectionUndoableActionable.State<Mapped_, Result_> state) {
+        return new CustomCollectionUndoableActionable<>(state);
     }
 
     @Override
