@@ -34,17 +34,17 @@ public class InnerUniConstraintCollectors {
 
     public static <A> UniConstraintCollector<A, ?, BigDecimal> averageBigDecimal(
             Function<? super A, ? extends BigDecimal> mapper) {
-        return new AverageReferenceUniCollector<>(mapper, ReferenceAverageCalculator.bigDecimal());
+        return new AverageReferenceUniCollector<>(mapper, ReferenceAverageCalculator.bigDecimalState());
     }
 
     public static <A> UniConstraintCollector<A, ?, BigDecimal> averageBigInteger(
             Function<? super A, ? extends BigInteger> mapper) {
-        return new AverageReferenceUniCollector<>(mapper, ReferenceAverageCalculator.bigInteger());
+        return new AverageReferenceUniCollector<>(mapper, ReferenceAverageCalculator.bigIntegerState());
     }
 
     public static <A> UniConstraintCollector<A, ?, Duration> averageDuration(
             Function<? super A, ? extends Duration> mapper) {
-        return new AverageReferenceUniCollector<>(mapper, ReferenceAverageCalculator.duration());
+        return new AverageReferenceUniCollector<>(mapper, ReferenceAverageCalculator.durationState());
     }
 
     public static <A, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.collector.bi;
 
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
@@ -9,18 +10,30 @@ import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalcu
 import org.jspecify.annotations.NonNull;
 
 final class AverageReferenceBiCollector<A, B, Mapped_, Average_>
-        extends ObjectCalculatorBiCollector<A, B, Mapped_, Average_, Mapped_, ReferenceAverageCalculator<Mapped_, Average_>> {
-    private final Supplier<ReferenceAverageCalculator<Mapped_, Average_>> calculatorSupplier;
+        extends
+        ObjectCalculatorBiCollector<A, B, Mapped_, Average_, ReferenceAverageCalculator.State<Mapped_, Average_>, ReferenceAverageCalculator<Mapped_, Average_>> {
+    private final Supplier<ReferenceAverageCalculator.State<Mapped_, Average_>> stateSupplier;
 
     AverageReferenceBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper,
-            Supplier<ReferenceAverageCalculator<Mapped_, Average_>> calculatorSupplier) {
+            Supplier<ReferenceAverageCalculator.State<Mapped_, Average_>> stateSupplier) {
         super(mapper);
-        this.calculatorSupplier = calculatorSupplier;
+        this.stateSupplier = stateSupplier;
     }
 
     @Override
-    public @NonNull Supplier<ReferenceAverageCalculator<Mapped_, Average_>> supplier() {
-        return calculatorSupplier;
+    protected ReferenceAverageCalculator<Mapped_, Average_>
+            newCalculator(ReferenceAverageCalculator.State<Mapped_, Average_> state) {
+        return new ReferenceAverageCalculator<>(state);
+    }
+
+    @Override
+    public @NonNull Supplier<ReferenceAverageCalculator.State<Mapped_, Average_>> supplier() {
+        return stateSupplier;
+    }
+
+    @Override
+    public @NonNull Function<ReferenceAverageCalculator.State<Mapped_, Average_>, Average_> finisher() {
+        return ReferenceAverageCalculator.State::result;
     }
 
     @Override
@@ -32,11 +45,11 @@ final class AverageReferenceBiCollector<A, B, Mapped_, Average_>
         if (!super.equals(object))
             return false;
         AverageReferenceBiCollector<?, ?, ?, ?> that = (AverageReferenceBiCollector<?, ?, ?, ?>) object;
-        return Objects.equals(calculatorSupplier, that.calculatorSupplier);
+        return Objects.equals(stateSupplier, that.stateSupplier);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), calculatorSupplier);
+        return Objects.hash(super.hashCode(), stateSupplier);
     }
 }

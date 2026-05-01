@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
-public sealed interface LongCalculator<Output_> permits LongAverageCalculator, LongSumCalculator {
+public sealed interface LongCalculator permits LongAverageCalculator, LongSumCalculator {
     void insert(long input);
 
-    void retract(long input);
+    void update(long input);
 
-    Output_ result();
+    void retract();
 }

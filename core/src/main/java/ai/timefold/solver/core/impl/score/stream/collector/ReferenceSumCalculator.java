@@ -2,30 +2,49 @@ package ai.timefold.solver.core.impl.score.stream.collector;
 
 import java.util.function.BinaryOperator;
 
-public final class ReferenceSumCalculator<Result_> implements ObjectCalculator<Result_, Result_, Result_> {
-    private Result_ current;
-    private final BinaryOperator<Result_> adder;
-    private final BinaryOperator<Result_> subtractor;
+public final class ReferenceSumCalculator<Result_> implements ObjectCalculator<Result_> {
 
-    public ReferenceSumCalculator(Result_ current, BinaryOperator<Result_> adder, BinaryOperator<Result_> subtractor) {
-        this.current = current;
-        this.adder = adder;
-        this.subtractor = subtractor;
+    public static final class State<Result_> {
+        Result_ current;
+        final BinaryOperator<Result_> adder;
+        final BinaryOperator<Result_> subtractor;
+
+        public State(Result_ zero, BinaryOperator<Result_> adder, BinaryOperator<Result_> subtractor) {
+            this.current = zero;
+            this.adder = adder;
+            this.subtractor = subtractor;
+        }
+
+        public Result_ result() {
+            return current;
+        }
+    }
+
+    private final State<Result_> state;
+    private Result_ cachedValue;
+
+    public ReferenceSumCalculator(State<Result_> state) {
+        this.state = state;
     }
 
     @Override
-    public Result_ insert(Result_ input) {
-        current = adder.apply(current, input);
-        return input;
+    public void insert(Result_ input) {
+        cachedValue = input;
+        state.current = state.adder.apply(state.current, input);
     }
 
     @Override
-    public void retract(Result_ mapped) {
-        current = subtractor.apply(current, mapped);
+    public void update(Result_ input) {
+        if (cachedValue == input) {
+            return;
+        }
+        state.current = state.subtractor.apply(state.current, cachedValue);
+        cachedValue = input;
+        state.current = state.adder.apply(state.current, input);
     }
 
     @Override
-    public Result_ result() {
-        return current;
+    public void retract() {
+        state.current = state.subtractor.apply(state.current, cachedValue);
     }
 }

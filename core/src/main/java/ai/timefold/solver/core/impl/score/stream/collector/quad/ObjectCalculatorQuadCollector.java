@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.quad;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
@@ -10,8 +9,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
-        implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
+abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_, State_, Calculator_ extends ObjectCalculator<Input_>>
+        implements QuadConstraintCollector<A, B, C, D, State_, Output_>
         permits AverageReferenceQuadCollector, ConnectedRangesQuadConstraintCollector,
         ConsecutiveSequencesQuadConstraintCollector, CountDistinctQuadCollector,
         SumReferenceQuadCollector {
@@ -22,18 +21,15 @@ abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_,
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull PentaFunction<Calculator_, A, B, C, D, Runnable> accumulator() {
-        return (calculator, a, b, c, d) -> {
-            final var mapped = mapper.apply(a, b, c, d);
-            final var saved = calculator.insert(mapped);
-            return () -> calculator.retract(saved);
-        };
-    }
+    protected abstract Calculator_ newCalculator(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return ObjectCalculator::result;
+    public @NonNull PentaFunction<State_, A, B, C, D, Runnable> accumulator() {
+        return (state, a, b, c, d) -> {
+            var calc = newCalculator(state);
+            calc.insert(mapper.apply(a, b, c, d));
+            return calc::retract;
+        };
     }
 
     @Override

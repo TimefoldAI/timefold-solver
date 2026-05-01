@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.tri;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
@@ -10,26 +9,23 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class LongCalculatorTriCollector<A, B, C, Output_, Calculator_ extends LongCalculator<Output_>>
-        implements TriConstraintCollector<A, B, C, Calculator_, Output_> permits AverageTriCollector, SumTriCollector {
+abstract sealed class LongCalculatorTriCollector<A, B, C, Output_, State_, Calculator_ extends LongCalculator>
+        implements TriConstraintCollector<A, B, C, State_, Output_> permits AverageTriCollector, SumTriCollector {
     private final ToLongTriFunction<? super A, ? super B, ? super C> mapper;
 
     public LongCalculatorTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
-        return (calculator, a, b, c) -> {
-            final long mapped = mapper.applyAsLong(a, b, c);
-            calculator.insert(mapped);
-            return () -> calculator.retract(mapped);
-        };
-    }
+    protected abstract Calculator_ newCalculator(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return LongCalculator::result;
+    public @NonNull QuadFunction<State_, A, B, C, Runnable> accumulator() {
+        return (state, a, b, c) -> {
+            var calc = newCalculator(state);
+            calc.insert(mapper.applyAsLong(a, b, c));
+            return calc::retract;
+        };
     }
 
     @Override
@@ -38,7 +34,7 @@ abstract sealed class LongCalculatorTriCollector<A, B, C, Output_, Calculator_ e
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (LongCalculatorTriCollector<?, ?, ?, ?, ?>) object;
+        var that = (LongCalculatorTriCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

@@ -34,23 +34,23 @@ public class InnerQuadConstraintCollectors {
 
     static <A, B, C, D, Mapped_, Average_> QuadConstraintCollector<A, B, C, D, ?, Average_> average(
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper,
-            Supplier<ReferenceAverageCalculator<Mapped_, Average_>> calculatorSupplier) {
-        return new AverageReferenceQuadCollector<>(mapper, calculatorSupplier);
+            Supplier<ReferenceAverageCalculator.State<Mapped_, Average_>> stateSupplier) {
+        return new AverageReferenceQuadCollector<>(mapper, stateSupplier);
     }
 
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, BigDecimal> averageBigDecimal(
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends BigDecimal> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigDecimal());
+        return average(mapper, ReferenceAverageCalculator.bigDecimalState());
     }
 
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, BigDecimal> averageBigInteger(
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends BigInteger> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigInteger());
+        return average(mapper, ReferenceAverageCalculator.bigIntegerState());
     }
 
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Duration> averageDuration(
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Duration> mapper) {
-        return average(mapper, ReferenceAverageCalculator.duration());
+        return average(mapper, ReferenceAverageCalculator.durationState());
     }
 
     public static <A, B, C, D, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>

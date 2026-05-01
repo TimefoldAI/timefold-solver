@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.collector.tri;
 
 import java.util.Objects;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
@@ -10,7 +11,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.ReferenceSumCalculato
 import org.jspecify.annotations.NonNull;
 
 final class SumReferenceTriCollector<A, B, C, Result_>
-        extends ObjectCalculatorTriCollector<A, B, C, Result_, Result_, Result_, ReferenceSumCalculator<Result_>> {
+        extends
+        ObjectCalculatorTriCollector<A, B, C, Result_, Result_, ReferenceSumCalculator.State<Result_>, ReferenceSumCalculator<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;
@@ -25,8 +27,18 @@ final class SumReferenceTriCollector<A, B, C, Result_>
     }
 
     @Override
-    public @NonNull Supplier<ReferenceSumCalculator<Result_>> supplier() {
-        return () -> new ReferenceSumCalculator<>(zero, adder, subtractor);
+    public @NonNull Supplier<ReferenceSumCalculator.State<Result_>> supplier() {
+        return () -> new ReferenceSumCalculator.State<>(zero, adder, subtractor);
+    }
+
+    @Override
+    public @NonNull Function<ReferenceSumCalculator.State<Result_>, Result_> finisher() {
+        return ReferenceSumCalculator.State::result;
+    }
+
+    @Override
+    protected ReferenceSumCalculator<Result_> newCalculator(ReferenceSumCalculator.State<Result_> state) {
+        return new ReferenceSumCalculator<>(state);
     }
 
     @Override

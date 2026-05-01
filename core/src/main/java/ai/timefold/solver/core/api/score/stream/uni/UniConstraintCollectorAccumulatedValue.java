@@ -6,10 +6,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * Represents a handle for a single value in a single {@link UniConstraintCollectorAccumulator} group.
  * <ul>
- *  <li>{@link #add(Object)} will be called externally exactly once, when the value enters the group.
- *  An instance of {@link UniConstraintCollectorAccumulatedValue} will only be created if there is a value to add.</li>
- *  <li>{@link #update(Object)} will be called externally zero or more times.</li>
- *  <li>{@link #remove()} will be called externally at most once, if the value is ever removed from the group.</li>
+ * <li>{@link #add(Object)} will be called externally exactly once, when the value enters the group.
+ * An instance of {@link UniConstraintCollectorAccumulatedValue} will only be created if there is a value to add.</li>
+ * <li>{@link #update(Object)} will be called externally zero or more times.</li>
+ * <li>{@link #remove()} will be called externally at most once, if the value is ever removed from the group.</li>
  * </ul>
  * This contract guarantees that the user can keep internal caches between add, update and remove
  * to avoid some expensive operations; if the added object equals the updated or removed object,

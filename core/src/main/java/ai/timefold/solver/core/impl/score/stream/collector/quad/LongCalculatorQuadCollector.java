@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.quad;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
@@ -10,8 +9,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class LongCalculatorQuadCollector<A, B, C, D, Output_, Calculator_ extends LongCalculator<Output_>>
-        implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
+abstract sealed class LongCalculatorQuadCollector<A, B, C, D, Output_, State_, Calculator_ extends LongCalculator>
+        implements QuadConstraintCollector<A, B, C, D, State_, Output_>
         permits AverageQuadCollector, SumQuadCollector {
     private final ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper;
 
@@ -19,18 +18,15 @@ abstract sealed class LongCalculatorQuadCollector<A, B, C, D, Output_, Calculato
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull PentaFunction<Calculator_, A, B, C, D, Runnable> accumulator() {
-        return (calculator, a, b, c, d) -> {
-            final long mapped = mapper.applyAsLong(a, b, c, d);
-            calculator.insert(mapped);
-            return () -> calculator.retract(mapped);
-        };
-    }
+    protected abstract Calculator_ newCalculator(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return LongCalculator::result;
+    public @NonNull PentaFunction<State_, A, B, C, D, Runnable> accumulator() {
+        return (state, a, b, c, d) -> {
+            var calc = newCalculator(state);
+            calc.insert(mapper.applyAsLong(a, b, c, d));
+            return calc::retract;
+        };
     }
 
     @Override
@@ -39,7 +35,7 @@ abstract sealed class LongCalculatorQuadCollector<A, B, C, D, Output_, Calculato
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (LongCalculatorQuadCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (LongCalculatorQuadCollector<?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

@@ -5,34 +5,39 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.impl.score.stream.collector.CollectorUtils;
 import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
-abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
-        implements UniConstraintCollector<A, Calculator_, Output_>
+abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, State_, Calculator_ extends ObjectCalculator<Input_>>
+        implements UniConstraintCollector<A, State_, Output_>
         permits AverageReferenceUniCollector, ConnectedRangesUniConstraintCollector, ConsecutiveSequencesUniConstraintCollector,
         CountDistinctUniCollector, SumReferenceUniCollector {
 
     protected final Function<? super A, ? extends Input_> mapper;
 
-    public ObjectCalculatorUniCollector(Function<? super A, ? extends Input_> mapper) {
+    ObjectCalculatorUniCollector(Function<? super A, ? extends Input_> mapper) {
         this.mapper = Objects.requireNonNull(mapper);
     }
 
+    protected abstract Calculator_ newCalculator(State_ state);
+
     @Override
-    public @NonNull BiFunction<Calculator_, A, Runnable> accumulator() {
-        return (calculator, a) -> {
-            final var mapped = mapper.apply(a);
-            final var saved = calculator.insert(mapped);
-            return () -> calculator.retract(saved);
-        };
+    public boolean isIncremental() {
+        return true;
     }
 
     @Override
-    public @Nullable Function<Calculator_, Output_> finisher() {
-        return ObjectCalculator::result;
+    public @NonNull BiFunction<State_, A, Runnable> accumulator() {
+        return CollectorUtils.fromIncrementalUni(incrementalAccumulator());
+    }
+
+    @Override
+    public @NonNull UniConstraintCollectorAccumulator<State_, A> incrementalAccumulator() {
+        return AccumulatedValue::new;
     }
 
     @Override
@@ -48,5 +53,28 @@ abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Mapped_, 
     @Override
     public int hashCode() {
         return Objects.hash(mapper);
+    }
+
+    private final class AccumulatedValue implements UniConstraintCollectorAccumulatedValue<A> {
+        private final Calculator_ calculator;
+
+        AccumulatedValue(State_ state) {
+            this.calculator = newCalculator(state);
+        }
+
+        @Override
+        public void add(A a) {
+            calculator.insert(mapper.apply(a));
+        }
+
+        @Override
+        public void update(A a) {
+            calculator.update(mapper.apply(a));
+        }
+
+        @Override
+        public void remove() {
+            calculator.retract();
+        }
     }
 }

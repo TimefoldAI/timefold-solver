@@ -10,7 +10,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.ReferenceSumCalculato
 import org.jspecify.annotations.NonNull;
 
 final class SumReferenceUniCollector<A, Result_>
-        extends ObjectCalculatorUniCollector<A, Result_, Result_, Result_, ReferenceSumCalculator<Result_>> {
+        extends
+        ObjectCalculatorUniCollector<A, Result_, Result_, ReferenceSumCalculator.State<Result_>, ReferenceSumCalculator<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;
@@ -24,8 +25,18 @@ final class SumReferenceUniCollector<A, Result_>
     }
 
     @Override
-    public @NonNull Supplier<ReferenceSumCalculator<Result_>> supplier() {
-        return () -> new ReferenceSumCalculator<>(zero, adder, subtractor);
+    protected ReferenceSumCalculator<Result_> newCalculator(ReferenceSumCalculator.State<Result_> state) {
+        return new ReferenceSumCalculator<>(state);
+    }
+
+    @Override
+    public @NonNull Supplier<ReferenceSumCalculator.State<Result_>> supplier() {
+        return () -> new ReferenceSumCalculator.State<>(zero, adder, subtractor);
+    }
+
+    @Override
+    public @NonNull Function<ReferenceSumCalculator.State<Result_>, Result_> finisher() {
+        return ReferenceSumCalculator.State::result;
     }
 
     @Override

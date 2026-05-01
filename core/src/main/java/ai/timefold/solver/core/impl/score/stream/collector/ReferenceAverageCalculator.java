@@ -8,66 +8,85 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
-public final class ReferenceAverageCalculator<Input_, Output_> implements ObjectCalculator<Input_, Output_, Input_> {
-    int count = 0;
-    Input_ sum;
-    final BinaryOperator<Input_> adder;
-    final BinaryOperator<Input_> subtractor;
-    final BiFunction<Input_, Integer, Output_> divider;
+public final class ReferenceAverageCalculator<Input_, Output_> implements ObjectCalculator<Input_> {
 
-    private final static Supplier<ReferenceAverageCalculator<BigDecimal, BigDecimal>> BIG_DECIMAL =
-            () -> new ReferenceAverageCalculator<>(BigDecimal.ZERO, BigDecimal::add, BigDecimal::subtract,
+    public static final class State<Input_, Output_> {
+        int count = 0;
+        Input_ sum;
+        final BinaryOperator<Input_> adder;
+        final BinaryOperator<Input_> subtractor;
+        final BiFunction<Input_, Integer, Output_> divider;
+
+        State(Input_ zero, BinaryOperator<Input_> adder, BinaryOperator<Input_> subtractor,
+                BiFunction<Input_, Integer, Output_> divider) {
+            this.sum = zero;
+            this.adder = adder;
+            this.subtractor = subtractor;
+            this.divider = divider;
+        }
+
+        public Output_ result() {
+            if (count == 0) {
+                return null;
+            }
+            return divider.apply(sum, count);
+        }
+    }
+
+    private final State<Input_, Output_> state;
+    private Input_ cachedValue;
+
+    private final static Supplier<State<BigDecimal, BigDecimal>> BIG_DECIMAL =
+            () -> new State<>(BigDecimal.ZERO, BigDecimal::add, BigDecimal::subtract,
                     (sum, count) -> sum.divide(BigDecimal.valueOf(count), RoundingMode.HALF_EVEN));
 
-    private final static Supplier<ReferenceAverageCalculator<BigInteger, BigDecimal>> BIG_INTEGER =
-            () -> new ReferenceAverageCalculator<>(BigInteger.ZERO, BigInteger::add, BigInteger::subtract,
+    private final static Supplier<State<BigInteger, BigDecimal>> BIG_INTEGER =
+            () -> new State<>(BigInteger.ZERO, BigInteger::add, BigInteger::subtract,
                     (sum, count) -> new BigDecimal(sum).divide(BigDecimal.valueOf(count), RoundingMode.HALF_EVEN));
 
-    private final static Supplier<ReferenceAverageCalculator<Duration, Duration>> DURATION =
-            () -> new ReferenceAverageCalculator<>(Duration.ZERO, Duration::plus, Duration::minus,
+    private final static Supplier<State<Duration, Duration>> DURATION =
+            () -> new State<>(Duration.ZERO, Duration::plus, Duration::minus,
                     (sum, count) -> {
                         long nanos = sum.toNanos();
                         return Duration.ofNanos(nanos / count);
                     });
 
-    public ReferenceAverageCalculator(Input_ zero, BinaryOperator<Input_> adder, BinaryOperator<Input_> subtractor,
-            BiFunction<Input_, Integer, Output_> divider) {
-        this.sum = zero;
-        this.adder = adder;
-        this.subtractor = subtractor;
-        this.divider = divider;
+    public ReferenceAverageCalculator(State<Input_, Output_> state) {
+        this.state = state;
     }
 
-    public static Supplier<ReferenceAverageCalculator<BigDecimal, BigDecimal>> bigDecimal() {
+    public static Supplier<State<BigDecimal, BigDecimal>> bigDecimalState() {
         return BIG_DECIMAL;
     }
 
-    public static Supplier<ReferenceAverageCalculator<BigInteger, BigDecimal>> bigInteger() {
+    public static Supplier<State<BigInteger, BigDecimal>> bigIntegerState() {
         return BIG_INTEGER;
     }
 
-    public static Supplier<ReferenceAverageCalculator<Duration, Duration>> duration() {
+    public static Supplier<State<Duration, Duration>> durationState() {
         return DURATION;
     }
 
     @Override
-    public Input_ insert(Input_ input) {
-        count++;
-        sum = adder.apply(sum, input);
-        return input;
+    public void insert(Input_ input) {
+        cachedValue = input;
+        state.count++;
+        state.sum = state.adder.apply(state.sum, input);
     }
 
     @Override
-    public void retract(Input_ mapped) {
-        count--;
-        sum = subtractor.apply(sum, mapped);
-    }
-
-    @Override
-    public Output_ result() {
-        if (count == 0) {
-            return null;
+    public void update(Input_ input) {
+        if (cachedValue == input) {
+            return;
         }
-        return divider.apply(sum, count);
+        state.sum = state.subtractor.apply(state.sum, cachedValue);
+        state.sum = state.adder.apply(state.sum, input);
+        cachedValue = input;
+    }
+
+    @Override
+    public void retract() {
+        state.count--;
+        state.sum = state.subtractor.apply(state.sum, cachedValue);
     }
 }

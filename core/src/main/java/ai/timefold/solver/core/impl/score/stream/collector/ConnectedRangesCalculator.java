@@ -8,35 +8,45 @@ import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.Conn
 import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.Range;
 
 public final class ConnectedRangesCalculator<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements
-        ObjectCalculator<Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, Range<Interval_, Point_>> {
+        implements ObjectCalculator<Interval_> {
 
-    private final ConnectedRangeTracker<Interval_, Point_, Difference_> context;
+    public static final class State<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>> {
+        private final ConnectedRangeTracker<Interval_, Point_, Difference_> context;
 
-    public ConnectedRangesCalculator(Function<? super Interval_, ? extends Point_> startMap,
-            Function<? super Interval_, ? extends Point_> endMap,
-            BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
-        this.context = new ConnectedRangeTracker<>(
-                startMap,
-                endMap,
-                differenceFunction);
+        public State(Function<? super Interval_, ? extends Point_> startMap,
+                Function<? super Interval_, ? extends Point_> endMap,
+                BiFunction<? super Point_, ? super Point_, ? extends Difference_> differenceFunction) {
+            this.context = new ConnectedRangeTracker<>(startMap, endMap, differenceFunction);
+        }
+
+        public ConnectedRangeChain<Interval_, Point_, Difference_> result() {
+            return context.getConnectedRangeChain();
+        }
+    }
+
+    private final State<Interval_, Point_, Difference_> state;
+    private Range<Interval_, Point_> cachedRange;
+
+    public ConnectedRangesCalculator(State<Interval_, Point_, Difference_> state) {
+        this.state = state;
     }
 
     @Override
-    public Range<Interval_, Point_> insert(Interval_ result) {
-        final var saved = context.getRange(result);
-        context.add(saved);
-        return saved;
+    public void insert(Interval_ result) {
+        final var saved = state.context.getRange(result);
+        cachedRange = saved;
+        state.context.add(saved);
     }
 
     @Override
-    public void retract(Range<Interval_, Point_> range) {
-        context.remove(range);
+    public void update(Interval_ input) {
+        state.context.remove(cachedRange);
+        cachedRange = state.context.getRange(input);
+        state.context.add(cachedRange);
     }
 
     @Override
-    public ConnectedRangeChain<Interval_, Point_, Difference_> result() {
-        return context.getConnectedRangeChain();
+    public void retract() {
+        state.context.remove(cachedRange);
     }
-
 }

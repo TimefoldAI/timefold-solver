@@ -10,7 +10,6 @@ import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
 import ai.timefold.solver.jackson.api.TimefoldJacksonModule;
 
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,7 @@ class SequenceRoundTripTest {
     }
 
     @Test
-    void roundTrip() throws JacksonException {
+    <Ctx_> void roundTrip() throws JacksonException {
         // Prepare the data to be serialized.
         Item sequence1Item1 = new Item("sequence1Item1", 0);
         Item sequence1Item2 = new Item("sequence1Item2", 1);
@@ -40,7 +39,7 @@ class SequenceRoundTripTest {
         Item sequence2Item2 = new Item("sequence2Item2", 4);
         Item sequence2Item3 = new Item("sequence2Item3", 5);
         Item sequence3Item1 = new Item("sequence3Item1", 7);
-        UniConstraintCollector<Item, SequenceCalculator<Integer>, SequenceChain<Item, Integer>> collector =
+        UniConstraintCollector<Item, Ctx_, SequenceChain<Item, Integer>> collector =
                 (UniConstraintCollector) ConstraintCollectors.toConsecutiveSequences(Item::index);
         var context = collector.supplier().get();
         var accumulator = collector.accumulator();

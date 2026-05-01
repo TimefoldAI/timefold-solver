@@ -8,13 +8,12 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.impl.score.stream.collector.ConnectedRangesCalculator;
-import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.Range;
 
 import org.jspecify.annotations.NonNull;
 
 final class ConnectedRangesQuadConstraintCollector<A, B, C, D, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         extends
-        ObjectCalculatorQuadCollector<A, B, C, D, Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, Range<Interval_, Point_>, ConnectedRangesCalculator<Interval_, Point_, Difference_>> {
+        ObjectCalculatorQuadCollector<A, B, C, D, Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, ConnectedRangesCalculator.State<Interval_, Point_, Difference_>, ConnectedRangesCalculator<Interval_, Point_, Difference_>> {
 
     private final Function<? super Interval_, ? extends Point_> startMap;
     private final Function<? super Interval_, ? extends Point_> endMap;
@@ -31,8 +30,21 @@ final class ConnectedRangesQuadConstraintCollector<A, B, C, D, Interval_, Point_
     }
 
     @Override
-    public @NonNull Supplier<ConnectedRangesCalculator<Interval_, Point_, Difference_>> supplier() {
-        return () -> new ConnectedRangesCalculator<>(startMap, endMap, differenceFunction);
+    public @NonNull Supplier<ConnectedRangesCalculator.State<Interval_, Point_, Difference_>> supplier() {
+        return () -> new ConnectedRangesCalculator.State<>(startMap, endMap, differenceFunction);
+    }
+
+    @Override
+    public @NonNull
+            Function<ConnectedRangesCalculator.State<Interval_, Point_, Difference_>, ConnectedRangeChain<Interval_, Point_, Difference_>>
+            finisher() {
+        return ConnectedRangesCalculator.State::result;
+    }
+
+    @Override
+    protected ConnectedRangesCalculator<Interval_, Point_, Difference_> newCalculator(
+            ConnectedRangesCalculator.State<Interval_, Point_, Difference_> state) {
+        return new ConnectedRangesCalculator<>(state);
     }
 
     @Override

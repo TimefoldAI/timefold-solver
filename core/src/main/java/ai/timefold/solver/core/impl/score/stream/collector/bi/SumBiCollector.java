@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.bi;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToLongBiFunction;
 
@@ -7,13 +8,24 @@ import ai.timefold.solver.core.impl.score.stream.collector.LongSumCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-final class SumBiCollector<A, B> extends LongCalculatorBiCollector<A, B, Long, LongSumCalculator> {
+final class SumBiCollector<A, B>
+        extends LongCalculatorBiCollector<A, B, Long, LongSumCalculator.State, LongSumCalculator> {
     SumBiCollector(ToLongBiFunction<? super A, ? super B> mapper) {
         super(mapper);
     }
 
     @Override
-    public @NonNull Supplier<LongSumCalculator> supplier() {
-        return LongSumCalculator::new;
+    protected LongSumCalculator newCalculator(LongSumCalculator.State state) {
+        return new LongSumCalculator(state);
+    }
+
+    @Override
+    public @NonNull Supplier<LongSumCalculator.State> supplier() {
+        return LongSumCalculator.State::new;
+    }
+
+    @Override
+    public @NonNull Function<LongSumCalculator.State, Long> finisher() {
+        return LongSumCalculator.State::result;
     }
 }

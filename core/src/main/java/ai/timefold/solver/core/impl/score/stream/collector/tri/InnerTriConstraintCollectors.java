@@ -34,23 +34,23 @@ public class InnerTriConstraintCollectors {
 
     static <A, B, C, Mapped_, Average_> TriConstraintCollector<A, B, C, ?, Average_> average(
             TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper,
-            Supplier<ReferenceAverageCalculator<Mapped_, Average_>> calculatorSupplier) {
-        return new AverageReferenceTriCollector<>(mapper, calculatorSupplier);
+            Supplier<ReferenceAverageCalculator.State<Mapped_, Average_>> stateSupplier) {
+        return new AverageReferenceTriCollector<>(mapper, stateSupplier);
     }
 
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, BigDecimal> averageBigDecimal(
             TriFunction<? super A, ? super B, ? super C, ? extends BigDecimal> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigDecimal());
+        return average(mapper, ReferenceAverageCalculator.bigDecimalState());
     }
 
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, BigDecimal> averageBigInteger(
             TriFunction<? super A, ? super B, ? super C, ? extends BigInteger> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigInteger());
+        return average(mapper, ReferenceAverageCalculator.bigIntegerState());
     }
 
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Duration> averageDuration(
             TriFunction<? super A, ? super B, ? super C, ? extends Duration> mapper) {
-        return average(mapper, ReferenceAverageCalculator.duration());
+        return average(mapper, ReferenceAverageCalculator.durationState());
     }
 
     public static <A, B, C, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>
