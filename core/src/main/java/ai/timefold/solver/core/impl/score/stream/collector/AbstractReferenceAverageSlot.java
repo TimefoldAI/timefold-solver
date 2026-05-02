@@ -8,21 +8,23 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 public abstract class AbstractReferenceAverageSlot<Input_, Output_> {
 
     public static final class State<Input_, Output_> {
-        int count = 0;
-        Input_ sum;
-        final BinaryOperator<Input_> adder;
-        final BinaryOperator<Input_> subtractor;
-        final BiFunction<Input_, Integer, Output_> divider;
+        private final BinaryOperator<Input_> adder;
+        private final BinaryOperator<Input_> subtractor;
+        private final BiFunction<Input_, Integer, Output_> divider;
+        private int count = 0;
+        private Input_ sum;
 
         State(Input_ zero, BinaryOperator<Input_> adder, BinaryOperator<Input_> subtractor,
                 BiFunction<Input_, Integer, Output_> divider) {
-            this.sum = zero;
             this.adder = adder;
             this.subtractor = subtractor;
             this.divider = divider;
+            this.sum = zero;
         }
 
         public Output_ result() {
@@ -34,7 +36,7 @@ public abstract class AbstractReferenceAverageSlot<Input_, Output_> {
     }
 
     private final State<Input_, Output_> state;
-    private Input_ cachedValue;
+    private @Nullable Input_ cachedValue;
 
     private final static Supplier<State<BigDecimal, BigDecimal>> BIG_DECIMAL =
             () -> new State<>(BigDecimal.ZERO, BigDecimal::add, BigDecimal::subtract,

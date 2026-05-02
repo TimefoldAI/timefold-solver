@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.collector;
 public abstract class AbstractCountSlot {
 
     public static final class State {
-        long count = 0;
+        private long count = 0;
 
         public Long result() {
             return count;

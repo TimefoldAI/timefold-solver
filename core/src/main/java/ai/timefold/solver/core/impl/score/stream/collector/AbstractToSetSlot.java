@@ -7,9 +7,11 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.util.MutableInt;
 
+import org.jspecify.annotations.Nullable;
+
 public abstract class AbstractToSetSlot<Mapped_> {
     public static final class State<Mapped_> {
-        final Map<Mapped_, MutableInt> itemToCount = new LinkedHashMap<>();
+        private final Map<Mapped_, MutableInt> itemToCount = new LinkedHashMap<>();
 
         public Set<Mapped_> result() {
             return itemToCount.keySet();
@@ -17,17 +19,17 @@ public abstract class AbstractToSetSlot<Mapped_> {
     }
 
     private final State<Mapped_> state;
-    private Mapped_ cachedValue;
-    private MutableInt cachedCount;
+    private @Nullable Mapped_ cachedValue;
+    private @Nullable MutableInt cachedCount;
 
     public AbstractToSetSlot(State<Mapped_> state) {
         this.state = state;
     }
 
     protected void addMapped(Mapped_ result) {
-        this.cachedValue = result;
-        this.cachedCount = state.itemToCount.computeIfAbsent(result, ignored -> new MutableInt());
-        this.cachedCount.increment();
+        cachedValue = result;
+        cachedCount = state.itemToCount.computeIfAbsent(result, ignored -> new MutableInt());
+        cachedCount.increment();
     }
 
     protected void updateMapped(Mapped_ result) {

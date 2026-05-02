@@ -7,6 +7,8 @@ import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.ConnectedRangeTracker;
 import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.Range;
 
+import org.jspecify.annotations.Nullable;
+
 public abstract class AbstractConnectedRangesSlot<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>> {
 
     public static final class State<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>> {
@@ -24,22 +26,20 @@ public abstract class AbstractConnectedRangesSlot<Interval_, Point_ extends Comp
     }
 
     private final State<Interval_, Point_, Difference_> state;
-    private Range<Interval_, Point_> cachedRange;
+    private @Nullable Range<Interval_, Point_> cachedRange;
 
     public AbstractConnectedRangesSlot(State<Interval_, Point_, Difference_> state) {
         this.state = state;
     }
 
     protected void addMapped(Interval_ result) {
-        final var saved = state.context.getRange(result);
-        cachedRange = saved;
-        state.context.add(saved);
+        cachedRange = state.context.getRange(result);
+        state.context.add(cachedRange);
     }
 
     protected void updateMapped(Interval_ input) {
-        state.context.remove(cachedRange);
-        cachedRange = state.context.getRange(input);
-        state.context.add(cachedRange);
+        removeMapped();
+        addMapped(input);
     }
 
     protected void removeMapped() {

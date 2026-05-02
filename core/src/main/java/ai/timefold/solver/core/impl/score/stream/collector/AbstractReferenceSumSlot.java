@@ -2,17 +2,19 @@ package ai.timefold.solver.core.impl.score.stream.collector;
 
 import java.util.function.BinaryOperator;
 
+import org.jspecify.annotations.Nullable;
+
 public abstract class AbstractReferenceSumSlot<Result_> {
 
     public static final class State<Result_> {
-        Result_ current;
-        final BinaryOperator<Result_> adder;
-        final BinaryOperator<Result_> subtractor;
+        private final BinaryOperator<Result_> adder;
+        private final BinaryOperator<Result_> subtractor;
+        private Result_ current;
 
         public State(Result_ zero, BinaryOperator<Result_> adder, BinaryOperator<Result_> subtractor) {
-            this.current = zero;
             this.adder = adder;
             this.subtractor = subtractor;
+            this.current = zero;
         }
 
         public Result_ result() {
@@ -21,7 +23,7 @@ public abstract class AbstractReferenceSumSlot<Result_> {
     }
 
     private final State<Result_> state;
-    private Result_ cachedValue;
+    private @Nullable Result_ cachedValue;
 
     public AbstractReferenceSumSlot(State<Result_> state) {
         this.state = state;

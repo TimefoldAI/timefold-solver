@@ -8,7 +8,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class TriCollectorUtils {
+public final class TriCollectorUtils {
 
     public static <ResultContainer_, A, B, C> QuadFunction<ResultContainer_, A, B, C, Runnable>
             fromIncremental(TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> incrementalAccumulator) {

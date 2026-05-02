@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.score.stream.collector;
 public abstract class AbstractLongAverageSlot {
 
     public static final class State {
-        long count = 0;
-        long sum = 0;
+        private long count = 0;
+        private long sum = 0;
 
         public Double result() {
             if (count == 0) {

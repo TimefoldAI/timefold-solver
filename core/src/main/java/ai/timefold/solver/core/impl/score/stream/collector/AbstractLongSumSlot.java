@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.collector;
 public abstract class AbstractLongSumSlot {
 
     public static final class State {
-        long sum = 0;
+        private long sum = 0;
 
         public Long result() {
             return sum;

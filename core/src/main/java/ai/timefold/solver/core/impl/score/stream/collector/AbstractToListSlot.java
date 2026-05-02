@@ -4,9 +4,11 @@ import java.util.List;
 
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
+import org.jspecify.annotations.Nullable;
+
 public abstract class AbstractToListSlot<Mapped_> {
     public static final class State<Mapped_> {
-        final ElementAwareArrayList<Mapped_> resultList = new ElementAwareArrayList<>();
+        private final ElementAwareArrayList<Mapped_> resultList = new ElementAwareArrayList<>();
 
         public List<Mapped_> result() {
             return resultList;
@@ -14,7 +16,7 @@ public abstract class AbstractToListSlot<Mapped_> {
     }
 
     private final State<Mapped_> state;
-    private ElementAwareArrayList.Entry<Mapped_> cachedEntry;
+    private ElementAwareArrayList.@Nullable Entry<Mapped_> cachedEntry;
 
     public AbstractToListSlot(State<Mapped_> state) {
         this.state = state;

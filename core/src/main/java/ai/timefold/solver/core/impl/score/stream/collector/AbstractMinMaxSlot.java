@@ -5,21 +5,25 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
+import java.util.SequencedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
+import org.jspecify.annotations.Nullable;
+
 public abstract class AbstractMinMaxSlot<Result_, Property_> {
     public static final class State<Result_, Property_> {
-        final boolean isMin;
-        final NavigableMap<Property_, Map<Result_, MutableInt>> propertyToItemCountMap;
-        final Function<? super Result_, ? extends Property_> propertyFunction;
+        private final Supplier<Map.Entry<Property_, SequencedMap<Result_, MutableInt>>> firstOrLastEntrySupplier;
+        private final NavigableMap<Property_, SequencedMap<Result_, MutableInt>> propertyToItemCountMap;
+        private final Function<? super Result_, ? extends Property_> propertyFunction;
 
-        State(boolean isMin, NavigableMap<Property_, Map<Result_, MutableInt>> propertyToItemCountMap,
+        private State(boolean isMin, NavigableMap<Property_, SequencedMap<Result_, MutableInt>> propertyToItemCountMap,
                 Function<? super Result_, ? extends Property_> propertyFunction) {
-            this.isMin = isMin;
+            this.firstOrLastEntrySupplier = isMin ? propertyToItemCountMap::firstEntry : propertyToItemCountMap::lastEntry;
             this.propertyToItemCountMap = propertyToItemCountMap;
             this.propertyFunction = propertyFunction;
         }
@@ -28,13 +32,10 @@ public abstract class AbstractMinMaxSlot<Result_, Property_> {
             if (propertyToItemCountMap.isEmpty()) {
                 return null;
             }
-            return isMin ? getFirstKey(propertyToItemCountMap.firstEntry().getValue())
-                    : getFirstKey(propertyToItemCountMap.lastEntry().getValue());
+            var entry = firstOrLastEntrySupplier.get();
+            return entry.getValue().sequencedKeySet().getFirst();
         }
 
-        private static <Key_> Key_ getFirstKey(Map<Key_, ?> map) {
-            return map.keySet().iterator().next();
-        }
     }
 
     public static <Result extends Comparable<? super Result>> State<Result, Result> minState() {
@@ -64,10 +65,10 @@ public abstract class AbstractMinMaxSlot<Result_, Property_> {
     }
 
     private final State<Result_, Property_> state;
-    private Result_ cachedItem;
-    private Property_ cachedKey;
-    private Map<Result_, MutableInt> cachedInnerMap;
-    private MutableInt cachedCount;
+    private @Nullable Result_ cachedItem;
+    private @Nullable Property_ cachedKey;
+    private @Nullable Map<Result_, MutableInt> cachedInnerMap;
+    private @Nullable MutableInt cachedCount;
 
     public AbstractMinMaxSlot(State<Result_, Property_> state) {
         this.state = state;

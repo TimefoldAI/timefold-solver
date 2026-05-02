@@ -7,6 +7,8 @@ import java.util.function.ToIntFunction;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.consecutive.ConsecutiveSetTree;
 
+import org.jspecify.annotations.Nullable;
+
 public abstract class AbstractSequenceSlot<Result_> {
 
     public static final class State<Result_> {
@@ -25,7 +27,7 @@ public abstract class AbstractSequenceSlot<Result_> {
     }
 
     private final State<Result_> state;
-    private Result_ cachedValue;
+    private @Nullable Result_ cachedValue;
 
     public AbstractSequenceSlot(State<Result_> state) {
         this.state = state;

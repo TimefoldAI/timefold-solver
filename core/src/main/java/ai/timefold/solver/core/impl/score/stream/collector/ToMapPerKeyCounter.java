@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 final class ToMapPerKeyCounter<Value_> {
 
-    private final Map<Value_, Long> counts = new LinkedHashMap<>(0);
+    private final Map<Value_, Long> counts = new LinkedHashMap<>();
 
     public long add(Value_ value) {
         return counts.compute(value, (k, currentCount) -> {
@@ -20,13 +20,13 @@ final class ToMapPerKeyCounter<Value_> {
     }
 
     public long update(Value_ oldValue, Value_ newValue) {
-        long removedCount = remove(oldValue);
+        var removedCount = remove(oldValue);
         add(newValue);
         return removedCount;
     }
 
     public long remove(Value_ value) {
-        Long newCount = counts.compute(value, (k, currentCount) -> {
+        var newCount = counts.compute(value, (k, currentCount) -> {
             if (currentCount > 1L) {
                 return currentCount - 1;
             } else {

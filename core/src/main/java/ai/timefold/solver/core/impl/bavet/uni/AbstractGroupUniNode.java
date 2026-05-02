@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.bavet.uni;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
@@ -11,71 +10,52 @@ import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.score.stream.collector.uni.UniCollectorUtils;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, ResultContainer_, Result_>
         extends AbstractGroupNode<UniTuple<OldA>, OutTuple_, GroupKey_, ResultContainer_, Result_> {
 
     private final int groupAccumulatorIndex;
-    private final @Nullable BiFunction<ResultContainer_, OldA, Runnable> accumulator;
     private final @Nullable UniConstraintCollectorAccumulator<ResultContainer_, OldA> incrementalAccumulator;
-    private final boolean useIncrementalAccumulator;
 
     protected AbstractGroupUniNode(int groupStoreIndex, int groupAccumulatorIndex,
             Function<UniTuple<OldA>, GroupKey_> groupKeyFunction,
-            UniConstraintCollector<OldA, ResultContainer_, Result_> collector,
+            @NonNull UniConstraintCollector<OldA, ResultContainer_, Result_> collector,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, groupKeyFunction,
-                collector == null ? null : collector.supplier(),
-                collector == null ? null : collector.finisher(),
-                nextNodesTupleLifecycle, environmentMode);
-        var hasCollector = collector != null;
-        this.groupAccumulatorIndex = hasCollector ? groupAccumulatorIndex : -1;
-        accumulator = hasCollector ? (collector.isIncremental() ? null : collector.accumulator()) : null;
-        incrementalAccumulator = hasCollector ? (collector.isIncremental() ? collector.incrementalAccumulator() : null) : null;
-        useIncrementalAccumulator = hasCollector && incrementalAccumulator != null;
+        super(groupStoreIndex, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
+                environmentMode);
+        this.groupAccumulatorIndex = groupAccumulatorIndex;
+        this.incrementalAccumulator = collector.isIncremental() ? collector.incrementalAccumulator()
+                : UniCollectorUtils.toIncremental(collector.accumulator());
     }
 
     protected AbstractGroupUniNode(int groupStoreIndex, Function<UniTuple<OldA>, GroupKey_> groupKeyFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
         super(groupStoreIndex, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
-        groupAccumulatorIndex = -1;
-        accumulator = null;
-        incrementalAccumulator = null;
-        useIncrementalAccumulator = false;
+        this.groupAccumulatorIndex = -1;
+        this.incrementalAccumulator = null;
     }
 
     @Override
     protected void groupInsert(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
-        if (useIncrementalAccumulator) {
-            var groupElement = incrementalAccumulator.intoGroup(resultContainer);
-            tuple.setStore(groupAccumulatorIndex, groupElement);
-            groupElement.add(tuple.getA());
-        } else {
-            tuple.setStore(groupAccumulatorIndex, accumulator.apply(resultContainer, tuple.getA()));
-        }
+        var groupElement = incrementalAccumulator.intoGroup(resultContainer);
+        tuple.setStore(groupAccumulatorIndex, groupElement);
+        groupElement.add(tuple.getA());
     }
 
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
-        if (useIncrementalAccumulator) {
-            UniConstraintCollectorAccumulatedValue<OldA> groupElement = tuple.getStore(groupAccumulatorIndex);
-            groupElement.update(tuple.getA());
-        } else {
-            super.groupUpdate(resultContainer, tuple);
-        }
+        UniConstraintCollectorAccumulatedValue<OldA> groupElement = tuple.getStore(groupAccumulatorIndex);
+        groupElement.update(tuple.getA());
     }
 
     @Override
     protected void groupRetract(UniTuple<OldA> tuple) {
-        if (useIncrementalAccumulator) {
-            UniConstraintCollectorAccumulatedValue<OldA> groupElement = tuple.removeStore(groupAccumulatorIndex);
-            groupElement.remove();
-        } else {
-            Runnable undo = tuple.removeStore(groupAccumulatorIndex);
-            undo.run();
-        }
+        UniConstraintCollectorAccumulatedValue<OldA> groupElement = tuple.removeStore(groupAccumulatorIndex);
+        groupElement.remove();
     }
 
 }

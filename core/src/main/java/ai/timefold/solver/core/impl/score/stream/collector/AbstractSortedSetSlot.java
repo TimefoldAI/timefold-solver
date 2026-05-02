@@ -8,9 +8,11 @@ import java.util.TreeMap;
 
 import ai.timefold.solver.core.impl.util.MutableInt;
 
+import org.jspecify.annotations.Nullable;
+
 public abstract class AbstractSortedSetSlot<Mapped_> {
     public static final class State<Mapped_> {
-        final NavigableMap<Mapped_, MutableInt> itemToCount;
+        private final NavigableMap<Mapped_, MutableInt> itemToCount;
 
         public State(Comparator<? super Mapped_> comparator) {
             this.itemToCount = new TreeMap<>(comparator);
@@ -22,8 +24,8 @@ public abstract class AbstractSortedSetSlot<Mapped_> {
     }
 
     private final State<Mapped_> state;
-    private Mapped_ cachedValue;
-    private MutableInt cachedCount;
+    private @Nullable Mapped_ cachedValue;
+    private @Nullable MutableInt cachedCount;
 
     public AbstractSortedSetSlot(State<Mapped_> state) {
         this.state = state;

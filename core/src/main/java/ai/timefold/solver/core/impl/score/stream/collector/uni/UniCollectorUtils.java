@@ -9,7 +9,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class UniCollectorUtils {
+public final class UniCollectorUtils {
 
     public static <ResultContainer_, A> BiFunction<ResultContainer_, A, Runnable>
             fromIncremental(UniConstraintCollectorAccumulator<ResultContainer_, A> incrementalAccumulator) {

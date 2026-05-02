@@ -8,7 +8,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class BiCollectorUtils {
+public final class BiCollectorUtils {
 
     public static <ResultContainer_, A, B> TriFunction<ResultContainer_, A, B, Runnable>
             fromIncremental(BiConstraintCollectorAccumulator<ResultContainer_, A, B> incrementalAccumulator) {

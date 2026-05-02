@@ -11,9 +11,9 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractToMapSlot<Key_, Value_, ResultValue_, Result_ extends Map<Key_, ResultValue_>> {
     public static final class State<Key_, Value_, ResultValue_, Result_ extends Map<Key_, ResultValue_>> {
-        final ToMapResultContainer<Key_, Value_, ResultValue_, Result_> container;
+        private final ToMapResultContainer<Key_, Value_, ResultValue_, Result_> container;
 
-        State(ToMapResultContainer<Key_, Value_, ResultValue_, Result_> container) {
+        private State(ToMapResultContainer<Key_, Value_, ResultValue_, Result_> container) {
             this.container = container;
         }
 

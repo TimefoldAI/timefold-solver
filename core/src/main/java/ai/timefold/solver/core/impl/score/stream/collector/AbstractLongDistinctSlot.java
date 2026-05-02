@@ -11,11 +11,13 @@ import org.jspecify.annotations.Nullable;
 public abstract class AbstractLongDistinctSlot<Input_> {
 
     public static final class State<Input_> {
+
         private final Map<Input_, MutableInt> countMap = new HashMap<>();
 
         public Long result() {
             return (long) countMap.size();
         }
+
     }
 
     private final State<Input_> state;

@@ -7,35 +7,32 @@ import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-import org.jspecify.annotations.Nullable;
-
 final class ToMultiMapResultContainer<Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
         implements ToMapResultContainer<Key_, Value_, Set_, Result_> {
 
     private final Supplier<Set_> setSupplier;
     private final Result_ result;
-    private final Map<Key_, ToMapPerKeyCounter<Value_>> valueCounts = new HashMap<>(0);
+    private final Map<Key_, ToMapPerKeyCounter<Value_>> valueCounts = new HashMap<>();
 
     public ToMultiMapResultContainer(Supplier<Result_> resultSupplier, IntFunction<Set_> setFunction) {
-        IntFunction<Set_> nonNullSetFunction = Objects.requireNonNull(setFunction);
+        var nonNullSetFunction = Objects.requireNonNull(setFunction);
         this.setSupplier = () -> nonNullSetFunction.apply(0);
         this.result = Objects.requireNonNull(resultSupplier).get();
     }
 
     @Override
     public void add(Key_ key, Value_ value) {
-        ToMapPerKeyCounter<Value_> counter = valueCounts.computeIfAbsent(key, k -> new ToMapPerKeyCounter<>());
+        var counter = valueCounts.computeIfAbsent(key, k -> new ToMapPerKeyCounter<>());
         counter.add(value);
         result.computeIfAbsent(key, k -> setSupplier.get())
                 .add(value);
     }
 
     @Override
-    public void update(@Nullable Key_ oldKey, @Nullable Value_ oldValue, @Nullable Key_ newKey,
-            @Nullable Value_ newValue) {
+    public void update(Key_ oldKey, Value_ oldValue, Key_ newKey, Value_ newValue) {
         if (Objects.equals(oldKey, newKey)) {
             var counter = valueCounts.get(oldKey);
-            long removedCount = counter.update(oldValue, newValue);
+            var removedCount = counter.update(oldValue, newValue);
             if (removedCount == 0) {
                 result.get(oldKey).remove(oldValue);
             }
@@ -48,8 +45,8 @@ final class ToMultiMapResultContainer<Key_, Value_, Set_ extends Set<Value_>, Re
 
     @Override
     public void remove(Key_ key, Value_ value) {
-        ToMapPerKeyCounter<Value_> counter = valueCounts.get(key);
-        long newCount = counter.remove(value);
+        var counter = valueCounts.get(key);
+        var newCount = counter.remove(value);
         if (newCount == 0) {
             result.get(key).remove(value);
         }
