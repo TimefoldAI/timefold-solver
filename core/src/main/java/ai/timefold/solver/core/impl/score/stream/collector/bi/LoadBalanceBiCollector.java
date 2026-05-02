@@ -8,13 +8,16 @@ import java.util.function.ToLongBiFunction;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
-import ai.timefold.solver.core.impl.score.stream.collector.LoadBalanceImpl;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractLoadBalanceSlot;
+import ai.timefold.solver.core.impl.score.stream.collector.DefaultLoadBalance;
 
 import org.jspecify.annotations.NonNull;
 
 final class LoadBalanceBiCollector<A, B, Balanced_>
-        implements BiConstraintCollector<A, B, LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> {
+        implements BiConstraintCollector<A, B, DefaultLoadBalance<Balanced_>, LoadBalance<Balanced_>> {
 
     private final BiFunction<A, B, Balanced_> balancedItemFunction;
     private final ToLongBiFunction<A, B> loadFunction;
@@ -28,22 +31,27 @@ final class LoadBalanceBiCollector<A, B, Balanced_>
     }
 
     @Override
-    public @NonNull Supplier<LoadBalanceImpl<Balanced_>> supplier() {
-        return LoadBalanceImpl::new;
+    public @NonNull Supplier<DefaultLoadBalance<Balanced_>> supplier() {
+        return DefaultLoadBalance::new;
     }
 
     @Override
-    public @NonNull TriFunction<LoadBalanceImpl<Balanced_>, A, B, Runnable> accumulator() {
-        return (balanceStatistics, a, b) -> {
-            var balanced = balancedItemFunction.apply(a, b);
-            var initialLoad = initialLoadFunction.applyAsLong(a, b);
-            var load = loadFunction.applyAsLong(a, b);
-            return balanceStatistics.registerBalanced(balanced, load, initialLoad);
-        };
+    public @NonNull TriFunction<DefaultLoadBalance<Balanced_>, A, B, Runnable> accumulator() {
+        return BiCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override
-    public @NonNull Function<LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> finisher() {
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull BiConstraintCollectorAccumulator<DefaultLoadBalance<Balanced_>, A, B> incrementalAccumulator() {
+        return Slot::new;
+    }
+
+    @Override
+    public @NonNull Function<DefaultLoadBalance<Balanced_>, LoadBalance<Balanced_>> finisher() {
         return balanceStatistics -> balanceStatistics;
     }
 
@@ -58,5 +66,30 @@ final class LoadBalanceBiCollector<A, B, Balanced_>
     @Override
     public int hashCode() {
         return Objects.hash(balancedItemFunction, loadFunction, initialLoadFunction);
+    }
+
+    private final class Slot extends AbstractLoadBalanceSlot<Balanced_>
+            implements BiConstraintCollectorAccumulatedValue<A, B> {
+
+        Slot(DefaultLoadBalance<Balanced_> container) {
+            super(container);
+        }
+
+        @Override
+        public void add(A a, B b) {
+            addMapped(balancedItemFunction.apply(a, b), loadFunction.applyAsLong(a, b),
+                    initialLoadFunction.applyAsLong(a, b));
+        }
+
+        @Override
+        public void update(A a, B b) {
+            updateMapped(balancedItemFunction.apply(a, b), loadFunction.applyAsLong(a, b),
+                    initialLoadFunction.applyAsLong(a, b));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 }

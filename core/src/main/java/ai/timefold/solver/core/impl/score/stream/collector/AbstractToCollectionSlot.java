@@ -1,15 +1,14 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.IntFunction;
 
-public final class CustomCollectionUndoableActionable<Mapped_, Result_ extends Collection<Mapped_>>
-        implements UndoableActionable<Mapped_> {
+import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
+
+public abstract class AbstractToCollectionSlot<Mapped_, Result_ extends Collection<Mapped_>> {
     public static final class State<Mapped_, Collection_ extends Collection<Mapped_>> {
         private final IntFunction<Collection_> collectionFunction;
-        final List<Mapped_> list = new ArrayList<>();
+        final ElementAwareArrayList<Mapped_> list = new ElementAwareArrayList<>();
 
         public State(IntFunction<Collection_> collectionFunction) {
             this.collectionFunction = collectionFunction;
@@ -27,20 +26,21 @@ public final class CustomCollectionUndoableActionable<Mapped_, Result_ extends C
     }
 
     private final State<Mapped_, Result_> state;
-    private Mapped_ cachedValue;
+    private ElementAwareArrayList.Entry<Mapped_> cachedEntry;
 
-    public CustomCollectionUndoableActionable(State<Mapped_, Result_> state) {
+    public AbstractToCollectionSlot(State<Mapped_, Result_> state) {
         this.state = state;
     }
 
-    @Override
-    public void insert(Mapped_ result) {
-        cachedValue = result;
-        state.list.add(result);
+    protected void addMapped(Mapped_ mapped) {
+        cachedEntry = state.list.addEntry(mapped);
     }
 
-    @Override
-    public void retract() {
-        state.list.remove(cachedValue);
+    protected void updateMapped(Mapped_ mapped) {
+        cachedEntry.replaceElement(mapped);
+    }
+
+    protected void removeMapped() {
+        state.list.remove(cachedEntry);
     }
 }

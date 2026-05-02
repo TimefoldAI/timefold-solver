@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.jspecify.annotations.Nullable;
 
-public final class LongDistinctCountCalculator<Input_> implements ObjectCalculator<Input_> {
+public abstract class AbstractLongDistinctSlot<Input_> {
 
     public static final class State<Input_> {
         private final Map<Input_, MutableInt> countMap = new HashMap<>();
@@ -22,28 +22,25 @@ public final class LongDistinctCountCalculator<Input_> implements ObjectCalculat
     private @Nullable Input_ cachedInput;
     private @Nullable MutableInt cachedCounter;
 
-    public LongDistinctCountCalculator(State<Input_> state) {
+    public AbstractLongDistinctSlot(State<Input_> state) {
         this.state = state;
     }
 
-    @Override
-    public void insert(Input_ input) {
+    protected void addMapped(Input_ input) {
         cachedInput = input;
         cachedCounter = state.countMap.computeIfAbsent(input, ignored -> new MutableInt());
         cachedCounter.increment();
     }
 
-    @Override
-    public void update(Input_ input) {
+    protected void updateMapped(Input_ input) {
         if (Objects.equals(cachedInput, input)) {
             return;
         }
-        retract();
-        insert(input);
+        removeMapped();
+        addMapped(input);
     }
 
-    @Override
-    public void retract() {
+    protected void removeMapped() {
         if (cachedCounter.decrement() == 0) {
             state.countMap.remove(cachedInput);
         }

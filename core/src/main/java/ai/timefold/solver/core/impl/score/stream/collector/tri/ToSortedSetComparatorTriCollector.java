@@ -7,13 +7,14 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.impl.score.stream.collector.SortedSetUndoableActionable;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractSortedSetSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class ToSortedSetComparatorTriCollector<A, B, C, Mapped_>
         extends
-        UndoableActionableTriCollector<A, B, C, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable.State<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
+        UndoableActionableTriCollector<A, B, C, Mapped_, SortedSet<Mapped_>, AbstractSortedSetSlot.State<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
 
     ToSortedSetComparatorTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper,
@@ -23,18 +24,41 @@ final class ToSortedSetComparatorTriCollector<A, B, C, Mapped_>
     }
 
     @Override
-    public @NonNull Supplier<SortedSetUndoableActionable.State<Mapped_>> supplier() {
-        return () -> new SortedSetUndoableActionable.State<>(comparator);
+    public @NonNull Supplier<AbstractSortedSetSlot.State<Mapped_>> supplier() {
+        return () -> new AbstractSortedSetSlot.State<>(comparator);
     }
 
     @Override
-    public @NonNull Function<SortedSetUndoableActionable.State<Mapped_>, SortedSet<Mapped_>> finisher() {
-        return SortedSetUndoableActionable.State::result;
+    public @NonNull Function<AbstractSortedSetSlot.State<Mapped_>, SortedSet<Mapped_>> finisher() {
+        return AbstractSortedSetSlot.State::result;
     }
 
     @Override
-    protected SortedSetUndoableActionable<Mapped_> newUndoableActionable(SortedSetUndoableActionable.State<Mapped_> state) {
-        return new SortedSetUndoableActionable<>(state);
+    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+            AbstractSortedSetSlot.State<Mapped_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractSortedSetSlot<Mapped_>
+            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+        Slot(AbstractSortedSetSlot.State<Mapped_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c) {
+            addMapped(mapper.apply(a, b, c));
+        }
+
+        @Override
+        public void update(A a, B b, C c) {
+            updateMapped(mapper.apply(a, b, c));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

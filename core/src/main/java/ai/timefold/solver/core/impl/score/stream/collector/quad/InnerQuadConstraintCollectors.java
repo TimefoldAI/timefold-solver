@@ -24,7 +24,7 @@ import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceAverageSlot;
 
 public class InnerQuadConstraintCollectors {
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Double> average(
@@ -34,23 +34,23 @@ public class InnerQuadConstraintCollectors {
 
     static <A, B, C, D, Mapped_, Average_> QuadConstraintCollector<A, B, C, D, ?, Average_> average(
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper,
-            Supplier<ReferenceAverageCalculator.State<Mapped_, Average_>> stateSupplier) {
+            Supplier<AbstractReferenceAverageSlot.State<Mapped_, Average_>> stateSupplier) {
         return new AverageReferenceQuadCollector<>(mapper, stateSupplier);
     }
 
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, BigDecimal> averageBigDecimal(
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends BigDecimal> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigDecimalState());
+        return average(mapper, AbstractReferenceAverageSlot.bigDecimalState());
     }
 
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, BigDecimal> averageBigInteger(
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends BigInteger> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigIntegerState());
+        return average(mapper, AbstractReferenceAverageSlot.bigIntegerState());
     }
 
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Duration> averageDuration(
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Duration> mapper) {
-        return average(mapper, ReferenceAverageCalculator.durationState());
+        return average(mapper, AbstractReferenceAverageSlot.durationState());
     }
 
     public static <A, B, C, D, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>

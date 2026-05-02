@@ -7,8 +7,7 @@ import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.ConnectedRangeTracker;
 import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.Range;
 
-public final class ConnectedRangesCalculator<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements ObjectCalculator<Interval_> {
+public abstract class AbstractConnectedRangesSlot<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>> {
 
     public static final class State<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>> {
         private final ConnectedRangeTracker<Interval_, Point_, Difference_> context;
@@ -27,26 +26,23 @@ public final class ConnectedRangesCalculator<Interval_, Point_ extends Comparabl
     private final State<Interval_, Point_, Difference_> state;
     private Range<Interval_, Point_> cachedRange;
 
-    public ConnectedRangesCalculator(State<Interval_, Point_, Difference_> state) {
+    public AbstractConnectedRangesSlot(State<Interval_, Point_, Difference_> state) {
         this.state = state;
     }
 
-    @Override
-    public void insert(Interval_ result) {
+    protected void addMapped(Interval_ result) {
         final var saved = state.context.getRange(result);
         cachedRange = saved;
         state.context.add(saved);
     }
 
-    @Override
-    public void update(Interval_ input) {
+    protected void updateMapped(Interval_ input) {
         state.context.remove(cachedRange);
         cachedRange = state.context.getRange(input);
         state.context.add(cachedRange);
     }
 
-    @Override
-    public void retract() {
+    protected void removeMapped() {
         state.context.remove(cachedRange);
     }
 }

@@ -6,13 +6,14 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.impl.score.stream.collector.ReferenceSumCalculator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceSumSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class SumReferenceTriCollector<A, B, C, Result_>
         extends
-        ObjectCalculatorTriCollector<A, B, C, Result_, Result_, ReferenceSumCalculator.State<Result_>, ReferenceSumCalculator<Result_>> {
+        ObjectCalculatorTriCollector<A, B, C, Result_, Result_, AbstractReferenceSumSlot.State<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;
@@ -27,18 +28,41 @@ final class SumReferenceTriCollector<A, B, C, Result_>
     }
 
     @Override
-    public @NonNull Supplier<ReferenceSumCalculator.State<Result_>> supplier() {
-        return () -> new ReferenceSumCalculator.State<>(zero, adder, subtractor);
+    public @NonNull Supplier<AbstractReferenceSumSlot.State<Result_>> supplier() {
+        return () -> new AbstractReferenceSumSlot.State<>(zero, adder, subtractor);
     }
 
     @Override
-    public @NonNull Function<ReferenceSumCalculator.State<Result_>, Result_> finisher() {
-        return ReferenceSumCalculator.State::result;
+    public @NonNull Function<AbstractReferenceSumSlot.State<Result_>, Result_> finisher() {
+        return AbstractReferenceSumSlot.State::result;
     }
 
     @Override
-    protected ReferenceSumCalculator<Result_> newCalculator(ReferenceSumCalculator.State<Result_> state) {
-        return new ReferenceSumCalculator<>(state);
+    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+            AbstractReferenceSumSlot.State<Result_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractReferenceSumSlot<Result_>
+            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+        Slot(AbstractReferenceSumSlot.State<Result_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c) {
+            addMapped(mapper.apply(a, b, c));
+        }
+
+        @Override
+        public void update(A a, B b, C c) {
+            updateMapped(mapper.apply(a, b, c));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

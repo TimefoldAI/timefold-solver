@@ -7,13 +7,14 @@ import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractSequenceSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>
         extends
-        ObjectCalculatorQuadCollector<A, B, C, D, Result_, SequenceChain<Result_, Integer>, SequenceCalculator.State<Result_>, SequenceCalculator<Result_>> {
+        ObjectCalculatorQuadCollector<A, B, C, D, Result_, SequenceChain<Result_, Integer>, AbstractSequenceSlot.State<Result_>> {
 
     private final ToIntFunction<Result_> indexMap;
 
@@ -24,18 +25,41 @@ final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>
     }
 
     @Override
-    public @NonNull Supplier<SequenceCalculator.State<Result_>> supplier() {
-        return () -> new SequenceCalculator.State<>(indexMap);
+    public @NonNull Supplier<AbstractSequenceSlot.State<Result_>> supplier() {
+        return () -> new AbstractSequenceSlot.State<>(indexMap);
     }
 
     @Override
-    public @NonNull Function<SequenceCalculator.State<Result_>, SequenceChain<Result_, Integer>> finisher() {
-        return SequenceCalculator.State::result;
+    public @NonNull Function<AbstractSequenceSlot.State<Result_>, SequenceChain<Result_, Integer>> finisher() {
+        return AbstractSequenceSlot.State::result;
     }
 
     @Override
-    protected SequenceCalculator<Result_> newCalculator(SequenceCalculator.State<Result_> state) {
-        return new SequenceCalculator<>(state);
+    protected QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(
+            AbstractSequenceSlot.State<Result_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractSequenceSlot<Result_>
+            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+        Slot(AbstractSequenceSlot.State<Result_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c, D d) {
+            addMapped(mapper.apply(a, b, c, d));
+        }
+
+        @Override
+        public void update(A a, B b, C c, D d) {
+            updateMapped(mapper.apply(a, b, c, d));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

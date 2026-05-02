@@ -7,12 +7,11 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
-import ai.timefold.solver.core.impl.score.stream.collector.CollectorUtils;
-import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractCountSlot;
 
 import org.jspecify.annotations.NonNull;
 
-final class CountUniCollector<A> implements UniConstraintCollector<A, LongCounter, Long> {
+final class CountUniCollector<A> implements UniConstraintCollector<A, AbstractCountSlot.State, Long> {
     private static final CountUniCollector<?> INSTANCE = new CountUniCollector<>();
 
     private CountUniCollector() {
@@ -24,13 +23,13 @@ final class CountUniCollector<A> implements UniConstraintCollector<A, LongCounte
     }
 
     @Override
-    public @NonNull Supplier<LongCounter> supplier() {
-        return LongCounter::new;
+    public @NonNull Supplier<AbstractCountSlot.State> supplier() {
+        return AbstractCountSlot.State::new;
     }
 
     @Override
-    public @NonNull BiFunction<LongCounter, A, Runnable> accumulator() {
-        return CollectorUtils.fromIncrementalUni(incrementalAccumulator());
+    public @NonNull BiFunction<AbstractCountSlot.State, A, Runnable> accumulator() {
+        return UniCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override
@@ -39,32 +38,35 @@ final class CountUniCollector<A> implements UniConstraintCollector<A, LongCounte
     }
 
     @Override
-    public @NonNull UniConstraintCollectorAccumulator<LongCounter, A> incrementalAccumulator() {
-        return AccumulatedValue::new;
+    public @NonNull UniConstraintCollectorAccumulator<AbstractCountSlot.State, A> incrementalAccumulator() {
+        return Slot::new;
     }
 
     @Override
-    public @NonNull Function<LongCounter, Long> finisher() {
-        return LongCounter::result;
+    public @NonNull Function<AbstractCountSlot.State, Long> finisher() {
+        return AbstractCountSlot.State::result;
     }
 
-    private record AccumulatedValue<A>(LongCounter container)
-            implements
-                UniConstraintCollectorAccumulatedValue<A> {
+    private static final class Slot<A> extends AbstractCountSlot
+            implements UniConstraintCollectorAccumulatedValue<A> {
+
+        Slot(AbstractCountSlot.State state) {
+            super(state);
+        }
 
         @Override
         public void add(A a) {
-            container.increment();
+            addMapped();
         }
 
         @Override
         public void update(A a) {
-            // count unchanged on update
+            updateMapped();
         }
 
         @Override
         public void remove() {
-            container.decrement();
+            removeMapped();
         }
     }
 }

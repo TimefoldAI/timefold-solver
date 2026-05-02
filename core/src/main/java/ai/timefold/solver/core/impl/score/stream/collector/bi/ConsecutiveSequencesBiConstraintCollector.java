@@ -6,14 +6,15 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractSequenceSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class ConsecutiveSequencesBiConstraintCollector<A, B, Result_>
         extends
-        ObjectCalculatorBiCollector<A, B, Result_, SequenceChain<Result_, Integer>, SequenceCalculator.State<Result_>, SequenceCalculator<Result_>> {
+        ObjectCalculatorBiCollector<A, B, Result_, SequenceChain<Result_, Integer>, AbstractSequenceSlot.State<Result_>> {
 
     private final ToIntFunction<Result_> indexMap;
 
@@ -23,18 +24,40 @@ final class ConsecutiveSequencesBiConstraintCollector<A, B, Result_>
     }
 
     @Override
-    protected SequenceCalculator<Result_> newCalculator(SequenceCalculator.State<Result_> state) {
-        return new SequenceCalculator<>(state);
+    public @NonNull Supplier<AbstractSequenceSlot.State<Result_>> supplier() {
+        return () -> new AbstractSequenceSlot.State<>(indexMap);
     }
 
     @Override
-    public @NonNull Supplier<SequenceCalculator.State<Result_>> supplier() {
-        return () -> new SequenceCalculator.State<>(indexMap);
+    public @NonNull Function<AbstractSequenceSlot.State<Result_>, SequenceChain<Result_, Integer>> finisher() {
+        return AbstractSequenceSlot.State::result;
     }
 
     @Override
-    public @NonNull Function<SequenceCalculator.State<Result_>, SequenceChain<Result_, Integer>> finisher() {
-        return SequenceCalculator.State::result;
+    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(AbstractSequenceSlot.State<Result_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractSequenceSlot<Result_>
+            implements BiConstraintCollectorAccumulatedValue<A, B> {
+        Slot(AbstractSequenceSlot.State<Result_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b) {
+            addMapped(mapper.apply(a, b));
+        }
+
+        @Override
+        public void update(A a, B b) {
+            updateMapped(mapper.apply(a, b));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

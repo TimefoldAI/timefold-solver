@@ -5,30 +5,34 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.UndoableActionable;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, State_, Calculator_ extends UndoableActionable<Input_>>
-        implements TriConstraintCollector<A, B, C, State_, Output_>
-        permits MaxComparableTriCollector, MaxComparatorTriCollector, MaxPropertyTriCollector, MinComparableTriCollector,
-        MinComparatorTriCollector, MinPropertyTriCollector, ToCollectionTriCollector, ToListTriCollector,
-        ToMultiMapTriCollector, ToSetTriCollector, ToSimpleMapTriCollector, ToSortedSetComparatorTriCollector {
-    private final TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper;
+abstract class UndoableActionableTriCollector<A, B, C, Input_, Output_, State_>
+        implements TriConstraintCollector<A, B, C, State_, Output_> {
+    protected final TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper;
 
     public UndoableActionableTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper) {
         this.mapper = mapper;
     }
 
-    protected abstract Calculator_ newUndoableActionable(State_ state);
+    protected abstract TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(State_ state);
+
+    @Override
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull TriConstraintCollectorAccumulator<State_, A, B, C> incrementalAccumulator() {
+        return this::newAccumulatedValue;
+    }
 
     @Override
     public @NonNull QuadFunction<State_, A, B, C, Runnable> accumulator() {
-        return (state, a, b, c) -> {
-            var ua = newUndoableActionable(state);
-            ua.insert(mapper.apply(a, b, c));
-            return ua::retract;
-        };
+        return TriCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override
@@ -37,7 +41,7 @@ abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, S
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (UndoableActionableTriCollector<?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (UndoableActionableTriCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

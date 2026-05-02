@@ -7,8 +7,7 @@ import java.util.function.ToIntFunction;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.consecutive.ConsecutiveSetTree;
 
-public final class SequenceCalculator<Result_>
-        implements ObjectCalculator<Result_> {
+public abstract class AbstractSequenceSlot<Result_> {
 
     public static final class State<Result_> {
         private static final BinaryOperator<Integer> DIFFERENCE = (a, b) -> b - a;
@@ -28,25 +27,22 @@ public final class SequenceCalculator<Result_>
     private final State<Result_> state;
     private Result_ cachedValue;
 
-    public SequenceCalculator(State<Result_> state) {
+    public AbstractSequenceSlot(State<Result_> state) {
         this.state = state;
     }
 
-    @Override
-    public void insert(Result_ result) {
+    protected void addMapped(Result_ result) {
         cachedValue = result;
         state.context.add(result, state.toIndexFunction.applyAsInt(result));
     }
 
-    @Override
-    public void update(Result_ input) {
+    protected void updateMapped(Result_ input) {
         state.context.remove(cachedValue);
         cachedValue = input;
         state.context.add(input, state.toIndexFunction.applyAsInt(input));
     }
 
-    @Override
-    public void retract() {
+    protected void removeMapped() {
         state.context.remove(cachedValue);
     }
 }

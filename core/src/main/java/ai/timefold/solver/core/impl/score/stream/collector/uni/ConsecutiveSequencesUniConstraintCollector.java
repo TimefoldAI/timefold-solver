@@ -6,14 +6,14 @@ import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractSequenceSlot;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 import org.jspecify.annotations.NonNull;
 
 final class ConsecutiveSequencesUniConstraintCollector<A>
-        extends
-        ObjectCalculatorUniCollector<A, A, SequenceChain<A, Integer>, SequenceCalculator.State<A>, SequenceCalculator<A>> {
+        extends ObjectCalculatorUniCollector<A, A, SequenceChain<A, Integer>, AbstractSequenceSlot.State<A>> {
 
     private final ToIntFunction<A> indexMap;
 
@@ -23,18 +23,41 @@ final class ConsecutiveSequencesUniConstraintCollector<A>
     }
 
     @Override
-    protected SequenceCalculator<A> newCalculator(SequenceCalculator.State<A> state) {
-        return new SequenceCalculator<>(state);
+    public @NonNull Supplier<AbstractSequenceSlot.State<A>> supplier() {
+        return () -> new AbstractSequenceSlot.State<>(indexMap);
     }
 
     @Override
-    public @NonNull Supplier<SequenceCalculator.State<A>> supplier() {
-        return () -> new SequenceCalculator.State<>(indexMap);
+    public @NonNull Function<AbstractSequenceSlot.State<A>, SequenceChain<A, Integer>> finisher() {
+        return AbstractSequenceSlot.State::result;
     }
 
     @Override
-    public @NonNull Function<SequenceCalculator.State<A>, SequenceChain<A, Integer>> finisher() {
-        return SequenceCalculator.State::result;
+    protected UniConstraintCollectorAccumulatedValue<A>
+            newAccumulatedValue(AbstractSequenceSlot.State<A> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractSequenceSlot<A>
+            implements UniConstraintCollectorAccumulatedValue<A> {
+        Slot(AbstractSequenceSlot.State<A> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a) {
+            addMapped(mapper.apply(a));
+        }
+
+        @Override
+        public void update(A a) {
+            updateMapped(mapper.apply(a));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

@@ -4,10 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-public final class ToSimpleMapResultContainer<Key_, Value_, Result_ extends Map<Key_, Value_>>
+import org.jspecify.annotations.Nullable;
+
+final class ToSimpleMapResultContainer<Key_, Value_, Result_ extends Map<Key_, Value_>>
         implements ToMapResultContainer<Key_, Value_, Value_, Result_> {
 
     private final BinaryOperator<Value_> mergeFunction;
@@ -19,16 +20,24 @@ public final class ToSimpleMapResultContainer<Key_, Value_, Result_ extends Map<
         this.result = Objects.requireNonNull(resultSupplier).get();
     }
 
-    public ToSimpleMapResultContainer(IntFunction<Result_> resultSupplier, BinaryOperator<Value_> mergeFunction) {
-        this.mergeFunction = Objects.requireNonNull(mergeFunction);
-        this.result = Objects.requireNonNull(resultSupplier).apply(0);
-    }
-
     @Override
     public void add(Key_ key, Value_ value) {
         ToMapPerKeyCounter<Value_> counter = valueCounts.computeIfAbsent(key, k -> new ToMapPerKeyCounter<>());
         counter.add(value);
         result.put(key, counter.merge(mergeFunction));
+    }
+
+    @Override
+    public void update(@Nullable Key_ oldKey, @Nullable Value_ oldValue, @Nullable Key_ newKey,
+            @Nullable Value_ newValue) {
+        if (Objects.equals(oldKey, newKey)) {
+            var counter = valueCounts.get(oldKey);
+            counter.update(oldValue, newValue);
+            result.put(oldKey, counter.merge(mergeFunction));
+        } else {
+            remove(oldKey, oldValue);
+            add(newKey, newValue);
+        }
     }
 
     @Override

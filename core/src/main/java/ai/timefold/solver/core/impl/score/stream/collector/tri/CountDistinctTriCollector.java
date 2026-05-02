@@ -4,29 +4,53 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.impl.score.stream.collector.LongDistinctCountCalculator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongDistinctSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class CountDistinctTriCollector<A, B, C, Mapped_>
         extends
-        ObjectCalculatorTriCollector<A, B, C, Mapped_, Long, LongDistinctCountCalculator.State<Mapped_>, LongDistinctCountCalculator<Mapped_>> {
+        ObjectCalculatorTriCollector<A, B, C, Mapped_, Long, AbstractLongDistinctSlot.State<Mapped_>> {
     CountDistinctTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper) {
         super(mapper);
     }
 
     @Override
-    public @NonNull Supplier<LongDistinctCountCalculator.State<Mapped_>> supplier() {
-        return LongDistinctCountCalculator.State::new;
+    public @NonNull Supplier<AbstractLongDistinctSlot.State<Mapped_>> supplier() {
+        return AbstractLongDistinctSlot.State::new;
     }
 
     @Override
-    public @NonNull Function<LongDistinctCountCalculator.State<Mapped_>, Long> finisher() {
-        return LongDistinctCountCalculator.State::result;
+    public @NonNull Function<AbstractLongDistinctSlot.State<Mapped_>, Long> finisher() {
+        return AbstractLongDistinctSlot.State::result;
     }
 
     @Override
-    protected LongDistinctCountCalculator<Mapped_> newCalculator(LongDistinctCountCalculator.State<Mapped_> state) {
-        return new LongDistinctCountCalculator<>(state);
+    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+            AbstractLongDistinctSlot.State<Mapped_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractLongDistinctSlot<Mapped_>
+            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+        Slot(AbstractLongDistinctSlot.State<Mapped_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c) {
+            addMapped(mapper.apply(a, b, c));
+        }
+
+        @Override
+        public void update(A a, B b, C c) {
+            updateMapped(mapper.apply(a, b, c));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 }

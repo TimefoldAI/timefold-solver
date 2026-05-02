@@ -25,7 +25,7 @@ import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceAverageSlot;
 
 public class InnerUniConstraintCollectors {
     public static <A> UniConstraintCollector<A, ?, Double> average(ToLongFunction<? super A> mapper) {
@@ -34,17 +34,17 @@ public class InnerUniConstraintCollectors {
 
     public static <A> UniConstraintCollector<A, ?, BigDecimal> averageBigDecimal(
             Function<? super A, ? extends BigDecimal> mapper) {
-        return new AverageReferenceUniCollector<>(mapper, ReferenceAverageCalculator.bigDecimalState());
+        return new AverageReferenceUniCollector<>(mapper, AbstractReferenceAverageSlot.bigDecimalState());
     }
 
     public static <A> UniConstraintCollector<A, ?, BigDecimal> averageBigInteger(
             Function<? super A, ? extends BigInteger> mapper) {
-        return new AverageReferenceUniCollector<>(mapper, ReferenceAverageCalculator.bigIntegerState());
+        return new AverageReferenceUniCollector<>(mapper, AbstractReferenceAverageSlot.bigIntegerState());
     }
 
     public static <A> UniConstraintCollector<A, ?, Duration> averageDuration(
             Function<? super A, ? extends Duration> mapper) {
-        return new AverageReferenceUniCollector<>(mapper, ReferenceAverageCalculator.durationState());
+        return new AverageReferenceUniCollector<>(mapper, AbstractReferenceAverageSlot.durationState());
     }
 
     public static <A, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>

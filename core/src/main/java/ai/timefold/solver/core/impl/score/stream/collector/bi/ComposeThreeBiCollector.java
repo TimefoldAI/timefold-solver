@@ -6,9 +6,12 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 import ai.timefold.solver.core.impl.util.Triple;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result_>
         implements BiConstraintCollector<A, B, Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> {
@@ -21,9 +24,9 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
     private final Supplier<ResultHolder2_> secondSupplier;
     private final Supplier<ResultHolder3_> thirdSupplier;
 
-    private final TriFunction<ResultHolder1_, A, B, Runnable> firstAccumulator;
-    private final TriFunction<ResultHolder2_, A, B, Runnable> secondAccumulator;
-    private final TriFunction<ResultHolder3_, A, B, Runnable> thirdAccumulator;
+    private final BiConstraintCollectorAccumulator<ResultHolder1_, A, B> firstIncremental;
+    private final BiConstraintCollectorAccumulator<ResultHolder2_, A, B> secondIncremental;
+    private final BiConstraintCollectorAccumulator<ResultHolder3_, A, B> thirdIncremental;
 
     private final Function<ResultHolder1_, Result1_> firstFinisher;
     private final Function<ResultHolder2_, Result2_> secondFinisher;
@@ -42,9 +45,12 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
         this.secondSupplier = second.supplier();
         this.thirdSupplier = third.supplier();
 
-        this.firstAccumulator = first.accumulator();
-        this.secondAccumulator = second.accumulator();
-        this.thirdAccumulator = third.accumulator();
+        this.firstIncremental =
+                first.isIncremental() ? first.incrementalAccumulator() : BiCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental =
+                second.isIncremental() ? second.incrementalAccumulator() : BiCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental =
+                third.isIncremental() ? third.incrementalAccumulator() : BiCollectorUtils.toIncremental(third.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -62,21 +68,22 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
 
     @Override
     public @NonNull TriFunction<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B, Runnable> accumulator() {
-        return (resultHolder, a, b) -> composeUndo(firstAccumulator.apply(resultHolder.a(), a, b),
-                secondAccumulator.apply(resultHolder.b(), a, b),
-                thirdAccumulator.apply(resultHolder.c(), a, b));
-    }
-
-    private static Runnable composeUndo(Runnable first, Runnable second, Runnable third) {
-        return () -> {
-            first.run();
-            second.run();
-            third.run();
-        };
+        return BiCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override
-    public @NonNull Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> finisher() {
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull BiConstraintCollectorAccumulator<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B>
+            incrementalAccumulator() {
+        return AccumulatedValue::new;
+    }
+
+    @Override
+    public @NonNull Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, @Nullable Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.a()),
                 secondFinisher.apply(resultHolder.b()),
                 thirdFinisher.apply(resultHolder.c()));
@@ -91,12 +98,44 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
         var that = (ComposeThreeBiCollector<?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(first, that.first) && Objects.equals(second,
                 that.second) && Objects.equals(third, that.third)
-                && Objects.equals(composeFunction,
-                        that.composeFunction);
+                && Objects.equals(composeFunction, that.composeFunction);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(first, second, third, composeFunction);
+    }
+
+    private final class AccumulatedValue implements BiConstraintCollectorAccumulatedValue<A, B> {
+        private final BiConstraintCollectorAccumulatedValue<A, B> v1;
+        private final BiConstraintCollectorAccumulatedValue<A, B> v2;
+        private final BiConstraintCollectorAccumulatedValue<A, B> v3;
+
+        AccumulatedValue(Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_> container) {
+            this.v1 = firstIncremental.intoGroup(container.a());
+            this.v2 = secondIncremental.intoGroup(container.b());
+            this.v3 = thirdIncremental.intoGroup(container.c());
+        }
+
+        @Override
+        public void add(A a, B b) {
+            v1.add(a, b);
+            v2.add(a, b);
+            v3.add(a, b);
+        }
+
+        @Override
+        public void update(A a, B b) {
+            v1.update(a, b);
+            v2.update(a, b);
+            v3.update(a, b);
+        }
+
+        @Override
+        public void remove() {
+            v1.remove();
+            v2.remove();
+            v3.remove();
+        }
     }
 }

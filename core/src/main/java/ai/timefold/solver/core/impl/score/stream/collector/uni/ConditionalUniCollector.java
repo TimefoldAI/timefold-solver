@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
-import ai.timefold.solver.core.impl.score.stream.collector.CollectorUtils;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -24,7 +23,7 @@ final class ConditionalUniCollector<A, ResultContainer_, Result_>
         this.predicate = predicate;
         this.delegate = delegate;
         this.innerIncremental = delegate.isIncremental() ? delegate.incrementalAccumulator()
-                : CollectorUtils.toIncrementalUni(delegate.accumulator());
+                : UniCollectorUtils.toIncremental(delegate.accumulator());
     }
 
     @Override
@@ -34,7 +33,7 @@ final class ConditionalUniCollector<A, ResultContainer_, Result_>
 
     @Override
     public @NonNull BiFunction<ResultContainer_, A, Runnable> accumulator() {
-        return CollectorUtils.fromIncrementalUni(incrementalAccumulator());
+        return UniCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override

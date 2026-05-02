@@ -7,13 +7,14 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.score.stream.collector.SortedSetUndoableActionable;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractSortedSetSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class ToSortedSetComparatorBiCollector<A, B, Mapped_>
         extends
-        UndoableActionableBiCollector<A, B, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable.State<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
+        UndoableActionableBiCollector<A, B, Mapped_, SortedSet<Mapped_>, AbstractSortedSetSlot.State<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
 
     ToSortedSetComparatorBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper,
@@ -23,18 +24,41 @@ final class ToSortedSetComparatorBiCollector<A, B, Mapped_>
     }
 
     @Override
-    public @NonNull Supplier<SortedSetUndoableActionable.State<Mapped_>> supplier() {
-        return () -> new SortedSetUndoableActionable.State<>(comparator);
+    public @NonNull Supplier<AbstractSortedSetSlot.State<Mapped_>> supplier() {
+        return () -> new AbstractSortedSetSlot.State<>(comparator);
     }
 
     @Override
-    public @NonNull Function<SortedSetUndoableActionable.State<Mapped_>, SortedSet<Mapped_>> finisher() {
-        return SortedSetUndoableActionable.State::result;
+    public @NonNull Function<AbstractSortedSetSlot.State<Mapped_>, SortedSet<Mapped_>> finisher() {
+        return AbstractSortedSetSlot.State::result;
     }
 
     @Override
-    protected SortedSetUndoableActionable<Mapped_> newUndoableActionable(SortedSetUndoableActionable.State<Mapped_> state) {
-        return new SortedSetUndoableActionable<>(state);
+    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(
+            AbstractSortedSetSlot.State<Mapped_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractSortedSetSlot<Mapped_>
+            implements BiConstraintCollectorAccumulatedValue<A, B> {
+        Slot(AbstractSortedSetSlot.State<Mapped_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b) {
+            addMapped(mapper.apply(a, b));
+        }
+
+        @Override
+        public void update(A a, B b) {
+            updateMapped(mapper.apply(a, b));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

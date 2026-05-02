@@ -5,30 +5,34 @@ import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.UndoableActionable;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class UndoableActionableBiCollector<A, B, Input_, Output_, State_, Calculator_ extends UndoableActionable<Input_>>
-        implements BiConstraintCollector<A, B, State_, Output_>
-        permits MaxComparableBiCollector, MaxComparatorBiCollector, MaxPropertyBiCollector, MinComparableBiCollector,
-        MinComparatorBiCollector, MinPropertyBiCollector, ToCollectionBiCollector, ToListBiCollector, ToMultiMapBiCollector,
-        ToSetBiCollector, ToSimpleMapBiCollector, ToSortedSetComparatorBiCollector {
-    private final BiFunction<? super A, ? super B, ? extends Input_> mapper;
+abstract class UndoableActionableBiCollector<A, B, Input_, Output_, State_>
+        implements BiConstraintCollector<A, B, State_, Output_> {
+    protected final BiFunction<? super A, ? super B, ? extends Input_> mapper;
 
     public UndoableActionableBiCollector(BiFunction<? super A, ? super B, ? extends Input_> mapper) {
         this.mapper = mapper;
     }
 
-    protected abstract Calculator_ newUndoableActionable(State_ state);
+    protected abstract BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(State_ state);
+
+    @Override
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull BiConstraintCollectorAccumulator<State_, A, B> incrementalAccumulator() {
+        return this::newAccumulatedValue;
+    }
 
     @Override
     public @NonNull TriFunction<State_, A, B, Runnable> accumulator() {
-        return (state, a, b) -> {
-            var ua = newUndoableActionable(state);
-            ua.insert(mapper.apply(a, b));
-            return ua::retract;
-        };
+        return BiCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override
@@ -37,7 +41,7 @@ abstract sealed class UndoableActionableBiCollector<A, B, Input_, Output_, State
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (UndoableActionableBiCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (UndoableActionableBiCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

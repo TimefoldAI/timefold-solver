@@ -7,10 +7,9 @@ import java.util.function.BinaryOperator;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.util.Pair;
+import org.jspecify.annotations.Nullable;
 
-public final class MapUndoableActionable<Key_, Value_, ResultValue_, Result_ extends Map<Key_, ResultValue_>>
-        implements UndoableActionable<Pair<Key_, Value_>> {
+public abstract class AbstractToMapSlot<Key_, Value_, ResultValue_, Result_ extends Map<Key_, ResultValue_>> {
     public static final class State<Key_, Value_, ResultValue_, Result_ extends Map<Key_, ResultValue_>> {
         final ToMapResultContainer<Key_, Value_, ResultValue_, Result_> container;
 
@@ -35,29 +34,29 @@ public final class MapUndoableActionable<Key_, Value_, ResultValue_, Result_ ext
     }
 
     private final State<Key_, Value_, ResultValue_, Result_> state;
-    private Pair<Key_, Value_> cachedEntry;
+    private @Nullable Key_ cachedKey;
+    private @Nullable Value_ cachedValue;
 
-    public MapUndoableActionable(State<Key_, Value_, ResultValue_, Result_> state) {
+    public AbstractToMapSlot(State<Key_, Value_, ResultValue_, Result_> state) {
         this.state = state;
     }
 
-    @Override
-    public void insert(Pair<Key_, Value_> entry) {
-        this.cachedEntry = entry;
-        state.container.add(entry.key(), entry.value());
+    protected void addMapped(Key_ key, Value_ value) {
+        this.cachedKey = key;
+        this.cachedValue = value;
+        state.container.add(key, value);
     }
 
-    @Override
-    public void update(Pair<Key_, Value_> entry) {
-        if (Objects.equals(cachedEntry, entry)) {
+    protected void updateMapped(Key_ key, Value_ value) {
+        if (Objects.equals(cachedKey, key) && Objects.equals(cachedValue, value)) {
             return;
         }
-        retract();
-        insert(entry);
+        state.container.update(cachedKey, cachedValue, key, value);
+        cachedKey = key;
+        cachedValue = value;
     }
 
-    @Override
-    public void retract() {
-        state.container.remove(cachedEntry.key(), cachedEntry.value());
+    protected void removeMapped() {
+        state.container.remove(cachedKey, cachedValue);
     }
 }

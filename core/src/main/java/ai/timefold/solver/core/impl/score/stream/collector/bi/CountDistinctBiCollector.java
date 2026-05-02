@@ -4,29 +4,53 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.score.stream.collector.LongDistinctCountCalculator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongDistinctSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class CountDistinctBiCollector<A, B, Mapped_>
         extends
-        ObjectCalculatorBiCollector<A, B, Mapped_, Long, LongDistinctCountCalculator.State<Mapped_>, LongDistinctCountCalculator<Mapped_>> {
+        ObjectCalculatorBiCollector<A, B, Mapped_, Long, AbstractLongDistinctSlot.State<Mapped_>> {
     CountDistinctBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper) {
         super(mapper);
     }
 
     @Override
-    protected LongDistinctCountCalculator<Mapped_> newCalculator(LongDistinctCountCalculator.State<Mapped_> state) {
-        return new LongDistinctCountCalculator<>(state);
+    public @NonNull Supplier<AbstractLongDistinctSlot.State<Mapped_>> supplier() {
+        return AbstractLongDistinctSlot.State::new;
     }
 
     @Override
-    public @NonNull Supplier<LongDistinctCountCalculator.State<Mapped_>> supplier() {
-        return LongDistinctCountCalculator.State::new;
+    public @NonNull Function<AbstractLongDistinctSlot.State<Mapped_>, Long> finisher() {
+        return AbstractLongDistinctSlot.State::result;
     }
 
     @Override
-    public @NonNull Function<LongDistinctCountCalculator.State<Mapped_>, Long> finisher() {
-        return LongDistinctCountCalculator.State::result;
+    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(
+            AbstractLongDistinctSlot.State<Mapped_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractLongDistinctSlot<Mapped_>
+            implements BiConstraintCollectorAccumulatedValue<A, B> {
+        Slot(AbstractLongDistinctSlot.State<Mapped_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b) {
+            addMapped(mapper.apply(a, b));
+        }
+
+        @Override
+        public void update(A a, B b) {
+            updateMapped(mapper.apply(a, b));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 }

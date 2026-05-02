@@ -7,9 +7,12 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
 import ai.timefold.solver.core.impl.util.Triple;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result_>
         implements TriConstraintCollector<A, B, C, Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> {
@@ -22,9 +25,9 @@ final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Re
     private final Supplier<ResultHolder2_> secondSupplier;
     private final Supplier<ResultHolder3_> thirdSupplier;
 
-    private final QuadFunction<ResultHolder1_, A, B, C, Runnable> firstAccumulator;
-    private final QuadFunction<ResultHolder2_, A, B, C, Runnable> secondAccumulator;
-    private final QuadFunction<ResultHolder3_, A, B, C, Runnable> thirdAccumulator;
+    private final TriConstraintCollectorAccumulator<ResultHolder1_, A, B, C> firstIncremental;
+    private final TriConstraintCollectorAccumulator<ResultHolder2_, A, B, C> secondIncremental;
+    private final TriConstraintCollectorAccumulator<ResultHolder3_, A, B, C> thirdIncremental;
 
     private final Function<ResultHolder1_, Result1_> firstFinisher;
     private final Function<ResultHolder2_, Result2_> secondFinisher;
@@ -43,9 +46,12 @@ final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Re
         this.secondSupplier = second.supplier();
         this.thirdSupplier = third.supplier();
 
-        this.firstAccumulator = first.accumulator();
-        this.secondAccumulator = second.accumulator();
-        this.thirdAccumulator = third.accumulator();
+        this.firstIncremental =
+                first.isIncremental() ? first.incrementalAccumulator() : TriCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
+                : TriCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental =
+                third.isIncremental() ? third.incrementalAccumulator() : TriCollectorUtils.toIncremental(third.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -63,21 +69,22 @@ final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Re
 
     @Override
     public @NonNull QuadFunction<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B, C, Runnable> accumulator() {
-        return (resultHolder, a, b, c) -> composeUndo(firstAccumulator.apply(resultHolder.a(), a, b, c),
-                secondAccumulator.apply(resultHolder.b(), a, b, c),
-                thirdAccumulator.apply(resultHolder.c(), a, b, c));
-    }
-
-    private static Runnable composeUndo(Runnable first, Runnable second, Runnable third) {
-        return () -> {
-            first.run();
-            second.run();
-            third.run();
-        };
+        return TriCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override
-    public @NonNull Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> finisher() {
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull TriConstraintCollectorAccumulator<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B, C>
+            incrementalAccumulator() {
+        return AccumulatedValue::new;
+    }
+
+    @Override
+    public @NonNull Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, @Nullable Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.a()),
                 secondFinisher.apply(resultHolder.b()),
                 thirdFinisher.apply(resultHolder.c()));
@@ -99,5 +106,38 @@ final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Re
     @Override
     public int hashCode() {
         return Objects.hash(first, second, third, composeFunction);
+    }
+
+    private final class AccumulatedValue implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+        private final TriConstraintCollectorAccumulatedValue<A, B, C> v1;
+        private final TriConstraintCollectorAccumulatedValue<A, B, C> v2;
+        private final TriConstraintCollectorAccumulatedValue<A, B, C> v3;
+
+        AccumulatedValue(Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_> container) {
+            this.v1 = firstIncremental.intoGroup(container.a());
+            this.v2 = secondIncremental.intoGroup(container.b());
+            this.v3 = thirdIncremental.intoGroup(container.c());
+        }
+
+        @Override
+        public void add(A a, B b, C c) {
+            v1.add(a, b, c);
+            v2.add(a, b, c);
+            v3.add(a, b, c);
+        }
+
+        @Override
+        public void update(A a, B b, C c) {
+            v1.update(a, b, c);
+            v2.update(a, b, c);
+            v3.update(a, b, c);
+        }
+
+        @Override
+        public void remove() {
+            v1.remove();
+            v2.remove();
+            v3.remove();
+        }
     }
 }

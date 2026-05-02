@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
-public final class LongAverageCalculator implements LongCalculator {
+public abstract class AbstractLongAverageSlot {
 
     public static final class State {
         long count = 0;
@@ -17,25 +17,22 @@ public final class LongAverageCalculator implements LongCalculator {
     private final State state;
     private long cachedInput;
 
-    public LongAverageCalculator(State state) {
+    public AbstractLongAverageSlot(State state) {
         this.state = state;
     }
 
-    @Override
-    public void insert(long input) {
+    protected void addMapped(long input) {
         cachedInput = input;
         state.count++;
         state.sum += input;
     }
 
-    @Override
-    public void update(long input) {
+    protected void updateMapped(long input) {
         state.sum += input - cachedInput;
         cachedInput = input;
     }
 
-    @Override
-    public void retract() {
+    protected void removeMapped() {
         state.count--;
         state.sum -= cachedInput;
     }

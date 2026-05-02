@@ -7,14 +7,14 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.score.stream.collector.MapUndoableActionable;
-import ai.timefold.solver.core.impl.util.Pair;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractToMapSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class ToMultiMapUniCollector<A, Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
         extends
-        UndoableActionableUniCollector<A, Pair<Key_, Value_>, Result_, MapUndoableActionable.State<Key_, Value_, Set_, Result_>, MapUndoableActionable<Key_, Value_, Set_, Result_>> {
+        UndoableActionableUniCollector<A, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Set_, Result_>> {
     private final Function<? super A, ? extends Key_> keyFunction;
     private final Function<? super A, ? extends Value_> valueFunction;
     private final Supplier<Result_> mapSupplier;
@@ -24,7 +24,7 @@ final class ToMultiMapUniCollector<A, Key_, Value_, Set_ extends Set<Value_>, Re
             Function<? super A, ? extends Value_> valueFunction,
             Supplier<Result_> mapSupplier,
             IntFunction<Set_> setFunction) {
-        super(a -> new Pair<>(keyFunction.apply(a), valueFunction.apply(a)));
+        super(keyFunction);
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction;
         this.mapSupplier = mapSupplier;
@@ -32,19 +32,41 @@ final class ToMultiMapUniCollector<A, Key_, Value_, Set_ extends Set<Value_>, Re
     }
 
     @Override
-    public @NonNull Supplier<MapUndoableActionable.State<Key_, Value_, Set_, Result_>> supplier() {
-        return () -> MapUndoableActionable.multiMapState(mapSupplier, setFunction);
+    public @NonNull Supplier<AbstractToMapSlot.State<Key_, Value_, Set_, Result_>> supplier() {
+        return () -> AbstractToMapSlot.multiMapState(mapSupplier, setFunction);
     }
 
     @Override
-    public @NonNull Function<MapUndoableActionable.State<Key_, Value_, Set_, Result_>, Result_> finisher() {
-        return MapUndoableActionable.State::result;
+    public @NonNull Function<AbstractToMapSlot.State<Key_, Value_, Set_, Result_>, Result_> finisher() {
+        return AbstractToMapSlot.State::result;
     }
 
     @Override
-    protected MapUndoableActionable<Key_, Value_, Set_, Result_> newUndoableActionable(
-            MapUndoableActionable.State<Key_, Value_, Set_, Result_> state) {
-        return new MapUndoableActionable<>(state);
+    protected UniConstraintCollectorAccumulatedValue<A>
+            newAccumulatedValue(AbstractToMapSlot.State<Key_, Value_, Set_, Result_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractToMapSlot<Key_, Value_, Set_, Result_>
+            implements UniConstraintCollectorAccumulatedValue<A> {
+        Slot(AbstractToMapSlot.State<Key_, Value_, Set_, Result_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a) {
+            addMapped(keyFunction.apply(a), valueFunction.apply(a));
+        }
+
+        @Override
+        public void update(A a) {
+            updateMapped(keyFunction.apply(a), valueFunction.apply(a));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     // Don't call super equals/hashCode; the groupingFunction is calculated from keyFunction

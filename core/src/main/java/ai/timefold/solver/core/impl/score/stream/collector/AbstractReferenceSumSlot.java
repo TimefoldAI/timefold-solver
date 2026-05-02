@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.collector;
 
 import java.util.function.BinaryOperator;
 
-public final class ReferenceSumCalculator<Result_> implements ObjectCalculator<Result_> {
+public abstract class AbstractReferenceSumSlot<Result_> {
 
     public static final class State<Result_> {
         Result_ current;
@@ -23,18 +23,16 @@ public final class ReferenceSumCalculator<Result_> implements ObjectCalculator<R
     private final State<Result_> state;
     private Result_ cachedValue;
 
-    public ReferenceSumCalculator(State<Result_> state) {
+    public AbstractReferenceSumSlot(State<Result_> state) {
         this.state = state;
     }
 
-    @Override
-    public void insert(Result_ input) {
+    protected void addMapped(Result_ input) {
         cachedValue = input;
         state.current = state.adder.apply(state.current, input);
     }
 
-    @Override
-    public void update(Result_ input) {
+    protected void updateMapped(Result_ input) {
         if (cachedValue == input) {
             return;
         }
@@ -43,8 +41,7 @@ public final class ReferenceSumCalculator<Result_> implements ObjectCalculator<R
         state.current = state.adder.apply(state.current, input);
     }
 
-    @Override
-    public void retract() {
+    protected void removeMapped() {
         state.current = state.subtractor.apply(state.current, cachedValue);
     }
 }

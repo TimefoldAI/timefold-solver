@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
-public final class ToMapPerKeyCounter<Value_> {
+final class ToMapPerKeyCounter<Value_> {
 
     private final Map<Value_, Long> counts = new LinkedHashMap<>(0);
 
@@ -17,6 +17,12 @@ public final class ToMapPerKeyCounter<Value_> {
                 return currentCount + 1;
             }
         });
+    }
+
+    public long update(Value_ oldValue, Value_ newValue) {
+        long removedCount = remove(oldValue);
+        add(newValue);
+        return removedCount;
     }
 
     public long remove(Value_ value) {

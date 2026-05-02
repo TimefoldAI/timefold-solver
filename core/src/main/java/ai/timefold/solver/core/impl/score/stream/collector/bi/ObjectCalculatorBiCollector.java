@@ -5,29 +5,35 @@ import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class ObjectCalculatorBiCollector<A, B, Input_, Output_, State_, Calculator_ extends ObjectCalculator<Input_>>
-        implements BiConstraintCollector<A, B, State_, Output_>
-        permits AverageReferenceBiCollector, ConnectedRangesBiConstraintCollector, ConsecutiveSequencesBiConstraintCollector,
-        CountDistinctBiCollector, SumReferenceBiCollector {
+abstract class ObjectCalculatorBiCollector<A, B, Input_, Output_, State_>
+        implements BiConstraintCollector<A, B, State_, Output_> {
+
     protected final BiFunction<? super A, ? super B, ? extends Input_> mapper;
 
     ObjectCalculatorBiCollector(BiFunction<? super A, ? super B, ? extends Input_> mapper) {
         this.mapper = mapper;
     }
 
-    protected abstract Calculator_ newCalculator(State_ state);
+    protected abstract BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(State_ state);
+
+    @Override
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull BiConstraintCollectorAccumulator<State_, A, B> incrementalAccumulator() {
+        return this::newAccumulatedValue;
+    }
 
     @Override
     public @NonNull TriFunction<State_, A, B, Runnable> accumulator() {
-        return (state, a, b) -> {
-            var calc = newCalculator(state);
-            calc.insert(mapper.apply(a, b));
-            return calc::retract;
-        };
+        return BiCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override
@@ -36,7 +42,7 @@ abstract sealed class ObjectCalculatorBiCollector<A, B, Input_, Output_, State_,
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (ObjectCalculatorBiCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (ObjectCalculatorBiCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

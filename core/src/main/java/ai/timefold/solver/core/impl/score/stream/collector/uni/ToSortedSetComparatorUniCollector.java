@@ -6,13 +6,13 @@ import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.score.stream.collector.SortedSetUndoableActionable;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractSortedSetSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class ToSortedSetComparatorUniCollector<A, Mapped_>
-        extends
-        UndoableActionableUniCollector<A, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable.State<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
+        extends UndoableActionableUniCollector<A, Mapped_, SortedSet<Mapped_>, AbstractSortedSetSlot.State<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
 
     ToSortedSetComparatorUniCollector(Function<? super A, ? extends Mapped_> mapper,
@@ -22,18 +22,41 @@ final class ToSortedSetComparatorUniCollector<A, Mapped_>
     }
 
     @Override
-    public @NonNull Supplier<SortedSetUndoableActionable.State<Mapped_>> supplier() {
-        return () -> new SortedSetUndoableActionable.State<>(comparator);
+    public @NonNull Supplier<AbstractSortedSetSlot.State<Mapped_>> supplier() {
+        return () -> new AbstractSortedSetSlot.State<>(comparator);
     }
 
     @Override
-    public @NonNull Function<SortedSetUndoableActionable.State<Mapped_>, SortedSet<Mapped_>> finisher() {
-        return SortedSetUndoableActionable.State::result;
+    public @NonNull Function<AbstractSortedSetSlot.State<Mapped_>, SortedSet<Mapped_>> finisher() {
+        return AbstractSortedSetSlot.State::result;
     }
 
     @Override
-    protected SortedSetUndoableActionable<Mapped_> newUndoableActionable(SortedSetUndoableActionable.State<Mapped_> state) {
-        return new SortedSetUndoableActionable<>(state);
+    protected UniConstraintCollectorAccumulatedValue<A>
+            newAccumulatedValue(AbstractSortedSetSlot.State<Mapped_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractSortedSetSlot<Mapped_>
+            implements UniConstraintCollectorAccumulatedValue<A> {
+        Slot(AbstractSortedSetSlot.State<Mapped_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a) {
+            addMapped(mapper.apply(a));
+        }
+
+        @Override
+        public void update(A a) {
+            updateMapped(mapper.apply(a));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
 
 import org.jspecify.annotations.NonNull;
 
@@ -14,11 +15,14 @@ final class AndThenQuadCollector<A, B, C, D, ResultContainer_, Intermediate_, Re
 
     private final QuadConstraintCollector<A, B, C, D, ResultContainer_, Intermediate_> delegate;
     private final Function<Intermediate_, Result_> mappingFunction;
+    private final QuadConstraintCollectorAccumulator<ResultContainer_, A, B, C, D> innerIncremental;
 
     AndThenQuadCollector(QuadConstraintCollector<A, B, C, D, ResultContainer_, Intermediate_> delegate,
             Function<Intermediate_, Result_> mappingFunction) {
         this.delegate = Objects.requireNonNull(delegate);
         this.mappingFunction = Objects.requireNonNull(mappingFunction);
+        this.innerIncremental = delegate.isIncremental() ? delegate.incrementalAccumulator()
+                : QuadCollectorUtils.toIncremental(delegate.accumulator());
     }
 
     @Override
@@ -28,7 +32,17 @@ final class AndThenQuadCollector<A, B, C, D, ResultContainer_, Intermediate_, Re
 
     @Override
     public @NonNull PentaFunction<ResultContainer_, A, B, C, D, Runnable> accumulator() {
-        return delegate.accumulator();
+        return QuadCollectorUtils.fromIncremental(incrementalAccumulator());
+    }
+
+    @Override
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull QuadConstraintCollectorAccumulator<ResultContainer_, A, B, C, D> incrementalAccumulator() {
+        return innerIncremental;
     }
 
     @Override

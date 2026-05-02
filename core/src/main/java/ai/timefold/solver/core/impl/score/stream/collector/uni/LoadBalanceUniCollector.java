@@ -10,13 +10,13 @@ import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
-import ai.timefold.solver.core.impl.score.stream.collector.CollectorUtils;
-import ai.timefold.solver.core.impl.score.stream.collector.LoadBalanceImpl;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractLoadBalanceSlot;
+import ai.timefold.solver.core.impl.score.stream.collector.DefaultLoadBalance;
 
 import org.jspecify.annotations.NonNull;
 
 final class LoadBalanceUniCollector<A, Balanced_>
-        implements UniConstraintCollector<A, LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> {
+        implements UniConstraintCollector<A, DefaultLoadBalance<Balanced_>, LoadBalance<Balanced_>> {
 
     private final Function<A, Balanced_> balancedItemFunction;
     private final ToLongFunction<A> loadFunction;
@@ -30,13 +30,13 @@ final class LoadBalanceUniCollector<A, Balanced_>
     }
 
     @Override
-    public @NonNull Supplier<LoadBalanceImpl<Balanced_>> supplier() {
-        return LoadBalanceImpl::new;
+    public @NonNull Supplier<DefaultLoadBalance<Balanced_>> supplier() {
+        return DefaultLoadBalance::new;
     }
 
     @Override
-    public @NonNull BiFunction<LoadBalanceImpl<Balanced_>, A, Runnable> accumulator() {
-        return CollectorUtils.fromIncrementalUni(incrementalAccumulator());
+    public @NonNull BiFunction<DefaultLoadBalance<Balanced_>, A, Runnable> accumulator() {
+        return UniCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override
@@ -45,12 +45,12 @@ final class LoadBalanceUniCollector<A, Balanced_>
     }
 
     @Override
-    public @NonNull UniConstraintCollectorAccumulator<LoadBalanceImpl<Balanced_>, A> incrementalAccumulator() {
-        return AccumulatedValue::new;
+    public @NonNull UniConstraintCollectorAccumulator<DefaultLoadBalance<Balanced_>, A> incrementalAccumulator() {
+        return Slot::new;
     }
 
     @Override
-    public @NonNull Function<LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> finisher() {
+    public @NonNull Function<DefaultLoadBalance<Balanced_>, LoadBalance<Balanced_>> finisher() {
         return balanceStatistics -> balanceStatistics;
     }
 
@@ -67,24 +67,26 @@ final class LoadBalanceUniCollector<A, Balanced_>
         return Objects.hash(balancedItemFunction, loadFunction, initialLoadFunction);
     }
 
-    private final class AccumulatedValue implements UniConstraintCollectorAccumulatedValue<A> {
-        private final LoadBalanceImpl<Balanced_> container;
-        private Runnable undoAction;
+    private final class Slot extends AbstractLoadBalanceSlot<Balanced_>
+            implements UniConstraintCollectorAccumulatedValue<A> {
 
-        AccumulatedValue(LoadBalanceImpl<Balanced_> container) {
-            this.container = container;
+        Slot(DefaultLoadBalance<Balanced_> container) {
+            super(container);
         }
 
         @Override
         public void add(A a) {
-            undoAction = container.registerBalanced(
-                    balancedItemFunction.apply(a), loadFunction.applyAsLong(a), initialLoadFunction.applyAsLong(a));
+            addMapped(balancedItemFunction.apply(a), loadFunction.applyAsLong(a), initialLoadFunction.applyAsLong(a));
+        }
+
+        @Override
+        public void update(A a) {
+            updateMapped(balancedItemFunction.apply(a), loadFunction.applyAsLong(a), initialLoadFunction.applyAsLong(a));
         }
 
         @Override
         public void remove() {
-            undoAction.run();
-            undoAction = null;
+            removeMapped();
         }
     }
 }

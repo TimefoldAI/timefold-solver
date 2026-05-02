@@ -24,7 +24,7 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceAverageSlot;
 
 public class InnerBiConstraintCollectors {
     public static <A, B> BiConstraintCollector<A, B, ?, Double> average(ToLongBiFunction<? super A, ? super B> mapper) {
@@ -33,23 +33,23 @@ public class InnerBiConstraintCollectors {
 
     static <A, B, Mapped_, Average_> BiConstraintCollector<A, B, ?, Average_> average(
             BiFunction<? super A, ? super B, ? extends Mapped_> mapper,
-            Supplier<ReferenceAverageCalculator.State<Mapped_, Average_>> stateSupplier) {
+            Supplier<AbstractReferenceAverageSlot.State<Mapped_, Average_>> stateSupplier) {
         return new AverageReferenceBiCollector<>(mapper, stateSupplier);
     }
 
     public static <A, B> BiConstraintCollector<A, B, ?, BigDecimal> averageBigDecimal(
             BiFunction<? super A, ? super B, ? extends BigDecimal> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigDecimalState());
+        return average(mapper, AbstractReferenceAverageSlot.bigDecimalState());
     }
 
     public static <A, B> BiConstraintCollector<A, B, ?, Duration> averageDuration(
             BiFunction<? super A, ? super B, ? extends Duration> mapper) {
-        return average(mapper, ReferenceAverageCalculator.durationState());
+        return average(mapper, AbstractReferenceAverageSlot.durationState());
     }
 
     public static <A, B> BiConstraintCollector<A, B, ?, BigDecimal> averageBigInteger(
             BiFunction<? super A, ? super B, ? extends BigInteger> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigIntegerState());
+        return average(mapper, AbstractReferenceAverageSlot.bigIntegerState());
     }
 
     public static <A, B, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>

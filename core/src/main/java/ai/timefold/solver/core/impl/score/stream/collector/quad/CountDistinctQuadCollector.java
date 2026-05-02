@@ -4,29 +4,53 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.impl.score.stream.collector.LongDistinctCountCalculator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongDistinctSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class CountDistinctQuadCollector<A, B, C, D, Mapped_>
         extends
-        ObjectCalculatorQuadCollector<A, B, C, D, Mapped_, Long, LongDistinctCountCalculator.State<Mapped_>, LongDistinctCountCalculator<Mapped_>> {
+        ObjectCalculatorQuadCollector<A, B, C, D, Mapped_, Long, AbstractLongDistinctSlot.State<Mapped_>> {
     CountDistinctQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper) {
         super(mapper);
     }
 
     @Override
-    public @NonNull Supplier<LongDistinctCountCalculator.State<Mapped_>> supplier() {
-        return LongDistinctCountCalculator.State::new;
+    public @NonNull Supplier<AbstractLongDistinctSlot.State<Mapped_>> supplier() {
+        return AbstractLongDistinctSlot.State::new;
     }
 
     @Override
-    public @NonNull Function<LongDistinctCountCalculator.State<Mapped_>, Long> finisher() {
-        return LongDistinctCountCalculator.State::result;
+    public @NonNull Function<AbstractLongDistinctSlot.State<Mapped_>, Long> finisher() {
+        return AbstractLongDistinctSlot.State::result;
     }
 
     @Override
-    protected LongDistinctCountCalculator<Mapped_> newCalculator(LongDistinctCountCalculator.State<Mapped_> state) {
-        return new LongDistinctCountCalculator<>(state);
+    protected QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(
+            AbstractLongDistinctSlot.State<Mapped_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractLongDistinctSlot<Mapped_>
+            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+        Slot(AbstractLongDistinctSlot.State<Mapped_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c, D d) {
+            addMapped(mapper.apply(a, b, c, d));
+        }
+
+        @Override
+        public void update(A a, B b, C c, D d) {
+            updateMapped(mapper.apply(a, b, c, d));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 }

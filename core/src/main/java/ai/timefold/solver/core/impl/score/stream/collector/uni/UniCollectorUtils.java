@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.score.stream.collector;
+package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.function.BiFunction;
 
@@ -9,18 +9,18 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public final class CollectorUtils {
+final class UniCollectorUtils {
 
-    public static <ResultContainer_, A> BiFunction<ResultContainer_, A, Runnable> fromIncrementalUni(
-            UniConstraintCollectorAccumulator<ResultContainer_, A> incrementalAccumulator) {
+    public static <ResultContainer_, A> BiFunction<ResultContainer_, A, Runnable>
+            fromIncremental(UniConstraintCollectorAccumulator<ResultContainer_, A> incrementalAccumulator) {
         if (incrementalAccumulator instanceof UniFromAccumulatorAdapter<ResultContainer_, A>(BiFunction<ResultContainer_, A, Runnable> accumulator)) {
             return accumulator;
         }
         return new UniFromIncrementalAdapter<>(incrementalAccumulator);
     }
 
-    public static <ResultContainer_, A> UniConstraintCollectorAccumulator<ResultContainer_, A> toIncrementalUni(
-            BiFunction<ResultContainer_, A, Runnable> accumulator) {
+    public static <ResultContainer_, A> UniConstraintCollectorAccumulator<ResultContainer_, A>
+            toIncremental(BiFunction<ResultContainer_, A, Runnable> accumulator) {
         if (accumulator instanceof UniFromIncrementalAdapter<ResultContainer_, A>(UniConstraintCollectorAccumulator<ResultContainer_, A> incrementalAccumulator)) {
             return incrementalAccumulator;
         }
@@ -76,9 +76,6 @@ public final class CollectorUtils {
             undo.run();
             undo = null;
         }
-    }
-
-    private CollectorUtils() {
     }
 
 }

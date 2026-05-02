@@ -11,7 +11,7 @@ import java.util.function.Function;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
-public final class MinMaxUndoableActionable<Result_, Property_> implements UndoableActionable<Result_> {
+public abstract class AbstractMinMaxSlot<Result_, Property_> {
     public static final class State<Result_, Property_> {
         final boolean isMin;
         final NavigableMap<Property_, Map<Result_, MutableInt>> propertyToItemCountMap;
@@ -69,12 +69,11 @@ public final class MinMaxUndoableActionable<Result_, Property_> implements Undoa
     private Map<Result_, MutableInt> cachedInnerMap;
     private MutableInt cachedCount;
 
-    public MinMaxUndoableActionable(State<Result_, Property_> state) {
+    public AbstractMinMaxSlot(State<Result_, Property_> state) {
         this.state = state;
     }
 
-    @Override
-    public void insert(Result_ item) {
+    protected void addMapped(Result_ item) {
         cachedItem = item;
         cachedKey = state.propertyFunction.apply(item);
         cachedInnerMap = state.propertyToItemCountMap.computeIfAbsent(cachedKey, ignored -> new LinkedHashMap<>());
@@ -82,13 +81,22 @@ public final class MinMaxUndoableActionable<Result_, Property_> implements Undoa
         cachedCount.increment();
     }
 
-    @Override
-    public void update(Result_ item) {
+    protected void updateMapped(Result_ item) {
         var newKey = state.propertyFunction.apply(item);
         if (Objects.equals(cachedKey, newKey)) {
+            if (Objects.equals(cachedItem, item)) {
+                return;
+            }
+            // same key, different item: swap within the same inner map
+            if (cachedCount.decrement() == 0) {
+                cachedInnerMap.remove(cachedItem);
+            }
+            cachedItem = item;
+            cachedCount = cachedInnerMap.computeIfAbsent(item, ignored -> new MutableInt());
+            cachedCount.increment();
             return;
         }
-        retract();
+        removeMapped();
         cachedItem = item;
         cachedKey = newKey;
         cachedInnerMap = state.propertyToItemCountMap.computeIfAbsent(newKey, ignored -> new LinkedHashMap<>());
@@ -96,8 +104,7 @@ public final class MinMaxUndoableActionable<Result_, Property_> implements Undoa
         cachedCount.increment();
     }
 
-    @Override
-    public void retract() {
+    protected void removeMapped() {
         if (cachedCount.decrement() == 0) {
             cachedInnerMap.remove(cachedItem);
             if (cachedInnerMap.isEmpty()) {

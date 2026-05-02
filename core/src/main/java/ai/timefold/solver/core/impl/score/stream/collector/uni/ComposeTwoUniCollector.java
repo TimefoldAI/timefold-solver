@@ -8,7 +8,6 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
-import ai.timefold.solver.core.impl.score.stream.collector.CollectorUtils;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.jspecify.annotations.NonNull;
@@ -39,10 +38,10 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
         this.firstSupplier = first.supplier();
         this.secondSupplier = second.supplier();
 
-        this.firstIncremental = first.isIncremental() ? first.incrementalAccumulator()
-                : CollectorUtils.toIncrementalUni(first.accumulator());
+        this.firstIncremental =
+                first.isIncremental() ? first.incrementalAccumulator() : UniCollectorUtils.toIncremental(first.accumulator());
         this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
-                : CollectorUtils.toIncrementalUni(second.accumulator());
+                : UniCollectorUtils.toIncremental(second.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -55,7 +54,7 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
 
     @Override
     public @NonNull BiFunction<Pair<ResultHolder1_, ResultHolder2_>, A, Runnable> accumulator() {
-        return CollectorUtils.fromIncrementalUni(incrementalAccumulator());
+        return UniCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override

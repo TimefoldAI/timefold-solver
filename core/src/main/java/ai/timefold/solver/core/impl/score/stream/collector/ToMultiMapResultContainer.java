@@ -7,7 +7,9 @@ import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-public final class ToMultiMapResultContainer<Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
+import org.jspecify.annotations.Nullable;
+
+final class ToMultiMapResultContainer<Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
         implements ToMapResultContainer<Key_, Value_, Set_, Result_> {
 
     private final Supplier<Set_> setSupplier;
@@ -20,18 +22,28 @@ public final class ToMultiMapResultContainer<Key_, Value_, Set_ extends Set<Valu
         this.result = Objects.requireNonNull(resultSupplier).get();
     }
 
-    public ToMultiMapResultContainer(IntFunction<Result_> resultFunction, IntFunction<Set_> setFunction) {
-        IntFunction<Set_> nonNullSetFunction = Objects.requireNonNull(setFunction);
-        this.setSupplier = () -> nonNullSetFunction.apply(0);
-        this.result = Objects.requireNonNull(resultFunction).apply(0);
-    }
-
     @Override
     public void add(Key_ key, Value_ value) {
         ToMapPerKeyCounter<Value_> counter = valueCounts.computeIfAbsent(key, k -> new ToMapPerKeyCounter<>());
         counter.add(value);
         result.computeIfAbsent(key, k -> setSupplier.get())
                 .add(value);
+    }
+
+    @Override
+    public void update(@Nullable Key_ oldKey, @Nullable Value_ oldValue, @Nullable Key_ newKey,
+            @Nullable Value_ newValue) {
+        if (Objects.equals(oldKey, newKey)) {
+            var counter = valueCounts.get(oldKey);
+            long removedCount = counter.update(oldValue, newValue);
+            if (removedCount == 0) {
+                result.get(oldKey).remove(oldValue);
+            }
+            result.computeIfAbsent(oldKey, k -> setSupplier.get()).add(newValue);
+        } else {
+            remove(oldKey, oldValue);
+            add(newKey, newValue);
+        }
     }
 
     @Override

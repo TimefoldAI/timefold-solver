@@ -7,7 +7,7 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.util.MutableInt;
 
-public final class SetUndoableActionable<Mapped_> implements UndoableActionable<Mapped_> {
+public abstract class AbstractToSetSlot<Mapped_> {
     public static final class State<Mapped_> {
         final Map<Mapped_, MutableInt> itemToCount = new LinkedHashMap<>();
 
@@ -20,28 +20,25 @@ public final class SetUndoableActionable<Mapped_> implements UndoableActionable<
     private Mapped_ cachedValue;
     private MutableInt cachedCount;
 
-    public SetUndoableActionable(State<Mapped_> state) {
+    public AbstractToSetSlot(State<Mapped_> state) {
         this.state = state;
     }
 
-    @Override
-    public void insert(Mapped_ result) {
+    protected void addMapped(Mapped_ result) {
         this.cachedValue = result;
         this.cachedCount = state.itemToCount.computeIfAbsent(result, ignored -> new MutableInt());
         this.cachedCount.increment();
     }
 
-    @Override
-    public void update(Mapped_ result) {
+    protected void updateMapped(Mapped_ result) {
         if (Objects.equals(cachedValue, result)) {
             return;
         }
-        retract();
-        insert(result);
+        removeMapped();
+        addMapped(result);
     }
 
-    @Override
-    public void retract() {
+    protected void removeMapped() {
         if (cachedCount.decrement() == 0) {
             state.itemToCount.remove(cachedValue);
         }

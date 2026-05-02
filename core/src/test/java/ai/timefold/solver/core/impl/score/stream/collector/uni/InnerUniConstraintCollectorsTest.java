@@ -1330,7 +1330,7 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         assertResult(collector, container, asList(1, 2));
         slot1.update(3);
         assertResult(collector, container, asList(3, 2));
-        slot1.update(3); // no short-circuit; re-inserted at end
+        slot1.update(3); // no-op
         assertResult(collector, container, asList(3, 2));
         slot2.remove();
         assertResult(collector, container, singletonList(3));
@@ -1381,9 +1381,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot2 = insert(collector, container, 2);
         assertResult(collector, container, new ArrayList<>(asList(1, 2)));
         slot1.update(3);
-        assertResult(collector, container, new ArrayList<>(asList(2, 3)));
-        slot1.update(3); // no short-circuit; re-inserted at end
-        assertResult(collector, container, new ArrayList<>(asList(2, 3)));
+        assertResult(collector, container, new ArrayList<>(asList(3, 2)));
+        slot1.update(3); // no-op
+        assertResult(collector, container, new ArrayList<>(asList(3, 2)));
         slot2.remove();
         assertResult(collector, container, new ArrayList<>(singletonList(3)));
         slot1.remove();

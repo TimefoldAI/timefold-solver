@@ -5,13 +5,13 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.score.stream.collector.MinMaxUndoableActionable;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractMinMaxSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class MinComparatorUniCollector<A, Result_>
-        extends
-        UndoableActionableUniCollector<A, Result_, Result_, MinMaxUndoableActionable.State<Result_, Result_>, MinMaxUndoableActionable<Result_, Result_>> {
+        extends UndoableActionableUniCollector<A, Result_, Result_, AbstractMinMaxSlot.State<Result_, Result_>> {
     private final Comparator<? super Result_> comparator;
 
     MinComparatorUniCollector(Function<? super A, ? extends Result_> mapper, Comparator<? super Result_> comparator) {
@@ -20,19 +20,41 @@ final class MinComparatorUniCollector<A, Result_>
     }
 
     @Override
-    public @NonNull Supplier<MinMaxUndoableActionable.State<Result_, Result_>> supplier() {
-        return () -> MinMaxUndoableActionable.minState(comparator);
+    public @NonNull Supplier<AbstractMinMaxSlot.State<Result_, Result_>> supplier() {
+        return () -> AbstractMinMaxSlot.minState(comparator);
     }
 
     @Override
-    public @NonNull Function<MinMaxUndoableActionable.State<Result_, Result_>, Result_> finisher() {
-        return MinMaxUndoableActionable.State::result;
+    public @NonNull Function<AbstractMinMaxSlot.State<Result_, Result_>, Result_> finisher() {
+        return AbstractMinMaxSlot.State::result;
     }
 
     @Override
-    protected MinMaxUndoableActionable<Result_, Result_> newUndoableActionable(
-            MinMaxUndoableActionable.State<Result_, Result_> state) {
-        return new MinMaxUndoableActionable<>(state);
+    protected UniConstraintCollectorAccumulatedValue<A>
+            newAccumulatedValue(AbstractMinMaxSlot.State<Result_, Result_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractMinMaxSlot<Result_, Result_>
+            implements UniConstraintCollectorAccumulatedValue<A> {
+        Slot(AbstractMinMaxSlot.State<Result_, Result_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a) {
+            addMapped(mapper.apply(a));
+        }
+
+        @Override
+        public void update(A a) {
+            updateMapped(mapper.apply(a));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

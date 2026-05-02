@@ -3,29 +3,52 @@ package ai.timefold.solver.core.impl.score.stream.collector.uni;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.score.stream.collector.LongDistinctCountCalculator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongDistinctSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class CountDistinctUniCollector<A, Mapped_>
-        extends
-        ObjectCalculatorUniCollector<A, Mapped_, Long, LongDistinctCountCalculator.State<Mapped_>, LongDistinctCountCalculator<Mapped_>> {
+        extends ObjectCalculatorUniCollector<A, Mapped_, Long, AbstractLongDistinctSlot.State<Mapped_>> {
     CountDistinctUniCollector(Function<? super A, ? extends Mapped_> mapper) {
         super(mapper);
     }
 
     @Override
-    protected LongDistinctCountCalculator<Mapped_> newCalculator(LongDistinctCountCalculator.State<Mapped_> state) {
-        return new LongDistinctCountCalculator<>(state);
+    public @NonNull Supplier<AbstractLongDistinctSlot.State<Mapped_>> supplier() {
+        return AbstractLongDistinctSlot.State::new;
     }
 
     @Override
-    public @NonNull Supplier<LongDistinctCountCalculator.State<Mapped_>> supplier() {
-        return LongDistinctCountCalculator.State::new;
+    public @NonNull Function<AbstractLongDistinctSlot.State<Mapped_>, Long> finisher() {
+        return AbstractLongDistinctSlot.State::result;
     }
 
     @Override
-    public @NonNull Function<LongDistinctCountCalculator.State<Mapped_>, Long> finisher() {
-        return LongDistinctCountCalculator.State::result;
+    protected UniConstraintCollectorAccumulatedValue<A>
+            newAccumulatedValue(AbstractLongDistinctSlot.State<Mapped_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractLongDistinctSlot<Mapped_>
+            implements UniConstraintCollectorAccumulatedValue<A> {
+        Slot(AbstractLongDistinctSlot.State<Mapped_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a) {
+            addMapped(mapper.apply(a));
+        }
+
+        @Override
+        public void update(A a) {
+            updateMapped(mapper.apply(a));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 }

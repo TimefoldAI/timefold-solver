@@ -7,13 +7,14 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
-import ai.timefold.solver.core.impl.score.stream.collector.ConnectedRangesCalculator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractConnectedRangesSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class ConnectedRangesTriConstraintCollector<A, B, C, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         extends
-        ObjectCalculatorTriCollector<A, B, C, Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, ConnectedRangesCalculator.State<Interval_, Point_, Difference_>, ConnectedRangesCalculator<Interval_, Point_, Difference_>> {
+        ObjectCalculatorTriCollector<A, B, C, Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_>> {
 
     private final Function<? super Interval_, ? extends Point_> startMap;
     private final Function<? super Interval_, ? extends Point_> endMap;
@@ -29,21 +30,43 @@ final class ConnectedRangesTriConstraintCollector<A, B, C, Interval_, Point_ ext
     }
 
     @Override
-    public @NonNull Supplier<ConnectedRangesCalculator.State<Interval_, Point_, Difference_>> supplier() {
-        return () -> new ConnectedRangesCalculator.State<>(startMap, endMap, differenceFunction);
+    public @NonNull Supplier<AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_>> supplier() {
+        return () -> new AbstractConnectedRangesSlot.State<>(startMap, endMap, differenceFunction);
     }
 
     @Override
     public @NonNull
-            Function<ConnectedRangesCalculator.State<Interval_, Point_, Difference_>, ConnectedRangeChain<Interval_, Point_, Difference_>>
+            Function<AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_>, ConnectedRangeChain<Interval_, Point_, Difference_>>
             finisher() {
-        return ConnectedRangesCalculator.State::result;
+        return AbstractConnectedRangesSlot.State::result;
     }
 
     @Override
-    protected ConnectedRangesCalculator<Interval_, Point_, Difference_> newCalculator(
-            ConnectedRangesCalculator.State<Interval_, Point_, Difference_> state) {
-        return new ConnectedRangesCalculator<>(state);
+    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+            AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractConnectedRangesSlot<Interval_, Point_, Difference_>
+            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+        Slot(AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c) {
+            addMapped(mapper.apply(a, b, c));
+        }
+
+        @Override
+        public void update(A a, B b, C c) {
+            updateMapped(mapper.apply(a, b, c));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

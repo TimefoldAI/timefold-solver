@@ -4,28 +4,51 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
-import ai.timefold.solver.core.impl.score.stream.collector.LongAverageCalculator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongAverageSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class AverageTriCollector<A, B, C>
-        extends LongCalculatorTriCollector<A, B, C, Double, LongAverageCalculator.State, LongAverageCalculator> {
+        extends LongCalculatorTriCollector<A, B, C, Double, AbstractLongAverageSlot.State> {
     AverageTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
         super(mapper);
     }
 
     @Override
-    public @NonNull Supplier<LongAverageCalculator.State> supplier() {
-        return LongAverageCalculator.State::new;
+    public @NonNull Supplier<AbstractLongAverageSlot.State> supplier() {
+        return AbstractLongAverageSlot.State::new;
     }
 
     @Override
-    public @NonNull Function<LongAverageCalculator.State, Double> finisher() {
-        return LongAverageCalculator.State::result;
+    public @NonNull Function<AbstractLongAverageSlot.State, Double> finisher() {
+        return AbstractLongAverageSlot.State::result;
     }
 
     @Override
-    protected LongAverageCalculator newCalculator(LongAverageCalculator.State state) {
-        return new LongAverageCalculator(state);
+    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(AbstractLongAverageSlot.State state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractLongAverageSlot
+            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+        Slot(AbstractLongAverageSlot.State state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c) {
+            addMapped(mapper.applyAsLong(a, b, c));
+        }
+
+        @Override
+        public void update(A a, B b, C c) {
+            updateMapped(mapper.applyAsLong(a, b, c));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 }

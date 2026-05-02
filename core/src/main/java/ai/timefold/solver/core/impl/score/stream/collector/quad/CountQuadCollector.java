@@ -5,11 +5,14 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractCountSlot;
 
 import org.jspecify.annotations.NonNull;
 
-final class CountQuadCollector<A, B, C, D> implements QuadConstraintCollector<A, B, C, D, LongCounter, Long> {
+final class CountQuadCollector<A, B, C, D>
+        implements QuadConstraintCollector<A, B, C, D, AbstractCountSlot.State, Long> {
     private static final CountQuadCollector<?, ?, ?, ?> INSTANCE = new CountQuadCollector<>();
 
     private CountQuadCollector() {
@@ -21,20 +24,50 @@ final class CountQuadCollector<A, B, C, D> implements QuadConstraintCollector<A,
     }
 
     @Override
-    public @NonNull Supplier<LongCounter> supplier() {
-        return LongCounter::new;
+    public @NonNull Supplier<AbstractCountSlot.State> supplier() {
+        return AbstractCountSlot.State::new;
     }
 
     @Override
-    public @NonNull PentaFunction<LongCounter, A, B, C, D, Runnable> accumulator() {
-        return (counter, a, b, c, d) -> {
-            counter.increment();
-            return counter::decrement;
-        };
+    public @NonNull PentaFunction<AbstractCountSlot.State, A, B, C, D, Runnable> accumulator() {
+        return QuadCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override
-    public @NonNull Function<LongCounter, Long> finisher() {
-        return LongCounter::result;
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull QuadConstraintCollectorAccumulator<AbstractCountSlot.State, A, B, C, D> incrementalAccumulator() {
+        return Slot::new;
+    }
+
+    @Override
+    public @NonNull Function<AbstractCountSlot.State, Long> finisher() {
+        return AbstractCountSlot.State::result;
+    }
+
+    private static final class Slot<A, B, C, D> extends AbstractCountSlot
+            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+
+        Slot(AbstractCountSlot.State state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c, D d) {
+            addMapped();
+        }
+
+        @Override
+        public void update(A a, B b, C c, D d) {
+            updateMapped();
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 }

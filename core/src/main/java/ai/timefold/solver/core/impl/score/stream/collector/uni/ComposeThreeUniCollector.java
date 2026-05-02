@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
-import ai.timefold.solver.core.impl.score.stream.collector.CollectorUtils;
 import ai.timefold.solver.core.impl.util.Triple;
 
 import org.jspecify.annotations.NonNull;
@@ -47,12 +46,12 @@ final class ComposeThreeUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHo
         this.secondSupplier = second.supplier();
         this.thirdSupplier = third.supplier();
 
-        this.firstIncremental = first.isIncremental() ? first.incrementalAccumulator()
-                : CollectorUtils.toIncrementalUni(first.accumulator());
+        this.firstIncremental =
+                first.isIncremental() ? first.incrementalAccumulator() : UniCollectorUtils.toIncremental(first.accumulator());
         this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
-                : CollectorUtils.toIncrementalUni(second.accumulator());
-        this.thirdIncremental = third.isIncremental() ? third.incrementalAccumulator()
-                : CollectorUtils.toIncrementalUni(third.accumulator());
+                : UniCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental =
+                third.isIncremental() ? third.incrementalAccumulator() : UniCollectorUtils.toIncremental(third.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -70,7 +69,7 @@ final class ComposeThreeUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHo
 
     @Override
     public @NonNull BiFunction<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, Runnable> accumulator() {
-        return CollectorUtils.fromIncrementalUni(incrementalAccumulator());
+        return UniCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override

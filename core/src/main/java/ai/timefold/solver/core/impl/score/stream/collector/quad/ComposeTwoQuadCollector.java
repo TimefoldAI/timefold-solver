@@ -7,9 +7,12 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
         implements QuadConstraintCollector<A, B, C, D, Pair<ResultHolder1_, ResultHolder2_>, Result_> {
@@ -20,8 +23,8 @@ final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, 
     private final Supplier<ResultHolder1_> firstSupplier;
     private final Supplier<ResultHolder2_> secondSupplier;
 
-    private final PentaFunction<ResultHolder1_, A, B, C, D, Runnable> firstAccumulator;
-    private final PentaFunction<ResultHolder2_, A, B, C, D, Runnable> secondAccumulator;
+    private final QuadConstraintCollectorAccumulator<ResultHolder1_, A, B, C, D> firstIncremental;
+    private final QuadConstraintCollectorAccumulator<ResultHolder2_, A, B, C, D> secondIncremental;
 
     private final Function<ResultHolder1_, Result1_> firstFinisher;
     private final Function<ResultHolder2_, Result2_> secondFinisher;
@@ -36,8 +39,10 @@ final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, 
         this.firstSupplier = first.supplier();
         this.secondSupplier = second.supplier();
 
-        this.firstAccumulator = first.accumulator();
-        this.secondAccumulator = second.accumulator();
+        this.firstIncremental = first.isIncremental() ? first.incrementalAccumulator()
+                : QuadCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
+                : QuadCollectorUtils.toIncremental(second.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -50,19 +55,22 @@ final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, 
 
     @Override
     public @NonNull PentaFunction<Pair<ResultHolder1_, ResultHolder2_>, A, B, C, D, Runnable> accumulator() {
-        return (resultHolder, a, b, c, d) -> composeUndo(firstAccumulator.apply(resultHolder.key(), a, b, c, d),
-                secondAccumulator.apply(resultHolder.value(), a, b, c, d));
-    }
-
-    private static Runnable composeUndo(Runnable first, Runnable second) {
-        return () -> {
-            first.run();
-            second.run();
-        };
+        return QuadCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override
-    public @NonNull Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
+    public boolean isIncremental() {
+        return true;
+    }
+
+    @Override
+    public @NonNull QuadConstraintCollectorAccumulator<Pair<ResultHolder1_, ResultHolder2_>, A, B, C, D>
+            incrementalAccumulator() {
+        return AccumulatedValue::new;
+    }
+
+    @Override
+    public @NonNull Function<Pair<ResultHolder1_, ResultHolder2_>, @Nullable Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.key()),
                 secondFinisher.apply(resultHolder.value()));
     }
@@ -81,5 +89,33 @@ final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, 
     @Override
     public int hashCode() {
         return Objects.hash(first, second, composeFunction);
+    }
+
+    private final class AccumulatedValue implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+        private final QuadConstraintCollectorAccumulatedValue<A, B, C, D> v1;
+        private final QuadConstraintCollectorAccumulatedValue<A, B, C, D> v2;
+
+        AccumulatedValue(Pair<ResultHolder1_, ResultHolder2_> container) {
+            this.v1 = firstIncremental.intoGroup(container.key());
+            this.v2 = secondIncremental.intoGroup(container.value());
+        }
+
+        @Override
+        public void add(A a, B b, C c, D d) {
+            v1.add(a, b, c, d);
+            v2.add(a, b, c, d);
+        }
+
+        @Override
+        public void update(A a, B b, C c, D d) {
+            v1.update(a, b, c, d);
+            v2.update(a, b, c, d);
+        }
+
+        @Override
+        public void remove() {
+            v1.remove();
+            v2.remove();
+        }
     }
 }

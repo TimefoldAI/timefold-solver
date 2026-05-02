@@ -8,7 +8,7 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
-public final class ReferenceAverageCalculator<Input_, Output_> implements ObjectCalculator<Input_> {
+public abstract class AbstractReferenceAverageSlot<Input_, Output_> {
 
     public static final class State<Input_, Output_> {
         int count = 0;
@@ -51,7 +51,7 @@ public final class ReferenceAverageCalculator<Input_, Output_> implements Object
                         return Duration.ofNanos(nanos / count);
                     });
 
-    public ReferenceAverageCalculator(State<Input_, Output_> state) {
+    public AbstractReferenceAverageSlot(State<Input_, Output_> state) {
         this.state = state;
     }
 
@@ -67,15 +67,13 @@ public final class ReferenceAverageCalculator<Input_, Output_> implements Object
         return DURATION;
     }
 
-    @Override
-    public void insert(Input_ input) {
+    protected void addMapped(Input_ input) {
         cachedValue = input;
         state.count++;
         state.sum = state.adder.apply(state.sum, input);
     }
 
-    @Override
-    public void update(Input_ input) {
+    protected void updateMapped(Input_ input) {
         if (cachedValue == input) {
             return;
         }
@@ -84,8 +82,7 @@ public final class ReferenceAverageCalculator<Input_, Output_> implements Object
         cachedValue = input;
     }
 
-    @Override
-    public void retract() {
+    protected void removeMapped() {
         state.count--;
         state.sum = state.subtractor.apply(state.sum, cachedValue);
     }
