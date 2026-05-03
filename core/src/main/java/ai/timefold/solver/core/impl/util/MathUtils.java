@@ -80,10 +80,12 @@ public class MathUtils {
         return switch (n) {
             case 0, 1 -> 1;
             default -> {
-                if (FACTORIAL_CACHE[n - 2] == 0L) {
-                    FACTORIAL_CACHE[n - 2] = n * factorial(n - 1);
+                var factorialCacheIndex = n - 2; // n={0,1} are already handled above.
+                var factorial = FACTORIAL_CACHE[factorialCacheIndex];
+                if (factorial != 0L) {
+                    yield factorial;
                 }
-                yield FACTORIAL_CACHE[n - 2];
+                yield FACTORIAL_CACHE[factorialCacheIndex] = n * factorial(n - 1);
             }
         };
     }
@@ -106,17 +108,13 @@ public class MathUtils {
      * {@code k}-element subsets that can be selected from an
      * {@code n}-element set.
      * <p>
-     * <Strong>Preconditions</strong>:
+     * <strong>Preconditions</strong>:
      * <ul>
-     * <li>{@code 0 <= k <= n } (otherwise
-     * {@link IllegalArgumentException} is thrown)</li>
-     * <li>The result is small enough to fit into a {@code long}. The
-     * largest value of {@code n} for which all coefficients are
-     * {@code  < Long.MAX_VALUE} is 66. If the computed value exceeds
-     * {@code Long.MAX_VALUE} a {@link ArithmeticException} is
-     * thrown.</li>
+     * <li>{@code 0 <= k <= n } (otherwise {@link IllegalArgumentException} is thrown)</li>
+     * <li>The result is small enough to fit into a {@code long}.
+     * The largest value of {@code n} for which all coefficients are less than {@code Long.MAX_VALUE} is 66.
+     * If the computed value exceeds {@code Long.MAX_VALUE} a {@link ArithmeticException} is thrown.</li>
      * </ul>
-     * </p>
      * Taken from `commons-math` 3.6.1 (Apache 2.0 licensed.)
      * Refactored to not depend on any other `commons-math` methods or types.
      *
