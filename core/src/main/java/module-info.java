@@ -247,7 +247,6 @@ module ai.timefold.solver.core {
     opens ai.timefold.solver.core.config.solver.termination to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.util to jakarta.xml.bind, org.glassfish.jaxb.runtime;
 
-    requires commons.math3;
     requires jakarta.xml.bind;
     requires java.xml;
     requires micrometer.core;
