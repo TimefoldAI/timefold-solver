@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.IntFunction;
@@ -34,29 +33,26 @@ public abstract class AbstractToMapSlot<Key_, Value_, ResultValue_, Result_ exte
     }
 
     private final State<Key_, Value_, ResultValue_, Result_> state;
-    private @Nullable Key_ cachedKey;
-    private @Nullable Value_ cachedValue;
+    private @Nullable ToMapPerKeyCounter<Key_, Value_> cachedCounter;
+    private @Nullable CountHolder<Value_> cachedHolder;
 
     public AbstractToMapSlot(State<Key_, Value_, ResultValue_, Result_> state) {
         this.state = state;
     }
 
     protected void addMapped(Key_ key, Value_ value) {
-        this.cachedKey = key;
-        this.cachedValue = value;
         state.container.add(key, value);
+        cachedCounter = state.container.lastCounter();
+        cachedHolder = state.container.lastHolder();
     }
 
     protected void updateMapped(Key_ key, Value_ value) {
-        if (Objects.equals(cachedKey, key) && Objects.equals(cachedValue, value)) {
-            return;
-        }
-        state.container.update(cachedKey, cachedValue, key, value);
-        cachedKey = key;
-        cachedValue = value;
+        state.container.update(cachedCounter, cachedHolder, key, value);
+        cachedCounter = state.container.lastCounter();
+        cachedHolder = state.container.lastHolder();
     }
 
     protected void removeMapped() {
-        state.container.remove(cachedKey, cachedValue);
+        state.container.remove(cachedCounter, cachedHolder);
     }
 }

@@ -24,16 +24,16 @@ public abstract class AbstractLongAverageSlot {
     protected void addMapped(long input) {
         cachedInput = input;
         state.count++;
-        state.sum += input;
+        state.sum = Math.addExact(state.sum, input);
     }
 
     protected void updateMapped(long input) {
-        state.sum += input - cachedInput;
+        state.sum += Math.subtractExact(input, cachedInput);
         cachedInput = input;
     }
 
     protected void removeMapped() {
         state.count--;
-        state.sum -= cachedInput;
+        state.sum = Math.subtractExact(state.sum, cachedInput);
     }
 }

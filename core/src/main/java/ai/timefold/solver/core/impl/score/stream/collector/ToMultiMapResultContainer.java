@@ -7,14 +7,18 @@ import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 final class ToMultiMapResultContainer<Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
         implements ToMapResultContainer<Key_, Value_, Set_, Result_> {
 
     private final Supplier<Set_> setSupplier;
     private final Result_ result;
-    private final Map<Key_, ToMapPerKeyCounter<Value_>> valueCounts = new HashMap<>();
+    private final Map<Key_, ToMapPerKeyCounter<Key_, Value_>> valueCounts = new HashMap<>(0);
+    private @Nullable ToMapPerKeyCounter<Key_, Value_> lastCounter;
+    private @Nullable CountHolder<Value_> lastHolder;
 
-    public ToMultiMapResultContainer(Supplier<Result_> resultSupplier, IntFunction<Set_> setFunction) {
+    ToMultiMapResultContainer(Supplier<Result_> resultSupplier, IntFunction<Set_> setFunction) {
         var nonNullSetFunction = Objects.requireNonNull(setFunction);
         this.setSupplier = () -> nonNullSetFunction.apply(0);
         this.result = Objects.requireNonNull(resultSupplier).get();
@@ -22,38 +26,57 @@ final class ToMultiMapResultContainer<Key_, Value_, Set_ extends Set<Value_>, Re
 
     @Override
     public void add(Key_ key, Value_ value) {
-        var counter = valueCounts.computeIfAbsent(key, k -> new ToMapPerKeyCounter<>());
-        counter.add(value);
-        result.computeIfAbsent(key, k -> setSupplier.get())
-                .add(value);
+        lastCounter = valueCounts.computeIfAbsent(key, ToMapPerKeyCounter::new);
+        lastHolder = lastCounter.add(value);
+        if (lastHolder.count == 1) {
+            result.computeIfAbsent(key, k -> setSupplier.get()).add(value);
+        }
     }
 
     @Override
-    public void update(Key_ oldKey, Value_ oldValue, Key_ newKey, Value_ newValue) {
-        if (Objects.equals(oldKey, newKey)) {
-            var counter = valueCounts.get(oldKey);
-            var removedCount = counter.update(oldValue, newValue);
-            if (removedCount == 0) {
-                result.get(oldKey).remove(oldValue);
+    public void update(ToMapPerKeyCounter<Key_, Value_> counter, CountHolder<Value_> holder,
+            Key_ newKey, Value_ newValue) {
+        if (Objects.equals(counter.key, newKey) && Objects.equals(holder.value, newValue)) {
+            lastCounter = counter;
+            lastHolder = holder;
+            return;
+        }
+        if (Objects.equals(counter.key, newKey)) {
+            counter.decrement(holder);
+            if (holder.count == 0) {
+                result.get(counter.key).remove(holder.value);
             }
-            result.computeIfAbsent(oldKey, k -> setSupplier.get()).add(newValue);
+            lastHolder = counter.add(newValue);
+            if (lastHolder.count == 1) {
+                result.computeIfAbsent(counter.key, k -> setSupplier.get()).add(newValue);
+            }
+            lastCounter = counter;
         } else {
-            remove(oldKey, oldValue);
+            remove(counter, holder);
             add(newKey, newValue);
         }
     }
 
     @Override
-    public void remove(Key_ key, Value_ value) {
-        var counter = valueCounts.get(key);
-        var newCount = counter.remove(value);
-        if (newCount == 0) {
-            result.get(key).remove(value);
+    public void remove(ToMapPerKeyCounter<Key_, Value_> counter, CountHolder<Value_> holder) {
+        counter.decrement(holder);
+        if (holder.count == 0) {
+            result.get(counter.key).remove(holder.value);
         }
         if (counter.isEmpty()) {
-            valueCounts.remove(key);
-            result.remove(key);
+            valueCounts.remove(counter.key);
+            result.remove(counter.key);
         }
+    }
+
+    @Override
+    public @Nullable ToMapPerKeyCounter<Key_, Value_> lastCounter() {
+        return lastCounter;
+    }
+
+    @Override
+    public @Nullable CountHolder<Value_> lastHolder() {
+        return lastHolder;
     }
 
     @Override

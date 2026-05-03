@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
+import java.util.Objects;
 import java.util.function.BinaryOperator;
 
 import org.jspecify.annotations.Nullable;
@@ -35,7 +36,7 @@ public abstract class AbstractReferenceSumSlot<Result_> {
     }
 
     protected void updateMapped(Result_ input) {
-        if (cachedValue == input) {
+        if (Objects.equals(cachedValue, input)) {
             return;
         }
         state.current = state.subtractor.apply(state.current, cachedValue);

@@ -19,15 +19,15 @@ public abstract class AbstractLongSumSlot {
 
     protected void addMapped(long input) {
         cachedInput = input;
-        state.sum += input;
+        state.sum = Math.addExact(state.sum, input);
     }
 
     protected void updateMapped(long input) {
-        state.sum += input - cachedInput;
+        state.sum += Math.subtractExact(input, cachedInput);
         cachedInput = input;
     }
 
     protected void removeMapped() {
-        state.sum -= cachedInput;
+        state.sum = Math.subtractExact(state.sum, cachedInput);
     }
 }
