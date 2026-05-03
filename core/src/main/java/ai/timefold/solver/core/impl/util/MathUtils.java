@@ -1,9 +1,9 @@
-/**
- * Includes code takes from Apache's commons-math library, v3.6.1 (Apache 2.0-licensed)
- * These methods are clearly marked in comments, their modifications listed.
- */
 package ai.timefold.solver.core.impl.util;
 
+/**
+ * Includes code taken from Apache's commons-math library, v3.6.1 (Apache 2.0-licensed)
+ * These methods are clearly marked in comments, their modifications listed.
+ */
 public class MathUtils {
 
     public static final long LOG_PRECISION = 1_000_000L;
