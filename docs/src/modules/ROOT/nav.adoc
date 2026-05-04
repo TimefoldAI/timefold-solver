@@ -1,6 +1,6 @@
 * xref:introduction.adoc[leveloffset=+1]
 * xref:planning-ai-concepts.adoc[leveloffset=+1]
-* Getting Started
+* Getting started
 ** xref:quickstart/overview.adoc[leveloffset=+1]
 ** xref:quickstart/hello-world/hello-world-quickstart.adoc[leveloffset=+1]
 ** xref:quickstart/quarkus/quarkus-quickstart.adoc[leveloffset=+1]
@@ -12,7 +12,7 @@
 ** xref:using-timefold-solver/modeling-planning-problems.adoc[leveloffset=+1]
 ** xref:using-timefold-solver/running-the-solver.adoc[leveloffset=+1]
 ** xref:using-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
-* Constraints and Score
+* Constraints and score
 ** xref:constraints-and-score/overview.adoc[leveloffset=+1]
 ** xref:constraints-and-score/score-calculation.adoc[leveloffset=+1]
 ** xref:constraints-and-score/understanding-the-score.adoc[Understanding the score]
@@ -39,9 +39,9 @@
 *** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
 *** xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
 * xref:commercial-editions/commercial-editions.adoc[leveloffset=+1]
-** xref:commercial-editions/installation.adoc[leveloffset=+1]
+** xref:commercial-editions/installation.adoc[Installation]
 ** xref:commercial-editions/performance-improvements.adoc[leveloffset=+1]
-** xref:constraints-and-score/understanding-the-score.adoc[Score Analysis]
+** xref:constraints-and-score/understanding-the-score.adoc[Score analysis]
 ** xref:responding-to-change/responding-to-change.adoc#assignmentRecommendationAPI[Recommendation API]
 ** xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection]
 ** xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[Multithreaded solving]

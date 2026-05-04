@@ -1,4 +1,4 @@
-= PlanningAI Concepts
+= PlanningAI concepts
 :doctype: book
 :sectnums:
 :icons: font
