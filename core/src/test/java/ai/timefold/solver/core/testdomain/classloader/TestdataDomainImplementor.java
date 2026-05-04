@@ -16,7 +16,6 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
-import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testutil.CodeAssertable;
 
@@ -34,8 +33,6 @@ public class TestdataDomainImplementor {
 
     private static final String PACKAGE = "ai.timefold.solver.core.testdomain";
     private static final ClassDesc STRING_DESC = ClassDesc.of(String.class.getCanonicalName());
-    private static final ClassDesc INT_DESC = ClassDesc.ofDescriptor("I");
-    private static final ClassDesc BOOLEAN_DESC = ClassDesc.ofDescriptor("Z");
 
     static final FieldDesc CODE_FIELD_DESC;
 
@@ -104,9 +101,7 @@ public class TestdataDomainImplementor {
             classCreator.method("getCode", methodCreator -> {
                 methodCreator.public_();
                 methodCreator.returning(String.class);
-                methodCreator.body(blockCreator -> {
-                    blockCreator.return_(methodCreator.this_().field(codeField));
-                });
+                methodCreator.body(blockCreator -> blockCreator.return_(methodCreator.this_().field(codeField)));
             });
 
             // public void setCode(String code)
@@ -124,9 +119,7 @@ public class TestdataDomainImplementor {
             classCreator.method("toString", methodCreator -> {
                 methodCreator.public_();
                 methodCreator.returning(String.class);
-                methodCreator.body(blockCreator -> {
-                    blockCreator.return_(methodCreator.this_().field(codeField));
-                });
+                methodCreator.body(blockCreator -> blockCreator.return_(methodCreator.this_().field(codeField)));
             });
         });
     }
@@ -164,7 +157,6 @@ public class TestdataDomainImplementor {
         var className = "%s.TestdataEntity".formatted(PACKAGE);
         var superClassDesc = ClassDesc.of(TestdataObject.class.getCanonicalName());
         var valueClassDesc = ClassDesc.of(TestdataValue.class.getCanonicalName());
-        var solutionClassDesc = ClassDesc.of(TestdataSolution.class.getCanonicalName());
 
         gizmo.class_(className, classCreator -> {
             classCreator.public_();
@@ -222,12 +214,9 @@ public class TestdataDomainImplementor {
             classCreator.method("getValue", methodCreator -> {
                 methodCreator.public_();
                 methodCreator.returning(valueClassDesc);
-                methodCreator.addAnnotation(PlanningVariable.class, annotationCreator -> {
-                    annotationCreator.addArray("valueRangeProviderRefs", "valueRange");
-                });
-                methodCreator.body(blockCreator -> {
-                    blockCreator.return_(methodCreator.this_().field(valueField));
-                });
+                methodCreator.addAnnotation(PlanningVariable.class,
+                        annotationCreator -> annotationCreator.addArray("valueRangeProviderRefs", "valueRange"));
+                methodCreator.body(blockCreator -> blockCreator.return_(methodCreator.this_().field(valueField)));
             });
 
             // public void setValue(TestdataValue value)
@@ -275,7 +264,6 @@ public class TestdataDomainImplementor {
         var superClassDesc = ClassDesc.of(TestdataObject.class.getCanonicalName());
         var entityClassDesc = ClassDesc.of(TestdataEntity.class.getCanonicalName());
         var valueClassDesc = ClassDesc.of(TestdataValue.class.getCanonicalName());
-        var thisClassDesc = ClassDesc.of(className);
 
         gizmo.class_(className, classCreator -> {
             classCreator.public_();
@@ -324,13 +312,10 @@ public class TestdataDomainImplementor {
             classCreator.method("getValueList", methodCreator -> {
                 methodCreator.public_();
                 methodCreator.returning(GenericType.of(java.util.List.class, List.of(TypeArgument.of(valueClassDesc))));
-                methodCreator.addAnnotation(ValueRangeProvider.class, annotationCreator -> {
-                    annotationCreator.add("id", "valueRange");
-                });
+                methodCreator.addAnnotation(ValueRangeProvider.class,
+                        annotationCreator -> annotationCreator.add("id", "valueRange"));
                 methodCreator.addAnnotation(ProblemFactCollectionProperty.class);
-                methodCreator.body(blockCreator -> {
-                    blockCreator.return_(methodCreator.this_().field(valueListField));
-                });
+                methodCreator.body(blockCreator -> blockCreator.return_(methodCreator.this_().field(valueListField)));
             });
 
             // public void setValueList(List<TestdataValue> valueList)
@@ -349,9 +334,7 @@ public class TestdataDomainImplementor {
                 methodCreator.public_();
                 methodCreator.returning(GenericType.of(java.util.List.class, List.of(TypeArgument.of(entityClassDesc))));
                 methodCreator.addAnnotation(PlanningEntityCollectionProperty.class);
-                methodCreator.body(blockCreator -> {
-                    blockCreator.return_(methodCreator.this_().field(entityListField));
-                });
+                methodCreator.body(blockCreator -> blockCreator.return_(methodCreator.this_().field(entityListField)));
             });
 
             // public void setEntityList(List<TestdataEntity> entityList)
@@ -370,9 +353,7 @@ public class TestdataDomainImplementor {
                 methodCreator.public_();
                 methodCreator.returning(SimpleScore.class);
                 methodCreator.addAnnotation(PlanningScore.class);
-                methodCreator.body(blockCreator -> {
-                    blockCreator.return_(methodCreator.this_().field(scoreField));
-                });
+                methodCreator.body(blockCreator -> blockCreator.return_(methodCreator.this_().field(scoreField)));
             });
 
             // public void setScore(SimpleScore score)
