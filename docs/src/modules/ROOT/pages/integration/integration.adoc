@@ -9,263 +9,51 @@
 == Overview
 
 Timefold Solver's input and output data (the planning problem and the best solution) are plain old JavaBeans (POJOs), so integration with other Java technologies is straightforward.
-For example:
+The most common way to use Timefold Solver is through its first-class framework integrations:
+xref:#integrationWithQuarkus[Quarkus]
+and xref:#integrationWithSpringBoot[Spring Boot].
+
+Beyond that, Timefold Solver also integrates with many other Java technologies. For example:
 
 * To read a planning problem from the database (and store the best solution in it), annotate the domain POJOs with JPA annotations.
 * To read a planning problem from an XML file (and store the best solution in it), annotate the domain POJOs with JAXB annotations.
 * To expose the Solver as a REST Service that reads the planning problem and responds with the best solution, annotate the domain POJOs with JAXB or Jackson annotations and hook the `Solver` in RESTEasy or a similar framework.
 
+[NOTE]
+====
+While it is possible to annotate the same domain classes with both Timefold Solver and persistence or serialization annotations,
+this tightly couples your planning domain to your data model.
+In many applications it is preferable to keep them separate for example, by mapping between a persistence entity and a dedicated planning model
+so that changes to one do not force changes to the other.
+====
+
 
 image::integration/integrationOverview.png[align="center"]
 
 
-[#integrationWithPersistentStorage]
-== Persistent storage
-
-
-[#integrationWithJpaAndHibernate]
-=== Database: JPA and Hibernate
-
-Enrich domain POJOs (solution, entities and problem facts) with JPA annotations
-to store them in a database by calling `EntityManager.persist()`.
-
-[NOTE]
-====
-Do not confuse JPA's `@Entity` annotation with Timefold Solver's `@PlanningEntity` annotation.
-They can appear both on the same class:
-
-[source,java,options="nowrap"]
-----
-@PlanningEntity // Timefold Solver annotation
-@Entity // JPA annotation
-public class Talk {...}
-----
-====
-
-[#jpaAndHibernatePersistingAScore]
-==== JPA and Hibernate: persisting a `Score`
-
-The `timefold-solver-jpa` jar provides a JPA score converter for every built-in score type.
-
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-@Entity
-public class VehicleRoutePlan {
-
-    @PlanningScore
-    @Convert(converter = HardSoftScoreConverter.class)
-    protected HardSoftScore score;
-
-    ...
-}
-----
-
-Please note that the converters make JPA and Hibernate serialize the score in a single `VARCHAR` column.
-This has the disadvantage that the score cannot be used in a SQL or JPA-QL query to efficiently filter the results, for example to query all infeasible schedules.
-
-To avoid this limitation, https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#embeddable-mapping-custom[implement the `CompositeUserType`] to persist each score level into a separate database table column.
-
-[#jpaAndHibernatePlanningCloning]
-==== JPA and Hibernate: planning cloning
-
-In JPA and Hibernate, there is usually a `@ManyToOne` relationship from most problem fact classes to the planning solution class.
-Therefore, the problem fact classes reference the planning solution class,
-which implies that when the solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning cloned], they need to be cloned too.
-Use an `@DeepPlanningClone` on each such problem fact class to enforce that:
-
-[source,java,options="nowrap"]
-----
-@PlanningSolution // Timefold Solver annotation
-@Entity // JPA annotation
-public class Conference {
-
-    @OneToMany(mappedBy="conference")
-    private List<Room> roomList;
-
-    ...
-}
-----
-
-[source,java,options="nowrap"]
-----
-@DeepPlanningClone // Timefold Solver annotation: Force the default planning cloner to planning clone this class too
-@Entity // JPA annotation
-public class Room {
-
-    @ManyToOne
-    private Conference conference; // Because of this reference, this problem fact needs to be planning cloned too
-
-}
-----
-
-Neglecting to do this can lead to persisting duplicate solutions, JPA exceptions or other side effects.
-
-
-[#integrationWithJaxb]
-=== XML or JSON: JAXB
-
-Enrich domain POJOs (solution, entities and problem facts) with JAXB annotations to serialize them to/from XML or JSON.
-
-Add a dependency to the `timefold-solver-jaxb` jar to take advantage of these extra integration features:
-
-[#jaxbMarshallingAScore]
-==== JAXB: marshalling a `Score`
-
-When a `Score` is marshalled to XML or JSON by the default JAXB configuration, it's corrupted.
-To fix that, configure the appropriate ``ScoreJaxbAdapter``:
-
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-@XmlRootElement @XmlAccessorType(XmlAccessType.FIELD)
-public class VehicleRoutePlan {
-
-    @PlanningScore
-    @XmlJavaTypeAdapter(HardSoftScoreJaxbAdapter.class)
-    private HardSoftScore score;
-
-    ...
-}
-----
-
-For example, this generates pretty XML:
-
-[source,xml,options="nowrap"]
-----
-<vehicleRoutePlan>
-   ...
-   <score>0hard/-200soft</score>
-</vehicleRoutePlan>
-----
-
-The same applies for a bendable score:
-
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-@XmlRootElement @XmlAccessorType(XmlAccessType.FIELD)
-public class Schedule {
-
-    @PlanningScore
-    @XmlJavaTypeAdapter(BendableScoreJaxbAdapter.class)
-    private BendableScore score;
-
-    ...
-}
-----
-
-For example, with a `hardLevelsSize` of `2` and a `softLevelsSize` of `3`, that will generate:
-
-[source,xml,options="nowrap"]
-----
-<schedule>
-   ...
-   <score>[0/0]hard/[-100/-20/-3]soft</score>
-</schedule>
-----
-
-The `hardLevelsSize` and `softLevelsSize` implied, when reading a bendable score from an XML element, must always be in sync with those in the solver.
-
-
-[#integrationWithJackson]
-=== JSON: Jackson
-
-Enrich domain POJOs (solution, entities and problem facts) with Jackson annotations to serialize them to/from JSON.
-
-Add a dependency to the `timefold-solver-jackson` jar and register `TimefoldJacksonModule`:
-
-[source,java,options="nowrap"]
-----
-var objectMapper = JsonMapper.builder()
-            .addModule(TimefoldJacksonModule.createModule())
-            .build();
-----
-
-
-[#jacksonMarshallingAScore]
-==== Jackson: marshalling a `Score`
-
-When a `Score` is marshalled to/from JSON by the default Jackson configuration, it fails.
-The `TimefoldJacksonModule` fixes that, by using `HardSoftScoreJacksonSerializer`,
-`HardSoftScoreJacksonDeserializer`, etc.
-
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-public class VehicleRoutePlan {
-
-    @PlanningScore
-    private HardSoftScore score;
-
-    ...
-}
-----
-
-For example, this generates:
-
-[source,json,options="nowrap"]
-----
-{
-   "score":"0hard/-200soft"
-   ...
-}
-----
-
-[NOTE]
-====
-When reading a `BendableScore`, the `hardLevelsSize` and `softLevelsSize` implied in the JSON element,
-must always be in sync with those defined in the `@PlanningScore` annotation in the solution class.For example:
-
-[source,json,options="nowrap"]
-----
-{
-   "score":"[0/0]hard/[-100/-20/-3]soft"
-   ...
-}
-----
-
-This JSON implies the `hardLevelsSize` is 2 and the `softLevelsSize` is 3,
-which must be in sync with the `@PlanningScore` annotation:
-
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-public class Schedule {
-
-    @PlanningScore(bendableHardLevelsSize = 2, bendableSoftLevelsSize = 3)
-    private BendableScore score;
-
-    ...
-}
-----
-====
-
-When a field is the `Score` supertype (instead of a specific type such as `HardSoftScore`),
-it uses `PolymorphicScoreJacksonSerializer` and `PolymorphicScoreJacksonDeserializer` to record the score type in JSON too,
-otherwise it would be impossible to deserialize it:
-
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-public class VehicleRoutePlan {
-
-    @PlanningScore
-    private Score score;
-
-    ...
-}
-----
-
-For example, this generates:
-
-[source,json,options="nowrap"]
-----
-{
-   "score":{"HardSoftScore":"0hard/-200soft"}
-   ...
-}
-----
+[#compatibilityMatrix]
+== Compatibility matrix
+
+Timefold Solver integrates with xref:#integrationWithQuarkus[Quarkus] and xref:#integrationWithSpringBoot[Spring Boot] out of the box.
+Get started quickly with the xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusQuickStart[Quarkus quick start]
+or the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQuickStart[Spring Boot quick start].
+
+The following table lists the supported versions of Java, Quarkus, and Spring Boot for each Timefold Solver major version:
+
+[cols="1,2,2,2",options="header"]
+|===
+|Timefold Solver |Java Baseline |Quarkus |Spring Boot
+
+|1.x
+|17
+|3.x
+|3.x
+
+|2.x
+|21
+|3.x
+|4.x
+|===
 
 
 [#integrationWithQuarkus]
@@ -1000,6 +788,255 @@ class Resource {
 --
 ====
 **Multi-stage** planning can also be accomplished by using a separate solver configuration for each optimization stage.
+
+[#integrationWithPersistentStorage]
+== Persistent storage
+
+
+[#integrationWithJpaAndHibernate]
+=== Database: JPA and Hibernate
+
+Enrich domain POJOs (solution, entities and problem facts) with JPA annotations
+to store them in a database by calling `EntityManager.persist()`.
+
+[NOTE]
+====
+Do not confuse JPA's `@Entity` annotation with Timefold Solver's `@PlanningEntity` annotation.
+They can appear both on the same class:
+
+[source,java,options="nowrap"]
+----
+@PlanningEntity // Timefold Solver annotation
+@Entity // JPA annotation
+public class Talk {...}
+----
+====
+
+[#jpaAndHibernatePersistingAScore]
+==== JPA and Hibernate: persisting a `Score`
+
+The `timefold-solver-jpa` jar provides a JPA score converter for every built-in score type.
+
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+@Entity
+public class VehicleRoutePlan {
+
+    @PlanningScore
+    @Convert(converter = HardSoftScoreConverter.class)
+    protected HardSoftScore score;
+
+    ...
+}
+----
+
+Please note that the converters make JPA and Hibernate serialize the score in a single `VARCHAR` column.
+This has the disadvantage that the score cannot be used in a SQL or JPA-QL query to efficiently filter the results, for example to query all infeasible schedules.
+
+To avoid this limitation, https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#embeddable-mapping-custom[implement the `CompositeUserType`] to persist each score level into a separate database table column.
+
+[#jpaAndHibernatePlanningCloning]
+==== JPA and Hibernate: planning cloning
+
+In JPA and Hibernate, there is usually a `@ManyToOne` relationship from most problem fact classes to the planning solution class.
+Therefore, the problem fact classes reference the planning solution class,
+which implies that when the solution is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning cloned], they need to be cloned too.
+Use an `@DeepPlanningClone` on each such problem fact class to enforce that:
+
+[source,java,options="nowrap"]
+----
+@PlanningSolution // Timefold Solver annotation
+@Entity // JPA annotation
+public class Conference {
+
+    @OneToMany(mappedBy="conference")
+    private List<Room> roomList;
+
+    ...
+}
+----
+
+[source,java,options="nowrap"]
+----
+@DeepPlanningClone // Timefold Solver annotation: Force the default planning cloner to planning clone this class too
+@Entity // JPA annotation
+public class Room {
+
+    @ManyToOne
+    private Conference conference; // Because of this reference, this problem fact needs to be planning cloned too
+
+}
+----
+
+Neglecting to do this can lead to persisting duplicate solutions, JPA exceptions or other side effects.
+
+
+[#integrationWithJaxb]
+=== XML or JSON: JAXB
+
+Enrich domain POJOs (solution, entities and problem facts) with JAXB annotations to serialize them to/from XML or JSON.
+
+Add a dependency to the `timefold-solver-jaxb` jar to take advantage of these extra integration features:
+
+[#jaxbMarshallingAScore]
+==== JAXB: marshalling a `Score`
+
+When a `Score` is marshalled to XML or JSON by the default JAXB configuration, it's corrupted.
+To fix that, configure the appropriate ``ScoreJaxbAdapter``:
+
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+@XmlRootElement @XmlAccessorType(XmlAccessType.FIELD)
+public class VehicleRoutePlan {
+
+    @PlanningScore
+    @XmlJavaTypeAdapter(HardSoftScoreJaxbAdapter.class)
+    private HardSoftScore score;
+
+    ...
+}
+----
+
+For example, this generates pretty XML:
+
+[source,xml,options="nowrap"]
+----
+<vehicleRoutePlan>
+   ...
+   <score>0hard/-200soft</score>
+</vehicleRoutePlan>
+----
+
+The same applies for a bendable score:
+
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+@XmlRootElement @XmlAccessorType(XmlAccessType.FIELD)
+public class Schedule {
+
+    @PlanningScore
+    @XmlJavaTypeAdapter(BendableScoreJaxbAdapter.class)
+    private BendableScore score;
+
+    ...
+}
+----
+
+For example, with a `hardLevelsSize` of `2` and a `softLevelsSize` of `3`, that will generate:
+
+[source,xml,options="nowrap"]
+----
+<schedule>
+   ...
+   <score>[0/0]hard/[-100/-20/-3]soft</score>
+</schedule>
+----
+
+The `hardLevelsSize` and `softLevelsSize` implied, when reading a bendable score from an XML element, must always be in sync with those in the solver.
+
+
+[#integrationWithJackson]
+=== JSON: Jackson
+
+Enrich domain POJOs (solution, entities and problem facts) with Jackson annotations to serialize them to/from JSON.
+
+Add a dependency to the `timefold-solver-jackson` jar and register `TimefoldJacksonModule`:
+
+[source,java,options="nowrap"]
+----
+var objectMapper = JsonMapper.builder()
+            .addModule(TimefoldJacksonModule.createModule())
+            .build();
+----
+
+
+[#jacksonMarshallingAScore]
+==== Jackson: marshalling a `Score`
+
+When a `Score` is marshalled to/from JSON by the default Jackson configuration, it fails.
+The `TimefoldJacksonModule` fixes that, by using `HardSoftScoreJacksonSerializer`,
+`HardSoftScoreJacksonDeserializer`, etc.
+
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class VehicleRoutePlan {
+
+    @PlanningScore
+    private HardSoftScore score;
+
+    ...
+}
+----
+
+For example, this generates:
+
+[source,json,options="nowrap"]
+----
+{
+   "score":"0hard/-200soft"
+   ...
+}
+----
+
+[NOTE]
+====
+When reading a `BendableScore`, the `hardLevelsSize` and `softLevelsSize` implied in the JSON element,
+must always be in sync with those defined in the `@PlanningScore` annotation in the solution class.For example:
+
+[source,json,options="nowrap"]
+----
+{
+   "score":"[0/0]hard/[-100/-20/-3]soft"
+   ...
+}
+----
+
+This JSON implies the `hardLevelsSize` is 2 and the `softLevelsSize` is 3,
+which must be in sync with the `@PlanningScore` annotation:
+
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class Schedule {
+
+    @PlanningScore(bendableHardLevelsSize = 2, bendableSoftLevelsSize = 3)
+    private BendableScore score;
+
+    ...
+}
+----
+====
+
+When a field is the `Score` supertype (instead of a specific type such as `HardSoftScore`),
+it uses `PolymorphicScoreJacksonSerializer` and `PolymorphicScoreJacksonDeserializer` to record the score type in JSON too,
+otherwise it would be impossible to deserialize it:
+
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class VehicleRoutePlan {
+
+    @PlanningScore
+    private Score score;
+
+    ...
+}
+----
+
+For example, this generates:
+
+[source,json,options="nowrap"]
+----
+{
+   "score":{"HardSoftScore":"0hard/-200soft"}
+   ...
+}
+----
+
 
 [#integrationWithOtherEnvironments]
 == Other environments
