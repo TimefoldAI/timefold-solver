@@ -23,7 +23,7 @@ Beyond that, Timefold Solver also integrates with many other Java technologies. 
 ====
 While it is possible to annotate the same domain classes with both Timefold Solver and persistence or serialization annotations,
 this tightly couples your planning domain to your data model.
-In many applications it is preferable to keep them separate for example, by mapping between a persistence entity and a dedicated planning model
+In many applications it is preferable to keep them separate, for example, by mapping between a persistence entity and a dedicated planning model
 so that changes to one do not force changes to the other.
 ====
 
@@ -433,7 +433,7 @@ and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQ
 
 [NOTE]
 ====
-Timefold Solver Spring Boot Starter only supports Spring Boot version 3.5.x.
+Timefold Solver Spring Boot Starter only supports Spring Boot version 4.x.
 ====
 
 [#integrationWithSpringBootProperties]
@@ -985,7 +985,7 @@ For example, this generates:
 [NOTE]
 ====
 When reading a `BendableScore`, the `hardLevelsSize` and `softLevelsSize` implied in the JSON element,
-must always be in sync with those defined in the `@PlanningScore` annotation in the solution class.For example:
+must always be in sync with those defined in the `@PlanningScore` annotation in the solution class. For example:
 
 [source,json,options="nowrap"]
 ----
