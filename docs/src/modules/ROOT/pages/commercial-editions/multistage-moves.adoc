@@ -1,5 +1,5 @@
 [#multistageMoves]
-= Multistage Moves
+= Multistage moves
 
 include::./_only-enterprise.adoc[]
 
