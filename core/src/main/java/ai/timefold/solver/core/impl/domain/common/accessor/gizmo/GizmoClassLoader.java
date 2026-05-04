@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -42,6 +44,47 @@ public final class GizmoClassLoader extends ClassLoader {
     @Override
     public String getName() {
         return "Timefold Solver Gizmo ClassLoader";
+    }
+
+    @Nullable
+    private Class<?> loadClassFrom(@Nullable ClassLoader otherClassLoader, String name) {
+        if (otherClassLoader == null || otherClassLoader == this) {
+            return null;
+        }
+        try {
+            return otherClassLoader.loadClass(name);
+        } catch (ClassNotFoundException ignored) {
+            return null;
+        }
+    }
+
+    @Override
+    public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        synchronized (getClassLoadingLock(name)) {
+            var loadedClass = findLoadedClass(name);
+            if (loadedClass == null) {
+                if (hasBytecodeFor(name)) {
+                    loadedClass = findClass(name);
+                } else {
+                    var configClassLoader = SolutionDescriptor.getClassLoader();
+                    var contextClassLoader = Thread.currentThread().getContextClassLoader();
+
+                    // First config, then context, then parent
+                    loadedClass = loadClassFrom(configClassLoader, name);
+                    if (loadedClass == null) {
+                        loadedClass = loadClassFrom(contextClassLoader, name);
+                    }
+                    if (loadedClass == null) {
+                        loadedClass = super.loadClass(name, false);
+                    }
+                    return loadedClass;
+                }
+            }
+            if (resolve) {
+                resolveClass(loadedClass);
+            }
+            return loadedClass;
+        }
     }
 
     @Override

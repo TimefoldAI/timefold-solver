@@ -78,6 +78,7 @@ import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.classloader.TestdataSeparateClassLoaderDomain;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -1771,6 +1772,18 @@ class DefaultSolverTest {
         var bestEntity3 = bestSolution.getEntityList().get(2);
         assertThat(bestEntity3.getValueList()).hasSizeGreaterThan(0);
         assertThat(bestEntity3.getValueList()).doesNotContain(value1, value2, value3);
+    }
+
+    @Test
+    void solveCustomClassLoader() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSeparateClassLoaderDomain.getTestdataSolutionClass(),
+                TestdataSeparateClassLoaderDomain.getTestdataEntityClass());
+        solverConfig.setClassLoader(TestdataSeparateClassLoaderDomain.getClassLoader());
+        var solution = TestdataSeparateClassLoaderDomain.generateSolution();
+
+        solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
+                BestScoreChangedEvent.constructionHeuristic(SimpleScore.ZERO, 0));
+        assertThat(solution).isNotNull();
     }
 
     @Test

@@ -1083,7 +1083,7 @@ class TimefoldProcessor {
         solverConfigMap.values().forEach(c -> {
             var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
                     c.getEnablePreviewFeatureSet(), DomainAccessType.FORCE_REFLECTION,
-                    c.getSolutionClass(), null, null, c.getEntityClassList());
+                    null, c.getSolutionClass(), null, null, c.getEntityClassList());
             gizmoSolutionClonerClassNameSet
                     .add(entityEnhancer.generateSolutionCloner(solutionDescriptor, classOutput, indexView, transformers));
         });

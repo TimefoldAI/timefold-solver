@@ -198,6 +198,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
         return SolutionDescriptor.buildSolutionDescriptor(solverConfig.getEnablePreviewFeatureSet(),
                 domainAccessType,
+                solverConfig.getClassLoader(),
                 (Class<Solution_>) solverConfig.getSolutionClass(),
                 solverConfig.getGizmoMemberAccessorMap(),
                 solverConfig.getGizmoSolutionClonerMap(),

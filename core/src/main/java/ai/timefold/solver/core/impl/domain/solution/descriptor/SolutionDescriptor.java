@@ -72,6 +72,7 @@ import ai.timefold.solver.core.impl.util.MutablePair;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,6 +86,9 @@ public final class SolutionDescriptor<Solution_> {
     private static final EntityDescriptor<?> NULL_ENTITY_DESCRIPTOR = new EntityDescriptor<>(-1, null, PlanningEntity.class);
     private static final Class[] ANNOTATED_MEMBERS_CLASSES = { ProblemFactCollectionProperty.class, ValueRangeProvider.class,
             PlanningEntityCollectionProperty.class, PlanningScore.class };
+    // TODO: In Java 25+ replace this with scoped value
+    private static final InheritableThreadLocal<@Nullable ClassLoader> CLASS_LOADER_THREAD_LOCAL =
+            new InheritableThreadLocal<>();
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(Class<Solution_> solutionClass,
             Class<?>... entityClasses) {
@@ -103,19 +107,21 @@ public final class SolutionDescriptor<Solution_> {
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
             Set<PreviewFeature> enabledPreviewFeaturesSet, Class<Solution_> solutionClass, List<Class<?>> entityClassList) {
-        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.FORCE_REFLECTION, solutionClass, null, null,
+        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.FORCE_REFLECTION, null, solutionClass, null,
+                null,
                 entityClassList);
     }
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
-            Set<PreviewFeature> enabledPreviewFeatureSet, DomainAccessType domainAccessType, Class<Solution_> solutionClass,
+            Set<PreviewFeature> enabledPreviewFeatureSet, DomainAccessType domainAccessType,
+            ClassLoader classLoader, Class<Solution_> solutionClass,
             Map<String, MemberAccessor> memberAccessorMap, Map<String, SolutionCloner> solutionClonerMap,
             List<Class<?>> entityClassList) {
         assertMutable(solutionClass, "solutionClass");
         assertSingleInheritance(solutionClass);
         assertValidAnnotatedMembers(solutionClass);
         solutionClonerMap = Objects.requireNonNullElse(solutionClonerMap, Collections.emptyMap());
-        var solutionDescriptor = new SolutionDescriptor<>(solutionClass, memberAccessorMap);
+        var solutionDescriptor = new SolutionDescriptor<>(classLoader, solutionClass, memberAccessorMap);
         var descriptorPolicy = new DescriptorPolicy();
         if (enabledPreviewFeatureSet != null) {
             descriptorPolicy.setEnabledPreviewFeatureSet(enabledPreviewFeatureSet);
@@ -261,8 +267,11 @@ public final class SolutionDescriptor<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    private SolutionDescriptor(Class<Solution_> solutionClass, Map<String, MemberAccessor> memberAccessorMap) {
+    private SolutionDescriptor(ClassLoader classLoader,
+            Class<Solution_> solutionClass,
+            Map<String, MemberAccessor> memberAccessorMap) {
         this.solutionClass = solutionClass;
+        CLASS_LOADER_THREAD_LOCAL.set(classLoader);
         if (solutionClass.getPackage() == null) {
             LOGGER.warn("The solutionClass ({}) should be in a proper java package.", solutionClass);
         }
@@ -1098,9 +1107,12 @@ public final class SolutionDescriptor<Solution_> {
         this.<Score_> getScoreDescriptor().setScore(solution, score);
     }
 
+    public static ClassLoader getClassLoader() {
+        return CLASS_LOADER_THREAD_LOCAL.get();
+    }
+
     @Override
     public String toString() {
         return "%s(%s)".formatted(getClass().getSimpleName(), solutionClass.getName());
     }
-
 }
