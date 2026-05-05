@@ -733,7 +733,7 @@ and reference the implementation class in the solver configuration like so:
 <solver xmlns="https://timefold.ai/xsd/solver">
    ...
   <enablePreviewFeature>NEIGHBORHOODS</enablePreviewFeature>
-  <constructionHeuristic/>  <!-- CH required when running localSearch -->
+  <constructionHeuristic/>  <!-- Often used before localSearch when the solution is not yet initialized -->
 
   <localSearch>
     <neighborhoodProviderClass>com.acme.MyNeighborhoodProvider</neighborhoodProviderClass>
@@ -742,7 +742,7 @@ and reference the implementation class in the solver configuration like so:
 ----
 
 NOTE: As the Neighborhoods API is a part of Local Search, it needs to be used on an initialized solution.
-This means that it needs a xref:optimization-algorithms/construction-heuristics.adoc[construction heuristic] to precede it.
+This usually means that a xref:optimization-algorithms/construction-heuristics.adoc[construction heuristic] precedes it.
 
 The `NeighborhoodProvider` interface has a single method:
 
