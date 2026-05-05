@@ -60,7 +60,7 @@ VehicleRoutePlan dataset1 = ...;
 VehicleRoutePlan dataset2 = ...;
 VehicleRoutePlan dataset3 = ...;
 PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark(dataset1, dataset2, dataset3);
-benchmark.benchmarkAndShowReportInBrowser();
+benchmark.benchmark();
 ----
 
 This generates a benchmark report in `local/benchmarkReport` and shows it in your browser when it's finished.
@@ -82,7 +82,7 @@ Configure it with a benchmark configuration XML file, provided as a classpath re
 PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromXmlResource(
         "org/acme/vehiclerouting/benchmarkConfig.xml");
 PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark();
-benchmark.benchmarkAndShowReportInBrowser();
+benchmark.benchmark();
 ----
 
 Alternatively, create a `PlannerBenchmarkFactory` programmatically from a `PlannerBenchmarkConfig`.
