@@ -767,6 +767,7 @@ public final class ConstraintCollectors {
      * For stable iteration order, use {@link #toSortedSet()}.
      * <p>
      * The default result of the collector (e.g. when never called) is an empty {@link Set}.
+     * The user must not modify this set.
      *
      * @param <A> type of the matched fact
      */
@@ -779,6 +780,7 @@ public final class ConstraintCollectors {
      * {@link ConstraintStream}.
      * <p>
      * The default result of the collector (e.g. when never called) is an empty {@link SortedSet}.
+     * The user must not modify this set.
      *
      * @param <A> type of the matched fact
      */
@@ -800,6 +802,7 @@ public final class ConstraintCollectors {
      * For stable iteration order, use {@link #toSortedSet()}.
      * <p>
      * The default result of the collector (e.g. when never called) is an empty {@link List}.
+     * The user must not modify this list.
      *
      * @param <A> type of the matched fact
      */
@@ -976,6 +979,7 @@ public final class ConstraintCollectors {
      * For stable iteration order, use {@link #toSortedMap(Function, Function, IntFunction)}.
      * <p>
      * The default result of the collector (e.g. when never called) is an empty {@link Map}.
+     * The user must not modify this map.
      *
      * @param keyMapper map matched fact to a map key
      * @param valueMapper map matched fact to a value
@@ -1103,6 +1107,7 @@ public final class ConstraintCollectors {
      * {@code {20: "Ann and Eric", 25: "Beth", 30: "Cathy and David"}}.
      * <p>
      * The default result of the collector (e.g. when never called) is an empty {@link SortedMap}.
+     * The user must not modify this map.
      *
      * @param keyMapper map matched fact to a map key
      * @param valueMapper map matched fact to a value

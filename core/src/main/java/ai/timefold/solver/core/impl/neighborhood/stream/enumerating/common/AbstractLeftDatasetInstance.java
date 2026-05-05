@@ -6,7 +6,6 @@ import java.util.random.RandomGenerator;
 import ai.timefold.solver.core.impl.bavet.common.index.UniqueRandomIterator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
-import ai.timefold.solver.core.impl.util.ElementAwareArrayList.Entry;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -35,7 +34,7 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
                             .formatted(tuple));
         }
 
-        tuple.setStore(entryStoreIndex, tupleList.add(tuple));
+        tuple.setStore(entryStoreIndex, tupleList.addEntry(tuple));
     }
 
     @Override
@@ -50,13 +49,12 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
 
     @Override
     public void retract(Tuple_ tuple) {
-        Entry<Tuple_> entry = tuple.removeStore(entryStoreIndex);
+        ElementAwareArrayList<Tuple_>.Entry entry = tuple.removeStore(entryStoreIndex);
         if (entry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-
-        tupleList.remove(entry);
+        entry.remove();
     }
 
     @Override

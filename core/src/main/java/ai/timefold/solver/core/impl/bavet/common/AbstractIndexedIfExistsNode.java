@@ -119,8 +119,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             return;
         }
         ListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
+        var element = counterEntry.element(); // Store so that the reference survives removal.
         updateIndexerLeft(compositeKey, counterEntry, leftTuple);
-        killCounterLeft(counterEntry.element());
+        killCounterLeft(element);
     }
 
     private void updateIndexerLeft(Object compositeKey, ListEntry<ExistsCounter<LeftTuple_>> counterEntry,
