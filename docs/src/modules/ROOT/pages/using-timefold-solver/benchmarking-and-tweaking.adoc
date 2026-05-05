@@ -63,7 +63,7 @@ PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark(dataset1, da
 benchmark.benchmark();
 ----
 
-This generates a benchmark report in `local/benchmarkReport` and shows it in your browser when it's finished.
+This generates a benchmark report in `local/benchmarkReport` when it's finished.
 The ``SolverFactory``'s solver configuration needs a termination to limit how long each dataset runs.
 To configure a different benchmark directory, pass a `File` parameter to `createFromSolverConfigXmlResource()`.
 
