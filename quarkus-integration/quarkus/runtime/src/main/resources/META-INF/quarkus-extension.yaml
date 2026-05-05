@@ -1,5 +1,6 @@
 ---
 name: "Timefold Solver"
+artifact: "ai.timefold.solver:timefold-solver-quarkus:999-SNAPSHOT"
 metadata:
   keywords:
     - "timefold"
