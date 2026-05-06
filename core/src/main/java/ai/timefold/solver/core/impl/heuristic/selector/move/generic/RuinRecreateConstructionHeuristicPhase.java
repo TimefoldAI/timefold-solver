@@ -32,6 +32,12 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
     }
 
     @Override
+    public void phaseStarted(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        disableLogging();
+    }
+
+    @Override
     protected ConstructionHeuristicPhaseScope<Solution_> buildPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex) {
         return new RuinRecreateConstructionHeuristicPhaseScope<>(solverScope, phaseIndex);
     }

@@ -68,7 +68,9 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
             // Reaching local search means that the solution is already fully initialized.
             // Yet the problem size indicates there is only 1 possible solution.
             // Therefore, this solution must be it and there is nothing to improve.
-            logger.info("{}Local Search phase ({}) has no entities or values to move.", logIndentation, phaseIndex);
+            if (isLoggingEnabled()) {
+                logger.info("{}Local Search phase ({}) has no entities or values to move.", logIndentation, phaseIndex);
+            }
             return;
         }
 
@@ -88,7 +90,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
             stepStarted(stepScope);
             decider.decideNextStep(stepScope);
             if (stepScope.getStep() == null) {
-                if (phaseTermination.isPhaseTerminated(phaseScope)) {
+                if (isLoggingEnabled() && phaseTermination.isPhaseTerminated(phaseScope)) {
                     logger.trace("{}    Step index ({}), time spent ({}) terminated without picking a nextStep.",
                             logIndentation,
                             stepScope.getStepIndex(),
@@ -227,18 +229,20 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         super.phaseEnded(phaseScope);
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
-        logger.info("""
-                {}Local Search phase ({}) ended: time spent ({}), best score ({}), \
-                {}move evaluation speed ({}/sec), step total ({}).""",
-                logIndentation,
-                phaseIndex,
-                phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                phaseScope.getBestScore().raw(),
-                // Multithreaded solving uses "effective" move evaluation speed, since not all evaluated moves
-                // are foraged
-                (decider.getClass().equals(LocalSearchDecider.class)) ? "" : "effective ",
-                phaseScope.getPhaseMoveEvaluationSpeed(),
-                phaseScope.getNextStepIndex());
+        if (isLoggingEnabled()) {
+            logger.info("""
+                    {}Local Search phase ({}) ended: time spent ({}), best score ({}), \
+                    {}move evaluation speed ({}/sec), step total ({}).""",
+                    logIndentation,
+                    phaseIndex,
+                    phaseScope.calculateSolverTimeMillisSpentUpToNow(),
+                    phaseScope.getBestScore().raw(),
+                    // Multithreaded solving uses "effective" move evaluation speed, since not all evaluated moves
+                    // are foraged
+                    (decider.getClass().equals(LocalSearchDecider.class)) ? "" : "effective ",
+                    phaseScope.getPhaseMoveEvaluationSpeed(),
+                    phaseScope.getNextStepIndex());
+        }
     }
 
     @Override
