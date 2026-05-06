@@ -1,272 +1,465 @@
 package ai.timefold.solver.core.impl.util;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
- * {@link ArrayList}-backed list which allows for a cheap {@link #remove(Entry) removal of an element},
+ * {@link AbstractList} implementation which allows for a cheap {@link Entry#remove() removal of an element},
  * while still providing fast iteration and random access.
  * The order of iteration is guaranteed to be the insertion order.
+ * {@code null} is a valid value.
  * <p>
  * It uses internal state of the entry to track insertion position of the element.
- * When an element is removed, the underlying collection isn't actually touched;
+ * When an entry is removed, its slot in the underlying collection is replaced with {@code null} (a gap);
  * therefore, the insertion position of later elements isn't changed.
- * This position is called a gap.
- * Gaps are removed (the list is compacted) when {@link #forEach(Consumer)} or {@link #asList()} is called.
- * This keeps the overhead low while giving us all benefits of {@link ArrayList},
- * such as memory efficiency, random access, and fast iteration.
+ * Gaps are removed (the list is fully compacted) when {@link #forEach(Consumer)} or {@link #add(int, Object)} is called.
+ * {@link #get(int)} and related index-based operations compact only the prefix up to the requested index.
+ * This keeps the overhead low while giving us most benefits of {@link ArrayList}.
  * <p>
- * This class is very thread-unsafe.
+ * Primary fast-path methods are {@link #addEntry(Object)} and {@link Entry#remove()}, both run in O(1).
+ * All standard {@link List} methods are also available and may run in O(n) or worse.
+ * <p>
+ * This class is so very not thread safe.
  *
  * @param <T>
  */
 @NullMarked
-public final class ElementAwareArrayList<T> {
+public final class ElementAwareArrayList<T extends @Nullable Object> extends AbstractList<T> {
 
-    private final List<Entry<T>> elementList = new ArrayList<>();
+    private static final int REMOVED_POSITION = -1;
+
+    private final List<@Nullable Entry> entryList = new ArrayList<>();
     private int lastElementPosition = -1;
-    private int gapCount = 0;
+    private int gapCount = 0; // Always equals the total number of null slots in entryList.
 
     /**
-     * Appends the specified element to the end of this collection.
+     * Appends the specified element to the end of this list.
      *
-     * @param element element to be appended to this collection
+     * @return the entry for later O(1) removal via {@link Entry#remove()}
      */
-    public Entry<T> add(T element) {
-        var newEntry = new Entry<>(element, ++lastElementPosition);
-        elementList.add(newEntry);
+    public Entry addEntry(T element) {
+        modCount++;
+        if (gapCount > 0 && entryList.get(lastElementPosition) == null) { // Reuse a gap if it exists.
+            var newEntry = new Entry(element, lastElementPosition);
+            entryList.set(lastElementPosition, newEntry);
+            gapCount--;
+            return newEntry;
+        }
+        var newEntry = new Entry(element, ++lastElementPosition);
+        entryList.add(newEntry);
         return newEntry;
     }
 
-    public Entry<T> get(int index) {
-        compact();
-        return elementList.get(index);
+    private Entry getEntry(int index) {
+        if (index < 0 || index >= size()) {
+            throw new IndexOutOfBoundsException(
+                    "The index (%d) must be >= 0 and < size (%d).".formatted(index, size()));
+        } else if (gapCount == 0) {
+            return Objects.requireNonNull(entryList.get(index));
+        }
+        return partialCompact(index);
     }
 
     /**
-     * Removes the first occurrence of the specified element from this collection, if present.
-     *
-     * @param entry entry to be removed from this collection
-     * @throws IllegalStateException if the element wasn't found in this collection
+     * Avoid calling this when {@code gapCount == 0}.
      */
-    public void remove(Entry<T> entry) {
+    private Entry partialCompact(int rightBoundaryPosition) {
+        var encounteredGaps = 0;
+        var lastNonNullPosition = -1;
+        for (var currentPosition = 0; currentPosition <= lastElementPosition; currentPosition++) {
+            var entry = entryList.get(currentPosition);
+            if (entry == null) {
+                encounteredGaps++;
+            } else {
+                lastNonNullPosition++;
+                if (encounteredGaps > 0) {
+                    var targetPosition = currentPosition - encounteredGaps;
+                    entry.moveTo(targetPosition);
+                    entryList.set(targetPosition, entry);
+                    entryList.set(currentPosition, null); // For consistency; the list is never in an invalid state.
+                    modCount++;
+                }
+                if (lastNonNullPosition == rightBoundaryPosition) {
+                    // Invariant: positions [0, index] are all non-null,
+                    // so all gapCount nulls lie in [index+1, lastElementPosition].
+                    // If that suffix is entirely nulls (equivalent to index == size()-1), trim it now.
+                    if (gapCount == lastElementPosition - rightBoundaryPosition) {
+                        entryList.subList(rightBoundaryPosition + 1, lastElementPosition + 1).clear();
+                        lastElementPosition = rightBoundaryPosition;
+                        gapCount = 0;
+                        modCount++;
+                    }
+                    return entry;
+                }
+            }
+        }
+        throw new IndexOutOfBoundsException(
+                "The index (%d) must be >= 0 and < size (%d).".formatted(rightBoundaryPosition, size()));
+    }
+
+    @Override
+    public T get(int index) {
+        return getEntry(index).element();
+    }
+
+    @Override
+    public boolean add(T element) {
+        addEntry(element);
+        return true;
+    }
+
+    @Override
+    @SuppressWarnings("DataFlowIssue")
+    public void add(int index, T element) {
+        var size = size();
+        if (index < 0 || index > size) {
+            throw new IndexOutOfBoundsException(
+                    "The index (%d) must be >= 0 and <= size (%d).".formatted(index, size));
+        }
+        if (index == size) {
+            addEntry(element);
+            return;
+        }
+        if (gapCount == 0) {
+            modCount++;
+            var newEntry = new Entry(element, index);
+            entryList.add(index, newEntry);
+            lastElementPosition++;
+            for (var i = index + 1; i <= lastElementPosition; i++) {
+                entryList.get(i).moveTo(i);
+            }
+            return;
+        }
+        // Compact prefix [0, index-1] so physical position k == logical position k for all k < index.
+        if (index > 0) {
+            partialCompact(index - 1); // Increases modCount.
+        }
+        var newEntry = new Entry(element, index);
+        if (entryList.get(index) == null) {
+            // Gap at the target position: fill it directly without shifting the array.
+            entryList.set(index, newEntry);
+            gapCount--;
+        } else {
+            // No gap at the target position: rotate entries rightward into the nearest gap in the suffix,
+            // consuming that gap rather than growing the backing list.
+            var displaced = newEntry;
+            for (var i = index; i <= lastElementPosition; i++) {
+                var current = entryList.get(i);
+                displaced.moveTo(i);
+                entryList.set(i, displaced);
+                if (current == null) {
+                    gapCount--;
+                    break;
+                }
+                displaced = current;
+            }
+        }
+    }
+
+    @Override
+    public T set(int index, T element) {
+        return getEntry(index).replaceElement(element);
+    }
+
+    @Override
+    public T remove(int index) {
+        var entry = getEntry(index);
+        var element = entry.element();
+        remove(entry);
+        return element;
+    }
+
+    /**
+     * Removes the element referenced by the entry in O(1).
+     *
+     * @throws IllegalStateException if the entry was already removed
+     */
+    private void remove(Entry entry) {
         if (entry.isRemoved()) {
             throw new IllegalStateException("The entry (%s) was already removed."
                     .formatted(entry));
         }
-        // For performance, we do not touch the list.
-        // Instead, we mark it as a gap by setting its position to -1.
-        // Technically, this is a memory leak of the value;
-        // in practice, compaction will clean it up relatively quickly.
-        entry.position = -1;
-        gapCount++;
+        var positionPreRemoval = entry.position;
+        if (positionPreRemoval == lastElementPosition) { // Removing the last element; just trim the list.
+            entryList.remove(lastElementPosition--);
+        } else {
+            entryList.set(positionPreRemoval, null);
+            gapCount++;
+        }
+        entry.moveTo(REMOVED_POSITION); // Mark the entry as removed.
+        modCount++;
         clearIfPossible();
     }
 
-    private boolean clearIfPossible() {
-        if (gapCount > 0 && lastElementPosition + 1 == gapCount) { // All positions are gaps. Clear the list entirely.
-            forceClear();
-            return true;
+    private void clearIfPossible() {
+        if (gapCount == 0 || lastElementPosition + 1 != gapCount) {
+            return;
         }
-        return false;
-    }
-
-    private void forceClear() {
-        elementList.clear();
+        // All positions are gaps. Clear the list entirely.
+        entryList.clear();
         gapCount = 0;
         lastElementPosition = -1;
     }
 
-    public boolean isEmpty() {
-        return size() == 0;
-    }
-
+    @Override
     public int size() {
         return lastElementPosition - gapCount + 1;
     }
 
     /**
-     * Performs the given action for each element of the collection
+     * Performs the given action for each element of the list
      * until all elements have been processed.
      *
-     * @param elementConsumer the action to be performed for each element;
-     *        mustn't modify the collection and mustn't throw exceptions,
-     *        as that'd leave the collection in an inconsistent state
+     * @param action the action to be performed for each element;
+     *        mustn't modify the list and mustn't throw exceptions,
+     *        as that'd leave the list in an inconsistent state
      */
-    public void forEach(Consumer<T> elementConsumer) {
+    @Override
+    public void forEach(Consumer<? super T> action) {
         if (gapCount == 0) {
-            forEachWithoutGaps(elementConsumer);
+            forEachWithoutGaps(action);
         } else {
             // Compact the collection as we iterate.
-            forEachCompacting(elementConsumer);
+            forEachCompacting(action);
         }
     }
 
-    private void forEachWithoutGaps(Consumer<T> elementConsumer) {
-        for (var i = 0; i <= lastElementPosition; i++) {
-            elementConsumer.accept(elementList.get(i).element());
+    @SuppressWarnings("DataFlowIssue")
+    private void forEachWithoutGaps(Consumer<? super T> elementConsumer) {
+        for (var currentPosition = 0; currentPosition <= lastElementPosition; currentPosition++) {
+            elementConsumer.accept(entryList.get(currentPosition).element());
         }
     }
 
-    private void forEachCompacting(Consumer<T> elementConsumer) {
-        if (clearIfPossible()) {
+    /**
+     * Compacts during iteration.
+     * Elements are moved to their new position (if needed) after the consumer is called on them,
+     * so that the consumer sees the original insertion order.
+     * Gaps end up at the end of the list, which is cleared in one go.
+     *
+     * @param elementConsumer to be executed over every element
+     */
+    private void forEachCompacting(Consumer<? super T> elementConsumer) {
+        var liveCount = size();
+        if (liveCount == 0) {
+            clearIfPossible(); // The list may still contain gaps, so try to clear it entirely.
             return;
         }
-        var indexesToRemove = new int[gapCount]; // Prevents iterating the entire list multiple times.
-        var encounteredGaps = 0;
-        for (var i = 0; i <= lastElementPosition; i++) {
-            var element = elementList.get(i);
-            if (element.isRemoved()) {
-                if (clearTailGapsIfPossible(i, encounteredGaps + 1, indexesToRemove)) {
-                    return;
-                } else {
-                    indexesToRemove[encounteredGaps++] = i;
-                }
-            } else {
-                elementConsumer.accept(element.element());
-                if (encounteredGaps > 0) {
-                    element.position = i - encounteredGaps;
-                }
+        var compactPosition = 0;
+        for (var currentPosition = 0; currentPosition <= lastElementPosition; currentPosition++) {
+            var entry = entryList.get(currentPosition);
+            if (entry == null) {
+                continue;
+            }
+            elementConsumer.accept(entry.element());
+            if (currentPosition != compactPosition) {
+                entry.moveTo(compactPosition);
+                entryList.set(compactPosition, entry);
+                entryList.set(currentPosition, null); // Prevent stale data.
+                modCount++;
+            }
+            if (++compactPosition == liveCount) {
+                break;
             }
         }
-        clearGaps(indexesToRemove);
-    }
-
-    /**
-     * Clears all remaining gaps if all remaining elements are gaps.
-     *
-     * @param currentGapPosition the current position in the iteration
-     * @param encounteredGaps the number of gaps encountered so far in the iteration, including the current one
-     * @param indexesToRemove the array of indexes where gaps were previously found; won't be modified
-     * @return true if all remaining elements were gaps and have been cleared
-     */
-    private boolean clearTailGapsIfPossible(int currentGapPosition, int encounteredGaps, int... indexesToRemove) {
-        var remainingGaps = gapCount - encounteredGaps;
-        if (remainingGaps == 0) {
-            return false;
-        }
-        var remainingElements = lastElementPosition - currentGapPosition;
-        if (remainingElements == remainingGaps) { // All remaining elements are gaps; we can stop here.
-            elementList.subList(currentGapPosition, lastElementPosition + 1).clear();
-            clearGaps(indexesToRemove, encounteredGaps - 2); // -2 because current gap is not yet in the array.
-            return true;
-        } else if (remainingElements > remainingGaps) { // There are still non-gap elements remaining.
-            return false;
-        } else {
-            throw new IllegalStateException(
-                    "Impossible state: the number of remaining elements (%d) is less than the number of remaining gaps (%d)."
-                            .formatted(remainingElements, remainingGaps));
-        }
-    }
-
-    private void clearGaps(int[] gaps, int topMostIndexToInclude) {
-        // Remove gaps from the back to shift only as little as we need.
-        for (var index = topMostIndexToInclude; index >= 0; index--) {
-            elementList.remove(gaps[index]);
-        }
-        lastElementPosition = elementList.size() - 1;
+        entryList.subList(compactPosition, lastElementPosition + 1).clear();
+        lastElementPosition = compactPosition - 1;
         gapCount = 0;
+        modCount++;
     }
 
-    private void clearGaps(int[] indexesToRemove) {
-        clearGaps(indexesToRemove, indexesToRemove.length - 1);
-    }
-
+    @Override
     public Iterator<T> iterator() {
-        compact();
-        return new DefaultIterator<>(elementList);
+        return listIterator(0);
     }
 
-    /**
-     * Returns a standard {@link List} view of this collection.
-     * Users mustn't modify the returned list, as that'd also change the underlying data structure.
-     *
-     * @return a standard list view of this element-aware list
-     */
-    public List<Entry<T>> asList() {
-        if (isEmpty() || compact()) {
-            return Collections.emptyList();
-        }
-        return elementList;
+    @Override
+    public ListIterator<T> listIterator(int index) {
+        return new ElementAwareListIterator(index);
     }
 
-    private boolean compact() {
-        if (gapCount == 0) {
-            return isEmpty();
-        }
-        if (clearIfPossible()) {
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
             return true;
         }
-        var indexesToRemove = new int[gapCount]; // Prevents iterating the entire list multiple times.
-        var encounteredGaps = 0;
-        for (var i = 0; i <= lastElementPosition; i++) {
-            var element = elementList.get(i);
-            if (element.isRemoved()) {
-                if (clearTailGapsIfPossible(i, encounteredGaps + 1, indexesToRemove)) {
-                    return false;
-                } else {
-                    indexesToRemove[encounteredGaps++] = i;
-                }
-            } else if (encounteredGaps > 0) {
-                element.position = i - encounteredGaps;
-            }
-        }
-        clearGaps(indexesToRemove);
-        return false;
+        return o instanceof List<?> other
+                && this.size() == other.size()
+                && super.equals(other);
     }
 
-    public static final class Entry<T> implements ListEntry<T> {
+    @Override
+    public int hashCode() {
+        return super.hashCode(); // Size not relevant; if sizes differ => lists do not equal => same hashCode is fine.
+    }
 
-        private final T element;
-        private int position;
+    private final class ElementAwareListIterator implements ListIterator<T> {
+
+        private int currentPosition;
+        private int logicalPosition;
+        private @Nullable Entry lastEntry;
+        private boolean lastWasFwd;
+        private int expectedModCount;
+
+        private ElementAwareListIterator(int startingPosition) {
+            var currentSize = size();
+            if (startingPosition < 0 || startingPosition > currentSize) {
+                throw new IndexOutOfBoundsException(
+                        "The index (%d) must be >= 0 and <= size (%d).".formatted(startingPosition, currentSize));
+            }
+            if (startingPosition > 0 && gapCount > 0) {
+                currentPosition = partialCompact(startingPosition - 1).position + 1;
+            } else {
+                currentPosition = startingPosition;
+            }
+            logicalPosition = startingPosition;
+            expectedModCount = modCount;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return logicalPosition < size();
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return logicalPosition > 0;
+        }
+
+        @Override
+        public int nextIndex() {
+            return logicalPosition;
+        }
+
+        @Override
+        public int previousIndex() {
+            return logicalPosition - 1;
+        }
+
+        @Override
+        public T next() {
+            checkModCount();
+            if (logicalPosition >= size()) {
+                throw new NoSuchElementException();
+            }
+            var entry = entryList.get(currentPosition);
+            while (entry == null) {
+                entry = entryList.get(++currentPosition);
+            }
+            currentPosition++;
+            logicalPosition++;
+            lastEntry = entry;
+            lastWasFwd = true;
+            return entry.element();
+        }
+
+        @Override
+        public T previous() {
+            checkModCount();
+            if (logicalPosition <= 0) {
+                throw new NoSuchElementException();
+            }
+            var entry = entryList.get(--currentPosition);
+            while (entry == null) {
+                entry = entryList.get(--currentPosition);
+            }
+            logicalPosition--;
+            lastEntry = entry;
+            lastWasFwd = false;
+            return entry.element();
+        }
+
+        @Override
+        public void remove() {
+            if (lastEntry == null) {
+                throw new IllegalStateException(
+                        "remove() called without a preceding next() or previous().");
+            }
+            checkModCount();
+            lastEntry.remove(); // Adjusts lastElementPosition.
+            if (lastWasFwd) {
+                logicalPosition--;
+            }
+            expectedModCount = modCount;
+            lastEntry = null;
+        }
+
+        @Override
+        public void set(T element) {
+            if (lastEntry == null) {
+                throw new IllegalStateException("set() called without a preceding next() or previous().");
+            }
+            checkModCount();
+            lastEntry.replaceElement(element);
+        }
+
+        @Override
+        public void add(T element) {
+            checkModCount();
+            ElementAwareArrayList.this.add(logicalPosition, element);
+            logicalPosition++;
+            currentPosition = logicalPosition;
+            expectedModCount = modCount;
+            lastEntry = null;
+        }
+
+        private void checkModCount() {
+            if (modCount != expectedModCount) {
+                throw new ConcurrentModificationException();
+            }
+        }
+
+    }
+
+    public final class Entry implements ListEntry<T> {
+
+        private T element; // Mutable so that ElementAwareArrayList.set(int, T) can be O(1).
+        private int position; // Keeps the element's position in the list; must be kept in sync with its actual position.
 
         private Entry(T element, int position) {
             this.element = element;
             this.position = position;
         }
 
-        public boolean isRemoved() {
-            return position < 0;
+        public void remove() {
+            ElementAwareArrayList.this.remove(this);
+        }
+
+        boolean isRemoved() {
+            return position == REMOVED_POSITION;
+        }
+
+        void moveTo(int newPosition) {
+            position = newPosition;
         }
 
         @Override
         public T element() {
+            if (isRemoved()) {
+                throw new IllegalStateException("The entry (%s) was already removed.".formatted(this));
+            }
             return element;
+        }
+
+        public T replaceElement(T newElement) {
+            var old = element();
+            element = newElement;
+            return old;
         }
 
         @Override
         public String toString() {
             return isRemoved() ? "null" : element + "@" + position;
-        }
-
-    }
-
-    public static final class DefaultIterator<T> implements Iterator<T> {
-
-        private final List<Entry<T>> list;
-        private int index = 0;
-
-        private DefaultIterator(List<Entry<T>> list) {
-            this.list = list;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return index < list.size();
-        }
-
-        @Override
-        public T next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            return list.get(index++).element();
         }
 
     }

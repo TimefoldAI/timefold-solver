@@ -24,12 +24,12 @@ public final class RandomAccessIndexerBackend<T> implements IndexerBackend<T> {
 
     @Override
     public ListEntry<T> put(Object compositeKey, T tuple) {
-        return tupleList.add(tuple);
+        return tupleList.addEntry(tuple);
     }
 
     @Override
     public void remove(Object compositeKey, ListEntry<T> entry) {
-        tupleList.remove((ElementAwareArrayList.Entry<T>) entry);
+        ((ElementAwareArrayList<T>.Entry) entry).remove();
     }
 
     @Override

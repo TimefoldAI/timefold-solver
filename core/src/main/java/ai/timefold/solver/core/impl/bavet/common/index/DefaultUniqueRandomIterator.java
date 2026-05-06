@@ -59,7 +59,7 @@ final class DefaultUniqueRandomIterator<T> implements UniqueRandomIterator<T> {
         if (nextIndex == -1) {
             return false;
         }
-        next = source.get(nextIndex).element();
+        next = source.get(nextIndex);
         indexToOptionallyRemove = -1;
         return true;
     }
