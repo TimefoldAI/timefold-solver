@@ -5,8 +5,6 @@ import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
-import org.jspecify.annotations.Nullable;
-
 public abstract class AbstractToCollectionSlot<Mapped_, Result_ extends Collection<Mapped_>> {
     public static final class State<Mapped_, Collection_ extends Collection<Mapped_>> {
         private final IntFunction<Collection_> collectionFunction;
@@ -28,7 +26,7 @@ public abstract class AbstractToCollectionSlot<Mapped_, Result_ extends Collecti
     }
 
     private final State<Mapped_, Result_> state;
-    private ElementAwareArrayList.@Nullable Entry<Mapped_> cachedEntry;
+    private ElementAwareArrayList<Mapped_>.Entry cachedEntry;
 
     public AbstractToCollectionSlot(State<Mapped_, Result_> state) {
         this.state = state;
@@ -43,6 +41,7 @@ public abstract class AbstractToCollectionSlot<Mapped_, Result_ extends Collecti
     }
 
     protected void removeMapped() {
-        state.list.remove(cachedEntry);
+        cachedEntry.remove();
+        cachedEntry = null;
     }
 }

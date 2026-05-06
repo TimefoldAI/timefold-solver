@@ -33,12 +33,12 @@ class SequenceRoundTripTest {
     @Test
     <Ctx_> void roundTrip() throws JacksonException {
         // Prepare the data to be serialized.
-        Item sequence1Item1 = new Item("sequence1Item1", 0);
-        Item sequence1Item2 = new Item("sequence1Item2", 1);
-        Item sequence2Item1 = new Item("sequence2Item1", 3);
-        Item sequence2Item2 = new Item("sequence2Item2", 4);
-        Item sequence2Item3 = new Item("sequence2Item3", 5);
-        Item sequence3Item1 = new Item("sequence3Item1", 7);
+        var sequence1Item1 = new Item("sequence1Item1", 0);
+        var sequence1Item2 = new Item("sequence1Item2", 1);
+        var sequence2Item1 = new Item("sequence2Item1", 3);
+        var sequence2Item2 = new Item("sequence2Item2", 4);
+        var sequence2Item3 = new Item("sequence2Item3", 5);
+        var sequence3Item1 = new Item("sequence3Item1", 7);
         UniConstraintCollector<Item, Ctx_, SequenceChain<Item, Integer>> collector =
                 (UniConstraintCollector) ConstraintCollectors.toConsecutiveSequences(Item::index);
         var context = collector.supplier().get();
