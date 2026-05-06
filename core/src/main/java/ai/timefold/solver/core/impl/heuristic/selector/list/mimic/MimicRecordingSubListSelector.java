@@ -93,6 +93,16 @@ public class MimicRecordingSubListSelector<Solution_> extends AbstractSelector<S
     }
 
     @Override
+    public int getMinimumSubListSize() {
+        return childSubListSelector.getMinimumSubListSize();
+    }
+
+    @Override
+    public int getMaximumSubListSize() {
+        return childSubListSelector.getMaximumSubListSize();
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (this == other)
             return true;

@@ -97,7 +97,7 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
 
     private SubListSelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, SelectionOrder resolvedSelectionOrder,
-            RandomSubListSelector<Solution_> subListSelector) {
+            SubListSelector<Solution_> subListSelector) {
         NearbySelectionConfig nearbySelectionConfig = config.getNearbySelectionConfig();
         if (nearbySelectionConfig == null) {
             return subListSelector;
