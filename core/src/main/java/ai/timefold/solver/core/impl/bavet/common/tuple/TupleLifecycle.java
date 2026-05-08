@@ -110,11 +110,11 @@ public interface TupleLifecycle<Tuple_ extends Tuple> {
      * and that will nuke the score director,
      * the lifecycle can determine at this point whether {@link #isActive() it is active}.
      * <p>
-     * It is the responsibility of the lifecycle to propagate the initialization
-     * to all of its downstream tuples, should there be any.
-     * Before propagating, it must decide for itself if it can produce tuples,
-     * based on what it learned from upstream and must propagate that information downstream
-     * so that they can make their own activation decisions.
+     * It is the responsibility of the lifecycle to trigger initialization
+     * of all of its downstream lifecycles, should there be any.
+     * It must first decide for itself if it can produce tuples
+     * based on what it learned from upstream,
+     * and then propagate that information downstream so that they can make their own activation decisions.
      * <p>
      * When deciding whether a lifecycle can produce tuples, consider the following:
      * <ul>

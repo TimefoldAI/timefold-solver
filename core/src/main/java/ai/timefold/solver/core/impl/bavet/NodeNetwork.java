@@ -13,6 +13,7 @@ import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -43,7 +44,7 @@ public final class NodeNetwork {
      *        propagation needs to happen in this order.
      */
     public NodeNetwork(Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap,
-                       Propagator[][] layeredNodes, @Nullable InnerConstraintProfiler constraintProfiler) {
+            Propagator[][] layeredNodes, @Nullable InnerConstraintProfiler constraintProfiler) {
         this.declaredClassToNodeMap = declaredClassToNodeMap;
         this.constraintProfiler = constraintProfiler;
         this.layeredNodes = layeredNodes;
@@ -69,12 +70,11 @@ public final class NodeNetwork {
     public void settle() {
         if (!activationCheckComplete) {
             var initializedRootNodes = Collections.newSetFromMap(new IdentityHashMap<>());
-            declaredClassToNodeMap.forEach((declaredClass, rootNodes) ->
-                    rootNodes.forEach(rootNode -> {
-                        if (initializedRootNodes.add(rootNode)) { // Ensure one initialization per node.
-                            rootNode.afterAllInserted();
-                        }
-                    }));
+            declaredClassToNodeMap.forEach((declaredClass, rootNodes) -> rootNodes.forEach(rootNode -> {
+                if (initializedRootNodes.add(rootNode)) { // Ensure one initialization per node.
+                    rootNode.afterAllInserted();
+                }
+            }));
 
             var activeLayeredNodes = new Propagator[layerCount()][];
             for (var layerIndex = 0; layerIndex < layerCount(); layerIndex++) {
