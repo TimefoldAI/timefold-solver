@@ -105,10 +105,11 @@ public interface TupleLifecycle<Tuple_ extends Tuple> {
     }
 
     /**
-     * Triggered after all facts which will ever be inserted have been inserted.
-     * Since the only way to insert or retract a fact is through a {@link ProblemChange},
-     * and that will nuke the score director,
-     * the lifecycle can determine at this point whether {@link #isActive() it is active}.
+     * Triggered after all facts which will ever be inserted have been inserted to the session;
+     * it doesn't guarantee they were propagated as far as this lifecycle,
+     * but the session now carries all the facts it will ever carry.
+     * (The only way to insert or retract a fact is through a {@link ProblemChange},
+     * and that will nuke the score director.)
      * <p>
      * It is the responsibility of the lifecycle to trigger initialization
      * of all of its downstream lifecycles, should there be any.

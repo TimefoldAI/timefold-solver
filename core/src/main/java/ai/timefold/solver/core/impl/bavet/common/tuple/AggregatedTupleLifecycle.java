@@ -1,20 +1,18 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
         implements TupleLifecycle<Tuple_> {
 
-    private final List<TupleLifecycle<Tuple_>> downstream;
+    private boolean upstreamCanProduceTuples;
+    private TupleLifecycle<Tuple_>[] downstream;
     private boolean downstreamFinal = false;
 
     @SafeVarargs
     public AggregatedTupleLifecycle(TupleLifecycle<Tuple_>... downstream) {
-        this.downstream = Arrays.stream(downstream)
-                .collect(Collectors.toList());
+        this.downstream = downstream;
     }
 
     @Override
@@ -22,15 +20,24 @@ public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
         for (var lifecycle : downstream) { // First initialize all downstream lifecycles.
             lifecycle.afterAllFactsInserted(upstreamCanProduceTuples);
         }
+        this.upstreamCanProduceTuples = upstreamCanProduceTuples;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean isActive() {
-        if (!downstreamFinal) {
-            downstream.removeIf(lifecycle -> !lifecycle.isActive());
-            downstreamFinal = true;
+        if (upstreamCanProduceTuples) {
+            if (!downstreamFinal) {
+                // Iterating a list in update() was measurably slower in micro benchmarks, so we deal with arrays.
+                downstream = Arrays.stream(downstream)
+                        .filter(TupleLifecycle::isActive)
+                        .toArray(TupleLifecycle[]::new);
+                downstreamFinal = true;
+            }
+            return downstream.length > 0;
+        } else {
+            return false;
         }
-        return !downstream.isEmpty();
     }
 
     @Override
@@ -57,10 +64,15 @@ public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
     @Override
     public boolean equals(Object o) {
         return o instanceof AggregatedTupleLifecycle<?> that &&
-                downstream.equals(that.downstream);
+                Arrays.deepEquals(downstream, that.downstream);
     }
 
-    public List<TupleLifecycle<Tuple_>> downstream() {
+    /**
+     * Users must not modify this array. (Defensive copy avoided for performance reasons.)
+     * 
+     * @return active downstream lifecycles
+     */
+    public TupleLifecycle<Tuple_>[] downstream() {
         return downstream;
     }
 
@@ -71,6 +83,6 @@ public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
 
     @Override
     public String toString() {
-        return "size = " + downstream.size();
+        return "size = " + downstream.length;
     }
 }

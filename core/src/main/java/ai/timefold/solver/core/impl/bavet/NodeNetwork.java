@@ -68,7 +68,12 @@ public final class NodeNetwork {
     }
 
     public void settle() {
-        if (!activationCheckComplete) {
+        var layerCount = layerCount();
+        if (activationCheckComplete) { // Simplified loop when the layers were already trimmed.
+            for (var layerIndex = 0; layerIndex < layerCount; layerIndex++) {
+                settleLayer(layeredNodes[layerIndex]);
+            }
+        } else { // Remove inactive nodes and settle the layers in one go.
             var initializedRootNodes = Collections.newSetFromMap(new IdentityHashMap<>());
             declaredClassToNodeMap.forEach((declaredClass, rootNodes) -> rootNodes.forEach(rootNode -> {
                 if (initializedRootNodes.add(rootNode)) { // Ensure one initialization per node.
@@ -76,18 +81,16 @@ public final class NodeNetwork {
                 }
             }));
 
-            var activeLayeredNodes = new Propagator[layerCount()][];
-            for (var layerIndex = 0; layerIndex < layerCount(); layerIndex++) {
+            var activeLayeredNodes = new Propagator[layerCount][];
+            for (var layerIndex = 0; layerIndex < layerCount; layerIndex++) {
                 var activePropagators = Arrays.stream(layeredNodes[layerIndex])
                         .filter(Propagator::isActive)
                         .toArray(Propagator[]::new);
                 activeLayeredNodes[layerIndex] = activePropagators;
+                settleLayer(activePropagators);
             }
             layeredNodes = activeLayeredNodes;
             activationCheckComplete = true;
-        }
-        for (var layerIndex = 0; layerIndex < layerCount(); layerIndex++) {
-            settleLayer(layeredNodes[layerIndex]);
         }
     }
 
