@@ -7,14 +7,19 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.DefaultSolverTest.DummyEasyScoreCalculator;
+import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.invalid.noentity.TestdataNoEntitySolution;
 
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
@@ -99,6 +104,32 @@ class DefaultSolverFactoryTest {
             softly.assertThat(solutionDescriptor2).isSameAs(solutionDescriptor1);
             softly.assertThat(scoreDirectorFactory2).isSameAs(scoreDirectorFactory1);
         });
+    }
+
+    @Test
+    void useCorrectRandomSeed() {
+        // Reproducible
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataListSolution.class)
+                .withEntityClasses(TestdataListEntity.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
+                .withRandomSeed(123456L);
+        var defaultSolverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
+        DelegatingSplittableRandomGenerator randomGenerator = (DelegatingSplittableRandomGenerator) defaultSolverFactory
+                .buildRandomSupplier(EnvironmentMode.PHASE_ASSERT).get();
+        assertThat(randomGenerator.getSeed()).isEqualTo(123456L);
+        solverConfig.setRandomSeed(null);
+        // Default seed
+        var otherDefaultSolverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
+        DelegatingSplittableRandomGenerator otherRandomGenerator = (DelegatingSplittableRandomGenerator) otherDefaultSolverFactory
+                .buildRandomSupplier(EnvironmentMode.NON_REPRODUCIBLE).get();
+        assertThat(otherRandomGenerator.getSeed()).isNotEqualTo(0L);
+        // Non-reproducible
+        var yetAnotherDefaultSolverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
+        DelegatingSplittableRandomGenerator yetAnotherRandomGenerator = (DelegatingSplittableRandomGenerator) yetAnotherDefaultSolverFactory
+                .buildRandomSupplier(EnvironmentMode.NON_REPRODUCIBLE).get();
+        assertThat(yetAnotherRandomGenerator.getSeed()).isNotEqualTo(0L);
+        assertThat(yetAnotherRandomGenerator.getSeed()).isNotEqualTo(123456L);
     }
 
     @Test
