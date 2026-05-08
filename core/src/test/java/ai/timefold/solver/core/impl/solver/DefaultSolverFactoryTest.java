@@ -17,8 +17,6 @@ import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.invalid.noentity.TestdataNoEntitySolution;
-import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
-import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -110,8 +108,8 @@ class DefaultSolverFactoryTest {
     void useCorrectRandomSeed() {
         // Reproducible
         var solverConfig = new SolverConfig()
-                .withSolutionClass(TestdataListSolution.class)
-                .withEntityClasses(TestdataListEntity.class)
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
                 .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
                 .withRandomSeed(123456L);
         var defaultSolverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
