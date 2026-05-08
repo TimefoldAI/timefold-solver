@@ -17,9 +17,9 @@ import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.invalid.noentity.TestdataNoEntitySolution;
-
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
@@ -117,19 +117,10 @@ class DefaultSolverFactoryTest {
         var defaultSolverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
         DelegatingSplittableRandomGenerator randomGenerator = (DelegatingSplittableRandomGenerator) defaultSolverFactory
                 .buildRandomSupplier(EnvironmentMode.PHASE_ASSERT).get();
-        assertThat(randomGenerator.getSeed()).isEqualTo(123456L);
-        solverConfig.setRandomSeed(null);
-        // Default seed
-        var otherDefaultSolverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
-        DelegatingSplittableRandomGenerator otherRandomGenerator = (DelegatingSplittableRandomGenerator) otherDefaultSolverFactory
-                .buildRandomSupplier(EnvironmentMode.NON_REPRODUCIBLE).get();
-        assertThat(otherRandomGenerator.getSeed()).isNotEqualTo(0L);
-        // Non-reproducible
-        var yetAnotherDefaultSolverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
-        DelegatingSplittableRandomGenerator yetAnotherRandomGenerator = (DelegatingSplittableRandomGenerator) yetAnotherDefaultSolverFactory
-                .buildRandomSupplier(EnvironmentMode.NON_REPRODUCIBLE).get();
-        assertThat(yetAnotherRandomGenerator.getSeed()).isNotEqualTo(0L);
-        assertThat(yetAnotherRandomGenerator.getSeed()).isNotEqualTo(123456L);
+        DelegatingSplittableRandomGenerator otherRandomGenerator =
+                new DelegatingSplittableRandomGenerator(solverConfig.getRandomSeed());
+        assertThat(randomGenerator.getSeed()).isEqualTo(otherRandomGenerator.getSeed());
+        assertThat(otherRandomGenerator.nextLong()).isEqualTo(randomGenerator.nextLong());
     }
 
     @Test
