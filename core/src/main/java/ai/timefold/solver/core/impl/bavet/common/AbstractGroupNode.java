@@ -12,8 +12,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 
 public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, GroupKey_, ResultContainer_, Result_>
-        extends AbstractNode
-        implements TupleLifecycle<InTuple_> {
+        extends AbstractSingleInputNode<InTuple_> {
 
     private final int groupStoreIndex;
     /**
@@ -56,6 +55,7 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             Supplier<ResultContainer_> supplier,
             Function<ResultContainer_, Result_> finisher,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
+        super(nextNodesTupleLifecycle);
         this.groupStoreIndex = groupStoreIndex;
         this.groupKeyFunction = groupKeyFunction;
         this.supplier = supplier;

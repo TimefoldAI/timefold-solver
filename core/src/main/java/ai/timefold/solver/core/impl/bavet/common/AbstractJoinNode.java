@@ -32,6 +32,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
 
     protected AbstractJoinNode(TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
             InOutTupleStorePositionTracker tupleStorePositionTracker) {
+        super(nextNodesTupleLifecycle);
         this.inputStoreIndexLeftOutTupleList = tupleStorePositionTracker.reserveNextLeft();
         this.inputStoreIndexRightOutTupleList = tupleStorePositionTracker.reserveNextRight();
         this.isFiltering = isFiltering;
@@ -246,6 +247,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         removeLeftEntry(outTuple);
         outTuple.removeStore(outputStoreIndexRightOutEntry); // The caller will clear the entire list in one go.
         propagateRetract(outTuple);
+    }
+
+    @Override
+    public final boolean isActive() {
+        return leftCanProduceTuples && rightCanProduceTuples;
     }
 
     @Override

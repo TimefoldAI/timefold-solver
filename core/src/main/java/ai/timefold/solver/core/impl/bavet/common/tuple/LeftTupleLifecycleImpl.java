@@ -2,12 +2,26 @@ package ai.timefold.solver.core.impl.bavet.common.tuple;
 
 import java.util.Objects;
 
-record LeftTupleLifecycleImpl<Tuple_ extends Tuple>(LeftTupleLifecycle<Tuple_> leftTupleLifecycle)
-        implements
-            TupleLifecycle<Tuple_> {
+final class LeftTupleLifecycleImpl<Tuple_ extends Tuple>
+        implements TupleLifecycle<Tuple_> {
 
-    LeftTupleLifecycleImpl {
+    private final LeftTupleLifecycle<Tuple_> leftTupleLifecycle;
+    private boolean isActive;
+
+    LeftTupleLifecycleImpl(LeftTupleLifecycle<Tuple_> leftTupleLifecycle) {
         Objects.requireNonNull(leftTupleLifecycle);
+        this.leftTupleLifecycle = leftTupleLifecycle;
+    }
+
+    @Override
+    public void initialize(boolean upstreamCanProduceTuples) {
+        this.isActive = upstreamCanProduceTuples; // We're just delegating.
+        leftTupleLifecycle.initializeLeft(upstreamCanProduceTuples);
+    }
+
+    @Override
+    public boolean isActive() {
+        return isActive;
     }
 
     @Override
@@ -25,9 +39,24 @@ record LeftTupleLifecycleImpl<Tuple_ extends Tuple>(LeftTupleLifecycle<Tuple_> l
         leftTupleLifecycle.retractLeft(tuple);
     }
 
+    public LeftTupleLifecycle<Tuple_> leftTupleLifecycle() {
+        return leftTupleLifecycle;
+    }
+
     @Override
     public String toString() {
         return "left " + leftTupleLifecycle;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof LeftTupleLifecycleImpl<?> other
+                && Objects.equals(this.leftTupleLifecycle, other.leftTupleLifecycle);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(leftTupleLifecycle);
     }
 
 }

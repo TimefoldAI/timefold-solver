@@ -14,12 +14,24 @@ import org.jspecify.annotations.Nullable;
 public final class ForEachFilteredUniNode<A>
         extends AbstractForEachUniNode<A> {
 
+    private final TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle;
     private final Predicate<A> filter;
 
     public ForEachFilteredUniNode(Class<A> forEachClass, Predicate<A> filter,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
         super(forEachClass, nextNodesTupleLifecycle, outputStoreSize);
+        this.nextNodesTupleLifecycle = Objects.requireNonNull(nextNodesTupleLifecycle);
         this.filter = Objects.requireNonNull(filter);
+    }
+
+    @Override
+    public void afterAllInserted() {
+        nextNodesTupleLifecycle.initialize(true);
+    }
+
+    @Override
+    public boolean isActive() {
+        return true; // Always active, because we do not know what the filter will do.
     }
 
     @Override

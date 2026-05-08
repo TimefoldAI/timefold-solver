@@ -11,9 +11,24 @@ import org.jspecify.annotations.Nullable;
 public final class ForEachUnfilteredUniNode<A>
         extends AbstractForEachUniNode<A> {
 
+    private final TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle;
+    private boolean isActive;
+
     public ForEachUnfilteredUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             int outputStoreSize) {
         super(forEachClass, nextNodesTupleLifecycle, outputStoreSize);
+        this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
+    }
+
+    @Override
+    public void afterAllInserted() {
+        isActive = !tupleMap.isEmpty();
+        nextNodesTupleLifecycle.initialize(isActive);
+    }
+
+    @Override
+    public boolean isActive() {
+        return isActive;
     }
 
     @Override

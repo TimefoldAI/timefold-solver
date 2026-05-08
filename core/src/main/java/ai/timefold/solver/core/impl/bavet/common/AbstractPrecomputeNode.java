@@ -10,8 +10,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple> extends AbstractNode
+public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple>
+        extends AbstractNode
         implements BavetRootNode<Object> {
+
     private final RecordAndReplayPropagator<Tuple_> recordAndReplayPropagator;
     private final Class<?>[] sourceClasses;
 
@@ -22,6 +24,16 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple> extends Abstr
                 this::remapTuple,
                 nextNodesTupleLifecycle);
         this.sourceClasses = sourceClasses;
+    }
+
+    @Override
+    public void afterAllInserted() {
+
+    }
+
+    @Override
+    public boolean isActive() {
+        return false;
     }
 
     @Override

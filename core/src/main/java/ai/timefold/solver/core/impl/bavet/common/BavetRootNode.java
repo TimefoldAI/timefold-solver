@@ -1,10 +1,22 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public interface BavetRootNode<A> {
+
+    /**
+     * As defined by {@link TupleLifecycle#initialize}.
+     */
+    void afterAllInserted();
+
+    /**
+     * As defined by {@link TupleLifecycle#isActive()}.
+     */
+    boolean isActive();
+
     void insert(@Nullable A a);
 
     void update(@Nullable A a);

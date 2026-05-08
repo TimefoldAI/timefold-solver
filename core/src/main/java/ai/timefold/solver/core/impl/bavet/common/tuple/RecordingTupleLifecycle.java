@@ -21,6 +21,16 @@ public class RecordingTupleLifecycle<Tuple_ extends Tuple> implements TupleLifec
     }
 
     @Override
+    public void initialize(boolean upstreamCanProduceTuples) {
+        // TODO is this correct?
+    }
+
+    @Override
+    public boolean isActive() {
+        return true; // TODO is this correct?
+    }
+
+    @Override
     public void insert(Tuple_ tuple) {
         if (tupleRecorder != null) {
             throw new IllegalStateException("""

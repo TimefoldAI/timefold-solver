@@ -35,7 +35,7 @@ import org.slf4j.event.Level;
 public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score<Score_>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BavetConstraintSessionFactory.class);
-    private static final Level CONSTRAINT_WEIGHT_LOGGING_LEVEL = Level.DEBUG;
+    public static final Level CONSTRAINT_WEIGHT_LOGGING_LEVEL = Level.DEBUG;
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final ConstraintMetaModel constraintMetaModel;

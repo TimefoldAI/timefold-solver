@@ -19,6 +19,16 @@ public abstract class AbstractDatasetInstance<Solution_, Tuple_ extends Tuple>
         this.entryStoreIndex = entryStoreIndex;
     }
 
+    @Override
+    public void initialize(boolean upstreamCanProduceTuples) {
+        // TODO implement
+    }
+
+    @Override
+    public boolean isActive() {
+        return true; // TODO implement
+    }
+
     public AbstractDataset<Solution_> getParent() {
         return parent;
     }

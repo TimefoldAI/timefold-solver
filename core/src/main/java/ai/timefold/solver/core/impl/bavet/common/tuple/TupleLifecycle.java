@@ -9,11 +9,14 @@ import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetStream;
 import ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId;
 import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
+import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.StreamKind;
+import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.Scorer;
 
 public interface TupleLifecycle<Tuple_ extends Tuple> {
@@ -99,6 +102,52 @@ public interface TupleLifecycle<Tuple_ extends Tuple> {
         }
         var profileId = new ConstraintNodeProfileId(lifecycleId, streamKind, qualifier, stream.getLocationSet());
         return new ProfilingTupleLifecycle<>(constraintProfiler, profileId, delegate);
+    }
+
+    /**
+     * Triggered after all facts which will ever be inserted have been inserted.
+     * Since the only way to insert or retract a fact is through a {@link ProblemChange},
+     * and that will nuke the score director,
+     * the lifecycle can determine at this point whether {@link #isActive() it is active}.
+     * <p>
+     * It is the responsibility of the lifecycle to propagate the initialization
+     * to all of its downstream tuples, should there be any.
+     * Before propagating, it must decide for itself if it can produce tuples,
+     * based on what it learned from upstream and must propagate that information downstream
+     * so that they can make their own activation decisions.
+     * <p>
+     * When deciding whether a lifecycle can produce tuples, consider the following:
+     * <ul>
+     * <li>
+     * Typically, when upstream cannot produce tuples, neither can downstream.
+     * Exceptions exist; ifNotExists() produces tuples exactly when downstream doesn't.
+     * </li>
+     * <li>
+     * Do not make decisions based on whether downstream produced any tuples by this point.
+     * If upstream produced no tuples so far, it doesn't mean it will never produce any.
+     * Filters on variables which previously did not match
+     * can easily create tuples during tuple updates.
+     * </li>
+     * </ul>
+     *
+     * @param upstreamCanProduceTuples True if the upstream node(s) will produce any tuples.
+     *        If false, this lifecycle will never receive any tuples and can deactivate itself.
+     */
+    void initialize(boolean upstreamCanProduceTuples);
+
+    /**
+     * Lifecycles which can never produce tuples are considered inactive,
+     * and will never be called by their {@link Propagator}.
+     * A decision on whether a lifecycle is active can only be made during {@link #initialize(boolean) initialization},
+     * when the upstream lifecycle will let us know whether it will send us any tuples or not.
+     * This is a one-time decision as for each lifecycle,
+     * this method will only be called once for the duration of {@link BavetConstraintSession}.
+     *
+     * @return true if this lifecycle can produce tuples
+     */
+    default boolean isActive() {
+        throw new IllegalStateException("Impossible state: node (%s) not yet called initialized."
+                .formatted(this));
     }
 
     void insert(Tuple_ tuple);

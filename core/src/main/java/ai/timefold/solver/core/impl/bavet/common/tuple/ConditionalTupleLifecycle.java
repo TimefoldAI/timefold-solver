@@ -3,14 +3,31 @@ package ai.timefold.solver.core.impl.bavet.common.tuple;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-public record ConditionalTupleLifecycle<Tuple_ extends Tuple>(TupleLifecycle<Tuple_> downstreamLifecycle,
-        TuplePredicate<Tuple_> predicate)
-        implements
-            TupleLifecycle<Tuple_> {
+public final class ConditionalTupleLifecycle<Tuple_ extends Tuple>
+        implements TupleLifecycle<Tuple_> {
 
-    public ConditionalTupleLifecycle {
+    private final TupleLifecycle<Tuple_> downstreamLifecycle;
+    private final TuplePredicate<Tuple_> predicate;
+    private boolean isActive;
+
+    public ConditionalTupleLifecycle(TupleLifecycle<Tuple_> downstreamLifecycle, TuplePredicate<Tuple_> predicate) {
         Objects.requireNonNull(downstreamLifecycle);
         Objects.requireNonNull(predicate);
+        this.downstreamLifecycle = downstreamLifecycle;
+        this.predicate = predicate;
+    }
+
+    @Override
+    public void initialize(boolean upstreamCanProduceTuples) {
+        // It is possible the predicate will always filter everything out, but we cannot know that for certain.
+        // We must pass the upstream information downstream, and be active if upstream can send anything to us.
+        this.isActive = upstreamCanProduceTuples;
+        downstreamLifecycle.initialize(upstreamCanProduceTuples);
+    }
+
+    @Override
+    public boolean isActive() {
+        return isActive;
     }
 
     @Override
@@ -37,6 +54,22 @@ public record ConditionalTupleLifecycle<Tuple_ extends Tuple>(TupleLifecycle<Tup
     @Override
     public String toString() {
         return "Conditional %s".formatted(downstreamLifecycle);
+    }
+
+    public TuplePredicate<Tuple_> predicate() {
+        return predicate;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ConditionalTupleLifecycle<?> other
+                && Objects.equals(this.downstreamLifecycle, other.downstreamLifecycle)
+                && Objects.equals(this.predicate, other.predicate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(downstreamLifecycle, predicate);
     }
 
     @FunctionalInterface

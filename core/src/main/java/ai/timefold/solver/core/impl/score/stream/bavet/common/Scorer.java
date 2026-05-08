@@ -9,18 +9,38 @@ import ai.timefold.solver.core.impl.score.stream.common.inliner.ScoreImpact;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.WeightedScoreImpacter;
 
 import org.jspecify.annotations.NullMarked;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @NullMarked
 public final class Scorer<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Scorer.class);
+
     private final ScoreImpacter<Tuple_> scoreImpacter;
     private final WeightedScoreImpacter<?, ?> weightedScoreImpacter;
     private final int inputStoreIndex;
+    private boolean isActive = true;
 
     public Scorer(ScoreImpacter<Tuple_> scoreImpacter, WeightedScoreImpacter<?, ?> weightedScoreImpacter, int inputStoreIndex) {
         this.scoreImpacter = Objects.requireNonNull(scoreImpacter);
         this.weightedScoreImpacter = Objects.requireNonNull(weightedScoreImpacter);
         this.inputStoreIndex = inputStoreIndex;
+    }
+
+    @Override
+    public void initialize(boolean upstreamCanProduceTuples) {
+        if (!upstreamCanProduceTuples) {
+            isActive = false;
+            LOGGER.debug(
+                    "Constraint ({}) with weight ({}) deactivated as the current working solution could never trigger it.",
+                    getConstraintRef(), weightedScoreImpacter.getContext().getConstraintWeight());
+        }
+    }
+
+    @Override
+    public boolean isActive() {
+        return isActive;
     }
 
     @Override

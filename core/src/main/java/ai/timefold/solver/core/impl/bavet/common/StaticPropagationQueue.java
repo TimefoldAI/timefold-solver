@@ -37,6 +37,11 @@ public final class StaticPropagationQueue<Tuple_ extends Tuple>
     }
 
     @Override
+    public boolean isActive() {
+        return nextNodesTupleLifecycle.isActive();
+    }
+
+    @Override
     public void insert(Tuple_ carrier) {
         if (carrier.getState() == TupleState.CREATING) {
             throw new IllegalStateException("Impossible state: The tuple (%s) is already in the insert queue."

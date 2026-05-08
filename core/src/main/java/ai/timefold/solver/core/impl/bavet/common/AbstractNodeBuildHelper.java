@@ -92,7 +92,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
                 affectedSet.add(profilingTupleLifecycle.profileId());
             }
         } else if (tupleLifecycle instanceof AggregatedTupleLifecycle<?> aggregated) {
-            for (var innerLifecycle : aggregated.lifecycles()) {
+            for (var innerLifecycle : aggregated.downstream()) {
                 updateConstraintProfileIdSet(stream, innerLifecycle);
             }
         }

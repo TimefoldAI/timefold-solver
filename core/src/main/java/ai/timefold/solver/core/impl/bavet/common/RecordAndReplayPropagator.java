@@ -28,7 +28,8 @@ import org.jspecify.annotations.NullMarked;
  * @param <Tuple_>
  */
 @NullMarked
-public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Propagator {
+public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
+        implements Propagator {
 
     private final Set<Object> retractQueue;
     private final Set<Object> insertQueue;
@@ -73,6 +74,11 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Pr
     public RecordAndReplayPropagator(Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
             UnaryOperator<Tuple_> internalTupleToOutputTupleMapper, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         this(precomputeBuildHelperSupplier, internalTupleToOutputTupleMapper, nextNodesTupleLifecycle, 1000);
+    }
+
+    @Override
+    public boolean isActive() {
+        return propagationQueue.isActive();
     }
 
     public void insert(Object object) {

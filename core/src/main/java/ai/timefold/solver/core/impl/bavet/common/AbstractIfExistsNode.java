@@ -31,6 +31,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
 
     protected AbstractIfExistsNode(boolean shouldExist, TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle, boolean isFiltering,
             InTupleStorePositionTracker tupleStorePositionTracker) {
+        super(nextNodesTupleLifecycle);
         this.shouldExist = shouldExist;
         this.inputStoreIndexLeftTrackerList = isFiltering ? tupleStorePositionTracker.reserveNextLeft() : -1;
         this.inputStoreIndexRightTrackerList = isFiltering ? tupleStorePositionTracker.reserveNextRight() : -1;
@@ -185,6 +186,14 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
                 throw new IllegalStateException("Impossible state: The counter (%s) has an impossible retract state (%s)."
                         .formatted(counter, counter.state));
         }
+    }
+
+    @Override
+    public final boolean isActive() {
+        // Unlike other two-input nodes, ifNotExist produces tuples if its right input does not.
+        // The left input must produce tuples no matter what,
+        // otherwise ifExists has nothing to join with.
+        return leftCanProduceTuples;
     }
 
     @Override
