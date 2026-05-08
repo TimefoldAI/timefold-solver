@@ -21,13 +21,12 @@ public class RecordingTupleLifecycle<Tuple_ extends Tuple> implements TupleLifec
     }
 
     @Override
-    public void initialize(boolean upstreamCanProduceTuples) {
-        // TODO is this correct?
+    public void afterAllFactsInserted(boolean upstreamCanProduceTuples) {
     }
 
     @Override
     public boolean isActive() {
-        return true; // TODO is this correct?
+        return true;
     }
 
     @Override

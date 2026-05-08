@@ -250,7 +250,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     }
 
     @Override
-    public final boolean isActive() {
+    protected boolean canProduceTuples() {
         return leftCanProduceTuples && rightCanProduceTuples;
     }
 

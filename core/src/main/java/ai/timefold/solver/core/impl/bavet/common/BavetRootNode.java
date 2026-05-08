@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 public interface BavetRootNode<A> {
 
     /**
-     * As defined by {@link TupleLifecycle#initialize}.
+     * As defined by {@link TupleLifecycle#afterAllFactsInserted}.
      */
     void afterAllInserted();
 

@@ -14,14 +14,14 @@ final class LeftTupleLifecycleImpl<Tuple_ extends Tuple>
     }
 
     @Override
-    public void initialize(boolean upstreamCanProduceTuples) {
+    public void afterAllFactsInserted(boolean upstreamCanProduceTuples) {
         this.isActive = upstreamCanProduceTuples; // We're just delegating.
-        leftTupleLifecycle.initializeLeft(upstreamCanProduceTuples);
+        leftTupleLifecycle.afterAllFactsInsertedLeft(upstreamCanProduceTuples);
     }
 
     @Override
     public boolean isActive() {
-        return isActive;
+        return isActive && leftTupleLifecycle.isActive();
     }
 
     @Override

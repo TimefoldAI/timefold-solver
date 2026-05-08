@@ -56,7 +56,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
     private final StaticPropagationQueue<Tuple_> propagationQueue;
 
     public RecordAndReplayPropagator(Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
-                                     UnaryOperator<Tuple_> internalTupleToOutputTupleMapper, TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
+            UnaryOperator<Tuple_> internalTupleToOutputTupleMapper, TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
         this.precomputeBuildHelperSupplier = precomputeBuildHelperSupplier;
         this.internalTupleToOutputTupleMapper = internalTupleToOutputTupleMapper;
         this.objectToOutputTuplesMap = new IdentityHashMap<>(size);
@@ -72,7 +72,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
     }
 
     public RecordAndReplayPropagator(Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
-                                     UnaryOperator<Tuple_> internalTupleToOutputTupleMapper, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+            UnaryOperator<Tuple_> internalTupleToOutputTupleMapper, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         this(precomputeBuildHelperSupplier, internalTupleToOutputTupleMapper, nextNodesTupleLifecycle, 1000);
     }
 
@@ -160,9 +160,9 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static <A> List<BavetRootNode<A>> getRootNodes(Object object, NodeNetwork internalNodeNetwork,
-                                                           Map<Class<?>, List<BavetRootNode<?>>> objectClassToRootNodes) {
+            Map<Class<?>, List<BavetRootNode<?>>> objectClassToRootNodes) {
         return (List) objectClassToRootNodes.computeIfAbsent(object.getClass(), clazz -> {
             var out = new ArrayList<BavetRootNode<?>>();
             internalNodeNetwork.getRootNodesAcceptingType(object.getClass()).forEach(out::add);
@@ -214,7 +214,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
     }
 
     private void recalculateTuples(NodeNetwork internalNodeNetwork, Map<Class<?>, List<BavetRootNode<?>>> classToRootNodeList,
-                                   RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle) {
+            RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle) {
         var internalTupleToOutputTupleMap =
                 new IdentityHashMap<Tuple_, Tuple_>(seenEntitySet.size() + seenFactSet.size());
         for (var invalidated : seenEntitySet) {

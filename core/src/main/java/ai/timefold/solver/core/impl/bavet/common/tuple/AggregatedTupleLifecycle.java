@@ -18,9 +18,9 @@ public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
     }
 
     @Override
-    public void initialize(boolean upstreamCanProduceTuples) {
+    public void afterAllFactsInserted(boolean upstreamCanProduceTuples) {
         for (var lifecycle : downstream) { // First initialize all downstream lifecycles.
-            lifecycle.initialize(upstreamCanProduceTuples);
+            lifecycle.afterAllFactsInserted(upstreamCanProduceTuples);
         }
     }
 

@@ -23,12 +23,12 @@ public final class ForEachUnfilteredUniNode<A>
     @Override
     public void afterAllInserted() {
         isActive = !tupleMap.isEmpty();
-        nextNodesTupleLifecycle.initialize(isActive);
+        nextNodesTupleLifecycle.afterAllFactsInserted(isActive);
     }
 
     @Override
     public boolean isActive() {
-        return isActive;
+        return isActive && nextNodesTupleLifecycle.isActive();
     }
 
     @Override

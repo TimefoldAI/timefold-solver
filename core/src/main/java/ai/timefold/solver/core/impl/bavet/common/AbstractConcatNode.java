@@ -57,7 +57,7 @@ public abstract class AbstractConcatNode<LeftTuple_ extends Tuple, RightTuple_ e
     protected abstract void updateOutTupleFromRight(RightTuple_ rightTuple, OutTuple_ outTuple);
 
     @Override
-    public final boolean isActive() {
+    protected boolean canProduceTuples() {
         // Unlike other two-input nodes,
         // this node will produce tuples even if one of its inputs won't.
         return leftCanProduceTuples || rightCanProduceTuples;

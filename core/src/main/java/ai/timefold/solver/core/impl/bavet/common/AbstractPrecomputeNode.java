@@ -30,7 +30,7 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple>
 
     @Override
     public void afterAllInserted() {
-        tupleLifecycle.initialize(recordAndReplayPropagator.isActive());
+        tupleLifecycle.afterAllFactsInserted(recordAndReplayPropagator.isActive());
     }
 
     @Override

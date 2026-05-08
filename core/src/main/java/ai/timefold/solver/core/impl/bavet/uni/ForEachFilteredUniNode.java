@@ -26,12 +26,14 @@ public final class ForEachFilteredUniNode<A>
 
     @Override
     public void afterAllInserted() {
-        nextNodesTupleLifecycle.initialize(true);
+        nextNodesTupleLifecycle.afterAllFactsInserted(true);
     }
 
     @Override
     public boolean isActive() {
-        return true; // Always active, because we do not know what the filter will do.
+        // Always active, because we do not know what the filter will do.
+        // Unless none of the downstream nodes are active.
+        return nextNodesTupleLifecycle.isActive();
     }
 
     @Override

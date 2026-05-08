@@ -16,14 +16,14 @@ public abstract class AbstractSingleInputNode<Tuple_ extends Tuple>
     private boolean upstreamCanProduceTuples;
 
     @Override
-    public void initialize(boolean upstreamCanProduceTuples) { // We only delegate; implementations can override.
+    public void afterAllFactsInserted(boolean upstreamCanProduceTuples) { // We only delegate; implementations can override.
         this.upstreamCanProduceTuples = upstreamCanProduceTuples;
-        downstreamTupleLifecycle.initialize(upstreamCanProduceTuples);
+        downstreamTupleLifecycle.afterAllFactsInserted(upstreamCanProduceTuples);
     }
 
     @Override
     public boolean isActive() {
-        return upstreamCanProduceTuples;
+        return upstreamCanProduceTuples && downstreamTupleLifecycle.isActive();
     }
 
 }

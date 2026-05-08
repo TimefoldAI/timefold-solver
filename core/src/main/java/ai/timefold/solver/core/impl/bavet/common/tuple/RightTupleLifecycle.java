@@ -3,9 +3,9 @@ package ai.timefold.solver.core.impl.bavet.common.tuple;
 public interface RightTupleLifecycle<Tuple_ extends Tuple> {
 
     /**
-     * As defined by {@link TupleLifecycle#initialize}.
+     * As defined by {@link TupleLifecycle#afterAllFactsInserted}.
      */
-    void initializeRight(boolean upstreamCanProduceTuples);
+    void afterAllFactsInsertedRight(boolean upstreamCanProduceTuples);
 
     /**
      * As defined by {@link TupleLifecycle#isActive()}.

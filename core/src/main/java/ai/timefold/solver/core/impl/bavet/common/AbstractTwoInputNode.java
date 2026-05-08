@@ -23,27 +23,33 @@ public abstract class AbstractTwoInputNode<LeftTuple_ extends Tuple, RightTuple_
     }
 
     @Override
-    public final void initializeLeft(boolean upstreamCanProduceTuples) {
+    public final void afterAllFactsInsertedLeft(boolean upstreamCanProduceTuples) {
         leftCanProduceTuples = upstreamCanProduceTuples;
         if (!fullyInitialized && rightInitialized) {
             // Only initialize downstream nodes when we have received initialization from both parents.
             // Avoid initializing twice.
-            downstreamTupleLifecycle.initialize(isActive());
+            downstreamTupleLifecycle.afterAllFactsInserted(canProduceTuples());
             fullyInitialized = true;
         }
         leftInitialized = true;
     }
 
+    abstract protected boolean canProduceTuples();
+
     @Override
-    public final void initializeRight(boolean upstreamCanProduceTuples) {
+    public final void afterAllFactsInsertedRight(boolean upstreamCanProduceTuples) {
         rightCanProduceTuples = upstreamCanProduceTuples;
         if (!fullyInitialized && leftInitialized) {
             // Only initialize downstream nodes when we have received initialization from both parents.
             // Avoid initializing twice.
-            downstreamTupleLifecycle.initialize(isActive());
+            downstreamTupleLifecycle.afterAllFactsInserted(canProduceTuples());
             fullyInitialized = true;
         }
         rightInitialized = true;
     }
 
+    @Override
+    public final boolean isActive() {
+        return canProduceTuples() && downstreamTupleLifecycle.isActive();
+    }
 }

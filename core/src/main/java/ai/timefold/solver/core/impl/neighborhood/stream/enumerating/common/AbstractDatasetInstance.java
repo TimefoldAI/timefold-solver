@@ -20,7 +20,7 @@ public abstract class AbstractDatasetInstance<Solution_, Tuple_ extends Tuple>
     }
 
     @Override
-    public void initialize(boolean upstreamCanProduceTuples) {
+    public void afterAllFactsInserted(boolean upstreamCanProduceTuples) {
         // TODO implement
     }
 

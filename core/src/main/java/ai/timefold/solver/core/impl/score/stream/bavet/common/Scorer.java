@@ -29,11 +29,11 @@ public final class Scorer<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_
     }
 
     @Override
-    public void initialize(boolean upstreamCanProduceTuples) {
+    public void afterAllFactsInserted(boolean upstreamCanProduceTuples) {
         if (!upstreamCanProduceTuples) {
             isActive = false;
             LOGGER.debug(
-                    "Constraint ({}) with weight ({}) deactivated as the current working solution could never trigger it.",
+                    "Constraint ({}) with weight ({}) deactivated as the current working solution could never match.",
                     getConstraintRef(), weightedScoreImpacter.getContext().getConstraintWeight());
         }
     }

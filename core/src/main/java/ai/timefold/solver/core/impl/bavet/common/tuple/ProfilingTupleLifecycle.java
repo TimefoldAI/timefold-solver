@@ -22,14 +22,14 @@ public final class ProfilingTupleLifecycle<Tuple_ extends Tuple> implements Tupl
     }
 
     @Override
-    public void initialize(boolean upstreamCanProduceTuples) {
+    public void afterAllFactsInserted(boolean upstreamCanProduceTuples) {
         this.isActive = upstreamCanProduceTuples;
-        this.delegate.initialize(upstreamCanProduceTuples);
+        this.delegate.afterAllFactsInserted(upstreamCanProduceTuples);
     }
 
     @Override
     public boolean isActive() {
-        return isActive;
+        return isActive && delegate.isActive();
     }
 
     @Override

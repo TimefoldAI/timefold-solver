@@ -18,16 +18,16 @@ public final class ConditionalTupleLifecycle<Tuple_ extends Tuple>
     }
 
     @Override
-    public void initialize(boolean upstreamCanProduceTuples) {
+    public void afterAllFactsInserted(boolean upstreamCanProduceTuples) {
         // It is possible the predicate will always filter everything out, but we cannot know that for certain.
         // We must pass the upstream information downstream, and be active if upstream can send anything to us.
         this.isActive = upstreamCanProduceTuples;
-        downstreamLifecycle.initialize(upstreamCanProduceTuples);
+        downstreamLifecycle.afterAllFactsInserted(upstreamCanProduceTuples);
     }
 
     @Override
     public boolean isActive() {
-        return isActive;
+        return isActive && downstreamLifecycle.isActive();
     }
 
     @Override
