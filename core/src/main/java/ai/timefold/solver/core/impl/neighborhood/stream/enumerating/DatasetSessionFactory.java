@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
-import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractEnumeratingStream;
@@ -64,7 +63,7 @@ public final class DatasetSessionFactory<Solution_> {
             // TODO implement node network visualization
             throw new UnsupportedOperationException("Not implemented yet");
         }
-        return AbstractNodeBuildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap, buildHelper);
+        return buildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap);
     }
 
 }

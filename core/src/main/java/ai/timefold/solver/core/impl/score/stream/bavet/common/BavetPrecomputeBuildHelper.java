@@ -12,7 +12,6 @@ import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.api.score.stream.PrecomputeFactory;
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
-import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
@@ -80,7 +79,7 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
                     }
                 });
 
-        this.nodeNetwork = AbstractNodeBuildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap, buildHelper);
+        this.nodeNetwork = buildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap);
         this.recordingTupleLifecycle =
                 (RecordingTupleLifecycle<Tuple_>) buildHelper
                         .getAggregatedTupleLifecycle(List.of(recordingPrecomputeConstraintStream));

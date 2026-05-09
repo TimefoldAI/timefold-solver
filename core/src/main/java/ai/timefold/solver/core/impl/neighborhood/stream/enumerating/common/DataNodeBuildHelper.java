@@ -3,10 +3,14 @@ package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import ai.timefold.solver.core.impl.bavet.NodeNetwork;
+import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
+import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
@@ -14,14 +18,15 @@ import ai.timefold.solver.core.impl.score.director.SessionContext;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public final class DataNodeBuildHelper<Solution_> extends AbstractNodeBuildHelper<AbstractEnumeratingStream<Solution_>> {
+public final class DataNodeBuildHelper<Solution_>
+        extends AbstractNodeBuildHelper<AbstractEnumeratingStream<Solution_>> {
 
     private final SessionContext<Solution_> sessionContext;
     private final List<AbstractDatasetInstance<Solution_, ?>> datasetInstanceList = new ArrayList<>();
 
     public DataNodeBuildHelper(SessionContext<Solution_> sessionContext,
             Set<AbstractEnumeratingStream<Solution_>> activeStreamSet) {
-        super(activeStreamSet, null);
+        super(activeStreamSet);
         this.sessionContext = Objects.requireNonNull(sessionContext);
     }
 
@@ -42,4 +47,12 @@ public final class DataNodeBuildHelper<Solution_> extends AbstractNodeBuildHelpe
     public List<AbstractDatasetInstance<Solution_, ?>> getDatasetInstanceList() {
         return Collections.unmodifiableList(datasetInstanceList);
     }
+
+    public NodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
+            Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap) {
+        return super.buildNodeNetwork(nodeList, declaredClassToNodeMap,
+                (classToNodeMap, layeredNodes) -> new NodeNetwork(classToNodeMap, layeredNodes, null),
+                null);
+    }
+
 }
