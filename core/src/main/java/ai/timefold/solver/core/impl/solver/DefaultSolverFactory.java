@@ -216,7 +216,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var randomSeed_ = solverConfig.getRandomSeed();
         if (randomSeed_ == null && environmentMode_ != EnvironmentMode.NON_REPRODUCIBLE) {
             randomSeed_ = DEFAULT_RANDOM_SEED;
-        } else {
+        } else if (randomSeed_ == null) {
             randomSeed_ = RandomGenerator.getDefault().nextLong();
         }
         return DelegatingSplittableRandomGenerator.getSupplier(randomSeed_);
