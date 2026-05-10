@@ -436,12 +436,9 @@ For example, don't change a gym lecture to a room which is not a gym room.
 It's usually better to not use move filtering for such cases,
 because it allows the metaheuristics to temporarily break hard constraints to escape local optima.
 +
-[NOTE]
-====
-Any built-in hard constraint must probably be filtered on every move type of every solver phase.
+NOTE: Any built-in hard constraint must probably be filtered on every move type of every solver phase.
 For example if it filters the change move of Local Search, it must also filter the swap move that swaps the room of a gym lecture with another lecture for which the other lecture's original room isn't a gym room.
 Furthermore, it must also filter the change moves of the Construction Heuristics (which requires an advanced configuration).
-====
 
 If a move is unaccepted by the filter, it's not executed and the score isn't calculated.
 
@@ -459,21 +456,16 @@ public interface SelectionFilter<Solution_, T> {
 ----
 
 Implement the `accept` method to return `false` on a discarded `selection` (see below).
+Implementations are expected to be stateless,
+as the solver may choose to reuse them in different contexts.
+
 Filtered selection can happen on any Selector in the selector tree, including any ``MoveSelector``, `EntitySelector`
 or ``ValueSelector``.
 It works with any `cacheType` and ``selectionOrder``.
 
-[NOTE]
-====
 Apply the filter on the lowest level possible.
 In most cases, you'll need to know both the entity and the value involved so you'll have to apply it on the move selector.
-====
 
-[NOTE]
-====
-`SelectionFilter` implementations are expected to be stateless.
-The solver may choose to reuse them in different contexts.
-====
 
 [#filteredMoveSelection]
 ===== Filtered move selection
@@ -482,12 +474,14 @@ Unaccepted moves will not be selected and will therefore never need to be undone
 
 [source,java,options="nowrap"]
 ----
-public class DifferentCourseSwapMoveFilter implements SelectionFilter<CourseSchedule, SwapMove> {
+public class DifferentCourseSwapMoveFilter
+    implements SelectionFilter<CourseSchedule, SwapMove<CourseSchedule, Lecture>> {
 
     @Override
-    public boolean accept(ScoreDirector<CourseSchedule> scoreDirector, SwapMove move) {
-        Lecture leftLecture = (Lecture) move.getLeftEntity();
-        Lecture rightLecture = (Lecture) move.getRightEntity();
+    public boolean accept(ScoreDirector<CourseSchedule> scoreDirector,
+            SwapMove<CourseSchedule, Lecture> move) {
+        var leftLecture = (Lecture) move.getLeftEntity();
+        var rightLecture = (Lecture) move.getRightEntity();
         return !leftLecture.getCourse().equals(rightLecture.getCourse());
     }
 
@@ -999,6 +993,7 @@ only set the distribution type (so without a `distributionSizeMaximum` parameter
     <betaDistributionBeta>5</betaDistributionBeta>
   </nearbySelection>
 ----
+
 [#basicMoveSelectors]
 == Move selectors for basic variables
 
