@@ -5,7 +5,6 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
 import ai.timefold.solver.core.impl.bavet.AbstractSession;
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.PropagationQueue;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
@@ -22,15 +21,16 @@ import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInl
  *
  * @param <Score_>
  */
-public final class BavetConstraintSession<Score_ extends Score<Score_>> extends AbstractSession {
+public final class BavetConstraintSession<Score_ extends Score<Score_>>
+        extends AbstractSession<ConstraintStreamsBavetNodeNetwork> {
 
     private final AbstractScoreInliner<Score_> scoreInliner;
 
     BavetConstraintSession(AbstractScoreInliner<Score_> scoreInliner) {
-        this(scoreInliner, NodeNetwork.EMPTY);
+        this(scoreInliner, ConstraintStreamsBavetNodeNetwork.EMPTY);
     }
 
-    BavetConstraintSession(AbstractScoreInliner<Score_> scoreInliner, NodeNetwork nodeNetwork) {
+    BavetConstraintSession(AbstractScoreInliner<Score_> scoreInliner, ConstraintStreamsBavetNodeNetwork nodeNetwork) {
         super(nodeNetwork);
         this.scoreInliner = scoreInliner;
     }
@@ -46,6 +46,10 @@ public final class BavetConstraintSession<Score_ extends Score<Score_>> extends 
 
     public Map<ConstraintRef, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
         return scoreInliner.getConstraintMatchTotalMap();
+    }
+
+    public void summarizeProfileIfPresent() {
+        nodeNetwork.summarizeProfileIfPresent();
     }
 
 }

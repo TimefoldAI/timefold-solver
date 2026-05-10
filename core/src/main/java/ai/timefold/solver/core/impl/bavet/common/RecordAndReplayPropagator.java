@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
+import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -22,7 +22,7 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * The implementation records the tuples each object affects inside
- * an internal {@link NodeNetwork} and replays them on update.
+ * an internal {@link AbstractBavetNodeNetwork} and replays them on update.
  * Used by {@link AbstractPrecomputeNode} to precompute constraint streams.
  *
  * @param <Tuple_>
@@ -161,7 +161,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static <A> List<BavetRootNode<A>> getRootNodes(Object object, NodeNetwork internalNodeNetwork,
+    private static <A> List<BavetRootNode<A>> getRootNodes(Object object, AbstractBavetNodeNetwork internalNodeNetwork,
             Map<Class<?>, List<BavetRootNode<?>>> objectClassToRootNodes) {
         return (List) objectClassToRootNodes.computeIfAbsent(object.getClass(), clazz -> {
             var out = new ArrayList<BavetRootNode<?>>();
@@ -213,7 +213,8 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
         factOutputTupleList.clear();
     }
 
-    private void recalculateTuples(NodeNetwork internalNodeNetwork, Map<Class<?>, List<BavetRootNode<?>>> classToRootNodeList,
+    private void recalculateTuples(AbstractBavetNodeNetwork internalNodeNetwork,
+            Map<Class<?>, List<BavetRootNode<?>>> classToRootNodeList,
             RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle) {
         var internalTupleToOutputTupleMap =
                 new IdentityHashMap<Tuple_, Tuple_>(seenEntitySet.size() + seenFactSet.size());

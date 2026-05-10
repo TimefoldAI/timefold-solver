@@ -5,9 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
+import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractEnumeratingStream;
@@ -15,7 +14,6 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataN
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class DatasetSessionFactory<Solution_> {
@@ -33,15 +31,15 @@ public final class DatasetSessionFactory<Solution_> {
             dataset.collectActiveEnumeratingStreams(activeEnumeratingStreamSet);
         }
         var buildHelper = new DataNodeBuildHelper<>(context, activeEnumeratingStreamSet);
-        var session = new DatasetSession<Solution_>(buildNodeNetwork(activeEnumeratingStreamSet, buildHelper, null));
+        var session = new DatasetSession<Solution_>(buildNodeNetwork(activeEnumeratingStreamSet, buildHelper));
         for (var datasetInstance : buildHelper.getDatasetInstanceList()) {
             session.registerDatasetInstance(datasetInstance.getParent(), datasetInstance);
         }
         return session;
     }
 
-    private NodeNetwork buildNodeNetwork(Set<AbstractEnumeratingStream<Solution_>> enumeratingStreamSet,
-            DataNodeBuildHelper<Solution_> buildHelper, @Nullable Consumer<String> nodeNetworkVisualizationConsumer) {
+    private AbstractBavetNodeNetwork buildNodeNetwork(Set<AbstractEnumeratingStream<Solution_>> enumeratingStreamSet,
+            DataNodeBuildHelper<Solution_> buildHelper) {
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<BavetRootNode<?>>>();
         var nodeList = buildHelper.buildNodeList(enumeratingStreamSet, buildHelper,
                 AbstractEnumeratingStream::buildNode, node -> {
@@ -59,10 +57,6 @@ public final class DatasetSessionFactory<Solution_> {
                     }
                     forEachUniNodeList.add(forEachUniNode);
                 });
-        if (nodeNetworkVisualizationConsumer != null) {
-            // TODO implement node network visualization
-            throw new UnsupportedOperationException("Not implemented yet");
-        }
         return buildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap);
     }
 

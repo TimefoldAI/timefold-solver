@@ -6,15 +6,15 @@ import java.util.Map;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode.LifecycleOperation;
 
-public abstract class AbstractSession {
+public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork> {
 
-    private final NodeNetwork nodeNetwork;
+    protected final Network_ nodeNetwork;
     private final Map<Class<?>, BavetRootNode<Object>[]> insertEffectiveClassToNodeArrayMap;
     private final Map<Class<?>, BavetRootNode<Object>[]> updateEffectiveClassToNodeArrayMap;
     private final Map<Class<?>, BavetRootNode<Object>[]> retractEffectiveClassToNodeArrayMap;
     private boolean settled = true;
 
-    protected AbstractSession(NodeNetwork nodeNetwork) {
+    protected AbstractSession(Network_ nodeNetwork) {
         this.nodeNetwork = nodeNetwork;
         this.insertEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
         this.updateEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
@@ -69,10 +69,6 @@ public abstract class AbstractSession {
         }
         nodeNetwork.settle();
         settled = true;
-    }
-
-    public final void summarizeProfileIfPresent() {
-        nodeNetwork.summarizeProfileIfPresent();
     }
 
 }

@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
+import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
@@ -223,9 +223,9 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
         }
     }
 
-    protected NodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
+    protected AbstractBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
             Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap,
-            BiFunction<Map<Class<?>, List<BavetRootNode<?>>>, Propagator[][], NodeNetwork> nodeConstructor,
+            BiFunction<Map<Class<?>, List<BavetRootNode<?>>>, Propagator[][], AbstractBavetNodeNetwork> nodeConstructor,
             @Nullable Function<AbstractNode, Propagator> propagatorFunction) {
         var layerMap = new TreeMap<Long, List<Propagator>>();
         for (var node : nodeList) {

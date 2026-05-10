@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
@@ -27,6 +26,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
+import ai.timefold.solver.core.impl.score.stream.bavet.ConstraintStreamsBavetNodeNetwork;
 import ai.timefold.solver.core.impl.score.stream.common.ForEachFilteringCriteria;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
@@ -120,10 +120,11 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
                 ignored -> criteria.getFilterForEntityDescriptor(consistencyTracker, entityDescriptor));
     }
 
-    public NodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
+    public ConstraintStreamsBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
             Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap) {
-        return super.buildNodeNetwork(nodeList, declaredClassToNodeMap,
-                (classToNodeMap, layeredNodes) -> new NodeNetwork(classToNodeMap, layeredNodes, constraintProfiler),
+        return (ConstraintStreamsBavetNodeNetwork) super.buildNodeNetwork(nodeList, declaredClassToNodeMap,
+                (classToNodeMap, layeredNodes) -> new ConstraintStreamsBavetNodeNetwork(classToNodeMap, layeredNodes,
+                        constraintProfiler),
                 node -> {
                     if (constraintProfiler == null) {
                         return node.getPropagator();

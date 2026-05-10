@@ -14,7 +14,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
@@ -128,7 +127,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                         nodeNetworkVisualizationConsumer));
     }
 
-    private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(Solution_ workingSolution,
+    private static <Solution_, Score_ extends Score<Score_>> ConstraintStreamsBavetNodeNetwork buildNodeNetwork(
+            Solution_ workingSolution,
             ConsistencyTracker<Solution_> consistencyTracker, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
             AbstractScoreInliner<Score_> scoreInliner,
             InnerConstraintProfiler profiler,

@@ -11,7 +11,7 @@ import java.util.Set;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.api.score.stream.PrecomputeFactory;
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
+import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
@@ -23,7 +23,7 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
 public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
-    private final NodeNetwork nodeNetwork;
+    private final AbstractBavetNodeNetwork nodeNetwork;
     private final RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle;
     private final Class<?>[] sourceClasses;
     private final Set<Class<?>> entityClassSet;
@@ -86,7 +86,7 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
         this.sourceClasses = declaredClassToNodeMap.keySet().toArray(new Class<?>[0]);
     }
 
-    public NodeNetwork getNodeNetwork() {
+    public AbstractBavetNodeNetwork getNodeNetwork() {
         return nodeNetwork;
     }
 

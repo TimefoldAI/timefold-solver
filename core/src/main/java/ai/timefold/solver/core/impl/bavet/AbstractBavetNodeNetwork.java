@@ -10,25 +10,18 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
-import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Represents Bavet's network of nodes, specific to a particular session.
- * Nodes only used by disabled constraints have already been removed.
- *
  */
 @NullMarked
-public final class NodeNetwork {
-
-    public static final NodeNetwork EMPTY = new NodeNetwork(Map.of(), new Propagator[0][0], null);
+public abstract class AbstractBavetNodeNetwork {
 
     private final Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap;
-    private final @Nullable InnerConstraintProfiler constraintProfiler;
 
     /**
      * Once {@code activationCheckComplete == true}, only contains nodes which are active.
@@ -43,10 +36,8 @@ public final class NodeNetwork {
      * @param layeredNodes nodes grouped first by their layer, then by their index within the layer;
      *        propagation needs to happen in this order.
      */
-    public NodeNetwork(Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap,
-            Propagator[][] layeredNodes, @Nullable InnerConstraintProfiler constraintProfiler) {
+    public AbstractBavetNodeNetwork(Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap, Propagator[][] layeredNodes) {
         this.declaredClassToNodeMap = declaredClassToNodeMap;
-        this.constraintProfiler = constraintProfiler;
         this.layeredNodes = layeredNodes;
     }
 
@@ -114,17 +105,11 @@ public final class NodeNetwork {
         }
     }
 
-    public void summarizeProfileIfPresent() {
-        if (constraintProfiler != null) {
-            constraintProfiler.summarize();
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof NodeNetwork that))
+        if (!(o instanceof AbstractBavetNodeNetwork that))
             return false;
         return Objects.equals(declaredClassToNodeMap, that.declaredClassToNodeMap)
                 && Objects.deepEquals(layeredNodes, that.layeredNodes);
@@ -139,18 +124,6 @@ public final class NodeNetwork {
     public String toString() {
         return "%s with %d forEach nodes."
                 .formatted(getClass().getSimpleName(), forEachNodeCount());
-    }
-
-    public Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap() {
-        return declaredClassToNodeMap;
-    }
-
-    public Propagator[][] layeredNodes() {
-        return layeredNodes;
-    }
-
-    public @Nullable InnerConstraintProfiler constraintProfiler() {
-        return constraintProfiler;
     }
 
 }
