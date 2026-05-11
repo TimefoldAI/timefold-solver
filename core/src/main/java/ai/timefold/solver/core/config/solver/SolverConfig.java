@@ -264,6 +264,9 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         this.clock = Objects.requireNonNull(clock);
     }
 
+    /**
+     * @deprecated does not have any effect.
+     */
     @Deprecated(since = "2.1.0", forRemoval = true)
     public SolverConfig(@Nullable ClassLoader classLoader) {
         this.classLoader = classLoader;
