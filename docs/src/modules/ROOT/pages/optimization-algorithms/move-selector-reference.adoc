@@ -475,11 +475,11 @@ Unaccepted moves will not be selected and will therefore never need to be undone
 [source,java,options="nowrap"]
 ----
 public class DifferentCourseSwapMoveFilter
-    implements SelectionFilter<CourseSchedule, SwapMove<CourseSchedule, Lecture>> {
+    implements SelectionFilter<CourseSchedule, SelectorBasedSwapMove<CourseSchedule, Lecture>> {
 
     @Override
     public boolean accept(ScoreDirector<CourseSchedule> scoreDirector,
-            SwapMove<CourseSchedule, Lecture> move) {
+            SelectorBasedSwapMove<CourseSchedule, Lecture> move) {
         var leftLecture = (Lecture) move.getLeftEntity();
         var rightLecture = (Lecture) move.getRightEntity();
         return !leftLecture.getCourse().equals(rightLecture.getCourse());

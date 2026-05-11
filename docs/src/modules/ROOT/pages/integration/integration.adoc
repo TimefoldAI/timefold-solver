@@ -97,7 +97,7 @@ The `SolverConfig` resource is constructed by reading the `application.propertie
 Therefore, Domain entities (solution, entities, and constraint classes) and customized properties (`spent-limit`, etc.) for the
 planning problem are identified and loaded into the solver configuration.
 
-The available resouses can be injected as follows:
+The available resources can be injected as follows:
 
 [tabs]
 ====
@@ -293,13 +293,13 @@ Kotlin::
 @Path("path")
 class Resource {
 
-    private final var fastSolver: SolverManager<...>?
-    private final var regularSolver: SolverManager<...>?
+    private lateinit var fastSolver: SolverManager<...>?
+    private lateinit var regularSolver: SolverManager<...>?
 
     @Inject
     constructor(
         @Named("fastSolver") fastSolver: SolverManager<Timetable, String>,
-        @Named("regularSolver") fastSolver: SolverManager<Timetable, String>
+        @Named("regularSolver") regularSolver: SolverManager<Timetable, String>
     ) {
         this.fastSolver = fastSolver
         this.regularSolver = regularSolver
@@ -405,8 +405,8 @@ class Teacher {
 @Path("path")
 class Resource {
 
-    private final var teacherToLessonScheduleSolverManager: SolverManager<TeacherToLessonSchedule, String>?
-    private final var lessonToRoomTimeslotSolverManager: SolverManager<Timetable, String>?
+    private lateinit var teacherToLessonScheduleSolverManager: SolverManager<TeacherToLessonSchedule, String>?
+    private lateinit var lessonToRoomTimeslotSolverManager: SolverManager<Timetable, String>?
 
     @Inject
     constructor(
