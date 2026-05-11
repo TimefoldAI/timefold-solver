@@ -347,22 +347,28 @@ public class SolverScope<Solution_> {
     }
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {
-        SolverScope<Solution_> childThreadSolverScope = new SolverScope<>(clock);
-        childThreadSolverScope.bestSolution.set(null);
-        childThreadSolverScope.bestScore.set(null);
-        childThreadSolverScope.monitoringTags = monitoringTags;
-        childThreadSolverScope.solverMetricSet = solverMetricSet;
-        childThreadSolverScope.startingSolverCount = startingSolverCount;
+        var childThreadScoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
+        return copy(childThreadScoreDirector);
+    }
+
+    public <Score_ extends Score<Score_>> SolverScope<Solution_> copy(InnerScoreDirector<Solution_, Score_> newScoreDirector) {
+        var copy = new SolverScope<Solution_>(clock);
+        copy.solver = solver;
+        copy.scoreDirector = newScoreDirector;
+        copy.bestSolution.set(null);
+        copy.bestScore.set(null);
+        copy.monitoringTags = monitoringTags;
+        copy.solverMetricSet = solverMetricSet;
+        copy.startingSolverCount = startingSolverCount;
         // Experiments show that this trick to attain reproducibility doesn't break uniform distribution
         var delegatingRandom = (DelegatingSplittableRandomGenerator) workingRandom;
-        childThreadSolverScope.workingRandom =
-                new DelegatingSplittableRandomGenerator(delegatingRandom.getSeed(), delegatingRandom.split());
-        childThreadSolverScope.scoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
-        childThreadSolverScope.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
-        resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);
-        childThreadSolverScope.startingInitializedScore = null;
-        childThreadSolverScope.bestSolutionTimeMillis = null;
-        return childThreadSolverScope;
+        copy.workingRandom = new DelegatingSplittableRandomGenerator(delegatingRandom.getSeed(), delegatingRandom.split());
+        copy.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
+        resetAtomicLongTimeMillis(copy.endingSystemTimeMillis);
+        copy.startingInitializedScore = null;
+        copy.bestSolutionTimeMillis = null;
+        copy.problemSizeStatistics.set(problemSizeStatistics.get());
+        return copy;
     }
 
     public void initializeYielding() {

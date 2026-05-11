@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
@@ -33,6 +34,7 @@ public class HeuristicConfigPolicy<Solution_> {
     private final String logIndentation;
     private final Integer moveThreadCount;
     private final Integer moveThreadBufferSize;
+    private final Integer constraintCount;
     private final Class<? extends ThreadFactory> threadFactoryClass;
     private final InitializingScoreTrend initializingScoreTrend;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
@@ -54,6 +56,7 @@ public class HeuristicConfigPolicy<Solution_> {
         this.logIndentation = builder.logIndentation;
         this.moveThreadCount = builder.moveThreadCount;
         this.moveThreadBufferSize = builder.moveThreadBufferSize;
+        this.constraintCount = builder.constraintCount;
         this.threadFactoryClass = builder.threadFactoryClass;
         this.initializingScoreTrend = builder.initializingScoreTrend;
         this.solutionDescriptor = builder.solutionDescriptor;
@@ -80,6 +83,10 @@ public class HeuristicConfigPolicy<Solution_> {
 
     public Integer getMoveThreadBufferSize() {
         return moveThreadBufferSize;
+    }
+
+    public Integer getConstraintCount() {
+        return constraintCount;
     }
 
     public InitializingScoreTrend getInitializingScoreTrend() {
@@ -132,6 +139,7 @@ public class HeuristicConfigPolicy<Solution_> {
                 .withEnvironmentMode(environmentMode)
                 .withMoveThreadCount(moveThreadCount)
                 .withMoveThreadBufferSize(moveThreadBufferSize)
+                .withConstraintCount(constraintCount)
                 .withThreadFactoryClass(threadFactoryClass)
                 .withNearbyDistanceMeterClass(nearbyDistanceMeterClass)
                 .withRandom(random)
@@ -261,6 +269,7 @@ public class HeuristicConfigPolicy<Solution_> {
         private EnvironmentMode environmentMode;
         private Integer moveThreadCount;
         private Integer moveThreadBufferSize;
+        private Integer constraintCount;
         private Class<? extends ThreadFactory> threadFactoryClass;
         private InitializingScoreTrend initializingScoreTrend;
         private SolutionDescriptor<Solution_> solutionDescriptor;
@@ -282,6 +291,17 @@ public class HeuristicConfigPolicy<Solution_> {
             return this;
         }
 
+        public Builder<Solution_> withPreviewFeature(PreviewFeature previewFeature) {
+            if (this.previewFeatureSet == null) {
+                this.previewFeatureSet = Set.of(previewFeature);
+            } else {
+                var updatedPreviewFeatureSet = new HashSet<>(this.previewFeatureSet);
+                updatedPreviewFeatureSet.add(previewFeature);
+                this.previewFeatureSet = updatedPreviewFeatureSet;
+            }
+            return this;
+        }
+
         public Builder<Solution_> withEnvironmentMode(EnvironmentMode environmentMode) {
             this.environmentMode = environmentMode;
             return this;
@@ -299,6 +319,11 @@ public class HeuristicConfigPolicy<Solution_> {
 
         public Builder<Solution_> withThreadFactoryClass(Class<? extends ThreadFactory> threadFactoryClass) {
             this.threadFactoryClass = threadFactoryClass;
+            return this;
+        }
+
+        public Builder<Solution_> withConstraintCount(Integer constraintCount) {
+            this.constraintCount = constraintCount;
             return this;
         }
 

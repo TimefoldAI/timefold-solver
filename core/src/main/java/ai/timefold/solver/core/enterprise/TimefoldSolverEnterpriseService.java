@@ -30,11 +30,16 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHe
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionState;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionStateManager;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.crossover.CrossoverStrategy;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.decider.EvolutionaryDecider;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.IndividualBuilder;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator.ConstructionIndividualStrategy;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementDestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.list.RandomSubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
@@ -43,10 +48,12 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
+import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
+import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
@@ -173,6 +180,16 @@ public interface TimefoldSolverEnterpriseService {
             SolverTermination<Solution_> solverTermination,
             BiFunction<HeuristicConfigPolicy<Solution_>, SolverTermination<Solution_>, PhaseTermination<Solution_>> phaseTerminationFunction);
 
+    <Solution_, Score_ extends Score<Score_>, State_ extends SolutionState<Solution_, Score_>>
+            EvolutionaryDecider<Solution_, Score_> buildHybridGeneticSearch(int populationSize, int generationSize,
+                    int eliteGroupSize, int populationRestartCount,
+                    ConstructionIndividualStrategy<Solution_, Score_> constructionIndividualStrategy,
+                    Phase<Solution_> localSearchPhase, Phase<Solution_> swapStarPhase,
+                    CrossoverStrategy<Solution_, Score_> crossoverStrategy,
+                    IndividualBuilder<Solution_, Score_> individualBuilder,
+                    SolutionStateManager<Solution_, Score_, State_> solutionInitializer,
+                    PhaseTermination<Solution_> phaseTermination, BestSolutionRecaller<Solution_> bestSolutionRecaller);
+
     <Solution_> EntitySelector<Solution_> applyNearbySelection(EntitySelectorConfig entitySelectorConfig,
             HeuristicConfigPolicy<Solution_> configPolicy, NearbySelectionConfig nearbySelectionConfig,
             SelectionCacheType minimumCacheType, SelectionOrder resolvedSelectionOrder,
@@ -184,7 +201,7 @@ public interface TimefoldSolverEnterpriseService {
 
     <Solution_> SubListSelector<Solution_> applyNearbySelection(SubListSelectorConfig subListSelectorConfig,
             HeuristicConfigPolicy<Solution_> configPolicy, SelectionCacheType minimumCacheType,
-            SelectionOrder resolvedSelectionOrder, RandomSubListSelector<Solution_> subListSelector);
+            SelectionOrder resolvedSelectionOrder, SubListSelector<Solution_> subListSelector);
 
     <Solution_> DestinationSelector<Solution_> applyNearbySelection(DestinationSelectorConfig destinationSelectorConfig,
             HeuristicConfigPolicy<Solution_> configPolicy, SelectionCacheType minimumCacheType,

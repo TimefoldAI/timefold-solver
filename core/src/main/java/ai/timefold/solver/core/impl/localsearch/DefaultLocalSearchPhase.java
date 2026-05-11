@@ -151,7 +151,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         decider.stepEnded(stepScope);
         collectMetrics(stepScope);
         var phaseScope = stepScope.getPhaseScope();
-        if (logger.isDebugEnabled()) {
+        if (isLoggingEnabled() && logger.isDebugEnabled()) {
             if (stepScope.getAcceptedMoveCount() == 0 && phaseTermination.isPhaseTerminated(phaseScope)) {
                 // Terminated early
                 logger.debug("""

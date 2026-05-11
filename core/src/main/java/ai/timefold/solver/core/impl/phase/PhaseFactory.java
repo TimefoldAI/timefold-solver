@@ -5,6 +5,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
+import ai.timefold.solver.core.config.evolutionaryalgorithm.EvolutionaryAlgorithmPhaseConfig;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
@@ -12,6 +13,7 @@ import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhaseFactory;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.DefaultEvolutionaryAlgorithmPhaseFactory;
 import ai.timefold.solver.core.impl.exhaustivesearch.DefaultExhaustiveSearchPhaseFactory;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.localsearch.DefaultLocalSearchPhaseFactory;
@@ -29,6 +31,8 @@ public interface PhaseFactory<Solution_> {
             return new DefaultConstructionHeuristicPhaseFactory<>((ConstructionHeuristicPhaseConfig) phaseConfig);
         } else if (PartitionedSearchPhaseConfig.class.isAssignableFrom(phaseConfig.getClass())) {
             return new DefaultPartitionedSearchPhaseFactory<>((PartitionedSearchPhaseConfig) phaseConfig);
+        } else if (EvolutionaryAlgorithmPhaseConfig.class.isAssignableFrom(phaseConfig.getClass())) {
+            return new DefaultEvolutionaryAlgorithmPhaseFactory<>((EvolutionaryAlgorithmPhaseConfig) phaseConfig);
         } else if (CustomPhaseConfig.class.isAssignableFrom(phaseConfig.getClass())) {
             return new DefaultCustomPhaseFactory<>((CustomPhaseConfig) phaseConfig);
         } else if (ExhaustiveSearchPhaseConfig.class.isAssignableFrom(phaseConfig.getClass())) {

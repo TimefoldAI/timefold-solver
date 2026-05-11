@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Objects;
 
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.evolutionaryalgorithm.EvolutionaryAlgorithmPhaseConfig;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
@@ -11,6 +12,7 @@ import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope.EvolutionaryAlgorithmPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -90,6 +92,8 @@ public abstract class AbstractPhaseFactory<Solution_, PhaseConfig_ extends Phase
                         """
                         .formatted("ai.timefold.solver.enterprise.core.partitioned.PartitionedSearchPhaseScope"));
             }
+        } else if (phaseConfig instanceof EvolutionaryAlgorithmPhaseConfig) {
+            return EvolutionaryAlgorithmPhaseScope.class;
         } else {
             throw new IllegalStateException("Unsupported phaseConfig class: %s".formatted(phaseConfig.getClass()));
         }

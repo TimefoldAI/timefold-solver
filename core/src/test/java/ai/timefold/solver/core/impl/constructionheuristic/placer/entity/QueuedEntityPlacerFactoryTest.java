@@ -91,7 +91,7 @@ class QueuedEntityPlacerFactoryTest {
                 QueuedEntityPlacerFactory.unfoldNew(configPolicy, List.of(primaryMoveSelectorConfig));
         var entityPlacer =
                 new QueuedEntityPlacerFactory<TestdataComparatorSortableSolution>(placerConfig);
-        var entitySelectorConfig = entityPlacer.buildEntitySelectorConfig(configPolicy);
+        var entitySelectorConfig = entityPlacer.buildEntitySelectorConfig(configPolicy, placerConfig);
         assertThat(entitySelectorConfig.getSelectionOrder()).isEqualTo(SelectionOrder.SORTED);
         assertThat(entitySelectorConfig.getSorterManner()).isEqualTo(EntitySorterManner.DESCENDING_IF_AVAILABLE);
     }

@@ -83,7 +83,7 @@ public final class SubListSwapMoveSelectorConfig extends MoveSelectorConfig<SubL
         this.selectReversingMoveToo =
                 ConfigUtils.inheritOverwritableProperty(selectReversingMoveToo, inheritedConfig.selectReversingMoveToo);
         this.subListSelectorConfig =
-                ConfigUtils.inheritOverwritableProperty(subListSelectorConfig, inheritedConfig.subListSelectorConfig);
+                ConfigUtils.inheritConfig(subListSelectorConfig, inheritedConfig.subListSelectorConfig);
         this.secondarySubListSelectorConfig =
                 ConfigUtils.inheritConfig(secondarySubListSelectorConfig, inheritedConfig.secondarySubListSelectorConfig);
         return this;
