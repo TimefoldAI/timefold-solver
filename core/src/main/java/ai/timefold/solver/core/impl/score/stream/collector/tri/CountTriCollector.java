@@ -8,10 +8,11 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractCountSlot;
+import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NonNull;
 
-final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C, AbstractCountSlot.State, Long> {
+final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C, MutableLong, Long> {
     private static final CountTriCollector<?, ?, ?> INSTANCE = new CountTriCollector<>();
 
     private CountTriCollector() {
@@ -23,12 +24,12 @@ final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C
     }
 
     @Override
-    public @NonNull Supplier<AbstractCountSlot.State> supplier() {
-        return AbstractCountSlot.State::new;
+    public @NonNull Supplier<MutableLong> supplier() {
+        return MutableLong::new;
     }
 
     @Override
-    public @NonNull QuadFunction<AbstractCountSlot.State, A, B, C, Runnable> accumulator() {
+    public @NonNull QuadFunction<MutableLong, A, B, C, Runnable> accumulator() {
         return TriCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
@@ -38,19 +39,19 @@ final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C
     }
 
     @Override
-    public @NonNull TriConstraintCollectorAccumulator<AbstractCountSlot.State, A, B, C> incrementalAccumulator() {
+    public @NonNull TriConstraintCollectorAccumulator<MutableLong, A, B, C> incrementalAccumulator() {
         return Slot::new;
     }
 
     @Override
-    public @NonNull Function<AbstractCountSlot.State, Long> finisher() {
-        return AbstractCountSlot.State::result;
+    public @NonNull Function<MutableLong, Long> finisher() {
+        return MutableLong::longValue;
     }
 
     private static final class Slot<A, B, C> extends AbstractCountSlot
             implements TriConstraintCollectorAccumulatedValue<A, B, C> {
 
-        Slot(AbstractCountSlot.State state) {
+        Slot(MutableLong state) {
             super(state);
         }
 

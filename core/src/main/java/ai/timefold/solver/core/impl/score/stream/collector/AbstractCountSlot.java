@@ -1,23 +1,17 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
+import ai.timefold.solver.core.impl.util.MutableLong;
+
 public abstract class AbstractCountSlot {
 
-    public static final class State {
-        private long count = 0;
+    private final MutableLong state;
 
-        public Long result() {
-            return count;
-        }
-    }
-
-    private final State state;
-
-    public AbstractCountSlot(State state) {
+    public AbstractCountSlot(MutableLong state) {
         this.state = state;
     }
 
     protected void addMapped() {
-        state.count++;
+        state.increment();
     }
 
     protected void updateMapped() {
@@ -25,6 +19,7 @@ public abstract class AbstractCountSlot {
     }
 
     protected void removeMapped() {
-        state.count--;
+        state.decrement();
     }
+
 }

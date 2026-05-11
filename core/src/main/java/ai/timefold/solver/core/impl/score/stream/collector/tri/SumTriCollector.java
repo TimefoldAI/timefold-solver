@@ -6,33 +6,34 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongSumSlot;
+import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NonNull;
 
 final class SumTriCollector<A, B, C>
-        extends LongCalculatorTriCollector<A, B, C, Long, AbstractLongSumSlot.State> {
+        extends LongCalculatorTriCollector<A, B, C, Long, MutableLong> {
     SumTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
         super(mapper);
     }
 
     @Override
-    public @NonNull Supplier<AbstractLongSumSlot.State> supplier() {
-        return AbstractLongSumSlot.State::new;
+    public @NonNull Supplier<MutableLong> supplier() {
+        return MutableLong::new;
     }
 
     @Override
-    public @NonNull Function<AbstractLongSumSlot.State, Long> finisher() {
-        return AbstractLongSumSlot.State::result;
+    public @NonNull Function<MutableLong, Long> finisher() {
+        return MutableLong::longValue;
     }
 
     @Override
-    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(AbstractLongSumSlot.State state) {
+    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(MutableLong state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractLongSumSlot
             implements TriConstraintCollectorAccumulatedValue<A, B, C> {
-        Slot(AbstractLongSumSlot.State state) {
+        Slot(MutableLong state) {
             super(state);
         }
 

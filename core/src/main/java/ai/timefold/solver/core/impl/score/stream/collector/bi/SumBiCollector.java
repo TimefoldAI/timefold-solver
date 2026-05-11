@@ -6,33 +6,34 @@ import java.util.function.ToLongBiFunction;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongSumSlot;
+import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NonNull;
 
 final class SumBiCollector<A, B>
-        extends LongCalculatorBiCollector<A, B, Long, AbstractLongSumSlot.State> {
+        extends LongCalculatorBiCollector<A, B, Long, MutableLong> {
     SumBiCollector(ToLongBiFunction<? super A, ? super B> mapper) {
         super(mapper);
     }
 
     @Override
-    public @NonNull Supplier<AbstractLongSumSlot.State> supplier() {
-        return AbstractLongSumSlot.State::new;
+    public @NonNull Supplier<MutableLong> supplier() {
+        return MutableLong::new;
     }
 
     @Override
-    public @NonNull Function<AbstractLongSumSlot.State, Long> finisher() {
-        return AbstractLongSumSlot.State::result;
+    public @NonNull Function<MutableLong, Long> finisher() {
+        return MutableLong::longValue;
     }
 
     @Override
-    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(AbstractLongSumSlot.State state) {
+    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(MutableLong state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractLongSumSlot
             implements BiConstraintCollectorAccumulatedValue<A, B> {
-        Slot(AbstractLongSumSlot.State state) {
+        Slot(MutableLong state) {
             super(state);
         }
 

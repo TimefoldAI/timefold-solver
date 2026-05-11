@@ -1,33 +1,27 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
+import ai.timefold.solver.core.impl.util.MutableLong;
+
 public abstract class AbstractLongSumSlot {
 
-    public static final class State {
-        private long sum = 0;
-
-        public Long result() {
-            return sum;
-        }
-    }
-
-    private final State state;
+    private final MutableLong state;
     private long cachedInput;
 
-    public AbstractLongSumSlot(State state) {
+    public AbstractLongSumSlot(MutableLong state) {
         this.state = state;
     }
 
     protected void addMapped(long input) {
         cachedInput = input;
-        state.sum = Math.addExact(state.sum, input);
+        state.add(input);
     }
 
     protected void updateMapped(long input) {
-        state.sum += Math.subtractExact(input, cachedInput);
+        state.add(Math.subtractExact(input, cachedInput));
         cachedInput = input;
     }
 
     protected void removeMapped() {
-        state.sum = Math.subtractExact(state.sum, cachedInput);
+        state.subtract(cachedInput);
     }
 }

@@ -6,33 +6,34 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongSumSlot;
+import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NonNull;
 
 final class SumQuadCollector<A, B, C, D>
-        extends LongCalculatorQuadCollector<A, B, C, D, Long, AbstractLongSumSlot.State> {
+        extends LongCalculatorQuadCollector<A, B, C, D, Long, MutableLong> {
     SumQuadCollector(ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
         super(mapper);
     }
 
     @Override
-    public @NonNull Supplier<AbstractLongSumSlot.State> supplier() {
-        return AbstractLongSumSlot.State::new;
+    public @NonNull Supplier<MutableLong> supplier() {
+        return MutableLong::new;
     }
 
     @Override
-    public @NonNull Function<AbstractLongSumSlot.State, Long> finisher() {
-        return AbstractLongSumSlot.State::result;
+    public @NonNull Function<MutableLong, Long> finisher() {
+        return MutableLong::longValue;
     }
 
     @Override
-    protected QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(AbstractLongSumSlot.State state) {
+    protected QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(MutableLong state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractLongSumSlot
             implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
-        Slot(AbstractLongSumSlot.State state) {
+        Slot(MutableLong state) {
             super(state);
         }
 

@@ -8,10 +8,11 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractCountSlot;
+import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NonNull;
 
-final class CountUniCollector<A> implements UniConstraintCollector<A, AbstractCountSlot.State, Long> {
+final class CountUniCollector<A> implements UniConstraintCollector<A, MutableLong, Long> {
     private static final CountUniCollector<?> INSTANCE = new CountUniCollector<>();
 
     private CountUniCollector() {
@@ -23,12 +24,12 @@ final class CountUniCollector<A> implements UniConstraintCollector<A, AbstractCo
     }
 
     @Override
-    public @NonNull Supplier<AbstractCountSlot.State> supplier() {
-        return AbstractCountSlot.State::new;
+    public @NonNull Supplier<MutableLong> supplier() {
+        return MutableLong::new;
     }
 
     @Override
-    public @NonNull BiFunction<AbstractCountSlot.State, A, Runnable> accumulator() {
+    public @NonNull BiFunction<MutableLong, A, Runnable> accumulator() {
         return UniCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
@@ -38,19 +39,19 @@ final class CountUniCollector<A> implements UniConstraintCollector<A, AbstractCo
     }
 
     @Override
-    public @NonNull UniConstraintCollectorAccumulator<AbstractCountSlot.State, A> incrementalAccumulator() {
+    public @NonNull UniConstraintCollectorAccumulator<MutableLong, A> incrementalAccumulator() {
         return Slot::new;
     }
 
     @Override
-    public @NonNull Function<AbstractCountSlot.State, Long> finisher() {
-        return AbstractCountSlot.State::result;
+    public @NonNull Function<MutableLong, Long> finisher() {
+        return MutableLong::longValue;
     }
 
     private static final class Slot<A> extends AbstractCountSlot
             implements UniConstraintCollectorAccumulatedValue<A> {
 
-        Slot(AbstractCountSlot.State state) {
+        Slot(MutableLong state) {
             super(state);
         }
 
