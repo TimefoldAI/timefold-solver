@@ -176,8 +176,8 @@ from the `Timetable` planning solution class:
 ----
 PlanningSolutionMetaModel<Timetable> solutionMetaModel = ...; // The solver will give this to you.
 PlanningVariableMetaModel<Timetable, Lesson, Timeslot> timeslotVariable =
-        solutionMetaModel.entity(Lesson.class)
-                .genuineVariable("timeslot");
+        solutionMetaModel.genuineEntity(Lesson.class)
+                .basicVariable("timeslot", Timeslot.class);
 ----
 
 If any of the entities or variables cannot be found,
@@ -189,8 +189,8 @@ The code above can often be simplified with Java's local type inference:
 [source,java,options="nowrap"]
 ----
 var solutionMetaModel = ...; // The solver will give this to you.
-var timeslotVariable = solutionMetaModel.entity(Lesson.class)
-                .genuineVariable("timeslot", Timeslot.class);
+var timeslotVariable = solutionMetaModel.genuineEntity(Lesson.class)
+                .basicVariable("timeslot", Timeslot.class);
 ----
 
 NOTE: Long-time users of Timefold Solver may be familiar with the concept of variable descriptors.
@@ -343,7 +343,7 @@ void testChangeMove() {
     var newRoom = timetable.getRooms().get(1);
 
     var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
-    var variableMetaModel = solutionMetaModel.entity(Lesson.class)
+    var variableMetaModel = solutionMetaModel.genuineEntity(Lesson.class)
             .basicVariable("room", Room.class);
 
     var move = Moves.change(variableMetaModel, lesson, newRoom);
@@ -374,7 +374,7 @@ void testMoveThenUndo() {
     var newRoom = timetable.getRooms().get(1);
 
     var solutionMetaModel = PlanningSolutionMetaModel.of(Timetable.class, Lesson.class);
-    var variableMetaModel = solutionMetaModel.entity(Lesson.class)
+    var variableMetaModel = solutionMetaModel.genuineEntity(Lesson.class)
             .basicVariable("room", Room.class);
 
     var move = Moves.change(variableMetaModel, lesson, newRoom);
@@ -765,8 +765,8 @@ public class MyNeighborhoodProvider implements NeighborhoodProvider<MySolution> 
     @Override
     public Neighborhood defineNeighborhood(NeighborhoodBuilder<MySolution> builder) {
         var timeslotVariable = builder.getSolutionMetaModel()
-                .entity(Lesson.class)
-                .variable("timeslot", Timeslot.class);
+                .genuineEntity(Lesson.class)
+                .basicVariable("timeslot", Timeslot.class);
         return builder.add(new TimeslotChangeMoveProvider(timeslotVariable))
                 .build();
     }
