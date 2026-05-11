@@ -120,7 +120,11 @@ public abstract sealed class AbstractFromPropertyValueRangeDescriptor<Solution_>
                             Use SortedSet or LinkedHashSet to ensure solver reproducibility.
                             """
                             .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set.getClass()));
-                } else if (set.contains(null)) {
+                } else if (!(collection instanceof SortedSet<Value_>) && set.contains(null)) {
+                    // The Set contract states that implementations that do not allow null values must fail when null is used in operations,
+                    // such as add and contains.
+                    // Since all currently available implementations of SortedSet do not allow null values,
+                    // we will skip the validation for SortedSet instances.
                     throw new IllegalStateException("""
                             The @%s-annotated member (%s) called on bean (%s) returns a Set (%s) with a null element.
                             Maybe remove that null element from the dataset \

@@ -98,6 +98,8 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedset.TestdataListUnassignedEntityProvidingSortedSetEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedset.TestdataListUnassignedEntityProvidingSortedSetSolution;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstValue;
@@ -1771,6 +1773,20 @@ class DefaultSolverTest {
         var bestEntity3 = bestSolution.getEntityList().get(2);
         assertThat(bestEntity3.getValueList()).hasSizeGreaterThan(0);
         assertThat(bestEntity3.getValueList()).doesNotContain(value1, value2, value3);
+    }
+
+    @Test
+    void solveListVarEntityRangeModelWithTreeSet() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataListUnassignedEntityProvidingSortedSetSolution.class)
+                .withEntityClasses(TestdataListUnassignedEntityProvidingSortedSetEntity.class)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
+
+        var problem = TestdataListUnassignedEntityProvidingSortedSetSolution.generateSolution();
+
+        problem = PlannerTestUtils.solve(solverConfig, problem, true);
+        assertThat(problem).isNotNull();
     }
 
     @Test
