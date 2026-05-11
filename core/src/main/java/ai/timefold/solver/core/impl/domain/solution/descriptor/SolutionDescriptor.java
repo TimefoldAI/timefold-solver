@@ -103,14 +103,12 @@ public final class SolutionDescriptor<Solution_> {
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
             Set<PreviewFeature> enabledPreviewFeaturesSet, Class<Solution_> solutionClass, List<Class<?>> entityClassList) {
-        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.FORCE_REFLECTION, solutionClass, null,
-                null,
+        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.FORCE_REFLECTION, solutionClass, null, null,
                 entityClassList);
     }
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
-            Set<PreviewFeature> enabledPreviewFeatureSet, DomainAccessType domainAccessType,
-            Class<Solution_> solutionClass,
+            Set<PreviewFeature> enabledPreviewFeatureSet, DomainAccessType domainAccessType, Class<Solution_> solutionClass,
             Map<String, MemberAccessor> memberAccessorMap, Map<String, SolutionCloner> solutionClonerMap,
             List<Class<?>> entityClassList) {
         assertMutable(solutionClass, "solutionClass");
@@ -263,8 +261,7 @@ public final class SolutionDescriptor<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    private SolutionDescriptor(Class<Solution_> solutionClass,
-            Map<String, MemberAccessor> memberAccessorMap) {
+    private SolutionDescriptor(Class<Solution_> solutionClass, Map<String, MemberAccessor> memberAccessorMap) {
         this.solutionClass = solutionClass;
         if (solutionClass.getPackage() == null) {
             LOGGER.warn("The solutionClass ({}) should be in a proper java package.", solutionClass);
@@ -1105,4 +1102,5 @@ public final class SolutionDescriptor<Solution_> {
     public String toString() {
         return "%s(%s)".formatted(getClass().getSimpleName(), solutionClass.getName());
     }
+
 }

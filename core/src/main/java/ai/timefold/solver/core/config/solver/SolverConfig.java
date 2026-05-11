@@ -296,11 +296,17 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         this.clock = clock;
     }
 
+    /**
+     * @deprecated does not have any effect.
+     */
     @Deprecated(since = "2.1.0", forRemoval = true)
     public @Nullable ClassLoader getClassLoader() {
         return classLoader;
     }
 
+    /**
+     * @deprecated does not have any effect.
+     */
     @Deprecated(since = "2.1.0", forRemoval = true)
     public void setClassLoader(@Nullable ClassLoader classLoader) {
         this.classLoader = classLoader;
@@ -505,6 +511,9 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
+    /**
+     * @deprecated does not have any effect.
+     */
     @Deprecated(since = "2.1.0", forRemoval = true)
     public @NonNull SolverConfig withClassLoader(@NonNull ClassLoader classLoader) {
         this.setClassLoader(classLoader);

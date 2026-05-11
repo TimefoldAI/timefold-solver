@@ -1776,6 +1776,9 @@ class DefaultSolverTest {
 
     @Test
     void solveCustomClassLoader() {
+        // Spring DevTools redefine existing classes, with their updated definitions replacing
+        // existing instances, and their updated definition are only available from the Thread's Context ClassLoader.
+        // This test verify the Context ClassLoader definition is used instead of the one from the parent ClassLoader.
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSeparateClassLoaderDomain.getTestdataSolutionClass(),
                 TestdataSeparateClassLoaderDomain.getTestdataEntityClass());
         var originalClassLoader = Thread.currentThread().getContextClassLoader();

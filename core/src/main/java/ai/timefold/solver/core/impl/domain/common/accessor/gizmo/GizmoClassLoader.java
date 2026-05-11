@@ -71,7 +71,6 @@ public final class GizmoClassLoader extends ClassLoader {
                     if (loadedClass == null) {
                         loadedClass = super.loadClass(name, false);
                     }
-                    return loadedClass;
                 }
             }
             if (resolve) {

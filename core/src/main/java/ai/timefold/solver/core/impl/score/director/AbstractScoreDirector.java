@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 @NullMarked
 public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
         implements InnerScoreDirector<Solution_, Score_> {
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final Factory_ scoreDirectorFactory;
