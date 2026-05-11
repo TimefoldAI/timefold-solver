@@ -16,6 +16,7 @@ public final class ForEachFilteredUniNode<A>
 
     private final TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle;
     private final Predicate<A> filter;
+    private int counter = 0;
 
     public ForEachFilteredUniNode(Class<A> forEachClass, Predicate<A> filter,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
@@ -26,18 +27,17 @@ public final class ForEachFilteredUniNode<A>
 
     @Override
     public void afterAllInserted() {
-        nextNodesTupleLifecycle.afterAllFactsInserted(true);
+        nextNodesTupleLifecycle.afterAllFactsInserted(counter > 0);
     }
 
     @Override
     public boolean isActive() {
-        // Always active, because we do not know what the filter will do.
-        // Unless none of the downstream nodes are active.
-        return nextNodesTupleLifecycle.isActive();
+        return counter > 0 && nextNodesTupleLifecycle.isActive();
     }
 
     @Override
     public void insert(@Nullable A a) {
+        counter++;
         if (!filter.test(a)) { // Skip inserting the tuple as it does not pass the filter.
             return;
         }
@@ -58,6 +58,7 @@ public final class ForEachFilteredUniNode<A>
 
     @Override
     public void retract(@Nullable A a) {
+        counter--;
         var tuple = tupleMap.remove(a);
         if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
             return;
