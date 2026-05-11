@@ -121,7 +121,7 @@ public abstract sealed class AbstractFromPropertyValueRangeDescriptor<Solution_>
                             """
                             .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set.getClass()));
                 } else if (!(collection instanceof SortedSet<Value_>) && set.contains(null)) {
-                    // The Set contract states that implementations that do not allow null values must fail when null is used in operations,
+                    // The Set contract states that implementations that do not allow null values must fail when null is used in some operations,
                     // such as add and contains.
                     // Since all currently available implementations of SortedSet do not allow null values,
                     // we will skip the validation for SortedSet instances.
