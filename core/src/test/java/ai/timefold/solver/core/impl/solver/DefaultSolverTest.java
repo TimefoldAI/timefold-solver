@@ -1778,12 +1778,17 @@ class DefaultSolverTest {
     void solveCustomClassLoader() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSeparateClassLoaderDomain.getTestdataSolutionClass(),
                 TestdataSeparateClassLoaderDomain.getTestdataEntityClass());
-        solverConfig.setClassLoader(TestdataSeparateClassLoaderDomain.getClassLoader());
-        var solution = TestdataSeparateClassLoaderDomain.generateSolution();
+        var originalClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(TestdataSeparateClassLoaderDomain.getClassLoader());
+            var solution = TestdataSeparateClassLoaderDomain.generateSolution();
 
-        solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
-                BestScoreChangedEvent.constructionHeuristic(SimpleScore.ZERO, 0));
-        assertThat(solution).isNotNull();
+            solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
+                    BestScoreChangedEvent.constructionHeuristic(SimpleScore.ZERO, 0));
+            assertThat(solution).isNotNull();
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
     }
 
     @Test

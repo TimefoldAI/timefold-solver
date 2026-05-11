@@ -203,6 +203,7 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
     @XmlTransient
     private Clock clock = null;
     @XmlTransient
+    @Deprecated(since = "2.1.0", forRemoval = true)
     private ClassLoader classLoader = null;
 
     // Warning: all fields are null (and not defaulted) because they can be inherited
@@ -263,6 +264,7 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         this.clock = Objects.requireNonNull(clock);
     }
 
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public SolverConfig(@Nullable ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
@@ -294,10 +296,12 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         this.clock = clock;
     }
 
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public @Nullable ClassLoader getClassLoader() {
         return classLoader;
     }
 
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public void setClassLoader(@Nullable ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
@@ -501,6 +505,7 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
+    @Deprecated(since = "2.1.0", forRemoval = true)
     public @NonNull SolverConfig withClassLoader(@NonNull ClassLoader classLoader) {
         this.setClassLoader(classLoader);
         return this;

@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -66,14 +64,10 @@ public final class GizmoClassLoader extends ClassLoader {
                 if (hasBytecodeFor(name)) {
                     loadedClass = findClass(name);
                 } else {
-                    var configClassLoader = SolutionDescriptor.getClassLoader();
                     var contextClassLoader = Thread.currentThread().getContextClassLoader();
 
-                    // First config, then context, then parent
-                    loadedClass = loadClassFrom(configClassLoader, name);
-                    if (loadedClass == null) {
-                        loadedClass = loadClassFrom(contextClassLoader, name);
-                    }
+                    // First context, then parent
+                    loadedClass = loadClassFrom(contextClassLoader, name);
                     if (loadedClass == null) {
                         loadedClass = super.loadClass(name, false);
                     }
