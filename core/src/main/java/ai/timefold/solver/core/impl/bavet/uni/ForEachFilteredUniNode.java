@@ -16,7 +16,7 @@ public final class ForEachFilteredUniNode<A>
 
     private final TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle;
     private final Predicate<A> filter;
-    private int counter = 0;
+    private int tupleCountWithoutFiltering = 0;
 
     public ForEachFilteredUniNode(Class<A> forEachClass, Predicate<A> filter,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
@@ -27,17 +27,21 @@ public final class ForEachFilteredUniNode<A>
 
     @Override
     public void afterAllInserted() {
-        nextNodesTupleLifecycle.afterAllFactsInserted(counter > 0);
+        nextNodesTupleLifecycle.afterAllFactsInserted(tupleCountWithoutFiltering > 0);
     }
 
     @Override
     public boolean isActive() {
-        return counter > 0 && nextNodesTupleLifecycle.isActive();
+        // The input may change during update,
+        // and therefore the filter may let things propagate which it previously did not.
+        // For this reason, this node must be considered active if it saw at least one input;
+        // only with zero tuples can it be considered inactive, as the filter has nothing to propagate.
+        return tupleCountWithoutFiltering > 0 && nextNodesTupleLifecycle.isActive();
     }
 
     @Override
     public void insert(@Nullable A a) {
-        counter++;
+        tupleCountWithoutFiltering++; // This is safe; each element is only inserted once, guaranteed by a fail-fast in the parent.
         if (!filter.test(a)) { // Skip inserting the tuple as it does not pass the filter.
             return;
         }
@@ -58,7 +62,7 @@ public final class ForEachFilteredUniNode<A>
 
     @Override
     public void retract(@Nullable A a) {
-        counter--;
+        tupleCountWithoutFiltering--;
         var tuple = tupleMap.remove(a);
         if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
             return;

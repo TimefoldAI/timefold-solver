@@ -247,6 +247,7 @@ module ai.timefold.solver.core {
     opens ai.timefold.solver.core.config.solver.monitoring to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.solver.termination to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.util to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    exports ai.timefold.solver.core.impl.bavet.visual;
 
     requires jakarta.xml.bind;
     requires java.xml;

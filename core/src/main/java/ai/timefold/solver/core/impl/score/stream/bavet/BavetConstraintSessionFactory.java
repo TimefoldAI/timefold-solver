@@ -39,14 +39,10 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     private final ConstraintMetaModel constraintMetaModel;
     private final @Nullable InnerConstraintProfiler constraintProfiler;
 
-    public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            ConstraintMetaModel constraintMetaModel, boolean profilingEnabled) {
+    public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor, ConstraintMetaModel constraintMetaModel, boolean profilingEnabled) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
         this.constraintMetaModel = Objects.requireNonNull(constraintMetaModel);
-        this.constraintProfiler = profilingEnabled
-                ? TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.CONSTRAINT_PROFILING)
-                        .buildConstraintProfiler()
-                : null;
+        this.constraintProfiler = profilingEnabled ? TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.CONSTRAINT_PROFILING).buildConstraintProfiler() : null;
     }
 
     // ************************************************************************
@@ -54,29 +50,21 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     // ************************************************************************
 
     @SuppressWarnings("unchecked")
-    public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution,
-            ConsistencyTracker<Solution_> consistencyTracker,
-            ConstraintMatchPolicy constraintMatchPolicy,
-            boolean scoreDirectorDerived, Consumer<String> nodeNetworkVisualizationConsumer) {
+    public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, ConsistencyTracker<Solution_> consistencyTracker, ConstraintMatchPolicy constraintMatchPolicy, boolean scoreDirectorDerived, Consumer<String> nodeNetworkVisualizationConsumer) {
         var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
         var constraints = constraintMetaModel.getConstraints();
         if (constraintWeightSupplier != null) { // Fail fast on unknown constraints.
-            var knownConstraints = constraints.stream()
-                    .map(Constraint::getConstraintRef)
-                    .collect(Collectors.toSet());
+            var knownConstraints = constraints.stream().map(Constraint::getConstraintRef).collect(Collectors.toSet());
             constraintWeightSupplier.validate(workingSolution, knownConstraints);
         }
-        var scoreDefinition = solutionDescriptor.<Score_> getScoreDefinition();
+        var scoreDefinition = solutionDescriptor.<Score_>getScoreDefinition();
         var zeroScore = scoreDefinition.getZeroScore();
         var constraintStreamSet = new LinkedHashSet<BavetAbstractConstraintStream<Solution_>>();
-        var constraintWeightMap = HashMap.<Constraint, Score_> newHashMap(constraints.size());
+        var constraintWeightMap = HashMap.<Constraint, Score_>newHashMap(constraints.size());
 
         // Only log constraint weights if logging is enabled; otherwise we don't need to build the string.
         var constraintWeightLoggingEnabled = !scoreDirectorDerived && LOGGER.isEnabledForLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL);
-        var constraintWeightString = constraintWeightLoggingEnabled
-                ? new StringBuilder("Constraint weights for solution (%s):%n"
-                        .formatted(workingSolution))
-                : null;
+        var constraintWeightString = constraintWeightLoggingEnabled ? new StringBuilder("Constraint weights for solution (%s):%n".formatted(workingSolution)) : null;
 
         for (var constraint : constraints) {
             var constraintRef = constraint.getConstraintRef();
@@ -86,11 +74,9 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             if (!constraintWeight.equals(zeroScore)) {
                 if (constraintWeightLoggingEnabled) {
                     if (defaultConstraintWeight != null && !defaultConstraintWeight.equals(constraintWeight)) {
-                        constraintWeightString.append("  Constraint (%s) weight overridden to (%s) from (%s).%n"
-                                .formatted(constraintRef, constraintWeight, defaultConstraintWeight));
+                        constraintWeightString.append("  Constraint (%s) weight overridden to (%s) from (%s).%n".formatted(constraintRef, constraintWeight, defaultConstraintWeight));
                     } else {
-                        constraintWeightString.append("  Constraint (%s) weight set to (%s).%n"
-                                .formatted(constraintRef, constraintWeight));
+                        constraintWeightString.append("  Constraint (%s) weight set to (%s).%n".formatted(constraintRef, constraintWeight));
                     }
                 }
                 /*
@@ -105,8 +91,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                      * Filter out nodes that only lead to constraints with zero weight.
                      * Note: Node sharing happens earlier, in BavetConstraintFactory#share(Stream_).
                      */
-                    constraintWeightString.append("  Constraint (%s) disabled.%n"
-                            .formatted(constraintRef));
+                    constraintWeightString.append("  Constraint (%s) disabled.%n".formatted(constraintRef));
                 }
             }
         }
@@ -118,58 +103,37 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         }
 
         if (constraintWeightLoggingEnabled) {
-            LOGGER.atLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL)
-                    .log(constraintWeightString.toString().trim());
+            LOGGER.atLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL).log(constraintWeightString.toString().trim());
         }
-        return new BavetConstraintSession<>(scoreInliner,
-                buildNodeNetwork(workingSolution, consistencyTracker, constraintStreamSet, scoreInliner,
-                        constraintProfiler,
-                        nodeNetworkVisualizationConsumer));
+        return new BavetConstraintSession<>(scoreInliner, buildNodeNetwork(workingSolution, consistencyTracker, constraintStreamSet, scoreInliner, constraintProfiler));
     }
 
-    private static <Solution_, Score_ extends Score<Score_>> ConstraintStreamsBavetNodeNetwork buildNodeNetwork(
-            Solution_ workingSolution,
-            ConsistencyTracker<Solution_> consistencyTracker, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
-            AbstractScoreInliner<Score_> scoreInliner,
-            InnerConstraintProfiler profiler,
-            Consumer<String> nodeNetworkVisualizationConsumer) {
-        var buildHelper =
-                new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner, profiler);
+    private ConstraintStreamsBavetNodeNetwork buildNodeNetwork(Solution_ workingSolution, ConsistencyTracker<Solution_> consistencyTracker, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner, InnerConstraintProfiler profiler) {
+        var buildHelper = new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner, profiler);
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<BavetRootNode<?>>>();
-        var nodeList = buildHelper.buildNodeList(constraintStreamSet, buildHelper,
-                BavetAbstractConstraintStream::buildNode,
-                node -> {
-                    if (!(node instanceof BavetRootNode<?> tupleSourceRoot)) {
-                        return;
-                    }
+        var nodeList = buildHelper.buildNodeList(constraintStreamSet, buildHelper, BavetAbstractConstraintStream::buildNode, node -> {
+            if (!(node instanceof BavetRootNode<?> tupleSourceRoot)) {
+                return;
+            }
 
-                    if (tupleSourceRoot instanceof AbstractForEachUniNode<?> forEachUniNode) {
-                        var forEachClass = forEachUniNode.getForEachClass();
-                        var forEachUniNodeList =
-                                declaredClassToNodeMap.computeIfAbsent(forEachClass, k -> new ArrayList<>(2));
-                        if (forEachUniNodeList.stream().filter(sourceNode -> sourceNode instanceof AbstractForEachUniNode<?>)
-                                .count() == 3) {
-                            // Each class can have at most three forEach nodes: one including everything, one including consistent + null vars, the last consistent + no null vars.
-                            throw new IllegalStateException(
-                                    "Impossible state: For class (%s) there are already 3 nodes (%s), not adding another (%s)."
-                                            .formatted(forEachClass, forEachUniNodeList, forEachUniNode));
-                        }
-                        forEachUniNodeList.add(forEachUniNode);
-                    } else {
-                        for (var sourceClass : tupleSourceRoot.getSourceClasses()) {
-                            var forEachUniNodeList =
-                                    declaredClassToNodeMap.computeIfAbsent(sourceClass, k -> new ArrayList<>(2));
-                            forEachUniNodeList.add(tupleSourceRoot);
-                        }
-                    }
-                });
-        if (nodeNetworkVisualizationConsumer != null) {
-            var constraintSet = scoreInliner.getConstraints();
-            var visualisation = NodeGraph
-                    .of(workingSolution, nodeList, constraintSet, buildHelper::getNodeCreatingStream,
-                            buildHelper::findParentNode)
-                    .buildGraphvizDOT();
-            nodeNetworkVisualizationConsumer.accept(visualisation);
+            if (tupleSourceRoot instanceof AbstractForEachUniNode<?> forEachUniNode) {
+                var forEachClass = forEachUniNode.getForEachClass();
+                var forEachUniNodeList = declaredClassToNodeMap.computeIfAbsent(forEachClass, k -> new ArrayList<>(2));
+                if (forEachUniNodeList.stream().filter(sourceNode -> sourceNode instanceof AbstractForEachUniNode<?>).count() == 3) {
+                    // Each class can have at most three forEach nodes: one including everything, one including consistent + null vars, the last consistent + no null vars.
+                    throw new IllegalStateException("Impossible state: For class (%s) there are already 3 nodes (%s), not adding another (%s).".formatted(forEachClass, forEachUniNodeList, forEachUniNode));
+                }
+                forEachUniNodeList.add(forEachUniNode);
+            } else {
+                for (var sourceClass : tupleSourceRoot.getSourceClasses()) {
+                    var forEachUniNodeList = declaredClassToNodeMap.computeIfAbsent(sourceClass, k -> new ArrayList<>(2));
+                    forEachUniNodeList.add(tupleSourceRoot);
+                }
+            }
+        });
+        if (constraintProfiler != null) {
+            var nodeGraph = NodeGraph.of(workingSolution, nodeList, scoreInliner.getConstraints(), buildHelper::getNodeCreatingStream, buildHelper::findParentNode);
+            constraintProfiler.registerNodeGraph(nodeGraph);
         }
         return buildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap);
     }

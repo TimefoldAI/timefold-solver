@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractSingleInputNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractTwoInputNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.BavetStream;
@@ -74,7 +75,8 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
         for (var node : allNodes) {
             for (var edge : edges) {
                 if (edge.from().equals(node)) {
-                    var line = "    %s -> %s;%n".formatted(nodeId(node), nodeId(edge.to()));
+                    var style = isNodeActive(node) ? "solid" : "dashed";
+                    var line = "    %s -> %s [style=%s];%n".formatted(nodeId(node), nodeId(edge.to()), style);
                     stringBuilder.append(line);
                 }
             }
@@ -113,15 +115,24 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
                 .formatted(stringBuilder.toString());
     }
 
+    private static boolean isNodeActive(AbstractNode node) {
+        return switch (node) {
+            case AbstractSingleInputNode<?> singleInputNode -> singleInputNode.isActive();
+            case AbstractTwoInputNode<?, ?> twoInputNode -> twoInputNode.isActive();
+            case AbstractForEachUniNode<?> forEachUniNode -> forEachUniNode.isActive();
+            default -> throw new IllegalStateException("Impossible state: unknown node type (%s)."
+                    .formatted(node.getClass().getCanonicalName())); // Nodes without an active state are always active.
+        };
+    }
+
     private static String getMetadata(AbstractNode node) {
         var metadata = getBaseDOTProperties("lightgrey", false);
+        metadata.put("style", isNodeActive(node) ? "solid" : "dashed");
         if (node instanceof AbstractForEachUniNode<?>) {
-            metadata.put("style", "filled");
             metadata.put("fillcolor", "#3e00ff");
             metadata.put("fontcolor", "white");
         } else if (node instanceof AbstractTwoInputNode<?, ?>) {
             // Nodes that join get a different color.
-            metadata.put("style", "filled");
             metadata.put("fillcolor", "#ff7700");
             metadata.put("fontcolor", "white");
         }
