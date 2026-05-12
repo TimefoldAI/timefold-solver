@@ -66,7 +66,7 @@
     <jacoco.agent.argLine/>
     <enforcer.failOnDuplicatedClasses>true</enforcer.failOnDuplicatedClasses>
     <!-- Latest release to be used by api-compatibility-check to check backwards compatibility of the API. -->
-    <revapi.oldTimefoldVersion>2.0.0</revapi.oldTimefoldVersion>
+    <revapi.oldTimefoldVersion>2.1.0</revapi.oldTimefoldVersion>
     <!--suppress UnresolvedMavenProperty-->
     <project.root.dir>${maven.multiModuleProjectDirectory}</project.root.dir>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
