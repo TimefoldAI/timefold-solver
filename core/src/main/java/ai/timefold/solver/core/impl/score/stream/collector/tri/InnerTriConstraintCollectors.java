@@ -106,12 +106,6 @@ public class InnerTriConstraintCollectors {
         return new MaxComparableTriCollector<>(mapper);
     }
 
-    public static <A, B, C, Result_> TriConstraintCollector<A, B, C, ?, Result_> max(
-            TriFunction<? super A, ? super B, ? super C, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MaxComparatorTriCollector<>(mapper, comparator);
-    }
-
     public static <A, B, C, Result_, Property_ extends Comparable<? super Property_>>
             TriConstraintCollector<A, B, C, ?, Result_> max(
                     TriFunction<? super A, ? super B, ? super C, ? extends Result_> mapper,
@@ -122,12 +116,6 @@ public class InnerTriConstraintCollectors {
     public static <A, B, C, Result_ extends Comparable<? super Result_>> TriConstraintCollector<A, B, C, ?, Result_> min(
             TriFunction<? super A, ? super B, ? super C, ? extends Result_> mapper) {
         return new MinComparableTriCollector<>(mapper);
-    }
-
-    public static <A, B, C, Result_> TriConstraintCollector<A, B, C, ?, Result_> min(
-            TriFunction<? super A, ? super B, ? super C, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MinComparatorTriCollector<>(mapper, comparator);
     }
 
     public static <A, B, C, Result_, Property_ extends Comparable<? super Property_>>

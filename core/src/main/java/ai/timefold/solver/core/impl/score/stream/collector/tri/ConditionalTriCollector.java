@@ -85,7 +85,7 @@ final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
 
         @Override
         public void update(A a, B b, C c) {
-            boolean nowActive = predicate.test(a, b, c);
+            var nowActive = predicate.test(a, b, c);
             if (active && nowActive) {
                 innerValue.update(a, b, c);
             } else if (active) {

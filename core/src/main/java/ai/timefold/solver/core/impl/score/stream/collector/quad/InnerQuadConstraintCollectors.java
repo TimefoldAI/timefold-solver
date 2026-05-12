@@ -106,12 +106,6 @@ public class InnerQuadConstraintCollectors {
         return new MaxComparableQuadCollector<>(mapper);
     }
 
-    public static <A, B, C, D, Result_> QuadConstraintCollector<A, B, C, D, ?, Result_> max(
-            QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MaxComparatorQuadCollector<>(mapper, comparator);
-    }
-
     public static <A, B, C, D, Result_, Property_ extends Comparable<? super Property_>>
             QuadConstraintCollector<A, B, C, D, ?, Result_> max(
                     QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Result_> mapper,
@@ -122,12 +116,6 @@ public class InnerQuadConstraintCollectors {
     public static <A, B, C, D, Result_ extends Comparable<? super Result_>> QuadConstraintCollector<A, B, C, D, ?, Result_> min(
             QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Result_> mapper) {
         return new MinComparableQuadCollector<>(mapper);
-    }
-
-    public static <A, B, C, D, Result_> QuadConstraintCollector<A, B, C, D, ?, Result_> min(
-            QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MinComparatorQuadCollector<>(mapper, comparator);
     }
 
     public static <A, B, C, D, Result_, Property_ extends Comparable<? super Property_>>

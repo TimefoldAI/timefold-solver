@@ -98,15 +98,8 @@ public class InnerUniConstraintCollectors {
         return new MaxComparableUniCollector<>(mapper);
     }
 
-    public static <A, Result_> UniConstraintCollector<A, ?, Result_> max(Function<? super A, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MaxComparatorUniCollector<>(mapper, comparator);
-    }
-
     public static <A, Result_, Property_ extends Comparable<? super Property_>> UniConstraintCollector<A, ?, Result_>
-            max(
-                    Function<? super A, ? extends Result_> mapper,
-                    Function<? super Result_, ? extends Property_> propertyMapper) {
+            max(Function<? super A, ? extends Result_> mapper, Function<? super Result_, ? extends Property_> propertyMapper) {
         return new MaxPropertyUniCollector<>(mapper, propertyMapper);
     }
 
@@ -115,15 +108,8 @@ public class InnerUniConstraintCollectors {
         return new MinComparableUniCollector<>(mapper);
     }
 
-    public static <A, Result_> UniConstraintCollector<A, ?, Result_> min(Function<? super A, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MinComparatorUniCollector<>(mapper, comparator);
-    }
-
     public static <A, Result_, Property_ extends Comparable<? super Property_>> UniConstraintCollector<A, ?, Result_>
-            min(
-                    Function<? super A, ? extends Result_> mapper,
-                    Function<? super Result_, ? extends Property_> propertyMapper) {
+            min(Function<? super A, ? extends Result_> mapper, Function<? super Result_, ? extends Property_> propertyMapper) {
         return new MinPropertyUniCollector<>(mapper, propertyMapper);
     }
 

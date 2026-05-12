@@ -85,7 +85,7 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
 
         @Override
         public void update(A a, B b) {
-            boolean nowActive = predicate.test(a, b);
+            var nowActive = predicate.test(a, b);
             if (active && nowActive) {
                 innerValue.update(a, b);
             } else if (active) {

@@ -85,7 +85,7 @@ final class ConditionalUniCollector<A, ResultContainer_, Result_>
 
         @Override
         public void update(A a) {
-            boolean nowActive = predicate.test(a);
+            var nowActive = predicate.test(a);
             if (active && nowActive) {
                 innerValue.update(a);
             } else if (active) {

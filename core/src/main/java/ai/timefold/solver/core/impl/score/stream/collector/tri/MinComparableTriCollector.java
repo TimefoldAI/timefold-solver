@@ -23,7 +23,7 @@ final class MinComparableTriCollector<A, B, C, Result_ extends Comparable<? supe
 
     @Override
     public @NonNull Function<AbstractMinMaxSlot.State<Result_, Result_>, Result_> finisher() {
-        return state -> state.result();
+        return AbstractMinMaxSlot.State::result;
     }
 
     @Override

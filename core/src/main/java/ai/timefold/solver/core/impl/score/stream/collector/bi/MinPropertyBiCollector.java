@@ -28,7 +28,7 @@ final class MinPropertyBiCollector<A, B, Result_, Property_ extends Comparable<?
 
     @Override
     public @NonNull Function<AbstractMinMaxSlot.State<Result_, Property_>, Result_> finisher() {
-        return state -> state.result();
+        return AbstractMinMaxSlot.State::result;
     }
 
     @Override

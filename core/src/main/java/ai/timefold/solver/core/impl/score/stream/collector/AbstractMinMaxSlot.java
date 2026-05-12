@@ -18,18 +18,19 @@ import org.jspecify.annotations.Nullable;
 public abstract class AbstractMinMaxSlot<Result_, Property_> {
     public static final class State<Result_, Property_> {
         private final Supplier<Map.Entry<Property_, SequencedMap<Result_, MutableInt>>> firstOrLastEntrySupplier;
-        private final NavigableMap<Property_, SequencedMap<Result_, MutableInt>> propertyToItemCountMap;
+        private final NavigableMap<Property_, SequencedMap<Result_, MutableInt>> propertyToItemCountNavigableMap;
         private final Function<? super Result_, ? extends Property_> propertyFunction;
 
-        private State(boolean isMin, NavigableMap<Property_, SequencedMap<Result_, MutableInt>> propertyToItemCountMap,
+        private State(boolean isMin, NavigableMap<Property_, SequencedMap<Result_, MutableInt>> propertyToItemCountNavigableMap,
                 Function<? super Result_, ? extends Property_> propertyFunction) {
-            this.firstOrLastEntrySupplier = isMin ? propertyToItemCountMap::firstEntry : propertyToItemCountMap::lastEntry;
-            this.propertyToItemCountMap = propertyToItemCountMap;
+            this.firstOrLastEntrySupplier =
+                    isMin ? propertyToItemCountNavigableMap::firstEntry : propertyToItemCountNavigableMap::lastEntry;
+            this.propertyToItemCountNavigableMap = propertyToItemCountNavigableMap;
             this.propertyFunction = propertyFunction;
         }
 
         public Result_ result() {
-            if (propertyToItemCountMap.isEmpty()) {
+            if (propertyToItemCountNavigableMap.isEmpty()) {
                 return null;
             }
             var entry = firstOrLastEntrySupplier.get();
@@ -77,7 +78,7 @@ public abstract class AbstractMinMaxSlot<Result_, Property_> {
     protected void addMapped(Result_ item) {
         cachedItem = item;
         cachedKey = state.propertyFunction.apply(item);
-        cachedInnerMap = state.propertyToItemCountMap.computeIfAbsent(cachedKey, ignored -> new LinkedHashMap<>());
+        cachedInnerMap = state.propertyToItemCountNavigableMap.computeIfAbsent(cachedKey, ignored -> new LinkedHashMap<>());
         cachedCount = cachedInnerMap.computeIfAbsent(item, ignored -> new MutableInt());
         cachedCount.increment();
     }
@@ -100,7 +101,7 @@ public abstract class AbstractMinMaxSlot<Result_, Property_> {
         removeMapped();
         cachedItem = item;
         cachedKey = newKey;
-        cachedInnerMap = state.propertyToItemCountMap.computeIfAbsent(newKey, ignored -> new LinkedHashMap<>());
+        cachedInnerMap = state.propertyToItemCountNavigableMap.computeIfAbsent(newKey, ignored -> new LinkedHashMap<>());
         cachedCount = cachedInnerMap.computeIfAbsent(item, ignored -> new MutableInt());
         cachedCount.increment();
     }
@@ -109,7 +110,7 @@ public abstract class AbstractMinMaxSlot<Result_, Property_> {
         if (cachedCount.decrement() == 0) {
             cachedInnerMap.remove(cachedItem);
             if (cachedInnerMap.isEmpty()) {
-                state.propertyToItemCountMap.remove(cachedKey);
+                state.propertyToItemCountNavigableMap.remove(cachedKey);
             }
         }
     }

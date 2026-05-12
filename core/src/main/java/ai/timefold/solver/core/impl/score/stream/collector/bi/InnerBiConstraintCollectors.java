@@ -104,12 +104,6 @@ public class InnerBiConstraintCollectors {
         return new MaxComparableBiCollector<>(mapper);
     }
 
-    public static <A, B, Result_> BiConstraintCollector<A, B, ?, Result_> max(
-            BiFunction<? super A, ? super B, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MaxComparatorBiCollector<>(mapper, comparator);
-    }
-
     public static <A, B, Result_, Property_ extends Comparable<? super Property_>>
             BiConstraintCollector<A, B, ?, Result_> max(
                     BiFunction<? super A, ? super B, ? extends Result_> mapper,
@@ -120,12 +114,6 @@ public class InnerBiConstraintCollectors {
     public static <A, B, Result_ extends Comparable<? super Result_>> BiConstraintCollector<A, B, ?, Result_> min(
             BiFunction<? super A, ? super B, ? extends Result_> mapper) {
         return new MinComparableBiCollector<>(mapper);
-    }
-
-    public static <A, B, Result_> BiConstraintCollector<A, B, ?, Result_> min(
-            BiFunction<? super A, ? super B, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MinComparatorBiCollector<>(mapper, comparator);
     }
 
     public static <A, B, Result_, Property_ extends Comparable<? super Property_>>
