@@ -253,8 +253,9 @@ A `@PlanningId` property must be:
 * Unique for that specific class
 ** It does not need to be unique across different problem fact classes
 (unless in that rare case that those classes are mixed in the same value range or planning entity collection).
-* An instance of a https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Comparable.html[`Comparable` class].
-** It's recommended to use types such as `Long`, `String` or `UUID`.
+* Of a type that implements https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Comparable.html[`Comparable`].
+** The type must also provide a stable `equals()`/`hashCode()` contract.
+** It's recommended to use immutable types such as `Long`, `String` or `UUID`.
 * Never `null` by the time `Solver.solve()` is called.
 
 
