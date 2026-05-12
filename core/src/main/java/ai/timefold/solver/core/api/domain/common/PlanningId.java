@@ -6,6 +6,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.util.UUID;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
@@ -23,7 +24,7 @@ import ai.timefold.solver.core.preview.api.move.Move;
  * {@link ValueRangeProvider planning value} class or any {@link ProblemFactCollectionProperty problem fact} class.
  * <p>
  * The return type can be any {@link Comparable} type which overrides {@link Object#equals(Object)} and
- * {@link Object#hashCode()}, and is usually {@link Long} or {@link String}.
+ * {@link Object#hashCode()}, and is usually {@link Long}, {@link UUID} or {@link String}.
  * It must never return a null instance.
  */
 @Target({ METHOD, FIELD })

@@ -1,8 +1,9 @@
 package ai.timefold.solver.core.impl.bavet.uni;
 
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
@@ -32,7 +33,7 @@ public abstract sealed class AbstractForEachUniNode<A>
     private final Class<A> forEachClass;
     private final int outputStoreSize;
     private final StaticPropagationQueue<UniTuple<A>> propagationQueue;
-    protected final Map<A, UniTuple<A>> tupleMap = new IdentityHashMap<>(1000);
+    protected final Map<A, UniTuple<A>> tupleMap = HashMap.newHashMap(1000);
 
     protected AbstractForEachUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             int outputStoreSize) {
@@ -61,8 +62,11 @@ public abstract sealed class AbstractForEachUniNode<A>
         var tuple = UniTuple.of(a, outputStoreSize);
         var old = tupleMap.put(a, tuple);
         if (old != null) {
-            throw new IllegalStateException("The fact (%s) was already inserted, so it cannot insert again."
-                    .formatted(a));
+            throw new IllegalStateException("""
+                    The fact (%s) was already inserted.
+                    Maybe your entities mistakenly equal each other?
+                    Maybe your @%s's collection properties contain duplicates?"""
+                    .formatted(a, PlanningSolution.class.getSimpleName()));
         }
         propagationQueue.insert(tuple);
     }
@@ -71,7 +75,7 @@ public abstract sealed class AbstractForEachUniNode<A>
         var state = tuple.getState();
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
-                throw new IllegalStateException("The fact (%s) was retracted, so it cannot update."
+                throw new IllegalStateException("The fact (%s) was already retracted."
                         .formatted(a));
             }
             // CREATING or UPDATING is ignored; it's already in the queue.
@@ -84,7 +88,7 @@ public abstract sealed class AbstractForEachUniNode<A>
     public void retract(@Nullable A a) {
         var tuple = tupleMap.remove(a);
         if (tuple == null) {
-            throw new IllegalStateException("The fact (%s) was never inserted, so it cannot retract."
+            throw new IllegalStateException("The fact (%s) was never inserted."
                     .formatted(a));
         }
         retractExisting(a, tuple);
@@ -94,7 +98,7 @@ public abstract sealed class AbstractForEachUniNode<A>
         var state = tuple.getState();
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
-                throw new IllegalStateException("The fact (%s) was already retracted, so it cannot retract."
+                throw new IllegalStateException("The fact (%s) was already retracted."
                         .formatted(a));
             }
             propagationQueue.retract(tuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);

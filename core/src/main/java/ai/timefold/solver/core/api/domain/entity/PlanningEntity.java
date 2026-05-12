@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 import java.util.Comparator;
 
 import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
+import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
@@ -25,6 +26,22 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
  *
  * If a planning entity has neither a genuine nor a shadow variable,
  * it is not a planning entity and the solver will fail fast.
+ *
+ * <p>
+ * Planning entities have special requirements on {@link Object#equals(Object)} and {@link Object#hashCode()}:
+ *
+ * <ul>
+ * <li>If two different entities are equal as defined by {@link Object#equals(Object)},
+ * they must represent the same entity.
+ * The solver will treat them as one entity.</li>
+ * <li>Entity {@link Object#equals(Object)} and {@link Object#hashCode()} must not depend on any planning variable.
+ * The return value of these methods must not change when any planning variable changes.
+ * It is recommended for entities to implement a unique {@link PlanningId},
+ * and use that for equality comparisons.</li>
+ * </ul>
+ *
+ * Failing to follow these requirements will cause undefined behavior in the solver,
+ * ranging from explicit fail fasts to silently producing incorrect results.
  *
  * <p>
  * The class should have a public no-arg constructor, so it can be cloned

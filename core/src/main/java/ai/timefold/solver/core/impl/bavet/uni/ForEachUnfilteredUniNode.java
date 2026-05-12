@@ -20,7 +20,7 @@ public final class ForEachUnfilteredUniNode<A>
     public void update(@Nullable A a) {
         var tuple = tupleMap.get(a);
         if (tuple == null) {
-            throw new IllegalStateException("The fact (%s) was never inserted, so it cannot update."
+            throw new IllegalStateException("The fact (%s) was never inserted."
                     .formatted(a));
         }
         updateExisting(a, tuple);
