@@ -1794,6 +1794,7 @@ class DefaultSolverTest {
         } finally {
             Thread.currentThread().setContextClassLoader(originalClassLoader);
         }
+    }
 
     @Test
     void solveListVarEntityRangeModelWithTreeSet() {
