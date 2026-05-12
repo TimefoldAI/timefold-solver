@@ -36,8 +36,8 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
  * The solver will treat them as one entity.</li>
  * <li>Entity {@link Object#equals(Object)} and {@link Object#hashCode()} must not depend on any planning variable.
  * The return value of these methods must not change when any planning variable changes.
- * It is recommended for entities to implement a unique {@link PlanningId},
- * and use that for equality comparisons.</li>
+ * It is recommended for entities to declare a unique member annotated with {@link PlanningId},
+ * and use that member for equality comparisons.</li>
  * </ul>
  *
  * Failing to follow these requirements will cause undefined behavior in the solver,
