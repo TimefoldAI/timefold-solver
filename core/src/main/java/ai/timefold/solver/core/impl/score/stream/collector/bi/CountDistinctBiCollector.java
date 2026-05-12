@@ -4,7 +4,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongDistinctSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -27,13 +27,13 @@ final class CountDistinctBiCollector<A, B, Mapped_>
     }
 
     @Override
-    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(
+    protected BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(
             AbstractLongDistinctSlot.State<Mapped_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractLongDistinctSlot<Mapped_>
-            implements BiConstraintCollectorAccumulatedValue<A, B> {
+            implements BiConstraintCollectorValueHandle<A, B> {
         Slot(AbstractLongDistinctSlot.State<Mapped_> state) {
             super(state);
         }

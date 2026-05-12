@@ -7,7 +7,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractSortedSetSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -34,13 +34,13 @@ final class ToSortedSetComparatorQuadCollector<A, B, C, D, Mapped_>
     }
 
     @Override
-    protected QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(
+    protected QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(
             AbstractSortedSetSlot.State<Mapped_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractSortedSetSlot<Mapped_>
-            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+            implements QuadConstraintCollectorValueHandle<A, B, C, D> {
         Slot(AbstractSortedSetSlot.State<Mapped_> state) {
             super(state);
         }

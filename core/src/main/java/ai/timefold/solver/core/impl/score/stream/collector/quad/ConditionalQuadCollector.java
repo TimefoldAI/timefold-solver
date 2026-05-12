@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
@@ -43,7 +43,7 @@ final class ConditionalQuadCollector<A, B, C, D, ResultContainer_, Result_>
 
     @Override
     public @NonNull QuadConstraintCollectorAccumulator<ResultContainer_, A, B, C, D> incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -66,11 +66,11 @@ final class ConditionalQuadCollector<A, B, C, D, ResultContainer_, Result_>
         return Objects.hash(predicate, delegate);
     }
 
-    private final class AccumulatedValue implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
-        private final QuadConstraintCollectorAccumulatedValue<A, B, C, D> innerValue;
+    private final class ValueHandle implements QuadConstraintCollectorValueHandle<A, B, C, D> {
+        private final QuadConstraintCollectorValueHandle<A, B, C, D> innerValue;
         private boolean active = false;
 
-        AccumulatedValue(ResultContainer_ container) {
+        ValueHandle(ResultContainer_ container) {
             this.innerValue = innerIncremental.intoGroup(container);
         }
 

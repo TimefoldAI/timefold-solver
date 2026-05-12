@@ -5,8 +5,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
@@ -19,7 +19,7 @@ abstract class UndoableActionableQuadCollector<A, B, C, D, Input_, Output_, Stat
         this.mapper = mapper;
     }
 
-    protected abstract QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(State_ state);
+    protected abstract QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(State_ state);
 
     @Override
     public boolean isIncremental() {

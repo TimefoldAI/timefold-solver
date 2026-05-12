@@ -7,7 +7,7 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractToMapSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -42,13 +42,13 @@ final class ToMultiMapUniCollector<A, Key_, Value_, Set_ extends Set<Value_>, Re
     }
 
     @Override
-    protected UniConstraintCollectorAccumulatedValue<A>
+    protected UniConstraintCollectorValueHandle<A>
             newAccumulatedValue(AbstractToMapSlot.State<Key_, Value_, Set_, Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractToMapSlot<Key_, Value_, Set_, Result_>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
         Slot(AbstractToMapSlot.State<Key_, Value_, Set_, Result_> state) {
             super(state);
         }

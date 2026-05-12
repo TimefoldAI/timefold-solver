@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractMinMaxSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -27,13 +27,13 @@ final class MaxComparableQuadCollector<A, B, C, D, Result_ extends Comparable<? 
     }
 
     @Override
-    protected QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(
+    protected QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(
             AbstractMinMaxSlot.State<Result_, Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractMinMaxSlot<Result_, Result_>
-            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+            implements QuadConstraintCollectorValueHandle<A, B, C, D> {
         Slot(AbstractMinMaxSlot.State<Result_, Result_> state) {
             super(state);
         }

@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongAverageSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -26,12 +26,12 @@ final class AverageQuadCollector<A, B, C, D>
     }
 
     @Override
-    protected QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(AbstractLongAverageSlot.State state) {
+    protected QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(AbstractLongAverageSlot.State state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractLongAverageSlot
-            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+            implements QuadConstraintCollectorValueHandle<A, B, C, D> {
         Slot(AbstractLongAverageSlot.State state) {
             super(state);
         }

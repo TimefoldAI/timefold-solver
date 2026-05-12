@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConnectedRangesSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -42,13 +42,13 @@ final class ConnectedRangesTriConstraintCollector<A, B, C, Interval_, Point_ ext
     }
 
     @Override
-    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+    protected TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(
             AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractConnectedRangesSlot<Interval_, Point_, Difference_>
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+            implements TriConstraintCollectorValueHandle<A, B, C> {
         Slot(AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_> state) {
             super(state);
         }

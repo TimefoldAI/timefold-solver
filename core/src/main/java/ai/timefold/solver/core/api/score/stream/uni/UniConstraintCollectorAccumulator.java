@@ -28,6 +28,6 @@ public interface UniConstraintCollectorAccumulator<ResultContainer_, A> {
      * @return the accumulator for the value, which will be used to insert the value to the group,
      *         to update it while in the group, and to remove it from the group.
      */
-    UniConstraintCollectorAccumulatedValue<A> intoGroup(ResultContainer_ resultContainer);
+    UniConstraintCollectorValueHandle<A> intoGroup(ResultContainer_ resultContainer);
 
 }

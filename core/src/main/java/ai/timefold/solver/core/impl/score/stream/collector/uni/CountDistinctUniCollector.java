@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.collector.uni;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongDistinctSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -25,13 +25,13 @@ final class CountDistinctUniCollector<A, Mapped_>
     }
 
     @Override
-    protected UniConstraintCollectorAccumulatedValue<A>
+    protected UniConstraintCollectorValueHandle<A>
             newAccumulatedValue(AbstractLongDistinctSlot.State<Mapped_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractLongDistinctSlot<Mapped_>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
         Slot(AbstractLongDistinctSlot.State<Mapped_> state) {
             super(state);
         }

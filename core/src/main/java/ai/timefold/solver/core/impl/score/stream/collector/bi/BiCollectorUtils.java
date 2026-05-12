@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.collector.bi;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -44,18 +44,18 @@ public final class BiCollectorUtils {
                 BiConstraintCollectorAccumulator<ResultContainer_, A, B> {
 
         @Override
-        public BiConstraintCollectorAccumulatedValue<A, B> intoGroup(ResultContainer_ container) {
-            return new BiAccumulatedValue<>(accumulator, container);
+        public BiConstraintCollectorValueHandle<A, B> intoGroup(ResultContainer_ container) {
+            return new BiValueHandle<>(accumulator, container);
         }
     }
 
-    private static final class BiAccumulatedValue<ResultContainer_, A, B>
-            implements BiConstraintCollectorAccumulatedValue<A, B> {
+    private static final class BiValueHandle<ResultContainer_, A, B>
+            implements BiConstraintCollectorValueHandle<A, B> {
         private final TriFunction<ResultContainer_, @Nullable A, @Nullable B, Runnable> accumulator;
         private final ResultContainer_ container;
         private @Nullable Runnable undo;
 
-        BiAccumulatedValue(TriFunction<ResultContainer_, A, B, Runnable> accumulator, ResultContainer_ container) {
+        BiValueHandle(TriFunction<ResultContainer_, A, B, Runnable> accumulator, ResultContainer_ container) {
             this.accumulator = accumulator;
             this.container = container;
         }

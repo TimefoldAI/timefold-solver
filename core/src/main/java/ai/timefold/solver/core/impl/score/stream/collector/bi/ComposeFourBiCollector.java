@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 import org.jspecify.annotations.NonNull;
@@ -94,7 +94,7 @@ final class ComposeFourBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultH
     public @NonNull
             BiConstraintCollectorAccumulator<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B>
             incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -124,13 +124,13 @@ final class ComposeFourBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultH
         return Objects.hash(first, second, third, fourth, composeFunction);
     }
 
-    private final class AccumulatedValue implements BiConstraintCollectorAccumulatedValue<A, B> {
-        private final BiConstraintCollectorAccumulatedValue<A, B> v1;
-        private final BiConstraintCollectorAccumulatedValue<A, B> v2;
-        private final BiConstraintCollectorAccumulatedValue<A, B> v3;
-        private final BiConstraintCollectorAccumulatedValue<A, B> v4;
+    private final class ValueHandle implements BiConstraintCollectorValueHandle<A, B> {
+        private final BiConstraintCollectorValueHandle<A, B> v1;
+        private final BiConstraintCollectorValueHandle<A, B> v2;
+        private final BiConstraintCollectorValueHandle<A, B> v3;
+        private final BiConstraintCollectorValueHandle<A, B> v4;
 
-        AccumulatedValue(Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_> container) {
+        ValueHandle(Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_> container) {
             this.v1 = firstIncremental.intoGroup(container.a());
             this.v2 = secondIncremental.intoGroup(container.b());
             this.v3 = thirdIncremental.intoGroup(container.c());

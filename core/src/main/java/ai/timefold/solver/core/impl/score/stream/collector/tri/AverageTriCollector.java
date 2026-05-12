@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongAverageSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -26,12 +26,12 @@ final class AverageTriCollector<A, B, C>
     }
 
     @Override
-    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(AbstractLongAverageSlot.State state) {
+    protected TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(AbstractLongAverageSlot.State state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractLongAverageSlot
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+            implements TriConstraintCollectorValueHandle<A, B, C> {
         Slot(AbstractLongAverageSlot.State state) {
             super(state);
         }

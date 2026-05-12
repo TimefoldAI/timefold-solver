@@ -5,7 +5,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractMinMaxSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -32,13 +32,13 @@ final class MaxPropertyBiCollector<A, B, Result_, Property_ extends Comparable<?
     }
 
     @Override
-    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(
+    protected BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(
             AbstractMinMaxSlot.State<Result_, Property_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractMinMaxSlot<Result_, Property_>
-            implements BiConstraintCollectorAccumulatedValue<A, B> {
+            implements BiConstraintCollectorValueHandle<A, B> {
         Slot(AbstractMinMaxSlot.State<Result_, Property_> state) {
             super(state);
         }

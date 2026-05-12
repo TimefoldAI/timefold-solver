@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 import org.jspecify.annotations.NonNull;
@@ -94,7 +94,7 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
     public @NonNull
             UniConstraintCollectorAccumulator<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A>
             incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -125,13 +125,13 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
         return Objects.hash(first, second, third, fourth, composeFunction);
     }
 
-    private final class AccumulatedValue implements UniConstraintCollectorAccumulatedValue<A> {
-        private final UniConstraintCollectorAccumulatedValue<A> v1;
-        private final UniConstraintCollectorAccumulatedValue<A> v2;
-        private final UniConstraintCollectorAccumulatedValue<A> v3;
-        private final UniConstraintCollectorAccumulatedValue<A> v4;
+    private final class ValueHandle implements UniConstraintCollectorValueHandle<A> {
+        private final UniConstraintCollectorValueHandle<A> v1;
+        private final UniConstraintCollectorValueHandle<A> v2;
+        private final UniConstraintCollectorValueHandle<A> v3;
+        private final UniConstraintCollectorValueHandle<A> v4;
 
-        AccumulatedValue(Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_> container) {
+        ValueHandle(Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_> container) {
             this.v1 = firstIncremental.intoGroup(container.a());
             this.v2 = secondIncremental.intoGroup(container.b());
             this.v3 = thirdIncremental.intoGroup(container.c());

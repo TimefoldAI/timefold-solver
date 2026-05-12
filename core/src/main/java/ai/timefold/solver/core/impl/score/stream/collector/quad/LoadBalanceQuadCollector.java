@@ -9,8 +9,8 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLoadBalanceSlot;
 import ai.timefold.solver.core.impl.score.stream.collector.DefaultLoadBalance;
 
@@ -69,7 +69,7 @@ final class LoadBalanceQuadCollector<A, B, C, D, Balanced_>
     }
 
     private final class Slot extends AbstractLoadBalanceSlot<Balanced_>
-            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+            implements QuadConstraintCollectorValueHandle<A, B, C, D> {
 
         Slot(DefaultLoadBalance<Balanced_> container) {
             super(container);

@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractSequenceSlot;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
@@ -33,13 +33,13 @@ final class ConsecutiveSequencesUniConstraintCollector<A>
     }
 
     @Override
-    protected UniConstraintCollectorAccumulatedValue<A>
+    protected UniConstraintCollectorValueHandle<A>
             newAccumulatedValue(AbstractSequenceSlot.State<A> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractSequenceSlot<A>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
         Slot(AbstractSequenceSlot.State<A> state) {
             super(state);
         }

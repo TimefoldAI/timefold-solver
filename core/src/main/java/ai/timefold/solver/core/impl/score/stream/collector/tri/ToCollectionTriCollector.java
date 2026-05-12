@@ -7,7 +7,7 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractToCollectionSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -34,13 +34,13 @@ final class ToCollectionTriCollector<A, B, C, Mapped_, Result_ extends Collectio
     }
 
     @Override
-    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+    protected TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(
             AbstractToCollectionSlot.State<Mapped_, Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractToCollectionSlot<Mapped_, Result_>
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+            implements TriConstraintCollectorValueHandle<A, B, C> {
         Slot(AbstractToCollectionSlot.State<Mapped_, Result_> state) {
             super(state);
         }

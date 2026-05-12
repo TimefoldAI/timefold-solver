@@ -6,8 +6,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 import org.jspecify.annotations.NonNull;
@@ -93,7 +93,7 @@ final class ComposeFourTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Res
     public @NonNull
             TriConstraintCollectorAccumulator<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, C>
             incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -124,13 +124,13 @@ final class ComposeFourTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Res
         return Objects.hash(first, second, third, fourth, composeFunction);
     }
 
-    private final class AccumulatedValue implements TriConstraintCollectorAccumulatedValue<A, B, C> {
-        private final TriConstraintCollectorAccumulatedValue<A, B, C> v1;
-        private final TriConstraintCollectorAccumulatedValue<A, B, C> v2;
-        private final TriConstraintCollectorAccumulatedValue<A, B, C> v3;
-        private final TriConstraintCollectorAccumulatedValue<A, B, C> v4;
+    private final class ValueHandle implements TriConstraintCollectorValueHandle<A, B, C> {
+        private final TriConstraintCollectorValueHandle<A, B, C> v1;
+        private final TriConstraintCollectorValueHandle<A, B, C> v2;
+        private final TriConstraintCollectorValueHandle<A, B, C> v3;
+        private final TriConstraintCollectorValueHandle<A, B, C> v4;
 
-        AccumulatedValue(Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_> container) {
+        ValueHandle(Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_> container) {
             this.v1 = firstIncremental.intoGroup(container.a());
             this.v2 = secondIncremental.intoGroup(container.b());
             this.v3 = thirdIncremental.intoGroup(container.c());

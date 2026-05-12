@@ -5,8 +5,8 @@ import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
@@ -19,7 +19,7 @@ abstract class ObjectCalculatorBiCollector<A, B, Input_, Output_, State_>
         this.mapper = mapper;
     }
 
-    protected abstract BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(State_ state);
+    protected abstract BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(State_ state);
 
     @Override
     public boolean isIncremental() {

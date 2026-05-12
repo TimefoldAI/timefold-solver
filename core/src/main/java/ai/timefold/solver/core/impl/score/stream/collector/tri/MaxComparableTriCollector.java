@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractMinMaxSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -27,13 +27,13 @@ final class MaxComparableTriCollector<A, B, C, Result_ extends Comparable<? supe
     }
 
     @Override
-    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+    protected TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(
             AbstractMinMaxSlot.State<Result_, Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractMinMaxSlot<Result_, Result_>
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+            implements TriConstraintCollectorValueHandle<A, B, C> {
         Slot(AbstractMinMaxSlot.State<Result_, Result_> state) {
             super(state);
         }

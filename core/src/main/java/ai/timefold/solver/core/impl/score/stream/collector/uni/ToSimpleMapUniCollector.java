@@ -6,7 +6,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractToMapSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -41,13 +41,13 @@ final class ToSimpleMapUniCollector<A, Key_, Value_, Result_ extends Map<Key_, V
     }
 
     @Override
-    protected UniConstraintCollectorAccumulatedValue<A>
+    protected UniConstraintCollectorValueHandle<A>
             newAccumulatedValue(AbstractToMapSlot.State<Key_, Value_, Value_, Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractToMapSlot<Key_, Value_, Value_, Result_>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
         Slot(AbstractToMapSlot.State<Key_, Value_, Value_, Result_> state) {
             super(state);
         }

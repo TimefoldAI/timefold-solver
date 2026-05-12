@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractSequenceSlot;
 
@@ -34,12 +34,12 @@ final class ConsecutiveSequencesBiConstraintCollector<A, B, Result_>
     }
 
     @Override
-    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(AbstractSequenceSlot.State<Result_> state) {
+    protected BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(AbstractSequenceSlot.State<Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractSequenceSlot<Result_>
-            implements BiConstraintCollectorAccumulatedValue<A, B> {
+            implements BiConstraintCollectorValueHandle<A, B> {
         Slot(AbstractSequenceSlot.State<Result_> state) {
             super(state);
         }

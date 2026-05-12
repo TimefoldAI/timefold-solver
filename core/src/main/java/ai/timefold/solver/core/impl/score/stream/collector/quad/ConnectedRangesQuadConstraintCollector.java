@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConnectedRangesSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -43,13 +43,13 @@ final class ConnectedRangesQuadConstraintCollector<A, B, C, D, Interval_, Point_
     }
 
     @Override
-    protected QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(
+    protected QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(
             AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractConnectedRangesSlot<Interval_, Point_, Difference_>
-            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+            implements QuadConstraintCollectorValueHandle<A, B, C, D> {
         Slot(AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_> state) {
             super(state);
         }

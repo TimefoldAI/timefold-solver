@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Triple;
 
 import org.jspecify.annotations.NonNull;
@@ -80,7 +80,7 @@ final class ComposeThreeUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHo
     @Override
     public @NonNull UniConstraintCollectorAccumulator<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A>
             incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -108,12 +108,12 @@ final class ComposeThreeUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHo
         return Objects.hash(first, second, third, composeFunction);
     }
 
-    private final class AccumulatedValue implements UniConstraintCollectorAccumulatedValue<A> {
-        private final UniConstraintCollectorAccumulatedValue<A> v1;
-        private final UniConstraintCollectorAccumulatedValue<A> v2;
-        private final UniConstraintCollectorAccumulatedValue<A> v3;
+    private final class ValueHandle implements UniConstraintCollectorValueHandle<A> {
+        private final UniConstraintCollectorValueHandle<A> v1;
+        private final UniConstraintCollectorValueHandle<A> v2;
+        private final UniConstraintCollectorValueHandle<A> v3;
 
-        AccumulatedValue(Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_> container) {
+        ValueHandle(Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_> container) {
             this.v1 = firstIncremental.intoGroup(container.a());
             this.v2 = secondIncremental.intoGroup(container.b());
             this.v3 = thirdIncremental.intoGroup(container.c());

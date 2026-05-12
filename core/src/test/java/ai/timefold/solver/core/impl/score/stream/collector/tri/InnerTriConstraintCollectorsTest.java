@@ -33,7 +33,7 @@ import java.util.SortedSet;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
@@ -1067,7 +1067,7 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
         return collector.accumulator().apply((Container_) container, valueA, valueB, valueC);
     }
 
-    private static <A, B, C, Container_, Result_> TriConstraintCollectorAccumulatedValue<A, B, C> insert(
+    private static <A, B, C, Container_, Result_> TriConstraintCollectorValueHandle<A, B, C> insert(
             TriConstraintCollector<A, B, C, Container_, Result_> collector, Object container, A a, B b, C c) {
         var slot = collector.incrementalAccumulator().intoGroup((Container_) container);
         slot.add(a, b, c);

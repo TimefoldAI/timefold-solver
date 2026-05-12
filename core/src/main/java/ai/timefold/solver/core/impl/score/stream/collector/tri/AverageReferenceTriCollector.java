@@ -5,7 +5,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceAverageSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -32,13 +32,13 @@ final class AverageReferenceTriCollector<A, B, C, Mapped_, Average_>
     }
 
     @Override
-    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+    protected TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(
             AbstractReferenceAverageSlot.State<Mapped_, Average_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractReferenceAverageSlot<Mapped_, Average_>
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+            implements TriConstraintCollectorValueHandle<A, B, C> {
         Slot(AbstractReferenceAverageSlot.State<Mapped_, Average_> state) {
             super(state);
         }

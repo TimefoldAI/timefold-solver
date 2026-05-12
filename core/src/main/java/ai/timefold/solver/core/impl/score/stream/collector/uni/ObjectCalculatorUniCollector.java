@@ -5,8 +5,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
@@ -19,7 +19,7 @@ abstract class ObjectCalculatorUniCollector<A, Input_, Output_, State_>
         this.mapper = Objects.requireNonNull(mapper);
     }
 
-    protected abstract UniConstraintCollectorAccumulatedValue<A> newAccumulatedValue(State_ state);
+    protected abstract UniConstraintCollectorValueHandle<A> newAccumulatedValue(State_ state);
 
     @Override
     public boolean isIncremental() {

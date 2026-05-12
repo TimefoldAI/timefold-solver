@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.bavet.bi;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
@@ -48,13 +48,13 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
 
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
-        BiConstraintCollectorAccumulatedValue<OldA, OldB> groupElement = tuple.getStore(groupAccumulatorIndex);
+        BiConstraintCollectorValueHandle<OldA, OldB> groupElement = tuple.getStore(groupAccumulatorIndex);
         groupElement.update(tuple.getA(), tuple.getB());
     }
 
     @Override
     protected void groupRetract(BiTuple<OldA, OldB> tuple) {
-        BiConstraintCollectorAccumulatedValue<OldA, OldB> groupElement = tuple.removeStore(groupAccumulatorIndex);
+        BiConstraintCollectorValueHandle<OldA, OldB> groupElement = tuple.removeStore(groupAccumulatorIndex);
         groupElement.remove();
     }
 }

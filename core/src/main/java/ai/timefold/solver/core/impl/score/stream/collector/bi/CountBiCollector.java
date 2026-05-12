@@ -5,8 +5,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractCountSlot;
 import ai.timefold.solver.core.impl.util.MutableLong;
 
@@ -49,7 +49,7 @@ final class CountBiCollector<A, B> implements BiConstraintCollector<A, B, Mutabl
     }
 
     private static final class Slot<A, B> extends AbstractCountSlot
-            implements BiConstraintCollectorAccumulatedValue<A, B> {
+            implements BiConstraintCollectorValueHandle<A, B> {
 
         Slot(MutableLong state) {
             super(state);

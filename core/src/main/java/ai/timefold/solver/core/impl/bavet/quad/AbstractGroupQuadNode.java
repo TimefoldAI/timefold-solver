@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.bavet.quad;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
@@ -49,13 +49,13 @@ abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends T
 
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, QuadTuple<OldA, OldB, OldC, OldD> tuple) {
-        QuadConstraintCollectorAccumulatedValue<OldA, OldB, OldC, OldD> groupElement = tuple.getStore(groupAccumulatorIndex);
+        QuadConstraintCollectorValueHandle<OldA, OldB, OldC, OldD> groupElement = tuple.getStore(groupAccumulatorIndex);
         groupElement.update(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
     }
 
     @Override
     protected void groupRetract(QuadTuple<OldA, OldB, OldC, OldD> tuple) {
-        QuadConstraintCollectorAccumulatedValue<OldA, OldB, OldC, OldD> groupElement = tuple.removeStore(groupAccumulatorIndex);
+        QuadConstraintCollectorValueHandle<OldA, OldB, OldC, OldD> groupElement = tuple.removeStore(groupAccumulatorIndex);
         groupElement.remove();
     }
 

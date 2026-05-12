@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.bavet.uni;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
@@ -48,13 +48,13 @@ abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, Re
 
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
-        UniConstraintCollectorAccumulatedValue<OldA> groupElement = tuple.getStore(groupAccumulatorIndex);
+        UniConstraintCollectorValueHandle<OldA> groupElement = tuple.getStore(groupAccumulatorIndex);
         groupElement.update(tuple.getA());
     }
 
     @Override
     protected void groupRetract(UniTuple<OldA> tuple) {
-        UniConstraintCollectorAccumulatedValue<OldA> groupElement = tuple.removeStore(groupAccumulatorIndex);
+        UniConstraintCollectorValueHandle<OldA> groupElement = tuple.removeStore(groupAccumulatorIndex);
         groupElement.remove();
     }
 

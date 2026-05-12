@@ -8,8 +8,8 @@ import java.util.function.ToLongBiFunction;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLoadBalanceSlot;
 import ai.timefold.solver.core.impl.score.stream.collector.DefaultLoadBalance;
@@ -69,7 +69,7 @@ final class LoadBalanceBiCollector<A, B, Balanced_>
     }
 
     private final class Slot extends AbstractLoadBalanceSlot<Balanced_>
-            implements BiConstraintCollectorAccumulatedValue<A, B> {
+            implements BiConstraintCollectorValueHandle<A, B> {
 
         Slot(DefaultLoadBalance<Balanced_> container) {
             super(container);

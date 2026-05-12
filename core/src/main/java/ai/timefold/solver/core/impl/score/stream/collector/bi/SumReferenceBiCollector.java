@@ -6,7 +6,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceSumSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -38,12 +38,12 @@ final class SumReferenceBiCollector<A, B, Result_>
     }
 
     @Override
-    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(AbstractReferenceSumSlot.State<Result_> state) {
+    protected BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(AbstractReferenceSumSlot.State<Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractReferenceSumSlot<Result_>
-            implements BiConstraintCollectorAccumulatedValue<A, B> {
+            implements BiConstraintCollectorValueHandle<A, B> {
         Slot(AbstractReferenceSumSlot.State<Result_> state) {
             super(state);
         }

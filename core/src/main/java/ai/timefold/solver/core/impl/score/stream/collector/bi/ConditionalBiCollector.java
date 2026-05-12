@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
@@ -43,7 +43,7 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
 
     @Override
     public @NonNull BiConstraintCollectorAccumulator<ResultContainer_, A, B> incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -66,11 +66,11 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
         return Objects.hash(predicate, delegate);
     }
 
-    private final class AccumulatedValue implements BiConstraintCollectorAccumulatedValue<A, B> {
-        private final BiConstraintCollectorAccumulatedValue<A, B> innerValue;
+    private final class ValueHandle implements BiConstraintCollectorValueHandle<A, B> {
+        private final BiConstraintCollectorValueHandle<A, B> innerValue;
         private boolean active = false;
 
-        AccumulatedValue(ResultContainer_ container) {
+        ValueHandle(ResultContainer_ container) {
             this.innerValue = innerIncremental.intoGroup(container);
         }
 

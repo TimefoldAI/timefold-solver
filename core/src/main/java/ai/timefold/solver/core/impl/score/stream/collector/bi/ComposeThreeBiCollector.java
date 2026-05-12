@@ -6,8 +6,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Triple;
 
 import org.jspecify.annotations.NonNull;
@@ -79,7 +79,7 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
     @Override
     public @NonNull BiConstraintCollectorAccumulator<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B>
             incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -106,12 +106,12 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
         return Objects.hash(first, second, third, composeFunction);
     }
 
-    private final class AccumulatedValue implements BiConstraintCollectorAccumulatedValue<A, B> {
-        private final BiConstraintCollectorAccumulatedValue<A, B> v1;
-        private final BiConstraintCollectorAccumulatedValue<A, B> v2;
-        private final BiConstraintCollectorAccumulatedValue<A, B> v3;
+    private final class ValueHandle implements BiConstraintCollectorValueHandle<A, B> {
+        private final BiConstraintCollectorValueHandle<A, B> v1;
+        private final BiConstraintCollectorValueHandle<A, B> v2;
+        private final BiConstraintCollectorValueHandle<A, B> v3;
 
-        AccumulatedValue(Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_> container) {
+        ValueHandle(Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_> container) {
             this.v1 = firstIncremental.intoGroup(container.a());
             this.v2 = secondIncremental.intoGroup(container.b());
             this.v3 = thirdIncremental.intoGroup(container.c());

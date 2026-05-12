@@ -6,8 +6,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.jspecify.annotations.NonNull;
@@ -64,7 +64,7 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
 
     @Override
     public @NonNull UniConstraintCollectorAccumulator<Pair<ResultHolder1_, ResultHolder2_>, A> incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -89,11 +89,11 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
         return Objects.hash(first, second, composeFunction);
     }
 
-    private final class AccumulatedValue implements UniConstraintCollectorAccumulatedValue<A> {
-        private final UniConstraintCollectorAccumulatedValue<A> v1;
-        private final UniConstraintCollectorAccumulatedValue<A> v2;
+    private final class ValueHandle implements UniConstraintCollectorValueHandle<A> {
+        private final UniConstraintCollectorValueHandle<A> v1;
+        private final UniConstraintCollectorValueHandle<A> v2;
 
-        AccumulatedValue(Pair<ResultHolder1_, ResultHolder2_> container) {
+        ValueHandle(Pair<ResultHolder1_, ResultHolder2_> container) {
             this.v1 = firstIncremental.intoGroup(container.key());
             this.v2 = secondIncremental.intoGroup(container.value());
         }

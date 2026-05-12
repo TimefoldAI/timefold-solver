@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractToCollectionSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -33,13 +33,13 @@ final class ToCollectionUniCollector<A, Mapped_, Result_ extends Collection<Mapp
     }
 
     @Override
-    protected UniConstraintCollectorAccumulatedValue<A>
+    protected UniConstraintCollectorValueHandle<A>
             newAccumulatedValue(AbstractToCollectionSlot.State<Mapped_, Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractToCollectionSlot<Mapped_, Result_>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
         Slot(AbstractToCollectionSlot.State<Mapped_, Result_> state) {
             super(state);
         }

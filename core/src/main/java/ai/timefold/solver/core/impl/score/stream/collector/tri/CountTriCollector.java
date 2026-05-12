@@ -5,8 +5,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractCountSlot;
 import ai.timefold.solver.core.impl.util.MutableLong;
 
@@ -49,7 +49,7 @@ final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C
     }
 
     private static final class Slot<A, B, C> extends AbstractCountSlot
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+            implements TriConstraintCollectorValueHandle<A, B, C> {
 
         Slot(MutableLong state) {
             super(state);

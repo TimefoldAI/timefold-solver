@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
@@ -43,7 +43,7 @@ final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
 
     @Override
     public @NonNull TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -66,11 +66,11 @@ final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
         return Objects.hash(predicate, delegate);
     }
 
-    private final class AccumulatedValue implements TriConstraintCollectorAccumulatedValue<A, B, C> {
-        private final TriConstraintCollectorAccumulatedValue<A, B, C> innerValue;
+    private final class ValueHandle implements TriConstraintCollectorValueHandle<A, B, C> {
+        private final TriConstraintCollectorValueHandle<A, B, C> innerValue;
         private boolean active = false;
 
-        AccumulatedValue(ResultContainer_ container) {
+        ValueHandle(ResultContainer_ container) {
             this.innerValue = innerIncremental.intoGroup(container);
         }
 

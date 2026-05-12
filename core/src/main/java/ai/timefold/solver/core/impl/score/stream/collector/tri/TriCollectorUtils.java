@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.collector.tri;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -45,18 +45,18 @@ public final class TriCollectorUtils {
                 TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> {
 
         @Override
-        public TriConstraintCollectorAccumulatedValue<A, B, C> intoGroup(ResultContainer_ container) {
-            return new TriAccumulatedValue<>(accumulator, container);
+        public TriConstraintCollectorValueHandle<A, B, C> intoGroup(ResultContainer_ container) {
+            return new TriValueHandle<>(accumulator, container);
         }
     }
 
-    private static final class TriAccumulatedValue<ResultContainer_, A, B, C>
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+    private static final class TriValueHandle<ResultContainer_, A, B, C>
+            implements TriConstraintCollectorValueHandle<A, B, C> {
         private final QuadFunction<ResultContainer_, @Nullable A, @Nullable B, @Nullable C, Runnable> accumulator;
         private final ResultContainer_ container;
         private @Nullable Runnable undo;
 
-        TriAccumulatedValue(QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator, ResultContainer_ container) {
+        TriValueHandle(QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator, ResultContainer_ container) {
             this.accumulator = accumulator;
             this.container = container;
         }

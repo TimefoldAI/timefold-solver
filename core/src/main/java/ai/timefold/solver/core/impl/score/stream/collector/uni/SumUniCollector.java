@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToLongFunction;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongSumSlot;
 import ai.timefold.solver.core.impl.util.MutableLong;
 
@@ -26,12 +26,12 @@ final class SumUniCollector<A> extends LongCalculatorUniCollector<A, Long, Mutab
     }
 
     @Override
-    protected UniConstraintCollectorAccumulatedValue<A> newAccumulatedValue(MutableLong state) {
+    protected UniConstraintCollectorValueHandle<A> newAccumulatedValue(MutableLong state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractLongSumSlot
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
 
         Slot(MutableLong state) {
             super(state);

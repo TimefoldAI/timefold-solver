@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
  * For collectors which do not delegate to other collectors (most typical collectors) this is the expected behavior:
  * <ul>
  * <li>{@link #add(Object)} will be called externally exactly once, when the value enters the group.
- * An instance of {@link UniConstraintCollectorAccumulatedValue} will only be created if there is a value to add.</li>
+ * An instance of {@link UniConstraintCollectorValueHandle} will only be created if there is a value to add.</li>
  * <li>{@link #update(Object)} will be called externally zero or more times.</li>
  * <li>{@link #remove()} will be called externally at most once, if the value is ever removed from the group.</li>
  * </ul>
@@ -23,11 +23,11 @@ import org.jspecify.annotations.Nullable;
  * the nested collector may be treated as such:
  * <ul>
  * <li>{@link #add(Object)} will be called externally, when the value enters the group.
- * An instance of {@link UniConstraintCollectorAccumulatedValue} will only be created if there is a value to add.</li>
+ * An instance of {@link UniConstraintCollectorValueHandle} will only be created if there is a value to add.</li>
  * <li>{@link #update(Object)} will be called externally zero or more times.</li>
  * <li>{@link #remove()} will be called externally at most once, if the value is ever removed from the group.
  * It may be followed by {@link #add(Object)} of another value,
- * reusing the current instance of {@link UniConstraintCollectorAccumulatedValue}.</li>
+ * reusing the current instance of {@link UniConstraintCollectorValueHandle}.</li>
  * </ul>
  * This contract guarantees that the user can keep internal caches between add, update and remove
  * to avoid some expensive operations; if the added object equals the updated or removed object,
@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
  * @param <A> the fact in the tuple
  */
 @NullMarked
-public interface UniConstraintCollectorAccumulatedValue<A> {
+public interface UniConstraintCollectorValueHandle<A> {
 
     /**
      * Add a value to the group.
@@ -59,7 +59,7 @@ public interface UniConstraintCollectorAccumulatedValue<A> {
      * @param a The component of the tuple.
      *        It is expected to be the component of the very same tuple that was used to {@link #add(Object)}.
      *        The component may be an entirely different object instance than was added.
-     *        For other tuples, a fresh {@link UniConstraintCollectorAccumulatedValue} will be obtained;
+     *        For other tuples, a fresh {@link UniConstraintCollectorValueHandle} will be obtained;
      *        an instance of this interface is guaranteed to work on one and only one tuple.
      */
     default void update(@Nullable A a) {

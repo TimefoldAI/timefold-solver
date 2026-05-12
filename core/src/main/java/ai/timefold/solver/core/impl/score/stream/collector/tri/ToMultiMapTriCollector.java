@@ -8,7 +8,7 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractToMapSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -43,13 +43,13 @@ final class ToMultiMapTriCollector<A, B, C, Key_, Value_, Set_ extends Set<Value
     }
 
     @Override
-    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+    protected TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(
             AbstractToMapSlot.State<Key_, Value_, Set_, Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractToMapSlot<Key_, Value_, Set_, Result_>
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+            implements TriConstraintCollectorValueHandle<A, B, C> {
         Slot(AbstractToMapSlot.State<Key_, Value_, Set_, Result_> state) {
             super(state);
         }

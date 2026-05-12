@@ -5,8 +5,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
@@ -18,7 +18,7 @@ abstract class LongCalculatorQuadCollector<A, B, C, D, Output_, State_>
         this.mapper = mapper;
     }
 
-    protected abstract QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(State_ state);
+    protected abstract QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(State_ state);
 
     @Override
     public boolean isIncremental() {

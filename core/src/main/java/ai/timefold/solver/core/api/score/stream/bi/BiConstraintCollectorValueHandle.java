@@ -1,25 +1,25 @@
 package ai.timefold.solver.core.api.score.stream.bi;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * As defined by {@link UniConstraintCollectorAccumulatedValue},
+ * As defined by {@link UniConstraintCollectorValueHandle},
  * only for {@link BiConstraintCollector}.
  */
 @NullMarked
-public interface BiConstraintCollectorAccumulatedValue<A, B> {
+public interface BiConstraintCollectorValueHandle<A, B> {
 
     /**
-     * As defined by {@link UniConstraintCollectorAccumulatedValue#add(Object)},
+     * As defined by {@link UniConstraintCollectorValueHandle#add(Object)},
      * only for {@link BiConstraintCollector}
      */
     void add(@Nullable A a, @Nullable B b);
 
     /**
-     * As defined by {@link UniConstraintCollectorAccumulatedValue#update(Object)},
+     * As defined by {@link UniConstraintCollectorValueHandle#update(Object)},
      * only for {@link BiConstraintCollector}
      */
     default void update(@Nullable A a, @Nullable B b) {
@@ -28,7 +28,7 @@ public interface BiConstraintCollectorAccumulatedValue<A, B> {
     }
 
     /**
-     * As defined by {@link UniConstraintCollectorAccumulatedValue#remove()},
+     * As defined by {@link UniConstraintCollectorValueHandle#remove()},
      * only for {@link BiConstraintCollector}
      */
     void remove();

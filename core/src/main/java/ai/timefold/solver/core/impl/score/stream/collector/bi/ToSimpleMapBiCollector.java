@@ -7,7 +7,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractToMapSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -42,13 +42,13 @@ final class ToSimpleMapBiCollector<A, B, Key_, Value_, Result_ extends Map<Key_,
     }
 
     @Override
-    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(
+    protected BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(
             AbstractToMapSlot.State<Key_, Value_, Value_, Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractToMapSlot<Key_, Value_, Value_, Result_>
-            implements BiConstraintCollectorAccumulatedValue<A, B> {
+            implements BiConstraintCollectorValueHandle<A, B> {
         Slot(AbstractToMapSlot.State<Key_, Value_, Value_, Result_> state) {
             super(state);
         }

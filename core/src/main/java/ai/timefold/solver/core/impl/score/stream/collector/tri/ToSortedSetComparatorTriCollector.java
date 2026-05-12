@@ -7,7 +7,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractSortedSetSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -34,13 +34,13 @@ final class ToSortedSetComparatorTriCollector<A, B, C, Mapped_>
     }
 
     @Override
-    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+    protected TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(
             AbstractSortedSetSlot.State<Mapped_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractSortedSetSlot<Mapped_>
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+            implements TriConstraintCollectorValueHandle<A, B, C> {
         Slot(AbstractSortedSetSlot.State<Mapped_> state) {
             super(state);
         }

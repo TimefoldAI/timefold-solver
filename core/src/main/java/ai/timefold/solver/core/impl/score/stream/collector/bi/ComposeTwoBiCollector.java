@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.jspecify.annotations.NonNull;
@@ -65,7 +65,7 @@ final class ComposeTwoBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result1_
 
     @Override
     public @NonNull BiConstraintCollectorAccumulator<Pair<ResultHolder1_, ResultHolder2_>, A, B> incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -90,11 +90,11 @@ final class ComposeTwoBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result1_
         return Objects.hash(first, second, composeFunction);
     }
 
-    private final class AccumulatedValue implements BiConstraintCollectorAccumulatedValue<A, B> {
-        private final BiConstraintCollectorAccumulatedValue<A, B> v1;
-        private final BiConstraintCollectorAccumulatedValue<A, B> v2;
+    private final class ValueHandle implements BiConstraintCollectorValueHandle<A, B> {
+        private final BiConstraintCollectorValueHandle<A, B> v1;
+        private final BiConstraintCollectorValueHandle<A, B> v2;
 
-        AccumulatedValue(Pair<ResultHolder1_, ResultHolder2_> container) {
+        ValueHandle(Pair<ResultHolder1_, ResultHolder2_> container) {
             this.v1 = firstIncremental.intoGroup(container.key());
             this.v2 = secondIncremental.intoGroup(container.value());
         }

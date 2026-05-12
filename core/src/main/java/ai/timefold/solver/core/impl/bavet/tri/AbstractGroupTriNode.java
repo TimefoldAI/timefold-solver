@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.bavet.tri;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
@@ -48,13 +48,13 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
 
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
-        TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> groupElement = tuple.getStore(groupAccumulatorIndex);
+        TriConstraintCollectorValueHandle<OldA, OldB, OldC> groupElement = tuple.getStore(groupAccumulatorIndex);
         groupElement.update(tuple.getA(), tuple.getB(), tuple.getC());
     }
 
     @Override
     protected void groupRetract(TriTuple<OldA, OldB, OldC> tuple) {
-        TriConstraintCollectorAccumulatedValue<OldA, OldB, OldC> groupElement = tuple.removeStore(groupAccumulatorIndex);
+        TriConstraintCollectorValueHandle<OldA, OldB, OldC> groupElement = tuple.removeStore(groupAccumulatorIndex);
         groupElement.remove();
     }
 

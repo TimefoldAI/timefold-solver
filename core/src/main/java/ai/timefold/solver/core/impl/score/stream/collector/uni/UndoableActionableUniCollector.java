@@ -4,8 +4,8 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
@@ -17,7 +17,7 @@ abstract class UndoableActionableUniCollector<A, Input_, Output_, State_>
         this.mapper = mapper;
     }
 
-    protected abstract UniConstraintCollectorAccumulatedValue<A> newAccumulatedValue(State_ state);
+    protected abstract UniConstraintCollectorValueHandle<A> newAccumulatedValue(State_ state);
 
     @Override
     public boolean isIncremental() {

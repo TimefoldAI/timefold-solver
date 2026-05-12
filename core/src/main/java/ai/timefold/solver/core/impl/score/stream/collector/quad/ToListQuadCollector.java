@@ -5,7 +5,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractToListSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -28,13 +28,13 @@ final class ToListQuadCollector<A, B, C, D, Mapped_>
     }
 
     @Override
-    protected QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(
+    protected QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(
             AbstractToListSlot.State<Mapped_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractToListSlot<Mapped_>
-            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+            implements QuadConstraintCollectorValueHandle<A, B, C, D> {
         Slot(AbstractToListSlot.State<Mapped_> state) {
             super(state);
         }

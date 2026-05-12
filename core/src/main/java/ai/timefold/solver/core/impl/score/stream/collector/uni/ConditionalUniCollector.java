@@ -7,8 +7,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -43,7 +43,7 @@ final class ConditionalUniCollector<A, ResultContainer_, Result_>
 
     @Override
     public @NonNull UniConstraintCollectorAccumulator<ResultContainer_, A> incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -66,11 +66,11 @@ final class ConditionalUniCollector<A, ResultContainer_, Result_>
         return Objects.hash(predicate, delegate);
     }
 
-    private final class AccumulatedValue implements UniConstraintCollectorAccumulatedValue<A> {
-        private final UniConstraintCollectorAccumulatedValue<A> innerValue;
+    private final class ValueHandle implements UniConstraintCollectorValueHandle<A> {
+        private final UniConstraintCollectorValueHandle<A> innerValue;
         private boolean active = false;
 
-        AccumulatedValue(ResultContainer_ container) {
+        ValueHandle(ResultContainer_ container) {
             this.innerValue = innerIncremental.intoGroup(container);
         }
 

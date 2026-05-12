@@ -5,8 +5,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractCountSlot;
 import ai.timefold.solver.core.impl.util.MutableLong;
 
@@ -49,7 +49,7 @@ final class CountUniCollector<A> implements UniConstraintCollector<A, MutableLon
     }
 
     private static final class Slot<A> extends AbstractCountSlot
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
 
         Slot(MutableLong state) {
             super(state);

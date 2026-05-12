@@ -2,8 +2,8 @@ package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -44,18 +44,18 @@ public final class UniCollectorUtils {
                 UniConstraintCollectorAccumulator<ResultContainer_, A> {
 
         @Override
-        public UniConstraintCollectorAccumulatedValue<A> intoGroup(ResultContainer_ container) {
-            return new UniAccumulatedValue<>(accumulator, container);
+        public UniConstraintCollectorValueHandle<A> intoGroup(ResultContainer_ container) {
+            return new UniValueHandle<>(accumulator, container);
         }
     }
 
-    private static final class UniAccumulatedValue<ResultContainer_, A>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+    private static final class UniValueHandle<ResultContainer_, A>
+            implements UniConstraintCollectorValueHandle<A> {
         private final BiFunction<ResultContainer_, @Nullable A, Runnable> accumulator;
         private final ResultContainer_ container;
         private @Nullable Runnable undo;
 
-        UniAccumulatedValue(BiFunction<ResultContainer_, A, Runnable> accumulator, ResultContainer_ container) {
+        UniValueHandle(BiFunction<ResultContainer_, A, Runnable> accumulator, ResultContainer_ container) {
             this.accumulator = accumulator;
             this.container = container;
         }

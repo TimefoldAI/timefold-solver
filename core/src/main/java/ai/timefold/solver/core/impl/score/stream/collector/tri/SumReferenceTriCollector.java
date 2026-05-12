@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceSumSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -38,13 +38,13 @@ final class SumReferenceTriCollector<A, B, C, Result_>
     }
 
     @Override
-    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+    protected TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(
             AbstractReferenceSumSlot.State<Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractReferenceSumSlot<Result_>
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+            implements TriConstraintCollectorValueHandle<A, B, C> {
         Slot(AbstractReferenceSumSlot.State<Result_> state) {
             super(state);
         }

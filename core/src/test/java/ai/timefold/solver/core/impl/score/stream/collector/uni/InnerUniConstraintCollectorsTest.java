@@ -36,7 +36,7 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
@@ -1013,7 +1013,7 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         return collector.accumulator().apply((Container_) container, value);
     }
 
-    private static <A, Container_, Result_> UniConstraintCollectorAccumulatedValue<A> insert(
+    private static <A, Container_, Result_> UniConstraintCollectorValueHandle<A> insert(
             UniConstraintCollector<A, Container_, Result_> collector, Object container, A value) {
         var slot = collector.incrementalAccumulator().intoGroup((Container_) container);
         slot.add(value);

@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.collector.quad;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -45,18 +45,18 @@ public final class QuadCollectorUtils {
                 QuadConstraintCollectorAccumulator<ResultContainer_, A, B, C, D> {
 
         @Override
-        public QuadConstraintCollectorAccumulatedValue<A, B, C, D> intoGroup(ResultContainer_ container) {
-            return new QuadAccumulatedValue<>(accumulator, container);
+        public QuadConstraintCollectorValueHandle<A, B, C, D> intoGroup(ResultContainer_ container) {
+            return new QuadValueHandle<>(accumulator, container);
         }
     }
 
-    private static final class QuadAccumulatedValue<ResultContainer_, A, B, C, D>
-            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+    private static final class QuadValueHandle<ResultContainer_, A, B, C, D>
+            implements QuadConstraintCollectorValueHandle<A, B, C, D> {
         private final PentaFunction<ResultContainer_, @Nullable A, @Nullable B, @Nullable C, @Nullable D, Runnable> accumulator;
         private final ResultContainer_ container;
         private @Nullable Runnable undo;
 
-        QuadAccumulatedValue(PentaFunction<ResultContainer_, A, B, C, D, Runnable> accumulator,
+        QuadValueHandle(PentaFunction<ResultContainer_, A, B, C, D, Runnable> accumulator,
                 ResultContainer_ container) {
             this.accumulator = accumulator;
             this.container = container;

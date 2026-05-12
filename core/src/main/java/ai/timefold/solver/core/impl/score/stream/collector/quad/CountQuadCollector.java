@@ -5,8 +5,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractCountSlot;
 import ai.timefold.solver.core.impl.util.MutableLong;
 
@@ -50,7 +50,7 @@ final class CountQuadCollector<A, B, C, D>
     }
 
     private static final class Slot<A, B, C, D> extends AbstractCountSlot
-            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+            implements QuadConstraintCollectorValueHandle<A, B, C, D> {
 
         Slot(MutableLong state) {
             super(state);

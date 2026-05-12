@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToLongBiFunction;
 
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongSumSlot;
 import ai.timefold.solver.core.impl.util.MutableLong;
 
@@ -27,12 +27,12 @@ final class SumBiCollector<A, B>
     }
 
     @Override
-    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(MutableLong state) {
+    protected BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(MutableLong state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractLongSumSlot
-            implements BiConstraintCollectorAccumulatedValue<A, B> {
+            implements BiConstraintCollectorValueHandle<A, B> {
         Slot(MutableLong state) {
             super(state);
         }

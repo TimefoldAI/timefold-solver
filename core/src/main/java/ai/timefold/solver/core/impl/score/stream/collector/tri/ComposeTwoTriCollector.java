@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.jspecify.annotations.NonNull;
@@ -65,7 +65,7 @@ final class ComposeTwoTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Resu
 
     @Override
     public @NonNull TriConstraintCollectorAccumulator<Pair<ResultHolder1_, ResultHolder2_>, A, B, C> incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -90,11 +90,11 @@ final class ComposeTwoTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Resu
         return Objects.hash(first, second, composeFunction);
     }
 
-    private final class AccumulatedValue implements TriConstraintCollectorAccumulatedValue<A, B, C> {
-        private final TriConstraintCollectorAccumulatedValue<A, B, C> v1;
-        private final TriConstraintCollectorAccumulatedValue<A, B, C> v2;
+    private final class ValueHandle implements TriConstraintCollectorValueHandle<A, B, C> {
+        private final TriConstraintCollectorValueHandle<A, B, C> v1;
+        private final TriConstraintCollectorValueHandle<A, B, C> v2;
 
-        AccumulatedValue(Pair<ResultHolder1_, ResultHolder2_> container) {
+        ValueHandle(Pair<ResultHolder1_, ResultHolder2_> container) {
             this.v1 = firstIncremental.intoGroup(container.key());
             this.v2 = secondIncremental.intoGroup(container.value());
         }

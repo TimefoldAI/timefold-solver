@@ -5,7 +5,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceSumSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -35,13 +35,13 @@ final class SumReferenceUniCollector<A, Result_>
     }
 
     @Override
-    protected UniConstraintCollectorAccumulatedValue<A>
+    protected UniConstraintCollectorValueHandle<A>
             newAccumulatedValue(AbstractReferenceSumSlot.State<Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractReferenceSumSlot<Result_>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
         Slot(AbstractReferenceSumSlot.State<Result_> state) {
             super(state);
         }

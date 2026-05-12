@@ -7,7 +7,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractSortedSetSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -34,13 +34,13 @@ final class ToSortedSetComparatorBiCollector<A, B, Mapped_>
     }
 
     @Override
-    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(
+    protected BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(
             AbstractSortedSetSlot.State<Mapped_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractSortedSetSlot<Mapped_>
-            implements BiConstraintCollectorAccumulatedValue<A, B> {
+            implements BiConstraintCollectorValueHandle<A, B> {
         Slot(AbstractSortedSetSlot.State<Mapped_> state) {
             super(state);
         }

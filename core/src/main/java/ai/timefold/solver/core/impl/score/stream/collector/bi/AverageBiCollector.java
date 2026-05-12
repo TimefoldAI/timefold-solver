@@ -4,7 +4,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToLongBiFunction;
 
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongAverageSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -26,12 +26,12 @@ final class AverageBiCollector<A, B>
     }
 
     @Override
-    protected BiConstraintCollectorAccumulatedValue<A, B> newAccumulatedValue(AbstractLongAverageSlot.State state) {
+    protected BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(AbstractLongAverageSlot.State state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractLongAverageSlot
-            implements BiConstraintCollectorAccumulatedValue<A, B> {
+            implements BiConstraintCollectorValueHandle<A, B> {
         Slot(AbstractLongAverageSlot.State state) {
             super(state);
         }

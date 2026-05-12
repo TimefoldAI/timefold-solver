@@ -8,8 +8,8 @@ import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLoadBalanceSlot;
 import ai.timefold.solver.core.impl.score.stream.collector.DefaultLoadBalance;
 
@@ -68,7 +68,7 @@ final class LoadBalanceUniCollector<A, Balanced_>
     }
 
     private final class Slot extends AbstractLoadBalanceSlot<Balanced_>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
 
         Slot(DefaultLoadBalance<Balanced_> container) {
             super(container);

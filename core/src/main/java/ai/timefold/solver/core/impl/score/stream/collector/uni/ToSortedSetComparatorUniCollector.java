@@ -6,7 +6,7 @@ import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractSortedSetSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -32,13 +32,13 @@ final class ToSortedSetComparatorUniCollector<A, Mapped_>
     }
 
     @Override
-    protected UniConstraintCollectorAccumulatedValue<A>
+    protected UniConstraintCollectorValueHandle<A>
             newAccumulatedValue(AbstractSortedSetSlot.State<Mapped_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractSortedSetSlot<Mapped_>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
         Slot(AbstractSortedSetSlot.State<Mapped_> state) {
             super(state);
         }

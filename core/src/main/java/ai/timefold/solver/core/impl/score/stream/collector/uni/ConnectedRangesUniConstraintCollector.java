@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConnectedRangesSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -41,13 +41,13 @@ final class ConnectedRangesUniConstraintCollector<A, Interval_, Point_ extends C
     }
 
     @Override
-    protected UniConstraintCollectorAccumulatedValue<A>
+    protected UniConstraintCollectorValueHandle<A>
             newAccumulatedValue(AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractConnectedRangesSlot<Interval_, Point_, Difference_>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
         Slot(AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_> state) {
             super(state);
         }

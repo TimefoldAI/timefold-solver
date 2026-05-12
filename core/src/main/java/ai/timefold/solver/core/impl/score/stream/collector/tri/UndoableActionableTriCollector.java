@@ -5,8 +5,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
@@ -18,7 +18,7 @@ abstract class UndoableActionableTriCollector<A, B, C, Input_, Output_, State_>
         this.mapper = mapper;
     }
 
-    protected abstract TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(State_ state);
+    protected abstract TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(State_ state);
 
     @Override
     public boolean isIncremental() {

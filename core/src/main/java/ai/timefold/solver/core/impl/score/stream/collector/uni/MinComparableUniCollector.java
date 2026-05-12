@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.collector.uni;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractMinMaxSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -25,13 +25,13 @@ final class MinComparableUniCollector<A, Result_ extends Comparable<? super Resu
     }
 
     @Override
-    protected UniConstraintCollectorAccumulatedValue<A>
+    protected UniConstraintCollectorValueHandle<A>
             newAccumulatedValue(AbstractMinMaxSlot.State<Result_, Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractMinMaxSlot<Result_, Result_>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
         Slot(AbstractMinMaxSlot.State<Result_, Result_> state) {
             super(state);
         }

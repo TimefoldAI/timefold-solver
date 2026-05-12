@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Triple;
 
 import org.jspecify.annotations.NonNull;
@@ -80,7 +80,7 @@ final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Re
     @Override
     public @NonNull TriConstraintCollectorAccumulator<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B, C>
             incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -108,12 +108,12 @@ final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Re
         return Objects.hash(first, second, third, composeFunction);
     }
 
-    private final class AccumulatedValue implements TriConstraintCollectorAccumulatedValue<A, B, C> {
-        private final TriConstraintCollectorAccumulatedValue<A, B, C> v1;
-        private final TriConstraintCollectorAccumulatedValue<A, B, C> v2;
-        private final TriConstraintCollectorAccumulatedValue<A, B, C> v3;
+    private final class ValueHandle implements TriConstraintCollectorValueHandle<A, B, C> {
+        private final TriConstraintCollectorValueHandle<A, B, C> v1;
+        private final TriConstraintCollectorValueHandle<A, B, C> v2;
+        private final TriConstraintCollectorValueHandle<A, B, C> v3;
 
-        AccumulatedValue(Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_> container) {
+        ValueHandle(Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_> container) {
             this.v1 = firstIncremental.intoGroup(container.a());
             this.v2 = secondIncremental.intoGroup(container.b());
             this.v3 = thirdIncremental.intoGroup(container.c());

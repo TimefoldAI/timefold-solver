@@ -7,8 +7,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Triple;
 
 import org.jspecify.annotations.NonNull;
@@ -80,7 +80,7 @@ final class ComposeThreeQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_
     @Override
     public @NonNull QuadConstraintCollectorAccumulator<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B, C, D>
             incrementalAccumulator() {
-        return AccumulatedValue::new;
+        return ValueHandle::new;
     }
 
     @Override
@@ -108,12 +108,12 @@ final class ComposeThreeQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_
         return Objects.hash(first, second, third, composeFunction);
     }
 
-    private final class AccumulatedValue implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
-        private final QuadConstraintCollectorAccumulatedValue<A, B, C, D> v1;
-        private final QuadConstraintCollectorAccumulatedValue<A, B, C, D> v2;
-        private final QuadConstraintCollectorAccumulatedValue<A, B, C, D> v3;
+    private final class ValueHandle implements QuadConstraintCollectorValueHandle<A, B, C, D> {
+        private final QuadConstraintCollectorValueHandle<A, B, C, D> v1;
+        private final QuadConstraintCollectorValueHandle<A, B, C, D> v2;
+        private final QuadConstraintCollectorValueHandle<A, B, C, D> v3;
 
-        AccumulatedValue(Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_> container) {
+        ValueHandle(Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_> container) {
             this.v1 = firstIncremental.intoGroup(container.a());
             this.v2 = secondIncremental.intoGroup(container.b());
             this.v3 = thirdIncremental.intoGroup(container.c());

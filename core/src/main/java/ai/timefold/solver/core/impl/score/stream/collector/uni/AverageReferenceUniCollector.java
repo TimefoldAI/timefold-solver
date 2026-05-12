@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceAverageSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -31,13 +31,13 @@ final class AverageReferenceUniCollector<A, Mapped_, Average_>
     }
 
     @Override
-    protected UniConstraintCollectorAccumulatedValue<A>
+    protected UniConstraintCollectorValueHandle<A>
             newAccumulatedValue(AbstractReferenceAverageSlot.State<Mapped_, Average_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractReferenceAverageSlot<Mapped_, Average_>
-            implements UniConstraintCollectorAccumulatedValue<A> {
+            implements UniConstraintCollectorValueHandle<A> {
         Slot(AbstractReferenceAverageSlot.State<Mapped_, Average_> state) {
             super(state);
         }

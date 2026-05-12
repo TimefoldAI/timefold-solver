@@ -7,7 +7,7 @@ import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractSequenceSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -35,13 +35,13 @@ final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>
     }
 
     @Override
-    protected QuadConstraintCollectorAccumulatedValue<A, B, C, D> newAccumulatedValue(
+    protected QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(
             AbstractSequenceSlot.State<Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractSequenceSlot<Result_>
-            implements QuadConstraintCollectorAccumulatedValue<A, B, C, D> {
+            implements QuadConstraintCollectorValueHandle<A, B, C, D> {
         Slot(AbstractSequenceSlot.State<Result_> state) {
             super(state);
         }

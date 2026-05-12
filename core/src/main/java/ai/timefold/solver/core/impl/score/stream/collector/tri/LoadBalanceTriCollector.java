@@ -9,8 +9,8 @@ import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractLoadBalanceSlot;
 import ai.timefold.solver.core.impl.score.stream.collector.DefaultLoadBalance;
 
@@ -70,7 +70,7 @@ final class LoadBalanceTriCollector<A, B, C, Balanced_>
     }
 
     private final class Slot extends AbstractLoadBalanceSlot<Balanced_>
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+            implements TriConstraintCollectorValueHandle<A, B, C> {
 
         Slot(DefaultLoadBalance<Balanced_> container) {
             super(container);

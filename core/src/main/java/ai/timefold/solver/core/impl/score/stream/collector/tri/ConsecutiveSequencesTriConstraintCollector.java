@@ -7,7 +7,7 @@ import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulatedValue;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractSequenceSlot;
 
 import org.jspecify.annotations.NonNull;
@@ -35,13 +35,13 @@ final class ConsecutiveSequencesTriConstraintCollector<A, B, C, Result_>
     }
 
     @Override
-    protected TriConstraintCollectorAccumulatedValue<A, B, C> newAccumulatedValue(
+    protected TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(
             AbstractSequenceSlot.State<Result_> state) {
         return new Slot(state);
     }
 
     private final class Slot extends AbstractSequenceSlot<Result_>
-            implements TriConstraintCollectorAccumulatedValue<A, B, C> {
+            implements TriConstraintCollectorValueHandle<A, B, C> {
         Slot(AbstractSequenceSlot.State<Result_> state) {
             super(state);
         }
