@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.SortedSet;
+import java.util.SequencedCollection;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
@@ -26,7 +26,8 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
  * they are automatically available as facts for {@link ConstraintFactory#forEach(Class)}.
  * <p>
  * For solver reproducibility, the collection must have a deterministic, stable iteration order.
- * It is recommended to use a {@link List}, {@link LinkedHashSet} or {@link SortedSet}.
+ * It must not contain duplicates (as defined by {@link Object#equals(Object)}).
+ * It is recommended to use any {@link SequencedCollection}, such as {@link List} or {@link LinkedHashSet}.
  * 
  * @see ProblemFactProperty
  */
