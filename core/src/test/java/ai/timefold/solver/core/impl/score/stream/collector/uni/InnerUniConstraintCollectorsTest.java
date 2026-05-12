@@ -1053,7 +1053,7 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         Object container = collector.supplier().get();
         var slot = insert(collector, container, 1L);
         assertResult(collector, container, 1L);
-        slot.update(42L); // no-op for count
+        slot.replaceWith(42L); // no-op for count
         assertResult(collector, container, 1L);
         slot.remove();
         assertResult(collector, container, 0L);
@@ -1066,11 +1066,11 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         Object container = collector.supplier().get();
         var slot = insert(collector, container, 2); // active (2 > 1)
         assertResult(collector, container, 2);
-        slot.update(1); // active → inactive (1 is not > 1)
+        slot.replaceWith(1); // active → inactive (1 is not > 1)
         assertResult(collector, container, null);
-        slot.update(3); // inactive → active (3 > 1)
+        slot.replaceWith(3); // inactive → active (3 > 1)
         assertResult(collector, container, 3);
-        slot.update(4); // active → active
+        slot.replaceWith(4); // active → active
         assertResult(collector, container, 4);
         slot.remove();
         assertResult(collector, container, null);
@@ -1085,7 +1085,7 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 2);
         var slot2 = insert(collector, container, 4);
         assertResult(collector, container, new Pair<>(2, 4));
-        slot1.update(3); // 2 → 3; min becomes 3
+        slot1.replaceWith(3); // 2 → 3; min becomes 3
         assertResult(collector, container, new Pair<>(3, 4));
         slot2.remove();
         slot1.remove();
@@ -1098,7 +1098,7 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var container = collector.supplier().get();
         var slot = insert(collector, container, 1);
         assertResult(collector, container, 10L);
-        slot.update(99); // count no-op; result unchanged
+        slot.replaceWith(99); // count no-op; result unchanged
         assertResult(collector, container, 10L);
         slot.remove();
         assertResult(collector, container, 0L);
@@ -1110,13 +1110,13 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var container = collector.supplier().get();
         var slot1 = insert(collector, container, 2L);
         assertResult(collector, container, 2L);
-        slot1.update(5L);
+        slot1.replaceWith(5L);
         assertResult(collector, container, 5L);
-        slot1.update(5L); // no-op
+        slot1.replaceWith(5L); // no-op
         assertResult(collector, container, 5L);
         var slot2 = insert(collector, container, 3L);
         assertResult(collector, container, 8L);
-        slot1.update(1L);
+        slot1.replaceWith(1L);
         assertResult(collector, container, 4L);
         slot2.remove();
         assertResult(collector, container, 1L);
@@ -1131,9 +1131,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 4);
         var slot2 = insert(collector, container, 2);
         assertResult(collector, container, 3.0D);
-        slot1.update(6); // (6+2)/2 = 4.0; count unchanged
+        slot1.replaceWith(6); // (6+2)/2 = 4.0; count unchanged
         assertResult(collector, container, 4.0D);
-        slot1.update(6); // no-op
+        slot1.replaceWith(6); // no-op
         assertResult(collector, container, 4.0D);
         slot2.remove();
         assertResult(collector, container, 6.0D);
@@ -1148,11 +1148,11 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, "a");
         var slot2 = insert(collector, container, "b");
         assertResult(collector, container, 2L);
-        slot1.update("b"); // both map to "b"
+        slot1.replaceWith("b"); // both map to "b"
         assertResult(collector, container, 1L);
-        slot1.update("b"); // no-op: Objects.equals short-circuit
+        slot1.replaceWith("b"); // no-op: Objects.equals short-circuit
         assertResult(collector, container, 1L);
-        slot1.update("c"); // "b" and "c"
+        slot1.replaceWith("c"); // "b" and "c"
         assertResult(collector, container, 2L);
         slot2.remove();
         assertResult(collector, container, 1L);
@@ -1168,9 +1168,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot2 = insert(collector, container, BigDecimal.TEN);
         assertResult(collector, container, BigDecimal.valueOf(11));
         var bd4 = BigDecimal.valueOf(4);
-        slot1.update(bd4);
+        slot1.replaceWith(bd4);
         assertResult(collector, container, BigDecimal.valueOf(14));
-        slot1.update(bd4); // no-op: same reference, == short-circuit
+        slot1.replaceWith(bd4); // no-op: same reference, == short-circuit
         assertResult(collector, container, BigDecimal.valueOf(14));
         slot2.remove();
         assertResult(collector, container, BigDecimal.valueOf(4));
@@ -1186,9 +1186,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot2 = insert(collector, container, BigInteger.TEN);
         assertResult(collector, container, BigInteger.valueOf(11));
         var bi4 = BigInteger.valueOf(4);
-        slot1.update(bi4);
+        slot1.replaceWith(bi4);
         assertResult(collector, container, BigInteger.valueOf(14));
-        slot1.update(bi4); // no-op: same reference, == short-circuit
+        slot1.replaceWith(bi4); // no-op: same reference, == short-circuit
         assertResult(collector, container, BigInteger.valueOf(14));
         slot2.remove();
         assertResult(collector, container, BigInteger.valueOf(4));
@@ -1204,9 +1204,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot2 = insert(collector, container, Duration.ofSeconds(2));
         assertResult(collector, container, Duration.ofSeconds(3));
         var d4 = Duration.ofSeconds(4);
-        slot1.update(d4);
+        slot1.replaceWith(d4);
         assertResult(collector, container, Duration.ofSeconds(6));
-        slot1.update(d4); // no-op: same reference, == short-circuit
+        slot1.replaceWith(d4); // no-op: same reference, == short-circuit
         assertResult(collector, container, Duration.ofSeconds(6));
         slot2.remove();
         assertResult(collector, container, Duration.ofSeconds(4));
@@ -1222,9 +1222,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot2 = insert(collector, container, Period.ofDays(2));
         assertResult(collector, container, Period.ofDays(3));
         var p4 = Period.ofDays(4);
-        slot1.update(p4);
+        slot1.replaceWith(p4);
         assertResult(collector, container, Period.ofDays(6));
-        slot1.update(p4); // no-op: same reference, == short-circuit
+        slot1.replaceWith(p4); // no-op: same reference, == short-circuit
         assertResult(collector, container, Period.ofDays(6));
         slot2.remove();
         assertResult(collector, container, Period.ofDays(4));
@@ -1240,9 +1240,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 4);
         var slot2 = insert(collector, container, 2);
         assertResult(collector, container, BigDecimal.valueOf(3));
-        slot1.update(6); // (6+2)/2 = 4; count unchanged
+        slot1.replaceWith(6); // (6+2)/2 = 4; count unchanged
         assertResult(collector, container, BigDecimal.valueOf(4));
-        slot1.update(6); // no-op: same input value
+        slot1.replaceWith(6); // no-op: same input value
         assertResult(collector, container, BigDecimal.valueOf(4));
         slot2.remove();
         assertResult(collector, container, BigDecimal.valueOf(6));
@@ -1258,9 +1258,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 4);
         var slot2 = insert(collector, container, 2);
         assertResult(collector, container, BigDecimal.valueOf(3));
-        slot1.update(6);
+        slot1.replaceWith(6);
         assertResult(collector, container, BigDecimal.valueOf(4));
-        slot1.update(6); // no-op: same input value
+        slot1.replaceWith(6); // no-op: same input value
         assertResult(collector, container, BigDecimal.valueOf(4));
         slot2.remove();
         assertResult(collector, container, BigDecimal.valueOf(6));
@@ -1276,9 +1276,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 4);
         var slot2 = insert(collector, container, 2);
         assertResult(collector, container, Duration.ofSeconds(3));
-        slot1.update(6); // (6+2)/2 = 4; count unchanged
+        slot1.replaceWith(6); // (6+2)/2 = 4; count unchanged
         assertResult(collector, container, Duration.ofSeconds(4));
-        slot1.update(6); // no-op: same input value
+        slot1.replaceWith(6); // no-op: same input value
         assertResult(collector, container, Duration.ofSeconds(4));
         slot2.remove();
         assertResult(collector, container, Duration.ofSeconds(6));
@@ -1293,9 +1293,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 1);
         var slot2 = insert(collector, container, 3); // gap of 2 — two sequences
         assertResultRecursive(collector, container, buildSequenceChain(1, 3));
-        slot1.update(2); // 2 and 3 are consecutive — one sequence
+        slot1.replaceWith(2); // 2 and 3 are consecutive — one sequence
         assertResultRecursive(collector, container, buildSequenceChain(2, 3));
-        slot1.update(2); // same value → result unchanged
+        slot1.replaceWith(2); // same value → result unchanged
         assertResultRecursive(collector, container, buildSequenceChain(2, 3));
         slot2.remove();
         assertResultRecursive(collector, container, buildSequenceChain(2));
@@ -1311,9 +1311,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot2 = insert(collector, container, new Interval(10, 20)); // disjoint
         assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(10, 20)));
         var i812 = new Interval(8, 12);
-        slot1.update(i812); // now overlaps with (10,20)
+        slot1.replaceWith(i812); // now overlaps with (10,20)
         assertResult(collector, container, buildConsecutiveUsage(new Interval(8, 12), new Interval(10, 20)));
-        slot1.update(i812); // same value → result unchanged
+        slot1.replaceWith(i812); // same value → result unchanged
         assertResult(collector, container, buildConsecutiveUsage(new Interval(8, 12), new Interval(10, 20)));
         slot2.remove();
         assertResult(collector, container, buildConsecutiveUsage(new Interval(8, 12)));
@@ -1328,9 +1328,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 1);
         var slot2 = insert(collector, container, 2);
         assertResult(collector, container, asList(1, 2));
-        slot1.update(3);
+        slot1.replaceWith(3);
         assertResult(collector, container, asList(3, 2));
-        slot1.update(3); // no-op
+        slot1.replaceWith(3); // no-op
         assertResult(collector, container, asList(3, 2));
         slot2.remove();
         assertResult(collector, container, singletonList(3));
@@ -1345,9 +1345,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 1);
         var slot2 = insert(collector, container, 2);
         assertResult(collector, container, asSet(1, 2));
-        slot1.update(3);
+        slot1.replaceWith(3);
         assertResult(collector, container, asSet(2, 3));
-        slot1.update(3); // Objects.equals short-circuit
+        slot1.replaceWith(3); // Objects.equals short-circuit
         assertResult(collector, container, asSet(2, 3));
         slot2.remove();
         assertResult(collector, container, singleton(3));
@@ -1362,9 +1362,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 1);
         var slot2 = insert(collector, container, 2);
         assertResult(collector, container, asSortedSet(1, 2));
-        slot1.update(3);
+        slot1.replaceWith(3);
         assertResult(collector, container, asSortedSet(2, 3));
-        slot1.update(3); // Objects.equals short-circuit
+        slot1.replaceWith(3); // Objects.equals short-circuit
         assertResult(collector, container, asSortedSet(2, 3));
         slot2.remove();
         assertResult(collector, container, asSortedSet(3));
@@ -1380,9 +1380,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 1);
         var slot2 = insert(collector, container, 2);
         assertResult(collector, container, new ArrayList<>(asList(1, 2)));
-        slot1.update(3);
+        slot1.replaceWith(3);
         assertResult(collector, container, new ArrayList<>(asList(3, 2)));
-        slot1.update(3); // no-op
+        slot1.replaceWith(3); // no-op
         assertResult(collector, container, new ArrayList<>(asList(3, 2)));
         slot2.remove();
         assertResult(collector, container, new ArrayList<>(singletonList(3)));
@@ -1398,9 +1398,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 2);
         var slot2 = insert(collector, container, 1);
         assertResult(collector, container, asMap(2, singleton(2), 1, singleton(1)));
-        slot1.update(3);
+        slot1.replaceWith(3);
         assertResult(collector, container, asMap(1, singleton(1), 3, singleton(3)));
-        slot1.update(3); // Objects.equals short-circuit on Pair(3,3)
+        slot1.replaceWith(3); // Objects.equals short-circuit on Pair(3,3)
         assertResult(collector, container, asMap(1, singleton(1), 3, singleton(3)));
         slot2.remove();
         assertResult(collector, container, asMap(3, singleton(3)));
@@ -1416,9 +1416,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 2);
         var slot2 = insert(collector, container, 1);
         assertResult(collector, container, asMap(2, 2, 1, 1));
-        slot1.update(3);
+        slot1.replaceWith(3);
         assertResult(collector, container, asMap(1, 1, 3, 3));
-        slot1.update(3); // Objects.equals short-circuit on Pair(3,3)
+        slot1.replaceWith(3); // Objects.equals short-circuit on Pair(3,3)
         assertResult(collector, container, asMap(1, 1, 3, 3));
         slot2.remove();
         assertResult(collector, container, asMap(3, 3));
@@ -1434,9 +1434,9 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 2);
         var slot2 = insert(collector, container, 1);
         assertResult(collector, container, asSortedMap(1, singleton(1), 2, singleton(2)));
-        slot1.update(3);
+        slot1.replaceWith(3);
         assertResult(collector, container, asSortedMap(1, singleton(1), 3, singleton(3)));
-        slot1.update(3); // Objects.equals short-circuit on Pair(3,3)
+        slot1.replaceWith(3); // Objects.equals short-circuit on Pair(3,3)
         assertResult(collector, container, asSortedMap(1, singleton(1), 3, singleton(3)));
         slot2.remove();
         assertResult(collector, container, asSortedMap(3, singleton(3)));
@@ -1451,11 +1451,11 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 5);
         var slot2 = insert(collector, container, 3);
         assertResult(collector, container, 3);
-        slot2.update(6);
+        slot2.replaceWith(6);
         assertResult(collector, container, 5);
-        slot2.update(6); // Objects.equals short-circuit
+        slot2.replaceWith(6); // Objects.equals short-circuit
         assertResult(collector, container, 5);
-        slot1.update(1);
+        slot1.replaceWith(1);
         assertResult(collector, container, 1);
         slot2.remove();
         assertResult(collector, container, 1);
@@ -1470,11 +1470,11 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, 3);
         var slot2 = insert(collector, container, 5);
         assertResult(collector, container, 5);
-        slot2.update(2);
+        slot2.replaceWith(2);
         assertResult(collector, container, 3);
-        slot2.update(2); // Objects.equals short-circuit
+        slot2.replaceWith(2); // Objects.equals short-circuit
         assertResult(collector, container, 3);
-        slot1.update(7);
+        slot1.replaceWith(7);
         assertResult(collector, container, 7);
         slot2.remove();
         assertResult(collector, container, 7);
@@ -1489,11 +1489,11 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, (Object) "b");
         var slot2 = insert(collector, container, (Object) "a");
         assertResult(collector, container, "a");
-        slot2.update("c");
+        slot2.replaceWith("c");
         assertResult(collector, container, "b");
-        slot2.update("c"); // Objects.equals short-circuit
+        slot2.replaceWith("c"); // Objects.equals short-circuit
         assertResult(collector, container, "b");
-        slot1.update("a");
+        slot1.replaceWith("a");
         assertResult(collector, container, "a");
         slot2.remove();
         assertResult(collector, container, "a");
@@ -1508,11 +1508,11 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         var slot1 = insert(collector, container, "b");
         var slot2 = insert(collector, container, "a");
         assertResult(collector, container, "b");
-        slot2.update("c");
+        slot2.replaceWith("c");
         assertResult(collector, container, "c");
-        slot2.update("c"); // Objects.equals short-circuit
+        slot2.replaceWith("c"); // Objects.equals short-circuit
         assertResult(collector, container, "c");
-        slot1.update("a");
+        slot1.replaceWith("a");
         assertResult(collector, container, "c");
         slot2.remove();
         assertResult(collector, container, "a");

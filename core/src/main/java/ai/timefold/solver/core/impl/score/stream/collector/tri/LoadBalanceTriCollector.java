@@ -83,8 +83,8 @@ final class LoadBalanceTriCollector<A, B, C, Balanced_>
         }
 
         @Override
-        public void update(A a, B b, C c) {
-            updateMapped(balancedItemFunction.apply(a, b, c), loadFunction.applyAsLong(a, b, c),
+        public void replaceWith(A a, B b, C c) {
+            replaceWithMapped(balancedItemFunction.apply(a, b, c), loadFunction.applyAsLong(a, b, c),
                     initialLoadFunction.applyAsLong(a, b, c));
         }
 

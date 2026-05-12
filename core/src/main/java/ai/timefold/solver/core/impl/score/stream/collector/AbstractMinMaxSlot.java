@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -47,14 +46,6 @@ public abstract class AbstractMinMaxSlot<Result_, Property_> {
         return new State<>(false, new TreeMap<>(), ConstantLambdaUtils.identity());
     }
 
-    public static <Result> State<Result, Result> minState(Comparator<? super Result> comparator) {
-        return new State<>(true, new TreeMap<>(comparator), ConstantLambdaUtils.identity());
-    }
-
-    public static <Result> State<Result, Result> maxState(Comparator<? super Result> comparator) {
-        return new State<>(false, new TreeMap<>(comparator), ConstantLambdaUtils.identity());
-    }
-
     public static <Result, Property extends Comparable<? super Property>> State<Result, Property> minState(
             Function<? super Result, ? extends Property> propertyMapper) {
         return new State<>(true, new TreeMap<>(), propertyMapper);
@@ -83,7 +74,7 @@ public abstract class AbstractMinMaxSlot<Result_, Property_> {
         cachedCount.increment();
     }
 
-    protected void updateMapped(Result_ item) {
+    protected void replaceWithMapped(Result_ item) {
         var newKey = state.propertyFunction.apply(item);
         if (Objects.equals(cachedKey, newKey)) {
             if (Objects.equals(cachedItem, item)) {

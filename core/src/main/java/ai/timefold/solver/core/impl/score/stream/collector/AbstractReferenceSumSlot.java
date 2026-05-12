@@ -34,11 +34,10 @@ public abstract class AbstractReferenceSumSlot<Result_> {
         state.current = state.adder.apply(state.current, input);
     }
 
-    protected void updateMapped(Result_ input) {
+    protected void replaceWithMapped(Result_ input) {
         // Avoiding equals shortcut, as addition and subtraction are super-fast.
-        state.current = state.subtractor.apply(state.current, cachedValue);
+        state.current = state.adder.apply(state.subtractor.apply(state.current, cachedValue), input);
         cachedValue = input;
-        state.current = state.adder.apply(state.current, input);
     }
 
     protected void removeMapped() {

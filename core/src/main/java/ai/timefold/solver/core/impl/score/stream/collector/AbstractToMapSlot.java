@@ -46,8 +46,8 @@ public abstract class AbstractToMapSlot<Key_, Value_, ResultValue_, Result_ exte
         cachedHolder = state.container.lastHolder();
     }
 
-    protected void updateMapped(Key_ key, Value_ value) {
-        state.container.update(cachedCounter, cachedHolder, key, value);
+    protected void replaceWithMapped(Key_ key, Value_ value) {
+        state.container.replaceWith(cachedCounter, cachedHolder, key, value);
         cachedCounter = state.container.lastCounter();
         cachedHolder = state.container.lastHolder();
     }

@@ -49,7 +49,7 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, BiTuple<OldA, OldB> tuple) {
         BiConstraintCollectorValueHandle<OldA, OldB> groupElement = tuple.getStore(groupAccumulatorIndex);
-        groupElement.update(tuple.getA(), tuple.getB());
+        groupElement.replaceWith(tuple.getA(), tuple.getB());
     }
 
     @Override

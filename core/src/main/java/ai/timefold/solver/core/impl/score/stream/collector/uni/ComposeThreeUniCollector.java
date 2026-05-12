@@ -127,10 +127,10 @@ final class ComposeThreeUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHo
         }
 
         @Override
-        public void update(A a) {
-            v1.update(a);
-            v2.update(a);
-            v3.update(a);
+        public void replaceWith(A a) {
+            v1.replaceWith(a);
+            v2.replaceWith(a);
+            v3.replaceWith(a);
         }
 
         @Override

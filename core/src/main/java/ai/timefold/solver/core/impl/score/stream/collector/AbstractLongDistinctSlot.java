@@ -34,7 +34,7 @@ public abstract class AbstractLongDistinctSlot<Input_> {
         cachedCounter.increment();
     }
 
-    protected void updateMapped(Input_ input) {
+    protected void replaceWithMapped(Input_ input) {
         if (Objects.equals(cachedInput, input)) {
             return;
         }

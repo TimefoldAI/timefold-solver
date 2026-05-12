@@ -146,11 +146,11 @@ final class ComposeFourBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultH
         }
 
         @Override
-        public void update(A a, B b) {
-            v1.update(a, b);
-            v2.update(a, b);
-            v3.update(a, b);
-            v4.update(a, b);
+        public void replaceWith(A a, B b) {
+            v1.replaceWith(a, b);
+            v2.replaceWith(a, b);
+            v3.replaceWith(a, b);
+            v4.replaceWith(a, b);
         }
 
         @Override

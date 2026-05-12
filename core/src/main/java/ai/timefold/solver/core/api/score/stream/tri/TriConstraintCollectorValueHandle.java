@@ -19,10 +19,10 @@ public interface TriConstraintCollectorValueHandle<A, B, C> {
     void add(@Nullable A a, @Nullable B b, @Nullable C c);
 
     /**
-     * As defined by {@link UniConstraintCollectorValueHandle#update(Object)},
+     * As defined by {@link UniConstraintCollectorValueHandle#replaceWith(Object)},
      * only for {@link TriConstraintCollector}
      */
-    default void update(@Nullable A a, @Nullable B b, @Nullable C c) {
+    default void replaceWith(@Nullable A a, @Nullable B b, @Nullable C c) {
         remove();
         add(a, b, c);
     }

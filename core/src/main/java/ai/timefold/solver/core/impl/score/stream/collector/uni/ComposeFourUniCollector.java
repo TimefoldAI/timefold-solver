@@ -147,11 +147,11 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
         }
 
         @Override
-        public void update(A a) {
-            v1.update(a);
-            v2.update(a);
-            v3.update(a);
-            v4.update(a);
+        public void replaceWith(A a) {
+            v1.replaceWith(a);
+            v2.replaceWith(a);
+            v3.replaceWith(a);
+            v4.replaceWith(a);
         }
 
         @Override

@@ -43,8 +43,8 @@ final class SumBiCollector<A, B>
         }
 
         @Override
-        public void update(A a, B b) {
-            updateMapped(mapper.applyAsLong(a, b));
+        public void replaceWith(A a, B b) {
+            replaceWithMapped(mapper.applyAsLong(a, b));
         }
 
         @Override

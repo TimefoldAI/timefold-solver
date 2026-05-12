@@ -45,8 +45,8 @@ final class ToSetQuadCollector<A, B, C, D, Mapped_>
         }
 
         @Override
-        public void update(A a, B b, C c, D d) {
-            updateMapped(mapper.apply(a, b, c, d));
+        public void replaceWith(A a, B b, C c, D d) {
+            replaceWithMapped(mapper.apply(a, b, c, d));
         }
 
         @Override

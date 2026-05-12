@@ -66,7 +66,7 @@ public final class UniCollectorUtils {
         }
 
         @Override
-        public void update(@Nullable A a) {
+        public void replaceWith(@Nullable A a) {
             undo.run();
             undo = accumulator.apply(container, a);
         }

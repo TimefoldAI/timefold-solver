@@ -59,8 +59,8 @@ final class ToMultiMapUniCollector<A, Key_, Value_, Set_ extends Set<Value_>, Re
         }
 
         @Override
-        public void update(A a) {
-            updateMapped(keyFunction.apply(a), valueFunction.apply(a));
+        public void replaceWith(A a) {
+            replaceWithMapped(keyFunction.apply(a), valueFunction.apply(a));
         }
 
         @Override

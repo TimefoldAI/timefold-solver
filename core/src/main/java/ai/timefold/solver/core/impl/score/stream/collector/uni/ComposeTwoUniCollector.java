@@ -105,9 +105,9 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
         }
 
         @Override
-        public void update(A a) {
-            v1.update(a);
-            v2.update(a);
+        public void replaceWith(A a) {
+            v1.replaceWith(a);
+            v2.replaceWith(a);
         }
 
         @Override

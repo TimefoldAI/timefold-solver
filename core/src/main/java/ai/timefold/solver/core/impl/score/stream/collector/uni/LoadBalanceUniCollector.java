@@ -80,8 +80,8 @@ final class LoadBalanceUniCollector<A, Balanced_>
         }
 
         @Override
-        public void update(A a) {
-            updateMapped(balancedItemFunction.apply(a), loadFunction.applyAsLong(a), initialLoadFunction.applyAsLong(a));
+        public void replaceWith(A a) {
+            replaceWithMapped(balancedItemFunction.apply(a), loadFunction.applyAsLong(a), initialLoadFunction.applyAsLong(a));
         }
 
         @Override

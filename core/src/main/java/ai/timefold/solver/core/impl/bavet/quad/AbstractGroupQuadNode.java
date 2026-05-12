@@ -50,7 +50,7 @@ abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends T
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, QuadTuple<OldA, OldB, OldC, OldD> tuple) {
         QuadConstraintCollectorValueHandle<OldA, OldB, OldC, OldD> groupElement = tuple.getStore(groupAccumulatorIndex);
-        groupElement.update(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
+        groupElement.replaceWith(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
     }
 
     @Override

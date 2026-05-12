@@ -52,8 +52,8 @@ final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>
         }
 
         @Override
-        public void update(A a, B b, C c, D d) {
-            updateMapped(mapper.apply(a, b, c, d));
+        public void replaceWith(A a, B b, C c, D d) {
+            replaceWithMapped(mapper.apply(a, b, c, d));
         }
 
         @Override

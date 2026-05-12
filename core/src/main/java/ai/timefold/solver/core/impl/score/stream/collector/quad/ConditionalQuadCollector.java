@@ -84,10 +84,10 @@ final class ConditionalQuadCollector<A, B, C, D, ResultContainer_, Result_>
         }
 
         @Override
-        public void update(A a, B b, C c, D d) {
+        public void replaceWith(A a, B b, C c, D d) {
             var nowActive = predicate.test(a, b, c, d);
             if (active && nowActive) {
-                innerValue.update(a, b, c, d);
+                innerValue.replaceWith(a, b, c, d);
             } else if (active) {
                 active = false;
                 innerValue.remove();

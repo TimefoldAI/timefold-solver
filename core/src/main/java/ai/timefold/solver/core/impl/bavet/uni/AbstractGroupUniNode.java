@@ -49,7 +49,7 @@ abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, Re
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
         UniConstraintCollectorValueHandle<OldA> groupElement = tuple.getStore(groupAccumulatorIndex);
-        groupElement.update(tuple.getA());
+        groupElement.replaceWith(tuple.getA());
     }
 
     @Override

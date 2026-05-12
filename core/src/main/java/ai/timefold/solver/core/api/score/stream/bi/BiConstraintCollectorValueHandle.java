@@ -19,10 +19,10 @@ public interface BiConstraintCollectorValueHandle<A, B> {
     void add(@Nullable A a, @Nullable B b);
 
     /**
-     * As defined by {@link UniConstraintCollectorValueHandle#update(Object)},
+     * As defined by {@link UniConstraintCollectorValueHandle#replaceWith(Object)},
      * only for {@link BiConstraintCollector}
      */
-    default void update(@Nullable A a, @Nullable B b) {
+    default void replaceWith(@Nullable A a, @Nullable B b) {
         remove();
         add(a, b);
     }

@@ -58,8 +58,8 @@ final class ToSimpleMapUniCollector<A, Key_, Value_, Result_ extends Map<Key_, V
         }
 
         @Override
-        public void update(A a) {
-            updateMapped(keyFunction.apply(a), valueFunction.apply(a));
+        public void replaceWith(A a) {
+            replaceWithMapped(keyFunction.apply(a), valueFunction.apply(a));
         }
 
         @Override

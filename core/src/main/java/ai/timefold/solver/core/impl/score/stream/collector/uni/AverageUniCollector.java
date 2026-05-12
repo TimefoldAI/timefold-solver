@@ -43,8 +43,8 @@ final class AverageUniCollector<A>
         }
 
         @Override
-        public void update(A a) {
-            updateMapped(mapper.applyAsLong(a));
+        public void replaceWith(A a) {
+            replaceWithMapped(mapper.applyAsLong(a));
         }
 
         @Override

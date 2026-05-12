@@ -42,8 +42,8 @@ final class MinComparableUniCollector<A, Result_ extends Comparable<? super Resu
         }
 
         @Override
-        public void update(A a) {
-            updateMapped(mapper.apply(a));
+        public void replaceWith(A a) {
+            replaceWithMapped(mapper.apply(a));
         }
 
         @Override

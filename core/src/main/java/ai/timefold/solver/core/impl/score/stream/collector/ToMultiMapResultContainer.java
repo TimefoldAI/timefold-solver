@@ -34,7 +34,7 @@ final class ToMultiMapResultContainer<Key_, Value_, Set_ extends Set<Value_>, Re
     }
 
     @Override
-    public void update(ToMapPerKeyCounter<Key_, Value_> counter, CountHolder<Value_> holder,
+    public void replaceWith(ToMapPerKeyCounter<Key_, Value_> counter, CountHolder<Value_> holder,
             Key_ newKey, Value_ newValue) {
         if (Objects.equals(counter.key, newKey) && Objects.equals(holder.value, newValue)) {
             lastCounter = counter;

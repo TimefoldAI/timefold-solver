@@ -60,8 +60,8 @@ final class ToMultiMapTriCollector<A, B, C, Key_, Value_, Set_ extends Set<Value
         }
 
         @Override
-        public void update(A a, B b, C c) {
-            updateMapped(keyFunction.apply(a, b, c), valueFunction.apply(a, b, c));
+        public void replaceWith(A a, B b, C c) {
+            replaceWithMapped(keyFunction.apply(a, b, c), valueFunction.apply(a, b, c));
         }
 
         @Override

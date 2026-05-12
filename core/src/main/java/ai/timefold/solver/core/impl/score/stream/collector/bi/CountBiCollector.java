@@ -61,8 +61,8 @@ final class CountBiCollector<A, B> implements BiConstraintCollector<A, B, Mutabl
         }
 
         @Override
-        public void update(A a, B b) {
-            updateMapped();
+        public void replaceWith(A a, B b) {
+            replaceWithMapped();
         }
 
         @Override

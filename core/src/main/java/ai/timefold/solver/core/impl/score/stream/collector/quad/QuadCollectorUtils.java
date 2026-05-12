@@ -68,7 +68,7 @@ public final class QuadCollectorUtils {
         }
 
         @Override
-        public void update(@Nullable A a, @Nullable B b, @Nullable C c, @Nullable D d) {
+        public void replaceWith(@Nullable A a, @Nullable B b, @Nullable C c, @Nullable D d) {
             undo.run();
             undo = accumulator.apply(container, a, b, c, d);
         }

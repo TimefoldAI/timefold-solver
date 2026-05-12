@@ -82,8 +82,8 @@ final class LoadBalanceBiCollector<A, B, Balanced_>
         }
 
         @Override
-        public void update(A a, B b) {
-            updateMapped(balancedItemFunction.apply(a, b), loadFunction.applyAsLong(a, b),
+        public void replaceWith(A a, B b) {
+            replaceWithMapped(balancedItemFunction.apply(a, b), loadFunction.applyAsLong(a, b),
                     initialLoadFunction.applyAsLong(a, b));
         }
 

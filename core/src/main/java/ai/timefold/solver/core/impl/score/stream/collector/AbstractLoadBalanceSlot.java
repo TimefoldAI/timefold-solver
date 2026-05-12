@@ -20,7 +20,7 @@ public abstract class AbstractLoadBalanceSlot<Balanced_> {
         container.registerBalanced(balanced, load, initialLoad);
     }
 
-    protected void updateMapped(Balanced_ balanced, long load, long initialLoad) {
+    protected void replaceWithMapped(Balanced_ balanced, long load, long initialLoad) {
         if (Objects.equals(cachedBalanced, balanced) && cachedLoad == load) {
             return;
         }

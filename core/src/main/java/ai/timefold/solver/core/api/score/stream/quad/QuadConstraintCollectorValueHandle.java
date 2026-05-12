@@ -19,10 +19,10 @@ public interface QuadConstraintCollectorValueHandle<A, B, C, D> {
     void add(@Nullable A a, @Nullable B b, @Nullable C c, @Nullable D d);
 
     /**
-     * As defined by {@link UniConstraintCollectorValueHandle#update(Object)},
+     * As defined by {@link UniConstraintCollectorValueHandle#replaceWith(Object)},
      * only for {@link QuadConstraintCollector}
      */
-    default void update(@Nullable A a, @Nullable B b, @Nullable C c, @Nullable D d) {
+    default void replaceWith(@Nullable A a, @Nullable B b, @Nullable C c, @Nullable D d) {
         remove();
         add(a, b, c, d);
     }

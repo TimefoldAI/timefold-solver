@@ -61,8 +61,8 @@ final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C
         }
 
         @Override
-        public void update(A a, B b, C c) {
-            updateMapped();
+        public void replaceWith(A a, B b, C c) {
+            replaceWithMapped();
         }
 
         @Override

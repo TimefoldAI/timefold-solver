@@ -107,9 +107,9 @@ final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, 
         }
 
         @Override
-        public void update(A a, B b, C c, D d) {
-            v1.update(a, b, c, d);
-            v2.update(a, b, c, d);
+        public void replaceWith(A a, B b, C c, D d) {
+            v1.replaceWith(a, b, c, d);
+            v2.replaceWith(a, b, c, d);
         }
 
         @Override

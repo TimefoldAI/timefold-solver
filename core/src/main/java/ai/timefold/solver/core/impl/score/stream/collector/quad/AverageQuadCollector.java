@@ -42,8 +42,8 @@ final class AverageQuadCollector<A, B, C, D>
         }
 
         @Override
-        public void update(A a, B b, C c, D d) {
-            updateMapped(mapper.applyAsLong(a, b, c, d));
+        public void replaceWith(A a, B b, C c, D d) {
+            replaceWithMapped(mapper.applyAsLong(a, b, c, d));
         }
 
         @Override

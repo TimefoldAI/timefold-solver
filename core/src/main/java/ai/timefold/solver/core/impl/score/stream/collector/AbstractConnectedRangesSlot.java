@@ -37,7 +37,7 @@ public abstract class AbstractConnectedRangesSlot<Interval_, Point_ extends Comp
         state.context.add(cachedRange);
     }
 
-    protected void updateMapped(Interval_ input) {
+    protected void replaceWithMapped(Interval_ input) {
         removeMapped();
         addMapped(input);
     }

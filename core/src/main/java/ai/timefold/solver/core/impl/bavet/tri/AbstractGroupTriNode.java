@@ -49,7 +49,7 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
     @Override
     protected void groupUpdate(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
         TriConstraintCollectorValueHandle<OldA, OldB, OldC> groupElement = tuple.getStore(groupAccumulatorIndex);
-        groupElement.update(tuple.getA(), tuple.getB(), tuple.getC());
+        groupElement.replaceWith(tuple.getA(), tuple.getB(), tuple.getC());
     }
 
     @Override

@@ -127,10 +127,10 @@ final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Re
         }
 
         @Override
-        public void update(A a, B b, C c) {
-            v1.update(a, b, c);
-            v2.update(a, b, c);
-            v3.update(a, b, c);
+        public void replaceWith(A a, B b, C c) {
+            v1.replaceWith(a, b, c);
+            v2.replaceWith(a, b, c);
+            v3.replaceWith(a, b, c);
         }
 
         @Override

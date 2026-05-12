@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
  * <ul>
  * <li>{@link #add(Object)} will be called externally exactly once, when the value enters the group.
  * An instance of {@link UniConstraintCollectorValueHandle} will only be created if there is a value to add.</li>
- * <li>{@link #update(Object)} will be called externally zero or more times.</li>
+ * <li>{@link #replaceWith(Object)} will be called externally zero or more times.</li>
  * <li>{@link #remove()} will be called externally at most once, if the value is ever removed from the group.</li>
  * </ul>
  * <p>
@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
  * <ul>
  * <li>{@link #add(Object)} will be called externally, when the value enters the group.
  * An instance of {@link UniConstraintCollectorValueHandle} will only be created if there is a value to add.</li>
- * <li>{@link #update(Object)} will be called externally zero or more times.</li>
+ * <li>{@link #replaceWith(Object)} will be called externally zero or more times.</li>
  * <li>{@link #remove()} will be called externally at most once, if the value is ever removed from the group.
  * It may be followed by {@link #add(Object)} of another value,
  * reusing the current instance of {@link UniConstraintCollectorValueHandle}.</li>
@@ -43,7 +43,7 @@ public interface UniConstraintCollectorValueHandle<A> {
      * Add a value to the group.
      * Once this method is called, a value is considered "added";
      * this method will not be called any more while the value is added.
-     * Instead, it will be followed by zero or more external {@link #update(Object) updates}
+     * Instead, it will be followed by zero or more external {@link #replaceWith(Object) updates}
      * and at most one external {@link #remove() removal}.
      *
      * @param a The component of the tuple.
@@ -62,7 +62,7 @@ public interface UniConstraintCollectorValueHandle<A> {
      *        For other tuples, a fresh {@link UniConstraintCollectorValueHandle} will be obtained;
      *        an instance of this interface is guaranteed to work on one and only one tuple.
      */
-    default void update(@Nullable A a) {
+    default void replaceWith(@Nullable A a) {
         remove();
         add(a);
     }

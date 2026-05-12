@@ -51,8 +51,8 @@ final class ToCollectionBiCollector<A, B, Mapped_, Result_ extends Collection<Ma
         }
 
         @Override
-        public void update(A a, B b) {
-            updateMapped(mapper.apply(a, b));
+        public void replaceWith(A a, B b) {
+            replaceWithMapped(mapper.apply(a, b));
         }
 
         @Override

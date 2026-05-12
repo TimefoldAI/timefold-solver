@@ -42,8 +42,8 @@ final class AverageTriCollector<A, B, C>
         }
 
         @Override
-        public void update(A a, B b, C c) {
-            updateMapped(mapper.applyAsLong(a, b, c));
+        public void replaceWith(A a, B b, C c) {
+            replaceWithMapped(mapper.applyAsLong(a, b, c));
         }
 
         @Override

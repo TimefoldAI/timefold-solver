@@ -9,8 +9,7 @@ sealed interface ToMapResultContainer<Key_, Value_, ResultValue_, Result_ extend
 
     void add(Key_ key, Value_ value);
 
-    void update(ToMapPerKeyCounter<Key_, Value_> counter, CountHolder<Value_> holder,
-            Key_ newKey, Value_ newValue);
+    void replaceWith(ToMapPerKeyCounter<Key_, Value_> counter, CountHolder<Value_> holder, Key_ newKey, Value_ newValue);
 
     void remove(ToMapPerKeyCounter<Key_, Value_> counter, CountHolder<Value_> holder);
 

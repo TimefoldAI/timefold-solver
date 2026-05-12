@@ -38,7 +38,7 @@ public abstract class AbstractSequenceSlot<Result_> {
         state.context.add(result, state.toIndexFunction.applyAsInt(result));
     }
 
-    protected void updateMapped(Result_ input) {
+    protected void replaceWithMapped(Result_ input) {
         state.context.remove(cachedValue);
         cachedValue = input;
         state.context.add(input, state.toIndexFunction.applyAsInt(input));

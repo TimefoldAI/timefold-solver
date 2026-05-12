@@ -30,7 +30,7 @@ final class ToSimpleMapResultContainer<Key_, Value_, Result_ extends Map<Key_, V
     }
 
     @Override
-    public void update(ToMapPerKeyCounter<Key_, Value_> counter, CountHolder<Value_> holder,
+    public void replaceWith(ToMapPerKeyCounter<Key_, Value_> counter, CountHolder<Value_> holder,
             Key_ newKey, Value_ newValue) {
         if (Objects.equals(counter.key, newKey) && Objects.equals(holder.value, newValue)) {
             lastCounter = counter;

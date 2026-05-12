@@ -60,8 +60,8 @@ final class ToMultiMapQuadCollector<A, B, C, D, Key_, Value_, Set_ extends Set<V
         }
 
         @Override
-        public void update(A a, B b, C c, D d) {
-            updateMapped(keyFunction.apply(a, b, c, d), valueFunction.apply(a, b, c, d));
+        public void replaceWith(A a, B b, C c, D d) {
+            replaceWithMapped(keyFunction.apply(a, b, c, d), valueFunction.apply(a, b, c, d));
         }
 
         @Override

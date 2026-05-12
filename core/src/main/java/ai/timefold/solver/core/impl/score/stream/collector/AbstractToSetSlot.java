@@ -32,7 +32,7 @@ public abstract class AbstractToSetSlot<Mapped_> {
         cachedCount.increment();
     }
 
-    protected void updateMapped(Mapped_ result) {
+    protected void replaceWithMapped(Mapped_ result) {
         if (Objects.equals(cachedValue, result)) {
             return;
         }

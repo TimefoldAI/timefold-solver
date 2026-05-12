@@ -82,8 +82,8 @@ final class LoadBalanceQuadCollector<A, B, C, D, Balanced_>
         }
 
         @Override
-        public void update(A a, B b, C c, D d) {
-            updateMapped(balancedItemFunction.apply(a, b, c, d), loadFunction.applyAsLong(a, b, c, d),
+        public void replaceWith(A a, B b, C c, D d) {
+            replaceWithMapped(balancedItemFunction.apply(a, b, c, d), loadFunction.applyAsLong(a, b, c, d),
                     initialLoadFunction.applyAsLong(a, b, c, d));
         }
 

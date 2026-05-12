@@ -14,8 +14,8 @@ public abstract class AbstractCountSlot {
         state.increment();
     }
 
-    protected void updateMapped() {
-        // count unchanged on update
+    protected void replaceWithMapped() {
+        // count is unchanged
     }
 
     protected void removeMapped() {

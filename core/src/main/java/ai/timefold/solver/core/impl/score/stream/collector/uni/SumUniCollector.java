@@ -43,8 +43,8 @@ final class SumUniCollector<A> extends LongCalculatorUniCollector<A, Long, Mutab
         }
 
         @Override
-        public void update(A a) {
-            updateMapped(mapper.applyAsLong(a));
+        public void replaceWith(A a) {
+            replaceWithMapped(mapper.applyAsLong(a));
         }
 
         @Override

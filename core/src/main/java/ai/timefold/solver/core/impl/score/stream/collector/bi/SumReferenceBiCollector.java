@@ -54,8 +54,8 @@ final class SumReferenceBiCollector<A, B, Result_>
         }
 
         @Override
-        public void update(A a, B b) {
-            updateMapped(mapper.apply(a, b));
+        public void replaceWith(A a, B b) {
+            replaceWithMapped(mapper.apply(a, b));
         }
 
         @Override

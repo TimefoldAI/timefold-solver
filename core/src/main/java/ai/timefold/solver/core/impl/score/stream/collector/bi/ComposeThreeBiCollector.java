@@ -125,10 +125,10 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
         }
 
         @Override
-        public void update(A a, B b) {
-            v1.update(a, b);
-            v2.update(a, b);
-            v3.update(a, b);
+        public void replaceWith(A a, B b) {
+            v1.replaceWith(a, b);
+            v2.replaceWith(a, b);
+            v3.replaceWith(a, b);
         }
 
         @Override

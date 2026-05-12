@@ -66,7 +66,7 @@ public final class BiCollectorUtils {
         }
 
         @Override
-        public void update(@Nullable A a, @Nullable B b) {
+        public void replaceWith(@Nullable A a, @Nullable B b) {
             undo.run();
             undo = accumulator.apply(container, a, b);
         }

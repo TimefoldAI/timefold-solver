@@ -59,8 +59,8 @@ final class ToSimpleMapBiCollector<A, B, Key_, Value_, Result_ extends Map<Key_,
         }
 
         @Override
-        public void update(A a, B b) {
-            updateMapped(keyFunction.apply(a, b), valueFunction.apply(a, b));
+        public void replaceWith(A a, B b) {
+            replaceWithMapped(keyFunction.apply(a, b), valueFunction.apply(a, b));
         }
 
         @Override

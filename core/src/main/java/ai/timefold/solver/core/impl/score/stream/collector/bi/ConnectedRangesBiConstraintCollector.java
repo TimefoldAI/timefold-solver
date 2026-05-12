@@ -58,8 +58,8 @@ final class ConnectedRangesBiConstraintCollector<A, B, Interval_, Point_ extends
         }
 
         @Override
-        public void update(A a, B b) {
-            updateMapped(mapper.apply(a, b));
+        public void replaceWith(A a, B b) {
+            replaceWithMapped(mapper.apply(a, b));
         }
 
         @Override

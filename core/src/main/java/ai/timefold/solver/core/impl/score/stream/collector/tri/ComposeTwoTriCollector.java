@@ -106,9 +106,9 @@ final class ComposeTwoTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Resu
         }
 
         @Override
-        public void update(A a, B b, C c) {
-            v1.update(a, b, c);
-            v2.update(a, b, c);
+        public void replaceWith(A a, B b, C c) {
+            v1.replaceWith(a, b, c);
+            v2.replaceWith(a, b, c);
         }
 
         @Override

@@ -24,7 +24,7 @@ public abstract class AbstractToListSlot<Mapped_> {
         cachedEntry = state.resultList.addEntry(mapped);
     }
 
-    protected void updateMapped(Mapped_ mapped) {
+    protected void replaceWithMapped(Mapped_ mapped) {
         cachedEntry.replaceElement(mapped);
     }
 

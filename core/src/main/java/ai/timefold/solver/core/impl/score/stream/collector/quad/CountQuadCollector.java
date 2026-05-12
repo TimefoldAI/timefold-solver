@@ -62,8 +62,8 @@ final class CountQuadCollector<A, B, C, D>
         }
 
         @Override
-        public void update(A a, B b, C c, D d) {
-            updateMapped();
+        public void replaceWith(A a, B b, C c, D d) {
+            replaceWithMapped();
         }
 
         @Override

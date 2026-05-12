@@ -84,10 +84,10 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
         }
 
         @Override
-        public void update(A a, B b) {
+        public void replaceWith(A a, B b) {
             var nowActive = predicate.test(a, b);
             if (active && nowActive) {
-                innerValue.update(a, b);
+                innerValue.replaceWith(a, b);
             } else if (active) {
                 active = false;
                 innerValue.remove();

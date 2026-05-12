@@ -36,7 +36,7 @@ public abstract class AbstractToCollectionSlot<Mapped_, Result_ extends Collecti
         cachedEntry = state.list.addEntry(mapped);
     }
 
-    protected void updateMapped(Mapped_ mapped) {
+    protected void replaceWithMapped(Mapped_ mapped) {
         cachedEntry.replaceElement(mapped);
     }
 

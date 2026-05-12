@@ -75,12 +75,8 @@ public abstract class AbstractReferenceAverageSlot<Input_, Output_> {
         state.sum = state.adder.apply(state.sum, input);
     }
 
-    protected void updateMapped(Input_ input) {
-        if (cachedValue == input) {
-            return;
-        }
-        state.sum = state.subtractor.apply(state.sum, cachedValue);
-        state.sum = state.adder.apply(state.sum, input);
+    protected void replaceWithMapped(Input_ input) {
+        state.sum = state.adder.apply(state.subtractor.apply(state.sum, cachedValue), input);
         cachedValue = input;
     }
 

@@ -61,8 +61,8 @@ final class CountUniCollector<A> implements UniConstraintCollector<A, MutableLon
         }
 
         @Override
-        public void update(A a) {
-            updateMapped();
+        public void replaceWith(A a) {
+            replaceWithMapped();
         }
 
         @Override

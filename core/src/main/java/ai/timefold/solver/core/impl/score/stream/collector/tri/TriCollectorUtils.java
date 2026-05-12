@@ -67,7 +67,7 @@ public final class TriCollectorUtils {
         }
 
         @Override
-        public void update(@Nullable A a, @Nullable B b, @Nullable C c) {
+        public void replaceWith(@Nullable A a, @Nullable B b, @Nullable C c) {
             undo.run();
             undo = accumulator.apply(container, a, b, c);
         }

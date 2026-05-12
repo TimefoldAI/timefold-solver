@@ -44,8 +44,8 @@ final class CountDistinctTriCollector<A, B, C, Mapped_>
         }
 
         @Override
-        public void update(A a, B b, C c) {
-            updateMapped(mapper.apply(a, b, c));
+        public void replaceWith(A a, B b, C c) {
+            replaceWithMapped(mapper.apply(a, b, c));
         }
 
         @Override
