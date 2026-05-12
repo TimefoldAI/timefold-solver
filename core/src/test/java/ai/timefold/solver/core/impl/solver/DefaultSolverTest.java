@@ -78,6 +78,7 @@ import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.classloader.TestdataSeparateClassLoaderDomain;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -1773,6 +1774,26 @@ class DefaultSolverTest {
         var bestEntity3 = bestSolution.getEntityList().get(2);
         assertThat(bestEntity3.getValueList()).hasSizeGreaterThan(0);
         assertThat(bestEntity3.getValueList()).doesNotContain(value1, value2, value3);
+    }
+
+    @Test
+    void solveCustomClassLoader() {
+        // Spring DevTools redefine existing classes, with their updated definitions replacing
+        // existing instances, and their updated definition are only available from the Thread's Context ClassLoader.
+        // This test verify the Context ClassLoader definition is used instead of the one from the parent ClassLoader.
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSeparateClassLoaderDomain.getTestdataSolutionClass(),
+                TestdataSeparateClassLoaderDomain.getTestdataEntityClass());
+        var originalClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(TestdataSeparateClassLoaderDomain.getClassLoader());
+            var solution = TestdataSeparateClassLoaderDomain.generateSolution();
+
+            solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
+                    BestScoreChangedEvent.constructionHeuristic(SimpleScore.ZERO, 0));
+            assertThat(solution).isNotNull();
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
     }
 
     @Test

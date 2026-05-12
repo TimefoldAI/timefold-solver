@@ -44,6 +44,42 @@ public final class GizmoClassLoader extends ClassLoader {
         return "Timefold Solver Gizmo ClassLoader";
     }
 
+    @Nullable
+    private Class<?> loadClassFrom(@Nullable ClassLoader otherClassLoader, String name) {
+        if (otherClassLoader == null || otherClassLoader == this) {
+            return null;
+        }
+        try {
+            return otherClassLoader.loadClass(name);
+        } catch (ClassNotFoundException ignored) {
+            return null;
+        }
+    }
+
+    @Override
+    public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        synchronized (getClassLoadingLock(name)) {
+            var loadedClass = findLoadedClass(name);
+            if (loadedClass == null) {
+                if (hasBytecodeFor(name)) {
+                    loadedClass = findClass(name);
+                } else {
+                    var contextClassLoader = Thread.currentThread().getContextClassLoader();
+
+                    // First context, then parent
+                    loadedClass = loadClassFrom(contextClassLoader, name);
+                    if (loadedClass == null) {
+                        loadedClass = super.loadClass(name, false);
+                    }
+                }
+            }
+            if (resolve) {
+                resolveClass(loadedClass);
+            }
+            return loadedClass;
+        }
+    }
+
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
         var byteCode = getBytecodeFor(name);
