@@ -6,7 +6,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-parent</artifactId>
-    <version>999-SNAPSHOT</version>
+    <version>${revision}</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -287,6 +287,238 @@
         <artifactId>timefold-solver-spring-boot-starter</artifactId>
         <type>test-jar</type>
         <version>${version.ai.timefold.solver}</version>
+      </dependency>
+
+      <!-- Model artifacts -->
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-with-maps</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-with-maps</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-definition</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-definition</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-jackson</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-jackson</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-json</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-json</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-rest-definition</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-rest-definition</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-rest</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-rest</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-worker</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-worker</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-quarkus</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-quarkus</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-quarkus-deployment</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-quarkus-deployment</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <!-- maps -->
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-api</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-api</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-service-integration</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-service-integration</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-service-client</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-service-client</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-service-rest</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-service-rest</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-service-test</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-service-test</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-quarkus-integration-tests</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-quarkus-integration-tests</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-haversine</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-maps-haversine</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-defaults</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-defaults</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <!-- test support -->
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-test</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-model-test</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <!-- maven plugin -->
+      <dependency>
+        <groupId>ai.timefold.solver.tools</groupId>
+        <artifactId>timefold-maven-plugin</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver.tools</groupId>
+        <artifactId>timefold-maven-plugin</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <classifier>sources</classifier>
       </dependency>
     </dependencies>
   </dependencyManagement>
