@@ -84,10 +84,9 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
 
     @Override
     public PrimitiveIterator.OfInt nodeForwardEdges(int fromNode) {
-        return componentMap.get(fromNode).stream()
-                .flatMap(member -> forwardEdges[member].stream())
+        return forwardEdges[fromNode].stream()
                 .mapToInt(Integer::intValue)
-                .distinct().iterator();
+                .iterator();
     }
 
     @Override
