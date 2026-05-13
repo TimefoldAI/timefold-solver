@@ -2,7 +2,9 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.BitSet;
 import java.util.PriorityQueue;
+import java.util.Spliterators;
 import java.util.function.IntFunction;
+import java.util.stream.StreamSupport;
 
 import org.jspecify.annotations.NonNull;
 
@@ -11,6 +13,7 @@ public final class FixedVariableReferenceGraph<Solution_>
     // These are immutable
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
     private final BitSet isChanged;
+    private final int[][] cachedComponentForwardEdges;
     // These are mutable
     private boolean isFinalized = false;
 
@@ -18,6 +21,7 @@ public final class FixedVariableReferenceGraph<Solution_>
             IntFunction<TopologicalOrderGraph> graphCreator) {
         super(outerGraph, graphCreator);
         isChanged = new BitSet(nodeList.size());
+        cachedComponentForwardEdges = new int[nodeList.size()][];
         graph.commitChanges(isChanged);
         isChanged.clear();
         isFinalized = true;
@@ -26,6 +30,11 @@ public final class FixedVariableReferenceGraph<Solution_>
         // each node to changed.
         changedVariableNotifier = outerGraph.changedVariableNotifier;
         for (var node = 0; node < nodeList.size(); node++) {
+            var finalNode = node;
+            cachedComponentForwardEdges[node] = StreamSupport
+                    .intStream(() -> Spliterators.spliterator(graph.nodeForwardEdges(finalNode), 0, 0),
+                            0, false)
+                    .toArray();
             changeSet.add(nodeTopologicalOrders[node]);
             var variableReference = nodeList.get(node).variableReferences().get(0);
             var entityConsistencyState = variableReference.entityConsistencyState();
@@ -84,8 +93,7 @@ public final class FixedVariableReferenceGraph<Solution_>
             for (var shadowVariableReference : shadowVariableReferences) {
                 var isVariableChanged = shadowVariableReference.updateIfChanged(entity, changedVariableNotifier);
                 if (isVariableChanged) {
-                    for (var iterator = graph.nodeForwardEdges(changedNode.nodeId()); iterator.hasNext();) {
-                        var nextNode = iterator.next();
+                    for (var nextNode : cachedComponentForwardEdges[changedNode.nodeId()]) {
                         if (visited.get(nextNode)) {
                             continue;
                         }
