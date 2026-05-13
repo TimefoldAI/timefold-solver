@@ -34,6 +34,7 @@
 * Upgrading Timefold Solver
 ** xref:upgrading-timefold-solver/overview.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/upgrade-from-v1.adoc[leveloffset=+1]
+** https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-from-optaplanner[Upgrading from OptaPlanner][leveloffset=+1]
 ** xref:upgrading-timefold-solver/backwards-compatibility.adoc[leveloffset=+1]
 ** Migration Guides
 *** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
