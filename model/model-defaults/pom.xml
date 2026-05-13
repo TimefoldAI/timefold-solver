@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-model-build-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../build/build-parent/pom.xml</relativePath>
+  </parent>
+
+  <artifactId>timefold-solver-model-defaults</artifactId>
+  <name>(Preview) Timefold Solver Model Default configuration</name>
+  <description>
+    The default configuration to be optionally imported by a model based on Timefold Solver.
+    This module is in a preview state and thus is a subject to changes.
+  </description>
+</project>
