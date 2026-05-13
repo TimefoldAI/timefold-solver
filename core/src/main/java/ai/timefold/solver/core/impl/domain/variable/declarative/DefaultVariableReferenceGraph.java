@@ -46,12 +46,12 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
     }
 
     @Override
-    public void markChanged(@NonNull GraphNode<Solution_> node) {
+    void markChanged(@NonNull GraphNode<Solution_> node) {
         changeSet.set(node.graphNodeId());
     }
 
     @Override
-    public void updateChanged() {
+    void innerUpdateChanged() {
         if (changeSet.isEmpty()) {
             return;
         }

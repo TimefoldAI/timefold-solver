@@ -10,15 +10,16 @@ public final class FixedVariableReferenceGraph<Solution_>
         extends AbstractVariableReferenceGraph<Solution_, PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder>> {
     // These are immutable
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
-
+    private final BitSet isChanged;
     // These are mutable
     private boolean isFinalized = false;
 
     public FixedVariableReferenceGraph(VariableReferenceGraphBuilder<Solution_> outerGraph,
             IntFunction<TopologicalOrderGraph> graphCreator) {
         super(outerGraph, graphCreator);
-        // We don't use a bit set to store changes, so pass a one-use instance
-        graph.commitChanges(new BitSet(nodeList.size()));
+        isChanged = new BitSet(nodeList.size());
+        graph.commitChanges(isChanged);
+        isChanged.clear();
         isFinalized = true;
 
         // Now that we know the topological order of nodes, add
@@ -51,16 +52,20 @@ public final class FixedVariableReferenceGraph<Solution_>
     }
 
     @Override
-    public void markChanged(@NonNull GraphNode<Solution_> node) {
+    void markChanged(@NonNull GraphNode<Solution_> node) {
         // Before the graph is finalized, ignore changes, since
         // we don't know the topological order yet
         if (isFinalized) {
-            changeSet.add(nodeTopologicalOrders[node.graphNodeId()]);
+            var nodeId = node.graphNodeId();
+            if (!isChanged.get(nodeId)) {
+                changeSet.add(nodeTopologicalOrders[nodeId]);
+                isChanged.set(nodeId);
+            }
         }
     }
 
     @Override
-    public void updateChanged() {
+    void innerUpdateChanged() {
         BitSet visited;
         if (!changeSet.isEmpty()) {
             visited = new BitSet(nodeList.size());
@@ -90,5 +95,6 @@ public final class FixedVariableReferenceGraph<Solution_>
                 }
             }
         }
+        isChanged.clear();
     }
 }

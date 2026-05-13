@@ -31,8 +31,11 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
     protected final ChangeSet_ changeSet;
     protected final TopologicalOrderGraph graph;
 
+    protected boolean isUpdating;
+
     AbstractVariableReferenceGraph(VariableReferenceGraphBuilder<Solution_> outerGraph,
             IntFunction<TopologicalOrderGraph> graphCreator) {
+        isUpdating = false;
         nodeList = List.copyOf(outerGraph.nodeList);
         var instanceCount = nodeList.size();
         // Often the maps are a singleton; we improve performance by actually making it so.
@@ -64,6 +67,17 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         }
     }
 
+    abstract void innerUpdateChanged();
+
+    abstract void markChanged(GraphNode<Solution_> changed);
+
+    @Override
+    public final void updateChanged() {
+        isUpdating = true;
+        innerUpdateChanged();
+        isUpdating = false;
+    }
+
     private BaseTopologicalOrderGraph.NodeTopologicalOrder[] buildNodeTopologicalOrderArray(BaseTopologicalOrderGraph graph,
             int graphSize) {
         var out = new BaseTopologicalOrderGraph.NodeTopologicalOrder[graphSize];
@@ -76,7 +90,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
 
     protected abstract ChangeSet_ createChangeSet(int instanceCount);
 
-    public @Nullable GraphNode<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
+    public final @Nullable GraphNode<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
         var map = variableReferenceToContainingNodeMap.get(variableId);
         if (map == null) {
             return null;
@@ -84,7 +98,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         return map.get(entity);
     }
 
-    public void addEdge(@NonNull GraphNode<Solution_> from, @NonNull GraphNode<Solution_> to) {
+    public final void addEdge(@NonNull GraphNode<Solution_> from, @NonNull GraphNode<Solution_> to) {
         var fromNodeId = from.graphNodeId();
         var toNodeId = to.graphNodeId();
         if (fromNodeId == toNodeId) {
@@ -99,7 +113,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         markChanged(to);
     }
 
-    public void removeEdge(@NonNull GraphNode<Solution_> from, @NonNull GraphNode<Solution_> to) {
+    public final void removeEdge(@NonNull GraphNode<Solution_> from, @NonNull GraphNode<Solution_> to) {
         var fromNodeId = from.graphNodeId();
         var toNodeId = to.graphNodeId();
         if (fromNodeId == toNodeId) {
@@ -114,10 +128,13 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         markChanged(to);
     }
 
-    abstract void markChanged(GraphNode<Solution_> changed);
-
     @Override
-    public void beforeVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
+    public final void beforeVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
+        if (isUpdating) {
+            // If we are updating, then the variable that changed is a declarative shadow variable;
+            // We don't need to check for graph modifications/track changes when we are updating, so skip
+            return;
+        }
         if (variableReference.entity().type().isInstance(entity)) {
             processEntity(variableReferenceToBeforeProcessor.getOrDefault(variableReference, Collections.emptyList()), entity);
         }
@@ -135,7 +152,12 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
     }
 
     @Override
-    public void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
+    public final void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
+        if (isUpdating) {
+            // If we are updating, then the variable that changed is a declarative shadow variable;
+            // We don't need to check for graph modifications/track changes when we are updating, so skip
+            return;
+        }
         if (variableReference.entity().type().isInstance(entity)) {
             var node = lookupOrNull(variableReference, entity);
             if (node != null) {
