@@ -135,7 +135,7 @@ class ListOXCrossoverTest {
         when(firstIndividual.getSolution()).thenReturn(firstParent);
         when(firstIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(firstIndividual.getChromosome()).thenReturn(firstParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var secondIndividual = (Individual<TestdataListSolution, SimpleScore>) mock(Individual.class);
@@ -143,7 +143,7 @@ class ListOXCrossoverTest {
         when(secondIndividual.getSolution()).thenReturn(secondParent);
         when(secondIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(secondIndividual.getChromosome()).thenReturn(secondParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         // Cut [2, 5] → both within entity a → fixIndex snaps to [0, 10] → all P1 values
@@ -252,7 +252,7 @@ class ListOXCrossoverTest {
         when(firstIndividual.getSolution()).thenReturn(firstParent);
         when(firstIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(firstIndividual.getChromosome()).thenReturn(firstParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var secondIndividual = (Individual<TestdataListSolution, SimpleScore>) mock(Individual.class);
@@ -260,7 +260,7 @@ class ListOXCrossoverTest {
         when(secondIndividual.getSolution()).thenReturn(secondParent);
         when(secondIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(secondIndividual.getChromosome()).thenReturn(secondParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         // Cut [3, 7] → start mid-a (snaps to 0), end mid-b (snaps to 10) → all P1
@@ -372,7 +372,7 @@ class ListOXCrossoverTest {
         when(firstIndividual.getSolution()).thenReturn(firstParent);
         when(firstIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(firstIndividual.getChromosome()).thenReturn(firstParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var secondIndividual = (Individual<TestdataListSolution, SimpleScore>) mock(Individual.class);
@@ -380,7 +380,7 @@ class ListOXCrossoverTest {
         when(secondIndividual.getSolution()).thenReturn(secondParent);
         when(secondIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(secondIndividual.getChromosome()).thenReturn(secondParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         // Cut [2, 8] → start mid-a (snaps to 0), end mid-c (snaps to 10) → all P1
@@ -492,7 +492,7 @@ class ListOXCrossoverTest {
         when(firstIndividual.getSolution()).thenReturn(firstParent);
         when(firstIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(firstIndividual.getChromosome()).thenReturn(firstParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var secondIndividual = (Individual<TestdataListSolution, SimpleScore>) mock(Individual.class);
@@ -500,7 +500,7 @@ class ListOXCrossoverTest {
         when(secondIndividual.getSolution()).thenReturn(secondParent);
         when(secondIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(secondIndividual.getChromosome()).thenReturn(secondParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         // inheritanceRate=0.5, size=10 → minSize=5, maxStart=6

@@ -13,17 +13,26 @@ public final class Utils {
     /**
      * Generate a cut-point and ensure that the expected number of planning values is included in the interval.
      */
-    public static int[] generateIndexes(RandomGenerator workingRandom, int size, double inheritanceRate) {
-        var minSize = (int) (size * inheritanceRate);
-        if (minSize == 0) {
-            return generateIndexes(workingRandom, size);
+    public static int[] generateIndexes(RandomGenerator workingRandom, int size, double inheritanceRate, boolean ensureSize) {
+        if (ensureSize) {
+            var minSize = (int) (size * inheritanceRate);
+            if (minSize == 0) {
+                return generateIndexes(workingRandom, size);
+            }
+            var maxStart = size - minSize + 1;
+            var start = workingRandom.nextInt(0, maxStart);
+            var minEnd = start + minSize - 1;
+            var maxEnd = start == 0 ? size - 1 : size;
+            var end = start == maxStart - 1 ? size - 1 : workingRandom.nextInt(minEnd, maxEnd);
+            return new int[] { start, end };
+        } else {
+            var start = workingRandom.nextInt(size);
+            // An inheritance rate of 95% means no more than 5% of the solution can be ruined.
+            // Some experiments have shown that a higher rate is more effective for overconstrained models
+            var maxSize = size * (1 - inheritanceRate);
+            var end = Math.min((int) (start + maxSize), size - 1);
+            return new int[] { start, end };
         }
-        var maxStart = size - minSize + 1;
-        var start = workingRandom.nextInt(0, maxStart);
-        var minEnd = start + minSize - 1;
-        var maxEnd = start == 0 ? size - 1 : size;
-        var end = start == maxStart - 1 ? size - 1 : workingRandom.nextInt(minEnd, maxEnd);
-        return new int[] { start, end };
     }
 
     /**

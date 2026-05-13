@@ -228,7 +228,7 @@ public final class HybridGeneticSearchDecider<Solution_, Score_ extends Score<Sc
             return this;
         }
 
-        public Builder<Solution_, Score_, State_, Type_> withSwapStarPhase(@Nullable Phase<Solution_> swapStarPhase) {
+        public Builder<Solution_, Score_, State_, Type_> withRefinementPhase(@Nullable Phase<Solution_> swapStarPhase) {
             this.refinementPhase = swapStarPhase;
             return this;
         }

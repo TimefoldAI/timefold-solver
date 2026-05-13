@@ -25,6 +25,11 @@ public class TestdataMultiVarEntity extends TestdataObject {
                 .getGenuineVariableDescriptor("secondaryValue");
     }
 
+    public static BasicVariableDescriptor<TestdataMultiVarSolution> buildVariableDescriptorForTertiaryValue() {
+        return (BasicVariableDescriptor<TestdataMultiVarSolution>) buildEntityDescriptor()
+                .getGenuineVariableDescriptor("tertiaryValueAllowedUnassigned");
+    }
+
     private TestdataValue primaryValue;
     private TestdataValue secondaryValue;
 

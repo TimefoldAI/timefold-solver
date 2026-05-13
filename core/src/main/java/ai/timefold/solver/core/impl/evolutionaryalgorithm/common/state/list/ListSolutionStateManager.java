@@ -18,6 +18,8 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Handles the saving and restoring of the working solution state for solutions using a {@link ListVariableDescriptor list
  * variable}.
@@ -31,6 +33,7 @@ import ai.timefold.solver.core.preview.api.move.builtin.Moves;
  * This class is used by the evolutionary algorithm to reset the working solution to a clean baseline before generating
  * new individuals.
  */
+@NullMarked
 public final class ListSolutionStateManager<Solution_, Score_ extends Score<Score_>>
         implements SolutionStateManager<Solution_, Score_, ListSolutionState<Solution_, Score_>> {
 
@@ -65,7 +68,8 @@ public final class ListSolutionStateManager<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public ListSolutionState<Solution_, Score_> saveSolutionState(Individual<Solution_, Score_> individual) {
+    public ListSolutionState<Solution_, Score_> saveSolutionState(InnerScoreDirector<Solution_, Score_> scoreDirector,
+            Individual<Solution_, Score_> individual) {
         var assignedValues = Arrays.stream(individual.getChromosome())
                 .map(chromosomeEntry -> new ListValueState(chromosomeEntry.value(),
                         ElementPosition.of(chromosomeEntry.entity(), chromosomeEntry.index())))
@@ -85,15 +89,15 @@ public final class ListSolutionStateManager<Solution_, Score_ extends Score<Scor
                             solution) - listVariableSupply.getUnassignedCount();
             var needRebase = stateToRestore.getSolution() != solution;
             var moveList = unassignAll(listVariableMetaModel, listVariableDescriptor, listVariableSupply, solution, size);
-            for (var assignedValue : stateToRestore.assignedValueList()) {
+            for (var stateEntry : stateToRestore.stateList()) {
                 if (needRebase) {
-                    var rebasedValue = Objects.requireNonNull(scoreDirector.lookUpWorkingObject(assignedValue.value()));
+                    var rebasedValue = Objects.requireNonNull(scoreDirector.lookUpWorkingObject(stateEntry.value()));
                     var rebasedEntity =
-                            Objects.requireNonNull(scoreDirector.lookUpWorkingObject(assignedValue.positionInList().entity()));
+                            Objects.requireNonNull(scoreDirector.lookUpWorkingObject(stateEntry.positionInList().entity()));
                     moveList.add(Moves.assign(listVariableMetaModel, rebasedValue, rebasedEntity,
-                            assignedValue.positionInList().index()));
+                            stateEntry.positionInList().index()));
                 } else {
-                    moveList.add(Moves.assign(listVariableMetaModel, assignedValue.value(), assignedValue.positionInList()));
+                    moveList.add(Moves.assign(listVariableMetaModel, stateEntry.value(), stateEntry.positionInList()));
                 }
             }
             if (!moveList.isEmpty()) {

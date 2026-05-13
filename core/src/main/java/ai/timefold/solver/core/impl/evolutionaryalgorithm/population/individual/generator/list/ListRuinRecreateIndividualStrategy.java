@@ -47,16 +47,12 @@ import org.jspecify.annotations.Nullable;
  * all values belonging to the same entity are always ruined or kept together.
  */
 @NullMarked
-public final class ListRuinRecreateIndividualStrategy<Solution_, Score_ extends Score<Score_>, State_ extends SolutionState<Solution_, Score_>>
-        implements ConstructionIndividualStrategy<Solution_, Score_> {
-
-    private final List<PhaseCommand<Solution_>> customPhaseIndividualCommandList;
-    private final Phase<Solution_> deterministicBestFitConstructionPhase;
-    private final Phase<Solution_> localSearchPhase;
-    private final @Nullable Phase<Solution_> refinementPhase;
-    private final SolutionStateManager<Solution_, Score_, State_> solutionStateManager;
-    private final IndividualBuilder<Solution_, Score_> individualBuilder;
-    private final double inheritanceRate;
+public record ListRuinRecreateIndividualStrategy<Solution_, Score_ extends Score<Score_>, State_ extends SolutionState<Solution_, Score_>>(
+        List<PhaseCommand<Solution_>> customPhaseIndividualCommandList, Phase<Solution_> deterministicBestFitConstructionPhase,
+        Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase,
+        SolutionStateManager<Solution_, Score_, State_> solutionStateManager,
+        IndividualBuilder<Solution_, Score_> individualBuilder,
+        double inheritanceRate) implements ConstructionIndividualStrategy<Solution_, Score_> {
 
     public ListRuinRecreateIndividualStrategy(List<PhaseCommand<Solution_>> customPhaseIndividualCommandList,
             Phase<Solution_> deterministicBestFitConstructionPhase, Phase<Solution_> localSearchPhase,
@@ -100,7 +96,7 @@ public final class ListRuinRecreateIndividualStrategy<Solution_, Score_ extends 
     void applyRuinRecreate(SolverScope<Solution_> solverScope, InnerScoreDirector<Solution_, Score_> scoreDirector,
             Population<Solution_, Score_> population) {
         var bestIndividual = Objects.requireNonNull(population.getBestIndividual());
-        var bestSolutionState = solutionStateManager.saveSolutionState(bestIndividual);
+        var bestSolutionState = solutionStateManager.saveSolutionState(scoreDirector, bestIndividual);
         solutionStateManager.restoreSolutionState(scoreDirector, bestSolutionState);
         var listVariableDescriptor = Objects.requireNonNull(scoreDirector.getSolutionDescriptor().getListVariableDescriptor());
         var listVariableMetaModel = listVariableDescriptor.getVariableMetaModel();
@@ -122,7 +118,7 @@ public final class ListRuinRecreateIndividualStrategy<Solution_, Score_ extends 
         var start = fixIndex(bestIndividual.getChromosome(), indexes[0], true);
         var end = fixIndex(bestIndividual.getChromosome(), indexes[1], false);
         var chromosome = bestIndividual.getChromosome();
-        var unassignMoveList = new ArrayList<Move<Solution_>>(end - start);
+        var moveList = new ArrayList<Move<Solution_>>(end - start);
         var ruinedValues = new ArrayList<>(end - start);
         for (var i = start; i < end; i++) {
             var rebasedValue = Objects.requireNonNull(scoreDirector.lookUpWorkingObject(chromosome[i].value()));
@@ -130,13 +126,12 @@ public final class ListRuinRecreateIndividualStrategy<Solution_, Score_ extends 
                 continue;
             }
             var position = listVariableStateSupply.getElementPosition(rebasedValue).ensureAssigned();
-            unassignMoveList.add(Moves.unassign(listVariableMetaModel, position));
+            moveList.add(Moves.unassign(listVariableMetaModel, position));
             ruinedValues.add(rebasedValue);
         }
-        Collections.reverse(unassignMoveList);
-        if (!unassignMoveList.isEmpty()) {
-            var compositeMove = Moves.compose(unassignMoveList);
-            scoreDirector.getMoveDirector().execute(compositeMove);
+        Collections.reverse(moveList);
+        if (!moveList.isEmpty()) {
+            scoreDirector.getMoveDirector().execute(Moves.compose(moveList));
         }
         return ruinedValues;
     }

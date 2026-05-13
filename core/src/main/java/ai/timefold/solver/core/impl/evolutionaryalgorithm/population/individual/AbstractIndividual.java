@@ -4,7 +4,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 abstract sealed class AbstractIndividual<Solution_, Score_ extends Score<Score_>> implements Individual<Solution_, Score_>
-        permits ListVariableIndividual {
+        permits BasicVariableIndividual, ListVariableIndividual {
 
     protected final Solution_ solution;
     protected final InnerScore<Score_> score;

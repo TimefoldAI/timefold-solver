@@ -44,6 +44,17 @@
           "old": "field ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_>>.subPillarSequenceComparatorClass",
           "new": "field ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_>>.subPillarSequenceComparatorClass",
           "justification": "Internal protected fields; safe."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.phase.PhaseConfig<Config_ extends ai.timefold.solver.core.config.phase.PhaseConfig<Config_>>",
+          "new": "class ai.timefold.solver.core.config.phase.PhaseConfig<Config_ extends ai.timefold.solver.core.config.phase.PhaseConfig<Config_>>",
+          "annotationType": "jakarta.xml.bind.annotation.XmlSeeAlso",
+          "attribute": "value",
+          "oldValue": "{ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig.class, ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig.class, ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig.class, ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig.class, ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig.class}",
+          "newValue": "{ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig.class, ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig.class, ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig.class, ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig.class, ai.timefold.solver.core.config.evolutionaryalgorithm.EvolutionaryAlgorithmPhaseConfig.class, ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig.class}",
+          "justification": "Add new evolutionary config"
         }
       ]
     }

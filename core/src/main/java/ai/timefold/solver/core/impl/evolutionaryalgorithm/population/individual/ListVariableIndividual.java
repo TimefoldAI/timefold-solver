@@ -29,8 +29,9 @@ public final class ListVariableIndividual<Solution_, Score_ extends Score<Score_
     private final Map<Object, PositionPair> predecessorAndSuccessorMap;
     private final ChromosomeEntry[] chromosome;
 
-    public ListVariableIndividual(Solution_ solution, InnerScore<Score_> score, @Nullable InnerScore<Score_> firstParentScore,
-            @Nullable InnerScore<Score_> secondParentScore, InnerScoreDirector<Solution_, Score_> scoreDirector) {
+    public ListVariableIndividual(InnerScoreDirector<Solution_, Score_> scoreDirector, Solution_ solution,
+            InnerScore<Score_> score, @Nullable InnerScore<Score_> firstParentScore,
+            @Nullable InnerScore<Score_> secondParentScore) {
         super(solution, score, firstParentScore, secondParentScore);
         var listVariableDescriptor = Objects.requireNonNull(scoreDirector.getSolutionDescriptor().getListVariableDescriptor());
         this.planningIdAccessor =
@@ -43,7 +44,7 @@ public final class ListVariableIndividual<Solution_, Score_ extends Score<Score_
         var size = (int) scoreDirector.getValueRangeManager().getProblemSizeStatistics().approximateValueCount();
         this.predecessorAndSuccessorMap = HashMap.newHashMap(size);
         var chromosomeList = new ArrayList<ChromosomeEntry>(size);
-        load(solution, listVariableDescriptor, chromosomeList, predecessorAndSuccessorMap, planningIdAccessor);
+        load(listVariableDescriptor, planningIdAccessor, solution, chromosomeList, predecessorAndSuccessorMap);
         this.chromosome = chromosomeList.toArray(ChromosomeEntry[]::new);
     }
 
@@ -56,9 +57,9 @@ public final class ListVariableIndividual<Solution_, Score_ extends Score<Score_
         this.chromosome = chromosome;
     }
 
-    private static <Solution_> void load(Solution_ solution, ListVariableDescriptor<Solution_> listVariableDescriptor,
-            List<ChromosomeEntry> chromosomeList, Map<Object, PositionPair> predecessorAndSuccessorMap,
-            MemberAccessor planningIdAccessor) {
+    private static <Solution_> void load(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            MemberAccessor planningIdAccessor, Solution_ solution, List<ChromosomeEntry> chromosomeList,
+            Map<Object, PositionPair> predecessorAndSuccessorMap) {
         var allEntities = listVariableDescriptor.getEntityDescriptor().extractEntities(solution);
         for (var entity : allEntities) {
             var valueList = listVariableDescriptor.getValue(entity);
@@ -71,7 +72,7 @@ public final class ListVariableIndividual<Solution_, Score_ extends Score<Score_
             for (var i = 0; i < size; i++) {
                 var value = valueList.get(i);
                 ids[i] = planningIdAccessor.executeGetter(value);
-                chromosomeList.add(new ChromosomeEntry(value, entity, i));
+                chromosomeList.add(new ChromosomeEntry(entity, value, i));
             }
             for (var i = 0; i < size; i++) {
                 predecessorAndSuccessorMap.put(ids[i],
@@ -120,8 +121,8 @@ public final class ListVariableIndividual<Solution_, Score_ extends Score<Score_
         var newSolution = scoreDirector.cloneSolution(solution);
         var newPredecessorAndSuccessorMap = HashMap.<Object, PositionPair> newHashMap(predecessorAndSuccessorMap.size());
         var chromosomeList = new ArrayList<ChromosomeEntry>(chromosome.length);
-        load(solution, scoreDirector.getSolutionDescriptor().getListVariableDescriptor(), chromosomeList,
-                newPredecessorAndSuccessorMap, planningIdAccessor);
+        load(scoreDirector.getSolutionDescriptor().getListVariableDescriptor(), planningIdAccessor, solution, chromosomeList,
+                newPredecessorAndSuccessorMap);
         var newChromosome = chromosomeList.toArray(ChromosomeEntry[]::new);
         return new ListVariableIndividual<>(newSolution, score, firstParentScore, secondParentScore,
                 planningIdAccessor, newPredecessorAndSuccessorMap, newChromosome);

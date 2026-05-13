@@ -81,7 +81,7 @@ public final class ListOXCrossover<Solution_, Score_ extends Score<Score_>>
             ValueRangeManager<Solution_> valueRangeManager, Individual<Solution_, Score_> firstIndividual,
             Individual<Solution_, Score_> secondIndividual, double inheritanceRate, boolean applyBestFitFirstPhase,
             RandomGenerator workingRandom) {
-        var indexes = generateIndexes(workingRandom, firstIndividual.size(), inheritanceRate);
+        var indexes = generateIndexes(workingRandom, firstIndividual.size(), inheritanceRate, true);
         var start = fixIndex(firstIndividual.getChromosome(), indexes[0], true);
         var end = fixIndex(firstIndividual.getChromosome(), indexes[1], false);
         // Add the values from the first parent within the specified interval

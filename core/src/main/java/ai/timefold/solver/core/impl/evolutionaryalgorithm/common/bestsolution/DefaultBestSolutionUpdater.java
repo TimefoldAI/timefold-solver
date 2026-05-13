@@ -38,7 +38,8 @@ public final class DefaultBestSolutionUpdater<Solution_, Score_ extends Score<Sc
             // it uses the solution state manager to save the individual state.
             // This method reads the values once and then assigns them to the current working solution,
             // requiring one additional read of the values.
-            var individualState = solutionStateManager.saveSolutionState(stepScope.getStepIndividual());
+            var individualState =
+                    solutionStateManager.saveSolutionState(stepScope.getScoreDirector(), stepScope.getStepIndividual());
             solutionStateManager.restoreSolutionState(sharedPhaseScope.getScoreDirector(), individualState);
             var bestSolutionStepScope = new EvolutionaryAlgorithmStepScope<>(sharedPhaseScope, newIndividual);
             bestSolutionStepScope.setScore(newIndividual.getScore());

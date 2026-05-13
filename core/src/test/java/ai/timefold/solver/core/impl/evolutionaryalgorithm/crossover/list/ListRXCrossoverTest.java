@@ -140,7 +140,7 @@ class ListRXCrossoverTest {
         when(firstIndividual.getSolution()).thenReturn(firstParent);
         when(firstIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(firstIndividual.getChromosome()).thenReturn(firstParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var secondIndividual = (Individual<TestdataListSolution, SimpleScore>) mock(Individual.class);
@@ -148,7 +148,7 @@ class ListRXCrossoverTest {
         when(secondIndividual.getSolution()).thenReturn(secondParent);
         when(secondIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(secondIndividual.getChromosome()).thenReturn(secondParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var context = new CrossoverContext<>(phaseScope, firstIndividual, secondIndividual);
@@ -242,7 +242,7 @@ class ListRXCrossoverTest {
         when(firstIndividual.getSolution()).thenReturn(firstParent);
         when(firstIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(firstIndividual.getChromosome()).thenReturn(firstParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var secondIndividual = (Individual<TestdataListSolution, SimpleScore>) mock(Individual.class);
@@ -250,7 +250,7 @@ class ListRXCrossoverTest {
         when(secondIndividual.getSolution()).thenReturn(secondParent);
         when(secondIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(secondIndividual.getChromosome()).thenReturn(secondParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var context = new CrossoverContext<>(phaseScope, firstIndividual, secondIndividual);
@@ -353,7 +353,7 @@ class ListRXCrossoverTest {
         when(firstIndividual.getSolution()).thenReturn(firstParent);
         when(firstIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(firstIndividual.getChromosome()).thenReturn(firstParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var secondIndividual = (Individual<TestdataListSolution, SimpleScore>) mock(Individual.class);
@@ -361,7 +361,7 @@ class ListRXCrossoverTest {
         when(secondIndividual.getSolution()).thenReturn(secondParent);
         when(secondIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(secondIndividual.getChromosome()).thenReturn(secondParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var context = new CrossoverContext<>(phaseScope, firstIndividual, secondIndividual);
@@ -471,7 +471,7 @@ class ListRXCrossoverTest {
         when(firstIndividual.getSolution()).thenReturn(firstParent);
         when(firstIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(firstIndividual.getChromosome()).thenReturn(firstParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var secondIndividual = (Individual<TestdataListSolution, SimpleScore>) mock(Individual.class);
@@ -479,7 +479,7 @@ class ListRXCrossoverTest {
         when(secondIndividual.getSolution()).thenReturn(secondParent);
         when(secondIndividual.getScore()).thenReturn(InnerScore.fullyAssigned(SimpleScore.ZERO));
         when(secondIndividual.getChromosome()).thenReturn(secondParent.getEntityList().stream()
-                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(v, e, 0)))
+                .flatMap(e -> e.getValueList().stream().map(v -> new ChromosomeEntry(e, v, 0)))
                 .toArray(ChromosomeEntry[]::new));
 
         var context = new CrossoverContext<>(phaseScope, firstIndividual, secondIndividual);

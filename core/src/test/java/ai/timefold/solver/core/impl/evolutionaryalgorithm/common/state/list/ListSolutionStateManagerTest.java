@@ -77,7 +77,7 @@ class ListSolutionStateManagerTest {
         var state = new ListSolutionStateManager<TestdataListSolution, SimpleScore>()
                 .saveSolutionState(scoreDirector, true);
 
-        assertThat(state.assignedValueList()).isEmpty();
+        assertThat(state.stateList()).isEmpty();
     }
 
     @Test
@@ -100,7 +100,7 @@ class ListSolutionStateManagerTest {
         var state = new ListSolutionStateManager<TestdataListSolution, SimpleScore>()
                 .saveSolutionState(scoreDirector, true);
 
-        assertThat(state.assignedValueList())
+        assertThat(state.stateList())
                 .hasSize(3)
                 .extracting(lv -> ((TestdataListValue) lv.value()).getCode())
                 .containsExactlyInAnyOrder("v1", "v2", "v3");
@@ -126,7 +126,7 @@ class ListSolutionStateManagerTest {
         var state = new ListSolutionStateManager<TestdataListSolution, SimpleScore>()
                 .saveSolutionState(scoreDirector, false);
 
-        assertThat(state.assignedValueList()).isEmpty();
+        assertThat(state.stateList()).isEmpty();
     }
 
     @Test
@@ -150,7 +150,7 @@ class ListSolutionStateManagerTest {
         var state = new ListSolutionStateManager<TestdataListSolution, SimpleScore>()
                 .saveSolutionState(scoreDirector, true);
 
-        assertThat(state.assignedValueList())
+        assertThat(state.stateList())
                 .hasSize(2)
                 .extracting(lv -> ((TestdataListValue) lv.value()).getCode())
                 .containsExactlyInAnyOrder("v1", "v2");
@@ -337,11 +337,13 @@ class ListSolutionStateManagerTest {
         var score = (InnerScore<SimpleScore>) mock(InnerScore.class);
         doReturn(score).when(individual).getScore();
 
+        InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector = buildScoreDirector(false);
+
         var state = new ListSolutionStateManager<TestdataListSolution, SimpleScore>()
-                .saveSolutionState(individual);
+                .saveSolutionState(scoreDirector, individual);
 
         assertThat(state.getSolution()).isSameAs(solution);
-        assertThat(state.assignedValueList()).isEmpty();
+        assertThat(state.stateList()).isEmpty();
         assertThat(state.getScore()).isSameAs(score);
     }
 
@@ -361,20 +363,22 @@ class ListSolutionStateManagerTest {
         var individual = (Individual<TestdataListSolution, SimpleScore>) mock(Individual.class);
         doReturn(solution).when(individual).getSolution();
         doReturn(new ChromosomeEntry[] {
-                new ChromosomeEntry(v1, a, 0),
-                new ChromosomeEntry(v2, a, 1),
-                new ChromosomeEntry(v3, b, 0)
+                new ChromosomeEntry(a, v1, 0),
+                new ChromosomeEntry(a, v2, 1),
+                new ChromosomeEntry(b, v3, 0)
         }).when(individual).getChromosome();
         var score = (InnerScore<SimpleScore>) mock(InnerScore.class);
         doReturn(score).when(individual).getScore();
 
+        InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector = buildScoreDirector(false);
+
         var state = new ListSolutionStateManager<TestdataListSolution, SimpleScore>()
-                .saveSolutionState(individual);
+                .saveSolutionState(scoreDirector, individual);
 
         assertThat(state.getSolution()).isSameAs(solution);
         assertThat(state.getScore()).isSameAs(score);
 
-        var assignedValues = state.assignedValueList();
+        var assignedValues = state.stateList();
         assertThat(assignedValues).hasSize(3);
 
         assertThat(assignedValues.get(0).value()).isSameAs(v1);

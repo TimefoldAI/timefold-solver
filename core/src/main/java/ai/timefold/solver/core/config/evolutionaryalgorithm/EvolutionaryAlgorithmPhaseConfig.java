@@ -11,6 +11,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
+        "complexProblem",
         "populationConfig",
         "workerConfig",
 })
@@ -18,6 +19,9 @@ import org.jspecify.annotations.Nullable;
 public class EvolutionaryAlgorithmPhaseConfig extends PhaseConfig<EvolutionaryAlgorithmPhaseConfig> {
 
     public static final String XML_ELEMENT_NAME = "evolutionaryAlgorithm";
+
+    @Nullable
+    private Boolean complexProblem;
 
     @Nullable
     private EvolutionaryPopulationConfig populationConfig = null;
@@ -28,6 +32,14 @@ public class EvolutionaryAlgorithmPhaseConfig extends PhaseConfig<EvolutionaryAl
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
+
+    public @Nullable Boolean getComplexProblem() {
+        return complexProblem;
+    }
+
+    public void setComplexProblem(@Nullable Boolean complexProblem) {
+        this.complexProblem = complexProblem;
+    }
 
     public @Nullable EvolutionaryPopulationConfig getPopulationConfig() {
         return populationConfig;
@@ -49,6 +61,11 @@ public class EvolutionaryAlgorithmPhaseConfig extends PhaseConfig<EvolutionaryAl
     // With methods
     // ************************************************************************
 
+    public EvolutionaryAlgorithmPhaseConfig withComplexProblem(Boolean complexProblem) {
+        setComplexProblem(complexProblem);
+        return this;
+    }
+
     public EvolutionaryAlgorithmPhaseConfig withPopulationConfig(EvolutionaryPopulationConfig populationConfig) {
         setPopulationConfig(populationConfig);
         return this;
@@ -62,6 +79,7 @@ public class EvolutionaryAlgorithmPhaseConfig extends PhaseConfig<EvolutionaryAl
     @Override
     public EvolutionaryAlgorithmPhaseConfig inherit(EvolutionaryAlgorithmPhaseConfig inheritedConfig) {
         super.inherit(inheritedConfig);
+        complexProblem = ConfigUtils.inheritOverwritableProperty(complexProblem, inheritedConfig.getComplexProblem());
         populationConfig = ConfigUtils.inheritConfig(populationConfig, inheritedConfig.getPopulationConfig());
         workerConfig =
                 ConfigUtils.inheritConfig(workerConfig, inheritedConfig.getWorkerConfig());

@@ -1,9 +1,8 @@
-package ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator.list;
+package ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator.basic;
 
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -12,7 +11,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -35,25 +33,26 @@ import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
-import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
-import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
-import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class ListRuinRecreateIndividualStrategyTest {
+class BasicRuinRecreateIndividualStrategyTest {
 
     @SuppressWarnings("unchecked")
-    private EvolutionaryAlgorithmStepScope<TestdataListSolution> prepareStepScope() {
+    private EvolutionaryAlgorithmStepScope<TestdataMultiVarSolution> prepareStepScope() {
         var solverScope = mock(SolverScope.class);
         var phaseScope = mock(EvolutionaryAlgorithmPhaseScope.class);
         doReturn(solverScope).when(phaseScope).getSolverScope();
-        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
+        var solutionDescriptor = TestdataMultiVarSolution.buildSolutionDescriptor();
         var heuristicConfigPolicy =
-                new HeuristicConfigPolicy.Builder<TestdataListSolution>().withSolutionDescriptor(solutionDescriptor).build();
-        var termination = (PhaseTermination<TestdataListSolution>) TerminationFactory
-                .<TestdataListSolution> create(new TerminationConfig().withStepCountLimit(1))
+                new HeuristicConfigPolicy.Builder<TestdataMultiVarSolution>().withSolutionDescriptor(solutionDescriptor)
+                        .build();
+        var termination = (PhaseTermination<TestdataMultiVarSolution>) TerminationFactory
+                .<TestdataMultiVarSolution> create(new TerminationConfig().withStepCountLimit(1))
                 .buildTermination(heuristicConfigPolicy);
         doReturn(termination).when(phaseScope).getTermination();
         var stepScope = mock(EvolutionaryAlgorithmStepScope.class);
@@ -61,7 +60,7 @@ class ListRuinRecreateIndividualStrategyTest {
         var population = mock(Population.class);
         doReturn(population).when(phaseScope).getPopulation();
         var scoreDirector = mockScoreDirector(solutionDescriptor);
-        var problem = TestdataListSolution.generateInitializedSolution(1, 1);
+        var problem = TestdataMultiVarSolution.generateUninitializedSolution(1, 1);
         scoreDirector.setWorkingSolution(problem);
         var score = scoreDirector.calculateScore();
         doReturn(scoreDirector).when(solverScope).getScoreDirector();
@@ -79,6 +78,7 @@ class ListRuinRecreateIndividualStrategyTest {
         var stepScope = prepareStepScope();
         var solverScope = stepScope.getPhaseScope().getSolverScope();
         var deterministicPhase = mock(Phase.class);
+        var shuffledPhase = mock(Phase.class);
         var localSearchPhase = mock(Phase.class);
         var solutionStateManager = mock(SolutionStateManager.class);
         var individualBuilder = mock(IndividualBuilder.class);
@@ -86,52 +86,47 @@ class ListRuinRecreateIndividualStrategyTest {
         doReturn(individual).when(individualBuilder).build(any(), any(), any(), any(), any());
 
         var strategy =
-                new ListRuinRecreateIndividualStrategy<TestdataListSolution, SimpleScore, SolutionState<TestdataListSolution, SimpleScore>>(
-                        Collections.emptyList(), deterministicPhase, localSearchPhase, null, solutionStateManager,
-                        individualBuilder, 0.95);
+                new BasicRuinRecreateIndividualStrategy<TestdataMultiVarSolution, SimpleScore, SolutionState<TestdataMultiVarSolution, SimpleScore>>(
+                        Collections.emptyList(), deterministicPhase, shuffledPhase, localSearchPhase, null,
+                        solutionStateManager, individualBuilder, 0.95);
 
         var generatedIndividual = strategy.apply(stepScope);
 
         assertThat(generatedIndividual).isNotNull();
         verify(deterministicPhase).solve(solverScope);
         verify(localSearchPhase).solve(solverScope);
+        verify(shuffledPhase, never()).solve(any());
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void applyWithBestIndividual() {
-        var v1 = new TestdataListValue("v1");
-        var v2 = new TestdataListValue("v2");
-        var a = new TestdataListEntity("a");
+        var primaryValue = new TestdataValue("primary");
+        var secondaryValue = new TestdataValue("secondary");
+        var entity = new TestdataMultiVarEntity("e1");
 
         var stepScope = prepareStepScope();
         var solverScope = stepScope.getPhaseScope().getSolverScope();
-        var scoreDirector = (InnerScoreDirector<TestdataListSolution, SimpleScore>) solverScope.getScoreDirector();
+        var scoreDirector = (InnerScoreDirector<TestdataMultiVarSolution, SimpleScore>) solverScope.getScoreDirector();
 
-        var problem = new TestdataListSolution();
-        problem.setValueList(new ArrayList<>(List.of(v1, v2)));
-        problem.setEntityList(List.of(a));
-        a.setValueList(new ArrayList<>(List.of(v1, v2)));
-        scoreDirector.setWorkingSolution(problem);
-
-        doReturn(v1).when(scoreDirector).lookUpWorkingObject(v1);
-        doReturn(v2).when(scoreDirector).lookUpWorkingObject(v2);
-        doReturn(a).when(scoreDirector).lookUpWorkingObject(a);
+        doReturn(entity).when(scoreDirector).lookUpWorkingObject(entity);
+        doReturn(primaryValue).when(scoreDirector).lookUpWorkingObject(primaryValue);
+        doReturn(secondaryValue).when(scoreDirector).lookUpWorkingObject(secondaryValue);
         doNothing().when(scoreDirector).executeMove(any());
 
-        // Return distinct indices to avoid retry in generateIndexes
         var workingRandom = mock(Random.class);
-        when(workingRandom.nextInt(anyInt())).thenReturn(0, 1);
+        when(workingRandom.nextInt(2)).thenReturn(0, 1);
         doReturn(workingRandom).when(solverScope).getWorkingRandom();
 
         var deterministicPhase = mock(Phase.class);
+        var shuffledPhase = mock(Phase.class);
         var localSearchPhase = mock(Phase.class);
         var solutionStateManager = mock(SolutionStateManager.class);
         var solutionState = mock(SolutionState.class);
         var bestIndividual = mock(Individual.class);
         doReturn(new ChromosomeEntry[] {
-                new ChromosomeEntry(a, v1, 0),
-                new ChromosomeEntry(a, v2, 1)
+                new ChromosomeEntry(entity, primaryValue, 0),
+                new ChromosomeEntry(entity, secondaryValue, 1)
         }).when(bestIndividual).getChromosome();
         doReturn(2).when(bestIndividual).size();
         doReturn(solutionState).when(solutionStateManager).saveSolutionState(scoreDirector, bestIndividual);
@@ -144,18 +139,18 @@ class ListRuinRecreateIndividualStrategyTest {
         doReturn(individual).when(individualBuilder).build(any(), any(), any(), any(), any());
 
         var strategy =
-                new ListRuinRecreateIndividualStrategy<TestdataListSolution, SimpleScore, SolutionState<TestdataListSolution, SimpleScore>>(
-                        Collections.emptyList(), deterministicPhase, localSearchPhase, null, solutionStateManager,
-                        individualBuilder, 0.95);
+                new BasicRuinRecreateIndividualStrategy<TestdataMultiVarSolution, SimpleScore, SolutionState<TestdataMultiVarSolution, SimpleScore>>(
+                        Collections.emptyList(), deterministicPhase, shuffledPhase, localSearchPhase, null,
+                        solutionStateManager, individualBuilder, 0.95);
 
         var generatedIndividual = strategy.apply(stepScope);
 
         assertThat(generatedIndividual).isNotNull();
-        // Ruin-recreate path: deterministic phase is skipped
         verify(deterministicPhase, never()).solve(any());
-        verify(localSearchPhase).solve(solverScope);
         verify(solutionStateManager).saveSolutionState(scoreDirector, bestIndividual);
         verify(solutionStateManager).restoreSolutionState(any(), any());
+        verify(shuffledPhase).solve(solverScope);
+        verify(localSearchPhase).solve(solverScope);
     }
 
     @Test
@@ -164,6 +159,7 @@ class ListRuinRecreateIndividualStrategyTest {
         var stepScope = prepareStepScope();
         var solverScope = stepScope.getPhaseScope().getSolverScope();
         var deterministicPhase = mock(Phase.class);
+        var shuffledPhase = mock(Phase.class);
         var localSearchPhase = mock(Phase.class);
         var solutionStateManager = mock(SolutionStateManager.class);
         var individualBuilder = mock(IndividualBuilder.class);
@@ -175,9 +171,9 @@ class ListRuinRecreateIndividualStrategyTest {
 
         var command = mock(PhaseCommand.class);
         var strategy =
-                new ListRuinRecreateIndividualStrategy<TestdataListSolution, SimpleScore, SolutionState<TestdataListSolution, SimpleScore>>(
-                        List.of(command), deterministicPhase, localSearchPhase, null, solutionStateManager, individualBuilder,
-                        0.95);
+                new BasicRuinRecreateIndividualStrategy<TestdataMultiVarSolution, SimpleScore, SolutionState<TestdataMultiVarSolution, SimpleScore>>(
+                        List.of(command), deterministicPhase, shuffledPhase, localSearchPhase, null, solutionStateManager,
+                        individualBuilder, 0.95);
 
         strategy.apply(stepScope);
 
@@ -192,6 +188,7 @@ class ListRuinRecreateIndividualStrategyTest {
         var stepScope = prepareStepScope();
         var solverScope = stepScope.getPhaseScope().getSolverScope();
         var deterministicPhase = mock(Phase.class);
+        var shuffledPhase = mock(Phase.class);
         var localSearchPhase = mock(Phase.class);
         var refinementPhase = mock(Phase.class);
         var solutionStateManager = mock(SolutionStateManager.class);
@@ -204,9 +201,9 @@ class ListRuinRecreateIndividualStrategyTest {
 
         var command = mock(PhaseCommand.class);
         var strategy =
-                new ListRuinRecreateIndividualStrategy<TestdataListSolution, SimpleScore, SolutionState<TestdataListSolution, SimpleScore>>(
-                        List.of(command), deterministicPhase, localSearchPhase, refinementPhase, solutionStateManager,
-                        individualBuilder, 0.95);
+                new BasicRuinRecreateIndividualStrategy<TestdataMultiVarSolution, SimpleScore, SolutionState<TestdataMultiVarSolution, SimpleScore>>(
+                        List.of(command), deterministicPhase, shuffledPhase, localSearchPhase, refinementPhase,
+                        solutionStateManager, individualBuilder, 0.95);
 
         strategy.apply(stepScope);
 

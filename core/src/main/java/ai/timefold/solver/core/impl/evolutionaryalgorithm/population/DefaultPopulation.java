@@ -117,6 +117,10 @@ public final class DefaultPopulation<Solution_, Score_ extends Score<Score_>> im
             bestIndividual = individual;
             bestGeneration = generationCount;
             bestIteration = individualCount;
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("New best individual, iteration ({}), generation({}), score ({})", bestIteration, bestGeneration,
+                        bestIndividual.getScore().raw());
+            }
         }
         return internalIndividual;
     }

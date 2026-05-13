@@ -27,23 +27,19 @@ import org.jspecify.annotations.Nullable;
  * The strategy can be used for both variable types, considering that the inner phases can handle each variable type.
  */
 @NullMarked
-public final class DefaultConstructionIndividualStrategy<Solution_, Score_ extends Score<Score_>>
-        implements ConstructionIndividualStrategy<Solution_, Score_> {
-
-    private final List<PhaseCommand<Solution_>> customPhaseIndividualCommandList;
-    private final Phase<Solution_> deterministicBestFitConstructionPhase;
-    private final Phase<Solution_> shuffledBestFitConstructionPhase;
-    private final Phase<Solution_> localSearchPhase;
-    private final @Nullable Phase<Solution_> refinementPhase;
-    private final IndividualBuilder<Solution_, Score_> individualBuilder;
+public record DefaultConstructionIndividualStrategy<Solution_, Score_ extends Score<Score_>>(
+        List<PhaseCommand<Solution_>> customPhaseIndividualCommandList, Phase<Solution_> deterministicBestFitConstructionPhase,
+        Phase<Solution_> shuffledFirstFitConstructionPhase, Phase<Solution_> localSearchPhase,
+        @Nullable Phase<Solution_> refinementPhase,
+        IndividualBuilder<Solution_, Score_> individualBuilder) implements ConstructionIndividualStrategy<Solution_, Score_> {
 
     public DefaultConstructionIndividualStrategy(List<PhaseCommand<Solution_>> customPhaseIndividualCommandList,
-            Phase<Solution_> deterministicBestFitConstructionPhase, Phase<Solution_> shuffledBestFitConstructionPhase,
+            Phase<Solution_> deterministicBestFitConstructionPhase, Phase<Solution_> shuffledFirstFitConstructionPhase,
             Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase,
             IndividualBuilder<Solution_, Score_> individualBuilder) {
         this.customPhaseIndividualCommandList = Objects.requireNonNull(customPhaseIndividualCommandList);
         this.deterministicBestFitConstructionPhase = Objects.requireNonNull(deterministicBestFitConstructionPhase);
-        this.shuffledBestFitConstructionPhase = Objects.requireNonNull(shuffledBestFitConstructionPhase);
+        this.shuffledFirstFitConstructionPhase = Objects.requireNonNull(shuffledFirstFitConstructionPhase);
         this.localSearchPhase = Objects.requireNonNull(localSearchPhase);
         this.refinementPhase = refinementPhase;
         this.individualBuilder = Objects.requireNonNull(individualBuilder);
@@ -74,6 +70,6 @@ public final class DefaultConstructionIndividualStrategy<Solution_, Score_ exten
             // The shuffled phase is expected to shuffle the selector and produce different solutions.
             return deterministicBestFitConstructionPhase;
         }
-        return shuffledBestFitConstructionPhase;
+        return shuffledFirstFitConstructionPhase;
     }
 }

@@ -4,7 +4,6 @@ import java.util.function.Consumer;
 
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
@@ -12,36 +11,36 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
-        "customIndividualPhaseConfig",
-        "localSearchPhaseConfig",
+        "individualGeneratorConfig",
+        "localSearchConfig",
 })
 @NullMarked
 public class EvolutionaryWorkerConfig extends PhaseConfig<EvolutionaryWorkerConfig> {
 
     @Nullable
-    private EvolutionaryCustomPhaseConfig customIndividualPhaseConfig = null;
+    private EvolutionaryIndividualGeneratorConfig individualGeneratorConfig = null;
 
     @Nullable
-    private LocalSearchPhaseConfig localSearchPhaseConfig = null;
+    private EvolutionaryLocalSearchConfig localSearchConfig = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public @Nullable EvolutionaryCustomPhaseConfig getCustomIndividualPhaseConfig() {
-        return customIndividualPhaseConfig;
+    public @Nullable EvolutionaryIndividualGeneratorConfig getIndividualGeneratorConfig() {
+        return individualGeneratorConfig;
     }
 
-    public void setCustomIndividualPhaseConfig(@Nullable EvolutionaryCustomPhaseConfig customIndividualPhaseConfig) {
-        this.customIndividualPhaseConfig = customIndividualPhaseConfig;
+    public void setIndividualGeneratorConfig(@Nullable EvolutionaryIndividualGeneratorConfig individualGeneratorConfig) {
+        this.individualGeneratorConfig = individualGeneratorConfig;
     }
 
-    public @Nullable LocalSearchPhaseConfig getLocalSearchPhaseConfig() {
-        return localSearchPhaseConfig;
+    public @Nullable EvolutionaryLocalSearchConfig getLocalSearchConfig() {
+        return localSearchConfig;
     }
 
-    public void setLocalSearchPhaseConfig(@Nullable LocalSearchPhaseConfig localSearchPhaseConfig) {
-        this.localSearchPhaseConfig = localSearchPhaseConfig;
+    public void setLocalSearchConfig(@Nullable EvolutionaryLocalSearchConfig localSearchConfig) {
+        this.localSearchConfig = localSearchConfig;
     }
 
     // ************************************************************************
@@ -49,22 +48,22 @@ public class EvolutionaryWorkerConfig extends PhaseConfig<EvolutionaryWorkerConf
     // ************************************************************************
 
     public EvolutionaryWorkerConfig
-            withCustomIndividualPhaseConfig(EvolutionaryCustomPhaseConfig customIndividualPhaseConfig) {
-        setCustomIndividualPhaseConfig(customIndividualPhaseConfig);
+            withIndividualGeneratorConfig(EvolutionaryIndividualGeneratorConfig individualGeneratorConfig) {
+        setIndividualGeneratorConfig(individualGeneratorConfig);
         return this;
     }
 
-    public EvolutionaryWorkerConfig withLocalSearchPhaseConfig(LocalSearchPhaseConfig localSearchPhaseConfig) {
-        setLocalSearchPhaseConfig(localSearchPhaseConfig);
+    public EvolutionaryWorkerConfig withLocalSearchConfig(EvolutionaryLocalSearchConfig localSearchConfig) {
+        setLocalSearchConfig(localSearchConfig);
         return this;
     }
 
     @Override
     public EvolutionaryWorkerConfig inherit(EvolutionaryWorkerConfig inheritedConfig) {
         super.inherit(inheritedConfig);
-        customIndividualPhaseConfig =
-                ConfigUtils.inheritConfig(customIndividualPhaseConfig, inheritedConfig.getCustomIndividualPhaseConfig());
-        localSearchPhaseConfig = ConfigUtils.inheritConfig(localSearchPhaseConfig, inheritedConfig.getLocalSearchPhaseConfig());
+        individualGeneratorConfig =
+                ConfigUtils.inheritConfig(individualGeneratorConfig, inheritedConfig.getIndividualGeneratorConfig());
+        localSearchConfig = ConfigUtils.inheritConfig(localSearchConfig, inheritedConfig.getLocalSearchConfig());
         return this;
     }
 
@@ -75,11 +74,11 @@ public class EvolutionaryWorkerConfig extends PhaseConfig<EvolutionaryWorkerConf
 
     @Override
     public void visitReferencedClasses(Consumer<@Nullable Class<?>> classVisitor) {
-        if (customIndividualPhaseConfig != null) {
-            customIndividualPhaseConfig.visitReferencedClasses(classVisitor);
+        if (individualGeneratorConfig != null) {
+            individualGeneratorConfig.visitReferencedClasses(classVisitor);
         }
-        if (localSearchPhaseConfig != null) {
-            localSearchPhaseConfig.visitReferencedClasses(classVisitor);
+        if (localSearchConfig != null) {
+            localSearchConfig.visitReferencedClasses(classVisitor);
         }
     }
 }
