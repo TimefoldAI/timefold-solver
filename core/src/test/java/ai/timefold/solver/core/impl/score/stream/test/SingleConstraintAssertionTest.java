@@ -11,6 +11,7 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
@@ -583,6 +584,67 @@ class SingleConstraintAssertionTest {
                 .given(new TestdataConstraintVerifierFirstEntity(PENALIZE_CODE, new TestdataValue()))
                 .rewardsWithLessThan(THERE_SHOULD_BE_NO_REWARDS, 2))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    void impactEnablesRelativeComparison() {
+        var entityA = new TestdataConstraintVerifierFirstEntity("A", new TestdataValue());
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        Number impactA = constraintVerifier
+                .verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
+                .given(entityA)
+                .impact();
+        Number impactB = constraintVerifier
+                .verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
+                .given(solution.getEntityList().toArray())
+                .impact();
+
+        assertThat(impactB.intValue()).isGreaterThan(impactA.intValue());
+    }
+
+    @Test
+    void scoreEnablesRelativeComparisonForRewards() {
+        var entityA = new TestdataConstraintVerifierFirstEntity("A", new TestdataValue());
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        HardSoftScore scoreA = constraintVerifier
+                .verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
+                .given(entityA)
+                .score();
+        HardSoftScore scoreB = constraintVerifier
+                .verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
+                .given(solution.getEntityList().toArray())
+                .score();
+
+        assertThat(scoreA).isNotNull();
+        assertThat(scoreA).isInstanceOf(HardSoftScore.class);
+        assertThat(scoreA.hardScore()).isEqualTo(0);
+        assertThat(scoreA.softScore()).isEqualTo(2);
+
+        assertThat(scoreB).isNotNull();
+        assertThat(scoreB).isInstanceOf(HardSoftScore.class);
+        assertThat(scoreB.hardScore()).isEqualTo(0);
+        assertThat(scoreB.softScore()).isEqualTo(6);
+
+        assertThat(scoreB).isGreaterThan(scoreA);
+    }
+
+    @Test
+    void scoreComparesGivenSolutions() {
+        var smallSolution = TestdataConstraintVerifierExtendedSolution.generateSolution(2, 2);
+        var largeSolution = TestdataConstraintVerifierExtendedSolution.generateSolution(2, 4);
+
+        HardSoftScore smallScore = constraintVerifier
+                .verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
+                .givenSolution(smallSolution)
+                .score();
+        HardSoftScore largeScore = constraintVerifier
+                .verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
+                .givenSolution(largeSolution)
+                .score();
+
+        assertThat(smallScore).isGreaterThan(largeScore);
     }
 
     @Test

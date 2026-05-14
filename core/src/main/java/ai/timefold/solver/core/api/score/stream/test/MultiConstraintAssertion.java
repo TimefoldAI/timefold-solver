@@ -27,4 +27,28 @@ public interface MultiConstraintAssertion {
      */
     void scores(@NonNull Score<?> score, @Nullable String message);
 
+    /**
+     * Returns the {@link Score} produced by all constraints in the {@link ConstraintProvider} for the given set of facts.
+     * <p>
+     * Unlike {@link #scores(Score)}, this method does not perform any assertion.
+     * Instead, it returns the raw score, allowing the caller to compare scores
+     * between different scenarios without hard-coding expected values.
+     * <p>
+     * Usage example:
+     *
+     * {@snippet :
+     * HardSoftScore scoreA = constraintVerifier.verifyThat()
+     *         .givenSolution(solutionA)
+     *         .score();
+     * HardSoftScore scoreB = constraintVerifier.verifyThat()
+     *         .givenSolution(solutionB)
+     *         .score();
+     * assertThat(scoreA).isGreaterThan(scoreB);
+     * }
+     *
+     * @return the score produced by all constraints for the given facts, never null
+     */
+    @NonNull
+    <S extends Score<S>> S score();
+
 }

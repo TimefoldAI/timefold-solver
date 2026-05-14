@@ -3,6 +3,7 @@ package ai.timefold.solver.core.api.score.stream.test;
 import java.math.BigDecimal;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
@@ -648,5 +649,57 @@ public interface SingleConstraintAssertion {
      * @throws AssertionError when the expected reward is not observed
      */
     void rewardsLessThan(@Nullable String message, long times);
+
+    /**
+     * Returns the {@link Score} produced by the {@link Constraint} being tested for the given set of facts.
+     * <p>
+     * Unlike assertion methods such as {@link #penalizesBy(int)} or {@link #rewardsWith(int)},
+     * this method does not perform any assertion. Instead, it returns the raw score, allowing the caller
+     * to compare scores between different scenarios without hard-coding expected values.
+     * <p>
+     * Usage example:
+     * 
+     * {@snippet :
+     * HardSoftScore scoreA = constraintVerifier.verifyThat(MyConstraints::roomConflict)
+     *         .given(entity1, entity2)
+     *         .score();
+     * HardSoftScore scoreB = constraintVerifier.verifyThat(MyConstraints::roomConflict)
+     *         .given(entity3, entity4)
+     *         .score();
+     * assertThat(scoreA).isLessThan(scoreB);
+     * }
+     *
+     * @return the score produced by this single constraint for the given facts, never null
+     */
+    @NonNull
+    <S extends Score<S>> S score();
+
+    /**
+     * Returns the match weight total of the {@link Constraint} being tested for the given set of facts.
+     * <p>
+     * Unlike {@link #score()}, which returns the full score (match weight × constraint weight),
+     * this method returns only the <b>match weight</b> — the same number you would pass
+     * to assertion methods like {@link #penalizesBy(int)} or {@link #rewardsWith(int)}.
+     * <p>
+     * This is useful for comparing the <em>severity</em> of a constraint across scenarios
+     * without needing to know the constraint weight.
+     * <p>
+     * Usage example:
+     *
+     * {@snippet :
+     * Number impactA = constraintVerifier.verifyThat(MyConstraints::roomConflict)
+     *         .given(entity1, entity2)
+     *         .impact();
+     * Number impactB = constraintVerifier.verifyThat(MyConstraints::roomConflict)
+     *         .given(entity3, entity4)
+     *         .impact();
+     * assertThat(impactA.intValue()).isGreaterThan(impactB.intValue());
+     * }
+     *
+     * @return the match weight total produced by this single constraint, never null.
+     *         Positive for rewards, negative for penalties, zero when there is no impact.
+     */
+    @NonNull
+    Number impact();
 
 }
