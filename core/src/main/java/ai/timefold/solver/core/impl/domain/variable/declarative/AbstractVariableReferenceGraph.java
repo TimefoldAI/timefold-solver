@@ -16,7 +16,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet_> implements VariableReferenceGraph
+public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTracker_> implements VariableReferenceGraph
         permits DefaultVariableReferenceGraph, FixedVariableReferenceGraph {
 
     // These structures are immutable.
@@ -28,9 +28,13 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
 
     // These structures are mutable.
     protected final DynamicLinearProbeNonNegativeIntCounter[] edgeCount;
-    protected final ChangeSet_ changeSet;
+    protected final ChangeTracker_ changeTracker;
     protected final TopologicalOrderGraph graph;
 
+    /**
+     * True if we are currently doing a declarative shadow variable update,
+     * false otherwise.
+     */
     protected boolean isUpdating;
 
     AbstractVariableReferenceGraph(VariableReferenceGraphBuilder<Solution_> outerGraph,
@@ -51,7 +55,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         nodeTopologicalOrders = buildNodeTopologicalOrderArray(graph, nodeList.size());
 
         var visited = Collections.newSetFromMap(new IdentityHashMap<>());
-        changeSet = createChangeSet(instanceCount);
+        changeTracker = createChangeTracker(instanceCount);
         for (var instance : nodeList) {
             var entity = instance.entity();
             if (visited.add(entity)) {
@@ -67,8 +71,22 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         }
     }
 
+    /**
+     * As specified by {@link VariableReferenceGraph#updateChanged()}.
+     *
+     * @implNote {@link #updateChanged()} sets {{@link #isUpdating}} to true
+     *           so {@link #beforeVariableChanged(VariableMetaModel, Object)}
+     *           and {@link #afterVariableChanged(VariableMetaModel, Object)}
+     *           can short circuit.
+     */
     abstract void innerUpdateChanged();
 
+    /**
+     * Called when any non-declarative source variable for the
+     * given {@link GraphNode} changes.
+     *
+     * @param changed The graph node that has a non-declarative source variable that changed.
+     */
     abstract void markChanged(GraphNode<Solution_> changed);
 
     @Override
@@ -88,7 +106,14 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         return out;
     }
 
-    protected abstract ChangeSet_ createChangeSet(int instanceCount);
+    /**
+     * Create the data structure used by {@link #markChanged(GraphNode)}.
+     * Used in the constructor when constructing the initial graph.
+     *
+     * @param instanceCount The number of nodes in the graph
+     * @return The data structure used for tracking.
+     */
+    protected abstract ChangeTracker_ createChangeTracker(int instanceCount);
 
     public final @Nullable GraphNode<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
         var map = variableReferenceToContainingNodeMap.get(variableId);

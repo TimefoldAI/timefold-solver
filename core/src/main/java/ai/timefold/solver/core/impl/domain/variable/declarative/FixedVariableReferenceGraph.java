@@ -35,7 +35,7 @@ public final class FixedVariableReferenceGraph<Solution_>
                     .intStream(() -> Spliterators.spliterator(graph.nodeForwardEdges(finalNode), 0, 0),
                             0, false)
                     .toArray();
-            changeSet.add(nodeTopologicalOrders[node]);
+            changeTracker.add(nodeTopologicalOrders[node]);
             var variableReference = nodeList.get(node).variableReferences().get(0);
             var entityConsistencyState = variableReference.entityConsistencyState();
             if (variableReference.groupEntities() != null) {
@@ -56,7 +56,7 @@ public final class FixedVariableReferenceGraph<Solution_>
     }
 
     @Override
-    protected PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder> createChangeSet(int instanceCount) {
+    protected PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder> createChangeTracker(int instanceCount) {
         return new PriorityQueue<>(instanceCount);
     }
 
@@ -67,7 +67,7 @@ public final class FixedVariableReferenceGraph<Solution_>
         if (isFinalized) {
             var nodeId = node.graphNodeId();
             if (!isChanged.get(nodeId)) {
-                changeSet.add(nodeTopologicalOrders[nodeId]);
+                changeTracker.add(nodeTopologicalOrders[nodeId]);
                 isChanged.set(nodeId);
             }
         }
@@ -76,17 +76,17 @@ public final class FixedVariableReferenceGraph<Solution_>
     @Override
     void innerUpdateChanged() {
         BitSet visited;
-        if (!changeSet.isEmpty()) {
+        if (!changeTracker.isEmpty()) {
             visited = new BitSet(nodeList.size());
-            visited.set(changeSet.peek().nodeId());
+            visited.set(changeTracker.peek().nodeId());
         } else {
             return;
         }
 
         // NOTE: This assumes the user did not add any fixed loops to
         // their graph (i.e. have two variables ALWAYS depend on one-another).
-        while (!changeSet.isEmpty()) {
-            var changedNode = changeSet.poll();
+        while (!changeTracker.isEmpty()) {
+            var changedNode = changeTracker.poll();
             var entityVariable = nodeList.get(changedNode.nodeId());
             var entity = entityVariable.entity();
             var shadowVariableReferences = entityVariable.variableReferences();
@@ -98,7 +98,7 @@ public final class FixedVariableReferenceGraph<Solution_>
                             continue;
                         }
                         visited.set(nextNode);
-                        changeSet.add(nodeTopologicalOrders[nextNode]);
+                        changeTracker.add(nodeTopologicalOrders[nextNode]);
                     }
                 }
             }
