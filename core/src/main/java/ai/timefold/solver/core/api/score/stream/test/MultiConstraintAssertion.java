@@ -36,7 +36,7 @@ public interface MultiConstraintAssertion {
      * <p>
      * Usage example:
      *
-     * <pre>{@code
+     * {@snippet :
      * HardSoftScore scoreA = constraintVerifier.verifyThat()
      *         .givenSolution(solutionA)
      *         .score();
@@ -44,7 +44,7 @@ public interface MultiConstraintAssertion {
      *         .givenSolution(solutionB)
      *         .score();
      * assertThat(scoreA).isGreaterThan(scoreB);
-     * }</pre>
+     * }
      *
      * @return the score produced by all constraints for the given facts, never null
      */

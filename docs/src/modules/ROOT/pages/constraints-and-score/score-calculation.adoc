@@ -1895,6 +1895,30 @@ or to call `settingAllShadowVariables()` to have them automatically updated.
 When executing `justifiesWith(...)` and `justifiesWithExactly(...)`,
 comparisons are made using the standard method `equals` on the fact problem instances.
 
+[#constraintStreamsTestingCustomAssertions]
+=== Employing custom assertions
+
+The `score()` and `impact()` methods allow you to extract the raw score or constraint match weight total
+produced by a constraint, enabling you to use custom assertions using third-party assertion libraries such as AssertJ.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+        HardSoftScore scoreA = constraintVerifier.verifyThat(MyConstraints::roomConflict)
+                .given(entity1, entity2)
+                .score();
+        HardSoftScore scoreB = constraintVerifier.verifyThat(MyConstraints::roomConflict)
+                .given(entity3, entity4)
+                .score();
+        assertThat(scoreA).isLessThan(scoreB);
+----
+====
+
+This is especially useful when you want to compare the _severity_ of a constraint across different scenarios.
+
 [#constraintStreamsTestingAllConstraints]
 === Testing all constraints together
 

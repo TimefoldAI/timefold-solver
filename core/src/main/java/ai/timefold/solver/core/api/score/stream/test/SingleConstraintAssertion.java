@@ -659,7 +659,7 @@ public interface SingleConstraintAssertion {
      * <p>
      * Usage example:
      * 
-     * <pre>{@code
+     * {@snippet :
      * HardSoftScore scoreA = constraintVerifier.verifyThat(MyConstraints::roomConflict)
      *         .given(entity1, entity2)
      *         .score();
@@ -667,7 +667,7 @@ public interface SingleConstraintAssertion {
      *         .given(entity3, entity4)
      *         .score();
      * assertThat(scoreA).isLessThan(scoreB);
-     * }</pre>
+     * }
      *
      * @return the score produced by this single constraint for the given facts, never null
      */
@@ -686,7 +686,7 @@ public interface SingleConstraintAssertion {
      * <p>
      * Usage example:
      *
-     * <pre>{@code
+     * {@snippet :
      * Number impactA = constraintVerifier.verifyThat(MyConstraints::roomConflict)
      *         .given(entity1, entity2)
      *         .impact();
@@ -694,7 +694,7 @@ public interface SingleConstraintAssertion {
      *         .given(entity3, entity4)
      *         .impact();
      * assertThat(impactA.intValue()).isGreaterThan(impactB.intValue());
-     * }</pre>
+     * }
      *
      * @return the match weight total produced by this single constraint, never null.
      *         Positive for rewards, negative for penalties, zero when there is no impact.
