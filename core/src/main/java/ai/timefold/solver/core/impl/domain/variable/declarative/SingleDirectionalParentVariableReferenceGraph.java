@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -21,6 +22,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
     private final List<Object> changedEntities;
     private final Class<?> monitoredEntityClass;
+    private final Map<Object, Object> keyToLastProcessedObject;
     private final boolean canTerminateEarly;
     private boolean isUpdating;
 
@@ -36,6 +38,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         sortedVariableUpdaterInfos = new VariableUpdaterInfo[sortedDeclarativeShadowVariableDescriptors.size()];
         monitoredSourceVariableSet = new HashSet<>();
         changedEntities = new ArrayList<>();
+        keyToLastProcessedObject = new IdentityHashMap<>();
         isUpdating = false;
 
         this.canTerminateEarly = canTerminateEarly;
@@ -80,17 +83,17 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     public void updateChanged() {
         isUpdating = true;
         changedEntities.sort(topologicalOrderComparator);
-        var processed = new IdentityHashMap<>();
         for (var changedEntity : changedEntities) {
             var key = keyFunction.apply(changedEntity);
-            var lastProcessed = processed.get(key);
+            var lastProcessed = keyToLastProcessedObject.get(key);
             if (lastProcessed == null || topologicalOrderComparator.compare(lastProcessed, changedEntity) < 0) {
                 lastProcessed = updateChanged(changedEntity);
-                processed.put(key, lastProcessed);
+                keyToLastProcessedObject.put(key, lastProcessed);
             }
         }
         isUpdating = false;
         changedEntities.clear();
+        keyToLastProcessedObject.clear();
     }
 
     /**
