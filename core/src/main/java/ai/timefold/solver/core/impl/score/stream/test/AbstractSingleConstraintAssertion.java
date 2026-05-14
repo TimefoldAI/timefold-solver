@@ -253,6 +253,19 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public <S extends Score<S>> S score() {
+        ensureInitialized();
+        return (S) actualScore.raw();
+    }
+
+    @Override
+    public Number impact() {
+        ensureInitialized();
+        return deduceImpact().key();
+    }
+
+    @Override
     public void hasNoImpact(@Nullable String message) {
         ensureInitialized();
         assertNoImpact(message);

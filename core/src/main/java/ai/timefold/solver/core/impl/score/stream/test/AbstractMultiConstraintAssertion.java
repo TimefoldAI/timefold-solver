@@ -57,4 +57,11 @@ public abstract sealed class AbstractMultiConstraintAssertion<Solution_, Score_ 
                         explainScore(actualScore, constraintMatchTotalCollection)));
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public <S extends Score<S>> S score() {
+        ensureInitialized();
+        return (S) actualScore.raw();
+    }
+
 }
