@@ -41,29 +41,29 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
     }
 
     @Override
-    protected BitSet createChangeSet(int instanceCount) {
+    protected BitSet createChangeTracker(int instanceCount) {
         return new BitSet(instanceCount);
     }
 
     @Override
-    public void markChanged(@NonNull GraphNode<Solution_> node) {
-        changeSet.set(node.graphNodeId());
+    void markChanged(@NonNull GraphNode<Solution_> node) {
+        changeTracker.set(node.graphNodeId());
     }
 
     @Override
-    public void updateChanged() {
-        if (changeSet.isEmpty()) {
+    void innerUpdateChanged() {
+        if (changeTracker.isEmpty()) {
             return;
         }
-        graph.commitChanges(changeSet);
-        affectedEntitiesUpdater.accept(changeSet);
+        graph.commitChanges(changeTracker);
+        affectedEntitiesUpdater.accept(changeTracker);
     }
 
     /**
      * See {@link ConsistencyTracker#setUnknownConsistencyFromEntityShadowVariablesInconsistent}
      */
     public void setUnknownInconsistencyValues() {
-        graph.commitChanges(changeSet);
+        graph.commitChanges(changeTracker);
         affectedEntitiesUpdater.setUnknownInconsistencyValues();
     }
 }
