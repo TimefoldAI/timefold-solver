@@ -112,6 +112,12 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
                                         package ai.timefold.solver.core.api.score.stream.quad;
                                         public interface QuadConstraintBuilder<A, B, C, D, Score_> {
                                             QuadConstraintBuilder<A, B, C, D, Score_> indictWith(Object indictment);
+                                        }""",
+                                """
+                                        package ai.timefold.solver.test.api.score.stream;
+                                        public interface SingleConstraintAssertion {
+                                            SingleConstraintAssertion indictsWith(Object matcher);
+                                            SingleConstraintAssertion indictsWithExactly(Object... matchers);
                                         }"""));
     }
 
@@ -304,6 +310,8 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
                         import ai.timefold.solver.core.api.score.stream.bi.BiConstraintBuilder;
                         import ai.timefold.solver.core.api.score.stream.tri.TriConstraintBuilder;
                         import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder;
+                        import ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion;
+
                         import java.util.function.Function;
 
                         public class Test {
@@ -311,11 +319,14 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
                                 BiConstraintBuilder<Object, Object, ?> bi;
                                 TriConstraintBuilder<Object, Object, Object, ?> tri;
                                 QuadConstraintBuilder<Object, Object, Object, Object, ?> quad;
+                                SingleConstraintAssertion assertion;
                                 public void test() {
                                     uni.indictWith(Function.identity());
                                     bi.indictWith((a, b) -> a);
                                     tri.indictWith(null);
                                     quad.indictWith(null);
+                                    assertion.indictsWith(null);
+                                    assertion.indictsWithExactly(null);
                                 }
                         }""",
                 """
@@ -325,6 +336,8 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
                         import ai.timefold.solver.core.api.score.stream.bi.BiConstraintBuilder;
                         import ai.timefold.solver.core.api.score.stream.tri.TriConstraintBuilder;
                         import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder;
+                        import ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion;
+
                         import java.util.function.Function;
 
                         public class Test {
@@ -332,6 +345,7 @@ class GeneralMethodDeleteInvocationMigrationRecipeTest implements RewriteTest {
                                 BiConstraintBuilder<Object, Object, ?> bi;
                                 TriConstraintBuilder<Object, Object, Object, ?> tri;
                                 QuadConstraintBuilder<Object, Object, Object, Object, ?> quad;
+                                SingleConstraintAssertion assertion;
                                 public void test() {
                                 }
                         }"""));

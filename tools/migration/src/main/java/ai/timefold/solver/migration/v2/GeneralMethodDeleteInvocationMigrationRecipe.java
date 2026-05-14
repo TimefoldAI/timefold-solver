@@ -110,6 +110,11 @@ public class GeneralMethodDeleteInvocationMigrationRecipe extends AbstractRecipe
                 new RemoveMethodInvocations(
                         "ai.timefold.solver.core.api.score.stream.tri.TriConstraintBuilder indictWith(..)"),
                 new RemoveMethodInvocations(
-                        "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder indictWith(..)"));
+                        "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder indictWith(..)"),
+                // indictWith in tests
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion indictsWith(..)"),
+                new RemoveMethodInvocations(
+                        "ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion indictsWithExactly(..)"));
     }
 }

@@ -55,7 +55,6 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.config.score.trend;
     exports ai.timefold.solver.core.config.solver;
     exports ai.timefold.solver.core.config.solver.monitoring;
-    exports ai.timefold.solver.core.config.solver.random;
     exports ai.timefold.solver.core.config.solver.termination;
     exports ai.timefold.solver.core.config.util;
     exports ai.timefold.solver.core.enterprise;
@@ -202,6 +201,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.neighborhood to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.partitionedsearch to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.phase to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.solver.random to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.recaller to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.event to ai.timefold.solver.enterprise.core;
 
@@ -244,11 +244,9 @@ module ai.timefold.solver.core {
     opens ai.timefold.solver.core.config.score.trend to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.solver to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.solver.monitoring to jakarta.xml.bind, org.glassfish.jaxb.runtime;
-    opens ai.timefold.solver.core.config.solver.random to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.solver.termination to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.util to jakarta.xml.bind, org.glassfish.jaxb.runtime;
 
-    requires commons.math3;
     requires jakarta.xml.bind;
     requires java.xml;
     requires micrometer.core;

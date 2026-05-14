@@ -1,4 +1,4 @@
-= Performance Improvements
+= Performance improvements
 
 Timefold Solver Enterprise brings many performance improvements. These are shortly described here.
 

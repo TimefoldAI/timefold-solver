@@ -224,7 +224,7 @@ Alternatively, you can sometimes also introduce <<cachedProblemFact,_a cached pr
 For some functionality
 (such as xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
 and xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning]),
-Timefold Solver needs to map problem facts and planning entities to an ID.
+Timefold Solver needs to map problem facts and planning entities to a unique ID.
 Timefold Solver uses that ID to _rebase_ a move from one thread's solution state to another's.
 
 To enable such functionality, specify the `@PlanningId` annotation on the identification field or getter method,
@@ -253,8 +253,11 @@ A `@PlanningId` property must be:
 * Unique for that specific class
 ** It does not need to be unique across different problem fact classes
 (unless in that rare case that those classes are mixed in the same value range or planning entity collection).
-* An instance of a type that implements `Object.hashCode()` and `Object.equals()`. See the Javadoc on the https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html[`java.lang.Object` class] for details.
-** It's recommended to use the type `Integer`, `int`, `Long`, `long`, `String` or `UUID`.
+* Of a type that implements https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Comparable.html[`Comparable`],
+or of a primitive type whose boxed type implements `Comparable` (for example `long`, which boxes to `Long`).
+** The type must also provide a stable `equals()`/`hashCode()` contract.
+** It's recommended to use immutable identifier types such as `Long`, `String` or `UUID`
+and primitive alternatives such as `long` where appropriate.
 * Never `null` by the time `Solver.solve()` is called.
 
 
@@ -358,11 +361,18 @@ Instead, calculate the free time in the score constraints (or as a <<shadowVaria
 
 If historic data needs to be considered too, then create a problem fact to hold the total of the historic assignments up to, but __not including__, the planning window (so that it does not change when a planning entity changes) and let the score constraints take it into account.
 
-==== Keep planning entity `hashCode()` implementations constant
+==== Keep planning entity `equals()` and `hashCode()` implementations constant
 
-Planning entity `hashCode()` implementations must remain constant.
-Therefore, entity `hashCode()` implementations must not depend on any planning variables, as these change during solving.
-Pay special attention when using data structures with auto-generated `hashCode()` as entities,
+Planning entity equality implementations must remain constant:
+
+- If two entities are equal at the start of solving, they must remain equal during solving.
+- If two entities are not equal at the start of solving, they must remain not equal during solving.
+- If two entities are equal, they are considered to be the same entity.
+
+From this, it follows that entity `equals()` and `hashCode()` implementations must not depend on any planning variables, as these change during solving.
+You can use a <<planningId,`@PlanningId`>> to distinguish planning entities from each other.
+
+Pay special attention when using data structures with auto-generated `equals()` and `hashCode()`,
 such as Kotlin data classes or Lombok's `@EqualsAndHashCode`.
 
 ==== Planning entity implementations must be mutable

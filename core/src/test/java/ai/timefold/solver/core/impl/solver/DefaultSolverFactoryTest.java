@@ -7,10 +7,12 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
-import ai.timefold.solver.core.impl.solver.random.RandomFactory;
+import ai.timefold.solver.core.impl.solver.DefaultSolverTest.DummyEasyScoreCalculator;
+import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -103,6 +105,23 @@ class DefaultSolverFactoryTest {
     }
 
     @Test
+    void useCorrectRandomSeed() {
+        // Reproducible
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
+                .withRandomSeed(123456L);
+        var defaultSolverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
+        DelegatingSplittableRandomGenerator randomGenerator = (DelegatingSplittableRandomGenerator) defaultSolverFactory
+                .buildRandomSupplier(EnvironmentMode.PHASE_ASSERT).get();
+        DelegatingSplittableRandomGenerator otherRandomGenerator =
+                new DelegatingSplittableRandomGenerator(solverConfig.getRandomSeed());
+        assertThat(randomGenerator.getSeed()).isEqualTo(otherRandomGenerator.getSeed());
+        assertThat(otherRandomGenerator.nextLong()).isEqualTo(randomGenerator.nextLong());
+    }
+
+    @Test
     void testNoSolutionConfiguration() {
         SolverConfig solverConfig = new SolverConfig();
         assertThatCode(() -> new DefaultSolverFactory<>(solverConfig))
@@ -119,17 +138,6 @@ class DefaultSolverFactoryTest {
                 .hasMessageContaining("The solver configuration must have at least 1 entityClass")
                 .hasMessageContaining(
                         "If you're using the Quarkus extension or Spring Boot starter, it should have been filled in already.");
-    }
-
-    @Test
-    void testInvalidRandomConfiguration() {
-        SolverConfig solverConfig =
-                SolverConfig.createFromXmlResource("ai/timefold/solver/core/config/solver/testdataSolverConfig.xml")
-                        .withRandomFactoryClass(RandomFactory.class)
-                        .withRandomSeed(1000L);
-        assertThatCode(() -> new DefaultSolverFactory<>(solverConfig).buildSolver(new SolverConfigOverride()))
-                .hasMessageContaining("The solverConfig with randomFactoryClass ")
-                .hasMessageContaining("has a non-null randomType (null) or a non-null randomSeed (1000).");
     }
 
     @Test

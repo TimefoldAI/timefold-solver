@@ -12,9 +12,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelect
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
-
-import org.apache.commons.math3.util.CombinatoricsUtils;
 
 final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
@@ -54,7 +53,7 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
         var maximumSelectedCount = maximumSelectedCountSupplier.applyAsInt(valueCount);
         for (var selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
             // Order is significant, and each entity can only be picked once
-            totalSize += CombinatoricsUtils.factorial((int) valueCount) / CombinatoricsUtils.factorial(selectedCount);
+            totalSize += MathUtils.factorial((int) valueCount) / MathUtils.factorial(selectedCount);
         }
         return totalSize;
     }

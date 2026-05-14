@@ -1,12 +1,12 @@
 :page-aliases: upgrading-timefold-solver/upgrade-to-latest-version.adoc
 
 [#upgradeFrom1to2]
-= Upgrade from Timefold Solver 1.x to 2.0.0
+= Upgrade from Timefold Solver 1.x to 2.x
 :doctype: book
 :sectnums:
 :icons: font
 
-Timefold Solver 2.0.0 is a major release with many improvements and some breaking changes.
+Timefold Solver 2.x brings many improvements comparing to 1.x, and some breaking changes as well.
 Many of the upgrade steps can be applied automatically using our migration tooling,
 but some manual changes may still be required.
 This upgrade recipe is intended to help you navigate those changes and upgrade your codebase with confidence.
@@ -15,14 +15,14 @@ This upgrade recipe is intended to help you navigate those changes and upgrade y
 == Before you start
 
 Throughout this document, we assume that you are upgrading from the latest available version of the 1.x line.
-Make sure to first upgrade to the latest 1.x version and only then follow this recipe to upgrade to 2.0.0.
+Make sure to first upgrade to the latest 1.x version and only then follow this recipe to upgrade to 2.x.
 
 Please refer to
 link:https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-to-latest-version[upgrade recipe for Timefold Solver 1.x] or even
 link:https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-from-optaplanner[upgrade recipe for OptaPlanner] if you go way back.
 
 [#automaticUpgradeTo200]
-== Automatic upgrade to Timefold Solver 2.0.0
+== Automatic upgrade to Timefold Solver 2.x
 
 For many of the upgrade steps mentioned later,
 we provide a migration tool that can automatically apply those changes to Java files and Maven POMs.
@@ -374,8 +374,8 @@ Timefold Solver and all of its JARs are now modules https://en.wikipedia.org/wik
 
 Most users won't need to do anything and can continue using the solver on the classpath.
 If your project is already using JPMS, you are not likely to notice any changes,
-since we were providing automatic module names in Timefold Solver 1.x
-and we have kept the same module name for 2.0.0.
+since we were providing automatic module names in Timefold Solver 1.x,
+and we have kept the same module name for 2.x.
 
 Please reach out if you notice any issues related to this change.
 ====

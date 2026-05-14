@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -28,6 +27,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
+import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
@@ -353,9 +353,10 @@ public class SolverScope<Solution_> {
         childThreadSolverScope.monitoringTags = monitoringTags;
         childThreadSolverScope.solverMetricSet = solverMetricSet;
         childThreadSolverScope.startingSolverCount = startingSolverCount;
-        // TODO FIXME use RandomFactory
         // Experiments show that this trick to attain reproducibility doesn't break uniform distribution
-        childThreadSolverScope.workingRandom = new Random(workingRandom.nextLong());
+        var delegatingRandom = (DelegatingSplittableRandomGenerator) workingRandom;
+        childThreadSolverScope.workingRandom =
+                new DelegatingSplittableRandomGenerator(delegatingRandom.getSeed(), delegatingRandom.split());
         childThreadSolverScope.scoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
         childThreadSolverScope.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
         resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);

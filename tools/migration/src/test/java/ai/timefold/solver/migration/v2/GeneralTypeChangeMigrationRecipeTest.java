@@ -61,7 +61,29 @@ class GeneralTypeChangeMigrationRecipeTest implements RewriteTest {
                                 "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface PillarChangeMove {}",
                                 "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface PillarSwapMove {}",
                                 "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface RuinRecreateMove {}",
-                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface SwapMove {}"));
+                                "package ai.timefold.solver.core.impl.heuristic.selector.move.generic; public interface SwapMove {}",
+                                "package ai.timefold.solver.core.api.score.constraint; public class ConstraintRef {}"));
+    }
+
+    @Test
+    void migrateConstraintRef() {
+        rewriteRun(java(
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+
+                        public class Test {
+                                ConstraintRef constraintRef;
+                        }""",
+                """
+                        package timefold;
+
+                        import ai.timefold.solver.core.api.score.stream.ConstraintRef;
+
+                        public class Test {
+                                ConstraintRef constraintRef;
+                        }"""));
     }
 
     @Test

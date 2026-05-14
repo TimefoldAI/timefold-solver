@@ -78,6 +78,7 @@ import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.classloader.TestdataSeparateClassLoaderDomain;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -98,6 +99,8 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedset.TestdataListUnassignedEntityProvidingSortedSetEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.sortedset.TestdataListUnassignedEntityProvidingSortedSetSolution;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstValue;
@@ -1397,8 +1400,9 @@ class DefaultSolverTest {
 
         var solution = PlannerTestUtils.solve(solverConfig, problem);
 
-        assertThat(solution.getEntityList().getFirst().getValue().getCode()).isEqualTo("v1");
-        assertThat(solution.getEntityList().get(1).getValue().getCode()).isEqualTo("v2");
+        assertThat(solution.getEntityList())
+                .map(entity -> entity.getValue().getCode())
+                .containsExactlyInAnyOrder("v1", "v2");
 
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(-2));
     }
@@ -1438,9 +1442,9 @@ class DefaultSolverTest {
 
         var solution = PlannerTestUtils.solve(solverConfig, problem);
 
-        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("a1",
-                "b1");
-        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("a2", "b2");
+        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("b1",
+                "a2");
+        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("b2", "a1");
 
         assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0, -240));
     }
@@ -1770,6 +1774,40 @@ class DefaultSolverTest {
         var bestEntity3 = bestSolution.getEntityList().get(2);
         assertThat(bestEntity3.getValueList()).hasSizeGreaterThan(0);
         assertThat(bestEntity3.getValueList()).doesNotContain(value1, value2, value3);
+    }
+
+    @Test
+    void solveCustomClassLoader() {
+        // Spring DevTools redefine existing classes, with their updated definitions replacing
+        // existing instances, and their updated definition are only available from the Thread's Context ClassLoader.
+        // This test verify the Context ClassLoader definition is used instead of the one from the parent ClassLoader.
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSeparateClassLoaderDomain.getTestdataSolutionClass(),
+                TestdataSeparateClassLoaderDomain.getTestdataEntityClass());
+        var originalClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(TestdataSeparateClassLoaderDomain.getClassLoader());
+            var solution = TestdataSeparateClassLoaderDomain.generateSolution();
+
+            solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
+                    BestScoreChangedEvent.constructionHeuristic(SimpleScore.ZERO, 0));
+            assertThat(solution).isNotNull();
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
+    }
+
+    @Test
+    void solveListVarEntityRangeModelWithTreeSet() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataListUnassignedEntityProvidingSortedSetSolution.class)
+                .withEntityClasses(TestdataListUnassignedEntityProvidingSortedSetEntity.class)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
+
+        var problem = TestdataListUnassignedEntityProvidingSortedSetSolution.generateSolution();
+
+        problem = PlannerTestUtils.solve(solverConfig, problem, true);
+        assertThat(problem).isNotNull();
     }
 
     @Test
