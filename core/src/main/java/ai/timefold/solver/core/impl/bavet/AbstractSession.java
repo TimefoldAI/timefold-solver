@@ -71,4 +71,7 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
         settled = true;
     }
 
+    public Network_ getNodeNetwork() {
+        return nodeNetwork;
+    }
 }

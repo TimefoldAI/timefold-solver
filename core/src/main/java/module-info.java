@@ -182,6 +182,7 @@ module ai.timefold.solver.core {
 
     // enterprise-specific exports
     exports ai.timefold.solver.core.impl.bavet.common to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.bavet.uni to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.constructionheuristic to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.constructionheuristic.decider to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.constructionheuristic.decider.forager to ai.timefold.solver.enterprise.core;
@@ -202,6 +203,8 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.neighborhood to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.partitionedsearch to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.phase to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.score.stream.bavet to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.score.stream.bavet.uni to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.random to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.recaller to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.event to ai.timefold.solver.enterprise.core;
@@ -247,7 +250,6 @@ module ai.timefold.solver.core {
     opens ai.timefold.solver.core.config.solver.monitoring to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.solver.termination to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.util to jakarta.xml.bind, org.glassfish.jaxb.runtime;
-    exports ai.timefold.solver.core.impl.bavet.visual;
 
     requires jakarta.xml.bind;
     requires java.xml;

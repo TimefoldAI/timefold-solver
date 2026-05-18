@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.director.stream;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
@@ -78,19 +77,10 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     }
 
     public BavetConstraintSession<Score_> newSession(Solution_ workingSolution,
-            ConsistencyTracker<Solution_> consistencyTracker,
-            ConstraintMatchPolicy constraintMatchPolicy,
+            ConsistencyTracker<Solution_> consistencyTracker, ConstraintMatchPolicy constraintMatchPolicy,
             boolean scoreDirectorDerived) {
-        return newSession(workingSolution, consistencyTracker, constraintMatchPolicy, scoreDirectorDerived, null);
-    }
-
-    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution,
-            ConsistencyTracker<Solution_> consistencyTracker,
-            ConstraintMatchPolicy constraintMatchPolicy,
-            boolean scoreDirectorDerived, Consumer<String> nodeNetworkVisualizationConsumer) {
         return constraintSessionFactory.buildSession(workingSolution, consistencyTracker, constraintMatchPolicy,
-                scoreDirectorDerived,
-                nodeNetworkVisualizationConsumer);
+                scoreDirectorDerived);
     }
 
     @Override

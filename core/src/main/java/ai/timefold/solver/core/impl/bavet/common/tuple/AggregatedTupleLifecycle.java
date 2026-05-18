@@ -34,10 +34,11 @@ public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
                         .toArray(TupleLifecycle[]::new);
                 downstreamFinal = true;
             }
-            return downstream.length > 0;
         } else {
+            downstream = new TupleLifecycle[0];
             return false;
         }
+        return downstream.length > 0;
     }
 
     @Override

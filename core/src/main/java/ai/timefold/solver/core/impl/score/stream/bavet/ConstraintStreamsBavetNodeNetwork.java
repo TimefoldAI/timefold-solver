@@ -36,6 +36,10 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
         this.constraintProfiler = constraintProfiler;
     }
 
+    public @Nullable InnerConstraintProfiler getConstraintProfiler() {
+        return constraintProfiler;
+    }
+
     public void summarizeProfileIfPresent() {
         if (constraintProfiler != null) {
             constraintProfiler.summarize();

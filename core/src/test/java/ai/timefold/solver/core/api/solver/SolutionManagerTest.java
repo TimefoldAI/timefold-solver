@@ -2,7 +2,6 @@ package ai.timefold.solver.core.api.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Arrays;
@@ -11,14 +10,8 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
-import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
-import ai.timefold.solver.core.testdomain.TestdataEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.TestdataEntity;
-import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListEntityWithShadowHistory;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListSolutionWithShadowHistory;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListValueWithShadowHistory;
@@ -57,17 +50,6 @@ public class SolutionManagerTest {
                     .withScoreDirectorFactory(
                             new ScoreDirectorFactoryConfig()
                                     .withConstraintProviderClass(TestdataListWithShadowHistoryConstraintProvider.class)));
-    public static final SolverFactory<TestdataSolution> SOLVER_FACTORY_WITH_CS = SolverFactory.create(
-            new SolverConfig()
-                    .withSolutionClass(TestdataSolution.class)
-                    .withEntityClasses(TestdataEntity.class)
-                    .withConstraintProviderClass(TestdataConstraintProvider.class));
-    public static final SolverFactory<TestdataSolution> SOLVER_FACTORY_EASY = SolverFactory.create(
-            new SolverConfig()
-                    .withSolutionClass(TestdataSolution.class)
-                    .withEntityClasses(TestdataEntity.class)
-                    .withScoreDirectorFactory(
-                            new ScoreDirectorFactoryConfig().withEasyScoreCalculatorClass(TestdataEasyScoreCalculator.class)));
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
@@ -351,38 +333,6 @@ public class SolutionManagerTest {
                         " and one of its elements (e1 -> a1 -> b1)" +
                         " which has a shadow variable (entity)" +
                         " has an oldInverseEntity (e2) which is not that entity.");
-    }
-
-    @SuppressWarnings("unchecked")
-    @ParameterizedTest
-    @EnumSource(SolutionManagerSource.class)
-    void visualizeNodeNetwork(SolutionManagerSource solutionManagerSource) {
-        var solution = new TestdataSolution();
-        var solutionManager = (DefaultSolutionManager<TestdataSolution, SimpleScore>) solutionManagerSource
-                .createSolutionManager(SOLVER_FACTORY_WITH_CS);
-        var result = solutionManager.visualizeNodeNetwork(solution);
-        assertThat(result).isEqualToIgnoringWhitespace(
-                """
-                        digraph {
-                            rankdir=LR;
-                            label=<<B>Bavet Node Network for 'null'</B><BR />1 constraints, 1 nodes>;
-                            node0 -> impact0;
-                            node0 [pad="0.2", fillcolor="#3e00ff", shape="plaintext", fontcolor="white", style="filled", label=<<B>ForEachFilteredUni</B><BR/>(TestdataEntity)>, fontname="Courier New"];
-                            impact0 [pad="0.2", fillcolor="#3423a6", shape="plaintext", fontcolor="white", style="filled", label=<<B>Always penalize</B><BR />(Weight: -1)>, fontname="Courier New"];
-                            { rank=same; node0; }
-                        }""");
-    }
-
-    @SuppressWarnings("unchecked")
-    @ParameterizedTest
-    @EnumSource(SolutionManagerSource.class)
-    void visualizeNodeNetworkNoBavet(SolutionManagerSource solutionManagerSource) {
-        var solution = new TestdataSolution();
-        var solutionManager = (DefaultSolutionManager<TestdataSolution, SimpleScore>) solutionManagerSource
-                .createSolutionManager(SOLVER_FACTORY_EASY);
-        assertThatThrownBy(() -> solutionManager.visualizeNodeNetwork(solution))
-                .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("Constraint Streams");
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
