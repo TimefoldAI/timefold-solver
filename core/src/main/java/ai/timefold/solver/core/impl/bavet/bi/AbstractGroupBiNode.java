@@ -28,8 +28,7 @@ abstract class AbstractGroupBiNode<OldA, OldB, OutTuple_ extends Tuple, GroupKey
         super(groupStoreIndex, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
                 environmentMode);
         this.groupAccumulatorIndex = groupAccumulatorIndex;
-        this.incrementalAccumulator = collector.isIncremental() ? collector.incrementalAccumulator()
-                : BiCollectorUtils.toIncremental(collector.accumulator());
+        this.incrementalAccumulator = BiCollectorUtils.toIncremental(collector.accumulator());
     }
 
     protected AbstractGroupBiNode(int groupStoreIndex, Function<BiTuple<OldA, OldB>, GroupKey_> groupKeyFunction,

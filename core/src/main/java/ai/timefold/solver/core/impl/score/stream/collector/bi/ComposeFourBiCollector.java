@@ -5,7 +5,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
@@ -54,14 +53,10 @@ final class ComposeFourBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultH
         this.thirdSupplier = third.supplier();
         this.fourthSupplier = fourth.supplier();
 
-        this.firstIncremental =
-                first.isIncremental() ? first.incrementalAccumulator() : BiCollectorUtils.toIncremental(first.accumulator());
-        this.secondIncremental =
-                second.isIncremental() ? second.incrementalAccumulator() : BiCollectorUtils.toIncremental(second.accumulator());
-        this.thirdIncremental =
-                third.isIncremental() ? third.incrementalAccumulator() : BiCollectorUtils.toIncremental(third.accumulator());
-        this.fourthIncremental =
-                fourth.isIncremental() ? fourth.incrementalAccumulator() : BiCollectorUtils.toIncremental(fourth.accumulator());
+        this.firstIncremental = BiCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = BiCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental = BiCollectorUtils.toIncremental(third.accumulator());
+        this.fourthIncremental = BiCollectorUtils.toIncremental(fourth.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -80,20 +75,9 @@ final class ComposeFourBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultH
     }
 
     @Override
-    public @NonNull TriFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, Runnable>
-            accumulator() {
-        return BiCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
     public @NonNull
             BiConstraintCollectorAccumulator<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B>
-            incrementalAccumulator() {
+            accumulator() {
         return ValueHandle::new;
     }
 

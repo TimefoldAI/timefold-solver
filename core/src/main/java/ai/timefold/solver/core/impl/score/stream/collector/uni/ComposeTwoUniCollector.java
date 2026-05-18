@@ -38,10 +38,8 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
         this.firstSupplier = first.supplier();
         this.secondSupplier = second.supplier();
 
-        this.firstIncremental =
-                first.isIncremental() ? first.incrementalAccumulator() : UniCollectorUtils.toIncremental(first.accumulator());
-        this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
-                : UniCollectorUtils.toIncremental(second.accumulator());
+        this.firstIncremental = UniCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = UniCollectorUtils.toIncremental(second.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -53,17 +51,7 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
     }
 
     @Override
-    public @NonNull BiFunction<Pair<ResultHolder1_, ResultHolder2_>, A, Runnable> accumulator() {
-        return UniCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull UniConstraintCollectorAccumulator<Pair<ResultHolder1_, ResultHolder2_>, A> incrementalAccumulator() {
+    public @NonNull UniConstraintCollectorAccumulator<Pair<ResultHolder1_, ResultHolder2_>, A> accumulator() {
         return ValueHandle::new;
     }
 

@@ -45,12 +45,9 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
         this.secondSupplier = second.supplier();
         this.thirdSupplier = third.supplier();
 
-        this.firstIncremental =
-                first.isIncremental() ? first.incrementalAccumulator() : BiCollectorUtils.toIncremental(first.accumulator());
-        this.secondIncremental =
-                second.isIncremental() ? second.incrementalAccumulator() : BiCollectorUtils.toIncremental(second.accumulator());
-        this.thirdIncremental =
-                third.isIncremental() ? third.incrementalAccumulator() : BiCollectorUtils.toIncremental(third.accumulator());
+        this.firstIncremental = BiCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = BiCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental = BiCollectorUtils.toIncremental(third.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -67,18 +64,8 @@ final class ComposeThreeBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result
     }
 
     @Override
-    public @NonNull TriFunction<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B, Runnable> accumulator() {
-        return BiCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
     public @NonNull BiConstraintCollectorAccumulator<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B>
-            incrementalAccumulator() {
+            accumulator() {
         return ValueHandle::new;
     }
 

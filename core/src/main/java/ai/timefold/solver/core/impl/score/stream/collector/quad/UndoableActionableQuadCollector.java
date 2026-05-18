@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.stream.collector.quad;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
@@ -22,18 +21,8 @@ abstract class UndoableActionableQuadCollector<A, B, C, D, Input_, Output_, Stat
     protected abstract QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(State_ state);
 
     @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull QuadConstraintCollectorAccumulator<State_, A, B, C, D> incrementalAccumulator() {
+    public @NonNull QuadConstraintCollectorAccumulator<State_, A, B, C, D> accumulator() {
         return this::newAccumulatedValue;
-    }
-
-    @Override
-    public @NonNull PentaFunction<State_, A, B, C, D, Runnable> accumulator() {
-        return QuadCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override

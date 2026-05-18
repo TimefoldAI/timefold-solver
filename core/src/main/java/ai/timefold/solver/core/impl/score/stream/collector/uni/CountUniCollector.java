@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -29,17 +28,7 @@ final class CountUniCollector<A> implements UniConstraintCollector<A, MutableLon
     }
 
     @Override
-    public @NonNull BiFunction<MutableLong, A, Runnable> accumulator() {
-        return UniCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull UniConstraintCollectorAccumulator<MutableLong, A> incrementalAccumulator() {
+    public @NonNull UniConstraintCollectorAccumulator<MutableLong, A> accumulator() {
         return Slot::new;
     }
 

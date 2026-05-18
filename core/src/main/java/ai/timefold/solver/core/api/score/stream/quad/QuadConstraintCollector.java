@@ -35,22 +35,10 @@ public interface QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> 
 
     /**
      * As defined by {@link UniConstraintCollector#accumulator()}, but for {@link QuadConstraintStream}.
+     * 
+     * @see QuadConstraintCollectorAccumulator An incremental API to be returned instead of the deprecated plain penta-function.
      */
     PentaFunction<ResultContainer_, A, B, C, D, Runnable> accumulator();
-
-    /**
-     * As defined by {@link UniConstraintCollector#incrementalAccumulator()}, but for {@link QuadConstraintStream}.
-     */
-    default QuadConstraintCollectorAccumulator<ResultContainer_, A, B, C, D> incrementalAccumulator() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * As defined by {@link UniConstraintCollector#isIncremental()}, but for {@link QuadConstraintStream}.
-     */
-    default boolean isIncremental() {
-        return false;
-    }
 
     /**
      * As defined by {@link UniConstraintCollector#finisher()}, but for {@link QuadConstraintStream}.

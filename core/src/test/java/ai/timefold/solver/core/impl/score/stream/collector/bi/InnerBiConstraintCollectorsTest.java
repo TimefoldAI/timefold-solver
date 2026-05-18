@@ -33,6 +33,7 @@ import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
@@ -1067,12 +1068,16 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
 
     private static <A, B, Container_, Result_> Runnable accumulate(
             BiConstraintCollector<A, B, Container_, Result_> collector, Object container, A valueA, B valueB) {
-        return collector.accumulator().apply((Container_) container, valueA, valueB);
+        var slot = ((BiConstraintCollectorAccumulator<Container_, A, B>) collector.accumulator())
+                .intoGroup((Container_) container);
+        slot.add(valueA, valueB);
+        return slot::remove;
     }
 
     private static <A, B, Container_, Result_> BiConstraintCollectorValueHandle<A, B> insert(
             BiConstraintCollector<A, B, Container_, Result_> collector, Object container, A a, B b) {
-        var slot = collector.incrementalAccumulator().intoGroup((Container_) container);
+        var slot = ((BiConstraintCollectorAccumulator<Container_, A, B>) collector.accumulator())
+                .intoGroup((Container_) container);
         slot.add(a, b);
         return slot;
     }

@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
@@ -36,17 +35,7 @@ final class LoadBalanceQuadCollector<A, B, C, D, Balanced_>
     }
 
     @Override
-    public @NonNull PentaFunction<DefaultLoadBalance<Balanced_>, A, B, C, D, Runnable> accumulator() {
-        return QuadCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull QuadConstraintCollectorAccumulator<DefaultLoadBalance<Balanced_>, A, B, C, D> incrementalAccumulator() {
+    public @NonNull QuadConstraintCollectorAccumulator<DefaultLoadBalance<Balanced_>, A, B, C, D> accumulator() {
         return Slot::new;
     }
 

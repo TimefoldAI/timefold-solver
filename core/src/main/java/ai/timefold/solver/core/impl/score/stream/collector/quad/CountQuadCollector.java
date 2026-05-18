@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.score.stream.collector.quad;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
@@ -30,17 +29,7 @@ final class CountQuadCollector<A, B, C, D>
     }
 
     @Override
-    public @NonNull PentaFunction<MutableLong, A, B, C, D, Runnable> accumulator() {
-        return QuadCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull QuadConstraintCollectorAccumulator<MutableLong, A, B, C, D> incrementalAccumulator() {
+    public @NonNull QuadConstraintCollectorAccumulator<MutableLong, A, B, C, D> accumulator() {
         return Slot::new;
     }
 

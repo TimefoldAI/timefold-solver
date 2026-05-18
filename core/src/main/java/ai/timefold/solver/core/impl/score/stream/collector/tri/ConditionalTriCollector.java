@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
@@ -22,8 +21,7 @@ final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
             TriConstraintCollector<A, B, C, ResultContainer_, Result_> delegate) {
         this.predicate = predicate;
         this.delegate = delegate;
-        this.innerIncremental = delegate.isIncremental() ? delegate.incrementalAccumulator()
-                : TriCollectorUtils.toIncremental(delegate.accumulator());
+        this.innerIncremental = TriCollectorUtils.toIncremental(delegate.accumulator());
     }
 
     @Override
@@ -32,17 +30,7 @@ final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
     }
 
     @Override
-    public @NonNull QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator() {
-        return TriCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> incrementalAccumulator() {
+    public @NonNull TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> accumulator() {
         return ValueHandle::new;
     }
 

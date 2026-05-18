@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.stream.collector.tri;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
@@ -21,18 +20,8 @@ abstract class UndoableActionableTriCollector<A, B, C, Input_, Output_, State_>
     protected abstract TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(State_ state);
 
     @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull TriConstraintCollectorAccumulator<State_, A, B, C> incrementalAccumulator() {
+    public @NonNull TriConstraintCollectorAccumulator<State_, A, B, C> accumulator() {
         return this::newAccumulatedValue;
-    }
-
-    @Override
-    public @NonNull QuadFunction<State_, A, B, C, Runnable> accumulator() {
-        return TriCollectorUtils.fromIncremental(incrementalAccumulator());
     }
 
     @Override

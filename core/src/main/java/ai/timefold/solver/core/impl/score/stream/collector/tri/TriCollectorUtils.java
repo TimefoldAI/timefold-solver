@@ -10,33 +10,12 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class TriCollectorUtils {
 
-    public static <ResultContainer_, A, B, C> QuadFunction<ResultContainer_, A, B, C, Runnable>
-            fromIncremental(TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> incrementalAccumulator) {
-        if (incrementalAccumulator instanceof TriFromAccumulatorAdapter<ResultContainer_, A, B, C>(QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator)) {
-            return accumulator;
-        }
-        return new TriFromIncrementalAdapter<>(incrementalAccumulator);
-    }
-
     public static <ResultContainer_, A, B, C> TriConstraintCollectorAccumulator<ResultContainer_, A, B, C>
             toIncremental(QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator) {
-        if (accumulator instanceof TriFromIncrementalAdapter<ResultContainer_, A, B, C>(TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> incrementalAccumulator)) {
-            return incrementalAccumulator;
+        if (accumulator instanceof TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> inc) {
+            return inc;
         }
         return new TriFromAccumulatorAdapter<>(accumulator);
-    }
-
-    private record TriFromIncrementalAdapter<ResultContainer_, A, B, C>(
-            TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> inc)
-            implements
-                QuadFunction<ResultContainer_, A, B, C, Runnable> {
-
-        @Override
-        public Runnable apply(ResultContainer_ container, A a, B b, C c) {
-            var val = inc.intoGroup(container);
-            val.add(a, b, c);
-            return val::remove;
-        }
     }
 
     private record TriFromAccumulatorAdapter<ResultContainer_, A, B, C>(
@@ -63,12 +42,6 @@ public final class TriCollectorUtils {
 
         @Override
         public void add(@Nullable A a, @Nullable B b, @Nullable C c) {
-            undo = accumulator.apply(container, a, b, c);
-        }
-
-        @Override
-        public void replaceWith(@Nullable A a, @Nullable B b, @Nullable C c) {
-            undo.run();
             undo = accumulator.apply(container, a, b, c);
         }
 

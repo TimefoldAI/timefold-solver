@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToLongFunction;
@@ -35,17 +34,7 @@ final class LoadBalanceUniCollector<A, Balanced_>
     }
 
     @Override
-    public @NonNull BiFunction<DefaultLoadBalance<Balanced_>, A, Runnable> accumulator() {
-        return UniCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull UniConstraintCollectorAccumulator<DefaultLoadBalance<Balanced_>, A> incrementalAccumulator() {
+    public @NonNull UniConstraintCollectorAccumulator<DefaultLoadBalance<Balanced_>, A> accumulator() {
         return Slot::new;
     }
 

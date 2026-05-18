@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.score.stream.collector.bi;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
@@ -29,17 +28,7 @@ final class CountBiCollector<A, B> implements BiConstraintCollector<A, B, Mutabl
     }
 
     @Override
-    public @NonNull TriFunction<MutableLong, A, B, Runnable> accumulator() {
-        return BiCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull BiConstraintCollectorAccumulator<MutableLong, A, B> incrementalAccumulator() {
+    public @NonNull BiConstraintCollectorAccumulator<MutableLong, A, B> accumulator() {
         return Slot::new;
     }
 

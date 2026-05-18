@@ -33,6 +33,7 @@ import java.util.SortedSet;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -1064,12 +1065,16 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
     private static <A, B, C, Container_, Result_> Runnable accumulate(
             TriConstraintCollector<A, B, C, Container_, Result_> collector, Object container, A valueA, B valueB,
             C valueC) {
-        return collector.accumulator().apply((Container_) container, valueA, valueB, valueC);
+        var slot = ((TriConstraintCollectorAccumulator<Container_, A, B, C>) collector.accumulator())
+                .intoGroup((Container_) container);
+        slot.add(valueA, valueB, valueC);
+        return slot::remove;
     }
 
     private static <A, B, C, Container_, Result_> TriConstraintCollectorValueHandle<A, B, C> insert(
             TriConstraintCollector<A, B, C, Container_, Result_> collector, Object container, A a, B b, C c) {
-        var slot = collector.incrementalAccumulator().intoGroup((Container_) container);
+        var slot = ((TriConstraintCollectorAccumulator<Container_, A, B, C>) collector.accumulator())
+                .intoGroup((Container_) container);
         slot.add(a, b, c);
         return slot;
     }

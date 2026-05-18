@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 
@@ -21,8 +20,7 @@ final class AndThenBiCollector<A, B, ResultContainer_, Intermediate_, Result_>
             Function<Intermediate_, Result_> mappingFunction) {
         this.delegate = Objects.requireNonNull(delegate);
         this.mappingFunction = Objects.requireNonNull(mappingFunction);
-        this.innerIncremental = delegate.isIncremental() ? delegate.incrementalAccumulator()
-                : BiCollectorUtils.toIncremental(delegate.accumulator());
+        this.innerIncremental = BiCollectorUtils.toIncremental(delegate.accumulator());
     }
 
     @Override
@@ -31,17 +29,7 @@ final class AndThenBiCollector<A, B, ResultContainer_, Intermediate_, Result_>
     }
 
     @Override
-    public @NonNull TriFunction<ResultContainer_, A, B, Runnable> accumulator() {
-        return BiCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull BiConstraintCollectorAccumulator<ResultContainer_, A, B> incrementalAccumulator() {
+    public @NonNull BiConstraintCollectorAccumulator<ResultContainer_, A, B> accumulator() {
         return innerIncremental;
     }
 

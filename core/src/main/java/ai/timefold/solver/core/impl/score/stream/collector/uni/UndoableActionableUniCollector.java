@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
@@ -20,17 +19,7 @@ abstract class UndoableActionableUniCollector<A, Input_, Output_, State_>
     protected abstract UniConstraintCollectorValueHandle<A> newAccumulatedValue(State_ state);
 
     @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull BiFunction<State_, A, Runnable> accumulator() {
-        return UniCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public @NonNull UniConstraintCollectorAccumulator<State_, A> incrementalAccumulator() {
+    public @NonNull UniConstraintCollectorAccumulator<State_, A> accumulator() {
         return this::newAccumulatedValue;
     }
 

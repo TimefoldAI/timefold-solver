@@ -53,14 +53,10 @@ final class ComposeFourTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Res
         this.thirdSupplier = third.supplier();
         this.fourthSupplier = fourth.supplier();
 
-        this.firstIncremental =
-                first.isIncremental() ? first.incrementalAccumulator() : TriCollectorUtils.toIncremental(first.accumulator());
-        this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
-                : TriCollectorUtils.toIncremental(second.accumulator());
-        this.thirdIncremental =
-                third.isIncremental() ? third.incrementalAccumulator() : TriCollectorUtils.toIncremental(third.accumulator());
-        this.fourthIncremental = fourth.isIncremental() ? fourth.incrementalAccumulator()
-                : TriCollectorUtils.toIncremental(fourth.accumulator());
+        this.firstIncremental = TriCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = TriCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental = TriCollectorUtils.toIncremental(third.accumulator());
+        this.fourthIncremental = TriCollectorUtils.toIncremental(fourth.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -79,20 +75,9 @@ final class ComposeFourTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Res
     }
 
     @Override
-    public @NonNull QuadFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, C, Runnable>
-            accumulator() {
-        return TriCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
     public @NonNull
             TriConstraintCollectorAccumulator<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, C>
-            incrementalAccumulator() {
+            accumulator() {
         return ValueHandle::new;
     }
 

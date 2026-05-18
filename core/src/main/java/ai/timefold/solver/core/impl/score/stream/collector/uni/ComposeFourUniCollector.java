@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -54,14 +53,10 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
         this.thirdSupplier = third.supplier();
         this.fourthSupplier = fourth.supplier();
 
-        this.firstIncremental =
-                first.isIncremental() ? first.incrementalAccumulator() : UniCollectorUtils.toIncremental(first.accumulator());
-        this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
-                : UniCollectorUtils.toIncremental(second.accumulator());
-        this.thirdIncremental =
-                third.isIncremental() ? third.incrementalAccumulator() : UniCollectorUtils.toIncremental(third.accumulator());
-        this.fourthIncremental = fourth.isIncremental() ? fourth.incrementalAccumulator()
-                : UniCollectorUtils.toIncremental(fourth.accumulator());
+        this.firstIncremental = UniCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = UniCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental = UniCollectorUtils.toIncremental(third.accumulator());
+        this.fourthIncremental = UniCollectorUtils.toIncremental(fourth.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -80,20 +75,9 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
     }
 
     @Override
-    public @NonNull BiFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, Runnable>
-            accumulator() {
-        return UniCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
     public @NonNull
             UniConstraintCollectorAccumulator<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A>
-            incrementalAccumulator() {
+            accumulator() {
         return ValueHandle::new;
     }
 

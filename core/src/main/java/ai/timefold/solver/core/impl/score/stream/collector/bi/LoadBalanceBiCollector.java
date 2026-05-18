@@ -6,7 +6,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToLongBiFunction;
 
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
@@ -36,17 +35,7 @@ final class LoadBalanceBiCollector<A, B, Balanced_>
     }
 
     @Override
-    public @NonNull TriFunction<DefaultLoadBalance<Balanced_>, A, B, Runnable> accumulator() {
-        return BiCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull BiConstraintCollectorAccumulator<DefaultLoadBalance<Balanced_>, A, B> incrementalAccumulator() {
+    public @NonNull BiConstraintCollectorAccumulator<DefaultLoadBalance<Balanced_>, A, B> accumulator() {
         return Slot::new;
     }
 

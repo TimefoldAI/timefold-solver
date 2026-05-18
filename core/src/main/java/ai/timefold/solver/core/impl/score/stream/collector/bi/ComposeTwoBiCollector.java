@@ -5,7 +5,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
@@ -39,10 +38,8 @@ final class ComposeTwoBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result1_
         this.firstSupplier = first.supplier();
         this.secondSupplier = second.supplier();
 
-        this.firstIncremental =
-                first.isIncremental() ? first.incrementalAccumulator() : BiCollectorUtils.toIncremental(first.accumulator());
-        this.secondIncremental =
-                second.isIncremental() ? second.incrementalAccumulator() : BiCollectorUtils.toIncremental(second.accumulator());
+        this.firstIncremental = BiCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = BiCollectorUtils.toIncremental(second.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -54,17 +51,7 @@ final class ComposeTwoBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result1_
     }
 
     @Override
-    public @NonNull TriFunction<Pair<ResultHolder1_, ResultHolder2_>, A, B, Runnable> accumulator() {
-        return BiCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull BiConstraintCollectorAccumulator<Pair<ResultHolder1_, ResultHolder2_>, A, B> incrementalAccumulator() {
+    public @NonNull BiConstraintCollectorAccumulator<Pair<ResultHolder1_, ResultHolder2_>, A, B> accumulator() {
         return ValueHandle::new;
     }
 

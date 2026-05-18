@@ -10,33 +10,12 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class BiCollectorUtils {
 
-    public static <ResultContainer_, A, B> TriFunction<ResultContainer_, A, B, Runnable>
-            fromIncremental(BiConstraintCollectorAccumulator<ResultContainer_, A, B> incrementalAccumulator) {
-        if (incrementalAccumulator instanceof BiFromAccumulatorAdapter<ResultContainer_, A, B>(TriFunction<ResultContainer_, A, B, Runnable> accumulator)) {
-            return accumulator;
-        }
-        return new BiFromIncrementalAdapter<>(incrementalAccumulator);
-    }
-
     public static <ResultContainer_, A, B> BiConstraintCollectorAccumulator<ResultContainer_, A, B>
             toIncremental(TriFunction<ResultContainer_, A, B, Runnable> accumulator) {
-        if (accumulator instanceof BiFromIncrementalAdapter<ResultContainer_, A, B>(BiConstraintCollectorAccumulator<ResultContainer_, A, B> incrementalAccumulator)) {
-            return incrementalAccumulator;
+        if (accumulator instanceof BiConstraintCollectorAccumulator<ResultContainer_, A, B> inc) {
+            return inc;
         }
         return new BiFromAccumulatorAdapter<>(accumulator);
-    }
-
-    private record BiFromIncrementalAdapter<ResultContainer_, A, B>(
-            BiConstraintCollectorAccumulator<ResultContainer_, A, B> inc)
-            implements
-                TriFunction<ResultContainer_, A, B, Runnable> {
-
-        @Override
-        public Runnable apply(ResultContainer_ container, A a, B b) {
-            var val = inc.intoGroup(container);
-            val.add(a, b);
-            return val::remove;
-        }
     }
 
     private record BiFromAccumulatorAdapter<ResultContainer_, A, B>(TriFunction<ResultContainer_, A, B, Runnable> accumulator)
@@ -62,12 +41,6 @@ public final class BiCollectorUtils {
 
         @Override
         public void add(@Nullable A a, @Nullable B b) {
-            undo = accumulator.apply(container, a, b);
-        }
-
-        @Override
-        public void replaceWith(@Nullable A a, @Nullable B b) {
-            undo.run();
             undo = accumulator.apply(container, a, b);
         }
 

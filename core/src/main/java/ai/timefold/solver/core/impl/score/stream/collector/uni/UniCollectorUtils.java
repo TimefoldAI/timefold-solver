@@ -11,32 +11,12 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class UniCollectorUtils {
 
-    public static <ResultContainer_, A> BiFunction<ResultContainer_, A, Runnable>
-            fromIncremental(UniConstraintCollectorAccumulator<ResultContainer_, A> incrementalAccumulator) {
-        if (incrementalAccumulator instanceof UniFromAccumulatorAdapter<ResultContainer_, A>(BiFunction<ResultContainer_, A, Runnable> accumulator)) {
-            return accumulator;
-        }
-        return new UniFromIncrementalAdapter<>(incrementalAccumulator);
-    }
-
     public static <ResultContainer_, A> UniConstraintCollectorAccumulator<ResultContainer_, A>
             toIncremental(BiFunction<ResultContainer_, A, Runnable> accumulator) {
-        if (accumulator instanceof UniFromIncrementalAdapter<ResultContainer_, A>(UniConstraintCollectorAccumulator<ResultContainer_, A> incrementalAccumulator)) {
-            return incrementalAccumulator;
+        if (accumulator instanceof UniConstraintCollectorAccumulator<ResultContainer_, A> inc) {
+            return inc;
         }
         return new UniFromAccumulatorAdapter<>(accumulator);
-    }
-
-    private record UniFromIncrementalAdapter<ResultContainer_, A>(UniConstraintCollectorAccumulator<ResultContainer_, A> inc)
-            implements
-                BiFunction<ResultContainer_, A, Runnable> {
-
-        @Override
-        public Runnable apply(ResultContainer_ container, A a) {
-            var val = inc.intoGroup(container);
-            val.add(a);
-            return val::remove;
-        }
     }
 
     private record UniFromAccumulatorAdapter<ResultContainer_, A>(BiFunction<ResultContainer_, A, Runnable> accumulator)
@@ -62,12 +42,6 @@ public final class UniCollectorUtils {
 
         @Override
         public void add(@Nullable A a) {
-            undo = accumulator.apply(container, a);
-        }
-
-        @Override
-        public void replaceWith(@Nullable A a) {
-            undo.run();
             undo = accumulator.apply(container, a);
         }
 

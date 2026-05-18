@@ -5,7 +5,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
@@ -22,8 +21,7 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
             BiConstraintCollector<A, B, ResultContainer_, Result_> delegate) {
         this.predicate = predicate;
         this.delegate = delegate;
-        this.innerIncremental = delegate.isIncremental() ? delegate.incrementalAccumulator()
-                : BiCollectorUtils.toIncremental(delegate.accumulator());
+        this.innerIncremental = BiCollectorUtils.toIncremental(delegate.accumulator());
     }
 
     @Override
@@ -32,17 +30,7 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
     }
 
     @Override
-    public @NonNull TriFunction<ResultContainer_, A, B, Runnable> accumulator() {
-        return BiCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull BiConstraintCollectorAccumulator<ResultContainer_, A, B> incrementalAccumulator() {
+    public @NonNull BiConstraintCollectorAccumulator<ResultContainer_, A, B> accumulator() {
         return ValueHandle::new;
     }
 

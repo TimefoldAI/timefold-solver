@@ -28,8 +28,7 @@ abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, Re
         super(groupStoreIndex, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
                 environmentMode);
         this.groupAccumulatorIndex = groupAccumulatorIndex;
-        this.incrementalAccumulator = collector.isIncremental() ? collector.incrementalAccumulator()
-                : UniCollectorUtils.toIncremental(collector.accumulator());
+        this.incrementalAccumulator = UniCollectorUtils.toIncremental(collector.accumulator());
     }
 
     protected AbstractGroupUniNode(int groupStoreIndex, Function<UniTuple<OldA>, GroupKey_> groupKeyFunction,

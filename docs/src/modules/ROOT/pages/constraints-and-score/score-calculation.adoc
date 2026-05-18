@@ -702,6 +702,14 @@ You can also provide your own collectors by implementing the
 `ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector` interface,
 or its `Bi...`, `Tri...` and `Quad...` counterparts.
 
+NOTE: Custom collectors can opt into incremental mode by having their `accumulator()` method return a
+`*ConstraintCollectorAccumulator` instance (e.g. `UniConstraintCollectorAccumulator`) instead of a plain lambda.
+In incremental mode, the accumulator receives insert/update/retract calls individually,
+which is more efficient than the default full retract-and-reinsert on update.
+The solver detects incremental support via `instanceof` automatically — no other method needs overriding.
+`*ConstraintCollectorAccumulator` extends the corresponding function type but throws `UnsupportedOperationException`
+if called as a function; use it via its `intoGroup()` method instead.
+
 
 [#collectorsCount]
 ==== `count()` collector

@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
@@ -54,14 +53,10 @@ final class ComposeFourQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_,
         this.thirdSupplier = third.supplier();
         this.fourthSupplier = fourth.supplier();
 
-        this.firstIncremental = first.isIncremental() ? first.incrementalAccumulator()
-                : QuadCollectorUtils.toIncremental(first.accumulator());
-        this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
-                : QuadCollectorUtils.toIncremental(second.accumulator());
-        this.thirdIncremental = third.isIncremental() ? third.incrementalAccumulator()
-                : QuadCollectorUtils.toIncremental(third.accumulator());
-        this.fourthIncremental = fourth.isIncremental() ? fourth.incrementalAccumulator()
-                : QuadCollectorUtils.toIncremental(fourth.accumulator());
+        this.firstIncremental = QuadCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = QuadCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental = QuadCollectorUtils.toIncremental(third.accumulator());
+        this.fourthIncremental = QuadCollectorUtils.toIncremental(fourth.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -81,20 +76,8 @@ final class ComposeFourQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_,
 
     @Override
     public @NonNull
-            PentaFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, C, D, Runnable>
-            accumulator() {
-        return QuadCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull
             QuadConstraintCollectorAccumulator<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, C, D>
-            incrementalAccumulator() {
+            accumulator() {
         return ValueHandle::new;
     }
 

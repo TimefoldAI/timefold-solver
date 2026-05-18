@@ -28,8 +28,7 @@ abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends T
         super(groupStoreIndex, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
                 environmentMode);
         this.groupAccumulatorIndex = groupAccumulatorIndex;
-        this.incrementalAccumulator = collector.isIncremental() ? collector.incrementalAccumulator()
-                : QuadCollectorUtils.toIncremental(collector.accumulator());
+        this.incrementalAccumulator = QuadCollectorUtils.toIncremental(collector.accumulator());
     }
 
     protected AbstractGroupQuadNode(int groupStoreIndex,

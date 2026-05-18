@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
 import ai.timefold.solver.jackson.api.TimefoldJacksonModule;
 
 import org.junit.jupiter.api.Test;
@@ -42,10 +43,10 @@ class SequenceRoundTripTest {
         UniConstraintCollector<Item, Ctx_, SequenceChain<Item, Integer>> collector =
                 (UniConstraintCollector) ConstraintCollectors.toConsecutiveSequences(Item::index);
         var context = collector.supplier().get();
-        var accumulator = collector.accumulator();
+        var accumulator = (UniConstraintCollectorAccumulator<Object, Item>) collector.accumulator();
         for (var item : List.of(sequence1Item1, sequence1Item2, sequence2Item1, sequence2Item2, sequence2Item3,
                 sequence3Item1)) {
-            accumulator.apply(context, item);
+            accumulator.intoGroup(context).add(item);
         }
 
         // Retrieve the instances to be serialized.

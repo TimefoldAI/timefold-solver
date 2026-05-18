@@ -33,22 +33,10 @@ public interface BiConstraintCollector<A, B, ResultContainer_, Result_> {
 
     /**
      * As defined by {@link UniConstraintCollector#accumulator()}, but for {@link BiConstraintStream}.
+     * 
+     * @see BiConstraintCollectorAccumulator An incremental API to be returned instead of the deprecated plain tri-function.
      */
     TriFunction<ResultContainer_, A, B, Runnable> accumulator();
-
-    /**
-     * As defined by {@link UniConstraintCollector#incrementalAccumulator()}, but for {@link BiConstraintStream}.
-     */
-    default BiConstraintCollectorAccumulator<ResultContainer_, A, B> incrementalAccumulator() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * As defined by {@link UniConstraintCollector#isIncremental()}, but for {@link BiConstraintStream}.
-     */
-    default boolean isIncremental() {
-        return false;
-    }
 
     /**
      * As defined by {@link UniConstraintCollector#finisher()}, but for {@link BiConstraintStream}.

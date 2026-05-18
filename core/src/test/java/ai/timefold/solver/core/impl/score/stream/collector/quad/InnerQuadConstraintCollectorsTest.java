@@ -33,6 +33,7 @@ import java.util.SortedSet;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -1102,13 +1103,17 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
     private static <A, B, C, D, Container_, Result_> Runnable accumulate(
             QuadConstraintCollector<A, B, C, D, Container_, Result_> collector, Object container, A valueA, B valueB,
             C valueC, D valueD) {
-        return collector.accumulator().apply((Container_) container, valueA, valueB, valueC, valueD);
+        var slot = ((QuadConstraintCollectorAccumulator<Container_, A, B, C, D>) collector.accumulator())
+                .intoGroup((Container_) container);
+        slot.add(valueA, valueB, valueC, valueD);
+        return slot::remove;
     }
 
     private static <A, B, C, D, Container_, Result_> QuadConstraintCollectorValueHandle<A, B, C, D> insert(
             QuadConstraintCollector<A, B, C, D, Container_, Result_> collector, Object container, A a, B b, C c,
             D d) {
-        var slot = collector.incrementalAccumulator().intoGroup((Container_) container);
+        var slot = ((QuadConstraintCollectorAccumulator<Container_, A, B, C, D>) collector.accumulator())
+                .intoGroup((Container_) container);
         slot.add(a, b, c, d);
         return slot;
     }

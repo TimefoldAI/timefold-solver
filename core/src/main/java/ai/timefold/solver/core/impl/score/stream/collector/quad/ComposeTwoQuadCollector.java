@@ -5,7 +5,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
@@ -39,10 +38,8 @@ final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, 
         this.firstSupplier = first.supplier();
         this.secondSupplier = second.supplier();
 
-        this.firstIncremental = first.isIncremental() ? first.incrementalAccumulator()
-                : QuadCollectorUtils.toIncremental(first.accumulator());
-        this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
-                : QuadCollectorUtils.toIncremental(second.accumulator());
+        this.firstIncremental = QuadCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = QuadCollectorUtils.toIncremental(second.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -54,18 +51,7 @@ final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, 
     }
 
     @Override
-    public @NonNull PentaFunction<Pair<ResultHolder1_, ResultHolder2_>, A, B, C, D, Runnable> accumulator() {
-        return QuadCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull QuadConstraintCollectorAccumulator<Pair<ResultHolder1_, ResultHolder2_>, A, B, C, D>
-            incrementalAccumulator() {
+    public @NonNull QuadConstraintCollectorAccumulator<Pair<ResultHolder1_, ResultHolder2_>, A, B, C, D> accumulator() {
         return ValueHandle::new;
     }
 

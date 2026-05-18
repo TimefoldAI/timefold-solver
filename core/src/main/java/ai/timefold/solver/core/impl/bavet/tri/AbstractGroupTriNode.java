@@ -28,8 +28,7 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, G
         super(groupStoreIndex, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
                 environmentMode);
         this.groupAccumulatorIndex = groupAccumulatorIndex;
-        this.incrementalAccumulator = collector.isIncremental() ? collector.incrementalAccumulator()
-                : TriCollectorUtils.toIncremental(collector.accumulator());
+        this.incrementalAccumulator = TriCollectorUtils.toIncremental(collector.accumulator());
     }
 
     protected AbstractGroupTriNode(int groupStoreIndex, Function<TriTuple<OldA, OldB, OldC>, GroupKey_> groupKeyFunction,

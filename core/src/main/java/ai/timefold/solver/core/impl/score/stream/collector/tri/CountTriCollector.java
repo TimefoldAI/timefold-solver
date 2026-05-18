@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.score.stream.collector.tri;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
@@ -29,17 +28,7 @@ final class CountTriCollector<A, B, C> implements TriConstraintCollector<A, B, C
     }
 
     @Override
-    public @NonNull QuadFunction<MutableLong, A, B, C, Runnable> accumulator() {
-        return TriCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
-    public @NonNull TriConstraintCollectorAccumulator<MutableLong, A, B, C> incrementalAccumulator() {
+    public @NonNull TriConstraintCollectorAccumulator<MutableLong, A, B, C> accumulator() {
         return Slot::new;
     }
 

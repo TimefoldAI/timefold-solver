@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -46,12 +45,9 @@ final class ComposeThreeUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHo
         this.secondSupplier = second.supplier();
         this.thirdSupplier = third.supplier();
 
-        this.firstIncremental =
-                first.isIncremental() ? first.incrementalAccumulator() : UniCollectorUtils.toIncremental(first.accumulator());
-        this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
-                : UniCollectorUtils.toIncremental(second.accumulator());
-        this.thirdIncremental =
-                third.isIncremental() ? third.incrementalAccumulator() : UniCollectorUtils.toIncremental(third.accumulator());
+        this.firstIncremental = UniCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = UniCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental = UniCollectorUtils.toIncremental(third.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -68,18 +64,8 @@ final class ComposeThreeUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHo
     }
 
     @Override
-    public @NonNull BiFunction<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, Runnable> accumulator() {
-        return UniCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
     public @NonNull UniConstraintCollectorAccumulator<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A>
-            incrementalAccumulator() {
+            accumulator() {
         return ValueHandle::new;
     }
 

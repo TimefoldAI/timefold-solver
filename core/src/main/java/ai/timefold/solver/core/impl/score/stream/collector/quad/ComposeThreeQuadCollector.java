@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
@@ -46,12 +45,9 @@ final class ComposeThreeQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_
         this.secondSupplier = second.supplier();
         this.thirdSupplier = third.supplier();
 
-        this.firstIncremental = first.isIncremental() ? first.incrementalAccumulator()
-                : QuadCollectorUtils.toIncremental(first.accumulator());
-        this.secondIncremental = second.isIncremental() ? second.incrementalAccumulator()
-                : QuadCollectorUtils.toIncremental(second.accumulator());
-        this.thirdIncremental = third.isIncremental() ? third.incrementalAccumulator()
-                : QuadCollectorUtils.toIncremental(third.accumulator());
+        this.firstIncremental = QuadCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = QuadCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental = QuadCollectorUtils.toIncremental(third.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -68,18 +64,8 @@ final class ComposeThreeQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_
     }
 
     @Override
-    public @NonNull PentaFunction<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B, C, D, Runnable> accumulator() {
-        return QuadCollectorUtils.fromIncremental(incrementalAccumulator());
-    }
-
-    @Override
-    public boolean isIncremental() {
-        return true;
-    }
-
-    @Override
     public @NonNull QuadConstraintCollectorAccumulator<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B, C, D>
-            incrementalAccumulator() {
+            accumulator() {
         return ValueHandle::new;
     }
 
