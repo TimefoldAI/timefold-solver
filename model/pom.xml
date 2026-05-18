@@ -1,0 +1,106 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>timefold-solver-model-root-parent</artifactId>
+
+  <packaging>pom</packaging>
+  <name>(Preview) Timefold Solver Model Parent</name>
+  <description>
+    This module contains APIs for optimization model development.
+    This module and any of its submodules are in a preview state and thus are subjects to changes.
+  </description>
+
+  <modules>
+    <module>build/build-parent</module>
+    <module>build/build-support</module>
+    <module>build/config</module>
+    <module>definition</module>
+    <module>json</module>
+    <module>jackson</module>
+    <module>rest</module>
+    <module>solver-worker</module>
+    <module>quarkus</module>
+    <module>maps</module>
+    <module>test</module>
+    <module>facade/sdk</module>
+    <module>facade/sdk-with-maps</module>
+    <module>facade/sdk-model-base-parent</module>
+    <module>facade/sdk-model-parent</module>
+    <module>rest-definition</module>
+    <module>model-defaults</module>
+    <module>tools/maven-plugin</module>
+  </modules>
+
+  <profiles>
+    <profile>
+      <id>test-model</id>
+      <modules>
+        <module>test-model</module>
+      </modules>
+    </profile>
+  </profiles>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <version.flatten.plugin>1.7.3</version.flatten.plugin>
+  </properties>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>${version.flatten.plugin}</version>
+          <configuration>
+            <updatePomFile>true</updatePomFile>
+            <flattenMode>resolveCiFriendliesOnly</flattenMode>
+            <keepCommentsInPom>true</keepCommentsInPom>
+          </configuration>
+          <executions>
+            <execution>
+              <id>flatten</id>
+              <phase>process-resources</phase>
+              <goals>
+                <goal>flatten</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>flatten.clean</id>
+              <phase>clean</phase>
+              <goals>
+                <goal>clean</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <!-- flatten maven plugin must be configured for all projects, even the top-level parent -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>Timefold Github Packages</name>
+      <url>https://maven.pkg.github.com/TimefoldAI/timefold-models-sdk</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </distributionManagement>
+
+</project>

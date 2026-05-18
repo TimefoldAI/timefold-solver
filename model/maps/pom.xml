@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-model-build-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../build/build-parent/pom.xml</relativePath>
+  </parent>
+  <artifactId>timefold-solver-maps</artifactId>
+  <packaging>pom</packaging>
+  <name>(Preview) Timefold Solver Model Maps integration</name>
+  <description>
+    This module contains maps integration.
+    This module is in a preview state and thus is a subject to changes.
+  </description>
+
+  <modules>
+    <module>api</module>
+    <module>service-integration</module>
+    <module>service-client</module>
+    <module>haversine</module>
+    <module>service-test</module>
+    <module>service-rest</module>
+  </modules>
+</project>
