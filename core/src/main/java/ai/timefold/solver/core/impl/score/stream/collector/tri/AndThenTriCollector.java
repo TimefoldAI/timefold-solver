@@ -4,8 +4,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
 
 import org.jspecify.annotations.NonNull;
 
@@ -14,11 +14,13 @@ final class AndThenTriCollector<A, B, C, ResultContainer_, Intermediate_, Result
 
     private final TriConstraintCollector<A, B, C, ResultContainer_, Intermediate_> delegate;
     private final Function<Intermediate_, Result_> mappingFunction;
+    private final TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> innerIncremental;
 
     AndThenTriCollector(TriConstraintCollector<A, B, C, ResultContainer_, Intermediate_> delegate,
             Function<Intermediate_, Result_> mappingFunction) {
         this.delegate = Objects.requireNonNull(delegate);
         this.mappingFunction = Objects.requireNonNull(mappingFunction);
+        this.innerIncremental = TriCollectorUtils.toIncremental(delegate.accumulator());
     }
 
     @Override
@@ -27,8 +29,8 @@ final class AndThenTriCollector<A, B, C, ResultContainer_, Intermediate_, Result
     }
 
     @Override
-    public @NonNull QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator() {
-        return delegate.accumulator();
+    public @NonNull TriConstraintCollectorAccumulator<ResultContainer_, A, B, C> accumulator() {
+        return innerIncremental;
     }
 
     @Override

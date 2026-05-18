@@ -2,36 +2,27 @@ package ai.timefold.solver.core.impl.score.stream.collector.bi;
 
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class ObjectCalculatorBiCollector<A, B, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
-        implements BiConstraintCollector<A, B, Calculator_, Output_>
-        permits AverageReferenceBiCollector, ConnectedRangesBiConstraintCollector, ConsecutiveSequencesBiConstraintCollector,
-        CountDistinctBiCollector, SumReferenceBiCollector {
+abstract class ObjectCalculatorBiCollector<A, B, Input_, Output_, State_>
+        implements BiConstraintCollector<A, B, State_, Output_> {
+
     protected final BiFunction<? super A, ? super B, ? extends Input_> mapper;
 
-    public ObjectCalculatorBiCollector(BiFunction<? super A, ? super B, ? extends Input_> mapper) {
+    ObjectCalculatorBiCollector(BiFunction<? super A, ? super B, ? extends Input_> mapper) {
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull TriFunction<Calculator_, A, B, Runnable> accumulator() {
-        return (calculator, a, b) -> {
-            final var mapped = mapper.apply(a, b);
-            final var saved = calculator.insert(mapped);
-            return () -> calculator.retract(saved);
-        };
-    }
+    protected abstract BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return ObjectCalculator::result;
+    public @NonNull BiConstraintCollectorAccumulator<State_, A, B> accumulator() {
+        return this::newAccumulatedValue;
     }
 
     @Override
@@ -40,7 +31,7 @@ abstract sealed class ObjectCalculatorBiCollector<A, B, Input_, Output_, Mapped_
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (ObjectCalculatorBiCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (ObjectCalculatorBiCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

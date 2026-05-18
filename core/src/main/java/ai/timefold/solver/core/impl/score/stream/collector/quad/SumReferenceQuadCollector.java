@@ -2,15 +2,18 @@ package ai.timefold.solver.core.impl.score.stream.collector.quad;
 
 import java.util.Objects;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.impl.score.stream.collector.ReferenceSumCalculator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceSumSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class SumReferenceQuadCollector<A, B, C, D, Result_>
-        extends ObjectCalculatorQuadCollector<A, B, C, D, Result_, Result_, Result_, ReferenceSumCalculator<Result_>> {
+        extends
+        ObjectCalculatorQuadCollector<A, B, C, D, Result_, Result_, AbstractReferenceSumSlot.State<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;
@@ -26,8 +29,41 @@ final class SumReferenceQuadCollector<A, B, C, D, Result_>
     }
 
     @Override
-    public @NonNull Supplier<ReferenceSumCalculator<Result_>> supplier() {
-        return () -> new ReferenceSumCalculator<>(zero, adder, subtractor);
+    public @NonNull Supplier<AbstractReferenceSumSlot.State<Result_>> supplier() {
+        return () -> new AbstractReferenceSumSlot.State<>(zero, adder, subtractor);
+    }
+
+    @Override
+    public @NonNull Function<AbstractReferenceSumSlot.State<Result_>, Result_> finisher() {
+        return AbstractReferenceSumSlot.State::result;
+    }
+
+    @Override
+    protected QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(
+            AbstractReferenceSumSlot.State<Result_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractReferenceSumSlot<Result_>
+            implements QuadConstraintCollectorValueHandle<A, B, C, D> {
+        Slot(AbstractReferenceSumSlot.State<Result_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c, D d) {
+            addMapped(mapper.apply(a, b, c, d));
+        }
+
+        @Override
+        public void replaceWith(A a, B b, C c, D d) {
+            replaceWithMapped(mapper.apply(a, b, c, d));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

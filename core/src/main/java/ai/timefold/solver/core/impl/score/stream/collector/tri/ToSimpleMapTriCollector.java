@@ -3,17 +3,18 @@ package ai.timefold.solver.core.impl.score.stream.collector.tri;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.impl.score.stream.collector.MapUndoableActionable;
-import ai.timefold.solver.core.impl.util.Pair;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractToMapSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class ToSimpleMapTriCollector<A, B, C, Key_, Value_, Result_ extends Map<Key_, Value_>>
         extends
-        UndoableActionableTriCollector<A, B, C, Pair<Key_, Value_>, Result_, MapUndoableActionable<Key_, Value_, Value_, Result_>> {
+        UndoableActionableTriCollector<A, B, C, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Value_, Result_>> {
     private final TriFunction<? super A, ? super B, ? super C, ? extends Key_> keyFunction;
     private final TriFunction<? super A, ? super B, ? super C, ? extends Value_> valueFunction;
     private final Supplier<Result_> mapSupplier;
@@ -23,7 +24,7 @@ final class ToSimpleMapTriCollector<A, B, C, Key_, Value_, Result_ extends Map<K
             TriFunction<? super A, ? super B, ? super C, ? extends Value_> valueFunction,
             Supplier<Result_> mapSupplier,
             BinaryOperator<Value_> mergeFunction) {
-        super((a, b, c) -> new Pair<>(keyFunction.apply(a, b, c), valueFunction.apply(a, b, c)));
+        super(keyFunction);
         this.keyFunction = keyFunction;
         this.valueFunction = valueFunction;
         this.mapSupplier = mapSupplier;
@@ -31,8 +32,41 @@ final class ToSimpleMapTriCollector<A, B, C, Key_, Value_, Result_ extends Map<K
     }
 
     @Override
-    public @NonNull Supplier<MapUndoableActionable<Key_, Value_, Value_, Result_>> supplier() {
-        return () -> MapUndoableActionable.mergeMap(mapSupplier, mergeFunction);
+    public @NonNull Supplier<AbstractToMapSlot.State<Key_, Value_, Value_, Result_>> supplier() {
+        return () -> AbstractToMapSlot.mergeMapState(mapSupplier, mergeFunction);
+    }
+
+    @Override
+    public @NonNull Function<AbstractToMapSlot.State<Key_, Value_, Value_, Result_>, Result_> finisher() {
+        return state -> state.result();
+    }
+
+    @Override
+    protected TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(
+            AbstractToMapSlot.State<Key_, Value_, Value_, Result_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractToMapSlot<Key_, Value_, Value_, Result_>
+            implements TriConstraintCollectorValueHandle<A, B, C> {
+        Slot(AbstractToMapSlot.State<Key_, Value_, Value_, Result_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c) {
+            addMapped(keyFunction.apply(a, b, c), valueFunction.apply(a, b, c));
+        }
+
+        @Override
+        public void replaceWith(A a, B b, C c) {
+            replaceWithMapped(keyFunction.apply(a, b, c), valueFunction.apply(a, b, c));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     // Don't call super equals/hashCode; the groupingFunction is calculated from keyFunction

@@ -5,11 +5,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 final class ComposeFourBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>
         implements
@@ -25,10 +27,10 @@ final class ComposeFourBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultH
     private final Supplier<ResultHolder3_> thirdSupplier;
     private final Supplier<ResultHolder4_> fourthSupplier;
 
-    private final TriFunction<ResultHolder1_, A, B, Runnable> firstAccumulator;
-    private final TriFunction<ResultHolder2_, A, B, Runnable> secondAccumulator;
-    private final TriFunction<ResultHolder3_, A, B, Runnable> thirdAccumulator;
-    private final TriFunction<ResultHolder4_, A, B, Runnable> fourthAccumulator;
+    private final BiConstraintCollectorAccumulator<ResultHolder1_, A, B> firstIncremental;
+    private final BiConstraintCollectorAccumulator<ResultHolder2_, A, B> secondIncremental;
+    private final BiConstraintCollectorAccumulator<ResultHolder3_, A, B> thirdIncremental;
+    private final BiConstraintCollectorAccumulator<ResultHolder4_, A, B> fourthIncremental;
 
     private final Function<ResultHolder1_, Result1_> firstFinisher;
     private final Function<ResultHolder2_, Result2_> secondFinisher;
@@ -51,10 +53,10 @@ final class ComposeFourBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultH
         this.thirdSupplier = third.supplier();
         this.fourthSupplier = fourth.supplier();
 
-        this.firstAccumulator = first.accumulator();
-        this.secondAccumulator = second.accumulator();
-        this.thirdAccumulator = third.accumulator();
-        this.fourthAccumulator = fourth.accumulator();
+        this.firstIncremental = BiCollectorUtils.toIncremental(first.accumulator());
+        this.secondIncremental = BiCollectorUtils.toIncremental(second.accumulator());
+        this.thirdIncremental = BiCollectorUtils.toIncremental(third.accumulator());
+        this.fourthIncremental = BiCollectorUtils.toIncremental(fourth.accumulator());
 
         this.firstFinisher = first.finisher();
         this.secondFinisher = second.finisher();
@@ -73,26 +75,15 @@ final class ComposeFourBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultH
     }
 
     @Override
-    public @NonNull TriFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, Runnable>
+    public @NonNull
+            BiConstraintCollectorAccumulator<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B>
             accumulator() {
-        return (resultHolder, a, b) -> composeUndo(firstAccumulator.apply(resultHolder.a(), a, b),
-                secondAccumulator.apply(resultHolder.b(), a, b),
-                thirdAccumulator.apply(resultHolder.c(), a, b),
-                fourthAccumulator.apply(resultHolder.d(), a, b));
-    }
-
-    private static Runnable composeUndo(Runnable first, Runnable second, Runnable third,
-            Runnable fourth) {
-        return () -> {
-            first.run();
-            second.run();
-            third.run();
-            fourth.run();
-        };
+        return ValueHandle::new;
     }
 
     @Override
-    public @NonNull Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
+    public @NonNull Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, @Nullable Result_>
+            finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.a()),
                 secondFinisher.apply(resultHolder.b()),
                 thirdFinisher.apply(resultHolder.c()),
@@ -108,13 +99,50 @@ final class ComposeFourBiCollector<A, B, ResultHolder1_, ResultHolder2_, ResultH
         var that = (ComposeFourBiCollector<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(first, that.first) && Objects.equals(second,
                 that.second) && Objects.equals(third, that.third)
-                && Objects.equals(fourth,
-                        that.fourth)
+                && Objects.equals(fourth, that.fourth)
                 && Objects.equals(composeFunction, that.composeFunction);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(first, second, third, fourth, composeFunction);
+    }
+
+    private final class ValueHandle implements BiConstraintCollectorValueHandle<A, B> {
+        private final BiConstraintCollectorValueHandle<A, B> v1;
+        private final BiConstraintCollectorValueHandle<A, B> v2;
+        private final BiConstraintCollectorValueHandle<A, B> v3;
+        private final BiConstraintCollectorValueHandle<A, B> v4;
+
+        ValueHandle(Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_> container) {
+            this.v1 = firstIncremental.intoGroup(container.a());
+            this.v2 = secondIncremental.intoGroup(container.b());
+            this.v3 = thirdIncremental.intoGroup(container.c());
+            this.v4 = fourthIncremental.intoGroup(container.d());
+        }
+
+        @Override
+        public void add(A a, B b) {
+            v1.add(a, b);
+            v2.add(a, b);
+            v3.add(a, b);
+            v4.add(a, b);
+        }
+
+        @Override
+        public void replaceWith(A a, B b) {
+            v1.replaceWith(a, b);
+            v2.replaceWith(a, b);
+            v3.replaceWith(a, b);
+            v4.replaceWith(a, b);
+        }
+
+        @Override
+        public void remove() {
+            v1.remove();
+            v2.remove();
+            v3.remove();
+            v4.remove();
+        }
     }
 }

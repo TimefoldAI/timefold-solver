@@ -1,18 +1,20 @@
 package ai.timefold.solver.core.impl.score.stream.collector.tri;
 
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractSequenceSlot;
 
 import org.jspecify.annotations.NonNull;
 
 final class ConsecutiveSequencesTriConstraintCollector<A, B, C, Result_>
         extends
-        ObjectCalculatorTriCollector<A, B, C, Result_, SequenceChain<Result_, Integer>, Result_, SequenceCalculator<Result_>> {
+        ObjectCalculatorTriCollector<A, B, C, Result_, SequenceChain<Result_, Integer>, AbstractSequenceSlot.State<Result_>> {
 
     private final ToIntFunction<Result_> indexMap;
 
@@ -23,8 +25,41 @@ final class ConsecutiveSequencesTriConstraintCollector<A, B, C, Result_>
     }
 
     @Override
-    public @NonNull Supplier<SequenceCalculator<Result_>> supplier() {
-        return () -> new SequenceCalculator<>(indexMap);
+    public @NonNull Supplier<AbstractSequenceSlot.State<Result_>> supplier() {
+        return () -> new AbstractSequenceSlot.State<>(indexMap);
+    }
+
+    @Override
+    public @NonNull Function<AbstractSequenceSlot.State<Result_>, SequenceChain<Result_, Integer>> finisher() {
+        return AbstractSequenceSlot.State::result;
+    }
+
+    @Override
+    protected TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(
+            AbstractSequenceSlot.State<Result_> state) {
+        return new Slot(state);
+    }
+
+    private final class Slot extends AbstractSequenceSlot<Result_>
+            implements TriConstraintCollectorValueHandle<A, B, C> {
+        Slot(AbstractSequenceSlot.State<Result_> state) {
+            super(state);
+        }
+
+        @Override
+        public void add(A a, B b, C c) {
+            addMapped(mapper.apply(a, b, c));
+        }
+
+        @Override
+        public void replaceWith(A a, B b, C c) {
+            replaceWithMapped(mapper.apply(a, b, c));
+        }
+
+        @Override
+        public void remove() {
+            removeMapped();
+        }
     }
 
     @Override

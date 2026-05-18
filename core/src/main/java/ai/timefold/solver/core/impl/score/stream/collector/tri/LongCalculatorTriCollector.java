@@ -1,35 +1,27 @@
 package ai.timefold.solver.core.impl.score.stream.collector.tri;
 
 import java.util.Objects;
-import java.util.function.Function;
 
-import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.LongCalculator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class LongCalculatorTriCollector<A, B, C, Output_, Calculator_ extends LongCalculator<Output_>>
-        implements TriConstraintCollector<A, B, C, Calculator_, Output_> permits AverageTriCollector, SumTriCollector {
-    private final ToLongTriFunction<? super A, ? super B, ? super C> mapper;
+abstract class LongCalculatorTriCollector<A, B, C, Output_, State_>
+        implements TriConstraintCollector<A, B, C, State_, Output_> {
+    protected final ToLongTriFunction<? super A, ? super B, ? super C> mapper;
 
     public LongCalculatorTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
-        return (calculator, a, b, c) -> {
-            final long mapped = mapper.applyAsLong(a, b, c);
-            calculator.insert(mapped);
-            return () -> calculator.retract(mapped);
-        };
-    }
+    protected abstract TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return LongCalculator::result;
+    public @NonNull TriConstraintCollectorAccumulator<State_, A, B, C> accumulator() {
+        return this::newAccumulatedValue;
     }
 
     @Override

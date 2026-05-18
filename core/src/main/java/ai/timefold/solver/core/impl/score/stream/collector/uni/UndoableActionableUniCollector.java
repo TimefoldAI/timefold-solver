@@ -1,37 +1,26 @@
 package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.UndoableActionable;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
-abstract sealed class UndoableActionableUniCollector<A, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
-        implements UniConstraintCollector<A, Calculator_, Output_>
-        permits MaxComparableUniCollector, MaxComparatorUniCollector, MaxPropertyUniCollector, MinComparableUniCollector,
-        MinComparatorUniCollector, MinPropertyUniCollector, ToCollectionUniCollector, ToListUniCollector,
-        ToMultiMapUniCollector, ToSetUniCollector, ToSimpleMapUniCollector, ToSortedSetComparatorUniCollector {
-    private final Function<? super A, ? extends Input_> mapper;
+abstract class UndoableActionableUniCollector<A, Input_, Output_, State_>
+        implements UniConstraintCollector<A, State_, Output_> {
+    protected final java.util.function.Function<? super A, ? extends Input_> mapper;
 
-    public UndoableActionableUniCollector(Function<? super A, ? extends Input_> mapper) {
+    public UndoableActionableUniCollector(java.util.function.Function<? super A, ? extends Input_> mapper) {
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull BiFunction<Calculator_, A, Runnable> accumulator() {
-        return (calculator, a) -> {
-            final Input_ mapped = mapper.apply(a);
-            return calculator.insert(mapped);
-        };
-    }
+    protected abstract UniConstraintCollectorValueHandle<A> newAccumulatedValue(State_ state);
 
     @Override
-    public @Nullable Function<Calculator_, Output_> finisher() {
-        return UndoableActionable::result;
+    public @NonNull UniConstraintCollectorAccumulator<State_, A> accumulator() {
+        return this::newAccumulatedValue;
     }
 
     @Override

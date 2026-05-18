@@ -13,7 +13,8 @@ import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 
 import org.jspecify.annotations.NonNull;
 
-public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> {
+public final class DefaultLoadBalance<Balanced_>
+        implements LoadBalance<Balanced_> {
 
     // If need be, precision can be made configurable on the constraint collector level.
     private static final MathContext RESULT_MATH_CONTEXT = new MathContext(6, RoundingMode.HALF_EVEN);
@@ -25,14 +26,13 @@ public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> 
     private long squaredDeviationIntegralPart = 0;
     private long squaredDeviationFractionNumerator = 0;
 
-    public Runnable registerBalanced(Balanced_ balanced, long metricValue, long initialMetricValue) {
+    public void registerBalanced(Balanced_ balanced, long metricValue, long initialMetricValue) {
         var balancedItemCount = balancedItemCountMap.compute(balanced, (k, v) -> v == null ? 1 : v + 1);
         if (balancedItemCount == 1) {
             addToMetric(balanced, metricValue + initialMetricValue);
         } else {
             addToMetric(balanced, metricValue);
         }
-        return () -> unregisterBalanced(balanced, metricValue);
     }
 
     public void unregisterBalanced(Balanced_ balanced, long metricValue) {

@@ -703,6 +703,7 @@ You can also provide your own collectors by implementing the
 or its `Bi...`, `Tri...` and `Quad...` counterparts.
 
 
+
 [#collectorsCount]
 ==== `count()` collector
 
@@ -1184,6 +1185,146 @@ ConstraintCollectors.collectAndThen(
     doubleValue -> (int) Math.round(doubleValue))
 ----
 ====
+
+
+[#constraintStreamsCustomCollector]
+==== Implementing a custom collector
+
+When no built-in collector covers the required aggregation,
+implement `UniConstraintCollector<A, ResultContainer_, Result_>` directly
+(or its `Bi...`, `Tri...`, `Quad...` counterparts for higher-arity streams).
+The interface has three methods:
+
+[cols="1,3"]
+|===
+| Method | Purpose
+
+| `supplier()`
+| Creates a fresh mutable result container for each group.
+
+| `accumulator()`
+| Called when a fact enters a group; returns a `UniConstraintCollectorValueHandle`
+  whose `add()`, `replaceWith()`, and `remove()` methods maintain the container.
+
+| `finisher()`
+| Converts the container into the immutable group result.
+|===
+
+The following example shows a simplified version of the built-in `toList()` collector:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class SimpleToListCollector<A>
+        implements UniConstraintCollector<A, List<A>, List<A>> {
+
+    @Override
+    public Supplier<List<A>> supplier() {
+        return ArrayList::new;
+    }
+
+    @Override
+    public UniConstraintCollectorAccumulator<List<A>, A> accumulator() {
+        return list -> new UniConstraintCollectorValueHandle<>() {
+            private A current;
+
+            @Override
+            public void add(A element) {
+                current = element;
+                list.add(element);
+            }
+
+            @Override
+            public void remove() {
+                list.remove(current);
+                current = null;
+            }
+        };
+    }
+
+    @Override
+    public Function<List<A>, List<A>> finisher() {
+        return Collections::unmodifiableList;
+    }
+}
+----
+====
+
+`accumulator()` returns a factory: for each fact that enters a group,
+the solver calls `intoGroup(container)` to obtain a fresh handle,
+then calls `add()` exactly once, zero or more `replaceWith()` calls as the fact changes,
+and `remove()` at most once when the fact leaves the group.
+
+`list.remove(current)` removes by value (runs in linear time).
+You might consider storing the insertion index instead and removing by index (runs in constant time),
+but that would be risky —
+any removal can shift subsequent indices at any time,
+making stored positions unreliable.
+Thankfully, there is a better way, using an incremental update.
+
+When a planning variable changes, the solver calls `replaceWith()` on the affected handle.
+The default implementation (inherited from `UniConstraintCollectorValueHandle`) does `remove()` followed by `add()`.
+For `ArrayList`, this means scanning to find the element in linear time,
+then shifting all subsequent elements to close the gap, and finally appending the new value at the end.
+
+Overriding `replaceWith()` with `list.set()` avoids the shift entirely:
+`set()` replaces the element in-place at its current position —
+no elements are moved, and the element's position in the list is preserved.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class IncrementalToListCollector<A>
+        implements UniConstraintCollector<A, List<A>, List<A>> {
+
+    @Override
+    public Supplier<List<A>> supplier() {
+        return ArrayList::new;
+    }
+
+    @Override
+    public UniConstraintCollectorAccumulator<List<A>, A> accumulator() {
+        return list -> new UniConstraintCollectorValueHandle<>() {
+            private A current;
+
+            @Override
+            public void add(A element) {
+                current = element;
+                list.add(element);
+            }
+
+            @Override
+            public void replaceWith(A element) {
+                list.set(list.indexOf(current), element);
+                current = element;
+            }
+
+            @Override
+            public void remove() {
+                list.remove(current);
+                current = null;
+            }
+        };
+    }
+
+    @Override
+    public Function<List<A>, List<A>> finisher() {
+        return Collections::unmodifiableList;
+    }
+}
+----
+====
+
+NOTE: The above implementation of `replaceWith()` is still not ideal,
+as it requires a linear scan to find the element.
+This will cause constraint scaling issues in larger lists,
+and is the main reason why we do not recommend using `toList()` in performance-sensitive constraints.
 
 
 [#constraintStreamsConditionalPropagation]

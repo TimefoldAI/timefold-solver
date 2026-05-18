@@ -1,36 +1,27 @@
 package ai.timefold.solver.core.impl.score.stream.collector.quad;
 
 import java.util.Objects;
-import java.util.function.Function;
 
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.LongCalculator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class LongCalculatorQuadCollector<A, B, C, D, Output_, Calculator_ extends LongCalculator<Output_>>
-        implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
-        permits AverageQuadCollector, SumQuadCollector {
-    private final ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper;
+abstract class LongCalculatorQuadCollector<A, B, C, D, Output_, State_>
+        implements QuadConstraintCollector<A, B, C, D, State_, Output_> {
+    protected final ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper;
 
     public LongCalculatorQuadCollector(ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull PentaFunction<Calculator_, A, B, C, D, Runnable> accumulator() {
-        return (calculator, a, b, c, d) -> {
-            final long mapped = mapper.applyAsLong(a, b, c, d);
-            calculator.insert(mapped);
-            return () -> calculator.retract(mapped);
-        };
-    }
+    protected abstract QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return LongCalculator::result;
+    public @NonNull QuadConstraintCollectorAccumulator<State_, A, B, C, D> accumulator() {
+        return this::newAccumulatedValue;
     }
 
     @Override

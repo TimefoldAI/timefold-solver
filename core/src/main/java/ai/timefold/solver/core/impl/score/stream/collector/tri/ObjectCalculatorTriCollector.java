@@ -1,37 +1,28 @@
 package ai.timefold.solver.core.impl.score.stream.collector.tri;
 
 import java.util.Objects;
-import java.util.function.Function;
 
-import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
-        implements TriConstraintCollector<A, B, C, Calculator_, Output_>
-        permits AverageReferenceTriCollector, ConnectedRangesTriConstraintCollector, ConsecutiveSequencesTriConstraintCollector,
-        CountDistinctTriCollector, SumReferenceTriCollector {
+abstract class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, State_>
+        implements TriConstraintCollector<A, B, C, State_, Output_> {
+
     protected final TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper;
 
     public ObjectCalculatorTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper) {
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
-        return (calculator, a, b, c) -> {
-            final var mapped = mapper.apply(a, b, c);
-            final var saved = calculator.insert(mapped);
-            return () -> calculator.retract(saved);
-        };
-    }
+    protected abstract TriConstraintCollectorValueHandle<A, B, C> newAccumulatedValue(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return ObjectCalculator::result;
+    public @NonNull TriConstraintCollectorAccumulator<State_, A, B, C> accumulator() {
+        return this::newAccumulatedValue;
     }
 
     @Override
@@ -40,7 +31,7 @@ abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Map
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (ObjectCalculatorTriCollector<?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ObjectCalculatorTriCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

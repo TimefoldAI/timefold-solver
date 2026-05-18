@@ -1,38 +1,28 @@
 package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
-abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
-        implements UniConstraintCollector<A, Calculator_, Output_>
-        permits AverageReferenceUniCollector, ConnectedRangesUniConstraintCollector, ConsecutiveSequencesUniConstraintCollector,
-        CountDistinctUniCollector, SumReferenceUniCollector {
+abstract class ObjectCalculatorUniCollector<A, Input_, Output_, State_>
+        implements UniConstraintCollector<A, State_, Output_> {
 
     protected final Function<? super A, ? extends Input_> mapper;
 
-    public ObjectCalculatorUniCollector(Function<? super A, ? extends Input_> mapper) {
+    ObjectCalculatorUniCollector(Function<? super A, ? extends Input_> mapper) {
         this.mapper = Objects.requireNonNull(mapper);
     }
 
-    @Override
-    public @NonNull BiFunction<Calculator_, A, Runnable> accumulator() {
-        return (calculator, a) -> {
-            final var mapped = mapper.apply(a);
-            final var saved = calculator.insert(mapped);
-            return () -> calculator.retract(saved);
-        };
-    }
+    protected abstract UniConstraintCollectorValueHandle<A> newAccumulatedValue(State_ state);
 
     @Override
-    public @Nullable Function<Calculator_, Output_> finisher() {
-        return ObjectCalculator::result;
+    public @NonNull UniConstraintCollectorAccumulator<State_, A> accumulator() {
+        return this::newAccumulatedValue;
     }
 
     @Override
@@ -41,7 +31,7 @@ abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Mapped_, 
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (ObjectCalculatorUniCollector<?, ?, ?, ?, ?>) object;
+        var that = (ObjectCalculatorUniCollector<?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

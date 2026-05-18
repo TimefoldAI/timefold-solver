@@ -1,20 +1,16 @@
 package ai.timefold.solver.core.impl.score.stream.collector.quad;
 
 import java.util.Objects;
-import java.util.function.Function;
 
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
-        implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
-        permits AverageReferenceQuadCollector, ConnectedRangesQuadConstraintCollector,
-        ConsecutiveSequencesQuadConstraintCollector, CountDistinctQuadCollector,
-        SumReferenceQuadCollector {
+abstract class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_, State_>
+        implements QuadConstraintCollector<A, B, C, D, State_, Output_> {
 
     protected final QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Input_> mapper;
 
@@ -22,18 +18,11 @@ abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_,
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull PentaFunction<Calculator_, A, B, C, D, Runnable> accumulator() {
-        return (calculator, a, b, c, d) -> {
-            final var mapped = mapper.apply(a, b, c, d);
-            final var saved = calculator.insert(mapped);
-            return () -> calculator.retract(saved);
-        };
-    }
+    protected abstract QuadConstraintCollectorValueHandle<A, B, C, D> newAccumulatedValue(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return ObjectCalculator::result;
+    public @NonNull QuadConstraintCollectorAccumulator<State_, A, B, C, D> accumulator() {
+        return this::newAccumulatedValue;
     }
 
     @Override
@@ -42,7 +31,7 @@ abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_,
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (ObjectCalculatorQuadCollector<?, ?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ObjectCalculatorQuadCollector<?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

@@ -1,35 +1,27 @@
 package ai.timefold.solver.core.impl.score.stream.collector.bi;
 
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.ToLongBiFunction;
 
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.LongCalculator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
-abstract sealed class LongCalculatorBiCollector<A, B, Output_, Calculator_ extends LongCalculator<Output_>>
-        implements BiConstraintCollector<A, B, Calculator_, Output_> permits AverageBiCollector, SumBiCollector {
-    private final ToLongBiFunction<? super A, ? super B> mapper;
+abstract class LongCalculatorBiCollector<A, B, Output_, State_>
+        implements BiConstraintCollector<A, B, State_, Output_> {
+    protected final ToLongBiFunction<? super A, ? super B> mapper;
 
-    public LongCalculatorBiCollector(ToLongBiFunction<? super A, ? super B> mapper) {
+    LongCalculatorBiCollector(ToLongBiFunction<? super A, ? super B> mapper) {
         this.mapper = mapper;
     }
 
-    @Override
-    public @NonNull TriFunction<Calculator_, A, B, Runnable> accumulator() {
-        return (calculator, a, b) -> {
-            final long mapped = mapper.applyAsLong(a, b);
-            calculator.insert(mapped);
-            return () -> calculator.retract(mapped);
-        };
-    }
+    protected abstract BiConstraintCollectorValueHandle<A, B> newAccumulatedValue(State_ state);
 
     @Override
-    public @NonNull Function<Calculator_, Output_> finisher() {
-        return LongCalculator::result;
+    public @NonNull BiConstraintCollectorAccumulator<State_, A, B> accumulator() {
+        return this::newAccumulatedValue;
     }
 
     @Override
