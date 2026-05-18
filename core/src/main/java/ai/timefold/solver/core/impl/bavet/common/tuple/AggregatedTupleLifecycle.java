@@ -26,18 +26,19 @@ public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
     @SuppressWarnings("unchecked")
     @Override
     public boolean isActive() {
-        if (upstreamCanProduceTuples) {
-            if (!downstreamFinal) {
-                // Iterating a list in update() was measurably slower in micro benchmarks, so we deal with arrays.
-                downstream = Arrays.stream(downstream)
-                        .filter(TupleLifecycle::isActive)
-                        .toArray(TupleLifecycle[]::new);
-                downstreamFinal = true;
-            }
-        } else {
-            downstream = new TupleLifecycle[0];
-            return false;
+        if (downstreamFinal) {
+            return downstream.length > 0;
         }
+        if (upstreamCanProduceTuples) {
+            // Iterating a list in update() was measurably slower in micro benchmarks, so we deal with arrays.
+            downstream = Arrays.stream(downstream)
+                    .filter(TupleLifecycle::isActive)
+                    .toArray(TupleLifecycle[]::new);
+        } else {
+            // No upstream facts, so downstream lifecycles will never be active.
+            downstream = new TupleLifecycle[0];
+        }
+        downstreamFinal = true;
         return downstream.length > 0;
     }
 
@@ -70,7 +71,7 @@ public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
 
     /**
      * Users must not modify this array. (Defensive copy avoided for performance reasons.)
-     * 
+     *
      * @return active downstream lifecycles
      */
     public TupleLifecycle<Tuple_>[] downstream() {

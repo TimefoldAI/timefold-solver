@@ -14,14 +14,14 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple>
         extends AbstractNode
         implements BavetRootNode<Object> {
 
-    private final TupleLifecycle<Tuple_> tupleLifecycle;
+    private final TupleLifecycle<Tuple_> downstreamTupleLifecycle;
     private final RecordAndReplayPropagator<Tuple_> recordAndReplayPropagator;
     private final Class<?>[] sourceClasses;
 
     protected AbstractPrecomputeNode(Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
             TupleLifecycle<Tuple_> nextNodesTupleLifecycle,
             Class<?>[] sourceClasses) {
-        this.tupleLifecycle = nextNodesTupleLifecycle;
+        this.downstreamTupleLifecycle = nextNodesTupleLifecycle;
         this.recordAndReplayPropagator = new RecordAndReplayPropagator<>(precomputeBuildHelperSupplier,
                 this::remapTuple,
                 nextNodesTupleLifecycle);
@@ -30,12 +30,12 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple>
 
     @Override
     public void afterAllInserted() {
-        tupleLifecycle.afterAllFactsInserted(recordAndReplayPropagator.isActive());
+        downstreamTupleLifecycle.afterAllFactsInserted(recordAndReplayPropagator.isActive());
     }
 
     @Override
     public boolean isActive() {
-        return recordAndReplayPropagator.isActive();
+        return recordAndReplayPropagator.isActive() && downstreamTupleLifecycle.isActive();
     }
 
     @Override

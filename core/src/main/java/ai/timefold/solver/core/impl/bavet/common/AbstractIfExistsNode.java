@@ -190,10 +190,20 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
 
     @Override
     protected boolean canProduceTuples() {
-        // Unlike other two-input nodes, ifNotExist produces tuples if its right input does not.
         // The left input must produce tuples no matter what,
         // otherwise ifExists has nothing to join with.
-        return leftCanProduceTuples;
+        if (!leftCanProduceTuples) {
+            return false;
+        } else if (shouldExist) {
+            // For the ifExists case, the right input must produce tuples as well,
+            // otherwise no left tuple can ever match.
+            return rightCanProduceTuples;
+        } else {
+            // For the ifNotExists case, if the right can not produce tuples, this node will.
+            // But even if right can produce tuples, it is not guaranteed to do so
+            // and therefore the node needs to stay active.
+            return true;
+        }
     }
 
     @Override
