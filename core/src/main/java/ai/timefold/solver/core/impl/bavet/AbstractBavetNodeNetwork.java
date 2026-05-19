@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
@@ -21,7 +21,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public abstract class AbstractBavetNodeNetwork {
 
-    private final Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap;
+    private final Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap;
 
     /**
      * Once {@code activationCheckComplete == true}, only contains nodes which are active.
@@ -36,7 +36,8 @@ public abstract class AbstractBavetNodeNetwork {
      * @param layeredNodes nodes grouped first by their layer, then by their index within the layer;
      *        propagation needs to happen in this order.
      */
-    public AbstractBavetNodeNetwork(Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap, Propagator[][] layeredNodes) {
+    public AbstractBavetNodeNetwork(Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
+            Propagator[][] layeredNodes) {
         this.declaredClassToNodeMap = declaredClassToNodeMap;
         this.layeredNodes = layeredNodes;
     }
@@ -49,7 +50,7 @@ public abstract class AbstractBavetNodeNetwork {
         return layeredNodes.length;
     }
 
-    public Stream<BavetRootNode<?>> getRootNodesAcceptingType(Class<?> factClass) {
+    public Stream<AbstractRootNode<?>> getRootNodesAcceptingType(Class<?> factClass) {
         // The node needs to match the fact, or the node needs to be applicable to the entire solution.
         // The latter is for FromSolution nodes.
         return declaredClassToNodeMap.entrySet()
@@ -67,8 +68,10 @@ public abstract class AbstractBavetNodeNetwork {
         } else { // Remove inactive nodes and settle the layers in one go.
             var initializedRootNodes = Collections.newSetFromMap(new IdentityHashMap<>());
             declaredClassToNodeMap.forEach((declaredClass, rootNodes) -> rootNodes.forEach(rootNode -> {
-                if (initializedRootNodes.add(rootNode)) { // Ensure one initialization per node.
-                    rootNode.afterAllInserted();
+                if (initializedRootNodes.add(rootNode)) {
+                    // Ensure one initialization per node.
+                    // Root nodes are filled from a session, which can always produce.
+                    rootNode.afterAllFactsInserted(true);
                 }
             }));
 

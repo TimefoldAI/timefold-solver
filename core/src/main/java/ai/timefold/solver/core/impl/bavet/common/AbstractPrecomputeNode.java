@@ -11,8 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple>
-        extends AbstractNode
-        implements BavetRootNode<Object> {
+        extends AbstractRootNode<Object> {
 
     private final TupleLifecycle<Tuple_> downstreamTupleLifecycle;
     private final RecordAndReplayPropagator<Tuple_> recordAndReplayPropagator;
@@ -29,7 +28,7 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple>
     }
 
     @Override
-    public void afterAllInserted() {
+    public void afterAllFactsInserted(boolean unused) {
         downstreamTupleLifecycle.afterAllFactsInserted(recordAndReplayPropagator.isActive());
     }
 
@@ -64,7 +63,7 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple>
     }
 
     @Override
-    public final boolean supports(BavetRootNode.LifecycleOperation lifecycleOperation) {
+    public final boolean supports(AbstractRootNode.LifecycleOperation lifecycleOperation) {
         return true;
     }
 

@@ -3,15 +3,15 @@ package ai.timefold.solver.core.impl.bavet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
-import ai.timefold.solver.core.impl.bavet.common.BavetRootNode.LifecycleOperation;
+import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode.LifecycleOperation;
 
 public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork> {
 
     protected final Network_ nodeNetwork;
-    private final Map<Class<?>, BavetRootNode<Object>[]> insertEffectiveClassToNodeArrayMap;
-    private final Map<Class<?>, BavetRootNode<Object>[]> updateEffectiveClassToNodeArrayMap;
-    private final Map<Class<?>, BavetRootNode<Object>[]> retractEffectiveClassToNodeArrayMap;
+    private final Map<Class<?>, AbstractRootNode<Object>[]> insertEffectiveClassToNodeArrayMap;
+    private final Map<Class<?>, AbstractRootNode<Object>[]> updateEffectiveClassToNodeArrayMap;
+    private final Map<Class<?>, AbstractRootNode<Object>[]> retractEffectiveClassToNodeArrayMap;
     private boolean settled = true;
 
     protected AbstractSession(Network_ nodeNetwork) {
@@ -24,13 +24,13 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
     public final void insert(Object fact) {
         settled = false;
         var factClass = fact.getClass();
-        for (var node : findNodes(factClass, BavetRootNode.LifecycleOperation.INSERT)) {
+        for (var node : findNodes(factClass, AbstractRootNode.LifecycleOperation.INSERT)) {
             node.insert(fact);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private BavetRootNode<Object>[] findNodes(Class<?> factClass, LifecycleOperation lifecycleOperation) {
+    private AbstractRootNode<Object>[] findNodes(Class<?> factClass, LifecycleOperation lifecycleOperation) {
         var effectiveClassToNodeArrayMap = switch (lifecycleOperation) {
             case INSERT -> insertEffectiveClassToNodeArrayMap;
             case UPDATE -> updateEffectiveClassToNodeArrayMap;
@@ -41,7 +41,7 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
         if (nodeArray == null) {
             nodeArray = nodeNetwork.getRootNodesAcceptingType(factClass)
                     .filter(node -> node.supports(lifecycleOperation))
-                    .toArray(BavetRootNode[]::new);
+                    .toArray(AbstractRootNode[]::new);
             effectiveClassToNodeArrayMap.put(factClass, nodeArray);
         }
         return nodeArray;
@@ -50,7 +50,7 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
     public final void update(Object fact) {
         settled = false;
         var factClass = fact.getClass();
-        for (var node : findNodes(factClass, BavetRootNode.LifecycleOperation.UPDATE)) {
+        for (var node : findNodes(factClass, AbstractRootNode.LifecycleOperation.UPDATE)) {
             node.update(fact);
         }
     }
@@ -58,7 +58,7 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
     public final void retract(Object fact) {
         settled = false;
         var factClass = fact.getClass();
-        for (var node : findNodes(factClass, BavetRootNode.LifecycleOperation.RETRACT)) {
+        for (var node : findNodes(factClass, AbstractRootNode.LifecycleOperation.RETRACT)) {
             node.retract(fact);
         }
     }

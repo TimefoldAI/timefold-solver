@@ -13,8 +13,8 @@ import java.util.function.Predicate;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
+import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetStream;
 import ai.timefold.solver.core.impl.bavet.common.BavetStreamBinaryOperation;
 import ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId;
@@ -121,7 +121,7 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
     }
 
     public ConstraintStreamsBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
-            Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap) {
+            Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap) {
         return (ConstraintStreamsBavetNodeNetwork) super.buildNodeNetwork(nodeList, declaredClassToNodeMap,
                 (classToNodeMap, layeredNodes) -> new ConstraintStreamsBavetNodeNetwork(classToNodeMap, layeredNodes,
                         constraintProfiler),

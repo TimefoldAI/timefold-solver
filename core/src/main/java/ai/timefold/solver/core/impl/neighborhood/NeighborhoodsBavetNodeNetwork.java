@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
-import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 
 import org.jspecify.annotations.NullMarked;
@@ -21,7 +21,7 @@ public final class NeighborhoodsBavetNodeNetwork extends AbstractBavetNodeNetwor
      * @param layeredNodes nodes grouped first by their layer, then by their index within the layer;
      *        propagation needs to happen in this order.
      */
-    public NeighborhoodsBavetNodeNetwork(Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap,
+    public NeighborhoodsBavetNodeNetwork(Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
             Propagator[][] layeredNodes) {
         super(declaredClassToNodeMap, layeredNodes);
     }

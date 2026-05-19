@@ -10,7 +10,7 @@ import java.util.Set;
 import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
-import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBavetNodeNetwork;
@@ -49,8 +49,8 @@ public final class DataNodeBuildHelper<Solution_>
         return Collections.unmodifiableList(datasetInstanceList);
     }
 
-    public AbstractBavetNodeNetwork  buildNodeNetwork(List<AbstractNode> nodeList,
-            Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap) {
+    public AbstractBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
+            Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap) {
         return super.buildNodeNetwork(nodeList, declaredClassToNodeMap, NeighborhoodsBavetNodeNetwork::new, null);
     }
 

@@ -115,7 +115,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
         if (!retractQueue.isEmpty() || !insertQueue.isEmpty()) {
             var precomputeBuildHelper = precomputeBuildHelperSupplier.get();
             var internalNodeNetwork = precomputeBuildHelper.getNodeNetwork();
-            var objectClassToRootNodes = new HashMap<Class<?>, List<BavetRootNode<?>>>();
+            var objectClassToRootNodes = new HashMap<Class<?>, List<AbstractRootNode<?>>>();
             var recordingTupleLifecycle = precomputeBuildHelper.getRecordingTupleLifecycle();
 
             invalidateCache();
@@ -161,10 +161,10 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static <A> List<BavetRootNode<A>> getRootNodes(Object object, AbstractBavetNodeNetwork internalNodeNetwork,
-            Map<Class<?>, List<BavetRootNode<?>>> objectClassToRootNodes) {
+    private static <A> List<AbstractRootNode<A>> getRootNodes(Object object, AbstractBavetNodeNetwork internalNodeNetwork,
+            Map<Class<?>, List<AbstractRootNode<?>>> objectClassToRootNodes) {
         return (List) objectClassToRootNodes.computeIfAbsent(object.getClass(), clazz -> {
-            var out = new ArrayList<BavetRootNode<?>>();
+            var out = new ArrayList<AbstractRootNode<?>>();
             internalNodeNetwork.getRootNodesAcceptingType(object.getClass()).forEach(out::add);
             return out;
         });
@@ -214,7 +214,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
     }
 
     private void recalculateTuples(AbstractBavetNodeNetwork internalNodeNetwork,
-            Map<Class<?>, List<BavetRootNode<?>>> classToRootNodeList,
+            Map<Class<?>, List<AbstractRootNode<?>>> classToRootNodeList,
             RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle) {
         var internalTupleToOutputTupleMap =
                 new IdentityHashMap<Tuple_, Tuple_>(seenEntitySet.size() + seenFactSet.size());
@@ -225,7 +225,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
                 // Do a fake update on the object and settle the network; this will update precisely the
                 // tuples mapped to this node, which will then be recorded
                 classToRootNodeList.get(invalidated.getClass())
-                        .forEach(node -> ((BavetRootNode<Object>) node).update(invalidated));
+                        .forEach(node -> ((AbstractRootNode<Object>) node).update(invalidated));
                 internalNodeNetwork.settle();
             }
             if (mappedTuples.isEmpty()) {

@@ -4,8 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
-import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.StaticPropagationQueue;
 import ai.timefold.solver.core.impl.bavet.common.StreamKind;
@@ -26,8 +25,7 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public abstract sealed class AbstractForEachUniNode<A>
-        extends AbstractNode
-        implements BavetRootNode<A>
+        extends AbstractRootNode<A>
         permits ForEachFilteredUniNode, ForEachUnfilteredUniNode {
 
     private final Class<A> forEachClass;

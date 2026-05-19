@@ -55,7 +55,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
         reversedNodeList.add(node);
         node.addLocationSet(creator.getLocationSet());
         nodeCreatorMap.put(node, creator);
-        if (!(node instanceof BavetRootNode<?>)) {
+        if (!(node instanceof AbstractRootNode<?>)) {
             if (parent == null) {
                 throw new IllegalStateException("Impossible state: The node (%s) has no parent (%s).".formatted(node, parent));
             }
@@ -207,25 +207,27 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     @SuppressWarnings("unchecked")
     private static <Stream_ extends BavetStream> long determineLayerIndex(AbstractNode node,
             AbstractNodeBuildHelper<Stream_> buildHelper) {
-        if (node instanceof BavetRootNode<?>) { // Root nodes, and only they, are in layer 0.
-            return 0;
-        } else if (node instanceof AbstractTwoInputNode<?, ?> joinNode) {
-            var nodeCreator = (BavetStreamBinaryOperation<?>) buildHelper.getNodeCreatingStream(joinNode);
-            var leftParent = (Stream_) nodeCreator.getLeftParent();
-            var rightParent = (Stream_) nodeCreator.getRightParent();
-            var leftParentNode = buildHelper.findParentNode(leftParent);
-            var rightParentNode = buildHelper.findParentNode(rightParent);
-            return Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
-        } else {
-            var nodeCreator = buildHelper.getNodeCreatingStream(node);
-            var parentNode = buildHelper.findParentNode(nodeCreator.getParent());
-            return parentNode.getLayerIndex() + 1;
-        }
+        return switch (node) {
+            case AbstractRootNode<?> rootNode -> 0L; // Root nodes, and only they, are in layer 0.
+            case AbstractTwoInputNode<?, ?> twoInputNode -> { // Two-input nodes must sit above both inputs.
+                var nodeCreator = (BavetStreamBinaryOperation<?>) buildHelper.getNodeCreatingStream(twoInputNode);
+                var leftParent = (Stream_) nodeCreator.getLeftParent();
+                var rightParent = (Stream_) nodeCreator.getRightParent();
+                var leftParentNode = buildHelper.findParentNode(leftParent);
+                var rightParentNode = buildHelper.findParentNode(rightParent);
+                yield Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
+            }
+            default -> { // Every other node sits above its parent.
+                var nodeCreator = buildHelper.getNodeCreatingStream(node);
+                var parentNode = buildHelper.findParentNode(nodeCreator.getParent());
+                yield parentNode.getLayerIndex() + 1;
+            }
+        };
     }
 
     protected AbstractBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
-            Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap,
-            BiFunction<Map<Class<?>, List<BavetRootNode<?>>>, Propagator[][], AbstractBavetNodeNetwork> nodeConstructor,
+            Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
+            BiFunction<Map<Class<?>, List<AbstractRootNode<?>>>, Propagator[][], AbstractBavetNodeNetwork> nodeConstructor,
             @Nullable Function<AbstractNode, Propagator> propagatorFunction) {
         var layerMap = new TreeMap<Long, List<Propagator>>();
         for (var node : nodeList) {

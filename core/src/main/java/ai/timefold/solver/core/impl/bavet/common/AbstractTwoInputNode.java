@@ -5,7 +5,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
-public abstract class AbstractTwoInputNode<LeftTuple_ extends Tuple, RightTuple_ extends Tuple>
+public abstract non-sealed class AbstractTwoInputNode<LeftTuple_ extends Tuple, RightTuple_ extends Tuple>
         extends AbstractNode
         implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<RightTuple_> {
 

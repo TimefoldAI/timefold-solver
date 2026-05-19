@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
-import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 
@@ -30,7 +30,7 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
      * @param layeredNodes nodes grouped first by their layer, then by their index within the layer;
      *        propagation needs to happen in this order.
      */
-    public ConstraintStreamsBavetNodeNetwork(Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap,
+    public ConstraintStreamsBavetNodeNetwork(Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
             Propagator[][] layeredNodes, @Nullable InnerConstraintProfiler constraintProfiler) {
         super(declaredClassToNodeMap, layeredNodes);
         this.constraintProfiler = constraintProfiler;

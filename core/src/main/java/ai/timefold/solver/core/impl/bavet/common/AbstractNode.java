@@ -10,10 +10,15 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
+ * Every node must be a child of one of the permitted extensions of this class.
+ * Direct extensions of this class may fail in unexpected places,
+ * as the specific type will be switched over.
+ *
  * @see PropagationQueue Description of the propagation mechanism.
  */
 @NullMarked
-public abstract class AbstractNode {
+public sealed abstract class AbstractNode
+        permits AbstractRootNode, AbstractSingleInputNode, AbstractTwoInputNode {
 
     private long id;
     private long layerIndex = -1;
