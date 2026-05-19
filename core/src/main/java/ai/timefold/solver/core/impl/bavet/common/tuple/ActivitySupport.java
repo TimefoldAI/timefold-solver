@@ -1,9 +1,33 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple;
 
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.Scorer;
 
+/**
+ * When a Bavet session is created, some nodes can become inactive.
+ * An inactive node cannot be triggered during a session as it cannot produce output.
+ * Processing inserts, updates and retracts in inactive nodes is possibly expensive.
+ * This interface establishes a protocol through which nodes can signal at runtime
+ * that they are inactive, so that the session can ignore them.
+ * <p>
+ * The pattern of interaction is as follows:
+ * <ul>
+ *     <li>The session will first call {@link #afterAllFactsInserted(boolean)} on every {@link AbstractRootNode}.
+ *     The nodes will propagate this call downstream.
+ *     Each downstream node must propagate the call further downstream,
+ *     until a {@link Scorer} is reached. (In case of Constraint Streams.)</li>
+ *     <li>Then the session will call {@link #isActive()} on every single node,
+ *     and entirely remove deactivated nodes from propagation.
+ *     Each node makes its activity decision independently,
+ *     but may ask its downstream nodes.</li>
+ *     <li>Once these two steps have been executed,
+ *     no method of this interface will ever be called again
+ *     for the duration of the session.</li>
+ * </ul>
+ */
 public interface ActivitySupport {
 
     /**
@@ -47,8 +71,8 @@ public interface ActivitySupport {
      * (Such as forEach(MyClass), when no MyClass instances were inserted.)</li>
      * <li>Its downstream tuples are inactive.
      * (A forEach() itself may be able to produce a tuple,
-     * but a join downstream cannot, because its other side supplies no tuples.
-     * In this case, the left side must be inactivated as well.)
+     * but a join downstream cannot, because its other side cannot produce tuples.
+     * In this case, the left side must be deactivated as well.)
      * </li>
      * </ul>
      *

@@ -4,11 +4,6 @@ public record ProfilingPropagator(InnerConstraintProfiler profiler, ConstraintNo
         Propagator delegate) implements Propagator {
 
     @Override
-    public boolean isActive() {
-        return delegate.isActive();
-    }
-
-    @Override
     public void propagateRetracts() {
         profiler.measure(profileId,
                 InnerConstraintProfiler.Operation.RETRACT,

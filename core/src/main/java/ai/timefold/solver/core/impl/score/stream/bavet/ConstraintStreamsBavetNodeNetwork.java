@@ -31,13 +31,14 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
             Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
             Map<BavetConstraint<?>, Scorer<?>> constraintToScorerMap, Function<AbstractNode, Propagator> propagatorFunction,
             @Nullable InnerConstraintProfiler constraintProfiler, boolean scoreDirectorDerived) {
-        var layeredNodes = AbstractBavetNodeNetwork.buildLayeredNodes(nodeList, propagatorFunction);
+        var layeredNodes = AbstractBavetNodeNetwork.buildLayeredNodes(nodeList);
         return new ConstraintStreamsBavetNodeNetwork(declaredClassToNodeMap, constraintToScorerMap, layeredNodes,
-                constraintProfiler, scoreDirectorDerived);
+                propagatorFunction, constraintProfiler, scoreDirectorDerived);
     }
 
     public static final ConstraintStreamsBavetNodeNetwork EMPTY =
-            new ConstraintStreamsBavetNodeNetwork(Map.of(), Map.of(), new Propagator[0][0], null, true);
+            new ConstraintStreamsBavetNodeNetwork(Map.of(), Map.of(), new AbstractNode[0][0], AbstractNode::getPropagator, null,
+                    true);
 
     private final Map<BavetConstraint<?>, Scorer<?>> constraintToScorerMap;
     private final @Nullable InnerConstraintProfiler constraintProfiler;
@@ -49,11 +50,13 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
      *        root nodes, layer index 0.
      * @param layeredNodes nodes grouped first by their layer, then by their index within the layer;
      *        propagation needs to happen in this order.
+     * @param propagatorFunction function to get the propagator for a given node
      */
     private ConstraintStreamsBavetNodeNetwork(Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
-            Map<BavetConstraint<?>, Scorer<?>> constraintToScorerMap, Propagator[][] layeredNodes,
-            @Nullable InnerConstraintProfiler constraintProfiler, boolean scoreDirectorDerived) {
-        super(declaredClassToNodeMap, layeredNodes);
+            Map<BavetConstraint<?>, Scorer<?>> constraintToScorerMap, AbstractNode[][] layeredNodes,
+            Function<AbstractNode, Propagator> propagatorFunction, @Nullable InnerConstraintProfiler constraintProfiler,
+            boolean scoreDirectorDerived) {
+        super(declaredClassToNodeMap, layeredNodes, propagatorFunction);
         this.constraintToScorerMap = constraintToScorerMap;
         this.constraintProfiler = constraintProfiler;
         this.scoreDirectorDerived = scoreDirectorDerived;
@@ -62,7 +65,7 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
     @Override
     public void settle() {
         super.settle();
-        if (!scoreDirectorDerived && !printedInactiveConstraints && activationCheckComplete) {
+        if (!scoreDirectorDerived && !printedInactiveConstraints && isActivationCheckComplete()) {
             printedInactiveConstraints = true;
             var substring = constraintToScorerMap.entrySet().stream()
                     .filter(entry -> !entry.getValue().isActive())

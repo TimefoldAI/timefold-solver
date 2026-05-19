@@ -29,12 +29,12 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple>
 
     @Override
     public void afterAllFactsInserted(boolean unused) {
-        downstreamTupleLifecycle.afterAllFactsInserted(recordAndReplayPropagator.isActive());
+        downstreamTupleLifecycle.afterAllFactsInserted(recordAndReplayPropagator.canProduceTuples());
     }
 
     @Override
     public boolean isActive() {
-        return recordAndReplayPropagator.isActive() && downstreamTupleLifecycle.isActive();
+        return recordAndReplayPropagator.canProduceTuples() && downstreamTupleLifecycle.isActive();
     }
 
     @Override

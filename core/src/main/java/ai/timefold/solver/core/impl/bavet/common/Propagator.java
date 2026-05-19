@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 
 /**
@@ -40,16 +38,8 @@ import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
  *
  * @see PropagationQueue More information about propagation.
  */
-public sealed interface Propagator permits ProfilingPropagator, PropagationQueue, RecordAndReplayPropagator {
-
-    /**
-     * As defined by {@link TupleLifecycle#isActive()}.
-     * A propagator will typically be active if its downstream (the target of propagation) is active.
-     * {@link AbstractBavetNodeNetwork#settle()} will use this method to decide
-     * whether to include this propagator's {@link AbstractNode node} in propagation,
-     * not any of the downstream methods.
-     */
-    boolean isActive();
+public sealed interface Propagator
+        permits ProfilingPropagator, PropagationQueue, RecordAndReplayPropagator {
 
     /**
      * Starts the propagation event. Must be followed by {@link #propagateUpdates()}.

@@ -51,11 +51,6 @@ final class DynamicPropagationQueue<Tuple_ extends Tuple, Carrier_ extends Abstr
     }
 
     @Override
-    public boolean isActive() {
-        return nextNodesTupleLifecycle.isActive();
-    }
-
-    @Override
     public void insert(Carrier_ carrier) {
         var positionInDirtyList = carrier.positionInDirtyList;
         if (positionInDirtyList < 0) {

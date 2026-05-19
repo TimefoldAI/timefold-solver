@@ -76,8 +76,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
         this(precomputeBuildHelperSupplier, internalTupleToOutputTupleMapper, nextNodesTupleLifecycle, 1000);
     }
 
-    @Override
-    public boolean isActive() {
+    public boolean canProduceTuples() {
         return !objectToOutputTuplesMap.isEmpty() // Tuples were produced.
                 || !insertQueue.isEmpty(); // Tuples will be produced.
     }

@@ -14,10 +14,13 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractSingleInputNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractTwoInputNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.ActivitySupport;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents Bavet's network of nodes, specific to a particular session.
@@ -25,28 +28,29 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public abstract class AbstractBavetNodeNetwork {
 
-    protected static Propagator[][] buildLayeredNodes(List<AbstractNode> nodeList,
-            Function<AbstractNode, Propagator> propagatorFunction) {
-        var layerMap = new TreeMap<Long, List<Propagator>>();
+    protected static AbstractNode[][] buildLayeredNodes(List<AbstractNode> nodeList) {
+        var layerMap = new TreeMap<Long, List<AbstractNode>>();
         nodeList.forEach(node -> layerMap.computeIfAbsent(node.getLayerIndex(), unused -> new ArrayList<>())
-                .add(propagatorFunction.apply(node)));
+                .add(node));
         var layerCount = layerMap.size();
-        var layeredNodes = new Propagator[layerCount][];
+        var layeredNodes = new AbstractNode[layerCount][];
         for (var i = 0; i < layerCount; i++) {
             var layer = layerMap.get((long) i);
-            layeredNodes[i] = layer.toArray(new Propagator[0]);
+            layeredNodes[i] = layer.toArray(new AbstractNode[0]);
         }
         return layeredNodes;
     }
 
     private final Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap;
 
+    private final AbstractNode[][] layeredNodes;
+    private final Function<AbstractNode, Propagator> propagatorFunction;
     /**
-     * Once {@code activationCheckComplete == true}, only contains nodes which are active.
+     * A subset of {@code layeredNodes}.
+     * Once non-null, only contains propagators of nodes which are active.
      * See {@link ActivitySupport#isActive()} for details.
      */
-    private Propagator[][] layeredNodes;
-    protected boolean activationCheckComplete = false;
+    private Propagator @Nullable [][] layeredActivePropagators;
 
     /**
      * @param declaredClassToNodeMap starting nodes, one for each class used in the constraints;
@@ -55,9 +59,10 @@ public abstract class AbstractBavetNodeNetwork {
      *        propagation needs to happen in this order.
      */
     public AbstractBavetNodeNetwork(Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
-            Propagator[][] layeredNodes) {
+            AbstractNode[][] layeredNodes, Function<AbstractNode, Propagator> propagatorFunction) {
         this.declaredClassToNodeMap = declaredClassToNodeMap;
         this.layeredNodes = layeredNodes;
+        this.propagatorFunction = propagatorFunction;
     }
 
     public int forEachNodeCount() {
@@ -74,11 +79,8 @@ public abstract class AbstractBavetNodeNetwork {
     }
 
     public void settle() {
-        if (activationCheckComplete) { // Simplified loop when the layers were already trimmed.
-            for (var layer : layeredNodes) {
-                settleLayer(layer);
-            }
-        } else { // Remove inactive nodes and settle the layers in one go.
+        if (layeredActivePropagators == null) {
+            // Remove inactive nodes and settle the layers in one go.
             var initializedRootNodes = Collections.newSetFromMap(new IdentityHashMap<>());
             declaredClassToNodeMap.forEach((declaredClass, rootNodes) -> rootNodes.forEach(rootNode -> {
                 if (initializedRootNodes.add(rootNode)) {
@@ -88,15 +90,27 @@ public abstract class AbstractBavetNodeNetwork {
                 }
             }));
 
-            layeredNodes = Arrays.stream(layeredNodes)
+            layeredActivePropagators = Arrays.stream(layeredNodes)
                     .map(layer -> Arrays.stream(layer)
-                            .filter(Propagator::isActive)
+                            .filter(s -> switch (s) {
+                                case ActivitySupport activityEnabled -> activityEnabled.isActive();
+                                case AbstractTwoInputNode<?, ?> twoInputNode -> twoInputNode.isActive();
+                            })
+                            .map(propagatorFunction)
                             .toArray(Propagator[]::new))
                     .filter(layer -> layer.length > 0)
                     .peek(AbstractBavetNodeNetwork::settleLayer)
                     .toArray(Propagator[][]::new);
-            activationCheckComplete = true;
+            return;
         }
+        // Simplified loop when the layers were already trimmed.
+        for (var layer : layeredActivePropagators) {
+            settleLayer(layer);
+        }
+    }
+
+    protected boolean isActivationCheckComplete() {
+        return layeredActivePropagators != null;
     }
 
     private static void settleLayer(Propagator[] nodesInLayer) {
