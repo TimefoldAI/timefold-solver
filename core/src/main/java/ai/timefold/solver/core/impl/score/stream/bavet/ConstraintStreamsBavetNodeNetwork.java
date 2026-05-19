@@ -59,7 +59,8 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
     @Override
     public void settle() {
         super.settle();
-        if (!scoreDirectorDerived && activationCheckComplete && !printedInactiveConstraints) {
+        if (!scoreDirectorDerived  && !printedInactiveConstraints && activationCheckComplete) {
+            printedInactiveConstraints = true;
             var substring = constraintToScorerMap.entrySet().stream()
                     .filter(entry -> !entry.getValue().isActive())
                     .map(entry -> "  Constraint (%s) with weight set to (%s).".formatted(entry.getKey().getConstraintRef(), entry.getValue().getWeight()))
@@ -71,7 +72,6 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
                     .append(System.lineSeparator())
                     .append(substring);
             LOGGER.debug(result.toString());
-            printedInactiveConstraints = true;
         }
     }
 
