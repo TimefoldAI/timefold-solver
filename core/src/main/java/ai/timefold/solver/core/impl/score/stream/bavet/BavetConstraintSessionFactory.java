@@ -116,7 +116,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             LOGGER.atLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL).log(constraintWeightString.toString().trim());
         }
         return new BavetConstraintSession<>(scoreInliner,
-                buildNodeNetwork(workingSolution, consistencyTracker, constraintStreamSet, scoreInliner, constraintProfiler, scoreDirectorDerived));
+                buildNodeNetwork(workingSolution, consistencyTracker, constraintStreamSet, scoreInliner, constraintProfiler,
+                        scoreDirectorDerived));
     }
 
     private ConstraintStreamsBavetNodeNetwork buildNodeNetwork(Solution_ workingSolution,
@@ -161,7 +162,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                     buildHelper::getNodeCreatingStream, buildHelper::findParentNode);
         }
 
-        return buildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap, (Map) constraintToScorerMap, scoreDirectorDerived);
+        return buildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap, (Map) constraintToScorerMap,
+                scoreDirectorDerived);
     }
 
 }

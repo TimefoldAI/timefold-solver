@@ -6,14 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
@@ -95,9 +91,8 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
         var tupleLifecycles = streamList.stream().filter(this::isStreamActive).map(s -> getTupleLifecycle(s, tupleLifecycleMap))
                 .toArray(TupleLifecycle[]::new);
         return switch (tupleLifecycles.length) {
-            case 0 ->
-                throw new IllegalStateException(
-                        "Impossible state: None of the streamList (%s) are active.".formatted(streamList));
+            case 0 -> throw new IllegalStateException(
+                    "Impossible state: None of the streamList (%s) are active.".formatted(streamList));
             case 1 -> tupleLifecycles[0];
             default -> TupleLifecycle.aggregate(tupleLifecycles);
         };
@@ -208,7 +203,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     private static <Stream_ extends BavetStream> long determineLayerIndex(AbstractNode node,
             AbstractNodeBuildHelper<Stream_> buildHelper) {
         return switch (node) {
-            case AbstractRootNode<?> rootNode -> 0L; // Root nodes, and only they, are in layer 0.
+            case AbstractRootNode<?> ignored -> 0L; // Root nodes, and only they, are in layer 0.
             case AbstractTwoInputNode<?, ?> twoInputNode -> { // Two-input nodes must sit above both inputs.
                 var nodeCreator = (BavetStreamBinaryOperation<?>) buildHelper.getNodeCreatingStream(twoInputNode);
                 var leftParent = (Stream_) nodeCreator.getLeftParent();
@@ -223,25 +218,6 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
                 yield parentNode.getLayerIndex() + 1;
             }
         };
-    }
-
-    protected AbstractBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
-            Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
-            BiFunction<Map<Class<?>, List<AbstractRootNode<?>>>, Propagator[][], AbstractBavetNodeNetwork> nodeConstructor,
-            @Nullable Function<AbstractNode, Propagator> propagatorFunction) {
-        var layerMap = new TreeMap<Long, List<Propagator>>();
-        for (var node : nodeList) {
-            var layer = node.getLayerIndex();
-            var propagator = propagatorFunction == null ? node.getPropagator() : propagatorFunction.apply(node);
-            layerMap.computeIfAbsent(layer, k -> new ArrayList<>()).add(propagator);
-        }
-        var layerCount = layerMap.size();
-        var layeredNodes = new Propagator[layerCount][];
-        for (var i = 0; i < layerCount; i++) {
-            var layer = layerMap.get((long) i);
-            layeredNodes[i] = layer.toArray(new Propagator[0]);
-        }
-        return nodeConstructor.apply(declaredClassToNodeMap, layeredNodes);
     }
 
 }

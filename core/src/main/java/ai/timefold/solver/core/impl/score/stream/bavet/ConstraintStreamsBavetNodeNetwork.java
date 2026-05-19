@@ -11,7 +11,6 @@ import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.Scorer;
-import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -28,9 +27,13 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConstraintStreamsBavetNodeNetwork.class);
 
-    public static ConstraintStreamsBavetNodeNetwork of(List<AbstractNode> nodeList, Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap, Map<BavetConstraint<?>, Scorer<?>> constraintToScorerMap, Function<AbstractNode, Propagator> propagatorFunction, @Nullable InnerConstraintProfiler constraintProfiler, boolean scoreDirectorDerived) {
+    public static ConstraintStreamsBavetNodeNetwork of(List<AbstractNode> nodeList,
+            Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
+            Map<BavetConstraint<?>, Scorer<?>> constraintToScorerMap, Function<AbstractNode, Propagator> propagatorFunction,
+            @Nullable InnerConstraintProfiler constraintProfiler, boolean scoreDirectorDerived) {
         var layeredNodes = AbstractBavetNodeNetwork.buildLayeredNodes(nodeList, propagatorFunction);
-        return new ConstraintStreamsBavetNodeNetwork(declaredClassToNodeMap, constraintToScorerMap, layeredNodes, constraintProfiler, scoreDirectorDerived);
+        return new ConstraintStreamsBavetNodeNetwork(declaredClassToNodeMap, constraintToScorerMap, layeredNodes,
+                constraintProfiler, scoreDirectorDerived);
     }
 
     public static final ConstraintStreamsBavetNodeNetwork EMPTY =
@@ -48,8 +51,8 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
      *        propagation needs to happen in this order.
      */
     private ConstraintStreamsBavetNodeNetwork(Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
-                                              Map<BavetConstraint<?>, Scorer<?>> constraintToScorerMap, Propagator[][] layeredNodes,
-                                              @Nullable InnerConstraintProfiler constraintProfiler, boolean scoreDirectorDerived) {
+            Map<BavetConstraint<?>, Scorer<?>> constraintToScorerMap, Propagator[][] layeredNodes,
+            @Nullable InnerConstraintProfiler constraintProfiler, boolean scoreDirectorDerived) {
         super(declaredClassToNodeMap, layeredNodes);
         this.constraintToScorerMap = constraintToScorerMap;
         this.constraintProfiler = constraintProfiler;
@@ -59,11 +62,12 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
     @Override
     public void settle() {
         super.settle();
-        if (!scoreDirectorDerived  && !printedInactiveConstraints && activationCheckComplete) {
+        if (!scoreDirectorDerived && !printedInactiveConstraints && activationCheckComplete) {
             printedInactiveConstraints = true;
             var substring = constraintToScorerMap.entrySet().stream()
                     .filter(entry -> !entry.getValue().isActive())
-                    .map(entry -> "  Constraint (%s) with weight set to (%s).".formatted(entry.getKey().getConstraintRef(), entry.getValue().getWeight()))
+                    .map(entry -> "  Constraint (%s) with weight set to (%s).".formatted(entry.getKey().getConstraintRef(),
+                            entry.getValue().getWeight()))
                     .collect(Collectors.joining(System.lineSeparator()));
             if (substring.isEmpty()) {
                 return;

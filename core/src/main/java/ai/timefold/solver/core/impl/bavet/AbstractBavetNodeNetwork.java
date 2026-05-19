@@ -15,7 +15,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.ActivitySupport;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -43,7 +43,7 @@ public abstract class AbstractBavetNodeNetwork {
 
     /**
      * Once {@code activationCheckComplete == true}, only contains nodes which are active.
-     * See {@link TupleLifecycle#isActive()} for details.
+     * See {@link ActivitySupport#isActive()} for details.
      */
     private Propagator[][] layeredNodes;
     protected boolean activationCheckComplete = false;
@@ -64,10 +64,6 @@ public abstract class AbstractBavetNodeNetwork {
         return declaredClassToNodeMap.size();
     }
 
-    public int layerCount() {
-        return layeredNodes.length;
-    }
-
     public Stream<AbstractRootNode<?>> getRootNodesAcceptingType(Class<?> factClass) {
         // The node needs to match the fact, or the node needs to be applicable to the entire solution.
         // The latter is for FromSolution nodes.
@@ -78,10 +74,9 @@ public abstract class AbstractBavetNodeNetwork {
     }
 
     public void settle() {
-        var layerCount = layerCount();
         if (activationCheckComplete) { // Simplified loop when the layers were already trimmed.
-            for (var layerIndex = 0; layerIndex < layerCount; layerIndex++) {
-                settleLayer(layeredNodes[layerIndex]);
+            for (var layer : layeredNodes) {
+                settleLayer(layer);
             }
         } else { // Remove inactive nodes and settle the layers in one go.
             var initializedRootNodes = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -93,35 +88,29 @@ public abstract class AbstractBavetNodeNetwork {
                 }
             }));
 
-            var activeLayeredNodes = new Propagator[layerCount][];
-            for (var layerIndex = 0; layerIndex < layerCount; layerIndex++) {
-                var activePropagators = Arrays.stream(layeredNodes[layerIndex])
-                        .filter(Propagator::isActive)
-                        .toArray(Propagator[]::new);
-                activeLayeredNodes[layerIndex] = activePropagators;
-                settleLayer(activePropagators);
-            }
-            layeredNodes = activeLayeredNodes;
+            layeredNodes = Arrays.stream(layeredNodes)
+                    .map(layer -> Arrays.stream(layer)
+                            .filter(Propagator::isActive)
+                            .toArray(Propagator[]::new))
+                    .filter(layer -> layer.length > 0)
+                    .peek(AbstractBavetNodeNetwork::settleLayer)
+                    .toArray(Propagator[][]::new);
             activationCheckComplete = true;
         }
     }
 
     private static void settleLayer(Propagator[] nodesInLayer) {
-        switch (nodesInLayer.length) {
-            case 0 -> {
-                // No nodes in this layer, nothing to do.
+        if (nodesInLayer.length == 1) { // Avoid iteration.
+            nodesInLayer[0].propagateEverything();
+        } else {
+            for (var node : nodesInLayer) {
+                node.propagateRetracts();
             }
-            case 1 -> nodesInLayer[0].propagateEverything(); // Avoid iteration.
-            default -> {
-                for (var node : nodesInLayer) {
-                    node.propagateRetracts();
-                }
-                for (var node : nodesInLayer) {
-                    node.propagateUpdates();
-                }
-                for (var node : nodesInLayer) {
-                    node.propagateInserts();
-                }
+            for (var node : nodesInLayer) {
+                node.propagateUpdates();
+            }
+            for (var node : nodesInLayer) {
+                node.propagateInserts();
             }
         }
     }
