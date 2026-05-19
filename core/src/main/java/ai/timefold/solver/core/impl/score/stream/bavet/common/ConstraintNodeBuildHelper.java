@@ -122,23 +122,20 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
 
     public ConstraintStreamsBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
             Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap) {
-        return (ConstraintStreamsBavetNodeNetwork) super.buildNodeNetwork(nodeList, declaredClassToNodeMap,
-                (classToNodeMap, layeredNodes) -> new ConstraintStreamsBavetNodeNetwork(classToNodeMap, layeredNodes,
-                        constraintProfiler),
-                node -> {
-                    if (constraintProfiler == null) {
-                        return node.getPropagator();
-                    }
-                    var profileKey = nextLifecycleProfilingId++;
-                    var profileId = new ConstraintNodeProfileId(profileKey, node.getStreamKind(),
-                            ConstraintNodeProfileId.Qualifier.NODE, node.getLocationSet());
-                    constraintProfiler.register(profileId);
-                    var stream = getNodeCreator(node);
-                    for (var affectedSet : streamToProfileIdSets.get(stream)) {
-                        affectedSet.add(profileId);
-                    }
-                    return new ProfilingPropagator(constraintProfiler, profileId, node.getPropagator());
-                });
+        return ConstraintStreamsBavetNodeNetwork.of(nodeList, declaredClassToNodeMap, node -> {
+            if (constraintProfiler == null) {
+                return node.getPropagator();
+            }
+            var profileKey = nextLifecycleProfilingId++;
+            var profileId = new ConstraintNodeProfileId(profileKey, node.getStreamKind(),
+                    ConstraintNodeProfileId.Qualifier.NODE, node.getLocationSet());
+            constraintProfiler.register(profileId);
+            var stream = getNodeCreator(node);
+            for (var affectedSet : streamToProfileIdSets.get(stream)) {
+                affectedSet.add(profileId);
+            }
+            return new ProfilingPropagator(constraintProfiler, profileId, node.getPropagator());
+        }, constraintProfiler);
     }
 
 }

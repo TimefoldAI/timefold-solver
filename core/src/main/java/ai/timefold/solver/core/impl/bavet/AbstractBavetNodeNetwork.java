@@ -1,14 +1,18 @@
 package ai.timefold.solver.core.impl.bavet;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -20,6 +24,20 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public abstract class AbstractBavetNodeNetwork {
+
+    protected static Propagator[][] buildLayeredNodes(List<AbstractNode> nodeList,
+            Function<AbstractNode, Propagator> propagatorFunction) {
+        var layerMap = new TreeMap<Long, List<Propagator>>();
+        nodeList.forEach(node -> layerMap.computeIfAbsent(node.getLayerIndex(), unused -> new ArrayList<>())
+                .add(propagatorFunction.apply(node)));
+        var layerCount = layerMap.size();
+        var layeredNodes = new Propagator[layerCount][];
+        for (var i = 0; i < layerCount; i++) {
+            var layer = layerMap.get((long) i);
+            layeredNodes[i] = layer.toArray(new Propagator[0]);
+        }
+        return layeredNodes;
+    }
 
     private final Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap;
 
