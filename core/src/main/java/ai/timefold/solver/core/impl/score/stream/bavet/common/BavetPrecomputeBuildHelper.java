@@ -79,7 +79,7 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
                     }
                 });
 
-        this.nodeNetwork = buildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap);
+        this.nodeNetwork = buildHelper.buildPrecomputeNodeNetwork(nodeList, declaredClassToNodeMap);
         this.recordingTupleLifecycle =
                 (RecordingTupleLifecycle<Tuple_>) buildHelper
                         .getAggregatedTupleLifecycle(List.of(recordingPrecomputeConstraintStream));

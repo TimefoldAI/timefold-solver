@@ -46,7 +46,7 @@ public abstract class AbstractBavetNodeNetwork {
      * See {@link TupleLifecycle#isActive()} for details.
      */
     private Propagator[][] layeredNodes;
-    private boolean activationCheckComplete = false;
+    protected boolean activationCheckComplete = false;
 
     /**
      * @param declaredClassToNodeMap starting nodes, one for each class used in the constraints;

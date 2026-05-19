@@ -26,6 +26,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
+import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.ConstraintStreamsBavetNodeNetwork;
 import ai.timefold.solver.core.impl.score.stream.common.ForEachFilteringCriteria;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
@@ -42,12 +43,13 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
     private final @Nullable InnerConstraintProfiler constraintProfiler;
     private final Map<EntityDescriptor<Solution_>, Map<ForEachFilteringCriteria, @Nullable Predicate<Object>>> entityDescriptorToForEachCriteriaToPredicateMap;
     private final Map<BavetAbstractConstraintStream<Solution_>, List<Set<ConstraintNodeProfileId>>> streamToProfileIdSets;
+    private final Map<BavetScoringConstraintStream<Solution_>, Scorer<?>> streamToScorers = new HashMap<>();
 
     private long nextLifecycleProfilingId = 0;
 
     public ConstraintNodeBuildHelper(ConsistencyTracker<Solution_> consistencyTracker,
-            Set<BavetAbstractConstraintStream<Solution_>> activeStreamSet, AbstractScoreInliner<Score_> scoreInliner,
-            @Nullable InnerConstraintProfiler profiler) {
+                                     Set<BavetAbstractConstraintStream<Solution_>> activeStreamSet, AbstractScoreInliner<Score_> scoreInliner,
+                                     @Nullable InnerConstraintProfiler profiler) {
         super(activeStreamSet);
         this.consistencyTracker = consistencyTracker;
         this.scoreInliner = scoreInliner;
@@ -58,7 +60,7 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
 
     @Override
     public <Tuple_ extends Tuple> void putInsertUpdateRetract(BavetAbstractConstraintStream<Solution_> stream,
-            TupleLifecycle<Tuple_> tupleLifecycle) {
+                                                              TupleLifecycle<Tuple_> tupleLifecycle) {
         if (constraintProfiler != null) {
             var out = TupleLifecycle.profiling(constraintProfiler, nextLifecycleProfilingId, stream, tupleLifecycle);
             super.putInsertUpdateRetract(stream, out);
@@ -91,10 +93,13 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
         } else {
             super.putInsertUpdateRetract(stream, tupleLifecycle);
         }
+        if (tupleLifecycle instanceof Scorer<?> scorer) {
+            streamToScorers.put((BavetScoringConstraintStream<Solution_>) stream, scorer);
+        }
     }
 
     private void updateConstraintProfileIdSet(BavetAbstractConstraintStream<Solution_> stream,
-            TupleLifecycle<?> tupleLifecycle) {
+                                              TupleLifecycle<?> tupleLifecycle) {
         if (tupleLifecycle instanceof ProfilingTupleLifecycle<?> profilingTupleLifecycle) {
             var affectedSets = streamToProfileIdSets.getOrDefault(stream, Collections.emptyList());
             for (var affectedSet : affectedSets) {
@@ -111,6 +116,10 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
         return scoreInliner;
     }
 
+    public Scorer<?> getScorer(BavetScoringConstraintStream<Solution_> stream) {
+        return streamToScorers.get(stream);
+    }
+
     @SuppressWarnings("unchecked")
     public <A> @Nullable Predicate<A> getForEachPredicateForEntityDescriptorAndCriteria(
             EntityDescriptor<Solution_> entityDescriptor, ForEachFilteringCriteria criteria) {
@@ -121,8 +130,9 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
     }
 
     public ConstraintStreamsBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
-            Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap) {
-        return ConstraintStreamsBavetNodeNetwork.of(nodeList, declaredClassToNodeMap, node -> {
+                                                              Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
+                                                              Map<BavetConstraint<Solution_>, Scorer<?>> constraintToScorerMap, boolean scoreDirectorDerived) {
+        return ConstraintStreamsBavetNodeNetwork.of(nodeList, declaredClassToNodeMap, (Map) constraintToScorerMap, node -> {
             if (constraintProfiler == null) {
                 return node.getPropagator();
             }
@@ -135,7 +145,11 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
                 affectedSet.add(profileId);
             }
             return new ProfilingPropagator(constraintProfiler, profileId, node.getPropagator());
-        }, constraintProfiler);
+        }, constraintProfiler, scoreDirectorDerived);
+    }
+
+    public ConstraintStreamsBavetNodeNetwork buildPrecomputeNodeNetwork(List<AbstractNode> nodeList, Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap) {
+        return buildNodeNetwork(nodeList, declaredClassToNodeMap, Collections.emptyMap(), true); // Reduces logging.
     }
 
 }

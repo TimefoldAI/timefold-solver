@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -114,12 +116,12 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             LOGGER.atLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL).log(constraintWeightString.toString().trim());
         }
         return new BavetConstraintSession<>(scoreInliner,
-                buildNodeNetwork(workingSolution, consistencyTracker, constraintStreamSet, scoreInliner, constraintProfiler));
+                buildNodeNetwork(workingSolution, consistencyTracker, constraintStreamSet, scoreInliner, constraintProfiler, scoreDirectorDerived));
     }
 
     private ConstraintStreamsBavetNodeNetwork buildNodeNetwork(Solution_ workingSolution,
             ConsistencyTracker<Solution_> consistencyTracker, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
-            AbstractScoreInliner<Score_> scoreInliner, InnerConstraintProfiler profiler) {
+            AbstractScoreInliner<Score_> scoreInliner, InnerConstraintProfiler profiler, boolean scoreDirectorDerived) {
         var buildHelper = new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner, profiler);
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractRootNode<?>>>();
         var nodeList =
@@ -147,11 +149,19 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                         }
                     }
                 });
+        var constraintToScorerMap = scoreInliner.getConstraints()
+                .stream()
+                .map(constraint -> (BavetConstraint<Solution_>) constraint)
+                .collect(Collectors.toMap(Function.identity(),
+                        constraint -> buildHelper.getScorer(constraint.getScoringConstraintStream()), (a, b) -> a,
+                        LinkedHashMap::new));
+
         if (constraintProfiler != null) {
             constraintProfiler.registerNodeGraph(workingSolution, nodeList, scoreInliner.getConstraints(),
                     buildHelper::getNodeCreatingStream, buildHelper::findParentNode);
         }
-        return buildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap);
+
+        return buildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap, (Map) constraintToScorerMap, scoreDirectorDerived);
     }
 
 }
