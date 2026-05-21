@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 
 final class SumReferenceQuadCollector<A, B, C, D, Result_>
         extends
-        ObjectCalculatorQuadCollector<A, B, C, D, Result_, Result_, AbstractReferenceSumSlot.State<Result_>> {
+        AbstractReferenceBasedQuadCollector<A, B, C, D, Result_, Result_, AbstractReferenceSumSlot.State<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;

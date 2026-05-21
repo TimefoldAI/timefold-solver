@@ -14,7 +14,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ToSimpleMapTriCollector<A, B, C, Key_, Value_, Result_ extends Map<Key_, Value_>>
         extends
-        UndoableActionableTriCollector<A, B, C, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Value_, Result_>> {
+        AbstractReferenceBasedTriCollector<A, B, C, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Value_, Result_>> {
     private final TriFunction<? super A, ? super B, ? super C, ? extends Key_> keyFunction;
     private final TriFunction<? super A, ? super B, ? super C, ? extends Value_> valueFunction;
     private final Supplier<Result_> mapSupplier;

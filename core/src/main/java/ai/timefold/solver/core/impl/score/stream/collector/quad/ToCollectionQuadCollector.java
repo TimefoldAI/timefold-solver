@@ -14,7 +14,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ToCollectionQuadCollector<A, B, C, D, Mapped_, Result_ extends Collection<Mapped_>>
         extends
-        UndoableActionableQuadCollector<A, B, C, D, Mapped_, Result_, AbstractToCollectionSlot.State<Mapped_, Result_>> {
+        AbstractReferenceBasedQuadCollector<A, B, C, D, Mapped_, Result_, AbstractToCollectionSlot.State<Mapped_, Result_>> {
     private final IntFunction<Result_> collectionFunction;
 
     ToCollectionQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper,

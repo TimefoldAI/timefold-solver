@@ -9,11 +9,11 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueH
 
 import org.jspecify.annotations.NonNull;
 
-abstract class LongCalculatorTriCollector<A, B, C, Output_, State_>
+abstract class AbstractPrimitiveBasedTriCollector<A, B, C, Output_, State_>
         implements TriConstraintCollector<A, B, C, State_, Output_> {
     protected final ToLongTriFunction<? super A, ? super B, ? super C> mapper;
 
-    public LongCalculatorTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
+    public AbstractPrimitiveBasedTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
         this.mapper = mapper;
     }
 
@@ -30,7 +30,7 @@ abstract class LongCalculatorTriCollector<A, B, C, Output_, State_>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (LongCalculatorTriCollector<?, ?, ?, ?, ?>) object;
+        var that = (AbstractPrimitiveBasedTriCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

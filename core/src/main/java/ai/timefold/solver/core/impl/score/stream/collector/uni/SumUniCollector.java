@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NonNull;
 
-final class SumUniCollector<A> extends LongCalculatorUniCollector<A, Long, MutableLong> {
+final class SumUniCollector<A> extends AbstractPrimitiveBasedUniCollector<A, Long, MutableLong> {
     SumUniCollector(ToLongFunction<? super A> mapper) {
         super(mapper);
     }

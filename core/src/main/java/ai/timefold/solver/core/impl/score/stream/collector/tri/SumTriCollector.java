@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.util.MutableLong;
 import org.jspecify.annotations.NonNull;
 
 final class SumTriCollector<A, B, C>
-        extends LongCalculatorTriCollector<A, B, C, Long, MutableLong> {
+        extends AbstractPrimitiveBasedTriCollector<A, B, C, Long, MutableLong> {
     SumTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
         super(mapper);
     }

@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractMinMaxSlot;
 import org.jspecify.annotations.NonNull;
 
 final class MaxPropertyUniCollector<A, Result_, Property_ extends Comparable<? super Property_>>
-        extends UndoableActionableUniCollector<A, Result_, Result_, AbstractMinMaxSlot.State<Result_, Property_>> {
+        extends AbstractReferenceBasedUniCollector<A, Result_, Result_, AbstractMinMaxSlot.State<Result_, Property_>> {
     private final Function<? super Result_, ? extends Property_> propertyMapper;
 
     MaxPropertyUniCollector(Function<? super A, ? extends Result_> mapper,

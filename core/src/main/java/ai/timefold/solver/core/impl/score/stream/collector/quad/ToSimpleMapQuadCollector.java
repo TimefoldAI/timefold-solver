@@ -14,7 +14,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ToSimpleMapQuadCollector<A, B, C, D, Key_, Value_, Result_ extends Map<Key_, Value_>>
         extends
-        UndoableActionableQuadCollector<A, B, C, D, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Value_, Result_>> {
+        AbstractReferenceBasedQuadCollector<A, B, C, D, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Value_, Result_>> {
     private final QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Key_> keyFunction;
     private final QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Value_> valueFunction;
     private final Supplier<Result_> mapSupplier;

@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongAverageSl
 import org.jspecify.annotations.NonNull;
 
 final class AverageTriCollector<A, B, C>
-        extends LongCalculatorTriCollector<A, B, C, Double, AbstractLongAverageSlot.State> {
+        extends AbstractPrimitiveBasedTriCollector<A, B, C, Double, AbstractLongAverageSlot.State> {
     AverageTriCollector(ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
         super(mapper);
     }

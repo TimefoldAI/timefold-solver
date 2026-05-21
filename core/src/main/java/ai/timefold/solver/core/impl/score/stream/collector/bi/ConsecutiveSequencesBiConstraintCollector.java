@@ -14,7 +14,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ConsecutiveSequencesBiConstraintCollector<A, B, Result_>
         extends
-        ObjectCalculatorBiCollector<A, B, Result_, SequenceChain<Result_, Integer>, AbstractSequenceSlot.State<Result_>> {
+        AbstractReferenceBasedBiCollector<A, B, Result_, SequenceChain<Result_, Integer>, AbstractSequenceSlot.State<Result_>> {
 
     private final ToIntFunction<Result_> indexMap;
 

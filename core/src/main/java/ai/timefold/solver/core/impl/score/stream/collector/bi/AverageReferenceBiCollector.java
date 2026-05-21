@@ -12,7 +12,7 @@ import org.jspecify.annotations.NonNull;
 
 final class AverageReferenceBiCollector<A, B, Mapped_, Average_>
         extends
-        ObjectCalculatorBiCollector<A, B, Mapped_, Average_, AbstractReferenceAverageSlot.State<Mapped_, Average_>> {
+        AbstractReferenceBasedBiCollector<A, B, Mapped_, Average_, AbstractReferenceAverageSlot.State<Mapped_, Average_>> {
     private final Supplier<AbstractReferenceAverageSlot.State<Mapped_, Average_>> stateSupplier;
 
     AverageReferenceBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper,

@@ -11,7 +11,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 final class AverageUniCollector<A>
-        extends LongCalculatorUniCollector<A, Double, AbstractLongAverageSlot.State> {
+        extends AbstractPrimitiveBasedUniCollector<A, Double, AbstractLongAverageSlot.State> {
     AverageUniCollector(ToLongFunction<? super A> mapper) {
         super(mapper);
     }

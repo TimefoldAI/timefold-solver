@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 
 final class SumReferenceTriCollector<A, B, C, Result_>
         extends
-        ObjectCalculatorTriCollector<A, B, C, Result_, Result_, AbstractReferenceSumSlot.State<Result_>> {
+        AbstractReferenceBasedTriCollector<A, B, C, Result_, Result_, AbstractReferenceSumSlot.State<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;

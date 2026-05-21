@@ -26,7 +26,7 @@ import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceAverageSlot;
 
-public class InnerQuadConstraintCollectors {
+public final class InnerQuadConstraintCollectors {
     public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Double> average(
             ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
         return new AverageQuadCollector<>(mapper);

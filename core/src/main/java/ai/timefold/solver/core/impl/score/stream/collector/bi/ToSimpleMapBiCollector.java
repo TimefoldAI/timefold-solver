@@ -13,8 +13,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractToMapSlot;
 import org.jspecify.annotations.NonNull;
 
 final class ToSimpleMapBiCollector<A, B, Key_, Value_, Result_ extends Map<Key_, Value_>>
-        extends
-        UndoableActionableBiCollector<A, B, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Value_, Result_>> {
+        extends AbstractReferenceBasedBiCollector<A, B, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Value_, Result_>> {
     private final BiFunction<? super A, ? super B, ? extends Key_> keyFunction;
     private final BiFunction<? super A, ? super B, ? extends Value_> valueFunction;
     private final Supplier<Result_> mapSupplier;

@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.util.MutableLong;
 import org.jspecify.annotations.NonNull;
 
 final class SumQuadCollector<A, B, C, D>
-        extends LongCalculatorQuadCollector<A, B, C, D, Long, MutableLong> {
+        extends AbstractPrimitiveBasedQuadCollector<A, B, C, D, Long, MutableLong> {
     SumQuadCollector(ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
         super(mapper);
     }

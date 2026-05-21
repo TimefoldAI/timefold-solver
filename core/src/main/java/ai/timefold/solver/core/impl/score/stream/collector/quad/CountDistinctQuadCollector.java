@@ -11,7 +11,7 @@ import org.jspecify.annotations.NonNull;
 
 final class CountDistinctQuadCollector<A, B, C, D, Mapped_>
         extends
-        ObjectCalculatorQuadCollector<A, B, C, D, Mapped_, Long, AbstractLongDistinctSlot.State<Mapped_>> {
+        AbstractReferenceBasedQuadCollector<A, B, C, D, Mapped_, Long, AbstractLongDistinctSlot.State<Mapped_>> {
     CountDistinctQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper) {
         super(mapper);
     }

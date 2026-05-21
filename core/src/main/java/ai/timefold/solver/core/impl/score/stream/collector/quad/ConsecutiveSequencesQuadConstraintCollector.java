@@ -14,7 +14,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>
         extends
-        ObjectCalculatorQuadCollector<A, B, C, D, Result_, SequenceChain<Result_, Integer>, AbstractSequenceSlot.State<Result_>> {
+        AbstractReferenceBasedQuadCollector<A, B, C, D, Result_, SequenceChain<Result_, Integer>, AbstractSequenceSlot.State<Result_>> {
 
     private final ToIntFunction<Result_> indexMap;
 

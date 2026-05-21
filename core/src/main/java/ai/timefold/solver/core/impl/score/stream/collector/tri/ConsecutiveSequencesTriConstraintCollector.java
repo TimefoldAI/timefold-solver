@@ -14,7 +14,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ConsecutiveSequencesTriConstraintCollector<A, B, C, Result_>
         extends
-        ObjectCalculatorTriCollector<A, B, C, Result_, SequenceChain<Result_, Integer>, AbstractSequenceSlot.State<Result_>> {
+        AbstractReferenceBasedTriCollector<A, B, C, Result_, SequenceChain<Result_, Integer>, AbstractSequenceSlot.State<Result_>> {
 
     private final ToIntFunction<Result_> indexMap;
 

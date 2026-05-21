@@ -11,7 +11,7 @@ import org.jspecify.annotations.NonNull;
 
 final class CountDistinctTriCollector<A, B, C, Mapped_>
         extends
-        ObjectCalculatorTriCollector<A, B, C, Mapped_, Long, AbstractLongDistinctSlot.State<Mapped_>> {
+        AbstractReferenceBasedTriCollector<A, B, C, Mapped_, Long, AbstractLongDistinctSlot.State<Mapped_>> {
     CountDistinctTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper) {
         super(mapper);
     }

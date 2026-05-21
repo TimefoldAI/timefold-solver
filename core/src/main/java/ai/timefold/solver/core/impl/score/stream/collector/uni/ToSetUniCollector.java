@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractToSetSlot;
 import org.jspecify.annotations.NonNull;
 
 final class ToSetUniCollector<A, Mapped_>
-        extends UndoableActionableUniCollector<A, Mapped_, Set<Mapped_>, AbstractToSetSlot.State<Mapped_>> {
+        extends AbstractReferenceBasedUniCollector<A, Mapped_, Set<Mapped_>, AbstractToSetSlot.State<Mapped_>> {
     ToSetUniCollector(Function<? super A, ? extends Mapped_> mapper) {
         super(mapper);
     }

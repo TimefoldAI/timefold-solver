@@ -12,7 +12,7 @@ import org.jspecify.annotations.NonNull;
 
 final class AverageReferenceQuadCollector<A, B, C, D, Mapped_, Average_>
         extends
-        ObjectCalculatorQuadCollector<A, B, C, D, Mapped_, Average_, AbstractReferenceAverageSlot.State<Mapped_, Average_>> {
+        AbstractReferenceBasedQuadCollector<A, B, C, D, Mapped_, Average_, AbstractReferenceAverageSlot.State<Mapped_, Average_>> {
     private final Supplier<AbstractReferenceAverageSlot.State<Mapped_, Average_>> stateSupplier;
 
     AverageReferenceQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper,

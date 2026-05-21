@@ -13,8 +13,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractToMapSlot;
 import org.jspecify.annotations.NonNull;
 
 final class ToMultiMapUniCollector<A, Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
-        extends
-        UndoableActionableUniCollector<A, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Set_, Result_>> {
+        extends AbstractReferenceBasedUniCollector<A, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Set_, Result_>> {
     private final Function<? super A, ? extends Key_> keyFunction;
     private final Function<? super A, ? extends Value_> valueFunction;
     private final Supplier<Result_> mapSupplier;

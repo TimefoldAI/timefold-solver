@@ -11,8 +11,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractMinMaxSlot;
 import org.jspecify.annotations.NonNull;
 
 final class MinPropertyBiCollector<A, B, Result_, Property_ extends Comparable<? super Property_>>
-        extends
-        UndoableActionableBiCollector<A, B, Result_, Result_, AbstractMinMaxSlot.State<Result_, Property_>> {
+        extends AbstractReferenceBasedBiCollector<A, B, Result_, Result_, AbstractMinMaxSlot.State<Result_, Property_>> {
     private final Function<? super Result_, ? extends Property_> propertyMapper;
 
     MinPropertyBiCollector(BiFunction<? super A, ? super B, ? extends Result_> mapper,

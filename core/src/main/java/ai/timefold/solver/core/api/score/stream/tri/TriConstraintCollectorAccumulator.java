@@ -8,9 +8,6 @@ import org.jspecify.annotations.NullMarked;
 /**
  * As defined by {@link UniConstraintCollectorAccumulator},
  * only for {@link TriConstraintCollector}.
- * <p>
- * This interface extends {@link QuadFunction}, but {@link #apply(Object, Object, Object, Object)} always throws
- * {@link UnsupportedOperationException}. Use {@link #intoGroup(Object)} instead.
  */
 @NullMarked
 @FunctionalInterface

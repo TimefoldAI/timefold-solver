@@ -12,7 +12,7 @@ import org.jspecify.annotations.NonNull;
 
 final class AverageReferenceTriCollector<A, B, C, Mapped_, Average_>
         extends
-        ObjectCalculatorTriCollector<A, B, C, Mapped_, Average_, AbstractReferenceAverageSlot.State<Mapped_, Average_>> {
+        AbstractReferenceBasedTriCollector<A, B, C, Mapped_, Average_, AbstractReferenceAverageSlot.State<Mapped_, Average_>> {
     private final Supplier<AbstractReferenceAverageSlot.State<Mapped_, Average_>> stateSupplier;
 
     AverageReferenceTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper,

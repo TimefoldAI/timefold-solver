@@ -8,9 +8,6 @@ import org.jspecify.annotations.NullMarked;
 /**
  * As defined by {@link UniConstraintCollectorAccumulator},
  * only for {@link BiConstraintCollector}.
- * <p>
- * This interface extends {@link TriFunction} for type compatibility, but {@link #apply(Object, Object, Object)}
- * always throws {@link UnsupportedOperationException}. Use {@link #intoGroup(Object)} instead.
  */
 @NullMarked
 @FunctionalInterface

@@ -8,9 +8,6 @@ import org.jspecify.annotations.NullMarked;
 /**
  * As defined by {@link UniConstraintCollectorAccumulator},
  * only for {@link QuadConstraintCollector}.
- * <p>
- * Extends {@link PentaFunction} for detection purposes; {@link #apply} always throws.
- * Use {@link #intoGroup} instead.
  */
 @NullMarked
 @FunctionalInterface

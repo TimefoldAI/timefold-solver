@@ -11,8 +11,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractToSetSlot;
 import org.jspecify.annotations.NonNull;
 
 final class ToSetBiCollector<A, B, Mapped_>
-        extends
-        UndoableActionableBiCollector<A, B, Mapped_, Set<Mapped_>, AbstractToSetSlot.State<Mapped_>> {
+        extends AbstractReferenceBasedBiCollector<A, B, Mapped_, Set<Mapped_>, AbstractToSetSlot.State<Mapped_>> {
     ToSetBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper) {
         super(mapper);
     }

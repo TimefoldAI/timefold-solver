@@ -11,8 +11,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractToSetSlot;
 import org.jspecify.annotations.NonNull;
 
 final class ToSetTriCollector<A, B, C, Mapped_>
-        extends
-        UndoableActionableTriCollector<A, B, C, Mapped_, Set<Mapped_>, AbstractToSetSlot.State<Mapped_>> {
+        extends AbstractReferenceBasedTriCollector<A, B, C, Mapped_, Set<Mapped_>, AbstractToSetSlot.State<Mapped_>> {
     ToSetTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper) {
         super(mapper);
     }

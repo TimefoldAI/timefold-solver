@@ -14,7 +14,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ConnectedRangesQuadConstraintCollector<A, B, C, D, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         extends
-        ObjectCalculatorQuadCollector<A, B, C, D, Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_>> {
+        AbstractReferenceBasedQuadCollector<A, B, C, D, Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, AbstractConnectedRangesSlot.State<Interval_, Point_, Difference_>> {
 
     private final Function<? super Interval_, ? extends Point_> startMap;
     private final Function<? super Interval_, ? extends Point_> endMap;

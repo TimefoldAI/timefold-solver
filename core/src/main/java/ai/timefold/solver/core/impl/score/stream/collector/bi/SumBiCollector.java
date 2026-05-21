@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.util.MutableLong;
 import org.jspecify.annotations.NonNull;
 
 final class SumBiCollector<A, B>
-        extends LongCalculatorBiCollector<A, B, Long, MutableLong> {
+        extends AbstractPrimitiveBasedBiCollector<A, B, Long, MutableLong> {
     SumBiCollector(ToLongBiFunction<? super A, ? super B> mapper) {
         super(mapper);
     }

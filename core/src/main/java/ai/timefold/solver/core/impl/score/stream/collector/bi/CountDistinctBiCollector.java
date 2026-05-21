@@ -11,7 +11,7 @@ import org.jspecify.annotations.NonNull;
 
 final class CountDistinctBiCollector<A, B, Mapped_>
         extends
-        ObjectCalculatorBiCollector<A, B, Mapped_, Long, AbstractLongDistinctSlot.State<Mapped_>> {
+        AbstractReferenceBasedBiCollector<A, B, Mapped_, Long, AbstractLongDistinctSlot.State<Mapped_>> {
     CountDistinctBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper) {
         super(mapper);
     }

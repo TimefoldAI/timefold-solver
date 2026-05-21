@@ -10,8 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractMinMaxSlot;
 import org.jspecify.annotations.NonNull;
 
 final class MinComparableTriCollector<A, B, C, Result_ extends Comparable<? super Result_>>
-        extends
-        UndoableActionableTriCollector<A, B, C, Result_, Result_, AbstractMinMaxSlot.State<Result_, Result_>> {
+        extends AbstractReferenceBasedTriCollector<A, B, C, Result_, Result_, AbstractMinMaxSlot.State<Result_, Result_>> {
     MinComparableTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Result_> mapper) {
         super(mapper);
     }

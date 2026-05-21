@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 
 final class SumReferenceBiCollector<A, B, Result_>
         extends
-        ObjectCalculatorBiCollector<A, B, Result_, Result_, AbstractReferenceSumSlot.State<Result_>> {
+        AbstractReferenceBasedBiCollector<A, B, Result_, Result_, AbstractReferenceSumSlot.State<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;

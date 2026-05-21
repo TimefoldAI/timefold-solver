@@ -12,8 +12,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractToCollectionS
 import org.jspecify.annotations.NonNull;
 
 final class ToCollectionUniCollector<A, Mapped_, Result_ extends Collection<Mapped_>>
-        extends
-        UndoableActionableUniCollector<A, Mapped_, Result_, AbstractToCollectionSlot.State<Mapped_, Result_>> {
+        extends AbstractReferenceBasedUniCollector<A, Mapped_, Result_, AbstractToCollectionSlot.State<Mapped_, Result_>> {
     private final IntFunction<Result_> collectionFunction;
 
     ToCollectionUniCollector(Function<? super A, ? extends Mapped_> mapper,

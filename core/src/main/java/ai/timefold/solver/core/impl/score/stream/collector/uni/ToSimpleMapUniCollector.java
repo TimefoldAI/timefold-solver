@@ -12,8 +12,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractToMapSlot;
 import org.jspecify.annotations.NonNull;
 
 final class ToSimpleMapUniCollector<A, Key_, Value_, Result_ extends Map<Key_, Value_>>
-        extends
-        UndoableActionableUniCollector<A, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Value_, Result_>> {
+        extends AbstractReferenceBasedUniCollector<A, Key_, Result_, AbstractToMapSlot.State<Key_, Value_, Value_, Result_>> {
     private final Function<? super A, ? extends Key_> keyFunction;
     private final Function<? super A, ? extends Value_> valueFunction;
     private final Supplier<Result_> mapSupplier;

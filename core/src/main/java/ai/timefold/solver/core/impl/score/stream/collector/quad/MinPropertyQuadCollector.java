@@ -12,7 +12,7 @@ import org.jspecify.annotations.NonNull;
 
 final class MinPropertyQuadCollector<A, B, C, D, Result_, Property_ extends Comparable<? super Property_>>
         extends
-        UndoableActionableQuadCollector<A, B, C, D, Result_, Result_, AbstractMinMaxSlot.State<Result_, Property_>> {
+        AbstractReferenceBasedQuadCollector<A, B, C, D, Result_, Result_, AbstractMinMaxSlot.State<Result_, Property_>> {
     private final Function<? super Result_, ? extends Property_> propertyMapper;
 
     MinPropertyQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Result_> mapper,

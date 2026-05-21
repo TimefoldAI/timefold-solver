@@ -9,11 +9,12 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHan
 
 import org.jspecify.annotations.NonNull;
 
-abstract class UndoableActionableBiCollector<A, B, Input_, Output_, State_>
+abstract class AbstractReferenceBasedBiCollector<A, B, Input_, Output_, State_>
         implements BiConstraintCollector<A, B, State_, Output_> {
+
     protected final BiFunction<? super A, ? super B, ? extends Input_> mapper;
 
-    public UndoableActionableBiCollector(BiFunction<? super A, ? super B, ? extends Input_> mapper) {
+    AbstractReferenceBasedBiCollector(BiFunction<? super A, ? super B, ? extends Input_> mapper) {
         this.mapper = mapper;
     }
 
@@ -30,7 +31,7 @@ abstract class UndoableActionableBiCollector<A, B, Input_, Output_, State_>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (UndoableActionableBiCollector<?, ?, ?, ?, ?>) object;
+        var that = (AbstractReferenceBasedBiCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

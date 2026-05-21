@@ -26,7 +26,7 @@ import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceAverageSlot;
 
-public class InnerTriConstraintCollectors {
+public final class InnerTriConstraintCollectors {
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Double> average(
             ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
         return new AverageTriCollector<>(mapper);

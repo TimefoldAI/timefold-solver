@@ -14,7 +14,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ToCollectionTriCollector<A, B, C, Mapped_, Result_ extends Collection<Mapped_>>
         extends
-        UndoableActionableTriCollector<A, B, C, Mapped_, Result_, AbstractToCollectionSlot.State<Mapped_, Result_>> {
+        AbstractReferenceBasedTriCollector<A, B, C, Mapped_, Result_, AbstractToCollectionSlot.State<Mapped_, Result_>> {
     private final IntFunction<Result_> collectionFunction;
 
     ToCollectionTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper,

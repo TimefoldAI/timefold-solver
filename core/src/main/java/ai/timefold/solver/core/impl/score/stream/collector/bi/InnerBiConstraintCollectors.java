@@ -26,7 +26,7 @@ import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceAverageSlot;
 
-public class InnerBiConstraintCollectors {
+public final class InnerBiConstraintCollectors {
     public static <A, B> BiConstraintCollector<A, B, ?, Double> average(ToLongBiFunction<? super A, ? super B> mapper) {
         return new AverageBiCollector<>(mapper);
     }

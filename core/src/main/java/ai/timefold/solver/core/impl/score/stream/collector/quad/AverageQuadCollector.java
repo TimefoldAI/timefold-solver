@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractLongAverageSl
 import org.jspecify.annotations.NonNull;
 
 final class AverageQuadCollector<A, B, C, D>
-        extends LongCalculatorQuadCollector<A, B, C, D, Double, AbstractLongAverageSlot.State> {
+        extends AbstractPrimitiveBasedQuadCollector<A, B, C, D, Double, AbstractLongAverageSlot.State> {
     AverageQuadCollector(ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
         super(mapper);
     }

@@ -280,10 +280,7 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
 
     protected abstract void groupInsert(ResultContainer_ resultContainer, InTuple_ tuple);
 
-    protected void groupUpdate(ResultContainer_ resultContainer, InTuple_ tuple) {
-        groupRetract(tuple);
-        groupInsert(resultContainer, tuple);
-    }
+    protected abstract void groupUpdate(ResultContainer_ resultContainer, InTuple_ tuple);
 
     protected abstract void groupRetract(InTuple_ tuple);
 

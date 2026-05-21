@@ -13,8 +13,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractSortedSetSlot
 import org.jspecify.annotations.NonNull;
 
 final class ToSortedSetComparatorBiCollector<A, B, Mapped_>
-        extends
-        UndoableActionableBiCollector<A, B, Mapped_, SortedSet<Mapped_>, AbstractSortedSetSlot.State<Mapped_>> {
+        extends AbstractReferenceBasedBiCollector<A, B, Mapped_, SortedSet<Mapped_>, AbstractSortedSetSlot.State<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
 
     ToSortedSetComparatorBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper,

@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceSumS
 import org.jspecify.annotations.NonNull;
 
 final class SumReferenceUniCollector<A, Result_>
-        extends ObjectCalculatorUniCollector<A, Result_, Result_, AbstractReferenceSumSlot.State<Result_>> {
+        extends AbstractReferenceBasedUniCollector<A, Result_, Result_, AbstractReferenceSumSlot.State<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;

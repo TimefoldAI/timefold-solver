@@ -9,11 +9,11 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValu
 
 import org.jspecify.annotations.NonNull;
 
-abstract class LongCalculatorQuadCollector<A, B, C, D, Output_, State_>
+abstract class AbstractPrimitiveBasedQuadCollector<A, B, C, D, Output_, State_>
         implements QuadConstraintCollector<A, B, C, D, State_, Output_> {
     protected final ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper;
 
-    public LongCalculatorQuadCollector(ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
+    public AbstractPrimitiveBasedQuadCollector(ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> mapper) {
         this.mapper = mapper;
     }
 
@@ -30,7 +30,7 @@ abstract class LongCalculatorQuadCollector<A, B, C, D, Output_, State_>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (LongCalculatorQuadCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (AbstractPrimitiveBasedQuadCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

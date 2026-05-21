@@ -11,7 +11,8 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 final class AverageReferenceUniCollector<A, Mapped_, Average_>
-        extends ObjectCalculatorUniCollector<A, Mapped_, Average_, AbstractReferenceAverageSlot.State<Mapped_, Average_>> {
+        extends
+        AbstractReferenceBasedUniCollector<A, Mapped_, Average_, AbstractReferenceAverageSlot.State<Mapped_, Average_>> {
     private final Supplier<AbstractReferenceAverageSlot.State<Mapped_, Average_>> stateSupplier;
 
     AverageReferenceUniCollector(Function<? super A, ? extends Mapped_> mapper,

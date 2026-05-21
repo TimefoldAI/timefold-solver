@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.collector.bi;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
+import java.util.function.ToLongBiFunction;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
@@ -9,12 +9,11 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHan
 
 import org.jspecify.annotations.NonNull;
 
-abstract class ObjectCalculatorBiCollector<A, B, Input_, Output_, State_>
+abstract class AbstractPrimitiveBasedBiCollector<A, B, Output_, State_>
         implements BiConstraintCollector<A, B, State_, Output_> {
+    protected final ToLongBiFunction<? super A, ? super B> mapper;
 
-    protected final BiFunction<? super A, ? super B, ? extends Input_> mapper;
-
-    ObjectCalculatorBiCollector(BiFunction<? super A, ? super B, ? extends Input_> mapper) {
+    AbstractPrimitiveBasedBiCollector(ToLongBiFunction<? super A, ? super B> mapper) {
         this.mapper = mapper;
     }
 
@@ -31,7 +30,7 @@ abstract class ObjectCalculatorBiCollector<A, B, Input_, Output_, State_>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (ObjectCalculatorBiCollector<?, ?, ?, ?, ?>) object;
+        var that = (AbstractPrimitiveBasedBiCollector<?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

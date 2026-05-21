@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractSortedSetSlot
 import org.jspecify.annotations.NonNull;
 
 final class ToSortedSetComparatorUniCollector<A, Mapped_>
-        extends UndoableActionableUniCollector<A, Mapped_, SortedSet<Mapped_>, AbstractSortedSetSlot.State<Mapped_>> {
+        extends AbstractReferenceBasedUniCollector<A, Mapped_, SortedSet<Mapped_>, AbstractSortedSetSlot.State<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
 
     ToSortedSetComparatorUniCollector(Function<? super A, ? extends Mapped_> mapper,

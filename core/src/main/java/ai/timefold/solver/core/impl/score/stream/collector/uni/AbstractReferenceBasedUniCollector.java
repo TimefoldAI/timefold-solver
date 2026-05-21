@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.collector.uni;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
@@ -8,12 +9,13 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueH
 
 import org.jspecify.annotations.NonNull;
 
-abstract class UndoableActionableUniCollector<A, Input_, Output_, State_>
+abstract class AbstractReferenceBasedUniCollector<A, Input_, Output_, State_>
         implements UniConstraintCollector<A, State_, Output_> {
-    protected final java.util.function.Function<? super A, ? extends Input_> mapper;
 
-    public UndoableActionableUniCollector(java.util.function.Function<? super A, ? extends Input_> mapper) {
-        this.mapper = mapper;
+    protected final Function<? super A, ? extends Input_> mapper;
+
+    AbstractReferenceBasedUniCollector(Function<? super A, ? extends Input_> mapper) {
+        this.mapper = Objects.requireNonNull(mapper);
     }
 
     protected abstract UniConstraintCollectorValueHandle<A> newAccumulatedValue(State_ state);
@@ -29,7 +31,7 @@ abstract class UndoableActionableUniCollector<A, Input_, Output_, State_>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (UndoableActionableUniCollector<?, ?, ?, ?>) object;
+        var that = (AbstractReferenceBasedUniCollector<?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

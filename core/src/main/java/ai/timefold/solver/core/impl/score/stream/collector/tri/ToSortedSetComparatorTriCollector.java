@@ -13,8 +13,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractSortedSetSlot
 import org.jspecify.annotations.NonNull;
 
 final class ToSortedSetComparatorTriCollector<A, B, C, Mapped_>
-        extends
-        UndoableActionableTriCollector<A, B, C, Mapped_, SortedSet<Mapped_>, AbstractSortedSetSlot.State<Mapped_>> {
+        extends AbstractReferenceBasedTriCollector<A, B, C, Mapped_, SortedSet<Mapped_>, AbstractSortedSetSlot.State<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
 
     ToSortedSetComparatorTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper,

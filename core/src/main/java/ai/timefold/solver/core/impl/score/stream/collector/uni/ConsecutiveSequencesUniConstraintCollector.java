@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 import org.jspecify.annotations.NonNull;
 
 final class ConsecutiveSequencesUniConstraintCollector<A>
-        extends ObjectCalculatorUniCollector<A, A, SequenceChain<A, Integer>, AbstractSequenceSlot.State<A>> {
+        extends AbstractReferenceBasedUniCollector<A, A, SequenceChain<A, Integer>, AbstractSequenceSlot.State<A>> {
 
     private final ToIntFunction<A> indexMap;
 

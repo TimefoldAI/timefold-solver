@@ -9,11 +9,12 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollectorValueH
 
 import org.jspecify.annotations.NonNull;
 
-abstract class UndoableActionableTriCollector<A, B, C, Input_, Output_, State_>
+abstract class AbstractReferenceBasedTriCollector<A, B, C, Input_, Output_, State_>
         implements TriConstraintCollector<A, B, C, State_, Output_> {
+
     protected final TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper;
 
-    public UndoableActionableTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper) {
+    public AbstractReferenceBasedTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Input_> mapper) {
         this.mapper = mapper;
     }
 
@@ -30,7 +31,7 @@ abstract class UndoableActionableTriCollector<A, B, C, Input_, Output_, State_>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (UndoableActionableTriCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (AbstractReferenceBasedTriCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

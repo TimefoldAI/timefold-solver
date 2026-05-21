@@ -14,7 +14,7 @@ import org.jspecify.annotations.NonNull;
 
 final class ToSortedSetComparatorQuadCollector<A, B, C, D, Mapped_>
         extends
-        UndoableActionableQuadCollector<A, B, C, D, Mapped_, SortedSet<Mapped_>, AbstractSortedSetSlot.State<Mapped_>> {
+        AbstractReferenceBasedQuadCollector<A, B, C, D, Mapped_, SortedSet<Mapped_>, AbstractSortedSetSlot.State<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
 
     ToSortedSetComparatorQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper,

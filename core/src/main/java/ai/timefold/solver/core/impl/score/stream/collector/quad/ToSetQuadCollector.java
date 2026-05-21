@@ -11,8 +11,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractToSetSlot;
 import org.jspecify.annotations.NonNull;
 
 final class ToSetQuadCollector<A, B, C, D, Mapped_>
-        extends
-        UndoableActionableQuadCollector<A, B, C, D, Mapped_, Set<Mapped_>, AbstractToSetSlot.State<Mapped_>> {
+        extends AbstractReferenceBasedQuadCollector<A, B, C, D, Mapped_, Set<Mapped_>, AbstractToSetSlot.State<Mapped_>> {
     ToSetQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper) {
         super(mapper);
     }

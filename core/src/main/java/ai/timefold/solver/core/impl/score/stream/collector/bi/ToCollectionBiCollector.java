@@ -13,8 +13,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.AbstractToCollectionS
 import org.jspecify.annotations.NonNull;
 
 final class ToCollectionBiCollector<A, B, Mapped_, Result_ extends Collection<Mapped_>>
-        extends
-        UndoableActionableBiCollector<A, B, Mapped_, Result_, AbstractToCollectionSlot.State<Mapped_, Result_>> {
+        extends AbstractReferenceBasedBiCollector<A, B, Mapped_, Result_, AbstractToCollectionSlot.State<Mapped_, Result_>> {
     private final IntFunction<Result_> collectionFunction;
 
     ToCollectionBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper,
