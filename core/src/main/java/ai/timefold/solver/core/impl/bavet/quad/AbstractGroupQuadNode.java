@@ -2,42 +2,60 @@ package ai.timefold.solver.core.impl.bavet.quad;
 
 import java.util.function.Function;
 
-import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollectorValueHandle;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.score.stream.collector.quad.QuadCollectorUtils;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 abstract class AbstractGroupQuadNode<OldA, OldB, OldC, OldD, OutTuple_ extends Tuple, GroupKey_, ResultContainer_, Result_>
         extends AbstractGroupNode<QuadTuple<OldA, OldB, OldC, OldD>, OutTuple_, GroupKey_, ResultContainer_, Result_> {
 
-    private final PentaFunction<ResultContainer_, OldA, OldB, OldC, OldD, Runnable> accumulator;
+    private final int groupAccumulatorIndex;
+    private final @Nullable QuadConstraintCollectorAccumulator<ResultContainer_, OldA, OldB, OldC, OldD> incrementalAccumulator;
 
-    protected AbstractGroupQuadNode(int groupStoreIndex, int undoStoreIndex,
+    protected AbstractGroupQuadNode(int groupStoreIndex, int groupAccumulatorIndex,
             Function<QuadTuple<OldA, OldB, OldC, OldD>, GroupKey_> groupKeyFunction,
-            QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainer_, Result_> collector,
+            @NonNull QuadConstraintCollector<OldA, OldB, OldC, OldD, ResultContainer_, Result_> collector,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex, undoStoreIndex,
-                groupKeyFunction,
-                collector == null ? null : collector.supplier(),
-                collector == null ? null : collector.finisher(),
-                nextNodesTupleLifecycle, environmentMode);
-        accumulator = collector == null ? null : collector.accumulator();
+        super(groupStoreIndex, groupKeyFunction, collector.supplier(), collector.finisher(), nextNodesTupleLifecycle,
+                environmentMode);
+        this.groupAccumulatorIndex = groupAccumulatorIndex;
+        this.incrementalAccumulator = QuadCollectorUtils.toIncremental(collector.accumulator());
     }
 
     protected AbstractGroupQuadNode(int groupStoreIndex,
             Function<QuadTuple<OldA, OldB, OldC, OldD>, GroupKey_> groupKeyFunction,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, EnvironmentMode environmentMode) {
-        super(groupStoreIndex,
-                groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
-        accumulator = null;
+        super(groupStoreIndex, groupKeyFunction, nextNodesTupleLifecycle, environmentMode);
+        this.groupAccumulatorIndex = -1;
+        this.incrementalAccumulator = null;
     }
 
     @Override
-    protected final Runnable accumulate(ResultContainer_ resultContainer, QuadTuple<OldA, OldB, OldC, OldD> tuple) {
-        return accumulator.apply(resultContainer, tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
+    protected void groupInsert(ResultContainer_ resultContainer, QuadTuple<OldA, OldB, OldC, OldD> tuple) {
+        var groupElement = incrementalAccumulator.intoGroup(resultContainer);
+        tuple.setStore(groupAccumulatorIndex, groupElement);
+        groupElement.add(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
+    }
+
+    @Override
+    protected void groupUpdate(ResultContainer_ resultContainer, QuadTuple<OldA, OldB, OldC, OldD> tuple) {
+        QuadConstraintCollectorValueHandle<OldA, OldB, OldC, OldD> groupElement = tuple.getStore(groupAccumulatorIndex);
+        groupElement.replaceWith(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
+    }
+
+    @Override
+    protected void groupRetract(QuadTuple<OldA, OldB, OldC, OldD> tuple) {
+        QuadConstraintCollectorValueHandle<OldA, OldB, OldC, OldD> groupElement = tuple.removeStore(groupAccumulatorIndex);
+        groupElement.remove();
     }
 
 }

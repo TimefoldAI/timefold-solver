@@ -12,6 +12,7 @@ import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.asMap;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -145,7 +147,36 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
     }
 
     @TestTemplate
-    void biGroupByRecollected() {
+    void biGroupByRecollectedToList() {
+        TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 3, 2, 5);
+
+        InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(factory -> factory
+                        .forEachUniquePair(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
+                        // Stream of all unique entity bi tuples that share a group
+                        .groupBy((a, b) -> a.getEntityGroup(), countBi())
+                        .groupBy(ConstraintCollectors.toList((a, b) -> a))
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_ID));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatchWithScore(-1,
+                        Arrays.asList(solution.getFirstEntityGroup(), solution.getEntityGroupList().get(1))));
+
+        // Incremental
+        TestdataLavishEntity entity = solution.getFirstEntity();
+        scoreDirector.beforeEntityRemoved(entity);
+        solution.getEntityList().remove(entity);
+        scoreDirector.afterEntityRemoved(entity);
+        assertScore(scoreDirector,
+                assertMatchWithScore(-1,
+                        Arrays.asList(solution.getFirstEntityGroup(), solution.getEntityGroupList().get(1))));
+    }
+
+    @TestTemplate
+    void biGroupByRecollectedToMap() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(2, 3, 2, 5);
 
         InnerScoreDirector<TestdataLavishSolution, SimpleScore> scoreDirector =
@@ -613,4 +644,5 @@ public abstract class AbstractAdvancedGroupByConstraintStreamTest extends Abstra
                 assertMatchWithScore(-1, entity3, entity1),
                 assertMatchWithScore(-1, entity3, entity3));
     }
+
 }

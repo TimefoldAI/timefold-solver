@@ -24,9 +24,9 @@ import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
-import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
+import ai.timefold.solver.core.impl.score.stream.collector.AbstractReferenceAverageSlot;
 
-public class InnerTriConstraintCollectors {
+public final class InnerTriConstraintCollectors {
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Double> average(
             ToLongTriFunction<? super A, ? super B, ? super C> mapper) {
         return new AverageTriCollector<>(mapper);
@@ -34,23 +34,23 @@ public class InnerTriConstraintCollectors {
 
     static <A, B, C, Mapped_, Average_> TriConstraintCollector<A, B, C, ?, Average_> average(
             TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper,
-            Supplier<ReferenceAverageCalculator<Mapped_, Average_>> calculatorSupplier) {
-        return new AverageReferenceTriCollector<>(mapper, calculatorSupplier);
+            Supplier<AbstractReferenceAverageSlot.State<Mapped_, Average_>> stateSupplier) {
+        return new AverageReferenceTriCollector<>(mapper, stateSupplier);
     }
 
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, BigDecimal> averageBigDecimal(
             TriFunction<? super A, ? super B, ? super C, ? extends BigDecimal> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigDecimal());
+        return average(mapper, AbstractReferenceAverageSlot.bigDecimalState());
     }
 
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, BigDecimal> averageBigInteger(
             TriFunction<? super A, ? super B, ? super C, ? extends BigInteger> mapper) {
-        return average(mapper, ReferenceAverageCalculator.bigInteger());
+        return average(mapper, AbstractReferenceAverageSlot.bigIntegerState());
     }
 
     public static <A, B, C> TriConstraintCollector<A, B, C, ?, Duration> averageDuration(
             TriFunction<? super A, ? super B, ? super C, ? extends Duration> mapper) {
-        return average(mapper, ReferenceAverageCalculator.duration());
+        return average(mapper, AbstractReferenceAverageSlot.durationState());
     }
 
     public static <A, B, C, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>
@@ -106,12 +106,6 @@ public class InnerTriConstraintCollectors {
         return new MaxComparableTriCollector<>(mapper);
     }
 
-    public static <A, B, C, Result_> TriConstraintCollector<A, B, C, ?, Result_> max(
-            TriFunction<? super A, ? super B, ? super C, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MaxComparatorTriCollector<>(mapper, comparator);
-    }
-
     public static <A, B, C, Result_, Property_ extends Comparable<? super Property_>>
             TriConstraintCollector<A, B, C, ?, Result_> max(
                     TriFunction<? super A, ? super B, ? super C, ? extends Result_> mapper,
@@ -122,12 +116,6 @@ public class InnerTriConstraintCollectors {
     public static <A, B, C, Result_ extends Comparable<? super Result_>> TriConstraintCollector<A, B, C, ?, Result_> min(
             TriFunction<? super A, ? super B, ? super C, ? extends Result_> mapper) {
         return new MinComparableTriCollector<>(mapper);
-    }
-
-    public static <A, B, C, Result_> TriConstraintCollector<A, B, C, ?, Result_> min(
-            TriFunction<? super A, ? super B, ? super C, ? extends Result_> mapper,
-            Comparator<? super Result_> comparator) {
-        return new MinComparatorTriCollector<>(mapper, comparator);
     }
 
     public static <A, B, C, Result_, Property_ extends Comparable<? super Property_>>

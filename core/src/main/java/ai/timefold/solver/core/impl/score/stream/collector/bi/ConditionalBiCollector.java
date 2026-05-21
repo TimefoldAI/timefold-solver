@@ -5,9 +5,9 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorAccumulator;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollectorValueHandle;
 
 import org.jspecify.annotations.NonNull;
 
@@ -15,13 +15,13 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
         implements BiConstraintCollector<A, B, ResultContainer_, Result_> {
     private final BiPredicate<A, B> predicate;
     private final BiConstraintCollector<A, B, ResultContainer_, Result_> delegate;
-    private final TriFunction<ResultContainer_, A, B, Runnable> innerAccumulator;
+    private final BiConstraintCollectorAccumulator<ResultContainer_, A, B> innerIncremental;
 
     ConditionalBiCollector(BiPredicate<A, B> predicate,
             BiConstraintCollector<A, B, ResultContainer_, Result_> delegate) {
         this.predicate = predicate;
         this.delegate = delegate;
-        this.innerAccumulator = delegate.accumulator();
+        this.innerIncremental = BiCollectorUtils.toIncremental(delegate.accumulator());
     }
 
     @Override
@@ -30,14 +30,8 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
     }
 
     @Override
-    public @NonNull TriFunction<ResultContainer_, A, B, Runnable> accumulator() {
-        return (resultContainer, a, b) -> {
-            if (predicate.test(a, b)) {
-                return innerAccumulator.apply(resultContainer, a, b);
-            } else {
-                return ConstantLambdaUtils.noop();
-            }
-        };
+    public @NonNull BiConstraintCollectorAccumulator<ResultContainer_, A, B> accumulator() {
+        return ValueHandle::new;
     }
 
     @Override
@@ -58,5 +52,46 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
     @Override
     public int hashCode() {
         return Objects.hash(predicate, delegate);
+    }
+
+    private final class ValueHandle implements BiConstraintCollectorValueHandle<A, B> {
+        private final BiConstraintCollectorValueHandle<A, B> innerValue;
+        private boolean active = false;
+
+        ValueHandle(ResultContainer_ container) {
+            this.innerValue = innerIncremental.intoGroup(container);
+        }
+
+        @Override
+        public void add(A a, B b) {
+            if (!predicate.test(a, b)) {
+                return;
+            }
+            active = true;
+            innerValue.add(a, b);
+        }
+
+        @Override
+        public void replaceWith(A a, B b) {
+            var nowActive = predicate.test(a, b);
+            if (active && nowActive) {
+                innerValue.replaceWith(a, b);
+            } else if (active) {
+                active = false;
+                innerValue.remove();
+            } else if (nowActive) {
+                active = true;
+                innerValue.add(a, b);
+            }
+        }
+
+        @Override
+        public void remove() {
+            if (!active) {
+                return;
+            }
+            active = false;
+            innerValue.remove();
+        }
     }
 }
