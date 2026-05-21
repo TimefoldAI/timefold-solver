@@ -95,7 +95,7 @@
   <distributionManagement>
     <repository>
       <id>github</id>
-      <name>Timefold Github Packages</name>
+      <name>Timefold GitHub Packages</name>
       <url>https://maven.pkg.github.com/TimefoldAI/timefold-models-sdk</url>
       <snapshots>
         <enabled>false</enabled>
