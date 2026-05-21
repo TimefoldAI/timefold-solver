@@ -15,17 +15,17 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.Scorer;
  * <p>
  * The pattern of interaction is as follows:
  * <ul>
- *     <li>The session will first call {@link #afterAllFactsInserted(boolean)} on every {@link AbstractRootNode}.
- *     The nodes will propagate this call downstream.
- *     Each downstream node must propagate the call further downstream,
- *     until a {@link Scorer} is reached. (In case of Constraint Streams.)</li>
- *     <li>Then the session will call {@link #isActive()} on every single node,
- *     and entirely remove deactivated nodes from propagation.
- *     Each node makes its activity decision independently,
- *     but may ask its downstream nodes.</li>
- *     <li>Once these two steps have been executed,
- *     no method of this interface will ever be called again
- *     for the duration of the session.</li>
+ * <li>The session will first call {@link #afterAllFactsInserted(boolean)} on every {@link AbstractRootNode}.
+ * The nodes will propagate this call downstream.
+ * Each downstream node must propagate the call further downstream,
+ * until a {@link Scorer} is reached. (In case of Constraint Streams.)</li>
+ * <li>Then the session will call {@link #isActive()} on every single node,
+ * and entirely remove deactivated nodes from propagation.
+ * Each node makes its activity decision independently,
+ * but may ask its downstream nodes.</li>
+ * <li>Once these two steps have been executed,
+ * no method of this interface will ever be called again
+ * for the duration of the session.</li>
  * </ul>
  */
 public interface ActivitySupport {

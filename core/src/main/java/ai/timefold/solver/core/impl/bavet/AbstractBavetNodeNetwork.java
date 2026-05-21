@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
-import ai.timefold.solver.core.impl.bavet.common.AbstractSingleInputNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractTwoInputNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.tuple.ActivitySupport;
