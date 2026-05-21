@@ -25,34 +25,26 @@
     <model.api.version>v1</model.api.version>
     <!-- default configuration, can be overridden by a model if needed -->
     <ai.timefold.model.descriptor.repository>${project.artifactId}</ai.timefold.model.descriptor.repository>
-    <ai.timefold.model.native.image.path>${project.build.directory}/${project.build.finalName}-runner
-    </ai.timefold.model.native.image.path>
+    <ai.timefold.model.native.image.path>${project.build.directory}/${project.build.finalName}-runner</ai.timefold.model.native.image.path>
     <ai.timefold.model.descriptor.groupId>${project.groupId}</ai.timefold.model.descriptor.groupId>
     <ai.timefold.model.descriptor.artifactId>${project.artifactId}-descriptor</ai.timefold.model.descriptor.artifactId>
     <ai.timefold.model.descriptor.classifier>${model.api.version}</ai.timefold.model.descriptor.classifier>
     <ai.timefold.model.descriptor.version>${project.version}</ai.timefold.model.descriptor.version>
-    <ai.timefold.model.descriptor.file>${project.build.directory}/model-descriptor.zip
-    </ai.timefold.model.descriptor.file>
+    <ai.timefold.model.descriptor.file>${project.build.directory}/model-descriptor.zip</ai.timefold.model.descriptor.file>
     <ai.timefold.model.descriptor.repository.id>github</ai.timefold.model.descriptor.repository.id>
-    <ai.timefold.model.descriptor.repository.url>https://maven.pkg.github.com/timefoldai/${project.artifactId}
-    </ai.timefold.model.descriptor.repository.url>
+    <ai.timefold.model.descriptor.repository.url>https://maven.pkg.github.com/timefoldai/${project.artifactId}</ai.timefold.model.descriptor.repository.url>
     <ai.timefold.model.benchmark.package>ai/timefold/model/*/benchmark/**</ai.timefold.model.benchmark.package>
 
     <!-- base images for JVM and native model containers -->
     <ai.timefold.model.base-jvm-image>eclipse-temurin:25-jre-ubi10-minimal</ai.timefold.model.base-jvm-image>
-    <ai.timefold.model.builder-native-image>quay.io/quarkus/ubi10-quarkus-mandrel-builder-image:jdk-25
-    </ai.timefold.model.builder-native-image>
+    <ai.timefold.model.builder-native-image>quay.io/quarkus/ubi10-quarkus-mandrel-builder-image:jdk-25</ai.timefold.model.builder-native-image>
     <ai.timefold.model.base-native-image>redhat/ubi10-minimal</ai.timefold.model.base-native-image>
 
     <ai.timefold.sdk.enterprise.skipTools>true</ai.timefold.sdk.enterprise.skipTools>
 
-    <ai.timefold.model.container.integration-tests.env-file-dir>${project.build.directory}/generated-config
-    </ai.timefold.model.container.integration-tests.env-file-dir>
-    <ai.timefold.model.container.integration-tests.env-file-name>container-integration-tests.env
-    </ai.timefold.model.container.integration-tests.env-file-name>
-    <ai.timefold.model.container.integration-tests.env-file>
-      ${ai.timefold.model.container.integration-tests.env-file-dir}/${ai.timefold.model.container.integration-tests.env-file-name}
-    </ai.timefold.model.container.integration-tests.env-file>
+    <ai.timefold.model.container.integration-tests.env-file-dir>${project.build.directory}/generated-config</ai.timefold.model.container.integration-tests.env-file-dir>
+    <ai.timefold.model.container.integration-tests.env-file-name>container-integration-tests.env</ai.timefold.model.container.integration-tests.env-file-name>
+    <ai.timefold.model.container.integration-tests.env-file>${ai.timefold.model.container.integration-tests.env-file-dir}/${ai.timefold.model.container.integration-tests.env-file-name}</ai.timefold.model.container.integration-tests.env-file>
 
     <!-- defaults for container image build/push -->
     <quarkus.container-image.build>false</quarkus.container-image.build>
@@ -64,9 +56,7 @@
          - set max memory ration to 85%
          - configure jmx for local only access for diagnostic tools
     -->
-    <ai.timefold.model.jvm-image-arguments>
-      -XX:+UseParallelGC,-Djava.net.useSystemProxies=true,-XX:+UseCompactObjectHeaders,-XX:MaxRAMPercentage=85,-Djava.rmi.server.hostname=localhost,-Dcom.sun.management.jmxremote,-Dcom.sun.management.jmxremote.port=5555,-Dcom.sun.management.jmxremote.rmi.port=5555,-Dcom.sun.management.jmxremote.local.only=true,-Dcom.sun.management.jmxremote.authenticate=false,-Dcom.sun.management.jmxremote.ssl=false
-    </ai.timefold.model.jvm-image-arguments>
+    <ai.timefold.model.jvm-image-arguments>-XX:+UseParallelGC,-Djava.net.useSystemProxies=true,-XX:+UseCompactObjectHeaders,-XX:MaxRAMPercentage=85,-Djava.rmi.server.hostname=localhost,-Dcom.sun.management.jmxremote,-Dcom.sun.management.jmxremote.port=5555,-Dcom.sun.management.jmxremote.rmi.port=5555,-Dcom.sun.management.jmxremote.local.only=true,-Dcom.sun.management.jmxremote.authenticate=false,-Dcom.sun.management.jmxremote.ssl=false</ai.timefold.model.jvm-image-arguments>
     <!-- ************************************************************************ -->
     <!-- Dependencies Override -->
     <!-- ************************************************************************ -->
