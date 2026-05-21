@@ -5,21 +5,21 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>ai.timefold.solver</groupId>
-    <artifactId>timefold-solver-maps</artifactId>
+    <artifactId>timefold-solver-model-maps</artifactId>
     <version>${revision}</version>
   </parent>
 
-  <artifactId>timefold-solver-maps-service-client</artifactId>
+  <artifactId>timefold-solver-model-maps-service-client</artifactId>
   <name>(Preview) Timefold Solver Model Maps Service Client</name>
 
   <dependencies>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-maps-service-integration</artifactId>
+      <artifactId>timefold-solver-model-maps-service-integration</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-maps-haversine</artifactId>
+      <artifactId>timefold-solver-model-maps-haversine</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -39,7 +39,7 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-maps-service-test</artifactId>
+      <artifactId>timefold-solver-model-maps-service-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

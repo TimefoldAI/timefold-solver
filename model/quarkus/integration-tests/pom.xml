@@ -21,7 +21,7 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-maps-service-integration</artifactId>
+      <artifactId>timefold-solver-model-maps-service-integration</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>

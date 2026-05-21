@@ -8,33 +8,25 @@
     <relativePath>../../build/build-parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>timefold-solver-model</artifactId>
-  <name>(Preview) Timefold Solver Model dependencies</name>
+  <artifactId>timefold-solver-model-with-maps</artifactId>
+  <name>(Preview) Timefold Solver Model with maps integration</name>
   <description>
-    This module is a dependency aggregator for models that don't require maps integration.
+    This module is a dependency aggregator for models that require maps integration.
     This module is in a preview state and thus is a subject to changes.
   </description>
 
   <dependencies>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-rest</artifactId>
+      <artifactId>timefold-solver-model</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-model-worker</artifactId>
-    </dependency>
+      <artifactId>timefold-solver-model-maps-service-rest</artifactId>
+    </dependency>    
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-model-quarkus</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-quarkus</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-model-defaults</artifactId>
+      <artifactId>timefold-solver-model-maps-service-client</artifactId>
     </dependency>
   </dependencies>
 </project>

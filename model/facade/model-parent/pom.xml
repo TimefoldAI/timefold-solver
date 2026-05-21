@@ -4,7 +4,7 @@
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-model-base-parent</artifactId>
     <version>${revision}</version>
-    <relativePath>../sdk-model-base-parent/pom.xml</relativePath>
+    <relativePath>../model-base-parent/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>timefold-solver-model-parent</artifactId>

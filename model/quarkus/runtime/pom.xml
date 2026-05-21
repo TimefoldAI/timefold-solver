@@ -42,7 +42,7 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-rest</artifactId>
+      <artifactId>timefold-solver-model-rest</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>

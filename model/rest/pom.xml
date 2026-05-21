@@ -7,7 +7,7 @@
       <relativePath>../build/build-parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>timefold-solver-rest</artifactId>
+  <artifactId>timefold-solver-model-rest</artifactId>
   <name>(Preview) Timefold Solver Model REST</name>
   <description>
     This module contains REST API interface for models based on Timefold Solver.
@@ -25,7 +25,7 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-rest-definition</artifactId>
+      <artifactId>timefold-solver-model-rest-definition</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

@@ -8,7 +8,7 @@
     <relativePath>../build/build-parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>timefold-solver-rest-definition</artifactId>
+  <artifactId>timefold-solver-model-rest-definition</artifactId>
   <name>(Preview) Timefold Solver Model REST definition</name>
   <description>
     This module contains REST API types definitions.

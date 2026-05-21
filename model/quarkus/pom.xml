@@ -12,7 +12,7 @@
   </parent>
   <artifactId>timefold-solver-model-quarkus-parent</artifactId>
   <packaging>pom</packaging>
-  <name>(Preview) Timefold Solver Model Quarkus Extension: SDK - Parent</name>
+  <name>(Preview) Timefold Solver Model Quarkus Extension: Parent</name>
   <description>
     The module contains Quarkus integration required for models based on Timefold Solver.
     This module is in a preview state and thus is a subject to changes.

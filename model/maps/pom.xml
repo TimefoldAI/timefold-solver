@@ -8,7 +8,7 @@
     <version>${revision}</version>
     <relativePath>../build/build-parent/pom.xml</relativePath>
   </parent>
-  <artifactId>timefold-solver-maps</artifactId>
+  <artifactId>timefold-solver-model-maps</artifactId>
   <packaging>pom</packaging>
   <name>(Preview) Timefold Solver Model Maps integration</name>
   <description>

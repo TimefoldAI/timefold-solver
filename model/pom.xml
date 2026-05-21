@@ -7,7 +7,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>timefold-solver-model-root-parent</artifactId>
+  <artifactId>timefold-solver-model-internal-parent</artifactId>
 
   <packaging>pom</packaging>
   <name>(Preview) Timefold Solver Model Parent</name>
@@ -28,10 +28,10 @@
     <module>quarkus</module>
     <module>maps</module>
     <module>test</module>
-    <module>facade/sdk</module>
-    <module>facade/sdk-with-maps</module>
-    <module>facade/sdk-model-base-parent</module>
-    <module>facade/sdk-model-parent</module>
+    <module>facade/model</module>
+    <module>facade/model-with-maps</module>
+    <module>facade/model-base-parent</module>
+    <module>facade/model-parent</module>
     <module>rest-definition</module>
     <module>model-defaults</module>
     <module>tools/maven-plugin</module>
