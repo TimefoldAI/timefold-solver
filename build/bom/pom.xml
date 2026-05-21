@@ -510,12 +510,12 @@
 
       <!-- maven plugin -->
       <dependency>
-        <groupId>ai.timefold.solver.tools</groupId>
+        <groupId>ai.timefold.solver</groupId>
         <artifactId>timefold-maven-plugin</artifactId>
         <version>${version.ai.timefold.solver}</version>
       </dependency>
       <dependency>
-        <groupId>ai.timefold.solver.tools</groupId>
+        <groupId>ai.timefold.solver</groupId>
         <artifactId>timefold-maven-plugin</artifactId>
         <version>${version.ai.timefold.solver}</version>
         <classifier>sources</classifier>
