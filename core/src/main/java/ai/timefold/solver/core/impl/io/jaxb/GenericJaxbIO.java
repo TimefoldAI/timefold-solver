@@ -124,7 +124,7 @@ public final class GenericJaxbIO<T> {
 
     public T read(Reader reader) {
         try {
-            return (T) createUnmarshaller().unmarshal(reader);
+            return (T) createUnmarshaller().unmarshal(parseXml(reader));
         } catch (JAXBException jaxbException) {
             throw new TimefoldXmlSerializationException(ERR_MSG_READ.formatted(rootClass.getName()), jaxbException);
         }
