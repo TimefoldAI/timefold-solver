@@ -31,12 +31,12 @@ import org.jspecify.annotations.Nullable;
 })
 public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFactoryConfig> {
 
-    private Class<? extends EasyScoreCalculator> easyScoreCalculatorClass = null;
+    private String easyScoreCalculatorClass = null;
 
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
     private Map<String, String> easyScoreCalculatorCustomProperties = null;
 
-    private Class<? extends ConstraintProvider> constraintProviderClass = null;
+    private String constraintProviderClass = null;
 
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
     private Map<String, String> constraintProviderCustomProperties = null;
@@ -44,7 +44,7 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
     private Boolean constraintStreamAutomaticNodeSharing;
     private Boolean constraintStreamProfilingEnabled;
 
-    private Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass = null;
+    private String incrementalScoreCalculatorClass = null;
 
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
     private Map<String, String> incrementalScoreCalculatorCustomProperties = null;
@@ -60,11 +60,11 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
     // ************************************************************************
 
     public @Nullable Class<? extends EasyScoreCalculator> getEasyScoreCalculatorClass() {
-        return easyScoreCalculatorClass;
+        return ConfigUtils.resolveClass(easyScoreCalculatorClass, "easyScoreCalculatorClass", this);
     }
 
     public void setEasyScoreCalculatorClass(@Nullable Class<? extends EasyScoreCalculator> easyScoreCalculatorClass) {
-        this.easyScoreCalculatorClass = easyScoreCalculatorClass;
+        this.easyScoreCalculatorClass = easyScoreCalculatorClass == null ? null : easyScoreCalculatorClass.getName();
     }
 
     public @Nullable Map<@NonNull String, @NonNull String> getEasyScoreCalculatorCustomProperties() {
@@ -77,11 +77,11 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
     }
 
     public @Nullable Class<? extends ConstraintProvider> getConstraintProviderClass() {
-        return constraintProviderClass;
+        return ConfigUtils.resolveClass(constraintProviderClass, "constraintProviderClass", this);
     }
 
     public void setConstraintProviderClass(@Nullable Class<? extends ConstraintProvider> constraintProviderClass) {
-        this.constraintProviderClass = constraintProviderClass;
+        this.constraintProviderClass = constraintProviderClass == null ? null : constraintProviderClass.getName();
     }
 
     public @Nullable Map<@NonNull String, @NonNull String> getConstraintProviderCustomProperties() {
@@ -111,12 +111,13 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
     }
 
     public @Nullable Class<? extends IncrementalScoreCalculator> getIncrementalScoreCalculatorClass() {
-        return incrementalScoreCalculatorClass;
+        return ConfigUtils.resolveClass(incrementalScoreCalculatorClass, "incrementalScoreCalculatorClass", this);
     }
 
     public void setIncrementalScoreCalculatorClass(
             @Nullable Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass) {
-        this.incrementalScoreCalculatorClass = incrementalScoreCalculatorClass;
+        this.incrementalScoreCalculatorClass =
+                incrementalScoreCalculatorClass == null ? null : incrementalScoreCalculatorClass.getName();
     }
 
     public @Nullable Map<@NonNull String, @NonNull String> getIncrementalScoreCalculatorCustomProperties() {
@@ -150,7 +151,7 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
 
     public @NonNull ScoreDirectorFactoryConfig
             withEasyScoreCalculatorClass(@NonNull Class<? extends EasyScoreCalculator> easyScoreCalculatorClass) {
-        this.easyScoreCalculatorClass = easyScoreCalculatorClass;
+        this.easyScoreCalculatorClass = easyScoreCalculatorClass.getName();
         return this;
     }
 
@@ -163,7 +164,7 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
 
     public @NonNull ScoreDirectorFactoryConfig
             withConstraintProviderClass(@NonNull Class<? extends ConstraintProvider> constraintProviderClass) {
-        this.constraintProviderClass = constraintProviderClass;
+        this.constraintProviderClass = constraintProviderClass.getName();
         return this;
     }
 
@@ -189,7 +190,7 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
     public @NonNull ScoreDirectorFactoryConfig
             withIncrementalScoreCalculatorClass(
                     @NonNull Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass) {
-        this.incrementalScoreCalculatorClass = incrementalScoreCalculatorClass;
+        this.incrementalScoreCalculatorClass = incrementalScoreCalculatorClass.getName();
         return this;
     }
 
@@ -214,11 +215,11 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
     @Override
     public @NonNull ScoreDirectorFactoryConfig inherit(@NonNull ScoreDirectorFactoryConfig inheritedConfig) {
         easyScoreCalculatorClass = ConfigUtils.inheritOverwritableProperty(
-                easyScoreCalculatorClass, inheritedConfig.getEasyScoreCalculatorClass());
+                easyScoreCalculatorClass, inheritedConfig.easyScoreCalculatorClass);
         easyScoreCalculatorCustomProperties = ConfigUtils.inheritMergeableMapProperty(
                 easyScoreCalculatorCustomProperties, inheritedConfig.getEasyScoreCalculatorCustomProperties());
         constraintProviderClass = ConfigUtils.inheritOverwritableProperty(
-                constraintProviderClass, inheritedConfig.getConstraintProviderClass());
+                constraintProviderClass, inheritedConfig.constraintProviderClass);
         constraintProviderCustomProperties = ConfigUtils.inheritMergeableMapProperty(
                 constraintProviderCustomProperties, inheritedConfig.getConstraintProviderCustomProperties());
         constraintStreamAutomaticNodeSharing = ConfigUtils.inheritOverwritableProperty(constraintStreamAutomaticNodeSharing,
@@ -226,7 +227,7 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
         constraintStreamProfilingEnabled = ConfigUtils.inheritOverwritableProperty(constraintStreamProfilingEnabled,
                 inheritedConfig.getConstraintStreamProfilingEnabled());
         incrementalScoreCalculatorClass = ConfigUtils.inheritOverwritableProperty(
-                incrementalScoreCalculatorClass, inheritedConfig.getIncrementalScoreCalculatorClass());
+                incrementalScoreCalculatorClass, inheritedConfig.incrementalScoreCalculatorClass);
         incrementalScoreCalculatorCustomProperties = ConfigUtils.inheritMergeableMapProperty(
                 incrementalScoreCalculatorCustomProperties, inheritedConfig.getIncrementalScoreCalculatorCustomProperties());
         initializingScoreTrend = ConfigUtils.inheritOverwritableProperty(
@@ -243,9 +244,9 @@ public final class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirect
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        classVisitor.accept(easyScoreCalculatorClass);
-        classVisitor.accept(constraintProviderClass);
-        classVisitor.accept(incrementalScoreCalculatorClass);
+        classVisitor.accept(getEasyScoreCalculatorClass());
+        classVisitor.accept(getConstraintProviderClass());
+        classVisitor.accept(getIncrementalScoreCalculatorClass());
         if (assertionScoreDirectorFactory != null) {
             assertionScoreDirectorFactory.visitReferencedClasses(classVisitor);
         }

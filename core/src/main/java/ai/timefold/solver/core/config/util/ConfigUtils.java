@@ -45,6 +45,39 @@ public class ConfigUtils {
 
     private static final AlphabeticMemberComparator alphabeticMemberComparator = new AlphabeticMemberComparator();
 
+    @SuppressWarnings("unchecked")
+    public static <T> @Nullable Class<T> resolveClass(@Nullable String className, @NonNull String fieldName,
+            @NonNull Object context) {
+        if (className == null) {
+            return null;
+        }
+        var trimmedClassName = className.strip();
+        if (trimmedClassName.isEmpty()) {
+            return null;
+        }
+        var classloader = Objects.requireNonNullElse(Thread.currentThread().getContextClassLoader(),
+                ConfigUtils.class.getClassLoader());
+        try {
+            return (Class<T>) Class.forName(trimmedClassName, false, classloader);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(
+                    "The %s (%s) of %s cannot be found.".formatted(fieldName, trimmedClassName, context), e);
+        }
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static <T> List<Class<? extends T>> resolveClasses(List<@Nullable String> classList, @NonNull String fieldName,
+            @NonNull Object context) {
+        return (List) classList.stream()
+                .map(cn -> ConfigUtils.resolveClass(cn, fieldName, context))
+                .peek(clz -> {
+                    if (clz == null) {
+                        throw new IllegalArgumentException(
+                                "The %s of %s cannot be null or empty.".formatted(fieldName, context));
+                    }
+                }).toList();
+    }
+
     /**
      * Create a new instance of clazz from a config's property.
      * <p>

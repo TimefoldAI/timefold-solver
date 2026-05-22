@@ -77,19 +77,19 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     protected SelectionOrder selectionOrder = null;
 
     @Nullable
-    protected Class<? extends SelectionFilter> filterClass = null;
+    protected String filterClass = null;
 
     @Nullable
-    protected Class<? extends Comparator> comparatorClass = null;
+    protected String comparatorClass = null;
     @Nullable
-    protected Class<? extends ComparatorFactory> comparatorFactoryClass = null;
+    protected String comparatorFactoryClass = null;
     @Nullable
     protected SelectionSorterOrder sorterOrder = null;
     @Nullable
-    protected Class<? extends SelectionSorter> sorterClass = null;
+    protected String sorterClass = null;
 
     @Nullable
-    protected Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass = null;
+    protected String probabilityWeightFactoryClass = null;
 
     @Nullable
     protected Long selectedCountLimit = null;
@@ -118,27 +118,27 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     }
 
     public @Nullable Class<? extends SelectionFilter> getFilterClass() {
-        return filterClass;
+        return ConfigUtils.resolveClass(filterClass, "filterClass", this);
     }
 
     public void setFilterClass(@Nullable Class<? extends SelectionFilter> filterClass) {
-        this.filterClass = filterClass;
+        this.filterClass = filterClass == null ? null : filterClass.getName();
     }
 
     public @Nullable Class<? extends Comparator> getComparatorClass() {
-        return comparatorClass;
+        return ConfigUtils.resolveClass(comparatorClass, "comparatorClass", this);
     }
 
     public void setComparatorClass(@Nullable Class<? extends Comparator> comparatorClass) {
-        this.comparatorClass = comparatorClass;
+        this.comparatorClass = comparatorClass == null ? null : comparatorClass.getName();
     }
 
     public @Nullable Class<? extends ComparatorFactory> getComparatorFactoryClass() {
-        return comparatorFactoryClass;
+        return ConfigUtils.resolveClass(comparatorFactoryClass, "comparatorFactoryClass", this);
     }
 
     public void setComparatorFactoryClass(@Nullable Class<? extends ComparatorFactory> comparatorFactoryClass) {
-        this.comparatorFactoryClass = comparatorFactoryClass;
+        this.comparatorFactoryClass = comparatorFactoryClass == null ? null : comparatorFactoryClass.getName();
     }
 
     public @Nullable SelectionSorterOrder getSorterOrder() {
@@ -150,20 +150,21 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     }
 
     public @Nullable Class<? extends SelectionSorter> getSorterClass() {
-        return sorterClass;
+        return ConfigUtils.resolveClass(sorterClass, "sorterClass", this);
     }
 
     public void setSorterClass(@Nullable Class<? extends SelectionSorter> sorterClass) {
-        this.sorterClass = sorterClass;
+        this.sorterClass = sorterClass == null ? null : sorterClass.getName();
     }
 
     public @Nullable Class<? extends SelectionProbabilityWeightFactory> getProbabilityWeightFactoryClass() {
-        return probabilityWeightFactoryClass;
+        return ConfigUtils.resolveClass(probabilityWeightFactoryClass, "probabilityWeightFactoryClass", this);
     }
 
     public void setProbabilityWeightFactoryClass(
             @Nullable Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass) {
-        this.probabilityWeightFactoryClass = probabilityWeightFactoryClass;
+        this.probabilityWeightFactoryClass = probabilityWeightFactoryClass == null ? null
+                : probabilityWeightFactoryClass.getName();
     }
 
     public @Nullable Long getSelectedCountLimit() {
@@ -197,18 +198,18 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     }
 
     public Config_ withFilterClass(Class<? extends SelectionFilter> filterClass) {
-        this.filterClass = filterClass;
+        this.filterClass = filterClass.getName();
         return (Config_) this;
     }
 
     public Config_ withComparatorClass(Class<? extends Comparator> comparatorClass) {
-        this.setComparatorClass(comparatorClass);
+        this.comparatorClass = comparatorClass.getName();
         return (Config_) this;
     }
 
     public Config_
             withComparatorFactoryClass(Class<? extends ComparatorFactory> comparatorFactoryClass) {
-        this.setComparatorFactoryClass(comparatorFactoryClass);
+        this.comparatorFactoryClass = comparatorFactoryClass.getName();
         return (Config_) this;
     }
 
@@ -218,13 +219,13 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     }
 
     public Config_ withSorterClass(Class<? extends SelectionSorter> sorterClass) {
-        this.sorterClass = sorterClass;
+        this.sorterClass = sorterClass.getName();
         return (Config_) this;
     }
 
     public Config_ withProbabilityWeightFactoryClass(
             Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass) {
-        this.probabilityWeightFactoryClass = probabilityWeightFactoryClass;
+        this.probabilityWeightFactoryClass = probabilityWeightFactoryClass.getName();
         return (Config_) this;
     }
 
@@ -261,27 +262,24 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     }
 
     protected void visitCommonReferencedClasses(Consumer<Class<?>> classVisitor) {
-        classVisitor.accept(filterClass);
-        classVisitor.accept(comparatorClass);
-        classVisitor.accept(comparatorFactoryClass);
-        classVisitor.accept(sorterClass);
-        classVisitor.accept(probabilityWeightFactoryClass);
+        classVisitor.accept(getFilterClass());
+        classVisitor.accept(getComparatorClass());
+        classVisitor.accept(getComparatorFactoryClass());
+        classVisitor.accept(getSorterClass());
+        classVisitor.accept(getProbabilityWeightFactoryClass());
     }
 
     private void inheritCommon(MoveSelectorConfig<?> inheritedConfig) {
         cacheType = ConfigUtils.inheritOverwritableProperty(cacheType, inheritedConfig.getCacheType());
         selectionOrder = ConfigUtils.inheritOverwritableProperty(selectionOrder, inheritedConfig.getSelectionOrder());
-        filterClass = ConfigUtils.inheritOverwritableProperty(filterClass, inheritedConfig.getFilterClass());
-        comparatorClass = ConfigUtils.inheritOverwritableProperty(
-                comparatorClass, inheritedConfig.getComparatorClass());
+        filterClass = ConfigUtils.inheritOverwritableProperty(filterClass, inheritedConfig.filterClass);
+        comparatorClass = ConfigUtils.inheritOverwritableProperty(comparatorClass, inheritedConfig.comparatorClass);
         comparatorFactoryClass = ConfigUtils.inheritOverwritableProperty(
-                comparatorFactoryClass, inheritedConfig.getComparatorFactoryClass());
-        sorterOrder = ConfigUtils.inheritOverwritableProperty(
-                sorterOrder, inheritedConfig.getSorterOrder());
-        sorterClass = ConfigUtils.inheritOverwritableProperty(
-                sorterClass, inheritedConfig.getSorterClass());
+                comparatorFactoryClass, inheritedConfig.comparatorFactoryClass);
+        sorterOrder = ConfigUtils.inheritOverwritableProperty(sorterOrder, inheritedConfig.getSorterOrder());
+        sorterClass = ConfigUtils.inheritOverwritableProperty(sorterClass, inheritedConfig.sorterClass);
         probabilityWeightFactoryClass = ConfigUtils.inheritOverwritableProperty(
-                probabilityWeightFactoryClass, inheritedConfig.getProbabilityWeightFactoryClass());
+                probabilityWeightFactoryClass, inheritedConfig.probabilityWeightFactoryClass);
         selectedCountLimit = ConfigUtils.inheritOverwritableProperty(
                 selectedCountLimit, inheritedConfig.getSelectedCountLimit());
 

@@ -3,6 +3,48 @@
     "extension": "revapi.differences",
     "configuration": {
       "differences": [
+        {
+          "ignore": true,
+          "code": "java.field.typeChanged",
+          "old": "field ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>.comparatorClass",
+          "new": "field ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>.comparatorClass",
+          "justification": "Internal protected fields; safe."
+        },
+        {
+          "ignore": true,
+          "code": "java.field.typeChanged",
+          "old": "field ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>.comparatorFactoryClass",
+          "new": "field ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>.comparatorFactoryClass",
+          "justification": "Internal protected fields; safe."
+        },
+        {
+          "ignore": true,
+          "code": "java.field.typeChanged",
+          "old": "field ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>.filterClass",
+          "new": "field ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>.filterClass",
+          "justification": "Internal protected fields; safe."
+        },
+        {
+          "ignore": true,
+          "code": "java.field.typeChanged",
+          "old": "field ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>.probabilityWeightFactoryClass",
+          "new": "field ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>.probabilityWeightFactoryClass",
+          "justification": "Internal protected fields; safe."
+        },
+        {
+          "ignore": true,
+          "code": "java.field.typeChanged",
+          "old": "field ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>.sorterClass",
+          "new": "field ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>.sorterClass",
+          "justification": "Internal protected fields; safe."
+        },
+        {
+          "ignore": true,
+          "code": "java.field.typeChanged",
+          "old": "field ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_>>.subPillarSequenceComparatorClass",
+          "new": "field ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_>>.subPillarSequenceComparatorClass",
+          "justification": "Internal protected fields; safe."
+        }
       ]
     }
   }

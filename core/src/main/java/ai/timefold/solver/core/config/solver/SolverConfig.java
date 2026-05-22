@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElements;
@@ -215,12 +216,12 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
     private Long randomSeed = null;
     private String moveThreadCount = null;
     private Integer moveThreadBufferSize = null;
-    private Class<? extends ThreadFactory> threadFactoryClass = null;
+    private String threadFactoryClass = null;
 
-    private Class<?> solutionClass = null;
+    private String solutionClass = null;
 
     @XmlElement(name = "entityClass")
-    private List<Class<?>> entityClassList = null;
+    private List<String> entityClassList = null;
     @XmlTransient
     private Map<String, MemberAccessor> gizmoMemberAccessorMap = null;
     @XmlTransient
@@ -232,7 +233,7 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
     @XmlElement(name = "termination")
     private TerminationConfig terminationConfig;
 
-    private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass = null;
+    private String nearbyDistanceMeterClass = null;
 
     @XmlElements({
             @XmlElement(name = ConstructionHeuristicPhaseConfig.XML_ELEMENT_NAME,
@@ -364,27 +365,31 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
     }
 
     public @Nullable Class<? extends ThreadFactory> getThreadFactoryClass() {
-        return threadFactoryClass;
+        return ConfigUtils.resolveClass(threadFactoryClass, "threadFactoryClass", this);
     }
 
     public void setThreadFactoryClass(@Nullable Class<? extends ThreadFactory> threadFactoryClass) {
-        this.threadFactoryClass = threadFactoryClass;
+        this.threadFactoryClass = threadFactoryClass == null ? null : threadFactoryClass.getName();
     }
 
     public @Nullable Class<?> getSolutionClass() {
-        return solutionClass;
+        return ConfigUtils.resolveClass(solutionClass, "solutionClass", this);
     }
 
     public void setSolutionClass(@Nullable Class<?> solutionClass) {
-        this.solutionClass = solutionClass;
+        this.solutionClass = solutionClass == null ? null : solutionClass.getName();
     }
 
     public @Nullable List<Class<?>> getEntityClassList() {
-        return entityClassList;
+        if (entityClassList == null) {
+            return null;
+        }
+        return ConfigUtils.resolveClasses(entityClassList, "entityClass", this);
     }
 
     public void setEntityClassList(@Nullable List<Class<?>> entityClassList) {
-        this.entityClassList = entityClassList;
+        this.entityClassList = entityClassList == null ? null
+                : entityClassList.stream().map(Class::getName).collect(Collectors.toList());
     }
 
     public @Nullable Map<@NonNull String, @NonNull MemberAccessor> getGizmoMemberAccessorMap() {
@@ -420,11 +425,11 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
     }
 
     public @Nullable Class<? extends NearbyDistanceMeter<?, ?>> getNearbyDistanceMeterClass() {
-        return nearbyDistanceMeterClass;
+        return ConfigUtils.resolveClass(nearbyDistanceMeterClass, "nearbyDistanceMeterClass", this);
     }
 
     public void setNearbyDistanceMeterClass(@Nullable Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass) {
-        this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
+        this.nearbyDistanceMeterClass = nearbyDistanceMeterClass == null ? null : nearbyDistanceMeterClass.getName();
     }
 
     public @Nullable List<@NonNull PhaseConfig> getPhaseConfigList() {
@@ -478,22 +483,22 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
     }
 
     public @NonNull SolverConfig withThreadFactoryClass(@NonNull Class<? extends ThreadFactory> threadFactoryClass) {
-        this.threadFactoryClass = threadFactoryClass;
+        this.threadFactoryClass = threadFactoryClass.getName();
         return this;
     }
 
     public @NonNull SolverConfig withSolutionClass(@NonNull Class<?> solutionClass) {
-        this.solutionClass = solutionClass;
+        this.solutionClass = solutionClass.getName();
         return this;
     }
 
     public @NonNull SolverConfig withEntityClassList(@NonNull List<Class<?>> entityClassList) {
-        this.entityClassList = entityClassList;
+        this.entityClassList = entityClassList.stream().map(Class::getName).collect(Collectors.toList());
         return this;
     }
 
     public @NonNull SolverConfig withEntityClasses(@NonNull Class<?>... entityClasses) {
-        this.entityClassList = Arrays.asList(entityClasses);
+        this.entityClassList = Arrays.stream(entityClasses).map(Class::getName).collect(Collectors.toList());
         return this;
     }
 
@@ -576,7 +581,7 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
 
     public @NonNull SolverConfig
             withNearbyDistanceMeterClass(@NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeterClass) {
-        this.nearbyDistanceMeterClass = distanceMeterClass;
+        this.nearbyDistanceMeterClass = distanceMeterClass.getName();
         return this;
     }
 
@@ -656,10 +661,10 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         moveThreadBufferSize = ConfigUtils.inheritOverwritableProperty(moveThreadBufferSize,
                 inheritedConfig.getMoveThreadBufferSize());
         threadFactoryClass = ConfigUtils.inheritOverwritableProperty(threadFactoryClass,
-                inheritedConfig.getThreadFactoryClass());
-        solutionClass = ConfigUtils.inheritOverwritableProperty(solutionClass, inheritedConfig.getSolutionClass());
+                inheritedConfig.threadFactoryClass);
+        solutionClass = ConfigUtils.inheritOverwritableProperty(solutionClass, inheritedConfig.solutionClass);
         entityClassList = ConfigUtils.inheritMergeableListProperty(entityClassList,
-                inheritedConfig.getEntityClassList());
+                inheritedConfig.entityClassList);
         gizmoMemberAccessorMap = ConfigUtils.inheritMergeableMapProperty(
                 gizmoMemberAccessorMap, inheritedConfig.getGizmoMemberAccessorMap());
         gizmoSolutionClonerMap = ConfigUtils.inheritMergeableMapProperty(
@@ -669,7 +674,7 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
                 inheritedConfig.getScoreDirectorFactoryConfig());
         terminationConfig = ConfigUtils.inheritConfig(terminationConfig, inheritedConfig.getTerminationConfig());
         nearbyDistanceMeterClass = ConfigUtils.inheritOverwritableProperty(nearbyDistanceMeterClass,
-                inheritedConfig.getNearbyDistanceMeterClass());
+                inheritedConfig.nearbyDistanceMeterClass);
         phaseConfigList = ConfigUtils.inheritMergeableListConfig(phaseConfigList, inheritedConfig.getPhaseConfigList());
         monitoringConfig = ConfigUtils.inheritConfig(monitoringConfig, inheritedConfig.getMonitoringConfig());
         return this;
@@ -682,16 +687,16 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        classVisitor.accept(threadFactoryClass);
-        classVisitor.accept(solutionClass);
+        classVisitor.accept(getThreadFactoryClass());
+        classVisitor.accept(getSolutionClass());
         if (entityClassList != null) {
-            entityClassList.forEach(classVisitor);
+            getEntityClassList().forEach(classVisitor);
         }
         if (scoreDirectorFactoryConfig != null) {
             scoreDirectorFactoryConfig.visitReferencedClasses(classVisitor);
         }
         if (nearbyDistanceMeterClass != null) {
-            classVisitor.accept(nearbyDistanceMeterClass);
+            classVisitor.accept(getNearbyDistanceMeterClass());
         }
         if (terminationConfig != null) {
             terminationConfig.visitReferencedClasses(classVisitor);

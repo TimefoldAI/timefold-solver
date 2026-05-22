@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.config.phase.custom;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,7 +33,7 @@ public final class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
 
     @XmlElement(name = "customPhaseCommandClass")
     @Nullable
-    private List<Class<? extends PhaseCommand>> customPhaseCommandClassList = null;
+    private List<String> customPhaseCommandClassList = null;
 
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
     @Nullable
@@ -49,11 +48,15 @@ public final class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
     // ************************************************************************
 
     public @Nullable List<Class<? extends PhaseCommand>> getCustomPhaseCommandClassList() {
-        return customPhaseCommandClassList;
+        if (customPhaseCommandClassList == null) {
+            return null;
+        }
+        return ConfigUtils.resolveClasses(customPhaseCommandClassList, "customPhaseCommandClass", this);
     }
 
     public void setCustomPhaseCommandClassList(@Nullable List<Class<? extends PhaseCommand>> customPhaseCommandClassList) {
-        this.customPhaseCommandClassList = customPhaseCommandClassList;
+        this.customPhaseCommandClassList = customPhaseCommandClassList == null ? null
+                : customPhaseCommandClassList.stream().map(Class::getName).toList();
     }
 
     public @Nullable Map<String, String> getCustomProperties() {
@@ -77,7 +80,7 @@ public final class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
     // ************************************************************************
 
     public CustomPhaseConfig withCustomPhaseCommandClassList(List<Class<? extends PhaseCommand>> customPhaseCommandClassList) {
-        this.customPhaseCommandClassList = customPhaseCommandClassList;
+        this.customPhaseCommandClassList = customPhaseCommandClassList.stream().map(Class::getName).toList();
         return this;
     }
 
@@ -87,11 +90,10 @@ public final class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
     }
 
     public CustomPhaseConfig withCustomPhaseCommandList(List<? extends PhaseCommand> customPhaseCommandList) {
-        boolean hasNullCommand = Objects.requireNonNullElse(customPhaseCommandList, Collections.emptyList())
-                .stream().anyMatch(Objects::isNull);
+        var hasNullCommand = customPhaseCommandList.stream().anyMatch(Objects::isNull);
         if (hasNullCommand) {
-            throw new IllegalArgumentException(
-                    "Custom phase commands (" + customPhaseCommandList + ") must not contain a null element.");
+            throw new IllegalArgumentException("Custom phase commands (%s) must not contain a null element."
+                    .formatted(customPhaseCommandList));
         }
         this.customPhaseCommandList = List.copyOf(customPhaseCommandList);
         return this;
@@ -106,7 +108,7 @@ public final class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
     public CustomPhaseConfig inherit(CustomPhaseConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         customPhaseCommandClassList = ConfigUtils.inheritMergeableListProperty(
-                customPhaseCommandClassList, inheritedConfig.getCustomPhaseCommandClassList());
+                customPhaseCommandClassList, inheritedConfig.customPhaseCommandClassList);
         customPhaseCommandList = ConfigUtils.inheritMergeableListProperty(
                 customPhaseCommandList, (List) inheritedConfig.getCustomPhaseCommandList());
         customProperties = ConfigUtils.inheritMergeableMapProperty(
@@ -125,7 +127,7 @@ public final class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
             terminationConfig.visitReferencedClasses(classVisitor);
         }
         if (customPhaseCommandClassList != null) {
-            customPhaseCommandClassList.forEach(classVisitor);
+            getCustomPhaseCommandClassList().forEach(classVisitor);
         }
     }
 
