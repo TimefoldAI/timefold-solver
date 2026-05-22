@@ -1,0 +1,16 @@
+# This is a template OpenAPI specification file. So generated spec files maintain the same order of the elements listed here
+---
+openapi: ""
+info:
+  title: ""
+  description: ""
+  contact:
+    name: ""
+    url: ""
+    email: ""
+  version: ""
+servers: []
+tags: []
+paths: {}
+components:
+  schemas: {}

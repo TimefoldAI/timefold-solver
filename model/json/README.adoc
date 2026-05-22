@@ -1,0 +1,225 @@
+= JSON support
+
+== JSON Schema validator
+
+Provides complete JSON schema validation of REST (HTTP) requests based on operation id and corresponding schema (extracted from OpenAPI definition)
+
+== JSON Patch handler
+
+Provides JSON Patch operation support for `from-patch` model API endpoint. It extends standard JSON Patch (that is mainly based on JSON pointer) with filter that allows to match based on field expression e.g. `[id=123]`
+
+Filter expression expects to be in following format:
+
+`[field-name operator field-value]`
+
+each expression must be surrounded with `[` and `]`. `field name` and `field value` are separated by `operator`.
+
+IMPORTANT: Currently only `=` operator is supported for field expressions. Field matching is based on text equality (case-sensitive) and thus any field expression must take that into consideration.
+
+=== Operations supported in JSON Patch
+
+JSON Patch allows to specify one or more operations in single patch. Each operation will be performed in sequence and should considered atomic - will succeed only when all operations are successfully performed. Moreover, next operation will operate on JSON document that the previous operation was already applied to.
+
+==== Add
+
+Allows to add new item to an array or new field into an object. Uses `/-` construct to append at the end of the array.
+
+Examples:
+
+
+Add new employee
+[source, json]
+----
+[
+   {
+      "op":"add",
+      "path":"/employees/-",
+      "value":{
+         "id":"john doe",
+         "contracts":[
+            "fullTimeContract"
+         ],
+         "skills":[
+            {
+               "id":"Ambulance"
+            }
+         ]
+      }
+   }
+]
+----
+
+Add new contract to an employee with id `Ann Cole`
+[source, json]
+----
+[
+  { "op": "add", "path": "/employees/[id=Ann Cole]/contracts/-", "value": "test" }
+]
+----
+
+Add visit to a visit group with id `ce9aa5e4`
+[source, json]
+----
+[
+   {
+      "op":"add",
+      "path":"/visitGroups/[id=ce9aa5e4]/visits/-",
+      "value":{
+         "id":"0d7f6e5x",
+         "name":"Mick Robinson 1 / 3",
+         "location":[
+            33.80118537771744,
+            -84.40335014628359
+         ],
+         "timeWindows":[
+            {
+               "minStartTime":"2025-08-18T08:00:00-04:00",
+               "maxEndTime":"2025-08-18T16:00:00-04:00"
+            }
+         ],
+         "serviceDuration":"PT1H30M",
+         "requiredSkills":[
+            {
+               "name":"plumber",
+               "minLevel":null
+            }
+         ],
+         "priority":"8",
+         "pinningRequested":false
+      }
+   }
+]
+----
+
+Add tag `emergency` to a shift (with id `cd4c29ed` ) within vehicle with (id `Ann`)
+
+[source, json]
+----
+[
+     { "op": "add", "path": "/vehicles/[id=Ann]/shifts/[id=cd4c29ed]/tags/-", "value": "emergency"}
+]
+----
+
+
+==== Replace
+
+Allows to replace full objects (that the path points to) with new value. It essentially performs `remove` and then `add` operations so can be replaced with two operations within the patch.
+
+Examples:
+
+Replace visit (with id `0d7f6e52`) inside visit group (with id `ce9aa5e4`)
+
+[source, json]
+----
+[
+   {
+      "op":"replace",
+      "path":"/visitGroups/[id=ce9aa5e4]/visits/[id=0d7f6e52]",
+      "value":{
+         "id":"0d7f6e5x",
+         "name":"Mick Robinson 1 / 3",
+         "location":[
+            33.80118537771744,
+            -84.40335014628359
+         ],
+         "timeWindows":[
+            {
+               "minStartTime":"2025-08-18T08:00:00-04:00",
+               "maxEndTime":"2025-08-18T16:00:00-04:00"
+            }
+         ],
+         "serviceDuration":"PT1H30M",
+         "requiredSkills":[
+            {
+               "name":"plumber",
+               "minLevel":null
+            }
+         ],
+         "priority":"8",
+         "pinningRequested":false
+      }
+   }
+]
+----
+
+Replace skills (all of them) for an employee with id `Ann Cole`
+
+[source, json]
+----
+[
+  { "op": "replace", "path": "/employees/[id=Ann Cole]/skills", "value": [{"id": "Test"}]}
+]
+----
+
+Replace skills for shift (with id `cd4c29ed`) within vehicle with id `Ann`
+
+[source, json]
+----
+[
+   {
+      "op":"replace",
+      "path":"/vehicles/[id=Ann]/shifts/[id=cd4c29ed]/skills",
+      "value":[
+         {
+            "name":"musician",
+            "level":1,
+            "multiplier":null
+         }
+      ]
+   }
+]
+----
+
+
+Replace timezone for an employee with id `Ann Cole`
+
+[source, json]
+----
+[
+  { "op": "replace", "path": "/employees/[id=Ann Cole]/timeZoneId", "value": "-08:00"}
+]
+----
+
+==== Remove
+
+Allows to remove value from an object or an array.
+
+Examples:
+
+Removes employee with skill
+
+[source, json]
+----
+[
+  { "op": "remove", "path": "/employees/[skills/id=Ambulance]" }
+]
+----
+
+Removes contract from an employee (with id `Ann Cole`) based on index
+
+[source, json]
+----
+[
+  { "op": "remove", "path": "/employees/[id=Ann Cole]/contracts/0" }
+]
+----
+
+Removes contract from an employee (with id `Ann Cole`) based on contract id
+
+[source, json]
+----
+[
+  { "op": "remove", "path": "/employees/[id=Ann Cole]/contracts/[fullTimeContract]" }
+]
+----
+
+Removes required break (with id `cd4c29ed Lunch`) from shift (with id `cd4c29ed`) within vehicle (with id `Ann`)
+
+[source, json]
+----
+[
+     { "op": "remove", "path": "/vehicles/[id=Ann]/shifts/[id=cd4c29ed]/requiredBreaks/[id=cd4c29ed Lunch]"}
+]
+----
+
+More examples can be found in link:src/test/java/ai/timefold/solver/model/json/internal/patch[test cases]

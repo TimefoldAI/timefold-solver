@@ -1,0 +1,2313 @@
+{
+  "openapi" : "3.0.3",
+  "info" : {
+    "title" : "Integration Tests - Simplified Employee Shift Scheduling model",
+    "description" : "",
+    "contact" : {
+      "name" : "",
+      "url" : "",
+      "email" : ""
+    },
+    "version" : "v2-beta"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:8080",
+    "description" : "Auto generated value"
+  }, {
+    "url" : "http://0.0.0.0:8080",
+    "description" : "Auto generated value"
+  } ],
+  "tags" : [ ],
+  "paths" : {
+    "/v2-beta/schedules" : {
+      "post" : {
+        "summary" : "Posts a dataset and optionally requests its solving. Unique identifier is returned that can be used for further operations on the dataset.",
+        "operationId" : "schedule",
+        "parameters" : [ {
+          "description" : "Optional name to be given to the dataset, if not provided a name will be generated.",
+          "name" : "name",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Operation to execute on the POST request.",
+          "name" : "operation",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OperationOnPost"
+            }, {
+              "default" : "SOLVE"
+            } ]
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ModelRequestEmployeeScheduleEmptyModelConfigOverrides"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "400" : {
+            "description" : "In case request given does not meet expectations",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ErrorInfo"
+                  }, {
+                    "$ref" : "#/components/schemas/ValidationErrorInfo"
+                  } ]
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Successfully accepted request to post a dataset",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "id" : {
+                      "type" : "string"
+                    },
+                    "parentId" : {
+                      "description" : "The id of the parent data set this was created from",
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "originId" : {
+                      "description" : "The id of the origin (root) data set this initially originates from",
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "name" : {
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "submitDateTime" : {
+                      "description" : "The moment the run is submitted",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "startDateTime" : {
+                      "description" : "The moment the run begins initializing",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "activeDateTime" : {
+                      "description" : "The moment the solving phase begins",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "completeDateTime" : {
+                      "description" : "The moment the solving phase concludes",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "shutdownDateTime" : {
+                      "description" : "The moment the post-processing phase finishes",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "solverStatus" : {
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/SolvingStatus"
+                      } ],
+                      "nullable" : true
+                    },
+                    "score" : {
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "tags" : {
+                      "uniqueItems" : true,
+                      "type" : "array",
+                      "items" : {
+                        "type" : "string"
+                      }
+                    },
+                    "validationResult" : {
+                      "$ref" : "#/components/schemas/LegacyValidationResult"
+                    },
+                    "failureMessage" : {
+                      "description" : "The message describing the reason of failure, in case of solverStatus=SOLVING_FAILED.",
+                      "type" : "string",
+                      "nullable" : true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      },
+      "get" : {
+        "summary" : "List all schedules that are registered in the service (that are to be solved, in progress or solved), only returning it's status, score and id",
+        "operationId" : "getSchedules",
+        "deprecated" : true,
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "format" : "int32",
+            "default" : 0,
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "schema" : {
+            "format" : "int32",
+            "default" : 100,
+            "maximum" : 1000,
+            "minimum" : 0,
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case request given schedule does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Returns scheduling with given identifier",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Metadata"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/validation-issue-types" : {
+      "get" : {
+        "summary" : "Get validation issue types supported by the model",
+        "operationId" : "getValidationIssueTypes",
+        "responses" : {
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Validation issue types supported by the model",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ValidationIssueTypes"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/validation-issue-types/{code}" : {
+      "get" : {
+        "summary" : "Get validation issue type by the code",
+        "operationId" : "getValidationIssueTypeByCode",
+        "parameters" : [ {
+          "description" : "Unique identifier of the validation issue type",
+          "required" : true,
+          "name" : "code",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case the issue type of the given code does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Validation issue type of the given code",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ValidationIssueTypes"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}" : {
+      "delete" : {
+        "summary" : "Terminate and return schedule with given identifier",
+        "operationId" : "terminateSchedule",
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case request given schedule does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Returns scheduling with given identifier",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ModelResponseHardMediumSoftScoreEmployeeScheduleEmployeeScheduleInputMetricsEmployeeScheduleOutputMetrics"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      },
+      "post" : {
+        "summary" : "Request solving a dataset under the given unique identifier.",
+        "operationId" : "solveDataset",
+        "parameters" : [ {
+          "description" : "Unique identifier of the dataset",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Successfully accepted request to solve scheduling problem",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "id" : {
+                      "type" : "string"
+                    },
+                    "parentId" : {
+                      "description" : "The id of the parent data set this was created from",
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "originId" : {
+                      "description" : "The id of the origin (root) data set this initially originates from",
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "name" : {
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "submitDateTime" : {
+                      "description" : "The moment the run is submitted",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "startDateTime" : {
+                      "description" : "The moment the run begins initializing",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "activeDateTime" : {
+                      "description" : "The moment the solving phase begins",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "completeDateTime" : {
+                      "description" : "The moment the solving phase concludes",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "shutdownDateTime" : {
+                      "description" : "The moment the post-processing phase finishes",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "solverStatus" : {
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/SolvingStatus"
+                      } ],
+                      "nullable" : true
+                    },
+                    "score" : {
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "tags" : {
+                      "uniqueItems" : true,
+                      "type" : "array",
+                      "items" : {
+                        "type" : "string"
+                      }
+                    },
+                    "validationResult" : {
+                      "$ref" : "#/components/schemas/LegacyValidationResult"
+                    },
+                    "failureMessage" : {
+                      "description" : "The message describing the reason of failure, in case of solverStatus=SOLVING_FAILED.",
+                      "type" : "string",
+                      "nullable" : true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      },
+      "get" : {
+        "summary" : "Get schedule (might be incomplete as long as the solver is still running) with given identifier",
+        "operationId" : "getSchedule",
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case request given schedule does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Returns scheduling with given identifier",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ModelResponseHardMediumSoftScoreEmployeeScheduleEmployeeScheduleInputMetricsEmployeeScheduleOutputMetrics"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}/config" : {
+      "get" : {
+        "summary" : "Get the configuration used for the schedule",
+        "operationId" : "getScheduleConfig",
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case request given schedule does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Returns the configuration used for a schedule with the given identifier",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ModelConfiguration2"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}/events" : {
+      "get" : {
+        "summary" : "Subscribes to events of given dataset (of type metadata) as long as it has not yet reached final state (completed, failed, incomplete or invalid)",
+        "operationId" : "getMetadataEvents",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SolvingStatus"
+            }
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case request given dataset does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "410" : {
+            "description" : "In case given dataset is already in final state",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Event stream of dataset changes",
+            "content" : {
+              "text/event-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Metadata"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}/from-input" : {
+      "post" : {
+        "summary" : "Request a problem to be solved, based on a previously solved dataset. A unique identifier is returned that can be used to get the schedule once solved",
+        "operationId" : "fromInput",
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Optional name to be given to the dataset, if not provided a name will be generated.",
+          "name" : "name",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Operation to execute on the POST request.",
+          "name" : "operation",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OperationOnPost"
+            }, {
+              "default" : "SOLVE"
+            } ]
+          }
+        }, {
+          "description" : "Data to use as a source for the operation.",
+          "name" : "select",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/DatasetSelector"
+            }, {
+              "default" : "UNSOLVED"
+            } ]
+          }
+        } ],
+        "requestBody" : {
+          "required" : false,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ModelConfiguration2"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "400" : {
+            "description" : "In case request given does not meet expectations",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ErrorInfo"
+                  }, {
+                    "$ref" : "#/components/schemas/ValidationErrorInfo"
+                  } ]
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Successfully accepted request to solve scheduling problem",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "id" : {
+                      "type" : "string"
+                    },
+                    "parentId" : {
+                      "description" : "The id of the parent data set this was created from",
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "originId" : {
+                      "description" : "The id of the origin (root) data set this initially originates from",
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "name" : {
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "submitDateTime" : {
+                      "description" : "The moment the run is submitted",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "startDateTime" : {
+                      "description" : "The moment the run begins initializing",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "activeDateTime" : {
+                      "description" : "The moment the solving phase begins",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "completeDateTime" : {
+                      "description" : "The moment the solving phase concludes",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "shutdownDateTime" : {
+                      "description" : "The moment the post-processing phase finishes",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "solverStatus" : {
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/SolvingStatus"
+                      } ],
+                      "nullable" : true
+                    },
+                    "score" : {
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "tags" : {
+                      "uniqueItems" : true,
+                      "type" : "array",
+                      "items" : {
+                        "type" : "string"
+                      }
+                    },
+                    "validationResult" : {
+                      "$ref" : "#/components/schemas/LegacyValidationResult"
+                    },
+                    "failureMessage" : {
+                      "description" : "The message describing the reason of failure, in case of solverStatus=SOLVING_FAILED.",
+                      "type" : "string",
+                      "nullable" : true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}/from-patch" : {
+      "post" : {
+        "summary" : "Preview: Request a problem to be solved, based on a previous dataset that is patched with given operations. A unique identifier is returned that can be used to get the dataset",
+        "description" : "Request a problem to be solved, based on a previous dataset that is patched with given operations. This operation is in preview and might be a subject to change. This operation is not be available for everyone (feature-flagged).",
+        "operationId" : "fromPatch",
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Optional name to be given to the dataset, if not provided a name will be generated.",
+          "name" : "name",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Operation to execute on the POST request.",
+          "name" : "operation",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OperationOnPost"
+            }, {
+              "default" : "SOLVE"
+            } ]
+          }
+        }, {
+          "description" : "Data to use as a source for the operation.",
+          "name" : "select",
+          "in" : "query",
+          "schema" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/DatasetSelector"
+            }, {
+              "default" : "SOLVED"
+            } ]
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ModelInputPatchRequestEmptyModelConfigOverrides"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "400" : {
+            "description" : "In case request given does not meet expectations",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ErrorInfo"
+                  }, {
+                    "$ref" : "#/components/schemas/ValidationErrorInfo"
+                  } ]
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Successfully patched and accepted request to solve scheduling problem",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "id" : {
+                      "type" : "string"
+                    },
+                    "parentId" : {
+                      "description" : "The id of the parent data set this was created from",
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "originId" : {
+                      "description" : "The id of the origin (root) data set this initially originates from",
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "name" : {
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "submitDateTime" : {
+                      "description" : "The moment the run is submitted",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "startDateTime" : {
+                      "description" : "The moment the run begins initializing",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "activeDateTime" : {
+                      "description" : "The moment the solving phase begins",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "completeDateTime" : {
+                      "description" : "The moment the solving phase concludes",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "shutdownDateTime" : {
+                      "description" : "The moment the post-processing phase finishes",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "solverStatus" : {
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/SolvingStatus"
+                      } ],
+                      "nullable" : true
+                    },
+                    "score" : {
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "tags" : {
+                      "uniqueItems" : true,
+                      "type" : "array",
+                      "items" : {
+                        "type" : "string"
+                      }
+                    },
+                    "validationResult" : {
+                      "$ref" : "#/components/schemas/LegacyValidationResult"
+                    },
+                    "failureMessage" : {
+                      "description" : "The message describing the reason of failure, in case of solverStatus=SOLVING_FAILED.",
+                      "type" : "string",
+                      "nullable" : true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}/input" : {
+      "get" : {
+        "summary" : "Get input dataset",
+        "operationId" : "getScheduleInput",
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case request given schedule does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Returns input dataset for given identifier",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmployeeSchedule"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}/logs" : {
+      "get" : {
+        "summary" : "Get logs with given identifier",
+        "operationId" : "getScheduleLogs",
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case request given schedule does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Returns logs with given identifier",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LogInfo"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}/metadata" : {
+      "get" : {
+        "summary" : "Get schedule status with given identifier",
+        "operationId" : "getMetadata",
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case request given schedule does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Returns scheduling with given identifier",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Metadata"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}/model-request" : {
+      "get" : {
+        "summary" : "Get complete input request for given schedule with given identifier",
+        "operationId" : "getModelRequest",
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case request given schedule does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Returns scheduling input with given identifier",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ModelRequestEmployeeScheduleEmptyModelConfigOverrides"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}/new-run" : {
+      "post" : {
+        "summary" : "(Deprecated endpoint, please use /{id}/from-input instead) Request a problem to be solved, based on a previously solved dataset. A unique identifier is returned that can be used to get the schedule once solved",
+        "operationId" : "reschedule",
+        "deprecated" : true,
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "required" : false,
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ModelConfiguration2"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "400" : {
+            "description" : "In case request given does not meet expectations",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [ {
+                    "$ref" : "#/components/schemas/ErrorInfo"
+                  }, {
+                    "$ref" : "#/components/schemas/ValidationErrorInfo"
+                  } ]
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Successfully accepted request to solve scheduling problem",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "id" : {
+                      "type" : "string"
+                    },
+                    "parentId" : {
+                      "description" : "The id of the parent data set this was created from",
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "originId" : {
+                      "description" : "The id of the origin (root) data set this initially originates from",
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "name" : {
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "submitDateTime" : {
+                      "description" : "The moment the run is submitted",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "startDateTime" : {
+                      "description" : "The moment the run begins initializing",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "activeDateTime" : {
+                      "description" : "The moment the solving phase begins",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "completeDateTime" : {
+                      "description" : "The moment the solving phase concludes",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "shutdownDateTime" : {
+                      "description" : "The moment the post-processing phase finishes",
+                      "type" : "string",
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/OffsetDateTime"
+                      } ],
+                      "nullable" : true
+                    },
+                    "solverStatus" : {
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/SolvingStatus"
+                      } ],
+                      "nullable" : true
+                    },
+                    "score" : {
+                      "type" : "string",
+                      "nullable" : true
+                    },
+                    "tags" : {
+                      "uniqueItems" : true,
+                      "type" : "array",
+                      "items" : {
+                        "type" : "string"
+                      }
+                    },
+                    "validationResult" : {
+                      "$ref" : "#/components/schemas/LegacyValidationResult"
+                    },
+                    "failureMessage" : {
+                      "description" : "The message describing the reason of failure, in case of solverStatus=SOLVING_FAILED.",
+                      "type" : "string",
+                      "nullable" : true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}/run" : {
+      "get" : {
+        "summary" : "(Deprecated endpoint, please use /{id}/metadata instead) Get schedule status with given identifier",
+        "operationId" : "getScheduleStatus",
+        "deprecated" : true,
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case request given schedule does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Returns scheduling with given identifier",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Metadata"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    },
+    "/v2-beta/schedules/{id}/validation-result" : {
+      "get" : {
+        "summary" : "Get validation result of a dataset with the given identifier",
+        "operationId" : "getValidationResult",
+        "parameters" : [ {
+          "description" : "Unique identifier of the schedule",
+          "required" : true,
+          "name" : "id",
+          "in" : "path",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "404" : {
+            "description" : "In case the given dataset does not exist",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "In case of processing errors",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorInfo"
+                }
+              }
+            }
+          },
+          "200" : {
+            "description" : "Validation results of a dataset with the given identifier",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ValidationResultAbstractEmployeeScheduleIssue"
+                }
+              }
+            }
+          }
+        },
+        "tags" : [ "Employee Schedule _ Employee Schedule Resource" ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "AbstractEmployeeScheduleIssue" : {
+        "required" : [ "code", "severity" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "description" : "Issue code referring to an issue type.",
+            "type" : "string"
+          },
+          "severity" : {
+            "description" : "Issue severity",
+            "enum" : [ "ERROR", "WARNING" ],
+            "type" : "string"
+          }
+        },
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/ShiftEndBeforeStartIssue"
+        } ]
+      },
+      "DatasetSelector" : {
+        "enum" : [ "UNSOLVED", "SOLVED" ],
+        "type" : "string"
+      },
+      "Duration" : {
+        "format" : "duration",
+        "type" : "string",
+        "example" : "P1D"
+      },
+      "Employee" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "skills" : {
+            "uniqueItems" : true,
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Skill"
+            }
+          }
+        }
+      },
+      "EmployeeSchedule" : {
+        "type" : "object",
+        "properties" : {
+          "employees" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Employee"
+            }
+          },
+          "shifts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Shift"
+            }
+          },
+          "score" : {
+            "$ref" : "#/components/schemas/HardMediumSoftScore"
+          }
+        }
+      },
+      "EmployeeScheduleInputMetrics" : {
+        "type" : "object",
+        "properties" : {
+          "shiftCount" : {
+            "format" : "number",
+            "title" : "Shifts",
+            "description" : "The number of shifts submitted in the input dataset.",
+            "type" : "number",
+            "readOnly" : true,
+            "example" : 100,
+            "x-tf-priority" : "1",
+            "x-tf-example" : "100"
+          },
+          "employeeCount" : {
+            "format" : "number",
+            "title" : "Emplyees",
+            "description" : "The number of employees submitted in the input dataset.",
+            "type" : "number",
+            "readOnly" : true,
+            "example" : 10,
+            "x-tf-priority" : "2",
+            "x-tf-example" : "10"
+          }
+        }
+      },
+      "EmployeeScheduleOutputMetrics" : {
+        "type" : "object",
+        "properties" : {
+          "assignedShifts" : {
+            "format" : "number",
+            "title" : "Assigned Shifts",
+            "description" : "The number of shifts assigned to employees.",
+            "type" : "number",
+            "readOnly" : true,
+            "example" : 100,
+            "x-tf-priority" : "1",
+            "x-tf-example" : "100"
+          }
+        }
+      },
+      "EmptyModelConfigOverrides" : {
+        "type" : "object"
+      },
+      "ErrorInfo" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "details" : {
+            "type" : "string"
+          }
+        }
+      },
+      "HardMediumSoftScore" : {
+        "type" : "object",
+        "properties" : {
+          "zero" : {
+            "type" : "boolean"
+          },
+          "hardScore" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "mediumScore" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "softScore" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "feasible" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "IssueCode" : {
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "type" : "string"
+          }
+        }
+      },
+      "IssueMessage" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "description" : "The type of the issue type detail.",
+            "type" : "string",
+            "readOnly" : true
+          },
+          "message" : {
+            "type" : "string"
+          }
+        }
+      },
+      "IssueMetadata" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "description" : "The type of the issue type detail.",
+            "type" : "string",
+            "readOnly" : true
+          }
+        },
+        "oneOf" : [ {
+          "$ref" : "#/components/schemas/IssueMessage"
+        } ]
+      },
+      "IssueSeverity" : {
+        "enum" : [ "ERROR", "WARNING" ],
+        "type" : "string"
+      },
+      "IssueType" : {
+        "required" : [ "code", "severity" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "description" : "Unique case-sensitive code of the issue type.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/IssueCode"
+            } ]
+          },
+          "severity" : {
+            "description" : "Issue severity",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/IssueSeverity"
+            } ]
+          },
+          "metadata" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/IssueMetadata"
+            }
+          }
+        }
+      },
+      "LegacyValidationResult" : {
+        "description" : "The result of the validation of the model input",
+        "type" : "object",
+        "properties" : {
+          "summary" : {
+            "description" : "The summary of the validation. The model input passes the validation if the summary does not contain errors.",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ValidationStatus"
+            } ]
+          },
+          "errors" : {
+            "description" : "The list of errors that occurred during the validation. If the list is empty, the model input is considered valid.",
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "warnings" : {
+            "description" : "The list of warnings that occurred during the validation.",
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        },
+        "additionalProperties" : false
+      },
+      "LogInfo" : {
+        "type" : "object",
+        "properties" : {
+          "details" : {
+            "type" : "string"
+          }
+        }
+      },
+      "MapsConfiguration" : {
+        "type" : "object",
+        "properties" : {
+          "provider" : {
+            "type" : "string"
+          },
+          "location" : {
+            "type" : "string"
+          },
+          "maxDistanceFromRoad" : {
+            "format" : "double",
+            "type" : "number"
+          },
+          "transportType" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Metadata" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "parentId" : {
+            "description" : "The id of the parent data set this was created from",
+            "type" : "string",
+            "nullable" : true
+          },
+          "originId" : {
+            "description" : "The id of the origin (root) data set this initially originates from",
+            "type" : "string",
+            "nullable" : true
+          },
+          "name" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "submitDateTime" : {
+            "description" : "The moment the run is submitted",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OffsetDateTime"
+            } ],
+            "nullable" : true
+          },
+          "startDateTime" : {
+            "description" : "The moment the run begins initializing",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OffsetDateTime"
+            } ],
+            "nullable" : true
+          },
+          "activeDateTime" : {
+            "description" : "The moment the solving phase begins",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OffsetDateTime"
+            } ],
+            "nullable" : true
+          },
+          "completeDateTime" : {
+            "description" : "The moment the solving phase concludes",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OffsetDateTime"
+            } ],
+            "nullable" : true
+          },
+          "shutdownDateTime" : {
+            "description" : "The moment the post-processing phase finishes",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OffsetDateTime"
+            } ],
+            "nullable" : true
+          },
+          "solverStatus" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SolvingStatus"
+            } ],
+            "nullable" : true
+          },
+          "score" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "tags" : {
+            "uniqueItems" : true,
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "validationResult" : {
+            "$ref" : "#/components/schemas/LegacyValidationResult"
+          },
+          "failureMessage" : {
+            "description" : "The message describing the reason of failure, in case of solverStatus=SOLVING_FAILED.",
+            "type" : "string",
+            "nullable" : true
+          }
+        }
+      },
+      "MetadataHardMediumSoftScore" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "parentId" : {
+            "description" : "The id of the parent data set this was created from",
+            "type" : "string",
+            "nullable" : true
+          },
+          "originId" : {
+            "description" : "The id of the origin (root) data set this initially originates from",
+            "type" : "string",
+            "nullable" : true
+          },
+          "name" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "submitDateTime" : {
+            "description" : "The moment the run is submitted",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OffsetDateTime"
+            } ],
+            "nullable" : true
+          },
+          "startDateTime" : {
+            "description" : "The moment the run begins initializing",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OffsetDateTime"
+            } ],
+            "nullable" : true
+          },
+          "activeDateTime" : {
+            "description" : "The moment the solving phase begins",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OffsetDateTime"
+            } ],
+            "nullable" : true
+          },
+          "completeDateTime" : {
+            "description" : "The moment the solving phase concludes",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OffsetDateTime"
+            } ],
+            "nullable" : true
+          },
+          "shutdownDateTime" : {
+            "description" : "The moment the post-processing phase finishes",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/OffsetDateTime"
+            } ],
+            "nullable" : true
+          },
+          "solverStatus" : {
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/SolvingStatus"
+            } ],
+            "nullable" : true
+          },
+          "score" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "tags" : {
+            "uniqueItems" : true,
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "validationResult" : {
+            "$ref" : "#/components/schemas/LegacyValidationResult"
+          },
+          "failureMessage" : {
+            "description" : "The message describing the reason of failure, in case of solverStatus=SOLVING_FAILED.",
+            "type" : "string",
+            "nullable" : true
+          }
+        }
+      },
+      "ModelConfigEmptyModelConfigOverrides" : {
+        "type" : "object",
+        "properties" : {
+          "overrides" : {
+            "description" : "The configuration of individual (soft) constraints weights and additional global model configuration attributes.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/EmptyModelConfigOverrides"
+            } ],
+            "nullable" : true
+          }
+        },
+        "additionalProperties" : false
+      },
+      "ModelConfigModelConfigOverrides" : {
+        "type" : "object",
+        "properties" : {
+          "overrides" : {
+            "description" : "The configuration of individual (soft) constraints weights and additional global model configuration attributes.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ModelConfigOverrides"
+            } ],
+            "nullable" : true
+          }
+        },
+        "additionalProperties" : false
+      },
+      "ModelConfigObject" : {
+        "type" : "object",
+        "properties" : {
+          "overrides" : {
+            "description" : "The configuration of individual (soft) constraints weights and additional global model configuration attributes.",
+            "type" : "object",
+            "nullable" : true
+          }
+        },
+        "additionalProperties" : false
+      },
+      "ModelConfigOverrides" : {
+        "type" : "object"
+      },
+      "ModelConfiguration1" : {
+        "type" : "object",
+        "properties" : {
+          "run" : {
+            "description" : "The run configuration.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/RunConfiguration"
+            } ],
+            "nullable" : true
+          },
+          "model" : {
+            "description" : "The model configuration. Impacts the quality of solution.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ModelConfigModelConfigOverrides"
+            } ],
+            "nullable" : true
+          },
+          "resourcesConfiguration" : {
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ResourcesConfiguration"
+            } ],
+            "readOnly" : true,
+            "nullable" : true
+          },
+          "mapsConfiguration" : {
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/MapsConfiguration"
+            } ],
+            "readOnly" : true,
+            "nullable" : true
+          }
+        },
+        "additionalProperties" : false
+      },
+      "ModelConfiguration2" : {
+        "type" : "object",
+        "properties" : {
+          "run" : {
+            "description" : "The run configuration.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/RunConfiguration"
+            } ],
+            "nullable" : true
+          },
+          "model" : {
+            "description" : "The model configuration. Impacts the quality of solution.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ModelConfigEmptyModelConfigOverrides"
+            } ],
+            "nullable" : true
+          },
+          "resourcesConfiguration" : {
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ResourcesConfiguration"
+            } ],
+            "readOnly" : true,
+            "nullable" : true
+          },
+          "mapsConfiguration" : {
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/MapsConfiguration"
+            } ],
+            "readOnly" : true,
+            "nullable" : true
+          }
+        },
+        "additionalProperties" : false
+      },
+      "ModelInput" : {
+        "type" : "object"
+      },
+      "ModelInputPatch" : {
+        "required" : [ "op", "path" ],
+        "type" : "object",
+        "properties" : {
+          "op" : {
+            "description" : "Operation to be applied",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ModelInputPatchOp"
+            } ]
+          },
+          "path" : {
+            "description" : "Path within the dataset structure to be modified. Can use field expression with format [fieldName=value] or index to point to selected objects",
+            "type" : "string",
+            "example" : "/employees/[id=Employee123]"
+          },
+          "value" : {
+            "description" : "Value (object, array or simple value) to be used for add or replace operations. It should not be given for remove operation",
+            "additionalProperties" : true,
+            "anyOf" : [ { }, {
+              "type" : "array",
+              "items" : { }
+            } ]
+          }
+        }
+      },
+      "ModelInputPatchOp" : {
+        "enum" : [ "add", "remove", "replace" ],
+        "type" : "string"
+      },
+      "ModelInputPatchRequestEmptyModelConfigOverrides" : {
+        "required" : [ "patch" ],
+        "type" : "object",
+        "properties" : {
+          "config" : {
+            "description" : "Optional configuration to be applied when solving the patched dataset.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ModelConfiguration2"
+            } ]
+          },
+          "patch" : {
+            "description" : "List of patches to be applied to the original dataset.",
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ModelInputPatch"
+            }
+          }
+        }
+      },
+      "ModelRequestEmployeeScheduleEmptyModelConfigOverrides" : {
+        "required" : [ "modelInput" ],
+        "type" : "object",
+        "properties" : {
+          "config" : {
+            "description" : "The configuration of the model request. If not provided, defaults of the model are used.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ModelConfiguration2"
+            } ],
+            "nullable" : true
+          },
+          "modelInput" : {
+            "description" : "The model input to solve.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/EmployeeSchedule"
+            } ]
+          }
+        },
+        "additionalProperties" : false
+      },
+      "ModelResponseHardMediumSoftScoreEmployeeScheduleEmployeeScheduleInputMetricsEmployeeScheduleOutputMetrics" : {
+        "type" : "object",
+        "properties" : {
+          "metadata" : {
+            "description" : "The model dataset metadata.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/MetadataHardMediumSoftScore"
+            } ],
+            "nullable" : true
+          },
+          "modelOutput" : {
+            "description" : "The solution to the requested model input.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/EmployeeSchedule"
+            } ],
+            "nullable" : true
+          },
+          "inputMetrics" : {
+            "description" : "Key metrics aggregated from the model input.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/EmployeeScheduleInputMetrics"
+            } ],
+            "nullable" : true
+          },
+          "kpis" : {
+            "description" : "Key metrics aggregated from the model output.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/EmployeeScheduleOutputMetrics"
+            } ],
+            "nullable" : true
+          },
+          "run" : {
+            "description" : "The model run metadata. Deprecated in favor of \"metadata\"",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/MetadataHardMediumSoftScore"
+            } ],
+            "readOnly" : true,
+            "nullable" : true,
+            "deprecated" : true
+          }
+        }
+      },
+      "OffsetDateTime" : {
+        "format" : "date-time",
+        "type" : "string",
+        "example" : "2022-03-10T12:15:50-04:00"
+      },
+      "OperationOnPost" : {
+        "enum" : [ "NONE", "SOLVE" ],
+        "type" : "string"
+      },
+      "ResourcesConfiguration" : {
+        "type" : "object",
+        "properties" : {
+          "memory" : {
+            "format" : "double",
+            "type" : "number"
+          },
+          "labels" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "RunConfiguration" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "description" : "Optional name to be given to the dataset. If not provided, the name will be generated.",
+            "maxLength" : 255,
+            "minLength" : 0,
+            "type" : "string",
+            "nullable" : true
+          },
+          "termination" : {
+            "$ref" : "#/components/schemas/SolverTerminationConfig"
+          },
+          "maxThreadCount" : {
+            "format" : "int32",
+            "description" : "Optional maximum number of threads to be used for solving.",
+            "minimum" : 1,
+            "type" : "integer",
+            "nullable" : true
+          },
+          "tags" : {
+            "description" : "Optional tags to be assigned to the dataset.",
+            "maxItems" : 100,
+            "uniqueItems" : true,
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        },
+        "additionalProperties" : false
+      },
+      "ScoreAnalysisConfigModelConfigOverrides" : {
+        "type" : "object",
+        "properties" : {
+          "model" : {
+            "description" : "Model configuration for the score analysis.",
+            "type" : "object",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ModelConfigModelConfigOverrides"
+            } ],
+            "nullable" : true
+          }
+        },
+        "additionalProperties" : false
+      },
+      "Shift" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "requiredSkill" : {
+            "$ref" : "#/components/schemas/Skill"
+          },
+          "startTime" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "endTime" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "employee" : {
+            "$ref" : "#/components/schemas/Employee"
+          }
+        }
+      },
+      "ShiftEndBeforeStartIssue" : {
+        "type" : "object",
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/AbstractEmployeeScheduleIssue"
+        } ],
+        "properties" : {
+          "shiftId" : {
+            "type" : "string"
+          },
+          "startTime" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          },
+          "endTime" : {
+            "$ref" : "#/components/schemas/OffsetDateTime"
+          }
+        }
+      },
+      "Skill" : {
+        "enum" : [ "AMBULANCE", "ANESTHESIA", "CARDIOLOGY", "DERMATOLOGY", "EMERGENCY" ],
+        "type" : "string"
+      },
+      "SolverTerminationConfig" : {
+        "type" : "object",
+        "properties" : {
+          "spentLimit" : {
+            "description" : "Maximum duration (ISO 8601 duration format) to keep the solver running (e.g. PT1H).",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/Duration"
+            } ],
+            "example" : "PT1H"
+          },
+          "unimprovedSpentLimit" : {
+            "description" : "Maximum unimproved score duration (ISO 8601 duration format). If the score has not improved during this period (e.g. PT5M), terminate the solver. If no value is provided, the default diminished returns termination will apply. If set, stepCountLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/Duration"
+            } ],
+            "example" : "PT5M"
+          },
+          "stepCountLimit" : {
+            "format" : "int32",
+            "description" : "Maximum solver step count. The solver will stop solving after a pre-determined amount of steps. Use when you require results independently of the hardware resources performance. Use this termination if you want to benchmark your models, not recommended for production use. If set, unimprovedSpentLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
+            "type" : "integer",
+            "example" : 1000
+          }
+        },
+        "additionalProperties" : false
+      },
+      "SolvingStatus" : {
+        "enum" : [ "DATASET_CREATED", "DATASET_VALIDATED", "DATASET_INVALID", "DATASET_COMPUTED", "SOLVING_SCHEDULED", "SOLVING_STARTED", "SOLVING_ACTIVE", "SOLVING_COMPLETED", "SOLVING_INCOMPLETE", "SOLVING_FAILED" ],
+        "type" : "string"
+      },
+      "ValidationErrorInfo" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "details" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "ValidationIssueTypes" : {
+        "required" : [ "issueTypes" ],
+        "type" : "object",
+        "properties" : {
+          "issueTypes" : {
+            "description" : "List of all supported validation issue types together with their metadata.",
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/IssueType"
+            }
+          }
+        }
+      },
+      "ValidationResultAbstractEmployeeScheduleIssue" : {
+        "required" : [ "status" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "description" : "Determines if the validated dataset is accepted for further processing",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/ValidationStatus"
+            } ]
+          },
+          "issues" : {
+            "description" : "Validation issues found",
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AbstractEmployeeScheduleIssue"
+            }
+          }
+        }
+      },
+      "ValidationStatus" : {
+        "enum" : [ "VALIDATION_NOT_SUPPORTED", "OK", "WARNINGS", "ERRORS" ],
+        "type" : "string"
+      }
+    }
+  }
+}

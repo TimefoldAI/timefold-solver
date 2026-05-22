@@ -364,7 +364,7 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>${version.exec-maven.plugin}</version>
           <configuration>
-            <mainClass>ai.timefold.sdk.config.ConfigDumperMain</mainClass>
+            <mainClass>ai.timefold.solver.model.config.ConfigDumperMain</mainClass>
           </configuration>
         </plugin>
       </plugins>

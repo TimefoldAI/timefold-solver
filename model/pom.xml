@@ -24,7 +24,7 @@
     <module>json</module>
     <module>jackson</module>
     <module>rest</module>
-    <module>solver-worker</module>
+    <module>worker</module>
     <module>quarkus</module>
     <module>maps</module>
     <module>test</module>
