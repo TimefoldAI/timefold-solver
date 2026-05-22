@@ -30,7 +30,7 @@ public final class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValu
 
     public static final String XML_ELEMENT_NAME = "queuedValuePlacer";
 
-    private Class<?> entityClass = null;
+    private String entityClass = null;
 
     @XmlElement(name = "valueSelector")
     private ValueSelectorConfig valueSelectorConfig = null;
@@ -50,11 +50,11 @@ public final class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValu
     private MoveSelectorConfig moveSelectorConfig = null;
 
     public @Nullable Class<?> getEntityClass() {
-        return entityClass;
+        return ConfigUtils.resolveClass(entityClass, "entityClass", this);
     }
 
     public void setEntityClass(@Nullable Class<?> entityClass) {
-        this.entityClass = entityClass;
+        this.entityClass = entityClass == null ? null : entityClass.getName();
     }
 
     public @Nullable ValueSelectorConfig getValueSelectorConfig() {
@@ -78,7 +78,7 @@ public final class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValu
     // ************************************************************************
 
     public @NonNull QueuedValuePlacerConfig withEntityClass(@NonNull Class<?> entityClass) {
-        this.setEntityClass(entityClass);
+        this.entityClass = entityClass.getName();
         return this;
     }
 
@@ -98,7 +98,7 @@ public final class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValu
 
     @Override
     public @NonNull QueuedValuePlacerConfig inherit(@NonNull QueuedValuePlacerConfig inheritedConfig) {
-        entityClass = ConfigUtils.inheritOverwritableProperty(entityClass, inheritedConfig.getEntityClass());
+        entityClass = ConfigUtils.inheritOverwritableProperty(entityClass, inheritedConfig.entityClass);
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.getValueSelectorConfig());
         setMoveSelectorConfig(
                 ConfigUtils.inheritOverwritableProperty(getMoveSelectorConfig(), inheritedConfig.getMoveSelectorConfig()));
@@ -112,7 +112,7 @@ public final class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValu
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        classVisitor.accept(entityClass);
+        classVisitor.accept(getEntityClass());
         if (valueSelectorConfig != null) {
             valueSelectorConfig.visitReferencedClasses(classVisitor);
         }

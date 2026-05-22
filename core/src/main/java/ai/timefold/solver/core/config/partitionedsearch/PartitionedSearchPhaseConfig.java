@@ -37,7 +37,7 @@ public final class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedS
     // Warning: all fields are null (and not defaulted) because they can be inherited
     // and also because the input config file should match the output config file
 
-    private Class<? extends SolutionPartitioner<?>> solutionPartitionerClass = null;
+    private String solutionPartitionerClass = null;
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
     private Map<String, String> solutionPartitionerCustomProperties = null;
 
@@ -58,11 +58,11 @@ public final class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedS
     // ************************************************************************
 
     public @Nullable Class<? extends SolutionPartitioner<?>> getSolutionPartitionerClass() {
-        return solutionPartitionerClass;
+        return ConfigUtils.resolveClass(solutionPartitionerClass, "solutionPartitionerClass", this);
     }
 
     public void setSolutionPartitionerClass(@Nullable Class<? extends SolutionPartitioner<?>> solutionPartitionerClass) {
-        this.solutionPartitionerClass = solutionPartitionerClass;
+        this.solutionPartitionerClass = solutionPartitionerClass == null ? null : solutionPartitionerClass.getName();
     }
 
     public @Nullable Map<String, String> getSolutionPartitionerCustomProperties() {
@@ -119,7 +119,7 @@ public final class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedS
 
     public @NonNull PartitionedSearchPhaseConfig withSolutionPartitionerClass(
             @NonNull Class<? extends SolutionPartitioner<?>> solutionPartitionerClass) {
-        this.setSolutionPartitionerClass(solutionPartitionerClass);
+        this.solutionPartitionerClass = solutionPartitionerClass.getName();
         return this;
     }
 
@@ -148,7 +148,7 @@ public final class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedS
     public @NonNull PartitionedSearchPhaseConfig inherit(@NonNull PartitionedSearchPhaseConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         solutionPartitionerClass = ConfigUtils.inheritOverwritableProperty(solutionPartitionerClass,
-                inheritedConfig.getSolutionPartitionerClass());
+                inheritedConfig.solutionPartitionerClass);
         solutionPartitionerCustomProperties = ConfigUtils.inheritMergeableMapProperty(
                 solutionPartitionerCustomProperties, inheritedConfig.getSolutionPartitionerCustomProperties());
         runnablePartThreadLimit = ConfigUtils.inheritOverwritableProperty(runnablePartThreadLimit,
@@ -168,7 +168,7 @@ public final class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedS
         if (terminationConfig != null) {
             terminationConfig.visitReferencedClasses(classVisitor);
         }
-        classVisitor.accept(solutionPartitionerClass);
+        classVisitor.accept(getSolutionPartitionerClass());
         if (phaseConfigList != null) {
             phaseConfigList.forEach(pc -> pc.visitReferencedClasses(classVisitor));
         }

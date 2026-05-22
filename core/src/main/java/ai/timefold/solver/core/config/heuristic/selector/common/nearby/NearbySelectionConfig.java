@@ -44,7 +44,7 @@ public final class NearbySelectionConfig extends SelectorConfig<NearbySelectionC
     private SubListSelectorConfig originSubListSelectorConfig = null;
     @XmlElement(name = "originValueSelector")
     private ValueSelectorConfig originValueSelectorConfig = null;
-    private Class<? extends NearbyDistanceMeter> nearbyDistanceMeterClass = null;
+    private String nearbyDistanceMeterClass = null;
 
     private NearbySelectionDistributionType nearbySelectionDistributionType = null;
 
@@ -85,11 +85,11 @@ public final class NearbySelectionConfig extends SelectorConfig<NearbySelectionC
     }
 
     public @Nullable Class<? extends NearbyDistanceMeter> getNearbyDistanceMeterClass() {
-        return nearbyDistanceMeterClass;
+        return ConfigUtils.resolveClass(nearbyDistanceMeterClass, "nearbyDistanceMeterClass", this);
     }
 
     public void setNearbyDistanceMeterClass(@Nullable Class<? extends NearbyDistanceMeter> nearbyDistanceMeterClass) {
-        this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
+        this.nearbyDistanceMeterClass = nearbyDistanceMeterClass == null ? null : nearbyDistanceMeterClass.getName();
     }
 
     public @Nullable NearbySelectionDistributionType getNearbySelectionDistributionType() {
@@ -189,7 +189,7 @@ public final class NearbySelectionConfig extends SelectorConfig<NearbySelectionC
 
     public @NonNull NearbySelectionConfig
             withNearbyDistanceMeterClass(@NonNull Class<? extends NearbyDistanceMeter> nearbyDistanceMeterClass) {
-        this.setNearbyDistanceMeterClass(nearbyDistanceMeterClass);
+        this.nearbyDistanceMeterClass = nearbyDistanceMeterClass.getName();
         return this;
     }
 
@@ -316,7 +316,7 @@ public final class NearbySelectionConfig extends SelectorConfig<NearbySelectionC
         originValueSelectorConfig = ConfigUtils.inheritConfig(originValueSelectorConfig,
                 inheritedConfig.getOriginValueSelectorConfig());
         nearbyDistanceMeterClass = ConfigUtils.inheritOverwritableProperty(nearbyDistanceMeterClass,
-                inheritedConfig.getNearbyDistanceMeterClass());
+                inheritedConfig.nearbyDistanceMeterClass);
         nearbySelectionDistributionType = ConfigUtils.inheritOverwritableProperty(nearbySelectionDistributionType,
                 inheritedConfig.getNearbySelectionDistributionType());
         blockDistributionSizeMinimum = ConfigUtils.inheritOverwritableProperty(blockDistributionSizeMinimum,
@@ -355,7 +355,7 @@ public final class NearbySelectionConfig extends SelectorConfig<NearbySelectionC
         if (originValueSelectorConfig != null) {
             originValueSelectorConfig.visitReferencedClasses(classVisitor);
         }
-        classVisitor.accept(nearbyDistanceMeterClass);
+        classVisitor.accept(getNearbyDistanceMeterClass());
     }
 
     @Override

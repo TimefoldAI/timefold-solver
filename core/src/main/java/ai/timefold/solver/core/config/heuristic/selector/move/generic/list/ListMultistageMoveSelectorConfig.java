@@ -8,6 +8,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "stageProviderClass"
@@ -15,19 +16,18 @@ import org.jspecify.annotations.NonNull;
 public final class ListMultistageMoveSelectorConfig extends MoveSelectorConfig<ListMultistageMoveSelectorConfig> {
     public static final String XML_ELEMENT_NAME = "listMultistageMoveSelector";
 
-    private Class<?> stageProviderClass;
+    private String stageProviderClass;
 
     // **************************
     // Getters/Setters
     // **************************
 
-    public Class<?> getStageProviderClass() {
-        return stageProviderClass;
+    public @Nullable Class<?> getStageProviderClass() {
+        return ConfigUtils.resolveClass(stageProviderClass, "stageProviderClass", this);
     }
 
-    public void setStageProviderClass(
-            Class<?> stageProviderClass) {
-        this.stageProviderClass = stageProviderClass;
+    public void setStageProviderClass(Class<?> stageProviderClass) {
+        this.stageProviderClass = stageProviderClass == null ? null : stageProviderClass.getName();
     }
 
     // **************************
@@ -36,7 +36,7 @@ public final class ListMultistageMoveSelectorConfig extends MoveSelectorConfig<L
 
     public @NonNull ListMultistageMoveSelectorConfig withStageProviderClass(
             @NonNull Class<?> stageProviderClass) {
-        this.setStageProviderClass(stageProviderClass);
+        this.stageProviderClass = stageProviderClass.getName();
         return this;
     }
 
@@ -56,7 +56,7 @@ public final class ListMultistageMoveSelectorConfig extends MoveSelectorConfig<L
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        classVisitor.accept(stageProviderClass);
+        classVisitor.accept(getStageProviderClass());
     }
 
     @Override
@@ -65,7 +65,7 @@ public final class ListMultistageMoveSelectorConfig extends MoveSelectorConfig<L
         super.inherit(inheritedConfig);
         stageProviderClass =
                 ConfigUtils.inheritOverwritableProperty(stageProviderClass,
-                        inheritedConfig.getStageProviderClass());
+                        inheritedConfig.stageProviderClass);
         return this;
     }
 }
