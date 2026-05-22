@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.neighborhood.stream;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
@@ -60,18 +62,23 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
 
     private final BiMoveStreamContext<Solution_, A, B> context;
     private final RandomGenerator workingRandom;
+    /**
+     * We cannot cache the right iterator on the left tuple,
+     * because that cache would survive across steps and the right iterator would be invalid by then.
+     * The alternative would be worse than this map,
+     * likely requiring some loop over tuples at step end, clearing the cache.
+     */
+    private final Map<UniTuple<A>, Iterator<UniTuple<B>>> leftTupleToRightIteratorMap = new HashMap<>();
 
     // Fields required for iteration.
     private final Iterator<UniTuple<A>> leftTupleIterator;
-    private final int rightIteratorStoreIndex;
     private @Nullable Move<Solution_> nextMove;
 
     public BiRandomMoveIterator(BiMoveStreamContext<Solution_, A, B> context, RandomGenerator workingRandom) {
         this.context = Objects.requireNonNull(context);
         this.workingRandom = Objects.requireNonNull(workingRandom);
-        var leftDatasetInstance = context.getLeftDatasetInstance();
-        this.rightIteratorStoreIndex = leftDatasetInstance.getRightIteratorStoreIndex();
-        this.leftTupleIterator = leftDatasetInstance.randomIterator(workingRandom);
+        this.leftTupleIterator = context.getLeftDatasetInstance()
+                .randomIterator(workingRandom);
     }
 
     @Override
@@ -82,10 +89,9 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
 
         while (leftTupleIterator.hasNext()) {
             var leftTuple = leftTupleIterator.next();
-            var rightEmpty = pickNextMove(leftTuple);
-            if (rightEmpty) {
+            if (!pickNextMove(leftTuple)) {
                 leftTupleIterator.remove();
-                leftTuple.setStore(rightIteratorStoreIndex, null);
+                leftTupleToRightIteratorMap.remove(leftTuple);
             }
             if (nextMove != null) {
                 if (nextMove instanceof AbstractSelectorBasedMove<Solution_> legacyMove) {
@@ -101,17 +107,20 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
     }
 
     private boolean pickNextMove(UniTuple<A> leftTuple) {
-        var rightTupleIterator = (Iterator<UniTuple<B>>) leftTuple.getStore(rightIteratorStoreIndex);
+        var rightTupleIterator = leftTupleToRightIteratorMap.get(leftTuple);
         if (rightTupleIterator == null) {
             rightTupleIterator = createRightTupleIterator(leftTuple);
-            leftTuple.setStore(rightIteratorStoreIndex, rightTupleIterator);
+            if (!rightTupleIterator.hasNext()) {
+                return false;
+            }
+            leftTupleToRightIteratorMap.put(leftTuple, rightTupleIterator);
         }
         if (!rightTupleIterator.hasNext()) {
-            return true;
+            return false;
         }
         nextMove = context.buildMove(leftTuple.getA(), rightTupleIterator.next().getA());
         rightTupleIterator.remove();
-        return false;
+        return true;
     }
 
     private Iterator<UniTuple<B>> createRightTupleIterator(UniTuple<A> leftTuple) {

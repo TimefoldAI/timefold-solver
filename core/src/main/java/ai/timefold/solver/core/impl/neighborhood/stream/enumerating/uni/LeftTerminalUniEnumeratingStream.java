@@ -22,9 +22,7 @@ final class LeftTerminalUniEnumeratingStream<Solution_, A>
     @Override
     public void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         assertEmptyChildStreamList();
-        var datasetInstance = dataset.instantiate(
-                buildHelper.reserveTupleStoreIndex(parent.getTupleSource()),
-                buildHelper.reserveTupleStoreIndex(parent.getTupleSource()));
+        var datasetInstance = dataset.instantiate(buildHelper.reserveTupleStoreIndex(parent.getTupleSource()));
         buildHelper.putInsertUpdateRetract(this, datasetInstance);
     }
 

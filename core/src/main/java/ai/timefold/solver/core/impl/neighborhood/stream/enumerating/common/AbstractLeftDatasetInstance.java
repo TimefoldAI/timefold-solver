@@ -15,15 +15,9 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tupl
         implements Iterable<Tuple_> {
 
     private final ElementAwareArrayList<Tuple_> tupleList = new ElementAwareArrayList<>();
-    private final int rightIteratorStoreIndex;
 
-    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_> parent, int rightIteratorStoreIndex, int entryStoreIndex) {
+    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_> parent, int entryStoreIndex) {
         super(parent, entryStoreIndex);
-        this.rightIteratorStoreIndex = rightIteratorStoreIndex;
-    }
-
-    public int getRightIteratorStoreIndex() {
-        return rightIteratorStoreIndex;
     }
 
     @Override
