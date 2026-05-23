@@ -664,7 +664,6 @@
             <configuration>
               <failOnWarning>true</failOnWarning>
               <ignoreNonCompile>true</ignoreNonCompile>
-              <verbose>true</verbose>
             </configuration>
           </execution>
         </executions>
