@@ -535,7 +535,7 @@ Add some dependencies in your `pom.xml`:
 ----
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-junit5</artifactId>
+      <artifactId>quarkus-junit</artifactId>
       <scope>test</scope>
     </dependency>
 ----
