@@ -59,7 +59,7 @@ public abstract sealed class AbstractMultiConstraintAssertion<Solution_, Score_ 
 
     @Override
     @SuppressWarnings("unchecked")
-    public <S extends Score<S>> S score() {
+    public <S extends Score<S>> S getScore() {
         ensureInitialized();
         return (S) actualScore.raw();
     }
