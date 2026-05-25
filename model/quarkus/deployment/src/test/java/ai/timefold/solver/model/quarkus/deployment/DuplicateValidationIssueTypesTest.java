@@ -6,6 +6,7 @@ import static ai.timefold.solver.model.worker.impl.termination.TerminationConfig
 import ai.timefold.solver.model.definition.api.validation.ValidationBuilder;
 import ai.timefold.solver.model.quarkus.deployment.testdata.validationduplicates.DuplicateTestIssue;
 import ai.timefold.solver.model.quarkus.deployment.testdata.validationduplicates.TestIssue;
+import ai.timefold.solver.model.quarkus.deployment.testdata.validationduplicates.TestdataAbstractIssue;
 import ai.timefold.solver.model.quarkus.deployment.testdata.validationduplicates.TestdataConstraintProvider;
 import ai.timefold.solver.model.quarkus.deployment.testdata.validationduplicates.TestdataEntity;
 import ai.timefold.solver.model.quarkus.deployment.testdata.validationduplicates.TestdataModelValidator;
@@ -30,7 +31,7 @@ public class DuplicateValidationIssueTypesTest {
             .withApplicationRoot((jar) -> jar
                     .addClasses(TestdataEntity.class, TestdataSolution.class, TestdataConstraintProvider.class,
                             TestdataModelValidator.class, ValidationBuilder.class, TestdataRest.class,
-                            TestIssue.class, DuplicateTestIssue.class))
+                            TestdataAbstractIssue.class, TestIssue.class, DuplicateTestIssue.class))
             .overrideConfigKey(MODEL_CONFIG_TERMINATION_SPENT_LIMIT, "PT1S")
             .overrideConfigKey(TERMINATION_SPENT_LIMIT, "PT1S");
 

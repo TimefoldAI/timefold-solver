@@ -2,10 +2,9 @@ package ai.timefold.solver.model.quarkus.deployment.testdata.validationduplicate
 
 import java.util.List;
 
-import ai.timefold.solver.model.definition.api.validation.AbstractIssue;
 import ai.timefold.solver.model.definition.api.validation.IssueSeverity;
 
-public class DuplicateTestIssue extends AbstractIssue {
+public class DuplicateTestIssue extends TestdataAbstractIssue {
 
     public DuplicateTestIssue() {
         super(TestIssue.ISSUE_CODE, IssueSeverity.ERROR, List.of());
