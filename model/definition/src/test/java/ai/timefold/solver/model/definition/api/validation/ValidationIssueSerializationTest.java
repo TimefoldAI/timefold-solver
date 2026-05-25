@@ -30,7 +30,7 @@ class ValidationIssueSerializationTest {
                   } ]
                 }""";
 
-        Assertions.assertThat(json).isEqualTo(expected);
+        Assertions.assertThat(json).isEqualToNormalizingNewlines(expected);
     }
 
     @Test
@@ -45,7 +45,7 @@ class ValidationIssueSerializationTest {
                   "errors" : [ "Validation error of code (MalformedEntityIssue) occurred." ]
                 }""";
 
-        Assertions.assertThat(json).isEqualTo(expected);
+        Assertions.assertThat(json).isEqualToNormalizingNewlines(expected);
     }
 
     @Test
@@ -61,7 +61,7 @@ class ValidationIssueSerializationTest {
                   "errors" : [ "Entity (entityId) is malformed." ]
                 }""";
 
-        Assertions.assertThat(json).isEqualTo(expected);
+        Assertions.assertThat(json).isEqualToNormalizingNewlines(expected);
     }
 
     @Test
@@ -81,7 +81,7 @@ class ValidationIssueSerializationTest {
                   } ]
                 }""";
 
-        Assertions.assertThat(json).isEqualTo(expected);
+        Assertions.assertThat(json).isEqualToNormalizingNewlines(expected);
     }
 
     private static class TestIssue extends AbstractIssue {
