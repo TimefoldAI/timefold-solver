@@ -612,6 +612,7 @@ public abstract non-sealed class AbstractStorageService<ModelInput_ extends Mode
                         true);
             }
         } catch (InterruptedException e) {
+            lock.unlock();
             throw new TimefoldRuntimeException(ErrorCodes.STORAGE_UNKNOWN, "Timeout acquiring lock to access to storage", e,
                     true);
         }
