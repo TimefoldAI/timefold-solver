@@ -163,6 +163,9 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                 }
             }
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new RuntimeException("Unexpected error while deploying model", e);
         }
 

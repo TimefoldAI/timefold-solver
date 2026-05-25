@@ -118,40 +118,36 @@ public class JsonPatch {
 
             Function<JsonNode, JsonNode> performer = new AddByIndex(path.substring(lastPathIndex + 1), value);
 
-            if (lastPathIndex == 0) {
-                return doc;
-            } else {
-                // check if there is expression (form at of expression is [field=value]
-                Matcher expressionMatcher = JsonPatchConstants.HAS_EXPRESSION_PATTERN.matcher(path);
-                if (expressionMatcher.find()) {
-                    Matcher matcher = JsonPatchConstants.EXTRACT_PATH_ELEMENTS_PATTERN.matcher(path);
-                    StringBuilder suffixPath = null;
-                    // iterate over all fragments of the path
-                    while (matcher.find()) {
-                        String fragment = matcher.group();
+            // check if there is expression (form at of expression is [field=value]
+            Matcher expressionMatcher = JsonPatchConstants.HAS_EXPRESSION_PATTERN.matcher(path);
+            if (expressionMatcher.find()) {
+                Matcher matcher = JsonPatchConstants.EXTRACT_PATH_ELEMENTS_PATTERN.matcher(path);
+                StringBuilder suffixPath = null;
+                // iterate over all fragments of the path
+                while (matcher.find()) {
+                    String fragment = matcher.group();
 
-                        if (suffixPath != null) {
-                            suffixPath.append(fragment.startsWith("/") ? fragment : "/" + fragment);
-                            continue;
-                        }
-
-                        // when fragment is expression, apply the actual expression performer
-                        if (fragment.startsWith("[") && fragment.endsWith("]")) {
-                            suffixPath = new StringBuilder();
-                            performer = new AddByFilter(fragment, value, suffixPath);
-
-                        } else {
-                            // regular path as json pointer so find the parent that expression will be applied on
-                            parent = doc.at(fragment);
-                        }
-
+                    if (suffixPath != null) {
+                        suffixPath.append(fragment.startsWith("/") ? fragment : "/" + fragment);
+                        continue;
                     }
-                } else {
-                    // no expression in the path, process as json pointer to find the parent
-                    parent = doc.at(path.substring(0, lastPathIndex));
-                }
 
+                    // when fragment is expression, apply the actual expression performer
+                    if (fragment.startsWith("[") && fragment.endsWith("]")) {
+                        suffixPath = new StringBuilder();
+                        performer = new AddByFilter(fragment, value, suffixPath);
+
+                    } else {
+                        // regular path as json pointer so find the parent that expression will be applied on
+                        parent = doc.at(fragment);
+                    }
+
+                }
+            } else {
+                // no expression in the path, process as json pointer to find the parent
+                parent = doc.at(path.substring(0, lastPathIndex));
             }
+
             if (parent.isMissingNode()) {
                 throw new IllegalArgumentException("Path does not exist: " + path);
             }

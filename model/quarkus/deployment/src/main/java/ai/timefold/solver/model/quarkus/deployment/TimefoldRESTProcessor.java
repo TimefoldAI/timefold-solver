@@ -119,7 +119,7 @@ class TimefoldRESTProcessor {
 
         if (restComponentsBuildItem.getRestResource().isPresent()) {
 
-            ClassInfo restAPI = restComponentsBuildItem.getRestResource().get();
+            ClassInfo restAPI = restComponentsBuildItem.getRestResource().orElseThrow();
 
             // Path annotation must be present on the interface to be able to bind the REST api to the endpoint path
             AnnotationInstance pathAnnotation = restAPI.annotations(Path.class).stream()

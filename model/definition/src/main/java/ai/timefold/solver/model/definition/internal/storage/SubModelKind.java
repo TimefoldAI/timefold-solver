@@ -31,6 +31,8 @@ public enum SubModelKind {
 
     public static SubModelKind valueOfId(String id) {
 
-        return Stream.of(values()).filter(item -> item.id().equals(id)).findAny().get();
+        return Stream.of(values())
+                .filter(item -> item.id().equals(id)).findAny()
+                .orElseThrow(() -> new IllegalStateException("Unsupported SubModelKind (%s)".formatted(id)));
     }
 }

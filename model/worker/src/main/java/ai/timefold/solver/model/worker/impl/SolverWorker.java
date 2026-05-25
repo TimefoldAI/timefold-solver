@@ -245,6 +245,9 @@ public class SolverWorker {
         try {
             emitter.send(event).toCompletableFuture().get(EMITTER_TIMEOUT, TimeUnit.SECONDS);
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             LOGGER.error("Error sending event: {}, message: {}", event, e.getMessage(), e);
         }
     }
@@ -533,6 +536,7 @@ public class SolverWorker {
             try {
                 countReachedZero = completionStatus.waitForCompletion(id, COMPLETION_TIMEOUT);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 throw new TimefoldRuntimeException(SOLVER_UNKNOWN, "Unknown error while waiting for solver completion",
                         e, true);
             }
