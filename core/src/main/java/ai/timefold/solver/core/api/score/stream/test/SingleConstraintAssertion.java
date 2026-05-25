@@ -7,9 +7,10 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public interface SingleConstraintAssertion {
 
     /**
@@ -19,9 +20,8 @@ public interface SingleConstraintAssertion {
      * @param message description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      */
-    @NonNull
     SingleConstraintAssertion justifiesWith(@Nullable String message,
-            @NonNull ConstraintJustification @NonNull... justifications);
+            ConstraintJustification... justifications);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a given
@@ -30,7 +30,7 @@ public interface SingleConstraintAssertion {
      * @param justifications the expected justifications.
      * @throws AssertionError when the expected penalty is not observed
      */
-    default @NonNull SingleConstraintAssertion justifiesWith(@NonNull ConstraintJustification @NonNull... justifications) {
+    default SingleConstraintAssertion justifiesWith(ConstraintJustification... justifications) {
         return justifiesWith(null, justifications);
     }
 
@@ -41,9 +41,8 @@ public interface SingleConstraintAssertion {
      * @param message description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      */
-    @NonNull
     SingleConstraintAssertion justifiesWithExactly(@Nullable String message,
-            @NonNull ConstraintJustification @NonNull... justifications);
+            ConstraintJustification... justifications);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a given
@@ -52,8 +51,8 @@ public interface SingleConstraintAssertion {
      * @param justifications the expected justifications.
      * @throws AssertionError when the expected penalty is not observed
      */
-    default @NonNull SingleConstraintAssertion
-            justifiesWithExactly(@NonNull ConstraintJustification @NonNull... justifications) {
+    default SingleConstraintAssertion
+            justifiesWithExactly(ConstraintJustification... justifications) {
         return justifiesWithExactly(null, justifications);
     }
 
@@ -126,7 +125,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    default void penalizesBy(@NonNull BigDecimal matchWeightTotal) {
+    default void penalizesBy(BigDecimal matchWeightTotal) {
         penalizesBy(null, matchWeightTotal);
     }
 
@@ -137,7 +136,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesBy(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
+    void penalizesBy(@Nullable String message, BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a given number of penalties.
@@ -232,7 +231,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    default void rewardsWith(@NonNull BigDecimal matchWeightTotal) {
+    default void rewardsWith(BigDecimal matchWeightTotal) {
         rewardsWith(null, matchWeightTotal);
     }
 
@@ -243,7 +242,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWith(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
+    void rewardsWith(@Nullable String message, BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a given number of rewards.
@@ -341,7 +340,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    default void penalizesByMoreThan(@NonNull BigDecimal matchWeightTotal) {
+    default void penalizesByMoreThan(BigDecimal matchWeightTotal) {
         penalizesByMoreThan(null, matchWeightTotal);
     }
 
@@ -352,7 +351,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesByMoreThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
+    void penalizesByMoreThan(@Nullable String message, BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -431,7 +430,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    default void rewardsWithMoreThan(@NonNull BigDecimal matchWeightTotal) {
+    default void rewardsWithMoreThan(BigDecimal matchWeightTotal) {
         rewardsWithMoreThan(null, matchWeightTotal);
     }
 
@@ -442,7 +441,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWithMoreThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
+    void rewardsWithMoreThan(@Nullable String message, BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -522,7 +521,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    default void penalizesByLessThan(@NonNull BigDecimal matchWeightTotal) {
+    default void penalizesByLessThan(BigDecimal matchWeightTotal) {
         penalizesByLessThan(null, matchWeightTotal);
     }
 
@@ -533,7 +532,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesByLessThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
+    void penalizesByLessThan(@Nullable String message, BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -612,7 +611,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    default void rewardsWithLessThan(@NonNull BigDecimal matchWeightTotal) {
+    default void rewardsWithLessThan(BigDecimal matchWeightTotal) {
         rewardsWithLessThan(null, matchWeightTotal);
     }
 
@@ -623,7 +622,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWithLessThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
+    void rewardsWithLessThan(@Nullable String message, BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -662,22 +661,21 @@ public interface SingleConstraintAssertion {
      * {@snippet :
      * HardSoftScore scoreA = constraintVerifier.verifyThat(MyConstraints::roomConflict)
      *         .given(entity1, entity2)
-     *         .score();
+     *         .getScore();
      * HardSoftScore scoreB = constraintVerifier.verifyThat(MyConstraints::roomConflict)
      *         .given(entity3, entity4)
-     *         .score();
+     *         .getScore();
      * assertThat(scoreA).isLessThan(scoreB);
      * }
      *
      * @return the score produced by this single constraint for the given facts, never null
      */
-    @NonNull
-    <S extends Score<S>> S score();
+    <S extends Score<S>> S getScore();
 
     /**
      * Returns the match weight total of the {@link Constraint} being tested for the given set of facts.
      * <p>
-     * Unlike {@link #score()}, which returns the full score (match weight × constraint weight),
+     * Unlike {@link #getScore()}, which returns the full score (match weight × constraint weight),
      * this method returns only the <b>match weight</b> — the same number you would pass
      * to assertion methods like {@link #penalizesBy(int)} or {@link #rewardsWith(int)}.
      * <p>
@@ -687,19 +685,18 @@ public interface SingleConstraintAssertion {
      * Usage example:
      *
      * {@snippet :
-     * Number impactA = constraintVerifier.verifyThat(MyConstraints::roomConflict)
+     * var impactA = constraintVerifier.verifyThat(MyConstraints::roomConflict)
      *         .given(entity1, entity2)
-     *         .impact();
-     * Number impactB = constraintVerifier.verifyThat(MyConstraints::roomConflict)
+     *         .getImpact();
+     * var impactB = constraintVerifier.verifyThat(MyConstraints::roomConflict)
      *         .given(entity3, entity4)
-     *         .impact();
+     *         .getImpact();
      * assertThat(impactA.intValue()).isGreaterThan(impactB.intValue());
      * }
      *
      * @return the match weight total produced by this single constraint, never null.
      *         Positive for rewards, negative for penalties, zero when there is no impact.
      */
-    @NonNull
-    Number impact();
+    Number getImpact();
 
 }

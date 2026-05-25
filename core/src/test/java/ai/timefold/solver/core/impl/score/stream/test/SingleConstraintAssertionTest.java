@@ -587,35 +587,35 @@ class SingleConstraintAssertionTest {
     }
 
     @Test
-    void impactEnablesRelativeComparison() {
+    void getImpactEnablesRelativeComparison() {
         var entityA = new TestdataConstraintVerifierFirstEntity("A", new TestdataValue());
         var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
-        Number impactA = constraintVerifier
+        var impactA = constraintVerifier
                 .verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
                 .given(entityA)
-                .impact();
-        Number impactB = constraintVerifier
+                .getImpact();
+        var impactB = constraintVerifier
                 .verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
                 .given(solution.getEntityList().toArray())
-                .impact();
+                .getImpact();
 
         assertThat(impactB.intValue()).isGreaterThan(impactA.intValue());
     }
 
     @Test
-    void scoreEnablesRelativeComparisonForRewards() {
+    void getScoreEnablesRelativeComparisonForRewards() {
         var entityA = new TestdataConstraintVerifierFirstEntity("A", new TestdataValue());
         var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         HardSoftScore scoreA = constraintVerifier
                 .verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
                 .given(entityA)
-                .score();
+                .getScore();
         HardSoftScore scoreB = constraintVerifier
                 .verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
                 .given(solution.getEntityList().toArray())
-                .score();
+                .getScore();
 
         assertThat(scoreA).isNotNull();
         assertThat(scoreA).isInstanceOf(HardSoftScore.class);
@@ -631,18 +631,18 @@ class SingleConstraintAssertionTest {
     }
 
     @Test
-    void scoreComparesGivenSolutions() {
+    void getScoreComparesGivenSolutions() {
         var smallSolution = TestdataConstraintVerifierExtendedSolution.generateSolution(2, 2);
         var largeSolution = TestdataConstraintVerifierExtendedSolution.generateSolution(2, 4);
 
         HardSoftScore smallScore = constraintVerifier
                 .verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
                 .givenSolution(smallSolution)
-                .score();
+                .getScore();
         HardSoftScore largeScore = constraintVerifier
                 .verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
                 .givenSolution(largeSolution)
-                .score();
+                .getScore();
 
         assertThat(smallScore).isGreaterThan(largeScore);
     }

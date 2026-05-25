@@ -71,7 +71,7 @@ class MultiConstraintAssertionTest {
     }
 
     @Test
-    void scoreReturnsTypedScoreWithGivenFacts() {
+    void getScoreReturnsTypedScoreWithGivenFacts() {
         var constraintVerifier = ConstraintVerifier.build(new TestdataConstraintVerifierConstraintProvider(),
                 TestdataConstraintVerifierExtendedSolution.class,
                 TestdataConstraintVerifierFirstEntity.class,
@@ -81,7 +81,7 @@ class MultiConstraintAssertionTest {
         HardSoftScore score = constraintVerifier
                 .verifyThat()
                 .given(entity)
-                .score();
+                .getScore();
 
         assertThat(score).isNotNull();
         assertThat(score).isInstanceOf(HardSoftScore.class);
@@ -91,7 +91,7 @@ class MultiConstraintAssertionTest {
     }
 
     @Test
-    void scoreEnablesRelativeComparisonWithGivenFacts() {
+    void getScoreEnablesRelativeComparisonWithGivenFacts() {
         var constraintVerifier = ConstraintVerifier.build(new TestdataConstraintVerifierConstraintProvider(),
                 TestdataConstraintVerifierExtendedSolution.class,
                 TestdataConstraintVerifierFirstEntity.class,
@@ -106,11 +106,11 @@ class MultiConstraintAssertionTest {
         HardSoftScore scoreA = constraintVerifier
                 .verifyThat()
                 .given(entityA)
-                .score();
+                .getScore();
         HardSoftScore scoreB = constraintVerifier
                 .verifyThat()
                 .given(entityB1, entityB2)
-                .score();
+                .getScore();
 
         assertThat(scoreA).isGreaterThan(scoreB);
     }
