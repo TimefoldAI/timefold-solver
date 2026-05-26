@@ -63,7 +63,6 @@
     <version.deploy.plugin>3.1.4</version.deploy.plugin>
     <version.exec.plugin>3.6.3</version.exec.plugin>
     <version.enforcer.plugin>3.6.3</version.enforcer.plugin>
-    <version.failsafe-plugin>${version.surefire.plugin}</version.failsafe-plugin>
     <version.install.plugin>3.1.4</version.install.plugin>
     <version.jacoco.plugin>0.8.14</version.jacoco.plugin>
     <version.jandex.plugin>3.5.3</version.jandex.plugin>
@@ -630,7 +629,7 @@
           <useModulePath>false</useModulePath>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <skipTests>${skipUTs}</skipTests>
-          <argLine>--add-opens java.base/java.lang.invoke=ALL-UNNAMED</argLine>
+          <!-- Avoid defining the argLine; it's configured in a profile for code coverage -->
         </configuration>
       </plugin>
       <plugin>
