@@ -1,5 +1,8 @@
 package ai.timefold.solver.model.definition.internal.descriptor;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * Describes a group constraints.
  *
@@ -11,4 +14,22 @@ package ai.timefold.solver.model.definition.internal.descriptor;
  */
 public record ConstraintGroupDescriptor(String id, String name, String description, String icon,
         ConstraintDescriptor[] constraintDescriptors, String[] tags) {
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ConstraintGroupDescriptor that)) return false;
+
+        return id.equals(that.id) && Objects.equals(name, that.name) && Objects.equals(icon, that.icon)
+                && Arrays.equals(tags, that.tags) && Objects.equals(description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + Objects.hashCode(name);
+        result = 31 * result + Objects.hashCode(description);
+        result = 31 * result + Objects.hashCode(icon);
+        result = 31 * result + Arrays.hashCode(tags);
+        return result;
+    }
 }

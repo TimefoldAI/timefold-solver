@@ -170,6 +170,9 @@ public class ConfigureMojo extends AbstractPlatformModelMojo {
         } catch (IllegalStateException e) {
             throw e;
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new RuntimeException("Unexpected error while making platform info call", e);
         }
     }

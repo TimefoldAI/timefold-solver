@@ -3,6 +3,9 @@ package ai.timefold.solver.model.definition.api.description;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * Groups related constraints into a single category for model description.
  *
@@ -17,4 +20,21 @@ import org.jspecify.annotations.Nullable;
 public record ConstraintGroupInfo(String id, @Nullable String name, @Nullable String description, @Nullable String icon,
         @Nullable String[] tags) {
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ConstraintGroupInfo that)) return false;
+
+        return id.equals(that.id) && Objects.equals(name, that.name) && Objects.equals(icon, that.icon)
+                && Arrays.equals(tags, that.tags) && Objects.equals(description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + Objects.hashCode(name);
+        result = 31 * result + Objects.hashCode(description);
+        result = 31 * result + Objects.hashCode(icon);
+        result = 31 * result + Arrays.hashCode(tags);
+        return result;
+    }
 }

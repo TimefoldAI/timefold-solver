@@ -74,7 +74,6 @@ public class UndeployModelMojo extends AbstractPlatformModelMojo {
                                     "Model %s (%s) has been successfully undeployed from platform %s with registration key %s",
                                     modelDescriptor.get("name").asText(), modelDescriptor.get("id").asText(), platformUrl,
                                     key));
-                    return;
                 } else {
                     getLog().debug(response.body());
                     throw new IllegalStateException(
@@ -84,6 +83,9 @@ public class UndeployModelMojo extends AbstractPlatformModelMojo {
         } catch (IllegalStateException e) {
             throw e;
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new RuntimeException("Unexpected error while undeploying model", e);
         }
 
