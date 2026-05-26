@@ -29,5 +29,7 @@ core/src/*/java/ai/timefold/solver/core/impl/solver/monitoring/** @triceo @Chris
 quarkus-integration/** @triceo @Christopher-Chianelli
 spring-integration/** @triceo @Christopher-Chianelli
 
+model/** @triceo @rsynek
+
 docs/** @triceo @TomCools
 **/*.adoc @triceo @TomCools
