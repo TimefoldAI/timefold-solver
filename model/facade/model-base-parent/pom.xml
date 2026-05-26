@@ -1,0 +1,117 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-model-internal-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>timefold-solver-model-base-parent</artifactId>
+  <packaging>pom</packaging>
+  <name>(Preview) Timefold Solver Model Base Parent</name>
+  <description>
+    The Model Base Parent pom.xml is meant to be used only by the base layer of extendable models.
+    This module is in a preview state and thus is a subject to changes.
+  </description>
+
+  <properties>
+    <ai.timefold.sdk.enterprise>false</ai.timefold.sdk.enterprise>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-bom</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Testing -->
+    <!-- TODO: encapsulate test dependencies in a facade project -->
+    <dependency>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-model-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <profiles>
+    <profile>
+      <id>timefold-base-model</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.smallrye</groupId>
+            <artifactId>jandex-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>enterprise</id>
+      <!-- This profile must NOT be activated during the SDK build, otherwise the build fails. -->
+      <activation>
+        <property>
+          <name>ai.timefold.sdk.enterprise</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+        <ai.timefold.sdk.enterprise>true</ai.timefold.sdk.enterprise>
+        <!-- enable copy of Timefold diagnostic tools when building container image - see container profile -->
+        <ai.timefold.sdk.enterprise.skipTools>false</ai.timefold.sdk.enterprise.skipTools>
+      </properties>
+      <repositories>
+        <repository>
+          <id>timefold</id>
+          <name>Timefold Enterprise Artifacts Repository</name>
+          <url>https://timefold.jfrog.io/artifactory/releases/</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>ai.timefold.solver.enterprise</groupId>
+            <artifactId>timefold-solver-enterprise-bom</artifactId>
+            <version>${version.ai.timefold.solver}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+      <dependencies>
+        <!-- TODO: encapsulate test dependencies in a facade project -->
+        <dependency>
+          <groupId>ai.timefold.solver</groupId>
+          <artifactId>timefold-solver-model-test</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-test</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.assertj</groupId>
+          <artifactId>assertj-core</artifactId>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+</project>

@@ -1,0 +1,770 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-model-base-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../model-base-parent/pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>timefold-solver-model-parent</artifactId>
+  <packaging>pom</packaging>
+  <name>(Preview) Timefold Solver Model Parent</name>
+  <description>
+    The Model Parent pom.xml is meant to be used by model extensions, including the default one, and
+    non-extendable models.
+    This module is in a preview state and thus is a subject to changes.
+  </description>
+
+  <properties>
+    <!--suppress UnresolvedMavenProperty -->
+    <ai.timefold.platform.model.test.api-key>${env.TF_PLATFORM_TEST_API_KEY}</ai.timefold.platform.model.test.api-key>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- the model api version has to be kept in sync with the model version in model POM -->
+    <model.api.version>v1</model.api.version>
+    <!-- default configuration, can be overridden by a model if needed -->
+    <ai.timefold.model.descriptor.repository>${project.artifactId}</ai.timefold.model.descriptor.repository>
+    <ai.timefold.model.native.image.path>${project.build.directory}/${project.build.finalName}-runner</ai.timefold.model.native.image.path>
+    <ai.timefold.model.descriptor.groupId>${project.groupId}</ai.timefold.model.descriptor.groupId>
+    <ai.timefold.model.descriptor.artifactId>${project.artifactId}-descriptor</ai.timefold.model.descriptor.artifactId>
+    <ai.timefold.model.descriptor.classifier>${model.api.version}</ai.timefold.model.descriptor.classifier>
+    <ai.timefold.model.descriptor.version>${project.version}</ai.timefold.model.descriptor.version>
+    <ai.timefold.model.descriptor.file>${project.build.directory}/model-descriptor.zip</ai.timefold.model.descriptor.file>
+    <ai.timefold.model.descriptor.repository.id>github</ai.timefold.model.descriptor.repository.id>
+    <ai.timefold.model.descriptor.repository.url>https://maven.pkg.github.com/timefoldai/${project.artifactId}</ai.timefold.model.descriptor.repository.url>
+    <ai.timefold.model.benchmark.package>ai/timefold/model/*/benchmark/**</ai.timefold.model.benchmark.package>
+
+    <!-- base images for JVM and native model containers -->
+    <ai.timefold.model.base-jvm-image>eclipse-temurin:25-jre-ubi10-minimal</ai.timefold.model.base-jvm-image>
+    <ai.timefold.model.builder-native-image>quay.io/quarkus/ubi10-quarkus-mandrel-builder-image:jdk-25</ai.timefold.model.builder-native-image>
+    <ai.timefold.model.base-native-image>redhat/ubi10-minimal</ai.timefold.model.base-native-image>
+
+    <ai.timefold.sdk.enterprise.skipTools>true</ai.timefold.sdk.enterprise.skipTools>
+
+    <ai.timefold.model.container.integration-tests.env-file-dir>${project.build.directory}/generated-config</ai.timefold.model.container.integration-tests.env-file-dir>
+    <ai.timefold.model.container.integration-tests.env-file-name>container-integration-tests.env</ai.timefold.model.container.integration-tests.env-file-name>
+    <ai.timefold.model.container.integration-tests.env-file>${ai.timefold.model.container.integration-tests.env-file-dir}/${ai.timefold.model.container.integration-tests.env-file-name}</ai.timefold.model.container.integration-tests.env-file>
+
+    <!-- defaults for container image build/push -->
+    <quarkus.container-image.build>false</quarkus.container-image.build>
+    <quarkus.container-image.push>false</quarkus.container-image.push>
+    <!--
+       configure in single place additional JVM parameters that:
+         - use parallel GC as Solver workloads are throughput oriented
+         - enable use of system proxies
+         - set max memory ration to 85%
+         - configure jmx for local only access for diagnostic tools
+    -->
+    <ai.timefold.model.jvm-image-arguments>-XX:+UseParallelGC,-Djava.net.useSystemProxies=true,-XX:+UseCompactObjectHeaders,-XX:MaxRAMPercentage=85,-Djava.rmi.server.hostname=localhost,-Dcom.sun.management.jmxremote,-Dcom.sun.management.jmxremote.port=5555,-Dcom.sun.management.jmxremote.rmi.port=5555,-Dcom.sun.management.jmxremote.local.only=true,-Dcom.sun.management.jmxremote.authenticate=false,-Dcom.sun.management.jmxremote.ssl=false</ai.timefold.model.jvm-image-arguments>
+    <!-- ************************************************************************ -->
+    <!-- Dependencies -->
+    <!-- ************************************************************************ -->
+    <version.org.webjars.bootstrap>5.3.8</version.org.webjars.bootstrap>
+    <version.org.webjars.jquery>3.7.1</version.org.webjars.jquery>
+    <version.org.webjars.font-awesome>7.2.0</version.org.webjars.font-awesome>
+    <version.org.webjars.js-joda>1.11.0</version.org.webjars.js-joda>
+    <version.org.webjars.leaflet>1.8.0</version.org.webjars.leaflet>
+
+    <!-- ************************************************************************ -->
+    <!-- Plugins -->
+    <!-- ************************************************************************ -->
+    <version.google-jib>3.5.1</version.google-jib>
+    <version.jib-layer-filter-extension-maven>0.3.0</version.jib-layer-filter-extension-maven>
+    <version.openapi-diff.plugin>2.1.7</version.openapi-diff.plugin>
+    <version.openapi-generator.plugin>7.22.0</version.openapi-generator.plugin>
+
+    <!-- ************************************************************************ -->
+    <!-- Plugins Configuration -->
+    <!-- ************************************************************************ -->
+    <openapi-diff.skip>false</openapi-diff.skip>
+    <openapi-diff.fail-on-changed>true</openapi-diff.fail-on-changed>
+    <openapi-diff.fail-on-incompatible>true</openapi-diff.fail-on-incompatible>
+    <ant.skip>true</ant.skip>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- UI webjars -->
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>bootstrap</artifactId>
+        <version>${version.org.webjars.bootstrap}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>jquery</artifactId>
+        <version>${version.org.webjars.jquery}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>font-awesome</artifactId>
+        <version>${version.org.webjars.font-awesome}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars.npm</groupId>
+        <artifactId>js-joda</artifactId>
+        <version>${version.org.webjars.js-joda}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>leaflet</artifactId>
+        <version>${version.org.webjars.leaflet}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-model-defaults</artifactId>
+    </dependency>
+    <!-- container build -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-container-image-jib</artifactId>
+    </dependency>
+    <!-- Testing -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-timefold-diagnostic-tools</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <skip>${ai.timefold.sdk.enterprise.skipTools}</skip>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>ai.timefold.solver.enterprise</groupId>
+                  <artifactId>timefold-solver-enterprise-diagnostic-tools</artifactId>
+                  <version>${version.ai.timefold.solver}</version>
+                  <type>jar</type>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>src/main/jib/timefold</outputDirectory>
+                  <destFileName>diagnostic-tools.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.google.cloud.tools</groupId>
+        <artifactId>jib-maven-plugin</artifactId>
+        <version>${version.google-jib}</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.google.cloud.tools</groupId>
+            <artifactId>jib-layer-filter-extension-maven</artifactId>
+            <version>${version.jib-layer-filter-extension-maven}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.openapitools.openapidiff</groupId>
+        <artifactId>openapi-diff-maven</artifactId>
+        <version>${version.openapi-diff.plugin}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>${version.openapi-generator.plugin}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>${version.antrun.plugin}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>${version.exec.plugin}</version>
+        <configuration>
+          <mainClass>ai.timefold.solver.model.config.ConfigDumperMain</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>enterprise</id>
+      <!-- This profile must NOT be activated during the SDK build, otherwise the build fails. -->
+      <activation>
+        <property>
+          <name>enterprise</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+        <ai.timefold.sdk.enterprise.skipTools>false</ai.timefold.sdk.enterprise.skipTools>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-model</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-storage-fs</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-storage-azure</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-storage-gcs</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-storage-s3</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>ai.timefold.solver</groupId>
+          <artifactId>timefold-solver-model-defaults</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-model-defaults</artifactId>
+        </dependency>
+        <!-- Testing -->
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-junit</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.rest-assured</groupId>
+          <artifactId>rest-assured</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.awaitility</groupId>
+          <artifactId>awaitility</artifactId>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>${ai.timefold.model.benchmark.package}</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Profile that adds benchmark dependency and removes any excludes for compiler plugin. -->
+    <profile>
+      <id>benchmark</id>
+
+      <properties>
+        <ai.timefold.benchmark>true</ai.timefold.benchmark>
+      </properties>
+
+      <dependencies>
+        <dependency>
+          <groupId>ai.timefold.solver</groupId>
+          <artifactId>timefold-solver-quarkus-benchmark</artifactId>
+        </dependency>
+      </dependencies>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <excludes combine.self="override"></excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Profiles defining plugins for a model build. -->
+    <profile>
+      <id>timefold-model</id>
+      <activation>
+        <property>
+          <name>ai.timefold.sdk.model.processing.disabled</name>
+          <value>!true</value>
+        </property>
+        <!-- Switch to the activation below after our CI moves to Maven 3.9
+        <property>
+            <name>packaging</name>
+            <value>!pom</value>
+        </property>
+        -->
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.quarkus.platform</groupId>
+            <artifactId>quarkus-maven-plugin</artifactId>
+            <extensions>true</extensions>
+            <configuration>
+              <properties>
+                <model.api.version>${model.api.version}</model.api.version>
+              </properties>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>build</goal>
+                  <goal>generate-code</goal>
+                  <goal>generate-code-tests</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <systemPropertyVariables>
+                <ai.timefold.sdk.enterprise>${ai.timefold.sdk.enterprise}</ai.timefold.sdk.enterprise>
+                <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                <!--suppress UnresolvedMavenProperty -->
+                <maven.home>${maven.home}</maven.home>
+              </systemPropertyVariables>
+              <argLine>@{argLine} --add-opens java.base/java.lang.invoke=ALL-UNNAMED</argLine>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+                <configuration>
+                  <systemPropertyVariables>
+                    <ai.timefold.sdk.enterprise>${ai.timefold.sdk.enterprise}</ai.timefold.sdk.enterprise>
+                    <native.image.path>${ai.timefold.model.native.image.path}</native.image.path>
+                    <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                    <!--suppress UnresolvedMavenProperty -->
+                    <maven.home>${maven.home}</maven.home>
+                  </systemPropertyVariables>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.openapitools.openapidiff</groupId>
+            <artifactId>openapi-diff-maven</artifactId>
+            <executions>
+              <execution>
+                <id>api-diff</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>diff</goal>
+                </goals>
+                <configuration>
+                  <skip>${openapi-diff.skip}</skip>
+                  <oldSpec>${project.basedir}/src/build/openapi.json</oldSpec>
+                  <newSpec>${project.basedir}/target/openapi-schema/openapi.json</newSpec>
+                  <failOnChanged>${openapi-diff.fail-on-changed}</failOnChanged>
+                  <failOnIncompatible>${openapi-diff.fail-on-incompatible}</failOnIncompatible>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.openapitools</groupId>
+            <artifactId>openapi-generator-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>validate-openapi</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>generate</goal>
+                </goals>
+                <configuration>
+                  <inputSpec>${project.build.directory}/timefold-model-enhanced-openapi.json</inputSpec>
+                  <!-- use dry run to validate only -->
+                  <dryRun>true</dryRun>
+                  <!-- disable generation of apis and models to reduce dry run report log -->
+                  <generateApis>false</generateApis>
+                  <generateModels>false</generateModels>
+                  <!-- configure required parts -->
+                  <generatorName>java</generatorName>
+                  <!-- required because of https://github.com/OpenAPITools/openapi-generator/issues/23527 -->
+                  <openapiNormalizer>REPLACE_ONE_OF_BY_DISCRIMINATOR_MAPPING=true</openapiNormalizer>
+                  <library>apache-httpclient</library>
+                  <output>${project.build.directory}/openapi-validation</output>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <configuration>
+              <groupId>${ai.timefold.model.descriptor.groupId}</groupId>
+              <artifactId>${ai.timefold.model.descriptor.artifactId}</artifactId>
+              <classifier>${ai.timefold.model.descriptor.classifier}</classifier>
+              <version>${ai.timefold.model.descriptor.version}</version>
+              <file>${ai.timefold.model.descriptor.file}</file>
+              <packaging>zip</packaging>
+              <generatePom>true</generatePom>
+            </configuration>
+            <executions>
+              <execution>
+                <id>install-model-descriptor</id>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <phase>install</phase>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <configuration>
+              <groupId>${ai.timefold.model.descriptor.groupId}</groupId>
+              <artifactId>${ai.timefold.model.descriptor.artifactId}</artifactId>
+              <classifier>${ai.timefold.model.descriptor.classifier}</classifier>
+              <version>${ai.timefold.model.descriptor.version}</version>
+              <file>${ai.timefold.model.descriptor.file}</file>
+              <repositoryId>${ai.timefold.model.descriptor.repository.id}</repositoryId>
+              <url>${ai.timefold.model.descriptor.repository.url}</url>
+              <packaging>zip</packaging>
+              <generatePom>true</generatePom>
+            </configuration>
+            <executions>
+              <execution>
+                <id>default-deploy</id>
+                <goals>
+                  <goal>deploy</goal>
+                </goals>
+                <phase>none</phase>
+              </execution>
+              <execution>
+                <id>deploy-model-descriptor</id>
+                <goals>
+                  <goal>deploy-file</goal>
+                </goals>
+                <phase>deploy</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>update-api</id>
+      <activation>
+        <property>
+          <name>update-api</name>
+        </property>
+      </activation>
+      <properties>
+        <openapi-diff.skip>true</openapi-diff.skip>
+        <ant.skip>false</ant.skip>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <configuration>
+              <skip>${ant.skip}</skip>
+              <target>
+                <!-- Override old openapi schema with new openapi schema -->
+                <copy
+                        file="${project.basedir}/target/openapi-schema/openapi.json"
+                        tofile="${project.basedir}/src/build/openapi.json"/>
+              </target>
+            </configuration>
+            <executions>
+              <execution>
+                <id>update-api</id>
+                <!-- Depends on quarkus-maven-plugin:build goal to have generated already the openapi spec -->
+                <!-- but quarkus-maven-plugin:build is bound to the same 'package' phase. -->
+                <!-- Maven documentation says: "Multiple goals bound to a phase are executed in the same order as they are declared in the POM.", -->
+                <!-- therefore the order of their declaration in the POM has to be kept. -->
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>native</id>
+      <activation>
+        <property>
+          <name>native</name>
+        </property>
+      </activation>
+      <properties>
+        <skipITs>false</skipITs>
+        <quarkus.native.enabled>true</quarkus.native.enabled>
+        <quarkus.package.jar.enabled>false</quarkus.package.jar.enabled>
+        <quarkus.native.container-build>true</quarkus.native.container-build>
+        <quarkus.native.builder-image>${ai.timefold.model.builder-native-image}</quarkus.native.builder-image>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>container</id>
+      <activation>
+        <property>
+          <name>container</name>
+        </property>
+      </activation>
+      <properties>
+        <quarkus.profile>container</quarkus.profile>
+        <quarkus.container-image.build>true</quarkus.container-image.build>
+        <quarkus.jib.jvm-additional-arguments>${ai.timefold.model.jvm-image-arguments}
+        </quarkus.jib.jvm-additional-arguments>
+        <quarkus.jib.base-jvm-image>${ai.timefold.model.base-jvm-image}</quarkus.jib.base-jvm-image>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>extract-container-integration-tests-properties</id>
+                <phase>generate-test-resources</phase>
+                <goals>
+                  <goal>unpack</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>ai.timefold.solver</groupId>
+                      <artifactId>timefold-solver-model-build-support</artifactId>
+                      <version>${version.ai.timefold.solver}</version>
+                      <overWrite>true</overWrite>
+                      <outputDirectory>${ai.timefold.model.container.integration-tests.env-file-dir}</outputDirectory>
+                      <includes>${ai.timefold.model.container.integration-tests.env-file-name}</includes>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <systemPropertyVariables>
+                <!-- Required for passing TIMEFOLD_ENTERPRISE_LICENSE to the integration tests container. -->
+                <!-- The env var name without a value will make the container read the value from the host env. var. -->
+                <quarkus.test.arg-line>--env-file=${ai.timefold.model.container.integration-tests.env-file}
+                </quarkus.test.arg-line>
+              </systemPropertyVariables>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>container-native</id>
+      <activation>
+        <property>
+          <name>container-native</name>
+        </property>
+      </activation>
+      <properties>
+        <skipITs>false</skipITs>
+        <quarkus.native.enabled>true</quarkus.native.enabled>
+        <quarkus.package.jar.enabled>false</quarkus.package.jar.enabled>
+        <quarkus.profile>container-native</quarkus.profile>
+        <quarkus.native.container-build>true</quarkus.native.container-build>
+        <quarkus.container-image.build>true</quarkus.container-image.build>
+        <quarkus.jib.native-arguments>-Djava.net.useSystemProxies=true</quarkus.jib.native-arguments>
+        <quarkus.jib.base-native-image>${ai.timefold.model.base-native-image}</quarkus.jib.base-native-image>
+        <quarkus.native.builder-image>${ai.timefold.model.builder-native-image}</quarkus.native.builder-image>
+        <!-- required for passing TIMEFOLD_ENTERPRISE_LICENSE to the integration tests container -->
+        <quarkus.test.arg-line>--env-file=${ai.timefold.model.container.integration-tests.env-file}
+        </quarkus.test.arg-line>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>extract-container-integration-tests-properties</id>
+                <phase>generate-test-resources</phase>
+                <goals>
+                  <goal>unpack</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>ai.timefold.solver</groupId>
+                      <artifactId>timefold-solver-model-build-support</artifactId>
+                      <version>${version.ai.timefold.solver}</version>
+                      <overWrite>true</overWrite>
+                      <outputDirectory>${ai.timefold.model.container.integration-tests.env-file-dir}</outputDirectory>
+                      <includes>${ai.timefold.model.container.integration-tests.env-file-name}</includes>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <systemPropertyVariables>
+                <!-- Required for passing TIMEFOLD_ENTERPRISE_LICENSE to the integration tests container. -->
+                <!-- The env var name without a value will make the container read the value from the host env. var. -->
+                <quarkus.test.arg-line>--env-file=${ai.timefold.model.container.integration-tests.env-file}
+                </quarkus.test.arg-line>
+              </systemPropertyVariables>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>platform-tests</id>
+      <activation>
+        <property>
+          <name>platform-tests</name>
+        </property>
+      </activation>
+      <properties>
+        <skipUTs>true</skipUTs>
+        <skipITs>false</skipITs>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+                <configuration>
+                  <systemPropertyVariables>
+                    <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                    <!--suppress UnresolvedMavenProperty -->
+                    <maven.home>${maven.home}</maven.home>
+
+                    <ai.timefold.platform.model.test.api-key>${ai.timefold.platform.model.test.api-key}
+                    </ai.timefold.platform.model.test.api-key>
+                    <quarkus.http.test-host>sandbox.timefold.dev</quarkus.http.test-host>
+                    <quarkus.http.test-ssl-port>443</quarkus.http.test-ssl-port>
+                    <quarkus.http.test-ssl-enabled>true</quarkus.http.test-ssl-enabled>
+                  </systemPropertyVariables>
+                  <includes>
+                    <include>**/*PT.java</include>
+                  </includes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>config</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>ai.timefold.solver</groupId>
+          <artifactId>timefold-solver-model-config</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>solver-snapshot</id>
+      <activation>
+        <property>
+          <name>solver-snapshot</name>
+        </property>
+      </activation>
+      <properties>
+        <version.ai.timefold.solver>999-SNAPSHOT</version.ai.timefold.solver>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>quickProfile</id>
+      <activation>
+        <property>
+          <name>quickly</name>
+        </property>
+      </activation>
+      <properties>
+        <skipTests>true</skipTests>
+        <skipITs>true</skipITs>
+        <skipUTs>true</skipUTs>
+        <openapi-diff.skip>true</openapi-diff.skip>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>imageBuildProfile</id>
+      <activation>
+        <property>
+          <name>image-build</name>
+        </property>
+      </activation>
+      <properties>
+        <skipUTs>true</skipUTs>
+        <formatter.skip>true</formatter.skip>
+        <openapi-diff.skip>true</openapi-diff.skip>
+      </properties>
+    </profile>
+
+  </profiles>
+</project>

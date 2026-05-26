@@ -1,0 +1,92 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-build-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../build/build-parent/pom.xml</relativePath>
+  </parent>
+
+  <artifactId>timefold-solver-model-internal-parent</artifactId>
+
+  <packaging>pom</packaging>
+  <name>(Preview) Timefold Solver Model Parent</name>
+  <description>
+    This module contains APIs for optimization model development.
+    This module and any of its submodules are in a preview state and thus are subjects to changes.
+  </description>
+
+  <properties>
+    <!-- TODO Quarkus is riddled with duplicate classes, see https://github.com/quarkusio/quarkus/issues/9834 -->
+    <enforcer.failOnDuplicatedClasses>false</enforcer.failOnDuplicatedClasses>
+  </properties>
+
+  <modules>
+    <module>build/build-support</module>
+    <module>build/config</module>
+    <module>definition</module>
+    <module>json</module>
+    <module>jackson</module>
+    <module>rest</module>
+    <module>worker</module>
+    <module>quarkus</module>
+    <module>maps</module>
+    <module>test</module>
+    <module>facade/model</module>
+    <module>facade/model-with-maps</module>
+    <module>facade/model-base-parent</module>
+    <module>facade/model-parent</module>
+    <module>rest-definition</module>
+    <module>model-defaults</module>
+    <module>tools/maven-plugin</module>
+  </modules>
+
+  <build>
+    <!-- Skip the dependency check for models. -->
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>analyze-only</id>
+            <configuration>
+              <failOnWarning>false</failOnWarning>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>test-model</id>
+      <modules>
+        <module>test-model</module>
+      </modules>
+    </profile>
+  </profiles>
+
+  <repositories>
+    <repository>
+      <id>timefold</id>
+      <name>Timefold JFrog releases repository</name>
+      <url>https://timefold.jfrog.io/artifactory/releases/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>Timefold GitHub Packages</name>
+      <url>https://maven.pkg.github.com/TimefoldAI/timefold-models-sdk</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </distributionManagement>
+
+</project>
