@@ -26,7 +26,7 @@ public record SolverTerminationConfig(
                 "Use this termination if you want to benchmark your models, not recommended for production use. " +
                 "If set, unimprovedSpentLimit must be empty. " +
                 "Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
-                examples = { "1000", "10000" }) @JsonInclude(JsonInclude.Include.NON_NULL) Integer stepCountLimit){
+                examples = { "1000", "10000" }) @JsonInclude(JsonInclude.Include.NON_NULL) Integer stepCountLimit) {
 
     public SolverTerminationConfig(Duration spentLimit, Duration unimprovedSpentLimit) {
         this(spentLimit, unimprovedSpentLimit, null);

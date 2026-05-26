@@ -16,6 +16,6 @@ public record ModelInputPatch(@Schema(required = true, description = "Operation 
         @JsonInclude(JsonInclude.Include.NON_NULL) @Schema(anyOf = { Object.class, Collection.class },
                 additionalProperties = True.class,
                 implementation = Object.class,
-                description = "Value (object, array or simple value) to be used for add or replace operations. It should not be given for remove operation") JsonNode value){
+                description = "Value (object, array or simple value) to be used for add or replace operations. It should not be given for remove operation") JsonNode value) {
 
 }

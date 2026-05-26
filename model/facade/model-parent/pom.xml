@@ -58,13 +58,61 @@
     -->
     <ai.timefold.model.jvm-image-arguments>-XX:+UseParallelGC,-Djava.net.useSystemProxies=true,-XX:+UseCompactObjectHeaders,-XX:MaxRAMPercentage=85,-Djava.rmi.server.hostname=localhost,-Dcom.sun.management.jmxremote,-Dcom.sun.management.jmxremote.port=5555,-Dcom.sun.management.jmxremote.rmi.port=5555,-Dcom.sun.management.jmxremote.local.only=true,-Dcom.sun.management.jmxremote.authenticate=false,-Dcom.sun.management.jmxremote.ssl=false</ai.timefold.model.jvm-image-arguments>
     <!-- ************************************************************************ -->
-    <!-- Dependencies Override -->
+    <!-- Dependencies -->
     <!-- ************************************************************************ -->
+    <version.org.webjars.bootstrap>5.3.8</version.org.webjars.bootstrap>
+    <version.org.webjars.jquery>3.7.1</version.org.webjars.jquery>
+    <version.org.webjars.font-awesome>7.2.0</version.org.webjars.font-awesome>
+    <version.org.webjars.js-joda>1.11.0</version.org.webjars.js-joda>
+    <version.org.webjars.leaflet>1.8.0</version.org.webjars.leaflet>
 
     <!-- ************************************************************************ -->
-    <!-- Plugins Override -->
+    <!-- Plugins -->
     <!-- ************************************************************************ -->
+    <version.google-jib>3.5.1</version.google-jib>
+    <version.jib-layer-filter-extension-maven>0.3.0</version.jib-layer-filter-extension-maven>
+    <version.openapi-diff.plugin>2.1.7</version.openapi-diff.plugin>
+    <version.openapi-generator.plugin>7.22.0</version.openapi-generator.plugin>
+
+    <!-- ************************************************************************ -->
+    <!-- Plugins Configuration -->
+    <!-- ************************************************************************ -->
+    <openapi-diff.skip>false</openapi-diff.skip>
+    <openapi-diff.fail-on-changed>true</openapi-diff.fail-on-changed>
+    <openapi-diff.fail-on-incompatible>true</openapi-diff.fail-on-incompatible>
+    <ant.skip>true</ant.skip>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- UI webjars -->
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>bootstrap</artifactId>
+        <version>${version.org.webjars.bootstrap}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>jquery</artifactId>
+        <version>${version.org.webjars.jquery}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>font-awesome</artifactId>
+        <version>${version.org.webjars.font-awesome}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars.npm</groupId>
+        <artifactId>js-joda</artifactId>
+        <version>${version.org.webjars.js-joda}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.webjars</groupId>
+        <artifactId>leaflet</artifactId>
+        <version>${version.org.webjars.leaflet}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -128,6 +176,41 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.google.cloud.tools</groupId>
+        <artifactId>jib-maven-plugin</artifactId>
+        <version>${version.google-jib}</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.google.cloud.tools</groupId>
+            <artifactId>jib-layer-filter-extension-maven</artifactId>
+            <version>${version.jib-layer-filter-extension-maven}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.openapitools.openapidiff</groupId>
+        <artifactId>openapi-diff-maven</artifactId>
+        <version>${version.openapi-diff.plugin}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>${version.openapi-generator.plugin}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>${version.antrun.plugin}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>${version.exec.plugin}</version>
+        <configuration>
+          <mainClass>ai.timefold.solver.model.config.ConfigDumperMain</mainClass>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -638,9 +721,50 @@
         <dependency>
           <groupId>ai.timefold.solver</groupId>
           <artifactId>timefold-solver-model-config</artifactId>
-          <version>${version.ai.timefold.solver}</version>
         </dependency>
       </dependencies>
     </profile>
+
+    <profile>
+      <id>solver-snapshot</id>
+      <activation>
+        <property>
+          <name>solver-snapshot</name>
+        </property>
+      </activation>
+      <properties>
+        <version.ai.timefold.solver>999-SNAPSHOT</version.ai.timefold.solver>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>quickProfile</id>
+      <activation>
+        <property>
+          <name>quickly</name>
+        </property>
+      </activation>
+      <properties>
+        <skipTests>true</skipTests>
+        <skipITs>true</skipITs>
+        <skipUTs>true</skipUTs>
+        <openapi-diff.skip>true</openapi-diff.skip>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>imageBuildProfile</id>
+      <activation>
+        <property>
+          <name>image-build</name>
+        </property>
+      </activation>
+      <properties>
+        <skipUTs>true</skipUTs>
+        <formatter.skip>true</formatter.skip>
+        <openapi-diff.skip>true</openapi-diff.skip>
+      </properties>
+    </profile>
+
   </profiles>
 </project>

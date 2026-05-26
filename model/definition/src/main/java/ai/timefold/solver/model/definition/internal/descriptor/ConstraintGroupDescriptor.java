@@ -17,7 +17,8 @@ public record ConstraintGroupDescriptor(String id, String name, String descripti
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof ConstraintGroupDescriptor that)) return false;
+        if (!(o instanceof ConstraintGroupDescriptor that))
+            return false;
 
         return id.equals(that.id) && Objects.equals(name, that.name) && Objects.equals(icon, that.icon)
                 && Arrays.equals(tags, that.tags) && Objects.equals(description, that.description);

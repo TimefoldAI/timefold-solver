@@ -101,7 +101,7 @@
             <path>
               <groupId>io.quarkus</groupId>
               <artifactId>quarkus-extension-processor</artifactId>
-              <version>${version.io.quarkus.platform}</version>
+              <version>${version.io.quarkus}</version>
             </path>
           </annotationProcessorPaths>
         </configuration>

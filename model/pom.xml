@@ -2,9 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>ai.timefold.solver</groupId>
-    <artifactId>timefold-solver-parent</artifactId>
+    <artifactId>timefold-solver-build-parent</artifactId>
     <version>${revision}</version>
-    <relativePath>../pom.xml</relativePath>
+    <relativePath>../build/build-parent/pom.xml</relativePath>
   </parent>
 
   <artifactId>timefold-solver-model-internal-parent</artifactId>
@@ -16,8 +16,12 @@
     This module and any of its submodules are in a preview state and thus are subjects to changes.
   </description>
 
+  <properties>
+    <!-- TODO Quarkus is riddled with duplicate classes, see https://github.com/quarkusio/quarkus/issues/9834 -->
+    <enforcer.failOnDuplicatedClasses>false</enforcer.failOnDuplicatedClasses>
+  </properties>
+
   <modules>
-    <module>build/build-parent</module>
     <module>build/build-support</module>
     <module>build/config</module>
     <module>definition</module>
@@ -37,6 +41,23 @@
     <module>tools/maven-plugin</module>
   </modules>
 
+  <build>
+    <!-- Skip the dependency check for models. -->
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>analyze-only</id>
+            <configuration>
+              <failOnWarning>false</failOnWarning>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
   <profiles>
     <profile>
       <id>test-model</id>
@@ -46,51 +67,16 @@
     </profile>
   </profiles>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.flatten.plugin>1.7.3</version.flatten.plugin>
-  </properties>
-
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>flatten-maven-plugin</artifactId>
-          <version>${version.flatten.plugin}</version>
-          <configuration>
-            <updatePomFile>true</updatePomFile>
-            <flattenMode>resolveCiFriendliesOnly</flattenMode>
-            <keepCommentsInPom>true</keepCommentsInPom>
-          </configuration>
-          <executions>
-            <execution>
-              <id>flatten</id>
-              <phase>process-resources</phase>
-              <goals>
-                <goal>flatten</goal>
-              </goals>
-            </execution>
-            <execution>
-              <id>flatten.clean</id>
-              <phase>clean</phase>
-              <goals>
-                <goal>clean</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-
-    <plugins>
-      <!-- flatten maven plugin must be configured for all projects, even the top-level parent -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>flatten-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
+  <repositories>
+    <repository>
+      <id>timefold</id>
+      <name>Timefold JFrog releases repository</name>
+      <url>https://timefold.jfrog.io/artifactory/releases/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <distributionManagement>
     <repository>
