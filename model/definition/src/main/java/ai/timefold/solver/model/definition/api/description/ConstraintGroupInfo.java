@@ -38,4 +38,15 @@ public record ConstraintGroupInfo(String id, @Nullable String name, @Nullable St
         result = 31 * result + Arrays.hashCode(tags);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "ConstraintGroupInfo{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", icon='" + icon + '\'' +
+                ", tags=" + Arrays.toString(tags) +
+                '}';
+    }
 }

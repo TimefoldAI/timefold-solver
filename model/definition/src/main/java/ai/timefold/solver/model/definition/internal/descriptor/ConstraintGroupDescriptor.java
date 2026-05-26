@@ -33,4 +33,16 @@ public record ConstraintGroupDescriptor(String id, String name, String descripti
         result = 31 * result + Arrays.hashCode(tags);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "ConstraintGroupDescriptor{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", icon='" + icon + '\'' +
+                ", constraintDescriptors=" + Arrays.toString(constraintDescriptors) +
+                ", tags=" + Arrays.toString(tags) +
+                '}';
+    }
 }
