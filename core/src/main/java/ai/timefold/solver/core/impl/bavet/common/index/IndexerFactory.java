@@ -499,6 +499,10 @@ public final class IndexerFactory<Right_> {
             return backendSupplier.get();
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualIndexer or ComparisonIndexer.
             var joinerType = joiner.getJoinerType(0);
+            if (joinerType == JoinerType.EQUAL) {
+                // Fuse the leaf-most equal indexer with its backend; the index key equals the composite key.
+                return buildFusedEqualLeaf();
+            }
             KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
             return buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
         }
@@ -509,8 +513,14 @@ public final class IndexerFactory<Right_> {
         for (var entry : descendingJoinerTypeMap.entrySet()) {
             var joinerType = entry.getValue();
             if (downstreamIndexerSupplier == backendSupplier && indexPropertyId == 0) {
-                KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
-                downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
+                if (joinerType == JoinerType.EQUAL) {
+                    // Fuse the leaf-most equal indexer with its backend; the index key equals the composite key.
+                    downstreamIndexerSupplier = this::buildFusedEqualLeaf;
+                } else {
+                    KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
+                    downstreamIndexerSupplier =
+                            () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
+                }
             } else {
                 KeyUnpacker<?> keyUnpacker = new CompositeKeyUnpacker<>(indexPropertyId);
                 var actualDownstreamIndexerSupplier = downstreamIndexerSupplier;
@@ -520,6 +530,17 @@ public final class IndexerFactory<Right_> {
             indexPropertyId--;
         }
         return downstreamIndexerSupplier.get();
+    }
+
+    /**
+     * Builds the fused equal indexer for the leaf-most equal level of an all-equal chain,
+     * where the index key equals the composite key (no {@link KeyUnpacker} indirection, no per-key backend object).
+     */
+    private <T> Indexer<T> buildFusedEqualLeaf() {
+        if (requiresRandomAccess) {
+            return new FusedEqualRandomAccessIndexer<>();
+        }
+        return new FusedEqualLinkedListIndexer<>();
     }
 
     private <T> Indexer<T> buildIndexerPart(boolean isLeftBridge, JoinerType joinerType, KeyUnpacker<?> keyUnpacker,
