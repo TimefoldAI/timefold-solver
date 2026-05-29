@@ -1,13 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <groupId>ai.timefold.solver</groupId>
-    <artifactId>timefold-solver-model-base-parent</artifactId>
-    <version>${revision}</version>
-    <relativePath>../model-base-parent/pom.xml</relativePath>
-  </parent>
   <modelVersion>4.0.0</modelVersion>
+  <groupId>ai.timefold.solver</groupId>
   <artifactId>timefold-solver-model-parent</artifactId>
+  <version>${revision}</version>
   <packaging>pom</packaging>
   <name>(Preview) Timefold Solver Model Parent</name>
   <description>
@@ -17,6 +13,9 @@
   </description>
 
   <properties>
+    <revision>999-SNAPSHOT</revision>
+    <ai.timefold.sdk.enterprise>false</ai.timefold.sdk.enterprise>
+
     <!--suppress UnresolvedMavenProperty -->
     <ai.timefold.platform.model.test.api-key>${env.TF_PLATFORM_TEST_API_KEY}</ai.timefold.platform.model.test.api-key>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -60,6 +59,10 @@
     <!-- ************************************************************************ -->
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
+    <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
+    <version.io.quarkus>3.35.3</version.io.quarkus>
+    <version.org.assertj>3.27.7</version.org.assertj>
+    <version.org.awaitility>4.3.0</version.org.awaitility>
     <version.org.webjars.bootstrap>5.3.8</version.org.webjars.bootstrap>
     <version.org.webjars.jquery>3.7.1</version.org.webjars.jquery>
     <version.org.webjars.font-awesome>7.2.0</version.org.webjars.font-awesome>
@@ -69,6 +72,8 @@
     <!-- ************************************************************************ -->
     <!-- Plugins -->
     <!-- ************************************************************************ -->
+    <version.antrun.plugin>3.2.0</version.antrun.plugin>
+    <version.exec.plugin>3.6.3</version.exec.plugin>
     <version.google-jib>3.5.1</version.google-jib>
     <version.jib-layer-filter-extension-maven>0.3.0</version.jib-layer-filter-extension-maven>
     <version.openapi-diff.plugin>2.1.7</version.openapi-diff.plugin>
@@ -85,6 +90,32 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>io.quarkus.platform</groupId>
+        <artifactId>quarkus-bom</artifactId>
+        <version>${version.io.quarkus}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>ai.timefold.solver</groupId>
+        <artifactId>timefold-solver-bom</artifactId>
+        <version>${version.ai.timefold.solver}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <scope>test</scope>
+        <version>${version.org.awaitility}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <scope>test</scope>
+        <version>${version.org.assertj}</version>
+      </dependency>
       <!-- UI webjars -->
       <dependency>
         <groupId>org.webjars</groupId>
@@ -130,6 +161,16 @@
     </dependency>
     <!-- Testing -->
     <dependency>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-model-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit</artifactId>
       <scope>test</scope>
@@ -163,7 +204,7 @@
               <artifactItems>
                 <artifactItem>
                   <groupId>ai.timefold.solver.enterprise</groupId>
-                  <artifactId>timefold-solver-enterprise-diagnostic-tools</artifactId>
+                  <artifactId>timefold-solver-enterprise-model-diagnostic-tools</artifactId>
                   <version>${version.ai.timefold.solver}</version>
                   <type>jar</type>
                   <overWrite>true</overWrite>
@@ -218,7 +259,7 @@
   <profiles>
     <profile>
       <id>enterprise</id>
-      <!-- This profile must NOT be activated during the SDK build, otherwise the build fails. -->
+      <!-- This profile must NOT be activated during the Solver build, otherwise the build fails. -->
       <activation>
         <property>
           <name>enterprise</name>
@@ -226,8 +267,21 @@
         </property>
       </activation>
       <properties>
+        <ai.timefold.sdk.enterprise>true</ai.timefold.sdk.enterprise>
+        <!-- enable copy of Timefold diagnostic tools when building container image - see container profile -->
         <ai.timefold.sdk.enterprise.skipTools>false</ai.timefold.sdk.enterprise.skipTools>
       </properties>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>ai.timefold.solver.enterprise</groupId>
+            <artifactId>timefold-solver-enterprise-bom</artifactId>
+            <version>${version.ai.timefold.solver}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
       <dependencies>
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
@@ -235,19 +289,19 @@
         </dependency>
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-storage-fs</artifactId>
+          <artifactId>timefold-solver-enterprise-model-storage-fs</artifactId>
         </dependency>
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-storage-azure</artifactId>
+          <artifactId>timefold-solver-enterprise-model-storage-azure</artifactId>
         </dependency>
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-storage-gcs</artifactId>
+          <artifactId>timefold-solver-enterprise-model-storage-gcs</artifactId>
         </dependency>
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-storage-s3</artifactId>
+          <artifactId>timefold-solver-enterprise-model-storage-s3</artifactId>
         </dependency>
         <dependency>
           <groupId>ai.timefold.solver</groupId>
@@ -259,18 +313,8 @@
         </dependency>
         <!-- Testing -->
         <dependency>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-junit</artifactId>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>io.rest-assured</groupId>
-          <artifactId>rest-assured</artifactId>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.awaitility</groupId>
-          <artifactId>awaitility</artifactId>
+          <groupId>ai.timefold.solver.enterprise</groupId>
+          <artifactId>timefold-solver-enterprise-model-test</artifactId>
           <scope>test</scope>
         </dependency>
       </dependencies>
@@ -287,6 +331,16 @@
           </plugin>
         </plugins>
       </build>
+      <repositories>
+        <repository>
+          <id>timefold</id>
+          <name>Timefold Enterprise Artifacts Repository</name>
+          <url>https://timefold.jfrog.io/artifactory/releases/</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
     </profile>
 
     <!-- Profile that adds benchmark dependency and removes any excludes for compiler plugin. -->

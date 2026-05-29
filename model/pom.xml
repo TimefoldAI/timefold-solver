@@ -34,7 +34,6 @@
     <module>test</module>
     <module>facade/model</module>
     <module>facade/model-with-maps</module>
-    <module>facade/model-base-parent</module>
     <module>facade/model-parent</module>
     <module>rest-definition</module>
     <module>model-defaults</module>
