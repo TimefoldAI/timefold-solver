@@ -10,4 +10,8 @@ public class TerminationConfigParams {
     public static final String TERMINATION_STEP_COUNT_LIMIT = "ai.timefold.platform.termination.step-count-limit";
     public static final String TERMINATION_BEST_SCORE_LIMIT =
             "ai.timefold.platform.termination.best-score-limit";
+    public static final String TERMINATION_DIMINISHED_RETURNS_SLIDING_WINDOW_DURATION =
+            "ai.timefold.platform.termination.diminished-returns.sliding-window-duration";
+    public static final String TERMINATION_DIMINISHED_RETURNS_MINIMUM_IMPROVEMENT_RATIO =
+            "ai.timefold.platform.termination.diminished-returns.minimum-improvement-ratio";
 }
