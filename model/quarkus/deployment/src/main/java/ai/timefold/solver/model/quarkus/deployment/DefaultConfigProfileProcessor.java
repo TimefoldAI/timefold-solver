@@ -47,6 +47,7 @@ public class DefaultConfigProfileProcessor {
     private static final String MODEL_CONFIG_MAP_PROVIDER = "ai.timefold.model.default-config.map.provider";
     private static final String MODEL_CONFIG_MAP_DISTANCE = "ai.timefold.model.default-config.map.max-distance-from-road";
     private static final String MODEL_CONFIG_MAP_TRANSPORT_TYPE = "ai.timefold.model.default-config.map.transport-type";
+    private static final String MODEL_CONFIG_MAP_USE_TRAFFIC = "ai.timefold.model.default-config.map.use-traffic";
 
     public static final String MODEL_CONFIG_TERMINATION_SPENT_LIMIT =
             "ai.timefold.model.default-config.termination.spent-limit";
@@ -92,6 +93,7 @@ public class DefaultConfigProfileProcessor {
         String location = config.getOptionalValue(MODEL_CONFIG_MAP_LOCATION, String.class).orElse(null);
         Double maxDistanceFromRoad = config.getOptionalValue(MODEL_CONFIG_MAP_DISTANCE, Double.class).orElse(null);
         String transportType = config.getOptionalValue(MODEL_CONFIG_MAP_TRANSPORT_TYPE, String.class).orElse(null);
+        Boolean useTraffic = config.getOptionalValue(MODEL_CONFIG_MAP_USE_TRAFFIC, Boolean.class).orElse(null);
         Integer maxThreadCount = config.getOptionalValue(MODEL_CONFIG_MAX_THREAD_COUNT, Integer.class).orElse(null);
         Duration spentLimit = config.getOptionalValue(MODEL_CONFIG_TERMINATION_SPENT_LIMIT, Duration.class).orElse(null);
         Duration unimprovedSpentLimit =
@@ -106,7 +108,7 @@ public class DefaultConfigProfileProcessor {
 
         ConfigurationProfile configProfile =
                 new ConfigurationProfile(DEFAULT_CONFIGURATION_PROFILE_ID, configName, description,
-                        new MapsConfiguration(provider, location, maxDistanceFromRoad, transportType),
+                        new MapsConfiguration(provider, location, maxDistanceFromRoad, transportType, useTraffic),
                         new ResourcesConfiguration(null, null),
                         new RunConfiguration(maxThreadCount,
                                 new SolverTerminationConfig(spentLimit, unimprovedSpentLimit)),

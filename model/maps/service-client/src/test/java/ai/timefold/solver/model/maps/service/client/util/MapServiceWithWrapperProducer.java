@@ -15,9 +15,11 @@ import ai.timefold.solver.model.maps.service.client.api.MapService;
 import ai.timefold.solver.model.maps.service.client.impl.MapServiceClient;
 import ai.timefold.solver.model.maps.service.client.impl.MapServiceClientImpl;
 import ai.timefold.solver.model.maps.service.client.impl.MapServiceLocalHaversineImpl;
+import ai.timefold.solver.model.maps.service.client.impl.bucketing.TimeframeBucketing;
 import ai.timefold.solver.model.maps.service.integration.internal.model.TravelTimeAndDistanceConverter;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +37,8 @@ public class MapServiceWithWrapperProducer {
     private final MapServiceClient mapService;
     private final List<TravelTimeAndDistanceConverter> converters;
     private final Optional<Boolean> fallbackEnabled;
+    private final TimeframeBucketing timeframeBucketing;
+    private final ManagedExecutor managedExecutor;
     private final ObjectMapper mapper;
     private final MapServiceInvocationCounter mapServiceInvocationCounter;
 
@@ -46,6 +50,8 @@ public class MapServiceWithWrapperProducer {
             @RestClient MapServiceClient mapService,
             @All List<TravelTimeAndDistanceConverter> converters,
             @ConfigProperty(name = "ai.timefold.platform.map-service.enable-fallback") Optional<Boolean> fallbackEnabled,
+            TimeframeBucketing timeframeBucketing,
+            ManagedExecutor managedExecutor,
             ObjectMapper mapper,
             MapServiceInvocationCounter mapServiceInvocationCounter) {
         this.useRemote = useRemote;
@@ -54,6 +60,8 @@ public class MapServiceWithWrapperProducer {
         this.mapService = mapService;
         this.converters = converters;
         this.fallbackEnabled = fallbackEnabled;
+        this.timeframeBucketing = timeframeBucketing;
+        this.managedExecutor = managedExecutor;
         this.mapServiceInvocationCounter = mapServiceInvocationCounter;
         this.mapper = mapper;
     }
@@ -63,8 +71,9 @@ public class MapServiceWithWrapperProducer {
         MapService mapService;
 
         if (useRemote) {
-            mapService = new MapServiceClientImpl(this.mapService, converters, fallbackEnabled, travelTimeAndDistanceProvider,
-                    waypointsProvider, mapper);
+            mapService = new MapServiceClientImpl(this.mapService, converters, fallbackEnabled, Optional.empty(),
+                    Optional.empty(), travelTimeAndDistanceProvider, waypointsProvider, timeframeBucketing,
+                    managedExecutor, mapper);
         } else {
             mapService = new MapServiceLocalHaversineImpl(travelTimeAndDistanceProvider, waypointsProvider);
         }

@@ -3,6 +3,7 @@ package ai.timefold.solver.model.maps.service.client.api;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -11,8 +12,11 @@ import ai.timefold.solver.model.definition.api.enrichment.SolverModelEnricher;
 import ai.timefold.solver.model.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.model.definition.internal.error.TimefoldRuntimeException;
 import ai.timefold.solver.model.maps.api.model.Location;
+import ai.timefold.solver.model.maps.api.model.TimeInterval;
+import ai.timefold.solver.model.maps.service.client.api.model.TravelTimesByAvailabilityWithMetadata;
 import ai.timefold.solver.model.maps.service.client.impl.MapServiceOptionsSupplier;
 import ai.timefold.solver.model.maps.service.client.impl.error.MapServiceIllegalArgumentException;
+import ai.timefold.solver.model.maps.service.integration.api.LocationsAndTrafficAwareSolverModel;
 import ai.timefold.solver.model.maps.service.integration.api.LocationsAwareSolverModel;
 import ai.timefold.solver.model.maps.service.integration.internal.model.TravelTimeAndDistanceConverterException;
 import ai.timefold.solver.model.maps.service.integration.internal.model.TravelTimeAndDistanceWithMetadata;
@@ -43,6 +47,21 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
     })
     @Override
     public LocationsAwareSolverModel<?> enrich(LocationsAwareSolverModel<?> solverModel) {
+        // Two enricher paths driven by the model interface:
+        //   - LocationsAwareSolverModel              -> single matrix, scalar setters. Whether the underlying data is
+        //     plain or traffic-aware-at-default-timeframe is decided inside MapServiceClientImpl based on the
+        //     use-traffic flag.
+        //   - LocationsAndTrafficAwareSolverModel    -> per-timeframe matrices, array setters. With traffic on, that's
+        //     one matrix per overlapping timeframe; with traffic off, MapServiceClientImpl wraps a single plain matrix
+        //     as a one-bucket array (resolver always returns 0).
+        // The use-traffic config flag lives in MapServiceClientImpl; the enricher doesn't read it.
+        if (solverModel instanceof LocationsAndTrafficAwareSolverModel<?> trafficAwareSolverModel) {
+            return enrichAvailabilityAware(trafficAwareSolverModel);
+        }
+        return enrichSingleMatrix(solverModel);
+    }
+
+    private LocationsAwareSolverModel<?> enrichSingleMatrix(LocationsAwareSolverModel<?> solverModel) {
         List<Location> locations = solverModel.getLocations(); // Get all the locations from the model only once.
         TravelTimeAndDistanceWithMetadata travelTimeAndDistance;
         try {
@@ -61,6 +80,28 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
             location.setDistanceMatrix(travelTimeAndDistance.travelTimeAndDistance().distance());
         });
         solverModel.setLocationsNotInMap(convertIdxToLocations(travelTimeAndDistance.locationsNotInMapIdx(), locations));
+        return solverModel;
+    }
+
+    private LocationsAwareSolverModel<?> enrichAvailabilityAware(LocationsAndTrafficAwareSolverModel<?> solverModel) {
+        List<Location> locations = solverModel.getLocations();
+        Map<Location, List<TimeInterval>> availability = solverModel.getLocationsWithTimeAvailability();
+
+        TravelTimesByAvailabilityWithMetadata result;
+        try {
+            result = mapService.getTravelTimeAndDistance(locations, optionsSupplier.getOptions(), availability);
+        } catch (TimefoldRuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TimefoldRuntimeException(ErrorCodes.MAP_SERVICE_UNKNOWN,
+                    "Error getting travel time and distances from map service", e, false);
+        }
+
+        for (Location location : locations) {
+            location.setTravelTimeMatrices(result.travelTimesByTimeframe(), result.timeframeIndexResolver());
+            location.setDistanceMatrices(result.distancesByTimeframe(), result.timeframeIndexResolver());
+        }
+        solverModel.setLocationsNotInMap(result.locationsNotInMap());
         return solverModel;
     }
 

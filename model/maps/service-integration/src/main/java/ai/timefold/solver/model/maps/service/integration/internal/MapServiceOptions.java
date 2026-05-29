@@ -24,6 +24,14 @@ public class MapServiceOptions {
 
     public static final String TRANSPORT_TYPE = "transportType";
 
+    public static final String ANNOTATION = "annotation";
+
+    public static final String ANNOTATION_DURATION = "duration";
+
+    public static final String ANNOTATION_DISTANCE = "distance";
+
+    public static final String TIMEFRAME = "timeframe";
+
     public static Map<String, String> parse(String options) {
         Map<String, String> optionMap = new HashMap<>();
 
@@ -105,6 +113,28 @@ public class MapServiceOptions {
             return "";
         }
         return TRANSPORT_TYPE + ":" + transportType;
+    }
+
+    public static String getAnnotationOption(String annotation) {
+        if (annotation == null) {
+            return "";
+        }
+        return ANNOTATION + ":" + annotation;
+    }
+
+    public static String getTimeframeOption(String timeframe) {
+        if (timeframe == null) {
+            return "";
+        }
+        return TIMEFRAME + ":" + timeframe;
+    }
+
+    public static String withOption(String options, String key, String value) {
+        String entry = key + ":" + value;
+        if (options == null || options.isEmpty()) {
+            return entry;
+        }
+        return options + "," + entry;
     }
 
 }

@@ -1,5 +1,8 @@
 package ai.timefold.solver.model.maps.api.model;
 
+import java.time.OffsetDateTime;
+import java.util.function.ToIntFunction;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
@@ -38,6 +41,15 @@ public class Location {
     @JsonIgnore
     private short distanceMatrixIndex = IndexableDistanceMatrix.EMPTY_INDEX;
 
+    @JsonIgnore
+    private DistanceMatrix[] travelTimesByTimeframe;
+
+    @JsonIgnore
+    private DistanceMatrix[] distancesByTimeframe;
+
+    @JsonIgnore
+    private ToIntFunction<OffsetDateTime> timeframeIndexResolver;
+
     public Location() {
     }
 
@@ -48,6 +60,10 @@ public class Location {
 
         validateLatitude();
         validateLongitude();
+    }
+
+    public static Location of(double latitude, double longitude) {
+        return new Location(latitude, longitude);
     }
 
     public double getLatitude() {
@@ -80,6 +96,18 @@ public class Location {
         updateIndex(this.distanceMatrix);
     }
 
+    public void setTravelTimeMatrices(DistanceMatrix[] travelTimesByTimeframe,
+            ToIntFunction<OffsetDateTime> indexResolver) {
+        this.travelTimesByTimeframe = travelTimesByTimeframe;
+        this.timeframeIndexResolver = indexResolver;
+    }
+
+    public void setDistanceMatrices(DistanceMatrix[] distancesByTimeframe,
+            ToIntFunction<OffsetDateTime> indexResolver) {
+        this.distancesByTimeframe = distancesByTimeframe;
+        this.timeframeIndexResolver = indexResolver;
+    }
+
     /**
      * Returns the travel time for a route between this location and the given location.
      *
@@ -100,6 +128,28 @@ public class Location {
                     "Are both locations in the configured map and in the location set (if used)?").formatted(this, location));
         }
         return TravelTime.of(travelTimeFromMatrix);
+    }
+
+    /**
+     * Returns the travel time for a route between this location and the given location at the given departure time.
+     *
+     * @param location the location representing the route destination
+     * @param departureTime the instant used to select the traffic timeframe matrix
+     * @return {@link TravelTime} instance representing the travel time in seconds and indicating if the destination is
+     *         unreachable from this location.
+     * @throws IllegalArgumentException When the resolved matrix does not include both locations, or the resolver returns
+     *         an out-of-bounds index.
+     * @throws IllegalStateException When there is no timeframe travel time matrix configured for this location.
+     */
+    public TravelTime getTravelTimeTo(Location location, OffsetDateTime departureTime) {
+        DistanceMatrix matrix = resolveTimeframeMatrix(travelTimesByTimeframe, departureTime, "travel time");
+        long travelTime = matrix.get(this, location);
+        if (travelTime == -1) {
+            throw new IllegalArgumentException(
+                    ("No travel time information found for a route from (%s) to (%s) at (%s).")
+                            .formatted(this, location, departureTime));
+        }
+        return TravelTime.of(travelTime);
     }
 
     @Deprecated
@@ -129,6 +179,27 @@ public class Location {
         return TravelDistance.of(travelDistanceFromMatrix);
     }
 
+    /**
+     * Returns the travel distance for a route between this location and the given location at the given departure time.
+     *
+     * @param location the location representing the route destination
+     * @param departureTime the instant used to select the traffic timeframe matrix
+     * @return {@link TravelDistance} instance representing the travel distance in meters and indicating if the destination is
+     *         unreachable from this location.
+     * @throws IllegalArgumentException When the resolved matrix does not include both locations, or the resolver returns
+     *         an out-of-bounds index.
+     * @throws IllegalStateException When there is no timeframe distance matrix configured for this location.
+     */
+    public TravelDistance getDistanceTo(Location location, OffsetDateTime departureTime) {
+        DistanceMatrix matrix = resolveTimeframeMatrix(distancesByTimeframe, departureTime, "distance");
+        long distance = matrix.get(this, location);
+        if (distance == -1) {
+            throw new IllegalArgumentException(("No distance information found for a route from (%s) to (%s) at (%s).")
+                    .formatted(this, location, departureTime));
+        }
+        return TravelDistance.of(distance);
+    }
+
     public short getIndex(DistanceMatrix matrix) {
         if (matrix == travelTimeMatrix) {
             return travelTimeMatrixIndex;
@@ -145,6 +216,26 @@ public class Location {
         } else if (matrix == distanceMatrix) {
             distanceMatrixIndex = index;
         }
+    }
+
+    private DistanceMatrix resolveTimeframeMatrix(DistanceMatrix[] matrices, OffsetDateTime departureTime, String what) {
+        if (matrices == null || timeframeIndexResolver == null) {
+            throw new IllegalStateException(
+                    ("No traffic-aware %s matrices configured for a location (%s).").formatted(what, this));
+        }
+        int index = timeframeIndexResolver.applyAsInt(departureTime);
+        if (index < 0 || index >= matrices.length) {
+            throw new IllegalArgumentException(
+                    ("Resolved timeframe index %d is out of bounds for %d %s matrix/matrices on location (%s) at (%s).")
+                            .formatted(index, matrices.length, what, this, departureTime));
+        }
+        DistanceMatrix matrix = matrices[index];
+        if (matrix == null) {
+            throw new IllegalArgumentException(
+                    ("No %s matrix fetched for timeframe index %d on location (%s) at (%s).")
+                            .formatted(what, index, this, departureTime));
+        }
+        return matrix;
     }
 
     private void updateIndex(DistanceMatrix distanceMatrix) {
