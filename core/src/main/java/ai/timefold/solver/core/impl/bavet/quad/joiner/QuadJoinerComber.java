@@ -75,10 +75,13 @@ public final class QuadJoinerComber<A, B, C, D> {
     }
 
     /**
+     * Returns the merged indexing joiner, reordered equal-first so the indexer chain always has its
+     * (merged) equal level at the top.
+     *
      * @return never null
      */
     public DefaultQuadJoiner<A, B, C, D> getMergedJoiner() {
-        return mergedJoiner;
+        return mergedJoiner.reorderedEqualsFirst();
     }
 
     /**

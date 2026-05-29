@@ -73,10 +73,13 @@ public final class BiJoinerComber<A, B> {
     }
 
     /**
+     * Returns the merged indexing joiner, reordered equal-first so the indexer chain always has its
+     * (merged) equal level at the top. Computed on read to also cover {@link #addJoiner} appends.
+     *
      * @return never null
      */
     public DefaultBiJoiner<A, B> getMergedJoiner() {
-        return mergedJoiner;
+        return mergedJoiner.reorderedEqualsFirst();
     }
 
     /**

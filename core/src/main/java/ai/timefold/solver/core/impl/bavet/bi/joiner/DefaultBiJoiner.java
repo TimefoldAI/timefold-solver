@@ -52,6 +52,29 @@ public final class DefaultBiJoiner<A, B> extends AbstractJoiner<B> implements Bi
         return new DefaultBiJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
     }
 
+    /**
+     * @return this if already equal-first (or single joiner); otherwise a copy with all
+     *         {@link JoinerType#EQUAL} joiners moved to the front (stable, see
+     *         {@link AbstractJoiner#equalsFirstOrder}).
+     */
+    public DefaultBiJoiner<A, B> reorderedEqualsFirst() {
+        var order = equalsFirstOrder(joinerTypes);
+        if (order == null) {
+            return this;
+        }
+        var count = order.length;
+        Function[] newLeftMappings = new Function[count];
+        var newJoinerTypes = new JoinerType[count];
+        Function[] newRightMappings = new Function[count];
+        for (var i = 0; i < count; i++) {
+            var from = order[i];
+            newLeftMappings[i] = leftMappings[from];
+            newJoinerTypes[i] = joinerTypes[from];
+            newRightMappings[i] = rightMappings[from];
+        }
+        return new DefaultBiJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
+    }
+
     public Function<A, Object> getLeftMapping(int index) {
         return leftMappings[index];
     }

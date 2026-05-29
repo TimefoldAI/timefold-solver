@@ -55,6 +55,29 @@ public final class DefaultTriJoiner<A, B, C> extends AbstractJoiner<C> implement
         return new DefaultTriJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
     }
 
+    /**
+     * @return this if already equal-first (or single joiner); otherwise a copy with all
+     *         {@link JoinerType#EQUAL} joiners moved to the front (stable, see
+     *         {@link AbstractJoiner#equalsFirstOrder}).
+     */
+    public DefaultTriJoiner<A, B, C> reorderedEqualsFirst() {
+        var order = equalsFirstOrder(joinerTypes);
+        if (order == null) {
+            return this;
+        }
+        var count = order.length;
+        BiFunction[] newLeftMappings = new BiFunction[count];
+        var newJoinerTypes = new JoinerType[count];
+        Function[] newRightMappings = new Function[count];
+        for (var i = 0; i < count; i++) {
+            var from = order[i];
+            newLeftMappings[i] = leftMappings[from];
+            newJoinerTypes[i] = joinerTypes[from];
+            newRightMappings[i] = rightMappings[from];
+        }
+        return new DefaultTriJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
+    }
+
     public BiFunction<A, B, Object> getLeftMapping(int index) {
         return leftMappings[index];
     }

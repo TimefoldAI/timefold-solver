@@ -74,10 +74,13 @@ public final class TriJoinerComber<A, B, C> {
     }
 
     /**
+     * Returns the merged indexing joiner, reordered equal-first so the indexer chain always has its
+     * (merged) equal level at the top.
+     *
      * @return never null
      */
     public DefaultTriJoiner<A, B, C> getMergedJoiner() {
-        return mergedJoiner;
+        return mergedJoiner.reorderedEqualsFirst();
     }
 
     /**

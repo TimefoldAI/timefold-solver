@@ -2,8 +2,6 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NavigableMap;
-import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -51,22 +49,23 @@ import ai.timefold.solver.core.impl.util.Triple;
  * each keyFunction in {@link CompositeKey} is associated with a
  * single indexer.
  * <p>
- * Comparison joiners result in a single indexer each,
- * whereas equal joiners will be merged into a single indexer if they are consecutive.
- * In the latter case,
- * a composite keyFunction is created of type {@link Pair}, {@link TriTuple},
+ * Comparison joiners result in a single indexer each.
+ * The comber reorders joiners equal-first, so all equal joiners form a single leading run;
+ * that run is merged into a single (top-most) indexer.
+ * In that case,
+ * a composite keyFunction is created of type {@link Pair}, {@link Triple},
  * {@link Quadruple} or {@link IndexerKey},
- * based on the length of the composite keyFunction (number of equals joiners in sequence).
+ * based on the length of the equal prefix (number of leading equal joiners).
  *
  * <ul>
  * <li>Example 2: For an EQUAL+LESS_THAN joiner,
  * there are two indexers in the chain with keyFunction length of 1 each.</li>
- * <li>Example 3: For an LESS_THAN+EQUAL+EQUAL joiner,
+ * <li>Example 3: For an EQUAL+EQUAL+LESS_THAN joiner,
  * there are still two indexers,
- * but the second indexer's keyFunction length is 2.</li>
- * <li>Example 4: For an LESS_THAN+EQUAL+EQUAL+LESS_THAN joiner,
+ * but the first (equal) indexer's keyFunction length is 2.</li>
+ * <li>Example 4: For an EQUAL+EQUAL+LESS_THAN+GREATER_THAN joiner,
  * there are three indexers in the chain,
- * and the middle one's keyFunction length is 2.</li>
+ * and the first (equal) one's keyFunction length is 2.</li>
  * </ul>
  *
  * @param <Right_>
@@ -75,7 +74,13 @@ public final class IndexerFactory<Right_> {
 
     private final AbstractJoiner<Right_> joiner;
     private final boolean requiresRandomAccess; // Neighborhoods with enumerating joiners require random access.
-    private final NavigableMap<Integer, JoinerType> joinerTypeMap;
+    /**
+     * The number of leading {@link JoinerType#EQUAL} joiners. The comber reorders joiners equal-first
+     * (see {@code reorderedEqualsFirst()}), so all equal joiners form a single run at the front; this is
+     * its length (0 if the joiner starts with a non-equal joiner). The equal run is merged into one indexer
+     * level (the composite key); every remaining joiner becomes its own single-key level.
+     */
+    private final int equalPrefixLength;
 
     public IndexerFactory(AbstractJoiner<Right_> joiner) {
         this.joiner = joiner;
@@ -83,22 +88,31 @@ public final class IndexerFactory<Right_> {
         // TODO It also impacts the flip(). Is requiresRandomAccess a good name?
         this.requiresRandomAccess = joiner instanceof DefaultBiNeighborhoodsJoiner<?, Right_>;
         var joinerCount = joiner.getJoinerCount();
-        if (joinerCount < 2) {
-            joinerTypeMap = null;
-        } else {
-            joinerTypeMap = new TreeMap<>();
-            for (var i = 1; i <= joinerCount; i++) {
-                var joinerType = i < joinerCount ? joiner.getJoinerType(i) : null;
-                var previousJoinerType = joiner.getJoinerType(i - 1);
-                if (joinerType != JoinerType.EQUAL || previousJoinerType != joinerType) {
-                    /*
-                     * Equal joiner is building a composite key with preceding equal joiner(s).
-                     * Does not apply to joiners other than equal; for those, each indexer has its own simple key.
-                     */
-                    joinerTypeMap.put(i, previousJoinerType);
-                }
-            }
+        var prefix = 0;
+        while (prefix < joinerCount && joiner.getJoinerType(prefix) == JoinerType.EQUAL) {
+            prefix++;
         }
+        this.equalPrefixLength = prefix;
+    }
+
+    /**
+     * The end-exclusive boundary of each indexer level, top-to-bottom: the merged equal-prefix level
+     * (length {@link #equalPrefixLength}, when {@code >= 1}) followed by one single-joiner level each.
+     * Empty when the joiner has no joiners. For {@code [EQUAL, EQUAL, LESS_THAN]} this is {@code [2, 3]}
+     * (one merged level spanning indices 0..1, then a single level at index 2).
+     */
+    private int[] levelEndIndices() {
+        var joinerCount = joiner.getJoinerCount();
+        if (joinerCount == 0) {
+            return new int[0];
+        }
+        var firstEndExclusive = equalPrefixLength == 0 ? 1 : equalPrefixLength;
+        var levelCount = joinerCount - firstEndExclusive + 1;
+        var endIndices = new int[levelCount];
+        for (var i = 0; i < levelCount; i++) {
+            endIndices[i] = firstEndExclusive + i;
+        }
+        return endIndices;
     }
 
     public AbstractJoiner<Right_> getJoiner() {
@@ -134,36 +148,35 @@ public final class IndexerFactory<Right_> {
         }
         var startIndexInclusive = 0;
         var keyFunctionList = new ArrayList<Function<A, Object>>();
-        for (var entry : joinerTypeMap.entrySet()) {
-            var endIndexExclusive = entry.getKey();
+        for (var endIndexExclusive : levelEndIndices()) {
             var keyFunctionLength = endIndexExclusive - startIndexInclusive;
-            // Consecutive EQUAL joiners are merged into a single composite keyFunction.
+            var levelStart = startIndexInclusive;
+            // The leading EQUAL run is merged into a single composite keyFunction; every other level has length 1.
             Function<A, Object> keyFunction = switch (keyFunctionLength) {
-                case 1 -> mappingExtractor.apply(startIndexInclusive);
+                case 1 -> mappingExtractor.apply(levelStart);
                 case 2 -> {
-                    var mapping1 = mappingExtractor.apply(startIndexInclusive);
-                    var mapping2 = mappingExtractor.apply(startIndexInclusive + 1);
+                    var mapping1 = mappingExtractor.apply(levelStart);
+                    var mapping2 = mappingExtractor.apply(levelStart + 1);
                     yield a -> new Pair<>(mapping1.apply(a), mapping2.apply(a));
                 }
                 case 3 -> {
-                    var mapping1 = mappingExtractor.apply(startIndexInclusive);
-                    var mapping2 = mappingExtractor.apply(startIndexInclusive + 1);
-                    var mapping3 = mappingExtractor.apply(startIndexInclusive + 2);
+                    var mapping1 = mappingExtractor.apply(levelStart);
+                    var mapping2 = mappingExtractor.apply(levelStart + 1);
+                    var mapping3 = mappingExtractor.apply(levelStart + 2);
                     yield a -> new Triple<>(mapping1.apply(a), mapping2.apply(a), mapping3.apply(a));
                 }
                 case 4 -> {
-                    var mapping1 = mappingExtractor.apply(startIndexInclusive);
-                    var mapping2 = mappingExtractor.apply(startIndexInclusive + 1);
-                    var mapping3 = mappingExtractor.apply(startIndexInclusive + 2);
-                    var mapping4 = mappingExtractor.apply(startIndexInclusive + 3);
+                    var mapping1 = mappingExtractor.apply(levelStart);
+                    var mapping2 = mappingExtractor.apply(levelStart + 1);
+                    var mapping3 = mappingExtractor.apply(levelStart + 2);
+                    var mapping4 = mappingExtractor.apply(levelStart + 3);
                     yield a -> new Quadruple<>(mapping1.apply(a), mapping2.apply(a), mapping3.apply(a),
                             mapping4.apply(a));
                 }
                 default -> {
-                    Function<A, Object>[] mappings = new Function[joinerCount];
-                    for (var i = 0; i < joinerCount; i++) {
-                        var mapping = mappingExtractor.apply(i);
-                        mappings[i] = mapping;
+                    Function<A, Object>[] mappings = new Function[keyFunctionLength];
+                    for (var i = 0; i < keyFunctionLength; i++) {
+                        mappings[i] = mappingExtractor.apply(levelStart + i);
                     }
                     yield toCompositeKeyFunction(mappings);
                 }
@@ -227,36 +240,35 @@ public final class IndexerFactory<Right_> {
         }
         var startIndexInclusive = 0;
         var keyFunctionList = new ArrayList<BiFunction<A, B, Object>>();
-        for (var entry : joinerTypeMap.entrySet()) {
-            var endIndexExclusive = entry.getKey();
+        for (var endIndexExclusive : levelEndIndices()) {
             var keyFunctionLength = endIndexExclusive - startIndexInclusive;
-            // Consecutive EQUAL joiners are merged into a single composite keyFunction.
+            var levelStart = startIndexInclusive;
+            // The leading EQUAL run is merged into a single composite keyFunction; every other level has length 1.
             BiFunction<A, B, Object> keyFunction = switch (keyFunctionLength) {
-                case 1 -> castJoiner.getLeftMapping(startIndexInclusive);
+                case 1 -> castJoiner.getLeftMapping(levelStart);
                 case 2 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
+                    var mapping1 = castJoiner.getLeftMapping(levelStart);
+                    var mapping2 = castJoiner.getLeftMapping(levelStart + 1);
                     yield (a, b) -> new Pair<>(mapping1.apply(a, b), mapping2.apply(a, b));
                 }
                 case 3 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
-                    var mapping3 = castJoiner.getLeftMapping(startIndexInclusive + 2);
+                    var mapping1 = castJoiner.getLeftMapping(levelStart);
+                    var mapping2 = castJoiner.getLeftMapping(levelStart + 1);
+                    var mapping3 = castJoiner.getLeftMapping(levelStart + 2);
                     yield (a, b) -> new Triple<>(mapping1.apply(a, b), mapping2.apply(a, b), mapping3.apply(a, b));
                 }
                 case 4 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
-                    var mapping3 = castJoiner.getLeftMapping(startIndexInclusive + 2);
-                    var mapping4 = castJoiner.getLeftMapping(startIndexInclusive + 3);
+                    var mapping1 = castJoiner.getLeftMapping(levelStart);
+                    var mapping2 = castJoiner.getLeftMapping(levelStart + 1);
+                    var mapping3 = castJoiner.getLeftMapping(levelStart + 2);
+                    var mapping4 = castJoiner.getLeftMapping(levelStart + 3);
                     yield (a, b) -> new Quadruple<>(mapping1.apply(a, b), mapping2.apply(a, b), mapping3.apply(a, b),
                             mapping4.apply(a, b));
                 }
                 default -> {
-                    BiFunction<A, B, Object>[] mappings = new BiFunction[joinerCount];
-                    for (var i = 0; i < joinerCount; i++) {
-                        var mapping = castJoiner.getLeftMapping(i);
-                        mappings[i] = mapping;
+                    BiFunction<A, B, Object>[] mappings = new BiFunction[keyFunctionLength];
+                    for (var i = 0; i < keyFunctionLength; i++) {
+                        mappings[i] = castJoiner.getLeftMapping(levelStart + i);
                     }
                     yield (a, b) -> {
                         var mappingCount = mappings.length;
@@ -314,37 +326,36 @@ public final class IndexerFactory<Right_> {
         }
         var startIndexInclusive = 0;
         var keyFunctionList = new ArrayList<TriFunction<A, B, C, Object>>();
-        for (var entry : joinerTypeMap.entrySet()) {
-            var endIndexExclusive = entry.getKey();
+        for (var endIndexExclusive : levelEndIndices()) {
             var keyFunctionLength = endIndexExclusive - startIndexInclusive;
-            // Consecutive EQUAL joiners are merged into a single composite keyFunction.
+            var levelStart = startIndexInclusive;
+            // The leading EQUAL run is merged into a single composite keyFunction; every other level has length 1.
             TriFunction<A, B, C, Object> keyFunction = switch (keyFunctionLength) {
-                case 1 -> castJoiner.getLeftMapping(startIndexInclusive);
+                case 1 -> castJoiner.getLeftMapping(levelStart);
                 case 2 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
+                    var mapping1 = castJoiner.getLeftMapping(levelStart);
+                    var mapping2 = castJoiner.getLeftMapping(levelStart + 1);
                     yield (a, b, c) -> new Pair<>(mapping1.apply(a, b, c), mapping2.apply(a, b, c));
                 }
                 case 3 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
-                    var mapping3 = castJoiner.getLeftMapping(startIndexInclusive + 2);
+                    var mapping1 = castJoiner.getLeftMapping(levelStart);
+                    var mapping2 = castJoiner.getLeftMapping(levelStart + 1);
+                    var mapping3 = castJoiner.getLeftMapping(levelStart + 2);
                     yield (a, b, c) -> new Triple<>(mapping1.apply(a, b, c), mapping2.apply(a, b, c),
                             mapping3.apply(a, b, c));
                 }
                 case 4 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
-                    var mapping3 = castJoiner.getLeftMapping(startIndexInclusive + 2);
-                    var mapping4 = castJoiner.getLeftMapping(startIndexInclusive + 3);
+                    var mapping1 = castJoiner.getLeftMapping(levelStart);
+                    var mapping2 = castJoiner.getLeftMapping(levelStart + 1);
+                    var mapping3 = castJoiner.getLeftMapping(levelStart + 2);
+                    var mapping4 = castJoiner.getLeftMapping(levelStart + 3);
                     yield (a, b, c) -> new Quadruple<>(mapping1.apply(a, b, c), mapping2.apply(a, b, c),
                             mapping3.apply(a, b, c), mapping4.apply(a, b, c));
                 }
                 default -> {
-                    TriFunction<A, B, C, Object>[] mappings = new TriFunction[joinerCount];
-                    for (var i = 0; i < joinerCount; i++) {
-                        var mapping = castJoiner.getLeftMapping(i);
-                        mappings[i] = mapping;
+                    TriFunction<A, B, C, Object>[] mappings = new TriFunction[keyFunctionLength];
+                    for (var i = 0; i < keyFunctionLength; i++) {
+                        mappings[i] = castJoiner.getLeftMapping(levelStart + i);
                     }
                     yield (a, b, c) -> {
                         var mappingCount = mappings.length;
@@ -405,37 +416,36 @@ public final class IndexerFactory<Right_> {
         }
         var startIndexInclusive = 0;
         var keyFunctionList = new ArrayList<QuadFunction<A, B, C, D, Object>>();
-        for (var entry : joinerTypeMap.entrySet()) {
-            var endIndexExclusive = entry.getKey();
+        for (var endIndexExclusive : levelEndIndices()) {
             var keyFunctionLength = endIndexExclusive - startIndexInclusive;
-            // Consecutive EQUAL joiners are merged into a single composite keyFunction.
+            var levelStart = startIndexInclusive;
+            // The leading EQUAL run is merged into a single composite keyFunction; every other level has length 1.
             QuadFunction<A, B, C, D, Object> keyFunction = switch (keyFunctionLength) {
-                case 1 -> castJoiner.getLeftMapping(startIndexInclusive);
+                case 1 -> castJoiner.getLeftMapping(levelStart);
                 case 2 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
+                    var mapping1 = castJoiner.getLeftMapping(levelStart);
+                    var mapping2 = castJoiner.getLeftMapping(levelStart + 1);
                     yield (a, b, c, d) -> new Pair<>(mapping1.apply(a, b, c, d), mapping2.apply(a, b, c, d));
                 }
                 case 3 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
-                    var mapping3 = castJoiner.getLeftMapping(startIndexInclusive + 2);
+                    var mapping1 = castJoiner.getLeftMapping(levelStart);
+                    var mapping2 = castJoiner.getLeftMapping(levelStart + 1);
+                    var mapping3 = castJoiner.getLeftMapping(levelStart + 2);
                     yield (a, b, c, d) -> new Triple<>(mapping1.apply(a, b, c, d), mapping2.apply(a, b, c, d),
                             mapping3.apply(a, b, c, d));
                 }
                 case 4 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
-                    var mapping3 = castJoiner.getLeftMapping(startIndexInclusive + 2);
-                    var mapping4 = castJoiner.getLeftMapping(startIndexInclusive + 3);
+                    var mapping1 = castJoiner.getLeftMapping(levelStart);
+                    var mapping2 = castJoiner.getLeftMapping(levelStart + 1);
+                    var mapping3 = castJoiner.getLeftMapping(levelStart + 2);
+                    var mapping4 = castJoiner.getLeftMapping(levelStart + 3);
                     yield (a, b, c, d) -> new Quadruple<>(mapping1.apply(a, b, c, d), mapping2.apply(a, b, c, d),
                             mapping3.apply(a, b, c, d), mapping4.apply(a, b, c, d));
                 }
                 default -> {
-                    QuadFunction<A, B, C, D, Object>[] mappings = new QuadFunction[joinerCount];
-                    for (var i = 0; i < joinerCount; i++) {
-                        var mapping = castJoiner.getLeftMapping(i);
-                        mappings[i] = mapping;
+                    QuadFunction<A, B, C, D, Object>[] mappings = new QuadFunction[keyFunctionLength];
+                    for (var i = 0; i < keyFunctionLength; i++) {
+                        mappings[i] = castJoiner.getLeftMapping(levelStart + i);
                     }
                     yield (a, b, c, d) -> {
                         var mappingCount = mappings.length;
@@ -495,26 +505,35 @@ public final class IndexerFactory<Right_> {
     public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
         Supplier<Indexer<T>> backendSupplier =
                 requiresRandomAccess ? RandomAccessIndexerBackend::new : LinkedListIndexerBackend::new;
-        if (!hasJoiners()) { // NoneJoiner results in NoneIndexer.
+        if (!hasJoiners()) { // NoneJoiner results in a bare backend (NoneIndexer).
             return backendSupplier.get();
-        } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualIndexer or ComparisonIndexer.
-            var joinerType = joiner.getJoinerType(0);
-            if (joinerType == JoinerType.EQUAL) {
-                // Fuse the leaf-most equal indexer with its backend; the index key equals the composite key.
-                return buildFusedEqualLeaf();
-            }
-            KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
-            return buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
         }
-        // The following code builds the children first, so it iterates over the joiners in reverse order.
-        var descendingJoinerTypeMap = joinerTypeMap.descendingMap();
+        return buildIndexerChain(isLeftBridge, 0, backendSupplier).get();
+    }
+
+    /**
+     * Builds the indexer chain for levels {@code [fromLevelInclusive, last]}, children-first, and returns
+     * a supplier of its top indexer. Level ids (hence the {@link CompositeKeyUnpacker} ids) are anchored to
+     * the FULL chain; {@code fromLevelInclusive} only bounds where the build stops. Therefore a suffix built
+     * with {@code fromLevelInclusive == 1} still uses {@code CompositeKeyUnpacker(1)} for its top level and
+     * never takes the {@code indexPropertyId == 0} leaf-fuse / single-key shortcut (that would hand it the
+     * whole composite key instead of component 1).
+     * <p>
+     * {@code buildIndexer(isLeftBridge)} is {@code buildIndexerChain(isLeftBridge, 0, backendSupplier)};
+     * {@link #buildJoinIndex()} uses {@code fromLevelInclusive == 1} to build the per-side suffix sub-chains.
+     */
+    private <T> Supplier<Indexer<T>> buildIndexerChain(boolean isLeftBridge, int fromLevelInclusive,
+            Supplier<Indexer<T>> backendSupplier) {
+        // Build children-first, so iterate the levels bottom-up (the leaf is the highest indexPropertyId).
+        // A level's joiner type is the type of any joiner it spans; the merged equal prefix (level 0) is EQUAL.
+        var endIndices = levelEndIndices();
         Supplier<Indexer<T>> downstreamIndexerSupplier = backendSupplier;
-        var indexPropertyId = descendingJoinerTypeMap.size() - 1;
-        for (var entry : descendingJoinerTypeMap.entrySet()) {
-            var joinerType = entry.getValue();
+        for (var indexPropertyId = endIndices.length - 1; indexPropertyId >= fromLevelInclusive; indexPropertyId--) {
+            var joinerType = joiner.getJoinerType(endIndices[indexPropertyId] - 1);
             if (downstreamIndexerSupplier == backendSupplier && indexPropertyId == 0) {
+                // Leaf-most level whose index key equals the whole composite key: no KeyUnpacker indirection.
                 if (joinerType == JoinerType.EQUAL) {
-                    // Fuse the leaf-most equal indexer with its backend; the index key equals the composite key.
+                    // Fuse the leaf-most equal indexer with its backend.
                     downstreamIndexerSupplier = this::buildFusedEqualLeaf;
                 } else {
                     KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
@@ -527,9 +546,45 @@ public final class IndexerFactory<Right_> {
                 downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker,
                         actualDownstreamIndexerSupplier);
             }
-            indexPropertyId--;
         }
-        return downstreamIndexerSupplier.get();
+        return downstreamIndexerSupplier;
+    }
+
+    /**
+     * Whether this join/ifExists can use a unified {@link JoinIndex} instead of two parallel indexers.
+     * Eligible iff the joiner has a leading EQUAL run (always true iff it has any equal, since the comber
+     * reorders equal-first) and random access is not required (random access is single-indexer anyway).
+     */
+    public boolean isJoinIndexEligible() {
+        return equalPrefixLength >= 1 && !requiresRandomAccess;
+    }
+
+    /**
+     * Builds a unified {@link JoinIndex} for an {@link #isJoinIndexEligible() eligible} join/ifExists.
+     * The top map is keyed by the equal prefix; each bucket holds the per-side downstream for the remaining
+     * comparison/containing suffix (built right-flipped on the right side), or a bare tuple-list backend when
+     * the join is pure-equal.
+     *
+     * @param <L> the left element type (a left tuple, or {@code ExistsCounter} for ifExists)
+     * @param <R> the right element type (a right {@code UniTuple})
+     */
+    public <L, R> JoinIndex<L, R> buildJoinIndex() {
+        var joinerCount = joiner.getJoinerCount();
+        // Pure-equal ⇒ the composite key IS the equal key (SingleKeyUnpacker); otherwise it is component 0.
+        KeyUnpacker<Object> topEqualKeyUnpacker =
+                equalPrefixLength == joinerCount ? new SingleKeyUnpacker<>() : new CompositeKeyUnpacker<>(0);
+        Supplier<Indexer<L>> leftDownstreamSupplier;
+        Supplier<Indexer<R>> rightDownstreamSupplier;
+        if (equalPrefixLength == joinerCount) {
+            // Pure equal: the per-side downstream is just the tuple list; the bucket is the equal-key group.
+            leftDownstreamSupplier = LinkedListIndexerBackend::new;
+            rightDownstreamSupplier = LinkedListIndexerBackend::new;
+        } else {
+            // Equal prefix + suffix: build the per-side suffix sub-chain (the right side flips comparisons).
+            leftDownstreamSupplier = buildIndexerChain(true, 1, LinkedListIndexerBackend::new);
+            rightDownstreamSupplier = buildIndexerChain(false, 1, LinkedListIndexerBackend::new);
+        }
+        return new JoinIndex<>(topEqualKeyUnpacker, leftDownstreamSupplier, rightDownstreamSupplier);
     }
 
     /**

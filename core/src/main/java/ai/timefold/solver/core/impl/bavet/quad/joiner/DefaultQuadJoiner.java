@@ -56,6 +56,29 @@ public final class DefaultQuadJoiner<A, B, C, D> extends AbstractJoiner<D> imple
         return new DefaultQuadJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
     }
 
+    /**
+     * @return this if already equal-first (or single joiner); otherwise a copy with all
+     *         {@link JoinerType#EQUAL} joiners moved to the front (stable, see
+     *         {@link AbstractJoiner#equalsFirstOrder}).
+     */
+    public DefaultQuadJoiner<A, B, C, D> reorderedEqualsFirst() {
+        var order = equalsFirstOrder(joinerTypes);
+        if (order == null) {
+            return this;
+        }
+        var count = order.length;
+        TriFunction[] newLeftMappings = new TriFunction[count];
+        var newJoinerTypes = new JoinerType[count];
+        Function[] newRightMappings = new Function[count];
+        for (var i = 0; i < count; i++) {
+            var from = order[i];
+            newLeftMappings[i] = leftMappings[from];
+            newJoinerTypes[i] = joinerTypes[from];
+            newRightMappings[i] = rightMappings[from];
+        }
+        return new DefaultQuadJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
+    }
+
     public TriFunction<A, B, C, Object> getLeftMapping(int index) {
         return leftMappings[index];
     }
