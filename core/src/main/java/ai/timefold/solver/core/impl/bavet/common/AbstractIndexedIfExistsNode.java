@@ -85,8 +85,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
     public final void insertLeft(LeftTuple_ leftTuple) {
         if (leftTuple.getStore(inputStoreIndexLefCompositeKey) != null) {
             throw new IllegalStateException(
-                    "Impossible state: the input for the tuple (%s) was already added in the tupleStore."
-                            .formatted(leftTuple));
+                    "Impossible state: the input for the tuple (%s) was already added in the tupleStore.".formatted(leftTuple));
         }
         var compositeKey = keysExtractorLeft.apply(leftTuple);
         leftTuple.setStore(inputStoreIndexLefCompositeKey, compositeKey);
@@ -161,8 +160,8 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         killCounterLeft(element);
     }
 
-    private void updateIndexerLeft(Object compositeKey, ListEntry<ExistsCounter<LeftTuple_>> counterEntry,
-            LeftTuple_ leftTuple, boolean keepBucket) {
+    private void updateIndexerLeft(Object compositeKey, ListEntry<ExistsCounter<LeftTuple_>> counterEntry, LeftTuple_ leftTuple,
+            boolean keepBucket) {
         if (useJoinIndex) {
             JoinBucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
             bucket.removeLeft(compositeKey, counterEntry);
@@ -318,8 +317,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
     private void forEachLeftCounter(UniTuple<Right_> rightTuple, Object compositeKey,
             Consumer<ExistsCounter<LeftTuple_>> consumer) {
         if (useJoinIndex) {
-            JoinBucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket =
-                    rightTuple.getStore(inputStoreIndexRightBucket);
+            JoinBucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket = rightTuple.getStore(inputStoreIndexRightBucket);
             bucket.forEachLeft(compositeKey, consumer);
         } else {
             indexerLeft.forEach(compositeKey, consumer);

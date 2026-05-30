@@ -16,7 +16,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <T>
  */
 @NullMarked
-public final class LinkedListIndexerBackend<T> implements IndexerBackend<T> {
+public final class LinkedListLeafIndexer<T> implements LeafIndexer<T> {
 
     private final ElementAwareLinkedList<T> tupleList = new ElementAwareLinkedList<>();
 

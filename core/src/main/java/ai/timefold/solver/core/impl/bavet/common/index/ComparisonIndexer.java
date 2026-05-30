@@ -32,7 +32,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     /**
      * @param comparisonJoinerType the type of comparison to use
-     * @param keyUnpacker determines if it immediately goes to a {@link IndexerBackend} or if it uses a {@link CompositeKey}.
+     * @param keyUnpacker determines if it immediately goes to a {@link LeafIndexer} or if it uses a {@link CompositeKey}.
      * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
     public ComparisonIndexer(JoinerType comparisonJoinerType, KeyUnpacker<?> keyUnpacker,

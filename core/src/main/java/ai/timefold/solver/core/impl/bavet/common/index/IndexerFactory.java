@@ -28,10 +28,10 @@ import ai.timefold.solver.core.impl.util.Triple;
 /**
  * {@link Indexer Indexers} form a parent-child hierarchy,
  * each child has exactly one parent.
- * {@link IndexerBackend} is always at the bottom of the hierarchy,
+ * {@link LeafIndexer} is always at the bottom of the hierarchy,
  * never a parent unless it is the only indexer.
  * Parent indexers delegate to their children,
- * until they reach the ultimate {@link IndexerBackend}.
+ * until they reach the ultimate {@link LeafIndexer}.
  * <p>
  * Example 1: EQUAL+LESS_THAN joiner will become EqualIndexer -> ComparisonIndexer -> NoneIndexer.
  * <p>
@@ -484,7 +484,7 @@ public final class IndexerFactory<Right_> {
 
     public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
         Supplier<Indexer<T>> backendSupplier =
-                requiresRandomAccess ? RandomAccessIndexerBackend::new : LinkedListIndexerBackend::new;
+                requiresRandomAccess ? RandomAccessLeafIndexer::new : LinkedListLeafIndexer::new;
         if (!hasJoiners()) { // NoneJoiner results in a bare backend (NoneIndexer).
             return backendSupplier.get();
         }
@@ -515,7 +515,7 @@ public final class IndexerFactory<Right_> {
                 if (joinerType == JoinerType.EQUAL) {
                     // Fuse the leaf-most equal indexer with its backend.
                     downstreamIndexerSupplier = () -> new EqualIndexer<T, Object>(new SingleKeyUnpacker<>(),
-                            requiresRandomAccess ? RandomAccessIndexerBackend::new : LinkedListIndexerBackend::new);
+                            requiresRandomAccess ? RandomAccessLeafIndexer::new : LinkedListLeafIndexer::new);
                 } else {
                     KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
                     downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
@@ -555,11 +555,11 @@ public final class IndexerFactory<Right_> {
                 equalPrefixLength == joinerCount ? new SingleKeyUnpacker<>() : new CompositeKeyUnpacker<>(0);
         if (equalPrefixLength == joinerCount) {
             // Pure equal: the per-side downstream is just the tuple list; the bucket is the equal-key group.
-            return new JoinIndex<>(topEqualKeyUnpacker, false, LinkedListIndexerBackend::new, LinkedListIndexerBackend::new);
+            return new JoinIndex<>(topEqualKeyUnpacker, false, LinkedListLeafIndexer::new, LinkedListLeafIndexer::new);
         } else {
             // Equal prefix + suffix: build the per-side suffix sub-chain (the right side flips comparisons).
-            var leftDownstreamSupplier = this.<L> buildIndexerChain(true, 1, LinkedListIndexerBackend::new);
-            var rightDownstreamSupplier = this.<R> buildIndexerChain(false, 1, LinkedListIndexerBackend::new);
+            var leftDownstreamSupplier = this.<L> buildIndexerChain(true, 1, LinkedListLeafIndexer::new);
+            var rightDownstreamSupplier = this.<R> buildIndexerChain(false, 1, LinkedListLeafIndexer::new);
             return new JoinIndex<L, R>(topEqualKeyUnpacker, true, leftDownstreamSupplier, rightDownstreamSupplier);
         }
     }

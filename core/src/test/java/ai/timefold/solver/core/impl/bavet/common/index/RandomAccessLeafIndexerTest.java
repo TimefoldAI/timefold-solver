@@ -8,11 +8,11 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 import org.junit.jupiter.api.Test;
 
-class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
+class RandomAccessLeafIndexerTest extends AbstractIndexerTest {
 
     @Test
     void isRemovable() {
-        var indexer = new RandomAccessIndexerBackend<>();
+        var indexer = new RandomAccessLeafIndexer<>();
         assertSoftly(softly -> {
             softly.assertThat(forEachToTuples(indexer)).isEmpty();
             softly.assertThat(indexer.isRemovable()).isTrue();
@@ -21,7 +21,7 @@ class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
 
     @Test
     void put() {
-        var indexer = new RandomAccessIndexerBackend<>();
+        var indexer = new RandomAccessLeafIndexer<>();
         var annTuple = newTuple("Ann-F-40");
         assertThat(indexer.size(CompositeKey.none())).isZero();
         indexer.put(CompositeKey.none(), annTuple);
@@ -34,7 +34,7 @@ class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
 
     @Test
     void removeTwice() {
-        var indexer = new RandomAccessIndexerBackend<>();
+        var indexer = new RandomAccessLeafIndexer<>();
         var annTuple = newTuple("Ann-F-40");
         var annEntry = indexer.put(CompositeKey.none(), annTuple);
         assertSoftly(softly -> {
@@ -53,7 +53,7 @@ class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
 
     @Test
     void forEach() {
-        var indexer = new RandomAccessIndexerBackend<>();
+        var indexer = new RandomAccessLeafIndexer<>();
 
         var annTuple = newTuple("Ann-F-40");
         indexer.put(CompositeKey.none(), annTuple);

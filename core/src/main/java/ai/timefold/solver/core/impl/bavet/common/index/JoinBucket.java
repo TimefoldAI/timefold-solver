@@ -10,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Co-locates the left and right tuples that share an equal-prefix key inside a {@link JoinIndex}.
  * Holds one downstream {@link Indexer} per side: for a pure-equal join each is simply a tuple-list
- * {@link LinkedListIndexerBackend}; for an equal-prefix + comparison/containing join each is the per-side
+ * {@link LinkedListLeafIndexer}; for an equal-prefix + comparison/containing join each is the per-side
  * suffix sub-chain (the right side built flipped, exactly as the two-indexer path's {@code indexerRight}).
  * <p>
  * The {@code compositeKey} passed to the per-side methods is the FULL composite key; a backend downstream

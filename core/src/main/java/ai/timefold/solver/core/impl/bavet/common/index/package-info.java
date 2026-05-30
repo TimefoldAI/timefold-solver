@@ -23,7 +23,7 @@
  * <li><b>Index abstraction:</b> {@link ai.timefold.solver.core.impl.bavet.common.index.Indexer}
  * exposes put/remove/iterate semantics regardless of index shape.</li>
  * <li><b>Storage backend:</b> leaf storage is provided by
- * {@link ai.timefold.solver.core.impl.bavet.common.index.IndexerBackend} implementations.</li>
+ * {@link ai.timefold.solver.core.impl.bavet.common.index.LeafIndexer} implementations.</li>
  * </ul>
  *
  * <h2>3. Cross-side communication model</h2>
