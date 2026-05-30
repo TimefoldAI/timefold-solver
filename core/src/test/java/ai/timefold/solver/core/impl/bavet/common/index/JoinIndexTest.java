@@ -100,6 +100,22 @@ class JoinIndexTest {
         assertThat(collectRight(bucket, CompositeKey.of("F", 60))).isEmpty();
     }
 
+    @Test
+    void hasSuffixAndIsSameBucket() {
+        // equal(gender) AND lessThan(age): has a suffix ⇒ different composite keys can share a bucket (same gender).
+        JoinIndex<UniTuple<String>, UniTuple<String>> suffixed =
+                new IndexerFactory<>(equalGenderLessThanAge()).buildJoinIndex();
+        assertThat(suffixed.hasSuffix()).isTrue();
+        // Same equal prefix (gender), different suffix (age) ⇒ same bucket: the changed-key update can reuse it.
+        assertThat(suffixed.isSameBucket(CompositeKey.of("F", 30), CompositeKey.of("F", 50))).isTrue();
+        // Different equal prefix ⇒ different bucket.
+        assertThat(suffixed.isSameBucket(CompositeKey.of("F", 30), CompositeKey.of("M", 30))).isFalse();
+
+        // Pure equal: no suffix ⇒ the node never reuses (a changed key is always a different bucket).
+        JoinIndex<UniTuple<String>, UniTuple<String>> pureEqual = new IndexerFactory<>(equalGender()).buildJoinIndex();
+        assertThat(pureEqual.hasSuffix()).isFalse();
+    }
+
     private static UniTuple<String> tuple(String factA) {
         return UniTuple.of(factA, 0);
     }

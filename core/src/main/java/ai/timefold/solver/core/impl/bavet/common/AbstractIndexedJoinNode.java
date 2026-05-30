@@ -54,6 +54,9 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
     private final @Nullable JoinIndex<LeftTuple_, UniTuple<Right_>> joinIndex;
     private final int inputStoreIndexLeftBucket;
     private final int inputStoreIndexRightBucket;
+    // True only for an equal+suffix unified index: a changed-key update whose equal prefix is unchanged can reuse the
+    // cached bucket. Pure-equal nodes are false, so the dominant path never even evaluates isSameBucket.
+    private final boolean reuseBucketEligible;
 
     protected AbstractIndexedJoinNode(KeysExtractor<LeftTuple_> keysExtractorLeft, IndexerFactory<Right_> indexerFactory,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
@@ -80,6 +83,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             this.inputStoreIndexLeftBucket = -1;
             this.inputStoreIndexRightBucket = -1;
         }
+        this.reuseBucketEligible = useJoinIndex && joinIndex.hasSuffix();
     }
 
     @Override
@@ -91,7 +95,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         }
         var compositeKey = keysExtractorLeft.apply(leftTuple);
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, new ElementAwareLinkedList<OutTuple_>());
-        indexAndPropagateLeft(leftTuple, compositeKey);
+        indexAndPropagateLeft(leftTuple, compositeKey, false);
     }
 
     @Override
@@ -107,6 +111,13 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             // No need for re-indexing because the index keys didn't change
             // Prefer an update over retract-insert if possible
             innerUpdateLeft(leftTuple, consumer -> forEachRightMatch(leftTuple, oldCompositeKey, consumer));
+        } else if (reuseBucketEligible && joinIndex.isSameBucket(oldCompositeKey, newCompositeKey)) {
+            // Equal prefix unchanged ⇒ same bucket: move within the cached bucket, no top lookup or drop/recreate.
+            ElementAwareLinkedList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
+            JoinBucket<LeftTuple_, UniTuple<Right_>> bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
+            bucket.removeLeft(oldCompositeKey, leftTuple.getStore(inputStoreIndexLeftEntry));
+            outTupleListLeft.clear(this::retractOutTupleByLeft);
+            indexAndPropagateLeft(leftTuple, newCompositeKey, true);
         } else {
             ElementAwareLinkedList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
             JoinBucket<LeftTuple_, UniTuple<Right_>> oldBucket =
@@ -115,15 +126,22 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             outTupleListLeft.clear(this::retractOutTupleByLeft);
             // outTupleListLeft is now empty
             // No need for leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
-            indexAndPropagateLeft(leftTuple, newCompositeKey);
+            indexAndPropagateLeft(leftTuple, newCompositeKey, false);
         }
     }
 
-    private void indexAndPropagateLeft(LeftTuple_ leftTuple, Object compositeKey) {
+    private void indexAndPropagateLeft(LeftTuple_ leftTuple, Object compositeKey, boolean reuseCachedBucket) {
         leftTuple.setStore(inputStoreIndexLeftCompositeKey, compositeKey);
         if (useJoinIndex) {
-            var bucket = joinIndex.getOrCreateBucket(compositeKey); // The single top-level lookup.
-            leftTuple.setStore(inputStoreIndexLeftBucket, bucket);
+            // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct — no top-level
+            // lookup and no re-cache; otherwise resolve the bucket (the single top-level lookup) and cache it.
+            JoinBucket<LeftTuple_, UniTuple<Right_>> bucket;
+            if (reuseCachedBucket) {
+                bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
+            } else {
+                bucket = joinIndex.getOrCreateBucket(compositeKey);
+                leftTuple.setStore(inputStoreIndexLeftBucket, bucket);
+            }
             leftTuple.setStore(inputStoreIndexLeftEntry, bucket.addLeft(compositeKey, leftTuple));
         } else {
             leftTuple.setStore(inputStoreIndexLeftEntry, indexerLeft.put(compositeKey, leftTuple));
@@ -170,7 +188,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         }
         var compositeKey = keysExtractorRight.apply(rightTuple);
         rightTuple.setStore(inputStoreIndexRightOutTupleList, new ElementAwareLinkedList<OutTuple_>());
-        indexAndPropagateRight(rightTuple, compositeKey);
+        indexAndPropagateRight(rightTuple, compositeKey, false);
     }
 
     @Override
@@ -186,6 +204,13 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             // No need for re-indexing because the index keys didn't change
             // Prefer an update over retract-insert if possible
             innerUpdateRight(rightTuple, consumer -> forEachLeftMatch(rightTuple, oldCompositeKey, consumer));
+        } else if (reuseBucketEligible && joinIndex.isSameBucket(oldCompositeKey, newCompositeKey)) {
+            // Equal prefix unchanged ⇒ same bucket: move within the cached bucket, no top lookup or drop/recreate.
+            ElementAwareLinkedList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
+            JoinBucket<LeftTuple_, UniTuple<Right_>> bucket = rightTuple.getStore(inputStoreIndexRightBucket);
+            bucket.removeRight(oldCompositeKey, rightTuple.getStore(inputStoreIndexRightEntry));
+            outTupleListRight.clear(this::retractOutTupleByRight);
+            indexAndPropagateRight(rightTuple, newCompositeKey, true);
         } else {
             ElementAwareLinkedList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
             JoinBucket<LeftTuple_, UniTuple<Right_>> oldBucket =
@@ -194,15 +219,22 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             outTupleListRight.clear(this::retractOutTupleByRight);
             // outTupleListRight is now empty
             // No need for rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
-            indexAndPropagateRight(rightTuple, newCompositeKey);
+            indexAndPropagateRight(rightTuple, newCompositeKey, false);
         }
     }
 
-    private void indexAndPropagateRight(UniTuple<Right_> rightTuple, Object compositeKey) {
+    private void indexAndPropagateRight(UniTuple<Right_> rightTuple, Object compositeKey, boolean reuseCachedBucket) {
         rightTuple.setStore(inputStoreIndexRightCompositeKey, compositeKey);
         if (useJoinIndex) {
-            var bucket = joinIndex.getOrCreateBucket(compositeKey); // The single top-level lookup.
-            rightTuple.setStore(inputStoreIndexRightBucket, bucket);
+            // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct — no top-level
+            // lookup and no re-cache; otherwise resolve the bucket (the single top-level lookup) and cache it.
+            JoinBucket<LeftTuple_, UniTuple<Right_>> bucket;
+            if (reuseCachedBucket) {
+                bucket = rightTuple.getStore(inputStoreIndexRightBucket);
+            } else {
+                bucket = joinIndex.getOrCreateBucket(compositeKey);
+                rightTuple.setStore(inputStoreIndexRightBucket, bucket);
+            }
             rightTuple.setStore(inputStoreIndexRightEntry, bucket.addRight(compositeKey, rightTuple));
         } else {
             rightTuple.setStore(inputStoreIndexRightEntry, indexerRight.put(compositeKey, rightTuple));

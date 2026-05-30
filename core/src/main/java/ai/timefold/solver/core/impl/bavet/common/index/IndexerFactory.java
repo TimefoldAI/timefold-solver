@@ -555,12 +555,12 @@ public final class IndexerFactory<Right_> {
                 equalPrefixLength == joinerCount ? new SingleKeyUnpacker<>() : new CompositeKeyUnpacker<>(0);
         if (equalPrefixLength == joinerCount) {
             // Pure equal: the per-side downstream is just the tuple list; the bucket is the equal-key group.
-            return new JoinIndex<>(topEqualKeyUnpacker, LinkedListIndexerBackend::new, LinkedListIndexerBackend::new);
+            return new JoinIndex<>(topEqualKeyUnpacker, false, LinkedListIndexerBackend::new, LinkedListIndexerBackend::new);
         } else {
             // Equal prefix + suffix: build the per-side suffix sub-chain (the right side flips comparisons).
             var leftDownstreamSupplier = this.<L> buildIndexerChain(true, 1, LinkedListIndexerBackend::new);
             var rightDownstreamSupplier = this.<R> buildIndexerChain(false, 1, LinkedListIndexerBackend::new);
-            return new JoinIndex<L, R>(topEqualKeyUnpacker, leftDownstreamSupplier, rightDownstreamSupplier);
+            return new JoinIndex<L, R>(topEqualKeyUnpacker, true, leftDownstreamSupplier, rightDownstreamSupplier);
         }
     }
 

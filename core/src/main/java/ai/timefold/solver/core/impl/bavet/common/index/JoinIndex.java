@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.NullMarked;
@@ -29,15 +30,40 @@ public final class JoinIndex<L, R> {
     // See EqualIndexer for the rationale behind the initial capacity and load factor.
     private final Map<Object, JoinBucket<L, R>> bucketMap = new HashMap<>(16, 0.5f);
     private final KeyUnpacker<Object> topEqualKeyUnpacker;
+    private final boolean hasSuffix;
     private final Supplier<Indexer<L>> leftDownstreamSupplier;
     private final Supplier<Indexer<R>> rightDownstreamSupplier;
 
     // Package-private: only IndexerFactory#buildJoinIndex (same package) creates a JoinIndex.
-    JoinIndex(KeyUnpacker<Object> topEqualKeyUnpacker, Supplier<Indexer<L>> leftDownstreamSupplier,
+    JoinIndex(KeyUnpacker<Object> topEqualKeyUnpacker, boolean hasSuffix, Supplier<Indexer<L>> leftDownstreamSupplier,
             Supplier<Indexer<R>> rightDownstreamSupplier) {
         this.topEqualKeyUnpacker = topEqualKeyUnpacker;
+        this.hasSuffix = hasSuffix;
         this.leftDownstreamSupplier = leftDownstreamSupplier;
         this.rightDownstreamSupplier = rightDownstreamSupplier;
+    }
+
+    /**
+     * @return true when this index has a comparison/containing suffix below the equal prefix (so different
+     *         composite keys can still share a bucket); false for a pure-equal index (the bucket key is the
+     *         whole composite key). The node uses this to gate {@link #isSameBucket}.
+     */
+    public boolean hasSuffix() {
+        return hasSuffix;
+    }
+
+    /**
+     * Whether two composite keys resolve to the same bucket, i.e. share the same equal prefix. Used by the node
+     * on a changed-key update to reuse the cached bucket (skipping a top-level lookup and a bucket drop/recreate)
+     * when only the suffix changed.
+     * <p>
+     * Only meaningful for {@link #hasSuffix()} indexes (the node gates on it); for a pure-equal index the equal key
+     * is the whole composite key, so this coincides with the full-key equality the caller has already ruled out.
+     * {@code Objects.equals} because the equal-prefix component may be null (a nullable planning variable feeding
+     * the equal joiner; the bucket map permits a null key).
+     */
+    public boolean isSameBucket(Object oldCompositeKey, Object newCompositeKey) {
+        return Objects.equals(topEqualKeyUnpacker.apply(oldCompositeKey), topEqualKeyUnpacker.apply(newCompositeKey));
     }
 
     /**
