@@ -3,8 +3,10 @@ package ai.timefold.solver.core.impl.bavet.common.joiner;
 import java.util.Objects;
 import java.util.function.Function;
 
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public abstract class AbstractJoiner<Right_> {
 
     protected final Function<Right_, Object>[] rightMappings;
@@ -47,8 +49,8 @@ public abstract class AbstractJoiner<Right_> {
             return null;
         }
         var seenNonEqual = false;
-        for (var i = 0; i < count; i++) {
-            if (joinerTypes[i] == JoinerType.EQUAL) {
+        for (var joinerType : joinerTypes) {
+            if (joinerType == JoinerType.EQUAL) {
                 if (seenNonEqual) { // An equal joiner follows a non-equal one, so a move is needed.
                     return buildEqualsFirstOrder(joinerTypes, count);
                 }

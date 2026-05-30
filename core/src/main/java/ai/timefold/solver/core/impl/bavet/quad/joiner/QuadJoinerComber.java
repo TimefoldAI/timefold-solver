@@ -6,89 +6,93 @@ import java.util.List;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.score.stream.quad.QuadJoiner;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Combs an array of {@link QuadJoiner} instances into a mergedJoiner and a mergedFiltering.
  *
  * @param <A>
  * @param <B>
- * @param <C>
- * @param <D>
  */
+@NullMarked
 public final class QuadJoinerComber<A, B, C, D> {
 
-    public static <A, B, C, D> QuadJoinerComber<A, B, C, D> comb(QuadJoiner<A, B, C, D>[] joiners) {
-        List<DefaultQuadJoiner<A, B, C, D>> defaultJoinerList = new ArrayList<>(joiners.length);
-        List<QuadPredicate<A, B, C, D>> filteringList = new ArrayList<>(joiners.length);
+    @SafeVarargs
+    public static <A, B, C, D> QuadJoinerComber<A, B, C, D> comb(QuadJoiner<A, B, C, D>... joiners) {
+        var defaultJoinerList = new ArrayList<DefaultQuadJoiner<A, B, C, D>>(joiners.length);
+        var filteringList = new ArrayList<QuadPredicate<A, B, C, D>>(joiners.length);
 
-        int indexOfFirstFilter = -1;
+        var indexOfFirstFilter = -1;
         // Make sure all indexing joiners, if any, come before filtering joiners. This is necessary for performance.
-        for (int i = 0; i < joiners.length; i++) {
-            QuadJoiner<A, B, C, D> joiner = joiners[i];
+        for (var i = 0; i < joiners.length; i++) {
+            var joiner = joiners[i];
             if (joiner instanceof FilteringQuadJoiner) {
                 // From now on, only allow filtering joiners.
                 indexOfFirstFilter = i;
                 filteringList.add(((FilteringQuadJoiner<A, B, C, D>) joiner).getFilter());
             } else if (joiner instanceof DefaultQuadJoiner) {
                 if (indexOfFirstFilter >= 0) {
-                    throw new IllegalStateException("Indexing joiner (" + joiner + ") must not follow " +
-                            "a filtering joiner (" + joiners[indexOfFirstFilter] + ").\n" +
-                            "Maybe reorder the joiners such that filtering() joiners are later in the parameter list.");
+                    throw new IllegalStateException("""
+                            Indexing joiner (%s) must not follow a filtering joiner (%s).
+                            "Maybe reorder the joiners such that filtering() joiners are later in the parameter list."""
+                            .formatted(joiner, joiners[indexOfFirstFilter]));
                 }
                 defaultJoinerList.add((DefaultQuadJoiner<A, B, C, D>) joiner);
             } else {
-                throw new IllegalArgumentException("The joiner class (" + joiner.getClass() + ") is not supported.");
+                throw new IllegalArgumentException("The joiner class (%s) is not supported."
+                        .formatted(joiner.getClass()));
             }
         }
-        DefaultQuadJoiner<A, B, C, D> mergedJoiner = DefaultQuadJoiner.merge(defaultJoinerList);
-        QuadPredicate<A, B, C, D> mergedFiltering = mergeFiltering(filteringList);
+        var mergedJoiner = DefaultQuadJoiner.merge(defaultJoinerList);
+        var mergedFiltering = mergeFiltering(filteringList);
         return new QuadJoinerComber<>(mergedJoiner, mergedFiltering);
     }
 
-    private static <A, B, C, D> QuadPredicate<A, B, C, D> mergeFiltering(List<QuadPredicate<A, B, C, D>> filteringList) {
-        if (filteringList.isEmpty()) {
-            return null;
-        }
-        switch (filteringList.size()) {
-            case 1:
-                return filteringList.get(0);
-            case 2:
-                return filteringList.get(0).and(filteringList.get(1));
-            default:
-                // Avoid predicate.and() when more than 2 predicates for debugging and potentially performance
-                return (A a, B b, C c, D d) -> {
-                    for (QuadPredicate<A, B, C, D> predicate : filteringList) {
+    @SuppressWarnings("unchecked")
+    private static <A, B, C, D> @Nullable QuadPredicate<A, B, C, D>
+            mergeFiltering(List<QuadPredicate<A, B, C, D>> filteringList) {
+        return switch (filteringList.size()) {
+            case 0 -> null;
+            case 1 -> filteringList.getFirst();
+            default -> {
+                // Avoid predicate.and() for debugging and potential performance
+                var filteringArray = (QuadPredicate<A, B, C, D>[]) filteringList.toArray(new QuadPredicate[0]);
+                yield (A a, B b, C c, D d) -> {
+                    for (var predicate : filteringArray) {
                         if (!predicate.test(a, b, c, d)) {
                             return false;
                         }
                     }
                     return true;
                 };
-        }
+            }
+        };
     }
 
-    private final DefaultQuadJoiner<A, B, C, D> mergedJoiner;
-    private final QuadPredicate<A, B, C, D> mergedFiltering;
+    private DefaultQuadJoiner<A, B, C, D> mergedJoiner;
+    private final @Nullable QuadPredicate<A, B, C, D> mergedFiltering;
 
-    public QuadJoinerComber(DefaultQuadJoiner<A, B, C, D> mergedJoiner, QuadPredicate<A, B, C, D> mergedFiltering) {
+    public QuadJoinerComber(DefaultQuadJoiner<A, B, C, D> mergedJoiner, @Nullable QuadPredicate<A, B, C, D> mergedFiltering) {
         this.mergedJoiner = mergedJoiner;
         this.mergedFiltering = mergedFiltering;
     }
 
     /**
-     * Returns the merged indexing joiner, reordered equal-first so the indexer chain always has its
-     * (merged) equal level at the top.
-     *
-     * @return never null
+     * Returns the merged indexing joiner,
+     * reordered equal-first so the indexer chain always has its (merged) equal level at the top.
+     * Computed on read to also cover {@link #addJoiner} appends.
      */
     public DefaultQuadJoiner<A, B, C, D> getMergedJoiner() {
         return mergedJoiner.reorderedEqualsFirst();
     }
 
-    /**
-     * @return null if not applicable
-     */
-    public QuadPredicate<A, B, C, D> getMergedFiltering() {
+    public @Nullable QuadPredicate<A, B, C, D> getMergedFiltering() {
         return mergedFiltering;
+    }
+
+    public void addJoiner(DefaultQuadJoiner<A, B, C, D> extraJoiner) {
+        mergedJoiner = mergedJoiner.and(extraJoiner);
     }
 
 }
