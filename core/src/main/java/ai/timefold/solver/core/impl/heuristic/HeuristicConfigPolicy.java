@@ -43,6 +43,7 @@ public class HeuristicConfigPolicy<Solution_> {
     private final boolean unassignedValuesAllowed;
     private final Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
     private final RandomGenerator random;
+    private final boolean reuseBestSolution;
 
     private final Map<String, EntityMimicRecorder<Solution_>> entityMimicRecorderMap = new HashMap<>();
     private final Map<String, SubListMimicRecorder<Solution_>> subListMimicRecorderMap = new HashMap<>();
@@ -64,6 +65,7 @@ public class HeuristicConfigPolicy<Solution_> {
         this.unassignedValuesAllowed = builder.unassignedValuesAllowed;
         this.nearbyDistanceMeterClass = builder.nearbyDistanceMeterClass;
         this.random = builder.random;
+        this.reuseBestSolution = builder.reuseBestSolution;
     }
 
     public EnvironmentMode getEnvironmentMode() {
@@ -122,6 +124,10 @@ public class HeuristicConfigPolicy<Solution_> {
         return random;
     }
 
+    public boolean isReuseBestSolution() {
+        return reuseBestSolution;
+    }
+
     // ************************************************************************
     // Builder methods
     // ************************************************************************
@@ -138,7 +144,8 @@ public class HeuristicConfigPolicy<Solution_> {
                 .withInitializingScoreTrend(initializingScoreTrend)
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(classInstanceCache)
-                .withLogIndentation(logIndentation);
+                .withLogIndentation(logIndentation)
+                .withReuseBestSolution(reuseBestSolution);
     }
 
     public HeuristicConfigPolicy<Solution_> copyConfigPolicy() {
@@ -276,6 +283,7 @@ public class HeuristicConfigPolicy<Solution_> {
 
         private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
         private RandomGenerator random;
+        private boolean reuseBestSolution = false;
 
         public Builder<Solution_> withPreviewFeatureSet(Set<PreviewFeature> previewFeatureSet) {
             this.previewFeatureSet = previewFeatureSet;
@@ -350,6 +358,11 @@ public class HeuristicConfigPolicy<Solution_> {
 
         public Builder<Solution_> withUnassignedValuesAllowed(boolean unassignedValuesAllowed) {
             this.unassignedValuesAllowed = unassignedValuesAllowed;
+            return this;
+        }
+
+        public Builder<Solution_> withReuseBestSolution(boolean reuseBestSolution) {
+            this.reuseBestSolution = reuseBestSolution;
             return this;
         }
 

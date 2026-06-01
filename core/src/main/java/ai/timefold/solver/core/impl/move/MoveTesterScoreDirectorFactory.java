@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class MoveTesterScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
+public final class MoveTesterScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirectorFactory<Solution_, Score_, MoveTesterScoreDirectorFactory<Solution_, Score_>> {
 
     public MoveTesterScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {

@@ -312,6 +312,9 @@ public class TimefoldSolverAutoConfiguration
         if (solverProperties.getRandomSeed() != null) {
             solverConfig.setRandomSeed(solverProperties.getRandomSeed());
         }
+        if (solverProperties.getReuseBestSolution() != null) {
+            solverConfig.setReuseBestSolution(solverProperties.getReuseBestSolution());
+        }
         applyTerminationProperties(solverConfig, solverProperties.getTermination());
     }
 

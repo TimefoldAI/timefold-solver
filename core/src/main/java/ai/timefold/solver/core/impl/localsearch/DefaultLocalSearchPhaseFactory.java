@@ -169,7 +169,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var moveThreadCount = configPolicy.getMoveThreadCount();
         var environmentMode = configPolicy.getEnvironmentMode();
         var decider = moveThreadCount == null
-                ? new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveRepository, acceptor, forager)
+                ? new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveRepository, acceptor, forager,
+                        configPolicy.isReuseBestSolution())
                 : TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
                         .buildLocalSearch(moveThreadCount, termination, moveRepository, acceptor, forager, environmentMode,
                                 configPolicy);

@@ -1,15 +1,23 @@
 package ai.timefold.solver.core.impl.solver.recaller;
 
+import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.move.Move;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * Remembers the {@link PlanningSolution best solution} that a {@link Solver} encounters.
@@ -21,8 +29,10 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     protected boolean assertInitialScoreFromScratch = false;
     protected boolean assertShadowVariablesAreNotStale = false;
     protected boolean assertBestScoreIsUnmodified = false;
-
+    protected boolean reuseBestSolution = false;
     protected SolverEventSupport<Solution_> solverEventSupport;
+    protected ReusingBestSolutionUpdater<Solution_> reusingBestSolutionUpdater;
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
     public void setAssertInitialScoreFromScratch(boolean assertInitialScoreFromScratch) {
         this.assertInitialScoreFromScratch = assertInitialScoreFromScratch;
@@ -34,6 +44,19 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     public void setAssertBestScoreIsUnmodified(boolean assertBestScoreIsUnmodified) {
         this.assertBestScoreIsUnmodified = assertBestScoreIsUnmodified;
+    }
+
+    public void setReuseBestSolution(boolean reuseBestSolution) {
+        this.reuseBestSolution = reuseBestSolution;
+        if (reuseBestSolution) {
+            reusingBestSolutionUpdater = TimefoldSolverEnterpriseService
+                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.REUSE_BEST_SOLUTION)
+                    .buildReusingBestSolutionUpdater(readWriteLock);
+        }
+    }
+
+    public boolean isReuseBestSolution() {
+        return reuseBestSolution;
     }
 
     public void setSolverEventSupport(SolverEventSupport<Solution_> solverEventSupport) {
@@ -79,7 +102,15 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         updateBestSolutionWithoutFiring(solverScope, stepScope.getScore(), newBestSolution);
     }
 
-    public <Score_ extends Score<Score_>> void processWorkingSolutionDuringStep(AbstractStepScope<Solution_> stepScope) {
+    public void processWorkingSolutionDuringStep(AbstractStepScope<Solution_> stepScope) {
+        processWorkingSolutionDuringStep(stepScope, null);
+    }
+
+    /**
+     * Return true if best solution was updated
+     */
+    public <Score_ extends Score<Score_>> void processWorkingSolutionDuringStep(AbstractStepScope<Solution_> stepScope,
+            @Nullable List<Move<Solution_>> acceptedMoveList) {
         var phaseScope = stepScope.getPhaseScope();
         var score = stepScope.<Score_> getScore();
         var solverScope = phaseScope.getSolverScope();
@@ -87,10 +118,16 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         stepScope.setBestScoreImproved(bestScoreImproved);
         if (bestScoreImproved) {
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
-            var newBestSolution = stepScope.cloneWorkingSolution();
-            var innerScore = buildInnerScore(solverScope.getSolutionDescriptor().<Score_> getScore(newBestSolution),
-                    stepScope.getScoreDirector().getWorkingInitScore(), true);
-            updateBestSolutionAndFire(solverScope, phaseScope, innerScore, newBestSolution);
+            if (reuseBestSolution && acceptedMoveList != null) {
+                updateBestSolutionAndFire(solverScope, phaseScope, score, acceptedMoveList);
+            } else {
+                var newBestSolution = stepScope.cloneWorkingSolution();
+                // Can this be removed? Seems to be the same as score?
+                var innerScore =
+                        buildInnerScore(solverScope.getSolutionDescriptor().<Score_> getScore(newBestSolution),
+                                stepScope.getScoreDirector().getWorkingInitScore(), true);
+                updateBestSolutionAndFire(solverScope, phaseScope, innerScore, newBestSolution);
+            }
         } else if (assertBestScoreIsUnmodified) {
             solverScope.assertScoreFromScratch(solverScope.getBestSolution());
         }
@@ -98,6 +135,11 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     public <Score_ extends Score<Score_>> void processWorkingSolutionDuringMove(InnerScore<Score_> moveScore,
             AbstractStepScope<Solution_> stepScope) {
+        processWorkingSolutionDuringMove(moveScore, stepScope, null);
+    }
+
+    public <Score_ extends Score<Score_>> void processWorkingSolutionDuringMove(InnerScore<Score_> moveScore,
+            AbstractStepScope<Solution_> stepScope, @Nullable List<Move<Solution_>> acceptedMoveList) {
         var phaseScope = stepScope.getPhaseScope();
         var solverScope = phaseScope.getSolverScope();
         var bestScoreImproved = moveScore.compareTo(solverScope.getBestScore()) > 0;
@@ -105,16 +147,18 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         // stepScope.getBestScoreImproved() is initialized on false before the first call here
         if (bestScoreImproved) {
             stepScope.setBestScoreImproved(bestScoreImproved);
-        }
-        if (bestScoreImproved) {
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
-            var newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
-            // The solution for mixed models can generate a partially solved solution,
-            // as the complete solution will only be achieved when all variable types are assigned.
-            updateBestSolutionAndFire(solverScope, phaseScope,
-                    buildInnerScore(moveScore.raw(), solverScope.getScoreDirector().getWorkingInitScore(),
-                            solverScope.getScoreDirector().getSolutionDescriptor().hasBothBasicAndListVariables()),
-                    newBestSolution);
+            // Can this be removed? Seems to be the same as moveScore?
+            var innerScore = buildInnerScore(moveScore.raw(), solverScope.getScoreDirector().getWorkingInitScore(),
+                    solverScope.getScoreDirector().getSolutionDescriptor().hasBothBasicAndListVariables());
+            if (reuseBestSolution && acceptedMoveList != null) {
+                updateBestSolutionAndFire(solverScope, phaseScope, innerScore, acceptedMoveList);
+            } else {
+                var newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
+                // The solution for mixed models can generate a partially solved solution,
+                // as the complete solution will only be achieved when all variable types are assigned.
+                updateBestSolutionAndFire(solverScope, phaseScope, innerScore, newBestSolution);
+            }
         } else if (assertBestScoreIsUnmodified) {
             solverScope.assertScoreFromScratch(solverScope.getBestSolution());
         }
@@ -122,14 +166,16 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     public void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, AbstractPhaseScope<Solution_> phaseScope) {
         updateBestSolutionWithoutFiring(solverScope);
-        solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), solverScope.getBestSolution());
+        solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), solverScope.getBestSolution(),
+                readWriteLock.readLock());
     }
 
     public void updateBestSolutionAndFireIfInitialized(SolverScope<Solution_> solverScope,
             EventProducerId eventProducerId) {
         updateBestSolutionWithoutFiring(solverScope);
         if (solverScope.isBestSolutionInitialized()) {
-            solverEventSupport.fireBestSolutionChanged(solverScope, eventProducerId, solverScope.getBestSolution());
+            solverEventSupport.fireBestSolutionChanged(solverScope, eventProducerId, solverScope.getBestSolution(),
+                    readWriteLock.readLock());
         }
     }
 
@@ -137,7 +183,17 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
             InnerScore<?> bestScore,
             Solution_ bestSolution) {
         updateBestSolutionWithoutFiring(solverScope, bestScore, bestSolution);
-        solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), bestSolution);
+        solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), bestSolution,
+                readWriteLock.readLock());
+    }
+
+    private <Score_ extends Score<Score_>> void updateBestSolutionAndFire(SolverScope<Solution_> solverScope,
+            AbstractPhaseScope<Solution_> phaseScope,
+            InnerScore<Score_> score, List<Move<Solution_>> acceptedMoveList) {
+        reusingBestSolutionUpdater.updateReusingBestSolution(solverScope, score, acceptedMoveList);
+        updateBestSolutionWithoutFiring(solverScope, score, reusingBestSolutionUpdater.getBestSolution());
+        solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(),
+                reusingBestSolutionUpdater.getBestSolution(), readWriteLock.readLock());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

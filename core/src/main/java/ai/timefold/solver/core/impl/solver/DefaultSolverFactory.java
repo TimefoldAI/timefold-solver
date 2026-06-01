@@ -132,7 +132,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(castScoreDirector));
 
         var moveThreadCount = resolveMoveThreadCount(true);
-        var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);
+        var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode,
+                solverConfig.getReuseBestSolution());
         var randomFactory = buildRandomSupplier(environmentMode);
         var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
 
@@ -157,6 +158,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withInitializingScoreTrend(scoreDirectorFactory.getInitializingScoreTrend())
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(ClassInstanceCache.create())
+                .withReuseBestSolution(Objects.requireNonNullElse(solverConfig.getReuseBestSolution(), false))
                 .build();
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
         var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);

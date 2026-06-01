@@ -3,6 +3,7 @@ package ai.timefold.solver.core.enterprise;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -47,6 +48,7 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
+import ai.timefold.solver.core.impl.solver.recaller.ReusingBestSolutionUpdater;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
@@ -210,6 +212,8 @@ public interface TimefoldSolverEnterpriseService {
                     Function<In_, @Nullable Out_> propositionFunction,
                     ScoreAnalysisFetchPolicy fetchPolicy);
 
+    <Solution_> ReusingBestSolutionUpdater<Solution_> buildReusingBestSolutionUpdater(ReadWriteLock readWriteLock);
+
     enum Feature {
         MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),
         PARTITIONED_SEARCH("Partitioned search", "remove partitioned search phase from solver configuration"),
@@ -219,7 +223,8 @@ public interface TimefoldSolverEnterpriseService {
                 "remove multistageMoveSelector and/or listMultistageMoveSelector from the solver configuration"),
         CONSTRAINT_PROFILING("Constraint profiling", "remove constraintStreamProfilingEnabled from the solver configuration"),
         SCORE_ANALYSIS("Score analysis", "do not use SolutionManager's analyze() method"),
-        RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method");
+        RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method"),
+        REUSE_BEST_SOLUTION("Reuse best solution", "remove reuseBestSolution from solver configuration");
 
         private final String name;
         private final String workaround;

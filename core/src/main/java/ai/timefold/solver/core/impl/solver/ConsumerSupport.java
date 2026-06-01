@@ -5,6 +5,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -66,33 +68,36 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     }
 
     void consumeIntermediateBestSolution(Solution_ solution, EventProducerId producerId,
-            BooleanSupplier isEveryProblemChangeProcessed) {
+            BooleanSupplier isEveryProblemChangeProcessed, Lock lock) {
         /*
          * If the bestSolutionConsumer is not provided, the best solution is still set for the purpose of recording
          * problem changes.
          */
         bestSolutionHolder.set(solution, producerId, isEveryProblemChangeProcessed);
         if (bestSolutionConsumer != null) {
-            tryConsumeWaitingIntermediateBestSolution();
+            tryConsumeWaitingIntermediateBestSolution(lock);
         }
     }
 
     // Called both on the Solver thread and the Consumer thread.
-    private void tryConsumeWaitingIntermediateBestSolution() {
+    private void tryConsumeWaitingIntermediateBestSolution(Lock lock) {
         if (bestSolutionHolder.isEmpty()) {
             return; // There is no best solution to consume.
         }
         if (activeConsumption.tryAcquire()) {
-            scheduleIntermediateBestSolutionConsumption()
+            scheduleIntermediateBestSolutionConsumption(lock)
                     .whenCompleteAsync((solution, throwable) -> {
                         activeConsumption.release();
-                        tryConsumeWaitingIntermediateBestSolution();
+                        tryConsumeWaitingIntermediateBestSolution(lock);
                     }, consumerExecutor);
         }
     }
 
-    private CompletableFuture<Void> scheduleIntermediateBestSolutionConsumption() {
+    private CompletableFuture<Void> scheduleIntermediateBestSolutionConsumption(Lock lock) {
         return CompletableFuture.runAsync(() -> {
+            // If reuse best solution is enabled, this will block if the best solution
+            // is currently being updated.
+            lock.lock();
             var bestSolutionContainingProblemChanges = bestSolutionHolder.take();
             if (bestSolutionContainingProblemChanges != null) {
                 try {
@@ -107,6 +112,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
                     bestSolutionContainingProblemChanges.completeProblemChangesExceptionally(throwable);
                 }
             }
+            lock.unlock();
         }, consumerExecutor);
     }
 
@@ -175,7 +181,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         // Situation:
         // The consumer is consuming the last but one best solution. The final best solution is waiting for the consumer.
         if (bestSolutionConsumer != null) {
-            scheduleIntermediateBestSolutionConsumption();
+            scheduleIntermediateBestSolutionConsumption(new ReentrantLock());
         }
         scheduleFinalBestSolutionConsumption(solution)
                 .whenComplete((unused, throwable) -> releaseAll());
