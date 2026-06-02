@@ -367,16 +367,6 @@
           </plugin>
         </plugins>
       </build>
-      <repositories>
-        <repository>
-          <id>timefold</id>
-          <name>Timefold Enterprise Artifacts Repository</name>
-          <url>https://timefold.jfrog.io/artifactory/releases/</url>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-        </repository>
-      </repositories>
     </profile>
 
     <!-- Profile that adds benchmark dependency and removes any excludes for compiler plugin. -->
