@@ -361,6 +361,7 @@
 
   <profiles>
     <profile>
+      <!-- Opt-in to use Timefold Solver Enterprise. -->
       <id>enterprise</id>
       <!-- This profile must NOT be activated during the Solver build, otherwise the build fails. -->
       <activation>
