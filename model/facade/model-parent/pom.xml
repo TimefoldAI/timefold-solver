@@ -58,6 +58,7 @@
     <ai.timefold.model.jvm-image-arguments>-XX:+UseParallelGC,-Djava.net.useSystemProxies=true,-XX:+UseCompactObjectHeaders,-XX:MaxRAMPercentage=85,-Djava.rmi.server.hostname=localhost,-Dcom.sun.management.jmxremote,-Dcom.sun.management.jmxremote.port=5555,-Dcom.sun.management.jmxremote.rmi.port=5555,-Dcom.sun.management.jmxremote.local.only=true,-Dcom.sun.management.jmxremote.authenticate=false,-Dcom.sun.management.jmxremote.ssl=false</ai.timefold.model.jvm-image-arguments>
     <!-- ************************************************************************ -->
     <!-- Dependencies -->
+    <!-- Keep in sync with the build-parent -->
     <!-- ************************************************************************ -->
     <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
     <version.io.quarkus>3.35.4</version.io.quarkus>
