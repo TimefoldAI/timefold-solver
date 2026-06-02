@@ -1,0 +1,34 @@
+project:
+  languages:
+    java:
+      groupId: "ai.timefold.solver"
+
+signing:
+  pgp:
+    active: ALWAYS
+    armored: true
+
+# We do not publish releases when uploading to JFrog
+release:
+  github:
+    skipTag: true
+    skipRelease: true
+    overwrite: false
+
+deploy:
+  maven:
+    artifactory:
+      solver-releases:
+        active: ALWAYS
+        url: "https://timefold.jfrog.io/artifactory/enterprise-solver-releases-staging/"
+        # TODO Remove verifyPom tag, hack for https://github.com/jreleaser/jreleaser/issues/1397
+        verifyPom: false
+        sign: true
+        applyMavenCentralRules: true
+        stagingRepositories:
+          - "target/staging-deploy"
+        artifactOverrides:
+          - groupId: ai.timefold.solver
+            artifactId: timefold-solver-ide-config
+            sourceJar: true
+            javadocJar: false

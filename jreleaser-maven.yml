@@ -16,6 +16,7 @@ release:
     releaseName: "Timefold Solver {{projectVersion}}"
     draft: true
     overwrite: false
+    skipTag: true
     sign: true
     milestone:
       close: true
