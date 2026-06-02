@@ -14,7 +14,7 @@
 
   <properties>
     <revision>999-SNAPSHOT</revision>
-    <ai.timefold.sdk.enterprise>false</ai.timefold.sdk.enterprise>
+    <ai.timefold.solver.enterprise>false</ai.timefold.solver.enterprise>
 
     <!-- ************************************************************************ -->
     <!-- Test plugins switches -->
@@ -46,7 +46,7 @@
     <ai.timefold.model.builder-native-image>quay.io/quarkus/ubi10-quarkus-mandrel-builder-image:jdk-25</ai.timefold.model.builder-native-image>
     <ai.timefold.model.base-native-image>redhat/ubi10-minimal</ai.timefold.model.base-native-image>
 
-    <ai.timefold.sdk.enterprise.skipTools>true</ai.timefold.sdk.enterprise.skipTools>
+    <ai.timefold.solver.enterprise.skipTools>true</ai.timefold.solver.enterprise.skipTools>
 
     <ai.timefold.model.container.integration-tests.env-file-dir>${project.build.directory}/generated-config</ai.timefold.model.container.integration-tests.env-file-dir>
     <ai.timefold.model.container.integration-tests.env-file-name>container-integration-tests.env</ai.timefold.model.container.integration-tests.env-file-name>
@@ -335,7 +335,7 @@
               <goal>copy</goal>
             </goals>
             <configuration>
-              <skip>${ai.timefold.sdk.enterprise.skipTools}</skip>
+              <skip>${ai.timefold.solver.enterprise.skipTools}</skip>
               <artifactItems>
                 <artifactItem>
                   <groupId>ai.timefold.solver.enterprise</groupId>
@@ -372,9 +372,9 @@
         </property>
       </activation>
       <properties>
-        <ai.timefold.sdk.enterprise>true</ai.timefold.sdk.enterprise>
+        <ai.timefold.solver.enterprise>true</ai.timefold.solver.enterprise>
         <!-- enable copy of Timefold diagnostic tools when building container image - see container profile -->
-        <ai.timefold.sdk.enterprise.skipTools>false</ai.timefold.sdk.enterprise.skipTools>
+        <ai.timefold.solver.enterprise.skipTools>false</ai.timefold.solver.enterprise.skipTools>
       </properties>
       <dependencyManagement>
         <dependencies>
@@ -506,7 +506,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <systemPropertyVariables>
-                <ai.timefold.sdk.enterprise>${ai.timefold.sdk.enterprise}</ai.timefold.sdk.enterprise>
+                <ai.timefold.solver.enterprise>${ai.timefold.solver.enterprise}</ai.timefold.solver.enterprise>
                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                 <!--suppress UnresolvedMavenProperty -->
                 <maven.home>${maven.home}</maven.home>
@@ -524,7 +524,7 @@
                 </goals>
                 <configuration>
                   <systemPropertyVariables>
-                    <ai.timefold.sdk.enterprise>${ai.timefold.sdk.enterprise}</ai.timefold.sdk.enterprise>
+                    <ai.timefold.solver.enterprise>${ai.timefold.solver.enterprise}</ai.timefold.solver.enterprise>
                     <native.image.path>${ai.timefold.model.native.image.path}</native.image.path>
                     <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                     <!--suppress UnresolvedMavenProperty -->
