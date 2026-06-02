@@ -484,7 +484,7 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>io.quarkus.platform</groupId>
+            <groupId>io.quarkus</groupId>
             <artifactId>quarkus-maven-plugin</artifactId>
             <extensions>true</extensions>
             <configuration>
