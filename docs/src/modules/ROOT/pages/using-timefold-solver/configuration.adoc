@@ -3,6 +3,9 @@
 :doctype: book
 :sectnums:
 :icons: font
+:relevance: core-only
+:notes: Mostly irrelevant in [MDK]. Also, "configuring" is too broad
+
 
 [#solverConfigurationByXML]
 == Solver configuration by XML

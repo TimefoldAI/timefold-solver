@@ -4,6 +4,9 @@
 :doctype: book
 :sectnums:
 :icons: font
+:relevance: both
+:notes: Wildly different in [MDK], so potentially split.
+
 
 The problem facts used to create a solution may change before or during the execution of that solution.
 Delaying planning in order to lower the risk of problem facts changing is not ideal,

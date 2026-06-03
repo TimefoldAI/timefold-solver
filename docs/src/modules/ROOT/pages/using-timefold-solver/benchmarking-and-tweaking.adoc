@@ -4,6 +4,8 @@
 :doctype: book
 :sectnums:
 :icons: font
+:relevance: both
+:notes: Mostly irrelevant in [MDK].
 
 
 [#findTheBestSolverConfiguration]

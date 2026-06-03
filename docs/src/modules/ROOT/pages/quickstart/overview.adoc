@@ -5,6 +5,9 @@
     use-cases-and-examples/use-cases-and-examples.adoc, \
     overview-quickstarts.adoc
 :imagesdir: ../..
+:relevance: both
+:notes: Hello World can stay, then we should just have [MDK] approach. Others should move elsewhere.
+
 
 [TIP]
 ====

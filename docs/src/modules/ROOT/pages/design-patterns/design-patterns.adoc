@@ -4,6 +4,10 @@
 :sectnums:
 :icons: font
 
+:relevance: both
+:notes: Most of this should be in the "how to model" reference. Design patterns is too weak a term.
+
+
 
 [#designPatternsIntroduction]
 == Design patterns introduction
