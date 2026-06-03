@@ -2,30 +2,30 @@ package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.NeighborhoodsGroupNodeConstructor;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeBiEnumeratingStream;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeUniEnumeratingStream;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class BiGroupBiEnumeratingStream<Solution_, A, B, NewA, NewB>
+final class BiGroupUniEnumeratingStream<Solution_, A, B, NewA>
         extends AbstractBiEnumeratingStream<Solution_, A, B> {
 
-    private final NeighborhoodsGroupNodeConstructor<Solution_, BiTuple<NewA, NewB>> nodeConstructor;
-    private @Nullable AftBridgeBiEnumeratingStream<Solution_, NewA, NewB> aftStream;
+    private final NeighborhoodsGroupNodeConstructor<Solution_, UniTuple<NewA>> nodeConstructor;
+    private @Nullable AftBridgeUniEnumeratingStream<Solution_, NewA> aftStream;
 
-    BiGroupBiEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
+    BiGroupUniEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             AbstractBiEnumeratingStream<Solution_, A, B> parent,
-            NeighborhoodsGroupNodeConstructor<Solution_, BiTuple<NewA, NewB>> nodeConstructor) {
+            NeighborhoodsGroupNodeConstructor<Solution_, UniTuple<NewA>> nodeConstructor) {
         super(enumeratingStreamFactory, parent);
         this.nodeConstructor = Objects.requireNonNull(nodeConstructor);
     }
 
-    void setAftBridge(AftBridgeBiEnumeratingStream<Solution_, NewA, NewB> aftStream) {
+    void setAftBridge(AftBridgeUniEnumeratingStream<Solution_, NewA> aftStream) {
         this.aftStream = aftStream;
     }
 
@@ -47,7 +47,7 @@ final class BiGroupBiEnumeratingStream<Solution_, A, B, NewA, NewB>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (BiGroupBiEnumeratingStream<?, ?, ?, ?, ?>) object;
+        var that = (BiGroupUniEnumeratingStream<?, ?, ?, ?>) object;
         return Objects.equals(parent, that.parent) && Objects.equals(nodeConstructor, that.nodeConstructor);
     }
 
@@ -58,6 +58,6 @@ final class BiGroupBiEnumeratingStream<Solution_, A, B, NewA, NewB>
 
     @Override
     public String toString() {
-        return "BiGroupBi()";
+        return "BiGroupUni()";
     }
 }

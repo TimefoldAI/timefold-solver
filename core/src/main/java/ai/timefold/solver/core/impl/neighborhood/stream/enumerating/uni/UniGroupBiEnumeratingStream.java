@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi;
+package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 
 import java.util.Objects;
 
@@ -12,14 +12,14 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class BiGroupBiEnumeratingStream<Solution_, A, B, NewA, NewB>
-        extends AbstractBiEnumeratingStream<Solution_, A, B> {
+final class UniGroupBiEnumeratingStream<Solution_, A, NewA, NewB>
+        extends AbstractUniEnumeratingStream<Solution_, A> {
 
     private final NeighborhoodsGroupNodeConstructor<Solution_, BiTuple<NewA, NewB>> nodeConstructor;
     private @Nullable AftBridgeBiEnumeratingStream<Solution_, NewA, NewB> aftStream;
 
-    BiGroupBiEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
-            AbstractBiEnumeratingStream<Solution_, A, B> parent,
+    UniGroupBiEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
+            AbstractUniEnumeratingStream<Solution_, A> parent,
             NeighborhoodsGroupNodeConstructor<Solution_, BiTuple<NewA, NewB>> nodeConstructor) {
         super(enumeratingStreamFactory, parent);
         this.nodeConstructor = Objects.requireNonNull(nodeConstructor);
@@ -47,7 +47,7 @@ final class BiGroupBiEnumeratingStream<Solution_, A, B, NewA, NewB>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (BiGroupBiEnumeratingStream<?, ?, ?, ?, ?>) object;
+        var that = (UniGroupBiEnumeratingStream<?, ?, ?, ?>) object;
         return Objects.equals(parent, that.parent) && Objects.equals(nodeConstructor, that.nodeConstructor);
     }
 
@@ -58,6 +58,6 @@ final class BiGroupBiEnumeratingStream<Solution_, A, B, NewA, NewB>
 
     @Override
     public String toString() {
-        return "BiGroupBi()";
+        return "UniGroupBi()";
     }
 }

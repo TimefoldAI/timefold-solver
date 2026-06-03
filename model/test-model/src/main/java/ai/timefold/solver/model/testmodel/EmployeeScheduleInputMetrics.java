@@ -21,7 +21,7 @@ public record EmployeeScheduleInputMetrics(
                         @Extension(name = "x-tf-priority", value = "2"),
                         @Extension(name = "x-tf-example", value = "10") }) int employeeCount)
         implements
-            ModelInputMetrics{
+            ModelInputMetrics {
 
     public static final String INPUT_METRIC_EMPLOYEES = "employeeCount";
     public static final String INPUT_METRIC_SHIFTS = "shiftCount";

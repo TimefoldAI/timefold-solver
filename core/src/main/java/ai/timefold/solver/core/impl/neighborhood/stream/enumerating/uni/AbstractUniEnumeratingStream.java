@@ -1,21 +1,18 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 
-import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.oneKeyGroupBy;
-
-import java.util.Objects;
-import java.util.function.Function;
-
-import ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor;
+import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.bavet.uni.Group1Mapping0CollectorUniNode;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.AbstractBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.JoinBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractEnumeratingStream;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.NeighborhoodsGroupNodeConstructor;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.joiner.BiNeighborhoodsJoinerComber;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.UniNeighborhoodsCollector;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.BiEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
@@ -103,28 +100,43 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
                         joinerComber.mergedJoiner(), joinerComber.mergedFiltering()), childStreamList::add);
     }
 
-    /**
-     * Convert the {@link UniEnumeratingStream} to a different {@link UniEnumeratingStream},
-     * containing the set of tuples resulting from applying the group key mapping function
-     * on all tuples of the original stream.
-     * Neither tuple of the new stream {@link Objects#equals(Object, Object)} any other.
-     *
-     * @param groupKeyMapping mapping function to convert each element in the stream to a different element
-     * @param <GroupKey_> the type of a fact in the destination {@link UniEnumeratingStream}'s tuple;
-     *        must honor {@link Object#hashCode() the general contract of hashCode}.
-     */
-    protected <GroupKey_> AbstractUniEnumeratingStream<Solution_, GroupKey_> groupBy(Function<A, GroupKey_> groupKeyMapping) {
-        // We do not expose this on the API, as this operation is not yet needed in any of the moves.
-        // The groupBy API will need revisiting if exposed as a feature of Neighborhoods API, do not expose as is.
-        GroupNodeConstructor<UniTuple<GroupKey_>> nodeConstructor =
-                oneKeyGroupBy(groupKeyMapping, Group1Mapping0CollectorUniNode::new);
-        return buildUniGroupBy(nodeConstructor);
+    @Override
+    public <GroupKey_> AbstractUniEnumeratingStream<Solution_, GroupKey_> groupBy(
+            UniNeighborhoodsMapper<Solution_, A, GroupKey_> key) {
+        return buildUniGroupBy(NeighborhoodsGroupNodeConstructor.uniOneKeyGroupBy(key));
     }
 
-    private <NewA> AbstractUniEnumeratingStream<Solution_, NewA>
-            buildUniGroupBy(GroupNodeConstructor<UniTuple<NewA>> nodeConstructor) {
+    @Override
+    public <Result_> AbstractUniEnumeratingStream<Solution_, Result_> groupBy(
+            UniNeighborhoodsCollector<Solution_, A, ?, Result_> collector) {
+        return buildUniGroupBy(NeighborhoodsGroupNodeConstructor.uniZeroKeysGroupBy(collector));
+    }
+
+    @Override
+    public <GroupKeyA_, GroupKeyB_> AbstractBiEnumeratingStream<Solution_, GroupKeyA_, GroupKeyB_> groupBy(
+            UniNeighborhoodsMapper<Solution_, A, GroupKeyA_> keyA,
+            UniNeighborhoodsMapper<Solution_, A, GroupKeyB_> keyB) {
+        return buildBiGroupBy(NeighborhoodsGroupNodeConstructor.uniTwoKeysGroupBy(keyA, keyB));
+    }
+
+    @Override
+    public <GroupKey_, Result_> AbstractBiEnumeratingStream<Solution_, GroupKey_, Result_> groupBy(
+            UniNeighborhoodsMapper<Solution_, A, GroupKey_> key,
+            UniNeighborhoodsCollector<Solution_, A, ?, Result_> collector) {
+        return buildBiGroupBy(NeighborhoodsGroupNodeConstructor.uniOneKeyAndCollectorGroupBy(key, collector));
+    }
+
+    private <NewA> AbstractUniEnumeratingStream<Solution_, NewA> buildUniGroupBy(
+            NeighborhoodsGroupNodeConstructor<Solution_, UniTuple<NewA>> nodeConstructor) {
         var stream = shareAndAddChild(new UniGroupUniEnumeratingStream<>(enumeratingStreamFactory, this, nodeConstructor));
         return enumeratingStreamFactory.share(new AftBridgeUniEnumeratingStream<>(enumeratingStreamFactory, stream),
+                stream::setAftBridge);
+    }
+
+    private <NewA, NewB> AbstractBiEnumeratingStream<Solution_, NewA, NewB> buildBiGroupBy(
+            NeighborhoodsGroupNodeConstructor<Solution_, BiTuple<NewA, NewB>> nodeConstructor) {
+        var stream = shareAndAddChild(new UniGroupBiEnumeratingStream<>(enumeratingStreamFactory, this, nodeConstructor));
+        return enumeratingStreamFactory.share(new AftBridgeBiEnumeratingStream<>(enumeratingStreamFactory, stream),
                 stream::setAftBridge);
     }
 
@@ -149,7 +161,7 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
         if (guaranteesDistinct()) {
             return this; // Already distinct, no need to create a new stream.
         }
-        return groupBy(ConstantLambdaUtils.identity());
+        return groupBy(ConstantLambdaUtils.neighborhoodsUniPickFirst());
     }
 
     public UniLeftDataset<Solution_, A> createLeftDataset() {
