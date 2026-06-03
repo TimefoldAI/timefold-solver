@@ -2,6 +2,7 @@ package ai.timefold.solver.model.maps.service.test.impl;
 
 import static ai.timefold.solver.model.definition.internal.Headers.X_MAPS_LOCATIONS_CHUNK_BYTES;
 import static ai.timefold.solver.model.definition.internal.Headers.X_MAPS_LOCATIONS_NOT_IN_MAP;
+import static ai.timefold.solver.model.definition.internal.Headers.X_MAPS_LOCATION_HEADER;
 import static ai.timefold.solver.model.definition.internal.Headers.X_MAPS_MATRIX_HASH_HEADER;
 import static ai.timefold.solver.model.definition.internal.Headers.X_MAPS_PROVIDER_HEADER;
 import static ai.timefold.solver.model.definition.internal.Headers.X_MAPS_RESPONSE_CHUNK_BYTES;
@@ -28,6 +29,7 @@ import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 public class HaversineDistanceResponseTransformer implements ResponseDefinitionTransformerV2 {
 
     public static String TRANSFORMER_NAME = "haversine-distance-response-transformer";
+    public static final String RESOLVED_MAP_LOCATION = "us-georgia";
     private static final List<Location> locationsOutOfMap = List.of(new Location(-90, -90));
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HaversineTravelTimeAndDistanceMatrixProvider provider =
@@ -63,6 +65,7 @@ public class HaversineDistanceResponseTransformer implements ResponseDefinitionT
                 return new ResponseDefinitionBuilder()
                         .withHeader("Content-Type", "application/json")
                         .withHeader(X_MAPS_PROVIDER_HEADER, provider.getProvider())
+                        .withHeader(X_MAPS_LOCATION_HEADER, RESOLVED_MAP_LOCATION)
                         .withHeader(X_MAPS_MATRIX_HASH_HEADER, "hash")
                         .withHeader(X_MAPS_LOCATIONS_CHUNK_BYTES,
                                 metadataChunkBytes.stream().map(Object::toString).collect(Collectors.joining(",")))
@@ -104,6 +107,7 @@ public class HaversineDistanceResponseTransformer implements ResponseDefinitionT
                 return new ResponseDefinitionBuilder()
                         .withHeader("Content-Type", "application/json")
                         .withHeader(X_MAPS_PROVIDER_HEADER, provider.getProvider())
+                        .withHeader(X_MAPS_LOCATION_HEADER, RESOLVED_MAP_LOCATION)
                         .withHeader(X_MAPS_RESPONSE_CHUNK_BYTES,
                                 response.chunkBytes().stream().map(Object::toString).collect(Collectors.joining(",")))
                         .withHeader(X_MAPS_MATRIX_HASH_HEADER, "hash")

@@ -70,6 +70,11 @@ public final class Metadata<Score_> implements Status<Score_> {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String failureMessage;
 
+    @Schema(nullable = true,
+            description = "The map-service region resolved when location is auto-select.")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private String resolvedMapLocation;
+
     public Metadata() {
         this((String) null);
     }
@@ -102,6 +107,7 @@ public final class Metadata<Score_> implements Status<Score_> {
         this.parentId = metadata.parentId;
         this.originId = metadata.originId;
         this.failureMessage = metadata.failureMessage;
+        this.resolvedMapLocation = metadata.resolvedMapLocation;
     }
 
     public String getId() {
@@ -258,6 +264,14 @@ public final class Metadata<Score_> implements Status<Score_> {
 
     public void setFailureMessage(String failureMessage) {
         this.failureMessage = failureMessage;
+    }
+
+    public String getResolvedMapLocation() {
+        return resolvedMapLocation;
+    }
+
+    public void setResolvedMapLocation(String resolvedMapLocation) {
+        this.resolvedMapLocation = resolvedMapLocation;
     }
 
     @Override

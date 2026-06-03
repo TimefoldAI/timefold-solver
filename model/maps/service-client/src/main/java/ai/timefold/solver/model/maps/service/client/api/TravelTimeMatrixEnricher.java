@@ -8,6 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.model.definition.api.enrichment.SolverModelEnricher;
+import ai.timefold.solver.model.definition.internal.MapEnrichmentContext;
 import ai.timefold.solver.model.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.model.definition.internal.error.TimefoldRuntimeException;
 import ai.timefold.solver.model.maps.api.model.Location;
@@ -30,10 +31,14 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
 
     private final MapServiceOptionsSupplier optionsSupplier;
 
+    private final MapEnrichmentContext mapEnrichmentContext;
+
     @Inject
-    public TravelTimeMatrixEnricher(MapService mapService, MapServiceOptionsSupplier optionsSupplier) {
+    public TravelTimeMatrixEnricher(MapService mapService, MapServiceOptionsSupplier optionsSupplier,
+            MapEnrichmentContext mapEnrichmentContext) {
         this.mapService = mapService;
         this.optionsSupplier = optionsSupplier;
+        this.mapEnrichmentContext = mapEnrichmentContext;
     }
 
     @Retry(maxRetries = 5, delay = 1, delayUnit = ChronoUnit.SECONDS, abortOn = {
@@ -61,6 +66,7 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
             location.setDistanceMatrix(travelTimeAndDistance.travelTimeAndDistance().distance());
         });
         solverModel.setLocationsNotInMap(convertIdxToLocations(travelTimeAndDistance.locationsNotInMapIdx(), locations));
+        mapEnrichmentContext.setResolvedMapLocation(travelTimeAndDistance.resolvedMapLocation());
         return solverModel;
     }
 
