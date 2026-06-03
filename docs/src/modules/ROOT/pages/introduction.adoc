@@ -3,6 +3,8 @@
 :doctype: book
 :sectnums:
 :icons: font
+:relevance: both
+:notes: be adjusted to clarify difference.
 
 [#whatIsTimefold]
 = Introduction

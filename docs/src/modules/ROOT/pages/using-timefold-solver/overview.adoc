@@ -4,6 +4,8 @@
 :doctype: book
 :sectnums:
 :icons: font
+:relevance: both
+:notes: split into both usages
 
 Solving a planning problem with Timefold Solver consists of the following steps:
 
