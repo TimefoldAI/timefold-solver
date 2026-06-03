@@ -620,7 +620,7 @@ public class SolverWorker {
     }
 
     private void applyResolvedMapLocation(Metadata metadata) {
-        String resolved = mapEnrichmentContext.consumeResolvedMapLocation();
+        String resolved = mapEnrichmentContext.getResolvedMapLocation();
         if (resolved == null || metadata == null) {
             return;
         }

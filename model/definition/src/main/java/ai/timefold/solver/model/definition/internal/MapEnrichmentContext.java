@@ -16,9 +16,7 @@ public class MapEnrichmentContext {
         this.resolvedMapLocation = location;
     }
 
-    public String consumeResolvedMapLocation() {
-        String value = this.resolvedMapLocation;
-        this.resolvedMapLocation = null;
-        return value;
+    public String getResolvedMapLocation() {
+        return this.resolvedMapLocation;
     }
 }
