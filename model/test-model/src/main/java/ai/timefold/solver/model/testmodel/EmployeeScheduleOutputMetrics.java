@@ -16,7 +16,7 @@ public record EmployeeScheduleOutputMetrics(
                         @Extension(name = "x-tf-priority", value = "1"),
                         @Extension(name = "x-tf-example", value = "100") }) int assignedShifts)
         implements
-            ModelOutputMetrics{
+            ModelOutputMetrics {
 
     public static final String OUTPUT_METRIC_SHIFTS = "assignedShifts";
 }
