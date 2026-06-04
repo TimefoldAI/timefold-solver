@@ -60,14 +60,6 @@ public interface BiEnumeratingStream<Solution_, A, B> extends EnumeratingStream 
     <Result_> UniEnumeratingStream<Solution_, Result_> groupBy(BiNeighborhoodsCollector<Solution_, A, B, ?, Result_> collector);
 
     /**
-     * As defined by {@link UniEnumeratingStream#groupBy(UniNeighborhoodsMapper, UniNeighborhoodsMapper)},
-     * only for {@link BiEnumeratingStream} sources.
-     */
-    <GroupKeyA_, GroupKeyB_> BiEnumeratingStream<Solution_, GroupKeyA_, GroupKeyB_> groupBy(
-            BiNeighborhoodsMapper<Solution_, A, B, GroupKeyA_> keyA,
-            BiNeighborhoodsMapper<Solution_, A, B, GroupKeyB_> keyB);
-
-    /**
      * As defined by
      * {@link UniEnumeratingStream#groupBy(UniNeighborhoodsMapper, UniNeighborhoodsCollector)},
      * only for {@link BiEnumeratingStream} sources.

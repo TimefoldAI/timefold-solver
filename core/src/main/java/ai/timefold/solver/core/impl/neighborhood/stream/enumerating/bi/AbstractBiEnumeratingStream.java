@@ -48,8 +48,7 @@ public abstract class AbstractBiEnumeratingStream<Solution_, A, B> extends Abstr
         return buildUniGroupBy(NeighborhoodsGroupNodeConstructor.biZeroKeysGroupBy(collector));
     }
 
-    @Override
-    public <GroupKeyA_, GroupKeyB_> AbstractBiEnumeratingStream<Solution_, GroupKeyA_, GroupKeyB_> groupBy(
+    private <GroupKeyA_, GroupKeyB_> AbstractBiEnumeratingStream<Solution_, GroupKeyA_, GroupKeyB_> groupBy(
             BiNeighborhoodsMapper<Solution_, A, B, GroupKeyA_> keyA,
             BiNeighborhoodsMapper<Solution_, A, B, GroupKeyB_> keyB) {
         return buildBiGroupBy(NeighborhoodsGroupNodeConstructor.biTwoKeysGroupBy(keyA, keyB));

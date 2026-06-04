@@ -37,7 +37,7 @@ public final class ToListBiNeighborhoodsCollector<Solution_, A, B, Mapped_>
 
     @Override
     public BiNeighborhoodsCollectorAccumulator<Solution_, A, B, AbstractToListSlot.State<Mapped_>> accumulator() {
-        return (view, state) -> new Slot<>(state, mapper, view);
+        return (view, state) -> new Slot(state, view);
     }
 
     @Override
@@ -60,16 +60,14 @@ public final class ToListBiNeighborhoodsCollector<Solution_, A, B, Mapped_>
         return Objects.hash(mapper);
     }
 
-    private static final class Slot<Solution_, A, B, Mapped_> extends AbstractToListSlot<Mapped_>
+    private final class Slot
+            extends AbstractToListSlot<Mapped_>
             implements BiNeighborhoodsCollectorValueHandle<A, B> {
 
-        private final BiNeighborhoodsMapper<Solution_, A, B, Mapped_> mapper;
         private final SolutionView<Solution_> view;
 
-        Slot(AbstractToListSlot.State<Mapped_> state, BiNeighborhoodsMapper<Solution_, A, B, Mapped_> mapper,
-                SolutionView<Solution_> view) {
+        Slot(AbstractToListSlot.State<Mapped_> state, SolutionView<Solution_> view) {
             super(state);
-            this.mapper = mapper;
             this.view = view;
         }
 

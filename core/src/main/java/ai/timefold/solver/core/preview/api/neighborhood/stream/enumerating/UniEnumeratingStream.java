@@ -446,18 +446,6 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
     <Result_> UniEnumeratingStream<Solution_, Result_> groupBy(UniNeighborhoodsCollector<Solution_, A, ?, Result_> collector);
 
     /**
-     * Groups the stream by two keys simultaneously, producing one pair (keyA, keyB) per group.
-     *
-     * @param keyA mapping function for the first group key
-     * @param keyB mapping function for the second group key
-     * @param <GroupKeyA_> the type of the first group key
-     * @param <GroupKeyB_> the type of the second group key
-     */
-    <GroupKeyA_, GroupKeyB_> BiEnumeratingStream<Solution_, GroupKeyA_, GroupKeyB_> groupBy(
-            UniNeighborhoodsMapper<Solution_, A, GroupKeyA_> keyA,
-            UniNeighborhoodsMapper<Solution_, A, GroupKeyB_> keyB);
-
-    /**
      * Groups the stream by a key and applies a collector to each group,
      * producing one pair (key, result) per group.
      *

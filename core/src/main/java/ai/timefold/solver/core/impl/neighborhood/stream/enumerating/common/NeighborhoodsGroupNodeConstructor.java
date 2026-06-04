@@ -16,7 +16,6 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.Group0Mapping1CollectorUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.Group1Mapping0CollectorUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.Group1Mapping1CollectorUniNode;
-import ai.timefold.solver.core.impl.bavet.uni.Group2Mapping0CollectorUniNode;
 import ai.timefold.solver.core.impl.neighborhood.stream.collector.NeighborhoodsCollectorUtils;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
@@ -41,15 +40,6 @@ public sealed interface NeighborhoodsGroupNodeConstructor<Solution_, Tuple_ exte
         return new NeighborhoodsGroupNodeConstructorWithoutAccumulate<>(key,
                 view -> GroupNodeConstructor.oneKeyGroupBy(key.toFunction(view),
                         Group1Mapping0CollectorUniNode::new));
-    }
-
-    static <Solution_, A, GroupKeyA_, GroupKeyB_>
-            NeighborhoodsGroupNodeConstructor<Solution_, BiTuple<GroupKeyA_, GroupKeyB_>>
-            uniTwoKeysGroupBy(UniNeighborhoodsMapper<Solution_, A, GroupKeyA_> keyA,
-                    UniNeighborhoodsMapper<Solution_, A, GroupKeyB_> keyB) {
-        return new NeighborhoodsGroupNodeConstructorWithoutAccumulate<>(new Pair<>(keyA, keyB),
-                view -> GroupNodeConstructor.twoKeysGroupBy(keyA.toFunction(view), keyB.toFunction(view),
-                        Group2Mapping0CollectorUniNode::new));
     }
 
     @SuppressWarnings("unchecked")

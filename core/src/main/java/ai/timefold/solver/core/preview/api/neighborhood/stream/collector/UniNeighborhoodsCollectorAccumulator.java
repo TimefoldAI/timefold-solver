@@ -6,7 +6,7 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Accumulates values into a group container for a {@link UniNeighborhoodsCollector}.
- * Called once per group to obtain a {@link UniNeighborhoodsCollectorValueHandle}
+ * Created once per group, then called for each value to obtain a {@link UniNeighborhoodsCollectorValueHandle}
  * for inserting, updating, and removing values.
  *
  * @param <Solution_> the type of the solution

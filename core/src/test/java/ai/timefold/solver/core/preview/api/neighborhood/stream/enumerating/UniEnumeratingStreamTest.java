@@ -627,26 +627,6 @@ class UniEnumeratingStreamTest {
     }
 
     @Test
-    void groupBy_2Mapping0Collector() {
-        var factory = factory();
-        UniNeighborhoodsMapper<TestdataSolution, TestdataEntity, String> byEntityCode =
-                (view, entity) -> entity.getCode();
-        UniNeighborhoodsMapper<TestdataSolution, TestdataEntity, String> byValueCode =
-                (view, entity) -> entity.getValue().getCode();
-        var groupedStream = entityStream(factory).groupBy(byEntityCode, byValueCode);
-        var mappedStream = (AbstractUniEnumeratingStream<TestdataSolution, String>) groupedStream
-                .map((view, entityCode, valueCode) -> entityCode + "->" + valueCode);
-        var dataset = mappedStream.createLeftDataset();
-
-        var solution = TestdataSolution.generateSolution(2, 2);
-        var session = createSession(factory, solution);
-        var instance = getInstance(session, dataset);
-
-        assertThat(instance.iterator()).toIterable().map(UniTuple::getA)
-                .containsExactlyInAnyOrder("Generated Entity 0->Generated Value 0", "Generated Entity 1->Generated Value 1");
-    }
-
-    @Test
     void groupBy_0Mapping1Collector() {
         var factory = factory();
         var groupedStream = entityStream(factory)
