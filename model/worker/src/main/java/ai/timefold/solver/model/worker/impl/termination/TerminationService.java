@@ -50,12 +50,12 @@ public class TerminationService {
         if (terminationConfig == null) {
             return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit, null, null);
         }
-        Duration spentLimit = requireNonNullElse(terminationConfig.spentLimit(), this.spentLimit);
+        var spentLimit = requireNonNullElse(terminationConfig.spentLimit(), this.spentLimit);
         // unimprovedSpentLimit may be null
-        Duration unimprovedSpentLimit =
+        var unimprovedSpentLimit =
                 terminationConfig.unimprovedSpentLimit() != null ? terminationConfig.unimprovedSpentLimit()
                         : this.unimprovedSpentLimit;
-        Integer stepCountLimit =
+        var stepCountLimit =
                 terminationConfig.stepCountLimit() != null ? terminationConfig.stepCountLimit() : this.stepCountLimit;
 
         return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit,
@@ -65,7 +65,7 @@ public class TerminationService {
     private TerminationConfig solverTerminationConfig(Duration spentLimit, Duration unimprovedSpentLimit,
             Integer stepCountLimit, Duration diminishedReturnsSlidingWindowDuration,
             Double diminishedReturnsMinimumImprovementRatio) {
-        TerminationConfig terminationConfig = new TerminationConfig()
+        var terminationConfig = new TerminationConfig()
                 .withTerminationCompositionStyle(TerminationCompositionStyle.OR)
                 .withSpentLimit(spentLimit)
                 .withBestScoreLimit(bestScoreLimit);
@@ -77,7 +77,7 @@ public class TerminationService {
             terminationConfig.withStepCountLimit(stepCountLimit);
             LOGGER.info("Using time spent ({}) with step count limit ({}) termination.", spentLimit, stepCountLimit);
         } else {
-            DiminishedReturnsTerminationConfig diminishedReturnsConfig = new DiminishedReturnsTerminationConfig();
+            var diminishedReturnsConfig = new DiminishedReturnsTerminationConfig();
             List<String> tuning = new ArrayList<>(2);
             if (diminishedReturnsSlidingWindowDuration != null) {
                 diminishedReturnsConfig.setSlidingWindowDuration(diminishedReturnsSlidingWindowDuration);
