@@ -24,14 +24,17 @@ jobs:
           git config user.name "Timefold Release Bot"
           git config user.email "release@timefold.ai"
           git checkout $RELEASE_BRANCH_NAME
-          ./mvnw -Dfull versions:set -DnewVersion=999-SNAPSHOT
+          export NEW_VERSION="999-SNAPSHOT"
+          .github/scripts/change_versions.sh
           git commit -am "build: move back to 999-SNAPSHOT"
           git push origin $RELEASE_BRANCH_NAME          
 
       - name: Update release branch
         shell: bash
+        env:
+          TAG_REF: ${{ github.ref }}
         run: |
-          tag=${{ github.ref }}
+          tag="$TAG_REF"
           tag_version=${tag##*/}
           version=${tag_version%.*}
           version="${version:1}.x"
