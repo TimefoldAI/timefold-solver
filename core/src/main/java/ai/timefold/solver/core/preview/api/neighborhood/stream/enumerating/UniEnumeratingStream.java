@@ -414,16 +414,13 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      *
      * @param mapping function to convert the original tuple into the new tuple
      * @param <ResultA_> the type of the only fact in the resulting {@link UniEnumeratingStream}'s tuple
+     * @return a {@link UniEnumeratingStream} of the new tuples created by the mapping function
      */
     <ResultA_> UniEnumeratingStream<Solution_, ResultA_> map(UniNeighborhoodsMapper<Solution_, A, ResultA_> mapping);
 
     /**
-     * As defined by {@link #map(UniNeighborhoodsMapper)}, only resulting in {@link BiEnumeratingStream}.
-     *
-     * @param mappingA function to convert the original tuple into the first fact of a new tuple
-     * @param mappingB function to convert the original tuple into the second fact of a new tuple
-     * @param <ResultA_> the type of the first fact in the resulting {@link BiEnumeratingStream}'s tuple
-     * @param <ResultB_> the type of the first fact in the resulting {@link BiEnumeratingStream}'s tuple
+     * As defined by {@link #map(UniNeighborhoodsMapper)},
+     * only resulting in {@link BiEnumeratingStream}.
      */
     <ResultA_, ResultB_> BiEnumeratingStream<Solution_, ResultA_, ResultB_> map(
             UniNeighborhoodsMapper<Solution_, A, ResultA_> mappingA,
@@ -434,6 +431,8 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      *
      * @param key mapping function to extract the group key from each element
      * @param <GroupKey_> the type of the group key
+     * @return a {@link UniEnumeratingStream} where the only fact is the group key,
+     *         and there is one tuple for each group of original tuples that share the same group key
      */
     <GroupKey_> UniEnumeratingStream<Solution_, GroupKey_> groupBy(UniNeighborhoodsMapper<Solution_, A, GroupKey_> key);
 
@@ -442,6 +441,8 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      *
      * @param collector the collector to apply to the stream
      * @param <Result_> the type of the result
+     * @return a {@link UniEnumeratingStream} with a single element,
+     *         which is the result of applying the collector to the entire stream
      */
     <Result_> UniEnumeratingStream<Solution_, Result_> groupBy(UniNeighborhoodsCollector<Solution_, A, ?, Result_> collector);
 
@@ -453,6 +454,8 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * @param collector the collector to apply to each group
      * @param <GroupKey_> the type of the group key
      * @param <Result_> the type of the collected result
+     * @return a {@link BiEnumeratingStream} where the first fact is the group key
+     *         and the second fact is the collected result for that group
      */
     <GroupKey_, Result_> BiEnumeratingStream<Solution_, GroupKey_, Result_> groupBy(
             UniNeighborhoodsMapper<Solution_, A, GroupKey_> key,
@@ -467,6 +470,9 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * However, operations such as {@link #map(UniNeighborhoodsMapper)} may create a stream which breaks that promise.
      * By calling this method on such a stream,
      * duplicate copies of the same tuple will be omitted at a performance cost.
+     *
+     * @return a stream that is guaranteed to have distinct tuples,
+     *         at the cost of increased time and memory usage
      */
     UniEnumeratingStream<Solution_, A> distinct();
 
