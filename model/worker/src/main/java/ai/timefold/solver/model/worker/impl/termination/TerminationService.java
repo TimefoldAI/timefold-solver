@@ -4,6 +4,8 @@ import static java.util.Objects.requireNonNullElse;
 
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -46,22 +48,24 @@ public class TerminationService {
 
     public TerminationConfig resolveTerminationConfig(SolverTerminationConfig terminationConfig) {
         if (terminationConfig == null) {
-            return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit);
+            return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit, null, null);
         }
-        Duration spentLimit = requireNonNullElse(terminationConfig.spentLimit(), this.spentLimit);
+        var spentLimit = requireNonNullElse(terminationConfig.spentLimit(), this.spentLimit);
         // unimprovedSpentLimit may be null
-        Duration unimprovedSpentLimit =
+        var unimprovedSpentLimit =
                 terminationConfig.unimprovedSpentLimit() != null ? terminationConfig.unimprovedSpentLimit()
                         : this.unimprovedSpentLimit;
-        Integer stepCountLimit =
+        var stepCountLimit =
                 terminationConfig.stepCountLimit() != null ? terminationConfig.stepCountLimit() : this.stepCountLimit;
 
-        return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit);
+        return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit,
+                terminationConfig.slidingWindowDuration(), terminationConfig.minimumImprovementRatio());
     }
 
     private TerminationConfig solverTerminationConfig(Duration spentLimit, Duration unimprovedSpentLimit,
-            Integer stepCountLimit) {
-        TerminationConfig terminationConfig = new TerminationConfig()
+            Integer stepCountLimit, Duration diminishedReturnsSlidingWindowDuration,
+            Double diminishedReturnsMinimumImprovementRatio) {
+        var terminationConfig = new TerminationConfig()
                 .withTerminationCompositionStyle(TerminationCompositionStyle.OR)
                 .withSpentLimit(spentLimit)
                 .withBestScoreLimit(bestScoreLimit);
@@ -73,8 +77,23 @@ public class TerminationService {
             terminationConfig.withStepCountLimit(stepCountLimit);
             LOGGER.info("Using time spent ({}) with step count limit ({}) termination.", spentLimit, stepCountLimit);
         } else {
-            terminationConfig.withDiminishedReturnsConfig(new DiminishedReturnsTerminationConfig());
-            LOGGER.info("Using time spent ({}) with diminished returns termination.", spentLimit);
+            var diminishedReturnsConfig = new DiminishedReturnsTerminationConfig();
+            List<String> tuning = new ArrayList<>(2);
+            if (diminishedReturnsSlidingWindowDuration != null) {
+                diminishedReturnsConfig.setSlidingWindowDuration(diminishedReturnsSlidingWindowDuration);
+                tuning.add("slidingWindowDuration=" + diminishedReturnsSlidingWindowDuration);
+            }
+            if (diminishedReturnsMinimumImprovementRatio != null) {
+                diminishedReturnsConfig.setMinimumImprovementRatio(diminishedReturnsMinimumImprovementRatio);
+                tuning.add("minimumImprovementRatio=" + diminishedReturnsMinimumImprovementRatio);
+            }
+            terminationConfig.withDiminishedReturnsConfig(diminishedReturnsConfig);
+            if (tuning.isEmpty()) {
+                LOGGER.info("Using time spent ({}) with diminished returns termination.", spentLimit);
+            } else {
+                LOGGER.info("Using time spent ({}) with diminished returns termination ({}).", spentLimit,
+                        String.join(", ", tuning));
+            }
         }
 
         return terminationConfig;
