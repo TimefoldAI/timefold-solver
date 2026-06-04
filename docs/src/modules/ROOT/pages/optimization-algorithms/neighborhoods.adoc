@@ -532,7 +532,7 @@ the `MONDAY_MORNING` timeslot is a valid value for the `timeslotVariable` of the
 If that's not the case, we filter out this lesson from the enumeration
 and therefore will not generate moves which use this lesson.
 
-The same pattern applies to other building blocks as well, such as `join`, `ifExists` or `groupBy`;
+The same pattern applies to other building blocks as well, such as `join`, `ifExists` and `groupBy`;
 essentially, the `solutionView` argument was added to every predicate or function where it could be useful.
 
 
