@@ -31,8 +31,6 @@ public class TerminationService {
     private final Duration unimprovedSpentLimit;
     private final String bestScoreLimit; // exposed for testing
     private final Integer stepCountLimit;
-    private final Duration diminishedReturnsSlidingWindowDuration;
-    private final Double diminishedReturnsMinimumImprovementRatio;
 
     @Inject
     TerminationService(
@@ -40,35 +38,17 @@ public class TerminationService {
             @ConfigProperty(
                     name = TerminationConfigParams.TERMINATION_UNIMPROVED_SPENT_LIMIT) Optional<String> unimprovedSpentLimit,
             @ConfigProperty(name = TerminationConfigParams.TERMINATION_BEST_SCORE_LIMIT) Optional<String> bestScoreLimit,
-            @ConfigProperty(name = TerminationConfigParams.TERMINATION_STEP_COUNT_LIMIT) Optional<Integer> stepCountLimit,
-            @ConfigProperty(
-                    name = TerminationConfigParams.TERMINATION_DIMINISHED_RETURNS_SLIDING_WINDOW_DURATION) Optional<String> diminishedReturnsSlidingWindowDuration,
-            @ConfigProperty(
-                    name = TerminationConfigParams.TERMINATION_DIMINISHED_RETURNS_MINIMUM_IMPROVEMENT_RATIO) Optional<Double> diminishedReturnsMinimumImprovementRatio) {
+            @ConfigProperty(name = TerminationConfigParams.TERMINATION_STEP_COUNT_LIMIT) Optional<Integer> stepCountLimit) {
         this.spentLimit = parseDurationFromConfig(TerminationConfigParams.TERMINATION_SPENT_LIMIT, spentLimit);
         this.unimprovedSpentLimit = unimprovedSpentLimit
                 .map(s -> parseDurationFromConfig(TerminationConfigParams.TERMINATION_UNIMPROVED_SPENT_LIMIT, s)).orElse(null);
         this.bestScoreLimit = bestScoreLimit.orElse(null);
         this.stepCountLimit = stepCountLimit.orElse(null);
-        this.diminishedReturnsSlidingWindowDuration = diminishedReturnsSlidingWindowDuration
-                .map(s -> parseDurationFromConfig(
-                        TerminationConfigParams.TERMINATION_DIMINISHED_RETURNS_SLIDING_WINDOW_DURATION, s))
-                .orElse(null);
-        Double minimumImprovementRatio = diminishedReturnsMinimumImprovementRatio.orElse(null);
-        if (minimumImprovementRatio != null && minimumImprovementRatio <= 0) {
-            throw new TimefoldRuntimeException(ErrorCodes.INVALID_TERMINATION_CONFIG,
-                    ("Property '%s' (%s) must be strictly positive.").formatted(
-                            TerminationConfigParams.TERMINATION_DIMINISHED_RETURNS_MINIMUM_IMPROVEMENT_RATIO,
-                            minimumImprovementRatio),
-                    null, false);
-        }
-        this.diminishedReturnsMinimumImprovementRatio = minimumImprovementRatio;
     }
 
     public TerminationConfig resolveTerminationConfig(SolverTerminationConfig terminationConfig) {
         if (terminationConfig == null) {
-            return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit,
-                    diminishedReturnsSlidingWindowDuration, diminishedReturnsMinimumImprovementRatio);
+            return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit, null, null);
         }
         Duration spentLimit = requireNonNullElse(terminationConfig.spentLimit(), this.spentLimit);
         // unimprovedSpentLimit may be null
@@ -77,15 +57,9 @@ public class TerminationService {
                         : this.unimprovedSpentLimit;
         Integer stepCountLimit =
                 terminationConfig.stepCountLimit() != null ? terminationConfig.stepCountLimit() : this.stepCountLimit;
-        Duration slidingWindowDuration = terminationConfig.slidingWindowDuration() != null
-                ? terminationConfig.slidingWindowDuration()
-                : this.diminishedReturnsSlidingWindowDuration;
-        Double minimumImprovementRatio = terminationConfig.minimumImprovementRatio() != null
-                ? terminationConfig.minimumImprovementRatio()
-                : this.diminishedReturnsMinimumImprovementRatio;
 
-        return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit, slidingWindowDuration,
-                minimumImprovementRatio);
+        return solverTerminationConfig(spentLimit, unimprovedSpentLimit, stepCountLimit,
+                terminationConfig.slidingWindowDuration(), terminationConfig.minimumImprovementRatio());
     }
 
     private TerminationConfig solverTerminationConfig(Duration spentLimit, Duration unimprovedSpentLimit,
