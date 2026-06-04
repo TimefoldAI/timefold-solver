@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.collector;
 
+import static ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.NeighborhoodsCollectors.collectAndThen;
 import static ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.NeighborhoodsCollectors.compose;
 import static ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.NeighborhoodsCollectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -92,6 +93,44 @@ class NeighborhoodsCollectorsTest {
         assertResult(collector, container, List.of(2));
         h2.remove();
         assertResult(collector, container, List.of());
+    }
+
+    // ************************************************************************
+    // collectAndThen
+    // ************************************************************************
+
+    @Test
+    void uniCollectAndThen() {
+        UniNeighborhoodsCollector<Object, Integer, ?, Integer> collector =
+                collectAndThen(toList(), List::size);
+        Object container = collector.supplier().get();
+
+        assertResult(collector, container, 0);
+        var h1 = accumulate(collector, container, 1);
+        assertResult(collector, container, 1);
+        var h2 = accumulate(collector, container, 2);
+        assertResult(collector, container, 2);
+        h1.remove();
+        assertResult(collector, container, 1);
+        h2.remove();
+        assertResult(collector, container, 0);
+    }
+
+    @Test
+    void biCollectAndThen() {
+        BiNeighborhoodsCollector<Object, Integer, String, ?, Integer> collector =
+                collectAndThen(toList((view, a, b) -> a), List::size);
+        Object container = collector.supplier().get();
+
+        assertResult(collector, container, 0);
+        var h1 = accumulate(collector, container, 1, "x");
+        assertResult(collector, container, 1);
+        var h2 = accumulate(collector, container, 2, "y");
+        assertResult(collector, container, 2);
+        h1.remove();
+        assertResult(collector, container, 1);
+        h2.remove();
+        assertResult(collector, container, 0);
     }
 
     // ************************************************************************
