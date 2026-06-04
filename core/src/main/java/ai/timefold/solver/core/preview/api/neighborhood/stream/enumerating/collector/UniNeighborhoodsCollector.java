@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.neighborhood.stream.collector;
+package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector;
 
 import java.util.function.Function;
 import java.util.function.Supplier;

@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftD
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDatasetInstance;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.NeighborhoodsCollectors;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.NeighborhoodsCollectors;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.NeighborhoodsJoiners;
 import ai.timefold.solver.core.testdomain.TestdataEntity;

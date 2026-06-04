@@ -12,9 +12,9 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridg
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.joiner.BiNeighborhoodsJoinerComber;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.UniNeighborhoodsCollector;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.BiEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.UniNeighborhoodsCollector;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsPredicate;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.joiner.BiNeighborhoodsJoiner;

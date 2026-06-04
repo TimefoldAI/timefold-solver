@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.neighborhood.stream.collector;
+package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.collector;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -12,10 +12,10 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorAccumulator;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollectorValueHandle;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.BiNeighborhoodsCollector;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.BiNeighborhoodsCollectorValueHandle;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.UniNeighborhoodsCollector;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.UniNeighborhoodsCollectorValueHandle;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.BiNeighborhoodsCollector;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.BiNeighborhoodsCollectorValueHandle;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.UniNeighborhoodsCollector;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.UniNeighborhoodsCollectorValueHandle;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

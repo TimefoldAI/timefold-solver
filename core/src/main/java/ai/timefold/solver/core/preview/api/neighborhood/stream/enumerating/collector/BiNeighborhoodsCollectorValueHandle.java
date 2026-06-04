@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.neighborhood.stream.collector;
+package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

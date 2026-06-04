@@ -67,7 +67,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.preview.api.move.test;
     exports ai.timefold.solver.core.preview.api.neighborhood;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream;
-    exports ai.timefold.solver.core.preview.api.neighborhood.stream.collector;
+    exports ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream.function;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream.joiner;

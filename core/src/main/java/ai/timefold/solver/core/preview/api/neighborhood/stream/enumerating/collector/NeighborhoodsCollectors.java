@@ -1,9 +1,12 @@
-package ai.timefold.solver.core.preview.api.neighborhood.stream.collector;
+package ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
-import ai.timefold.solver.core.impl.neighborhood.stream.collector.ToListBiNeighborhoodsCollector;
-import ai.timefold.solver.core.impl.neighborhood.stream.collector.ToListUniNeighborhoodsCollector;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.collector.ComposeTwoBiNeighborhoodsCollector;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.collector.ComposeTwoUniNeighborhoodsCollector;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.collector.ToListBiNeighborhoodsCollector;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.collector.ToListUniNeighborhoodsCollector;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.BiEnumeratingStream;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
@@ -50,6 +53,28 @@ public final class NeighborhoodsCollectors {
     public static <Solution_, A, B, Mapped_> BiNeighborhoodsCollector<Solution_, A, B, ?, List<Mapped_>> toList(
             BiNeighborhoodsMapper<Solution_, A, B, Mapped_> mapper) {
         return ToListBiNeighborhoodsCollector.create(mapper);
+    }
+
+    /**
+     * Composes two {@link UniNeighborhoodsCollector}s into one, combining their results with the given function.
+     */
+    public static <Solution_, A, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
+            UniNeighborhoodsCollector<Solution_, A, ?, Result_> compose(
+                    UniNeighborhoodsCollector<Solution_, A, ResultHolder1_, Result1_> first,
+                    UniNeighborhoodsCollector<Solution_, A, ResultHolder2_, Result2_> second,
+                    BiFunction<Result1_, Result2_, Result_> composeFunction) {
+        return new ComposeTwoUniNeighborhoodsCollector<>(first, second, composeFunction);
+    }
+
+    /**
+     * Composes two {@link BiNeighborhoodsCollector}s into one, combining their results with the given function.
+     */
+    public static <Solution_, A, B, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
+            BiNeighborhoodsCollector<Solution_, A, B, ?, Result_> compose(
+                    BiNeighborhoodsCollector<Solution_, A, B, ResultHolder1_, Result1_> first,
+                    BiNeighborhoodsCollector<Solution_, A, B, ResultHolder2_, Result2_> second,
+                    BiFunction<Result1_, Result2_, Result_> composeFunction) {
+        return new ComposeTwoBiNeighborhoodsCollector<>(first, second, composeFunction);
     }
 
 }

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.neighborhood.stream.collector;
+package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.collector;
 
 import java.util.List;
 import java.util.Objects;
@@ -7,9 +7,9 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractToListSlot;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.UniNeighborhoodsCollector;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.UniNeighborhoodsCollectorAccumulator;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.UniNeighborhoodsCollectorValueHandle;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.UniNeighborhoodsCollector;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.UniNeighborhoodsCollectorAccumulator;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.UniNeighborhoodsCollectorValueHandle;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
 
 import org.jspecify.annotations.NullMarked;
@@ -47,12 +47,11 @@ public final class ToListUniNeighborhoodsCollector<Solution_, A, Mapped_>
 
     @Override
     public boolean equals(Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null || getClass() != object.getClass())
-            return false;
-        var that = (ToListUniNeighborhoodsCollector<?, ?, ?>) object;
-        return Objects.equals(mapper, that.mapper);
+        }
+        return object instanceof ToListUniNeighborhoodsCollector<?, ?, ?> other
+                && Objects.equals(mapper, other.mapper);
     }
 
     @Override

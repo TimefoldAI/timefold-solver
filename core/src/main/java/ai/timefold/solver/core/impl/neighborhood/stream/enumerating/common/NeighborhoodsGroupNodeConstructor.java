@@ -16,11 +16,11 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.Group0Mapping1CollectorUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.Group1Mapping0CollectorUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.Group1Mapping1CollectorUniNode;
-import ai.timefold.solver.core.impl.neighborhood.stream.collector.NeighborhoodsCollectorUtils;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.collector.NeighborhoodsCollectorUtils;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.BiNeighborhoodsCollector;
-import ai.timefold.solver.core.preview.api.neighborhood.stream.collector.UniNeighborhoodsCollector;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.BiNeighborhoodsCollector;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector.UniNeighborhoodsCollector;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.BiNeighborhoodsMapper;
 import ai.timefold.solver.core.preview.api.neighborhood.stream.function.UniNeighborhoodsMapper;
 
