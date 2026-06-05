@@ -84,7 +84,8 @@ public class ProblemBenchmarkResult<Solution_> {
     private Long entityCount = null;
     private Long variableCount = null;
     private Long maximumValueCount = null;
-    private Long problemScale = null;
+    private String problemScale = null;
+    private Long problemScaleLog = null;
     private Long inputSolutionLoadingTimeMillisSpent = null;
 
     @XmlTransient // Loaded lazily from singleBenchmarkResults
@@ -177,8 +178,12 @@ public class ProblemBenchmarkResult<Solution_> {
         return maximumValueCount;
     }
 
-    public Long getProblemScale() {
+    public String getProblemScale() {
         return problemScale;
+    }
+
+    public Long getProblemScaleLog() {
+        return problemScaleLog;
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
@@ -455,13 +460,15 @@ public class ProblemBenchmarkResult<Solution_> {
             maximumValueCount = -1L;
         }
         if (problemScale == null) {
-            problemScale = problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong();
-        } else if (problemScale.longValue() != problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong()) {
+            problemScale = problemSizeStatistics.approximateProblemScaleAsFormattedString();
+            problemScaleLog = problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong();
+        } else if (!Objects.equals(problemScaleLog, problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong())) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different problemScale values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
                     getName(), problemScale, problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong());
             // The problemScale is not unknown (null), but known to be ambiguous
-            problemScale = -1L;
+            problemScale = "-1";
+            problemScaleLog = -1L;
         }
     }
 
@@ -517,6 +524,7 @@ public class ProblemBenchmarkResult<Solution_> {
                     newResult.variableCount = oldResult.variableCount;
                     newResult.maximumValueCount = oldResult.maximumValueCount;
                     newResult.problemScale = oldResult.problemScale;
+                    newResult.problemScaleLog = oldResult.problemScaleLog;
                     problemProviderToNewResultMap.put(oldResult.problemProvider, newResult);
                     newPlannerBenchmarkResult.getUnifiedProblemBenchmarkResultList().add(newResult);
                 } else {
@@ -534,6 +542,7 @@ public class ProblemBenchmarkResult<Solution_> {
                     newResult.maximumValueCount = ConfigUtils.meldProperty(oldResult.maximumValueCount,
                             newResult.maximumValueCount);
                     newResult.problemScale = ConfigUtils.meldProperty(oldResult.problemScale, newResult.problemScale);
+                    newResult.problemScaleLog = ConfigUtils.meldProperty(oldResult.problemScaleLog, newResult.problemScaleLog);
                 }
                 mergeMap.put(oldResult, newResult);
             }

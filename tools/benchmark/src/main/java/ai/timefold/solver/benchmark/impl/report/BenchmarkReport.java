@@ -372,8 +372,8 @@ public class BenchmarkReport {
             String solverLabel = solverBenchmarkResult.getNameWithFavoriteSuffix();
             for (SingleBenchmarkResult singleBenchmarkResult : solverBenchmarkResult.getSingleBenchmarkResultList()) {
                 if (singleBenchmarkResult.hasAllSuccess()) {
-                    long problemScale = singleBenchmarkResult.getProblemBenchmarkResult().getProblemScale();
-                    double[] levelValues = singleBenchmarkResult.getAverageScore().toLevelDoubles();
+                    var problemScale = singleBenchmarkResult.getProblemBenchmarkResult().getProblemScaleLog();
+                    var levelValues = singleBenchmarkResult.getAverageScore().toLevelDoubles();
                     for (int i = 0; i < levelValues.length && i < CHARTED_SCORE_LEVEL_SIZE; i++) {
                         if (i >= builderList.size()) {
                             builderList.add(new LineChart.Builder<>());
@@ -556,8 +556,8 @@ public class BenchmarkReport {
                     .stream()
                     .filter(SingleBenchmarkResult::hasAllSuccess)
                     .forEach(singleBenchmarkResult -> {
-                        long problemScale = singleBenchmarkResult.getProblemBenchmarkResult().getProblemScale();
-                        long timeMillisSpent = valueFunction.applyAsLong(singleBenchmarkResult);
+                        var problemScale = singleBenchmarkResult.getProblemBenchmarkResult().getProblemScaleLog();
+                        var timeMillisSpent = valueFunction.applyAsLong(singleBenchmarkResult);
                         builder.add(solverLabel, problemScale, timeMillisSpent);
                     });
         }
@@ -570,8 +570,8 @@ public class BenchmarkReport {
             String solverLabel = solverBenchmarkResult.getNameWithFavoriteSuffix();
             for (SingleBenchmarkResult singleBenchmarkResult : solverBenchmarkResult.getSingleBenchmarkResultList()) {
                 if (singleBenchmarkResult.hasAllSuccess()) {
-                    long timeMillisSpent = singleBenchmarkResult.getTimeMillisSpent();
-                    double[] levelValues = singleBenchmarkResult.getAverageScore().toLevelDoubles();
+                    var timeMillisSpent = singleBenchmarkResult.getTimeMillisSpent();
+                    var levelValues = singleBenchmarkResult.getAverageScore().toLevelDoubles();
                     for (int i = 0; i < levelValues.length && i < CHARTED_SCORE_LEVEL_SIZE; i++) {
                         if (i >= builderList.size()) {
                             builderList.add(new LineChart.Builder<>());

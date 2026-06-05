@@ -23,7 +23,6 @@ import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
-import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -316,10 +315,10 @@ public class PlannerBenchmarkResult {
 
     private <Score_ extends Score<Score_>> void determineTotalsAndAverages() {
         failureCount = 0;
-        long totalProblemScale = 0L;
-        int problemScaleCount = 0;
-        for (ProblemBenchmarkResult problemBenchmarkResult : unifiedProblemBenchmarkResultList) {
-            Long problemScale = problemBenchmarkResult.getProblemScale();
+        var totalProblemScale = 0L;
+        var problemScaleCount = 0;
+        for (var problemBenchmarkResult : unifiedProblemBenchmarkResultList) {
+            var problemScale = problemBenchmarkResult.getProblemScaleLog();
             if (problemScale != null && problemScale >= 0L) {
                 totalProblemScale += problemScale;
                 problemScaleCount++;
@@ -328,10 +327,10 @@ public class PlannerBenchmarkResult {
         }
         averageProblemScale = problemScaleCount == 0 ? null : totalProblemScale / problemScaleCount;
         Score_ totalScore = null;
-        int solverBenchmarkCount = 0;
-        boolean firstSolverBenchmarkResult = true;
-        for (SolverBenchmarkResult solverBenchmarkResult : solverBenchmarkResultList) {
-            EnvironmentMode solverEnvironmentMode = solverBenchmarkResult.getEnvironmentMode();
+        var solverBenchmarkCount = 0;
+        var firstSolverBenchmarkResult = true;
+        for (var solverBenchmarkResult : solverBenchmarkResultList) {
+            var solverEnvironmentMode = solverBenchmarkResult.getEnvironmentMode();
             if (firstSolverBenchmarkResult && solverEnvironmentMode != null) {
                 environmentMode = solverEnvironmentMode;
                 firstSolverBenchmarkResult = false;
@@ -339,9 +338,9 @@ public class PlannerBenchmarkResult {
                 environmentMode = null;
             }
 
-            Score_ score = (Score_) solverBenchmarkResult.getAverageScore();
+            var score = (Score_) solverBenchmarkResult.getAverageScore();
             if (score != null) {
-                ScoreDefinition<Score_> scoreDefinition = solverBenchmarkResult.getScoreDefinition();
+                var scoreDefinition = solverBenchmarkResult.getScoreDefinition();
                 if (totalScore != null && !scoreDefinition.isCompatibleArithmeticArgument(totalScore)) {
                     // Mixing different use cases with different score definitions.
                     totalScore = null;
