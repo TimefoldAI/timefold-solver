@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -23,6 +24,7 @@ import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
+import ai.timefold.solver.core.impl.util.MathUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +68,7 @@ public class PlannerBenchmarkResult {
     // ************************************************************************
 
     private Integer failureCount = null;
-    private Long averageProblemScale = null;
+    private String averageProblemScale = null;
     private Score averageScore = null;
     private SolverBenchmarkResult favoriteSolverBenchmarkResult = null;
 
@@ -183,7 +185,7 @@ public class PlannerBenchmarkResult {
         return failureCount;
     }
 
-    public Long getAverageProblemScale() {
+    public String getAverageProblemScale() {
         return averageProblemScale;
     }
 
@@ -318,14 +320,16 @@ public class PlannerBenchmarkResult {
         var totalProblemScale = 0L;
         var problemScaleCount = 0;
         for (var problemBenchmarkResult : unifiedProblemBenchmarkResultList) {
-            var problemScale = problemBenchmarkResult.getProblemScaleLog();
+            var problemScale = problemBenchmarkResult.getProblemScale();
             if (problemScale != null && problemScale >= 0L) {
                 totalProblemScale += problemScale;
                 problemScaleCount++;
             }
             failureCount += problemBenchmarkResult.getFailureCount();
         }
-        averageProblemScale = problemScaleCount == 0 ? null : totalProblemScale / problemScaleCount;
+        averageProblemScale = problemScaleCount == 0 ? null
+                : MathUtils.approximateProblemScaleAsFormattedString(
+                        (double) totalProblemScale / problemScaleCount / MathUtils.LOG_PRECISION, Locale.getDefault());
         Score_ totalScore = null;
         var solverBenchmarkCount = 0;
         var firstSolverBenchmarkResult = true;

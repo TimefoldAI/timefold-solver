@@ -524,7 +524,7 @@ public class BenchmarkAggregatorFrame extends JFrame {
                         Problem scale: %s%n\
                         Used memory: %s""",
                 problemBenchmarkResult.getEntityCount(),
-                problemBenchmarkResult.getProblemScale(),
+                problemBenchmarkResult.getFormattedProblemScale(),
                 toEmptyStringIfNull(problemBenchmarkResult.getAverageUsedMemoryAfterInputSolution()));
         return new MixedCheckBox(problemBenchmarkResult.getName(), problemBenchmarkDetail);
     }

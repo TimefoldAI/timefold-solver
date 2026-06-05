@@ -372,7 +372,7 @@ public class BenchmarkReport {
             String solverLabel = solverBenchmarkResult.getNameWithFavoriteSuffix();
             for (SingleBenchmarkResult singleBenchmarkResult : solverBenchmarkResult.getSingleBenchmarkResultList()) {
                 if (singleBenchmarkResult.hasAllSuccess()) {
-                    var problemScale = singleBenchmarkResult.getProblemBenchmarkResult().getProblemScaleLog();
+                    var problemScale = singleBenchmarkResult.getProblemBenchmarkResult().getProblemScale();
                     var levelValues = singleBenchmarkResult.getAverageScore().toLevelDoubles();
                     for (int i = 0; i < levelValues.length && i < CHARTED_SCORE_LEVEL_SIZE; i++) {
                         if (i >= builderList.size()) {
@@ -556,7 +556,7 @@ public class BenchmarkReport {
                     .stream()
                     .filter(SingleBenchmarkResult::hasAllSuccess)
                     .forEach(singleBenchmarkResult -> {
-                        var problemScale = singleBenchmarkResult.getProblemBenchmarkResult().getProblemScaleLog();
+                        var problemScale = singleBenchmarkResult.getProblemBenchmarkResult().getProblemScale();
                         var timeMillisSpent = valueFunction.applyAsLong(singleBenchmarkResult);
                         builder.add(solverLabel, problemScale, timeMillisSpent);
                     });
