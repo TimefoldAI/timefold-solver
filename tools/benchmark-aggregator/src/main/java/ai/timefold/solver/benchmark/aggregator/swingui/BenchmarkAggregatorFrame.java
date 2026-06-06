@@ -518,12 +518,13 @@ public class BenchmarkAggregatorFrame extends JFrame {
     }
 
     private MixedCheckBox createProblemBenchmarkCheckBox(ProblemBenchmarkResult problemBenchmarkResult) {
-        String problemBenchmarkDetail = String.format(
-                "Entity count: %d%n"
-                        + "Problem scale: %d%n"
-                        + "Used memory: %s",
+        var problemBenchmarkDetail = String.format(
+                """
+                        Entity count: %d%n\
+                        Problem scale: %s%n\
+                        Used memory: %s""",
                 problemBenchmarkResult.getEntityCount(),
-                problemBenchmarkResult.getProblemScale(),
+                problemBenchmarkResult.getFormattedProblemScale(),
                 toEmptyStringIfNull(problemBenchmarkResult.getAverageUsedMemoryAfterInputSolution()));
         return new MixedCheckBox(problemBenchmarkResult.getName(), problemBenchmarkDetail);
     }

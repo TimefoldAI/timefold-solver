@@ -404,7 +404,7 @@
                                         <th>Problem scale</th>
                                         <td>${benchmarkReport.plannerBenchmarkResult.averageProblemScale!""}</td>
                                         <#list benchmarkReport.plannerBenchmarkResult.unifiedProblemBenchmarkResultList as problemBenchmarkResult>
-                                            <td class="problemScale">${problemBenchmarkResult.problemScale!""}</td>
+                                            <td class="problemScale">${problemBenchmarkResult.formattedProblemScale!""}</td>
                                         </#list>
                                     </tr>
                                 </thead>
@@ -472,7 +472,7 @@
                                         <th>Problem scale</th>
                                         <td>${benchmarkReport.plannerBenchmarkResult.averageProblemScale!""}</td>
                                         <#list benchmarkReport.plannerBenchmarkResult.unifiedProblemBenchmarkResultList as problemBenchmarkResult>
-                                            <td class="problemScale">${problemBenchmarkResult.problemScale!""}</td>
+                                            <td class="problemScale">${problemBenchmarkResult.formattedProblemScale!""}</td>
                                         </#list>
                                     </tr>
                                 </thead>
@@ -585,7 +585,7 @@
                                         <th>Problem scale</th>
                                         <td>${benchmarkReport.plannerBenchmarkResult.averageProblemScale!""}</td>
                                         <#list benchmarkReport.plannerBenchmarkResult.unifiedProblemBenchmarkResultList as problemBenchmarkResult>
-                                            <td class="problemScale">${problemBenchmarkResult.problemScale!""}</td>
+                                            <td class="problemScale">${problemBenchmarkResult.formattedProblemScale!""}</td>
                                         </#list>
                                     </tr>
                                 </thead>
@@ -668,7 +668,7 @@
                             </tr>
                             <tr>
                                 <th>Problem scale</th>
-                                <td>${problemBenchmarkResult.problemScale!""}</td>
+                                <td>${problemBenchmarkResult.formattedProblemScale!""}</td>
                             </tr>
                             <#if problemBenchmarkResult.inputSolutionLoadingTimeMillisSpent??>
                                 <tr>
