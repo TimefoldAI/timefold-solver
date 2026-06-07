@@ -95,7 +95,7 @@ public interface ActivitySupport {
      * @return true if this lifecycle can produce tuples
      */
     default boolean isActive() {
-        throw new IllegalStateException("Impossible state: node (%s) not yet called initialized."
+        throw new IllegalStateException("Impossible state: node (%s) not yet initialized (afterAllFactsInserted not called)."
                 .formatted(this));
     }
 

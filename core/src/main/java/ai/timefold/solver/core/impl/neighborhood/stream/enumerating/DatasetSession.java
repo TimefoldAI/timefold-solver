@@ -4,9 +4,9 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
 import ai.timefold.solver.core.impl.bavet.AbstractSession;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBavetNodeNetwork;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDataset;
@@ -17,14 +17,15 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Abstr
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public final class DatasetSession<Solution_> extends AbstractSession {
+public final class DatasetSession<Solution_>
+        extends AbstractSession<NeighborhoodsBavetNodeNetwork> {
 
     private final Map<AbstractDataset<Solution_>, AbstractDatasetInstance<Solution_, ?>> leftDatasetInstanceMap =
             new IdentityHashMap<>();
     private final Map<AbstractDataset<Solution_>, AbstractDatasetInstance<Solution_, ?>> rightDatasetInstanceMap =
             new IdentityHashMap<>();
 
-    DatasetSession(AbstractBavetNodeNetwork nodeNetwork) {
+    DatasetSession(NeighborhoodsBavetNodeNetwork nodeNetwork) {
         super(nodeNetwork);
     }
 

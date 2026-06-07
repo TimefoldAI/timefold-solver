@@ -93,9 +93,10 @@ the constraint may still be deactivated at runtime,
 if the engine can prove that it will never contribute to the score.
 For example, a constraint using `forEach(Visit.class)` will be deactivated
 if there are no `Visit` instances in the solution.
-This is inferior though to manually setting the constraint weight to zero,
+
+This is inferior to manually setting the constraint weight to zero,
 as the engine can only perform optimizations it can guarantee are safe
-based on the information it has.
+based on the limited information it has.
 With full understanding of the domain,
 you are in a much better position to know which constraints are relevant and which are not,
 and you can set the weights accordingly.
