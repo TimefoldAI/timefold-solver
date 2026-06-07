@@ -7,6 +7,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -50,6 +51,10 @@ public abstract class AbstractBavetNodeNetwork {
      * See {@link ActivitySupport#isActive()} for details.
      */
     private Propagator @Nullable [][] layeredActivePropagators;
+    /**
+     * For testing only: the set of nodes that remained active after {@link #settle()}; null before settle.
+     */
+    private @Nullable Set<AbstractNode> activeNodeSet;
 
     /**
      * @param declaredClassToNodeMap starting nodes, one for each class used in the constraints;
@@ -89,17 +94,20 @@ public abstract class AbstractBavetNodeNetwork {
                 }
             }));
 
+            var activeNodes = Collections.<AbstractNode> newSetFromMap(new IdentityHashMap<>());
             layeredActivePropagators = Arrays.stream(layeredNodes)
                     .map(layer -> Arrays.stream(layer)
                             .filter(s -> switch (s) {
                                 case ActivitySupport activityEnabled -> activityEnabled.isActive();
                                 case AbstractTwoInputNode<?, ?> twoInputNode -> twoInputNode.isActive();
                             })
+                            .peek(activeNodes::add)
                             .map(propagatorFunction)
                             .toArray(Propagator[]::new))
                     .filter(layer -> layer.length > 0)
                     .peek(AbstractBavetNodeNetwork::settleLayer)
                     .toArray(Propagator[][]::new);
+            this.activeNodeSet = activeNodes;
             return;
         }
         // Simplified loop when the layers were already trimmed.
@@ -110,6 +118,27 @@ public abstract class AbstractBavetNodeNetwork {
 
     protected boolean isActivationCheckComplete() {
         return layeredActivePropagators != null;
+    }
+
+    /**
+     * For testing only. The nodes that remained active after {@link #settle()}.
+     *
+     * @throws IllegalStateException if called before {@link #settle()}.
+     */
+    Set<AbstractNode> getActiveNodes() {
+        if (activeNodeSet == null) {
+            throw new IllegalStateException("Impossible state: getActiveNodes() called before settle().");
+        }
+        return activeNodeSet;
+    }
+
+    /**
+     * For testing only. All nodes in the network, regardless of activity.
+     */
+    List<AbstractNode> getNodes() {
+        return Arrays.stream(layeredNodes)
+                .flatMap(Arrays::stream)
+                .toList();
     }
 
     private static void settleLayer(Propagator[] nodesInLayer) {
