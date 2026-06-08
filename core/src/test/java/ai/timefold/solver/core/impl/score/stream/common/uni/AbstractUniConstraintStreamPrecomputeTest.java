@@ -33,6 +33,40 @@ public abstract class AbstractUniConstraintStreamPrecomputeTest extends Abstract
         super(implSupport);
     }
 
+    /**
+     * A precompute that simply enumerates a problem-fact class must emit one tuple per fact.
+     * Removing a problem fact must re-derive the fact-only output
+     * and retract the removed fact's tuple.
+     * Exercises the cache-invalidation path for fact-derived output.
+     */
+    @TestTemplate
+    void forEachUnfiltered_fact() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var value1 = new TestdataLavishValue();
+        var value2 = new TestdataLavishValue();
+        var value3 = new TestdataLavishValue();
+        solution.getValueList().addAll(List.of(value1, value2, value3));
+
+        var scoreDirector = buildScoreDirector(
+                factory -> factory.precompute(pf -> pf.forEachUnfiltered(TestdataLavishValue.class))
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_ID));
+
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(value1),
+                assertMatch(value2),
+                assertMatch(value3));
+
+        scoreDirector.beforeProblemFactRemoved(value3);
+        solution.getValueList().remove(value3);
+        scoreDirector.afterProblemFactRemoved(value3);
+
+        assertScore(scoreDirector,
+                assertMatch(value1),
+                assertMatch(value2));
+    }
+
     @Override
     @TestTemplate
     public void filter_0_changed() {
