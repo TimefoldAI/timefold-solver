@@ -71,7 +71,7 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
         }
         nodeNetwork.settle();
         if (!initialized && nodeNetwork.isActivationCheckComplete()) {
-            removeInactiveRootNodes(insertEffectiveClassToNodeArrayMap);
+            insertEffectiveClassToNodeArrayMap = removeInactiveRootNodes(insertEffectiveClassToNodeArrayMap);
             removeInactiveRootNodes(updateEffectiveClassToNodeArrayMap);
             removeInactiveRootNodes(retractEffectiveClassToNodeArrayMap);
             initialized = true;
@@ -79,11 +79,12 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
         settled = true;
     }
 
-    private void removeInactiveRootNodes(Map<Class<?>, AbstractRootNode<Object>[]> effectiveClassToNodeArrayMap) {
+    private Map<Class<?>, AbstractRootNode<Object>[]> removeInactiveRootNodes(Map<Class<?>, AbstractRootNode<Object>[]> effectiveClassToNodeArrayMap) {
         // Use getActiveNodes() for this, to not rerun the activity checking logic again.
         effectiveClassToNodeArrayMap.replaceAll((k, v) -> Arrays.stream(v)
                 .filter(n -> nodeNetwork.getActiveNodes().contains(n))
                 .toArray(AbstractRootNode[]::new));
+        return new ImmutableIdentityPerfectHashMap<>(effectiveClassToNodeArrayMap);
     }
 
     public Network_ getNodeNetwork() {
