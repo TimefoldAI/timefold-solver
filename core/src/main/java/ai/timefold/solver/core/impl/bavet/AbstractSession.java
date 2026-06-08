@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet;
 
-import java.util.IdentityHashMap;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
@@ -12,13 +13,14 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
     private final Map<Class<?>, AbstractRootNode<Object>[]> insertEffectiveClassToNodeArrayMap;
     private final Map<Class<?>, AbstractRootNode<Object>[]> updateEffectiveClassToNodeArrayMap;
     private final Map<Class<?>, AbstractRootNode<Object>[]> retractEffectiveClassToNodeArrayMap;
-    private boolean settled = true;
+    private boolean initialized = false;
+    private boolean settled = false;
 
     protected AbstractSession(Network_ nodeNetwork) {
         this.nodeNetwork = nodeNetwork;
-        this.insertEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
-        this.updateEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
-        this.retractEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
+        this.insertEffectiveClassToNodeArrayMap = HashMap.newHashMap(nodeNetwork.forEachNodeCount());
+        this.updateEffectiveClassToNodeArrayMap = HashMap.newHashMap(nodeNetwork.forEachNodeCount());
+        this.retractEffectiveClassToNodeArrayMap = HashMap.newHashMap(nodeNetwork.forEachNodeCount());
     }
 
     public final void insert(Object fact) {
@@ -68,7 +70,20 @@ public abstract class AbstractSession<Network_ extends AbstractBavetNodeNetwork>
             return;
         }
         nodeNetwork.settle();
+        if (!initialized && nodeNetwork.isActivationCheckComplete()) {
+            removeInactiveRootNodes(insertEffectiveClassToNodeArrayMap);
+            removeInactiveRootNodes(updateEffectiveClassToNodeArrayMap);
+            removeInactiveRootNodes(retractEffectiveClassToNodeArrayMap);
+            initialized = true;
+        }
         settled = true;
+    }
+
+    private void removeInactiveRootNodes(Map<Class<?>, AbstractRootNode<Object>[]> effectiveClassToNodeArrayMap) {
+        // Use getActiveNodes() for this, to not rerun the activity checking logic again.
+        effectiveClassToNodeArrayMap.replaceAll((k, v) -> Arrays.stream(v)
+                .filter(n -> nodeNetwork.getActiveNodes().contains(n))
+                .toArray(AbstractRootNode[]::new));
     }
 
     public Network_ getNodeNetwork() {

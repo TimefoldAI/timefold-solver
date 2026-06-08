@@ -30,8 +30,7 @@ public abstract class AbstractBavetNodeNetwork {
 
     protected static AbstractNode[][] buildLayeredNodes(List<AbstractNode> nodeList) {
         var layerMap = new TreeMap<Long, List<AbstractNode>>();
-        nodeList.forEach(node -> layerMap.computeIfAbsent(node.getLayerIndex(), unused -> new ArrayList<>())
-                .add(node));
+        nodeList.forEach(node -> layerMap.computeIfAbsent(node.getLayerIndex(), unused -> new ArrayList<>()).add(node));
         var layerCount = layerMap.size();
         var layeredNodes = new AbstractNode[layerCount][];
         for (var i = 0; i < layerCount; i++) {
@@ -73,13 +72,21 @@ public abstract class AbstractBavetNodeNetwork {
         return declaredClassToNodeMap.size();
     }
 
+    /**
+     *
+     * @param factClass
+     * @return if {@link #isActivationCheckComplete()} is true, only returns active root nodes;
+     *         otherwise returns all root nodes.
+     *         This means that if this information was ever read before activation checks were complete,
+     *         it should be re-read after to make sure no inactive nodes are included.
+     */
     public Stream<AbstractRootNode<?>> getRootNodesAcceptingType(Class<?> factClass) {
         // The node needs to match the fact, or the node needs to be applicable to the entire solution.
         // The latter is for FromSolution nodes.
-        return declaredClassToNodeMap.entrySet()
-                .stream()
+        return declaredClassToNodeMap.entrySet().stream()
                 .flatMap(entry -> entry.getValue().stream())
-                .filter(tupleSourceRoot -> factClass == PlanningSolution.class || tupleSourceRoot.allowsInstancesOf(factClass));
+                .filter(tupleSourceRoot -> factClass == PlanningSolution.class || tupleSourceRoot.allowsInstancesOf(factClass))
+                .filter(node -> !isActivationCheckComplete() || activeNodeSet.contains(node));
     }
 
     public void settle() {
@@ -102,11 +109,8 @@ public abstract class AbstractBavetNodeNetwork {
                                 case AbstractTwoInputNode<?, ?> twoInputNode -> twoInputNode.isActive();
                             })
                             .peek(activeNodes::add)
-                            .map(propagatorFunction)
-                            .toArray(Propagator[]::new))
-                    .filter(layer -> layer.length > 0)
-                    .peek(AbstractBavetNodeNetwork::settleLayer)
-                    .toArray(Propagator[][]::new);
+                            .map(propagatorFunction).toArray(Propagator[]::new))
+                    .filter(layer -> layer.length > 0).peek(AbstractBavetNodeNetwork::settleLayer).toArray(Propagator[][]::new);
             this.activeNodeSet = activeNodes;
             return;
         }
@@ -116,15 +120,10 @@ public abstract class AbstractBavetNodeNetwork {
         }
     }
 
-    protected boolean isActivationCheckComplete() {
+    public boolean isActivationCheckComplete() {
         return layeredActivePropagators != null;
     }
 
-    /**
-     * For testing only. The nodes that remained active after {@link #settle()}.
-     *
-     * @throws IllegalStateException if called before {@link #settle()}.
-     */
     Set<AbstractNode> getActiveNodes() {
         if (activeNodeSet == null) {
             throw new IllegalStateException("Impossible state: getActiveNodes() called before settle().");
@@ -136,9 +135,7 @@ public abstract class AbstractBavetNodeNetwork {
      * For testing only. All nodes in the network, regardless of activity.
      */
     List<AbstractNode> getNodes() {
-        return Arrays.stream(layeredNodes)
-                .flatMap(Arrays::stream)
-                .toList();
+        return Arrays.stream(layeredNodes).flatMap(Arrays::stream).toList();
     }
 
     private static void settleLayer(Propagator[] nodesInLayer) {
@@ -174,8 +171,7 @@ public abstract class AbstractBavetNodeNetwork {
 
     @Override
     public String toString() {
-        return "%s with %d forEach nodes."
-                .formatted(getClass().getSimpleName(), forEachNodeCount());
+        return "%s with %d forEach nodes.".formatted(getClass().getSimpleName(), forEachNodeCount());
     }
 
 }

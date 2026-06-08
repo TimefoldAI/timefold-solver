@@ -141,7 +141,7 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
                     ConstraintNodeProfileId.Qualifier.NODE, node.getLocationSet());
             constraintProfiler.register(profileId);
             var stream = getNodeCreator(node);
-            for (var affectedSet : streamToProfileIdSets.get(stream)) {
+            for (var affectedSet : streamToProfileIdSets.getOrDefault(stream, Collections.emptyList())) {
                 affectedSet.add(profileId);
             }
             return new ProfilingPropagator(constraintProfiler, profileId, node.getPropagator());

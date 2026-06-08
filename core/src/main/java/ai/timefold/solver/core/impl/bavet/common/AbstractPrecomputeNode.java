@@ -92,4 +92,5 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends Tuple>
     }
 
     protected abstract Tuple_ remapTuple(Tuple_ tuple);
+
 }

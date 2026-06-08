@@ -249,7 +249,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
                             internalTupleToOutputTupleMapper, internalTupleToOutputTupleMap))) {
                 for (var fact : seenFactSet) {
                     classToRootNodeList.get(fact.getClass())
-                            .forEach(node -> ((BavetRootNode<Object>) node).update(fact));
+                            .forEach(node -> ((AbstractRootNode<Object>) node).update(fact));
                 }
                 internalNodeNetwork.settle();
             }

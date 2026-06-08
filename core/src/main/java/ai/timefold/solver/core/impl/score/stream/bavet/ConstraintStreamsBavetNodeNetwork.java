@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 /**
- * Represents Constraint Streams's network of nodes, specific to a particular session.
+ * Represents Constraint Streams' network of nodes, specific to a particular session.
  * Nodes only used by disabled constraints have already been removed.
  *
  */

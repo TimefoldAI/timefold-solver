@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
         implements TupleLifecycle<Tuple_> {
@@ -64,12 +63,6 @@ public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof AggregatedTupleLifecycle<?> that &&
-                Arrays.deepEquals(downstream, that.downstream);
-    }
-
     /**
      * Users must not modify this array. (Defensive copy avoided for performance reasons.)
      *
@@ -80,8 +73,14 @@ public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
     }
 
     @Override
+    public boolean equals(Object o) {
+        return o instanceof AggregatedTupleLifecycle<?> that &&
+                Arrays.deepEquals(downstream, that.downstream);
+    }
+
+    @Override
     public int hashCode() {
-        return Objects.hashCode(downstream);
+        return Arrays.deepHashCode(downstream);
     }
 
     @Override
