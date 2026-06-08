@@ -34,7 +34,7 @@
     <version.ch.qos.logback>1.5.33</version.ch.qos.logback>
     <version.com.networknt.json-schem-validator>1.5.9</version.com.networknt.json-schem-validator>
     <version.jakarta.enterprise.cdi-api>4.1.0</version.jakarta.enterprise.cdi-api>
-    <version.io.quarkus>3.35.4</version.io.quarkus>
+    <version.io.quarkus>3.36.1</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.26.0</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.7</version.org.assertj>
