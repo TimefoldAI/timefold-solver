@@ -43,6 +43,9 @@ import ai.timefold.solver.model.definition.api.error.ValidationErrorInfo;
 import ai.timefold.solver.model.definition.api.log.LogInfo;
 import ai.timefold.solver.model.definition.api.metrics.ModelInputMetrics;
 import ai.timefold.solver.model.definition.api.metrics.ModelOutputMetrics;
+import ai.timefold.solver.model.definition.api.rest.DatasetSelector;
+import ai.timefold.solver.model.definition.api.rest.OperationId;
+import ai.timefold.solver.model.definition.api.rest.OperationOnPost;
 import ai.timefold.solver.model.definition.api.validation.Issue;
 import ai.timefold.solver.model.definition.api.validation.IssueCode;
 import ai.timefold.solver.model.definition.api.validation.ModelValidator;
@@ -62,9 +65,6 @@ import ai.timefold.solver.model.definition.internal.events.SolveTerminateCommand
 import ai.timefold.solver.model.definition.internal.events.SolverChannels;
 import ai.timefold.solver.model.definition.internal.storage.AbstractStorageService;
 import ai.timefold.solver.model.json.internal.patch.JsonPatch;
-import ai.timefold.solver.model.rest.definition.api.DatasetSelector;
-import ai.timefold.solver.model.rest.definition.api.OperationId;
-import ai.timefold.solver.model.rest.definition.api.OperationOnPost;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;

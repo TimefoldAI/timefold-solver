@@ -1,4 +1,4 @@
-package ai.timefold.solver.model.rest.definition.api;
+package ai.timefold.solver.model.definition.api.rest;
 
 public enum DatasetSelector {
 

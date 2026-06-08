@@ -1,7 +1,7 @@
 package ai.timefold.solver.model.quarkus.deployment;
 
+import static ai.timefold.solver.model.definition.api.rest.OperationId.POST_OPERATIONS_ID_PATTERN;
 import static ai.timefold.solver.model.quarkus.deployment.util.ProcessorUtils.excludeType;
-import static ai.timefold.solver.model.rest.definition.api.OperationId.POST_OPERATIONS_ID_PATTERN;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -47,6 +47,7 @@ import ai.timefold.solver.model.definition.api.description.ConstraintInfo;
 import ai.timefold.solver.model.definition.api.domain.ConstraintReference;
 import ai.timefold.solver.model.definition.api.domain.DataFormat;
 import ai.timefold.solver.model.definition.api.domain.ModelRequest;
+import ai.timefold.solver.model.definition.api.rest.OperationId;
 import ai.timefold.solver.model.definition.internal.descriptor.ConstraintDescriptor;
 import ai.timefold.solver.model.definition.internal.descriptor.ConstraintGroupDescriptor;
 import ai.timefold.solver.model.definition.internal.descriptor.DocumentationDescriptor;
@@ -68,7 +69,6 @@ import ai.timefold.solver.model.quarkus.deployment.builditem.SingleOpenApiDocume
 import ai.timefold.solver.model.quarkus.deployment.descriptor.DefaultConstraintGroupDescriptorFactory;
 import ai.timefold.solver.model.quarkus.deployment.openapi.SchemaPostProcessor;
 import ai.timefold.solver.model.quarkus.deployment.openapi.SchemaUtils;
-import ai.timefold.solver.model.rest.definition.api.OperationId;
 
 import org.apache.commons.lang3.exception.UncheckedException;
 import org.eclipse.microprofile.config.Config;
