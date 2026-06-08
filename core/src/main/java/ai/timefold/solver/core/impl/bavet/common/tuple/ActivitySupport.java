@@ -8,25 +8,28 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.Scorer;
 
 /**
  * When a Bavet session is created, some nodes can become inactive.
- * An inactive node cannot be triggered during a session as it cannot produce output.
- * Processing inserts, updates and retracts in inactive nodes is possibly expensive.
+ * An inactive node cannot impact the score, as it cannot produce tuples.
+ * Yet processing inserts, updates and retracts in inactive nodes still consumes CPU cycles.
  * This interface establishes a protocol through which nodes can signal at runtime
  * that they are inactive, so that the session can ignore them.
  * <p>
  * The pattern of interaction is as follows:
  * <ul>
  * <li>The session will first call {@link #afterAllFactsInserted(boolean)} on every {@link AbstractRootNode}.
- * The nodes will propagate this call downstream.
- * Each downstream node must propagate the call further downstream,
- * until a {@link Scorer} is reached. (In case of Constraint Streams.)</li>
- * <li>Then the session will call {@link #isActive()} on every single node,
- * and entirely remove deactivated nodes from propagation.
- * Each node makes its activity decision independently,
- * but may ask its downstream nodes.</li>
+ * Each lifecycle must propagate the call further downstream, until a {@link Scorer} is reached.
+ * (In case of Constraint Streams.)</li>
+ * <li>Then the session will call {@link #isActive()} on every single lifecycle,
+ * and entirely remove deactivated lifecycles from propagation.
+ * Each lifecycle makes its activity decision independently,
+ * but may ask its downstream lifecycles.</li>
  * <li>Once these two steps have been executed,
  * no method of this interface will ever be called again
  * for the duration of the session.</li>
  * </ul>
+ *
+ * @see TupleLifecycle
+ * @see LeftTupleLifecycle
+ * @see RightTupleLifecycle
  */
 public interface ActivitySupport {
 
@@ -39,26 +42,24 @@ public interface ActivitySupport {
      * <p>
      * It is the responsibility of the lifecycle to trigger initialization
      * of all of its downstream lifecycles, should there be any.
-     * It must first decide for itself if it can produce tuples
-     * based on what it learned from upstream,
+     * It must first decide for itself if it can produce tuples based on what it learned from upstream,
      * and then propagate that information downstream so that they can make their own activation decisions.
      * <p>
      * When deciding whether a lifecycle can produce tuples, consider the following:
      * <ul>
      * <li>
      * Typically, when upstream cannot produce tuples, neither can downstream.
-     * Exceptions exist; ifNotExists() produces tuples exactly when downstream doesn't.
+     * (Unless downstream has the capability to fabricate tuples out of nowhere.)
      * </li>
      * <li>
-     * Do not make decisions based on whether downstream produced any tuples by this point.
+     * Do not make decisions based on whether upstream actually produced any tuples by this point.
      * If upstream produced no tuples so far, it doesn't mean it will never produce any.
-     * Filters on variables which previously did not match
-     * can easily create tuples during tuple updates.
+     * Filters on variables which previously did not match can easily create tuples during tuple updates.
      * </li>
      * </ul>
      *
-     * @param upstreamCanProduceTuples True if the upstream node(s) will produce any tuples.
-     *        If false, this lifecycle will never receive any tuples and can deactivate itself.
+     * @param upstreamCanProduceTuples True if the upstream lifecycle(s) will produce any tuples.
+     *        If false, this lifecycle will never receive any tuples and can most likely deactivate itself.
      */
     void afterAllFactsInserted(boolean upstreamCanProduceTuples);
 
@@ -71,8 +72,9 @@ public interface ActivitySupport {
      * (Such as forEach(MyClass), when no MyClass instances were inserted.)</li>
      * <li>Its downstream tuples are inactive.
      * (A forEach() itself may be able to produce a tuple,
-     * but a join downstream cannot, because its other side cannot produce tuples.
-     * In this case, the left side must be deactivated as well.)
+     * but a join() downstream cannot, because its other side cannot produce tuples.
+     * In this case, the left side must be deactivated as well,
+     * unless it also outputs to another active downstream lifecycle.)
      * </li>
      * </ul>
      *
@@ -86,17 +88,21 @@ public interface ActivitySupport {
      * </ul>
      *
      * This is a one-time decision;
-     * for each lifecycle, this method will only be called once for the duration of {@link BavetConstraintSession}.
+     * for each lifecycle, this method will only be called at the start of {@link BavetConstraintSession},
+     * and never again.
+     * It may be called multiple times by different upstream lifecycles,
+     * and must always return the same value.
      *
      * <p>
      * Typically this decision will be {@code upstreamCanProduceTuples && downstreamIsActive},
-     * but some nodes will have to use different logic.
+     * but some specialized lifecycles may have to use different logic.
      *
      * @return true if this lifecycle can produce tuples
      */
     default boolean isActive() {
-        throw new IllegalStateException("Impossible state: node (%s) not yet initialized (afterAllFactsInserted not called)."
-                .formatted(this));
+        throw new IllegalStateException(
+                "Impossible state: lifecycle (%s) not yet initialized (afterAllFactsInserted not called)."
+                        .formatted(this));
     }
 
 }

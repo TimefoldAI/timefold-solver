@@ -2,13 +2,13 @@ package ai.timefold.solver.core.impl.bavet.common.tuple;
 
 import java.util.Objects;
 
-final class LeftTupleLifecycleImpl<Tuple_ extends Tuple>
+final class LeftBridgeTupleLifecycle<Tuple_ extends Tuple>
         implements TupleLifecycle<Tuple_> {
 
     private final LeftTupleLifecycle<Tuple_> leftTupleLifecycle;
     private boolean isActive;
 
-    LeftTupleLifecycleImpl(LeftTupleLifecycle<Tuple_> leftTupleLifecycle) {
+    LeftBridgeTupleLifecycle(LeftTupleLifecycle<Tuple_> leftTupleLifecycle) {
         Objects.requireNonNull(leftTupleLifecycle);
         this.leftTupleLifecycle = leftTupleLifecycle;
     }
@@ -50,7 +50,7 @@ final class LeftTupleLifecycleImpl<Tuple_ extends Tuple>
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof LeftTupleLifecycleImpl<?> other
+        return o instanceof LeftBridgeTupleLifecycle<?> other
                 && Objects.equals(this.leftTupleLifecycle, other.leftTupleLifecycle);
     }
 

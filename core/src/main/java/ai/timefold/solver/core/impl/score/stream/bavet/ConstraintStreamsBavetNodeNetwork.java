@@ -16,6 +16,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 /**
  * Represents Constraint Streams's network of nodes, specific to a particular session.
@@ -65,6 +66,10 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
     @Override
     public void settle() {
         super.settle();
+        var loggingLevel = Level.DEBUG; // Makes sure the check and the logging always operate on the same level.
+        if (!LOGGER.isEnabledForLevel(loggingLevel)) {
+            return;
+        }
         if (!scoreDirectorDerived && !printedInactiveConstraints && isActivationCheckComplete()) {
             printedInactiveConstraints = true;
             var substring = constraintToScorerMap.entrySet().stream()
@@ -75,10 +80,9 @@ public final class ConstraintStreamsBavetNodeNetwork extends AbstractBavetNodeNe
             if (substring.isEmpty()) {
                 return;
             }
-            var result = new StringBuilder("Constraints deactivated due to being useless in the given working solution:")
-                    .append(System.lineSeparator())
-                    .append(substring);
-            LOGGER.debug(result.toString());
+            LOGGER.atLevel(loggingLevel).log("""
+                    Constraints deactivated due to being useless in the given working solution:
+                    %s""".formatted(substring));
         }
     }
 

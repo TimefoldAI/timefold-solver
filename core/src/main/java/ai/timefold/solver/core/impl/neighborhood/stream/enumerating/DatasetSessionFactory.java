@@ -57,7 +57,7 @@ public final class DatasetSessionFactory<Solution_> {
                     }
                     forEachUniNodeList.add(forEachUniNode);
                 });
-        return buildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap);
+        return DataNodeBuildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap);
     }
 
 }

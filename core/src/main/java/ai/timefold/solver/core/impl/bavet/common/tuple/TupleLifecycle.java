@@ -20,11 +20,11 @@ public interface TupleLifecycle<Tuple_ extends Tuple>
         extends ActivitySupport {
 
     static <Tuple_ extends Tuple> TupleLifecycle<Tuple_> ofLeft(LeftTupleLifecycle<Tuple_> leftTupleLifecycle) {
-        return new LeftTupleLifecycleImpl<>(leftTupleLifecycle);
+        return new LeftBridgeTupleLifecycle<>(leftTupleLifecycle);
     }
 
     static <Tuple_ extends Tuple> TupleLifecycle<Tuple_> ofRight(RightTupleLifecycle<Tuple_> rightTupleLifecycle) {
-        return new RightTupleLifecycleImpl<>(rightTupleLifecycle);
+        return new RightBridgeTupleLifecycle<>(rightTupleLifecycle);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -80,11 +80,11 @@ public interface TupleLifecycle<Tuple_ extends Tuple>
         if (delegate instanceof AbstractNode node) {
             streamKind = node.getStreamKind();
             qualifier = Qualifier.NODE;
-        } else if (delegate instanceof LeftTupleLifecycleImpl<?> parent
+        } else if (delegate instanceof LeftBridgeTupleLifecycle<?> parent
                 && parent.leftTupleLifecycle() instanceof AbstractNode node) {
             streamKind = node.getStreamKind();
             qualifier = Qualifier.LEFT_INPUT;
-        } else if (delegate instanceof RightTupleLifecycleImpl<?> parent
+        } else if (delegate instanceof RightBridgeTupleLifecycle<?> parent
                 && parent.rightTupleLifecycle() instanceof AbstractNode node) {
             streamKind = node.getStreamKind();
             qualifier = Qualifier.RIGHT_INPUT;

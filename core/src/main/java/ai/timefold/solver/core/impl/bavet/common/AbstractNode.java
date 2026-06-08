@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * @see PropagationQueue Description of the propagation mechanism.
  */
 @NullMarked
-public sealed abstract class AbstractNode
+public abstract sealed class AbstractNode
         permits AbstractRootNode, AbstractSingleInputNode, AbstractTwoInputNode {
 
     private long id;

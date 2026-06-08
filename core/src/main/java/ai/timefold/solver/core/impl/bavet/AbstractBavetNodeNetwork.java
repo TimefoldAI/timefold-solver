@@ -62,7 +62,7 @@ public abstract class AbstractBavetNodeNetwork {
      * @param layeredNodes nodes grouped first by their layer, then by their index within the layer;
      *        propagation needs to happen in this order.
      */
-    public AbstractBavetNodeNetwork(Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
+    protected AbstractBavetNodeNetwork(Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap,
             AbstractNode[][] layeredNodes, Function<AbstractNode, Propagator> propagatorFunction) {
         this.declaredClassToNodeMap = declaredClassToNodeMap;
         this.layeredNodes = layeredNodes;

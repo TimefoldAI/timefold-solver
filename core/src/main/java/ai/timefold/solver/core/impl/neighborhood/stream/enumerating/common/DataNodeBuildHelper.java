@@ -48,7 +48,7 @@ public final class DataNodeBuildHelper<Solution_>
         return Collections.unmodifiableList(datasetInstanceList);
     }
 
-    public NeighborhoodsBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
+    public static NeighborhoodsBavetNodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
             Map<Class<?>, List<AbstractRootNode<?>>> declaredClassToNodeMap) {
         return NeighborhoodsBavetNodeNetwork.of(nodeList, declaredClassToNodeMap);
     }

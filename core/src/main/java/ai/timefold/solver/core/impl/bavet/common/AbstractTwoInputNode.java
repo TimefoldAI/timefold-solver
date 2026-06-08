@@ -34,7 +34,7 @@ public abstract non-sealed class AbstractTwoInputNode<LeftTuple_ extends Tuple, 
         leftInitialized = true;
     }
 
-    abstract protected boolean canProduceTuples();
+    protected abstract boolean canProduceTuples();
 
     @Override
     public final void afterAllFactsInsertedRight(boolean upstreamCanProduceTuples) {
