@@ -38,8 +38,7 @@ public class Timetable implements SolverModel<HardSoftScore> {
 }
 ----
 
-This allows it to be discovered by the SDK.
-In case you don't want control over the `score` class used, you can also extend the `AbstractSimpleModel` as used in the xref:getting-started/getting-started.adoc[getting started guide].
+In case you don't want control over the `score` class used, you can also extend the `AbstractSimpleModel` as used in the xref:../quickstart/service/getting-started.adoc[getting started guide].
 
 [#solverModelEnrichment]
 == SolverModel enrichment
@@ -99,7 +98,8 @@ public class TimeslotHolidayEnricher implements SolverModelEnricher<Timetable> {
 
 Next, register a `SolverModelEnrichmentDirector` implementation.
 This class allows you to determine the order in which enrichers are executed.
-This might be important when 1 of your custom enrichers depends on an enricher provided by the SDK (e.g. xref:integrations/maps-integration.adoc[location enricher]).
+This might be important when 1 of your custom enrichers depends on an enricher provided by Timefold Solver.
+//TODO re-add: such as the (e.g. xref:integrations/maps-integration.adoc[location enricher]).
 
 .Timetable Enrichment Director for the School Timetabling example
 [source,Java]

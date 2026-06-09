@@ -231,10 +231,8 @@ For enhancing the SolverModel, use the xref:./modeling-changes.adoc#solverModelE
 [#validatingRestInput]
 == Validating REST input
 
-By default, the SDK provides validation on the input based on the xref:./rest-api.adoc#openAPISpecification[OpenAPI Specification annotations].
-Additionally, the SDK allows for custom validations on the `ModelInput` object.
-
-To activate this feature, implement the `ModelValidator` interface.
+By default, validation on the input is based on the xref:./rest-api.adoc#openAPISpecification[OpenAPI Specification annotations].
+Additional validations can be added by implementing the `ModelValidator` interface.
 
 [#timetableValidatorExample]
 [source,java]
@@ -385,9 +383,9 @@ After building the model with `mvn verify`, the generated API spec can be found 
 === Deliberate API changes
 
 As with any API, breaking the REST API in newer versions of your model should be avoided to ensure backward compatibility and prevent disruptions for existing consumers.
-Because the SDK takes care of a lot of boilerplate code, it might be harder to see when an API change was accidentally introduced.
+Because Timefold Solver takes care of a lot of boilerplate code, it might be harder to see when an API change was accidentally introduced.
 
-The SDK supports comparing a pre-existing OpenAPI specification file in your project `src/build/openapi.json` with the one generated during the build.
+Timefold Solver supports comparing a pre-existing OpenAPI specification file in your project `src/build/openapi.json` with the one generated during the build.
 If there is any difference between the 2 files, the build will fail.
 
 If the API changes are intentional, run the following command which will copy the generated `target/openapi-schema/openapi.json` to `src/build/openapi.json` file.
@@ -408,9 +406,9 @@ We recommend to keep this file in Version Control, this makes sure the changes m
 //Note, this is implemented in the OpenAPIFilter.java class.
 
 As mentioned before, the REST endpoints for solver methods are automatically generated.
-This means SDK users do not have the option to set the _OpenAPI Annotations_ for those methods.
+This means users do not have the option to set the _OpenAPI Annotations_ for those methods.
 
-The SDK does support setting a __custom summary__ through the use of properties in the `application.properties` file.
+Timefold Solver does support setting a __custom summary__ through the use of properties in the `application.properties` file.
 This uses the following format:
 
 [source,properties]
