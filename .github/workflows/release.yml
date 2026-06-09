@@ -32,14 +32,13 @@ jobs:
     runs-on: self-hosted
     permissions:
       contents: write  # IMPORTANT: required for action to create release branch
-      pull-requests: write # IMPORTANT: so release PR can be created
       id-token: write  # IMPORTANT: mandatory for trusted publishing
       attestations: write  # IMPORTANT: mandatory for attestations
     steps:
       - name: Print inputs to the release workflow
         run: echo "${{ toJSON(github.event.inputs) }}"
 
-      - name: Validate source branch and the version
+      - name: Validate the version
         shell: bash
         env:
           VERSION: ${{ github.event.inputs.version }}
