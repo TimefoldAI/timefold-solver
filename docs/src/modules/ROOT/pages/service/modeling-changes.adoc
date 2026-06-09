@@ -1,0 +1,130 @@
+= Service Model and Enricher
+:description: The core of any model is the solver
+:doctype: book
+:sectnums:
+:icons: font
+
+Building Timefold Solver as a service introduces a few concepts which are not relevant when using it as a library when it comes to modeling your problem domain.
+
+include::_preview-note.adoc[]
+
+[#solverModel]
+== SolverModel interface
+
+Your class which is annotated by `@PlanningSolution` should implement the `SolverModel` interface.
+
+.Example for School Timetabling
+[source,Java]
+----
+@PlanningSolution
+public class Timetable implements SolverModel<HardSoftScore> {
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    private List<Timeslot> timeslots;
+
+    @PlanningEntityCollectionProperty
+    private List<Lesson> lessons;
+
+    @PlanningScore
+    private HardSoftScore score;
+
+    @Override
+    public HardSoftScore getScore() {
+        return score;
+    }
+
+    // other Getters/Setters/Constructors excluded
+}
+----
+
+This allows it to be discovered by the SDK.
+In case you don't want control over the `score` class used, you can also extend the `AbstractSimpleModel` as used in the xref:getting-started/getting-started.adoc[getting started guide].
+
+[#solverModelEnrichment]
+== SolverModel enrichment
+
+In some situations, the `SolverModel` must be enriched with additional information.
+This could be external information such as map data or
+smaller enhancements such as pinning entities which occurred in the past.
+
+Enrichers usually pre-calculate fields which would otherwise be calculated in a _ConstraintStream_.
+Especially when the field depends on external information or is difficult to compute, pre-calculating can lead to much faster results.
+
+In this example, we enrich the Timetable PlanningSolution described above by filling in the "isHoliday" field for all Timeslot objects.
+
+.Timeslot class for the School Timetabling example
+[source,Java]
+----
+
+public class Timeslot {
+
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+
+    private boolean isHoliday;
+
+    public void setHoliday(boolean isHoliday) {
+        this.isHoliday = isHoliday;
+    }
+
+    // other Getters/Setters/Constructors excluded
+}
+----
+
+Enrichment of the SolverModel is possible by implementing a `SolverModelEnricher`.
+
+.Timeslot Enricher for the School Timetabling example
+[source,Java]
+----
+@ApplicationScoped
+public class TimeslotHolidayEnricher implements SolverModelEnricher<Timetable> {
+
+    @Override
+    public Timetable enrich(Timetable solverModel) {
+        for (Timeslot timeslot : solverModel.getTimeslots()) {
+            boolean isHoliday = overlapsWithKnownHoliday(timeslot.getStartTime(), timeslot.getEndTime());
+            timeslot.setHoliday(isHoliday);
+        }
+
+        return solverModel;
+    }
+
+    private boolean overlapsWithKnownHoliday(LocalDateTime start, LocalDateTime end) {
+        //Implementation excluded. Potential call external service / database
+    }
+}
+
+----
+
+Next, register a `SolverModelEnrichmentDirector` implementation.
+This class allows you to determine the order in which enrichers are executed.
+This might be important when 1 of your custom enrichers depends on an enricher provided by the SDK (e.g. xref:integrations/maps-integration.adoc[location enricher]).
+
+.Timetable Enrichment Director for the School Timetabling example
+[source,Java]
+----
+@ApplicationScoped
+public class TimetableEnrichmentDirector implements SolverModelEnrichmentDirector<Timetable> {
+
+    private final TimeslotHolidayEnricher timeslotEnricher;
+
+    @Inject
+    public TimetableEnrichmentDirector(TimeslotHolidayEnricher timeslotEnricher) {
+        this.timeslotEnricher = timeslotEnricher;
+    }
+
+    @Override
+    public Timetable enrich(Timetable solverModel) {
+        var enrichedModel = timeslotEnricher.enrich(solverModel);
+        // Additional enrichers.
+        return enrichedModel;
+    }
+}
+----
+
+
+
+
+
+

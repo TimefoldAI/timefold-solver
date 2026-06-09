@@ -1,0 +1,77 @@
+= Exposing metrics (optional)
+:description: How to expose input and output metrics.
+:doctype: book
+:sectnums:
+:icons: font
+
+To get more insights into your Planning Solution, a mechanism is provided to collect both input and output metrics.
+
+include::_preview-note.adoc[]
+
+[#modelInputMetrics]
+== Input metrics
+
+Input metrics provide more information about the data provided to the solver.
+The metrics should be contained in a class or record which implements the `ModelInputMetrics` interface.
+
+[NOTE]
+====
+The input metrics will be exposed through the xref:./rest-api.adoc[REST API], for which an OpenAPI spec will be generated.
+It is therefore necessary to add xref:./rest-api.adoc#openAPISpecification[OpenAPI Specification] annotations to the fields.
+====
+
+.Example for School Timetabling
+[source,Java]
+----
+public record TimetableInputMetrics(
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "lessons", title = "Lessons",
+            format = DataFormat.Values.NUMBER, description = "The number of lessons submitted in the input dataset.",
+            type = SchemaType.NUMBER, example = "10", readOnly = true) int lessons,
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "timeslots", title = "Timeslots",
+            format = DataFormat.Values.NUMBER, description = "The number of timeslots submitted in the input dataset.",
+            type = SchemaType.NUMBER, example = "30", readOnly = true) int timeslots
+   ) implements ModelInputMetrics {}
+----
+
+Next, the `SolverModel` should implement the `InputMetricsAware` interface and construct the defined `ModelInputMetrics` object.
+
+.Example for School Timetabling
+[source,Java]
+----
+@PlanningSolution
+public class Timetable implements SolverModel<HardSoftScore>, InputMetricsAware<TimetableInputMetrics> {
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    private List<Timeslot> timeslots;
+
+    @PlanningEntityCollectionProperty
+    private List<Lesson> lessons;
+
+    @PlanningScore
+    private HardSoftScore score;
+
+    @Override
+    public HardSoftScore getScore() {
+        return score;
+    }
+
+    @Override
+    public TimetableInputMetrics getInputMetrics() {
+        return new TimetableInputMetrics(lessons.size(), timeslots.size());
+    }
+
+    // other Getters/Setters/Constructors excluded
+}
+----
+
+[#modelOutputMetrics]
+== Output metrics
+
+Output metrics provide more information about the dataset.
+The implementation is the same as xref:#modelInputMetrics[the solver input metrics], with these differences:
+
+- The output metrics should be contained in a class or record which implements the `ModelOutputMetrics` interface.
+- The `SolverModel` should implement the `OutputMetricsAware` interface and should construct the defined `ModelOutputMetrics` object.
+
+// TODO: Don't be lazy and also write this out fully ;)

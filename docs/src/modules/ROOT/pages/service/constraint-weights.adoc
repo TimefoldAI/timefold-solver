@@ -1,0 +1,116 @@
+= Constraint weights (optional)
+:description: How to make constraint weights and other parameters user configurable.
+:doctype: book
+:sectnums:
+:icons: font
+
+When implementing a model, it's important to set up the weights of the constraints correctly.
+Having good default weights makes the model easily reusable and is an expression of your modeling expertise.
+
+include::_preview-note.adoc[]
+
+Constraint weights are always an interpretation by the modeller. It might be that the consumer of the model would like to see the constraints weighed differently.
+`ModelConfigOverrides` allows consumers of a model to tailor constraint weights and parameters to their use case.
+
+[NOTE]
+Be careful not to make your model overly configurable as that impacts usability.
+
+== Adjusting constraint weights
+
+Implement the `ModelConfigOverrides` interface. This is a marker interface, meaning it has no methods but can be discovered by the SDK.
+The implementation should have fields that refer to specific constraints using the `@ConstraintReference` annotation.
+To ensure both the constraint and this reference are the same, use a static field to keep the name of the constraint.
+
+.The example ConstraintProvider class.
+[source,java]
+----
+public class TimetableConstraintProvider implements ConstraintProvider {
+
+    public static final String TEACHER_CONFLICT = "Teacher conflict";
+    public static final String ROOM_CONFLICT = "Room conflict";
+
+    Constraint roomConflict(ConstraintFactory constraintFactory) {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(ROOM_CONFLICT);
+    }
+
+    Constraint teacherConflict(ConstraintFactory constraintFactory) {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(TEACHER_CONFLICT);
+    }
+
+    // other constraints excluded
+}
+----
+
+.The ModelConfigOverrides class.
+[source,java]
+----
+public final class TimetableConfigOverrides implements ModelConfigOverrides {
+
+    public static final long DEFAULT_WEIGHT_ZERO = 0L;
+    public static final long DEFAULT_WEIGHT_ONE = 1L;
+
+    @ConstraintReference(TimetableConstraintProvider.TEACHER_CONFLICT)
+    private long teacherConflictWeight = DEFAULT_WEIGHT_ONE;
+
+    @ConstraintReference(TimetableConstraintProvider.ROOM_CONFLICT)
+    private long roomConflictWeight = DEFAULT_WEIGHT_ONE;
+
+    // getter/setter excluded
+
+}
+----
+
+The default constraint weight for these constraints is `1`. This can now be overridden by the consumer by passing in the model overrides object in a request.
+For example, to make the Teacher conflict 10 times more impactful, override the weight to 10:
+
+.Example Request to change the weight.
+[json]
+----
+{
+    "config": {
+      "run": {
+        "name": "run name"
+        <some fields excluded>
+      },
+      "model": {
+        "overrides": {
+          teacherConflictWeight: 10
+        }
+      }
+    },
+    "modelInput" : <ModelInput class as JSON>
+}
+----
+
+[NOTE]
+Only allow weight overrides if it makes sense.
+Usually, it doesn't make sense to allow weight overrides for _hard_ constraints.
+
+// TODO, i wish it ended with The SDK takes care of changing the referenced constraint with the new weight... but we continue!
+
+Next, in the xref:./rest-api.adoc#modelConverter[model converter], make sure to map these overrides to a solver specific `ConstraintWeightOverrides` object that must be on the `@PlanningSolution` class.
+
+.As part of the ModelConverter
+[java]
+----
+TimetableConfigOverrides modelConfigOverrides = modelConfig.overrides();
+
+ConstraintWeightOverrides<HardMediumSoftLongScore> constraintWeightOverrides = ConstraintWeightOverrides.none();
+constraintWeightOverrides = ConstraintWeightOverrides.of(
+                    Map.ofEntries(
+                        Map.entry(TEACHER_CONFLICT,
+                                HardMediumSoftLongScore.ofHard(modelConfigOverrides.getTeacherConflictWeight())),
+                        Map.entry(ROOM_COMFLICT,
+                                HardMediumSoftLongScore
+                                        .ofSoft(modelConfigOverrides.getRoomConflictWeight()));
+
+solverModel.setConstraintWeightOverrides(constraintWeightOverrides);
+----
+
+More information about https://docs.timefold.ai/timefold-solver/latest/constraints-and-score/constraint-configuration[Adjusting constraints at runtime] in the Timefold Solver documentation.
+
+//TODO === Adjusting Model Parameters
