@@ -9,7 +9,7 @@ This page describes how to provide dedicated support for exposing demo data.
 
 include::_preview-note.adoc[]
 
-// To be simplified with: https://github.com/TimefoldAI/timefold-models-sdk/issues/550
+// TODO To be simplified with: https://github.com/TimefoldAI/timefold-models-sdk/issues/550
 == Generating demo data
 
 To provide consumers of your model with example datasets, implement the `DemoDataGenerator` interface.
@@ -74,7 +74,7 @@ public class TimetableDemoDataGenerator implements DemoDataGenerator {
 }
 ----
 
-With this interface implemented, the SDK will automatically expose these methods as REST endpoints:
+With this interface implemented, Timefold Solver will automatically expose these methods as REST endpoints:
 
 - `GET /<root>/demo-data`: Retrieve all available demo dataset names.
 - `GET /<root>/demo-data/\{name\}`: Retrieve demo dataset with given identifier

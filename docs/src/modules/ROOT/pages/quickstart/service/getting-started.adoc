@@ -63,7 +63,7 @@ it is known as a _planning solution_.
 
 Extending `AbstractSimpleModel`:
 
-- Configures this class to be (de-)serialized as part of the `ModelInput` and `ModelOutput` of the xref:architecture/rest-api.adoc[REST API].
+- Configures this class to be (de-)serialized as part of the `ModelInput` and `ModelOutput` of the xref:../../rest-api.adoc[REST API].
 - Implements the `SolverModel` interface using the default HardMediumSoftLongScore.
 
 [NOTE]
@@ -124,7 +124,7 @@ ai.timefold.platform.termination.spent-limit=PT30S
 ----
 
 This sets up the maximum time the solver will run to be 30 seconds by default, which is enough for this guide.
-Detailed instruction on how to set this up more correctly will be found in the xref:architecture/solver.adoc[solver part of the documentation].
+Detailed instruction on how to set this up more correctly will be found in the xref:../../modeling-changes.adoc[solver part of the documentation].
 
 == REST API
 
@@ -149,7 +149,7 @@ include::_examples/TimetableResource.java[]
 --
 ====
 
-This is the most basic version of the interface. The SDK will automatically create multiple xref:architecture/rest-api.adoc[REST API endpoints] for optimization actions.
+This is the most basic version of the interface. The SDK will automatically create multiple xref:../../rest-api.adoc[REST API endpoints] for optimization actions.
 The `@Path` annotation is used to configure the base path of all those endpoints.
 
 == Running and manually testing the model
@@ -179,7 +179,7 @@ http://localhost:8080/q/swagger-ui/
 image:quickstart/mdk/openapi.png[]
 
 As shown in the image above, just by extending the `ModelRest` interface, quite a few endpoints were automatically generated.
-We discuss these in more depth in the xref:architecture/rest-api.adoc[REST API] section of this documentation.
+We discuss these in more depth in the xref:../../rest-api.adoc[REST API] section.
 
 To showcase that the model is now ready for use we only need 2 of those endpoints:
 
@@ -213,7 +213,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ----
 
-This call with return the standard xref:architecture/rest-api.adoc#solvingResponse[response structure].
+This call with return the standard xref:../../rest-api.adoc#solvingResponse[response structure].
 [source,json]
 ----
 include::_examples/output-response.json[]
@@ -231,5 +231,5 @@ Important elements to observe in the JSON above:
 Since this is a "Getting Started" guide, not everything is covered yet.
 
 * Learn about improvements you can make to your model:
-** How to set up the underlying xref:architecture/solver.adoc[Timefold Constraint Solver].
-** How to configure your xref:architecture/rest-api.adoc[REST API] with validations, custom endpoints, etc.
+** How to set up the underlying xref:../../service/modeling-changes.adoc[Timefold Constraint Solver].
+** How to configure your xref:../../rest-api.adoc[REST API] with validations, custom endpoints, etc.
