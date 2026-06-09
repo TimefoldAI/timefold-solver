@@ -333,7 +333,7 @@ public class SolverWorker {
         shutdownExecutor.scheduleShutdown(shutdownDelay, 0);
     }
 
-    private void computeOutputs(String id) {
+    private void computeOutputs(String id, boolean solveRequested) {
         LOGGER.info("Requesting solver for id {} to compute outputs...", id);
         try {
             var metadata = storageService.getMetadata(id);
@@ -357,7 +357,8 @@ public class SolverWorker {
 
             postProcessOutput(id, modelOutput, solverModel);
 
-            sendEvent(datasetOutputsComputedEmitter, new DatasetComputedEvent(metadata, solverModel, planName, tenantName));
+            sendEvent(datasetOutputsComputedEmitter,
+                    new DatasetComputedEvent(metadata, solverModel, planName, tenantName, solveRequested));
         } catch (Throwable e) {
             notifyOnFailure(id, e);
         }
@@ -489,7 +490,7 @@ public class SolverWorker {
                 return;
             }
 
-            computeOutputs(id);
+            computeOutputs(id, command.solve());
 
             if (command.solve()) {
                 onSolveStartCommand(new SolveStartCommand(id));

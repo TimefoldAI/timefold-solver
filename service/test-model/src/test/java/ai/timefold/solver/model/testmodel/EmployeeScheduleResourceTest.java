@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -56,6 +57,9 @@ import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.jboss.resteasy.reactive.client.SseEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPResource;
@@ -132,6 +136,28 @@ public class EmployeeScheduleResourceTest {
 
         assertThat(model.getScore()).isNotNull();
         assertThat(model.getConstraintWeightOverrides()).isNotNull();
+    }
+
+    static Stream<Arguments> solveRequestedScenarios() {
+        return Stream.of(
+                Arguments.of(OperationOnPost.SOLVE, true),
+                Arguments.of(OperationOnPost.NONE, false));
+    }
+
+    @ParameterizedTest
+    @MethodSource("solveRequestedScenarios")
+    void datasetComputedEventCarriesSolveRequestedFlag(OperationOnPost operation, boolean expectedSolveRequested) {
+        EmployeeSchedule inputSchedule = createInputEmployeeSchedule();
+
+        post(inputSchedule, operation);
+
+        await()
+                .atMost(TEST_AWAIT_TIMEOUT_DURATION)
+                .pollInterval(TEST_POLL_INTERVAL_MILLIS)
+                .until(() -> !datasetComputedSink.received().isEmpty());
+
+        DatasetComputedEvent event = datasetComputedSink.received().getFirst().getPayload();
+        assertThat(event.isSolveRequested()).isEqualTo(expectedSolveRequested);
     }
 
     @Test
