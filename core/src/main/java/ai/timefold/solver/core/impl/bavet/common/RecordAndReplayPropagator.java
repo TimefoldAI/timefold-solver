@@ -77,8 +77,12 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
     }
 
     public boolean canProduceTuples() {
+        // This is correct, but not optimal.
+        // These conditions guarantee that deactivation will only happen when safe,
+        // but it will not deactivate in all cases;
+        // for that, the activity check would have to happen after all inserts, updates and retracts were propagated once.
         return !objectToOutputTuplesMap.isEmpty() // Tuples were produced.
-                || !insertQueue.isEmpty(); // Tuples will be produced.
+                || !insertQueue.isEmpty(); // Tuples will be produced, unless retract removes them from the insert queue.
     }
 
     public void insert(Object object) {

@@ -77,7 +77,7 @@ public final class ProfilingTupleLifecycle<Tuple_ extends Tuple>
 
     @Override
     public String toString() {
-        return "ProfilingTupleLifecycle[%s, %s, %s]'"
+        return "ProfilingTupleLifecycle[%s, %s, %s]"
                 .formatted(constraintProfiler, profileId, delegate);
     }
 
