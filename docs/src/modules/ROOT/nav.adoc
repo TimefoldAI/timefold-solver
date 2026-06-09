@@ -12,6 +12,12 @@
 ** xref:using-timefold-solver/modeling-planning-problems.adoc[leveloffset=+1]
 ** xref:using-timefold-solver/running-the-solver.adoc[leveloffset=+1]
 ** xref:using-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
+** Building a service (Preview)
+*** xref:service/rest-api.adoc[leveloffset=+1]
+*** xref:service/modeling-changes.adoc[leveloffset=+1]
+*** xref:service/constraint-weights.adoc[leveloffset=+1]
+*** xref:service/demo-data.adoc[leveloffset=+1]
+*** xref:service/exposing-metrics.adoc[leveloffset=+1]
 * Constraints and score
 ** xref:constraints-and-score/overview.adoc[leveloffset=+1]
 ** xref:constraints-and-score/score-calculation.adoc[leveloffset=+1]
