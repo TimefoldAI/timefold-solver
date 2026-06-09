@@ -3,6 +3,9 @@ package ai.timefold.solver.core.impl.bavet.common.tuple;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public final class ConditionalTupleLifecycle<Tuple_ extends Tuple>
         implements TupleLifecycle<Tuple_> {
 
@@ -11,10 +14,8 @@ public final class ConditionalTupleLifecycle<Tuple_ extends Tuple>
     private boolean isActive;
 
     public ConditionalTupleLifecycle(TupleLifecycle<Tuple_> downstreamLifecycle, TuplePredicate<Tuple_> predicate) {
-        Objects.requireNonNull(downstreamLifecycle);
-        Objects.requireNonNull(predicate);
-        this.downstreamLifecycle = downstreamLifecycle;
-        this.predicate = predicate;
+        this.downstreamLifecycle = Objects.requireNonNull(downstreamLifecycle);
+        this.predicate = Objects.requireNonNull(predicate);
     }
 
     @Override
@@ -51,13 +52,13 @@ public final class ConditionalTupleLifecycle<Tuple_ extends Tuple>
         downstreamLifecycle.retract(tuple);
     }
 
+    public TuplePredicate<Tuple_> predicate() {
+        return predicate;
+    }
+
     @Override
     public String toString() {
         return "Conditional %s".formatted(downstreamLifecycle);
-    }
-
-    public TuplePredicate<Tuple_> predicate() {
-        return predicate;
     }
 
     @Override
@@ -73,7 +74,7 @@ public final class ConditionalTupleLifecycle<Tuple_ extends Tuple>
     }
 
     @FunctionalInterface
-    interface TuplePredicate<Tuple_ extends Tuple> extends Predicate<Tuple_> {
+    public interface TuplePredicate<Tuple_ extends Tuple> extends Predicate<Tuple_> {
     }
 
 }

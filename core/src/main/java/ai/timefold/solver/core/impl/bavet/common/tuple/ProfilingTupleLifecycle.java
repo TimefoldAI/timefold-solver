@@ -5,13 +5,15 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId;
 import ai.timefold.solver.core.impl.bavet.common.InnerConstraintProfiler;
 
-public final class ProfilingTupleLifecycle<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+public final class ProfilingTupleLifecycle<Tuple_ extends Tuple>
+        implements TupleLifecycle<Tuple_> {
 
     private final InnerConstraintProfiler constraintProfiler;
     private final ConstraintNodeProfileId profileId;
     private final TupleLifecycle<Tuple_> delegate;
-
-    private boolean isActive;
 
     public ProfilingTupleLifecycle(InnerConstraintProfiler constraintProfiler, ConstraintNodeProfileId profileId,
             TupleLifecycle<Tuple_> delegate) {
@@ -23,13 +25,12 @@ public final class ProfilingTupleLifecycle<Tuple_ extends Tuple> implements Tupl
 
     @Override
     public void afterAllFactsInserted(boolean upstreamCanProduceTuples) {
-        this.isActive = upstreamCanProduceTuples;
         this.delegate.afterAllFactsInserted(upstreamCanProduceTuples);
     }
 
     @Override
     public boolean isActive() {
-        return isActive && delegate.isActive();
+        return delegate.isActive();
     }
 
     @Override
@@ -50,10 +51,6 @@ public final class ProfilingTupleLifecycle<Tuple_ extends Tuple> implements Tupl
                 () -> delegate.retract(tuple));
     }
 
-    public InnerConstraintProfiler constraintProfiler() {
-        return constraintProfiler;
-    }
-
     public ConstraintNodeProfileId profileId() {
         return profileId;
     }
@@ -64,14 +61,13 @@ public final class ProfilingTupleLifecycle<Tuple_ extends Tuple> implements Tupl
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this)
+        if (obj == this) {
             return true;
-        if (obj == null || obj.getClass() != this.getClass())
-            return false;
-        var that = (ProfilingTupleLifecycle) obj;
-        return Objects.equals(this.constraintProfiler, that.constraintProfiler) &&
-                Objects.equals(this.profileId, that.profileId) &&
-                Objects.equals(this.delegate, that.delegate);
+        }
+        return obj instanceof ProfilingTupleLifecycle<?> other
+                && Objects.equals(constraintProfiler, other.constraintProfiler)
+                && Objects.equals(profileId, other.profileId)
+                && Objects.equals(delegate, other.delegate);
     }
 
     @Override
@@ -81,10 +77,8 @@ public final class ProfilingTupleLifecycle<Tuple_ extends Tuple> implements Tupl
 
     @Override
     public String toString() {
-        return "ProfilingTupleLifecycle[" +
-                "constraintProfiler=" + constraintProfiler + ", " +
-                "profileId=" + profileId + ", " +
-                "delegate=" + delegate + ']';
+        return "ProfilingTupleLifecycle[%s, %s, %s]'"
+                .formatted(constraintProfiler, profileId, delegate);
     }
 
 }

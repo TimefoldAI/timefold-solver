@@ -13,6 +13,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.MapUniToUniNode;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * See {@link ActivitySupport}.
@@ -55,11 +57,12 @@ class SingleInputNodeActivityTest {
         assertThat(node.isActive()).isFalse();
     }
 
-    @Test
-    void forwardsUpstreamCapabilityDownstream() {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void forwardsUpstreamCapabilityDownstream(boolean upstreamCanProduce) {
         var downstream = mockDownstream(true);
         var node = node(downstream);
-        node.afterAllFactsInserted(false);
-        verify(downstream).afterAllFactsInserted(false);
+        node.afterAllFactsInserted(upstreamCanProduce);
+        verify(downstream).afterAllFactsInserted(upstreamCanProduce);
     }
 }

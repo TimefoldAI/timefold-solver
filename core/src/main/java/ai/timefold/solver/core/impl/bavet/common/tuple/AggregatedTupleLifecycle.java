@@ -5,9 +5,10 @@ import java.util.Arrays;
 public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
         implements TupleLifecycle<Tuple_> {
 
-    private boolean upstreamCanProduceTuples;
+    // Iterating a list in update() was measurably slower in micro benchmarks, so we deal with arrays.
     private TupleLifecycle<Tuple_>[] downstream;
-    private boolean downstreamFinal = false;
+    private boolean upstreamCanProduceTuples;
+    private boolean downstreamFinal;
 
     @SafeVarargs
     public AggregatedTupleLifecycle(TupleLifecycle<Tuple_>... downstream) {
@@ -29,7 +30,6 @@ public final class AggregatedTupleLifecycle<Tuple_ extends Tuple>
             return downstream.length > 0;
         }
         if (upstreamCanProduceTuples) {
-            // Iterating a list in update() was measurably slower in micro benchmarks, so we deal with arrays.
             downstream = Arrays.stream(downstream)
                     .distinct()
                     .filter(TupleLifecycle::isActive)

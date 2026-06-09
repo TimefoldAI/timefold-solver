@@ -12,7 +12,6 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractRootNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractTwoInputNode;
@@ -81,11 +80,9 @@ public abstract class AbstractBavetNodeNetwork {
      *         it should be re-read after to make sure no inactive nodes are included.
      */
     public Stream<AbstractRootNode<?>> getRootNodesAcceptingType(Class<?> factClass) {
-        // The node needs to match the fact, or the node needs to be applicable to the entire solution.
-        // The latter is for FromSolution nodes.
         return declaredClassToNodeMap.entrySet().stream()
                 .flatMap(entry -> entry.getValue().stream())
-                .filter(tupleSourceRoot -> factClass == PlanningSolution.class || tupleSourceRoot.allowsInstancesOf(factClass))
+                .filter(tupleSourceRoot -> tupleSourceRoot.allowsInstancesOf(factClass))
                 .filter(node -> !isActivationCheckComplete() || activeNodeSet.contains(node));
     }
 

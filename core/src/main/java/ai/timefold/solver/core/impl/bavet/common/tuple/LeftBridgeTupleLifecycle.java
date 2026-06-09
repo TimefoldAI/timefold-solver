@@ -2,6 +2,9 @@ package ai.timefold.solver.core.impl.bavet.common.tuple;
 
 import java.util.Objects;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 final class LeftBridgeTupleLifecycle<Tuple_ extends Tuple>
         implements TupleLifecycle<Tuple_> {
 
@@ -9,8 +12,7 @@ final class LeftBridgeTupleLifecycle<Tuple_ extends Tuple>
     private boolean isActive;
 
     LeftBridgeTupleLifecycle(LeftTupleLifecycle<Tuple_> leftTupleLifecycle) {
-        Objects.requireNonNull(leftTupleLifecycle);
-        this.leftTupleLifecycle = leftTupleLifecycle;
+        this.leftTupleLifecycle = Objects.requireNonNull(leftTupleLifecycle);
     }
 
     @Override
@@ -45,7 +47,7 @@ final class LeftBridgeTupleLifecycle<Tuple_ extends Tuple>
 
     @Override
     public String toString() {
-        return "left " + leftTupleLifecycle;
+        return "left %s".formatted(leftTupleLifecycle);
     }
 
     @Override
