@@ -1,19 +1,24 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
+import ai.timefold.solver.core.impl.bavet.common.tuple.ActivitySupport;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public interface BavetRootNode<A> {
-    void insert(@Nullable A a);
+public abstract non-sealed class AbstractRootNode<A>
+        extends AbstractNode
+        implements ActivitySupport {
 
-    void update(@Nullable A a);
+    public abstract void insert(@Nullable A a);
 
-    void retract(@Nullable A a);
+    public abstract void update(@Nullable A a);
 
-    boolean allowsInstancesOf(Class<?> clazz);
+    public abstract void retract(@Nullable A a);
 
-    Class<?>[] getSourceClasses();
+    public abstract boolean allowsInstancesOf(Class<?> clazz);
+
+    public abstract Class<?>[] getSourceClasses();
 
     /**
      * Determines if this node supports the given lifecycle operation.
@@ -22,13 +27,13 @@ public interface BavetRootNode<A> {
      * @param lifecycleOperation the lifecycle operation to check
      * @return {@code true} if the given lifecycle operation is supported; otherwise, {@code false}.
      */
-    boolean supports(BavetRootNode.LifecycleOperation lifecycleOperation);
+    public abstract boolean supports(LifecycleOperation lifecycleOperation);
 
     /**
      * Represents the various lifecycle operations that can be performed
      * on tuples within a node in Bavet.
      */
-    enum LifecycleOperation {
+    public enum LifecycleOperation {
         /**
          * Represents the operation of inserting a new tuple into the node.
          * This operation is typically performed when a new fact is added to the working solution
