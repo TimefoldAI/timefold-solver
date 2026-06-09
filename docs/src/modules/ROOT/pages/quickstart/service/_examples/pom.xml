@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>ai.timefold.sdk</groupId>
+    <artifactId>timefold-sdk-model-parent</artifactId>
+    <version>{timefold-sdk-version}</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.acme</groupId>
+  <artifactId>schooltimetabling</artifactId>
+  <version>${revision}</version>
+  <name>School Timetabling</name>
+  <description>Solution for the Timefold Service getting started example</description>
+
+  <properties>
+    <revision>1.0.0-SNAPSHOT</revision>
+    <version.ai.timefold.sdk>{timefold-sdk-version}</version.ai.timefold.sdk>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>ai.timefold.sdk.enterprise</groupId>
+      <artifactId>timefold-sdk-enterprise</artifactId>
+    </dependency>
+  </dependencies>
+
+</project>

@@ -13,8 +13,7 @@ for example, `Monday 10:30 - 11:30` or `Tuesday 13:30 - 14:30`.
 For simplicity's sake, all time slots have the same duration
 and there are no time slots during lunch or other breaks.
 
-A time slot has no date, because a high school schedule just repeats every week.
-So there is no need for xref:responding-to-change/responding-to-change.adoc#continuousPlanning[continuous planning].
+A time slot has no date, because in this example, the high school schedule just repeats every week.
 
 [tabs]
 ====
@@ -99,7 +98,7 @@ so it is easier to read Timefold Solver's `DEBUG` or `TRACE` log, as shown later
 
 == Room
 
-The `Room` class represents a location where lessons are taught,
+The `Room` record represents a location where lessons are taught,
 for example, `Room A` or `Room B`.
 For simplicity's sake, all rooms are without capacity limits
 and they can accommodate all lessons.
@@ -115,27 +114,7 @@ Create the `src/main/java/org/acme/schooltimetabling/domain/Room.java` class:
 ----
 package org.acme.schooltimetabling.domain;
 
-public class Room {
-
-    private String name;
-
-    public Room() {
-    }
-
-    public Room(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
-
-}
+public record Room(String name) { }
 ----
 --
 

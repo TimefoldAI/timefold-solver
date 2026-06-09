@@ -1,0 +1,2 @@
+NOTE: This page describes features which are only relevant when running Timefold Solver as a Service (Preview).
+The information on these pages may describe functionality which may be changed or even removed in a future release.
