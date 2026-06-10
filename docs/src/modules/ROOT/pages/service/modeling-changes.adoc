@@ -99,7 +99,7 @@ public class TimeslotHolidayEnricher implements SolverModelEnricher<Timetable> {
 Next, register a `SolverModelEnrichmentDirector` implementation.
 This class allows you to determine the order in which enrichers are executed.
 This might be important when 1 of your custom enrichers depends on an enricher provided by Timefold Solver.
-//TODO re-add: such as the (e.g. xref:integrations/maps-integration.adoc[location enricher]).
+//TODO add link to maps component docs https://github.com/TimefoldAI/timefold-solver/issues/2348
 
 .Timetable Enrichment Director for the School Timetabling example
 [source,Java]
@@ -122,9 +122,3 @@ public class TimetableEnrichmentDirector implements SolverModelEnrichmentDirecto
     }
 }
 ----
-
-
-
-
-
-

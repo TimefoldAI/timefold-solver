@@ -62,12 +62,13 @@ If your model provides xref:./demo-data.adoc[demo data], the following endpoints
 - `GET /<root>/demo-data`: Retrieve all available demo dataset names.
 - `GET /<root>/demo-data/\{name\}`: Retrieve the demo dataset with the given identifier
 
-// TODO See the xref:consumer-guide.adoc[model consumer guide] for information on how consumers of the model should interact with these API endpoints.
+// TODO See the xref:consumer-guide.adoc[service consumer guide] for information on how consumers of the service should interact with these API endpoints.
+// TODO https://github.com/TimefoldAI/timefold-solver/issues/2349
 
 [#requestResponseStructure]
 == Request and response structure
 
-The generated endpoints do not accept/return the pure `ModelInput`/`ModelOuput` objects as JSON.
+The generated endpoints do not accept/return the pure `ModelInput`/`ModelOutput` objects as JSON.
 Instead, a fixed envelop is used for both the requests and responses of solver actions.
 
 === Structured solving request
@@ -80,7 +81,7 @@ A Solving Request always contains at least 2 major parts, the `modelInput` objec
 Additionally, more fields might be added for specific model implementations.
 
 .Example Request
-[json]
+[source,json]
 ----
 {
     "config": {
@@ -94,12 +95,10 @@ Additionally, more fields might be added for specific model implementations.
         "tags": []
       },
       "model": {
-        "overrides": {
-          <model-specific configurations>
-        }
+        "overrides": "<model-specific configurations>"
       }
     },
-    "modelInput" : <ModelInput class as JSON>
+    "modelInput" : "<ModelInput class as JSON>"
 }
 ----
 
@@ -139,7 +138,7 @@ Additionally, more fields might be added for specific model implementations:
 - `kpis`: metrics about the output of the planning problem see: xref:./exposing-metrics.adoc#modelOutputMetrics[]
 
 .Example Response
-[json]
+[source,json]
 ----
 {
   "metadata": {
@@ -184,7 +183,7 @@ The `metadata` object contains a couple of fields:
 
 The remaining fields are timestamps for each step in the optimization lifecycle.
 
-The metadata object contain five key timestamps, each marking a distinct phase in the process:
+The metadata object contains five key timestamps, each marking a distinct phase in the process:
 
 - `submitDateTime`: The moment the dataset is submitted. At this stage, the dataset is queued and has not yet begun solving. The dataset status is `SOLVING_SCHEDULED`.
 - `startDateTime`: The moment the run begins initializing. During this phase, the dataset is not solving yet, but the model is being built and enriched with external data (e.g., incorporating map information for models involving geographical locations). The dataset status is `SOLVING_STARTED`.
@@ -195,10 +194,10 @@ The metadata object contain five key timestamps, each marking a distinct phase i
 [#modelConverter]
 == Decoupling API interaction from the solver domain
 
-While it is possible to add the `ModelInput` and  `ModelOuput` directly on the  `SolverModel` (the `@PlanningSolution` class used by the solver),
+While it is possible to add the `ModelInput` and  `ModelOutput` directly on the  `SolverModel` (the `@PlanningSolution` class used by the solver),
 it's often beneficial to decouple the classes used for the REST API interactions and the classes used for the optimization.
 
-To convert between `ModelInput` / `ModelOuput` and the `SolverModel`, a `ModelConvertor` implementation can be provided.
+To convert between `ModelInput` / `ModelOutput` and the `SolverModel`, a `ModelConvertor` implementation can be provided.
 
 [source,Java]
 ----
@@ -282,7 +281,7 @@ All validation information can be accessed either in a simple textual form, or a
 The `metadata` object is a part of the model response json and contains the validation result in a textual form to provide an immediate feedback on the input json.
 
 .Validation result in response json.
-[json, highlight=13..17]
+[source,json, highlight=13..17]
 ----
 {
   "metadata": {
@@ -302,7 +301,7 @@ The `metadata` object is a part of the model response json and contains the vali
       "warnings": []
     }
   },
-  "modelOutput": <ModelOutput class as JSON>
+  "modelOutput": "<ModelOutput class as JSON>"
 }
 ----
 
@@ -315,7 +314,7 @@ Additionally, a richer validation result can be obtained by a dedicated REST end
 Assuming the xref:timetableValidatorExample[example TimetableValidator], the endpoint provides the following response:
 
 .Validation result available via `GET /v1/timetables/+{id}+/validation-result`.
-[json, highlight=13..17]
+[source,json, highlight=13..17]
 ----
 {
   "status" : "ERRORS",
@@ -398,12 +397,10 @@ mvn clean package -Dupdate-api
 This approach ensures that any change to the API has to be reflected in the `src/build/openapi.json` file.
 
 [TIP]
-We recommend to keep this file in Version Control, this makes sure the changes made are deliberate (commited and pushed) rather than accidental.
+We recommend to keep this file in Version Control, this makes sure the changes made are deliberate (committed and pushed) rather than accidental.
 
 [#customizeSummary]
 === Customize summary of solver methods
-
-//Note, this is implemented in the OpenAPIFilter.java class.
 
 As mentioned before, the REST endpoints for solver methods are automatically generated.
 This means users do not have the option to set the _OpenAPI Annotations_ for those methods.

@@ -1,14 +1,19 @@
 = Getting started: building a service (Preview)
-:description: Getting started with the [MDK]
+:description: Getting started with the service module
 :doctype: book
 :sectnums:
 :icons: font
 
 This guide walks you through the process of creating an AI Optimization service.
 
-NOTE: TODO: more explainer here. The [MDK] is currently only available in Java and is built upon Quarkus.
+With this approach, you define your planning model: the domain objects, constraints, and planning solution.
+Timefold Solver takes care of the rest.
+There is no need to wire up a solver manually, manage thread pools, or implement REST endpoints by hand.
+The service exposes a ready-to-use REST API automatically, built on top of https://quarkus.io[Quarkus].
 
-IMPORTANT: The [MDK] way of building things is currently in preview.
+NOTE: The service approach is currently only available in Java.
+
+IMPORTANT: The service approach is currently in preview.
 
 [sectnums!]
 include::../shared/_whatyoubuild.adoc[]
@@ -130,7 +135,7 @@ Detailed instruction on how to set this up more correctly will be found in the x
 
 The standard way to interact with the optimization service is through a REST API.
 
-Using the [MDK], most of the REST Endpoints will be automatically generated thanks to the use of the `ModelInput`, `ModelOutput` and `SolverModel` interfaces.
+Using the service module, most of the REST Endpoints will be automatically generated thanks to the use of the `ModelInput`, `ModelOutput` and `SolverModel` interfaces.
 You didn't have to implement those interfaces in this guide, because they were already implemented for you in the `AbstractSimpleModel`.
 
 To configure the REST API, you need to provide an interface which extends the `ModelRest` interface.
@@ -170,13 +175,13 @@ You should see the following line in the log on successful start
 getting-started-school-timetabling <version> on JVM (powered by Quarkus 3.21.4) started in 1.552s. Listening on: http://localhost:8080
 ----
 
-//TODO PARAMETERIZE [MDK] QUARKUS VERSION
-//TODO PARAMETERIZE [MDK] VERSION
+//TODO PARAMETERIZE service module QUARKUS VERSION
+//TODO PARAMETERIZE service module VERSION
 
 Open the http://localhost:8080/q/swagger-ui/[Swagger OpenAPI Viewer] to inspect the generated API Endpoints:
 http://localhost:8080/q/swagger-ui/
 
-image:quickstart/mdk/openapi.png[]
+image:quickstart/mdk/openapi.png[Screenshot of the Swagger OpenAPI UI showing the automatically generated REST API endpoints]
 
 As shown in the image above, just by extending the `ModelRest` interface, quite a few endpoints were automatically generated.
 We discuss these in more depth in the xref:../../rest-api.adoc[REST API] section.
@@ -209,7 +214,7 @@ Using the ID received in the previous run, the current status of the run can be 
 [source,bash]
 ----
 curl -X 'GET' \
-  'http://localhost:8080/v1/timetables/f401a609-403b-48c4-9487-0baf287e4f72' \
+  'http://localhost:8080/v1/timetables/{id}' \
   -H 'accept: application/json'
 ----
 
