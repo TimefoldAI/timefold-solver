@@ -35,7 +35,6 @@
     <module>facade/model</module>
     <module>facade/model-with-maps</module>
     <module>facade/model-parent</module>
-    <module>rest-definition</module>
     <module>model-defaults</module>
     <module>tools/maven-plugin</module>
   </modules>

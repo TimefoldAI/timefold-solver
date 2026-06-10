@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
-import ai.timefold.solver.model.rest.definition.api.OperationId;
+import ai.timefold.solver.model.definition.api.rest.OperationId;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.models.OpenAPI;

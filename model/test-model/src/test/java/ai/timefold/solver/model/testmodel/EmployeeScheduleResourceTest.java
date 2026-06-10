@@ -43,7 +43,7 @@ import ai.timefold.solver.model.definition.internal.events.FinalBestSolutionEven
 import ai.timefold.solver.model.definition.internal.events.InitSolutionEvent;
 import ai.timefold.solver.model.definition.internal.events.SolverChannels;
 import ai.timefold.solver.model.quarkus.deployment.defaults.EmptyModelConfigOverrides;
-import ai.timefold.solver.model.rest.definition.api.OperationOnPost;
+import ai.timefold.solver.model.definition.api.rest.OperationOnPost;
 import ai.timefold.solver.model.testmodel.domain.Employee;
 import ai.timefold.solver.model.testmodel.domain.EmployeeSchedule;
 import ai.timefold.solver.model.testmodel.domain.Shift;
