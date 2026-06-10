@@ -40,7 +40,6 @@ import ai.timefold.solver.model.definition.api.Status;
 import ai.timefold.solver.model.definition.api.domain.Configuration;
 import ai.timefold.solver.model.definition.api.domain.Metadata;
 import ai.timefold.solver.model.definition.api.domain.ModelConfig;
-import ai.timefold.solver.model.definition.api.domain.ModelRequest;
 import ai.timefold.solver.model.definition.api.enrichment.SolverModelEnricherService;
 import ai.timefold.solver.model.definition.api.enrichment.SolverModelEnrichmentDirectorService;
 import ai.timefold.solver.model.definition.api.metrics.InputMetricsAware;
@@ -446,8 +445,8 @@ public class SolverWorker {
             return LegacyValidationResult.successful();
         }
 
-        ModelRequest modelRequest = storageService.getModelRequest(id);
-        if (modelRequest.modelInput() == null) {
+        ModelInput modelInput = storageService.getModelInput(id);
+        if (modelInput == null) {
             logUnreadableInput(id);
             /*
              * The only case of input being null is when it cannot be parsed, in which case the metadata already
@@ -456,8 +455,9 @@ public class SolverWorker {
             return storageService.getMetadata(id).getValidationResult();
         }
 
+        var modelConfig = Configuration.getSafeModelConfig(storageService.getConfiguration(id));
         ValidationBuilder validationBuilder = new ValidationBuilder();
-        modelValidator.validate(validationBuilder, modelRequest.modelInput(), modelRequest.getModelConfig());
+        modelValidator.validate(validationBuilder, modelInput, modelConfig);
 
         // We store both the new and old validation result format for backward compatibility.
         ValidationResult validationResponse = validationBuilder.build();

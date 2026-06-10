@@ -656,12 +656,13 @@ public abstract class AbstractModelAPIResource<ModelInput_ extends ModelInput, M
     @Produces(MediaType.APPLICATION_JSON)
     public ValidationResult<ValidationIssue_> getValidationResult(
             @Parameter(description = "Unique identifier of the schedule", required = true) @PathParam("id") String id) {
-        ValidationBuilder validationBuilder = new ValidationBuilder();
-        ModelRequest<ModelInput_, ModelConfigurationOverrides_> modelRequest = storageService.getModelRequest(id);
-        if (modelRequest.modelInput() == null) {
+        ModelInput_ modelInput = storageService.getModelInput(id);
+        if (modelInput == null) {
             throw new ItemNotFoundException(ErrorCodes.STORAGE_NO_JOB_FOUND, id);
         }
-        modelValidator.validate(validationBuilder, modelRequest.modelInput(), modelRequest.getModelConfig());
+        var modelConfig = Configuration.getSafeModelConfig(storageService.getConfiguration(id));
+        ValidationBuilder validationBuilder = new ValidationBuilder();
+        modelValidator.validate(validationBuilder, modelInput, modelConfig);
         return validationBuilder.build();
     }
 
