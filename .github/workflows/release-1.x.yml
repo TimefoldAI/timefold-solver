@@ -21,9 +21,10 @@ on:
         default: 1.x
         required: true
       dryRun:
-        description: 'Do a dry run? (true or false)'
+        description: 'Do a dry run?'
         default: true
         required: true
+        type: boolean
 jobs:
   build:
     env:
