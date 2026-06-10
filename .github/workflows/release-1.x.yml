@@ -32,11 +32,13 @@ jobs:
     runs-on: self-hosted
     permissions:
       contents: write  # IMPORTANT: required for action to create release branch
-      pull-requests: write # IMPORTANT: so release PR can be created
       id-token: write  # IMPORTANT: mandatory for trusted publishing
       attestations: write  # IMPORTANT: mandatory for attestations
     steps:
-      - name: Validate source branch and the version
+      - name: Print inputs to the release workflow
+        run: echo "${{ toJSON(github.event.inputs) }}"
+
+      - name: Validate the version
         shell: bash
         env:
           VERSION: ${{ github.event.inputs.version }}
@@ -73,9 +75,12 @@ jobs:
       # Technically, this goes against the main reason for doing a dry run; to eliminate potential problems.
       # But unless something catastrophic happened, PR checks on source branch already ensured that all tests pass.
       - name: Set release version and build release
+        env:
+          NEW_VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dryRun }}
         run: |
-          ./mvnw -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
-          ./mvnw -Dfull deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
+          ./mvnw -Dfull versions:set -DnewVersion="$NEW_VERSION" -DgenerateBackupPoms=false
+          ./mvnw -Dfull deploy -DskipTests=$DRY_RUN -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
           cp docs/target/antora.yml docs/src/antora.yml
           git add docs/src/antora.yml
           find . -name 'pom.xml' | xargs git add
