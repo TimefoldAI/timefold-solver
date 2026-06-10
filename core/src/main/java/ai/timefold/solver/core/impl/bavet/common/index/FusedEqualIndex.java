@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -44,7 +43,6 @@ public final class FusedEqualIndex<L, R> {
     private final Supplier<Indexer<L>> leftDownstreamSupplier;
     private final Supplier<Indexer<R>> rightDownstreamSupplier;
 
-    // Package-private: only IndexerFactory#buildJoinIndex (same package) creates a JoinIndex.
     FusedEqualIndex(KeyUnpacker<Object> topEqualKeyUnpacker, boolean hasSuffix, Supplier<Indexer<L>> leftDownstreamSupplier,
             Supplier<Indexer<R>> rightDownstreamSupplier) {
         this.topEqualKeyUnpacker = topEqualKeyUnpacker;
@@ -73,7 +71,9 @@ public final class FusedEqualIndex<L, R> {
      * the equal joiner; the bucket map permits a null key).
      */
     public boolean isSameBucket(Object oldCompositeKey, Object newCompositeKey) {
-        return Objects.equals(topEqualKeyUnpacker.apply(oldCompositeKey), topEqualKeyUnpacker.apply(newCompositeKey));
+        var a = topEqualKeyUnpacker.apply(oldCompositeKey);
+        var b = topEqualKeyUnpacker.apply(newCompositeKey);
+        return (a == b) || (a != null && a.equals(b));
     }
 
     /**
@@ -141,7 +141,6 @@ public final class FusedEqualIndex<L, R> {
         private @Nullable Indexer<L> leftDownstream;
         private @Nullable Indexer<R> rightDownstream;
 
-        // Package-private: only FusedEqualIndex (same package) creates buckets.
         Bucket(Supplier<Indexer<L>> leftSupplier, Supplier<Indexer<R>> rightSupplier) {
             this.leftSupplier = leftSupplier;
             this.rightSupplier = rightSupplier;

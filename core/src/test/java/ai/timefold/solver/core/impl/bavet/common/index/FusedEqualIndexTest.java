@@ -125,7 +125,7 @@ class FusedEqualIndexTest {
     void lazyAllocation_leftOnlyKey_rightNotAllocated() {
         var rightInitCount = new AtomicInteger(0);
         var index = new FusedEqualIndex<String, String>(
-                new SingleKeyUnpacker<>(), // identity: pure-equal, single-component key
+                KeyUnpacker.single(), // identity: pure-equal, single-component key
                 false, // hasSuffix
                 LinkedListLeafIndexer::new,
                 () -> {

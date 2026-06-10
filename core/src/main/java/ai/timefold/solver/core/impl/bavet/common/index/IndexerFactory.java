@@ -514,14 +514,14 @@ public final class IndexerFactory<Right_> {
                 // Leaf-most level whose index key equals the whole composite key: no KeyUnpacker indirection.
                 if (joinerType == JoinerType.EQUAL) {
                     // Fuse the leaf-most equal indexer with its backend.
-                    downstreamIndexerSupplier = () -> new EqualIndexer<T, Object>(new SingleKeyUnpacker<>(),
+                    downstreamIndexerSupplier = () -> new EqualIndexer<>(KeyUnpacker.single(),
                             requiresRandomAccess ? RandomAccessLeafIndexer::new : LinkedListLeafIndexer::new);
                 } else {
-                    KeyUnpacker<?> keyUnpacker = new SingleKeyUnpacker<>();
+                    KeyUnpacker<?> keyUnpacker = KeyUnpacker.single();
                     downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
                 }
             } else {
-                KeyUnpacker<?> keyUnpacker = new CompositeKeyUnpacker<>(indexPropertyId);
+                KeyUnpacker<?> keyUnpacker = KeyUnpacker.composite(indexPropertyId);
                 var actualDownstreamIndexerSupplier = downstreamIndexerSupplier;
                 downstreamIndexerSupplier =
                         () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, actualDownstreamIndexerSupplier);
@@ -554,7 +554,7 @@ public final class IndexerFactory<Right_> {
         var joinerCount = joiner.getJoinerCount();
         // Pure-equal ⇒ the composite key IS the equal key (SingleKeyUnpacker); otherwise it is component 0.
         KeyUnpacker<Object> topEqualKeyUnpacker =
-                equalPrefixLength == joinerCount ? new SingleKeyUnpacker<>() : new CompositeKeyUnpacker<>(0);
+                equalPrefixLength == joinerCount ? KeyUnpacker.single() : KeyUnpacker.composite(0);
         if (equalPrefixLength == joinerCount) {
             // Pure equal: the per-side downstream is just the tuple list; the bucket is the equal-key group.
             return new FusedEqualIndex<>(topEqualKeyUnpacker, false, LinkedListLeafIndexer::new, LinkedListLeafIndexer::new);
