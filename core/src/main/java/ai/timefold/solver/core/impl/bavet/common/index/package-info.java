@@ -34,7 +34,8 @@
  * <li><b>Unified path:</b> if there is an equal prefix and random access is not required,
  * {@link ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory} builds a shared
  * {@link ai.timefold.solver.core.impl.bavet.common.index.FusedEqualIndex}.
- * Matching left/right tuples co-locate in the same {@link ai.timefold.solver.core.impl.bavet.common.index.FusedEqualIndex.Bucket} and communicate there.</li>
+ * Matching left/right tuples co-locate in the same
+ * {@link ai.timefold.solver.core.impl.bavet.common.index.FusedEqualIndex.Bucket} and communicate there.</li>
  * <li><b>Non-unified path:</b> otherwise each side has its own index chain;
  * communication happens by querying the opposite chain.</li>
  * </ul>

@@ -3,7 +3,10 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -117,10 +120,8 @@ public final class FusedEqualIndex<L, R> {
 
     /**
      * Co-locates the left and right tuples that share an equal-prefix key inside a {@link FusedEqualIndex}.
-     * Holds one downstream {@link Indexer} per side:
-     * for a pure-equal join each is simply a tuple-list {@link LinkedListLeafIndexer};
-     * for an equal-prefix + comparison/containing join each is the per-side suffix sub-chain
-     * (the right side built flipped, exactly as the two-indexer path's {@code indexerRight}).
+     * Each side's downstream {@link Indexer} is allocated lazily on first {@link #putLeft}/{@link #putRight},
+     * so one-sided keys (e.g. unmatched ifExists counters) pay no allocation for the unused side.
      * <p>
      * The {@code compositeKey} passed to the per-side methods is the FULL composite key;
      * a backend downstream ignores it, a suffix sub-chain extracts its levels from it
@@ -133,19 +134,66 @@ public final class FusedEqualIndex<L, R> {
      * @param <R> the right element type (a right {@code UniTuple})
      */
     @NullMarked
-    public record Bucket<L, R>(Indexer<L> leftDownstream, Indexer<R> rightDownstream) {
+    public static final class Bucket<L, R> {
 
-        // Package-private: only JoinIndex (same package) creates buckets.
-        public Bucket(Supplier<Indexer<L>> leftDownstream, Supplier<Indexer<R>> rightDownstream) {
-            this(leftDownstream.get(), rightDownstream.get());
+        private final Supplier<Indexer<L>> leftSupplier;
+        private final Supplier<Indexer<R>> rightSupplier;
+        private @Nullable Indexer<L> leftDownstream;
+        private @Nullable Indexer<R> rightDownstream;
+
+        // Package-private: only FusedEqualIndex (same package) creates buckets.
+        Bucket(Supplier<Indexer<L>> leftSupplier, Supplier<Indexer<R>> rightSupplier) {
+            this.leftSupplier = leftSupplier;
+            this.rightSupplier = rightSupplier;
+        }
+
+        public ListEntry<L> putLeft(Object compositeKey, L element) {
+            if (leftDownstream == null) {
+                leftDownstream = leftSupplier.get();
+            }
+            return leftDownstream.put(compositeKey, element);
+        }
+
+        public void removeLeft(Object compositeKey, ListEntry<L> entry) {
+            leftDownstream.remove(compositeKey, entry);
+        }
+
+        public void forEachLeft(Object compositeKey, Consumer<L> consumer) {
+            if (leftDownstream != null) {
+                leftDownstream.forEach(compositeKey, consumer);
+            }
+        }
+
+        public ListEntry<R> putRight(Object compositeKey, R element) {
+            if (rightDownstream == null) {
+                rightDownstream = rightSupplier.get();
+            }
+            return rightDownstream.put(compositeKey, element);
+        }
+
+        public void removeRight(Object compositeKey, ListEntry<R> entry) {
+            rightDownstream.remove(compositeKey, entry);
+        }
+
+        public void forEachRight(Object compositeKey, Consumer<R> consumer) {
+            if (rightDownstream != null) {
+                rightDownstream.forEach(compositeKey, consumer);
+            }
         }
 
         /**
-         * @return true when both sides are removable (empty), so the bucket can be dropped from the
-         *         {@link FusedEqualIndex}. A bucket holding a live tuple on either side is never reclaimed.
+         * Returns 0 without allocating when the right side has never received a tuple.
+         */
+        public int sizeRight(Object compositeKey) {
+            return rightDownstream == null ? 0 : rightDownstream.size(compositeKey);
+        }
+
+        /**
+         * A null downstream is semantically empty and counts as removable.
          */
         boolean isRemovable() {
-            return leftDownstream.isRemovable() && rightDownstream.isRemovable();
+            return (leftDownstream == null || leftDownstream.isRemovable())
+                    && (rightDownstream == null || rightDownstream.isRemovable());
         }
 
     }
