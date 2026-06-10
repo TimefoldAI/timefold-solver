@@ -15,6 +15,7 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.service.definition.api.ModelOutput;
+import ai.timefold.solver.service.definition.api.ModelPostProcessingResult;
 import ai.timefold.solver.service.definition.api.ModelPostProcessor;
 import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.definition.api.log.LogInfo;
@@ -46,13 +47,15 @@ public class LogsPostProcessor implements ModelPostProcessor {
     }
 
     @Override
-    public void process(ModelOutput modelOutput, SolverModel<?> solverModel, String id) {
+    public ModelPostProcessingResult process(ModelOutput modelOutput, SolverModel<?> solverModel, String id) {
         if (logsStored.get()) {
-            return;
+            return null;
         }
         logsStored.set(true);
 
         storeLogsWithStacktrace(id, null);
+
+        return null;
     }
 
     @Override

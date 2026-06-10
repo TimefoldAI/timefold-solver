@@ -1,16 +1,21 @@
 package ai.timefold.solver.service.definition.api;
 
+import org.jspecify.annotations.Nullable;
+
 public interface ModelPostProcessor {
 
     /**
-     * Process successfully solved model run.
+     * Process a successfully solved model run and optionally return a result.
      * <p>
      * The post processor is called when solver terminates either by meeting termination conditions or by termination request.
      *
+     * @param modelOutput the model output
      * @param solverModel the model with all data taken from the solving
      * @param id unique identifier of the model
+     * @return the result of the post processor, or {@code null} if this post-processor contributes none
      */
-    void process(ModelOutput modelOutput, SolverModel<?> solverModel, String id);
+    @Nullable
+    ModelPostProcessingResult process(ModelOutput modelOutput, SolverModel<?> solverModel, String id);
 
     /**
      * Process successfully computed model (not yet solved).
@@ -31,6 +36,5 @@ public interface ModelPostProcessor {
      * @param error the error that caused the solving failure
      */
     default void processFailed(String id, Throwable error) {
-
     }
 }

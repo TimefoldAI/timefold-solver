@@ -8,6 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.service.definition.api.ModelOutput;
+import ai.timefold.solver.service.definition.api.ModelPostProcessingResult;
 import ai.timefold.solver.service.definition.api.ModelPostProcessor;
 import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.definition.internal.storage.AbstractStorageService;
@@ -29,13 +30,15 @@ public class SaveWaypointsPostProcessor implements ModelPostProcessor {
         this.waypointsService = waypointsService;
     }
 
-    public void process(ModelOutput modelOutput, SolverModel<?> solverModel, String id) {
-
+    @Override
+    public ModelPostProcessingResult process(ModelOutput modelOutput, SolverModel<?> solverModel, String id) {
         List<Waypoints> waypoints = waypointsService.getWaypoints(id, Set.of());
 
         if (waypoints != null && !waypoints.isEmpty()) {
             storageService.storeWaypoints(id, waypoints);
         }
+
+        return null;
     }
 
     @Override

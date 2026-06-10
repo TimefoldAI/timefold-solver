@@ -5,6 +5,7 @@ import static ai.timefold.solver.service.definition.internal.platform.Environmen
 import static ai.timefold.solver.service.definition.internal.platform.EnvironmentVars.ENV_TIMEFOLD_TENANT_NAME;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +33,7 @@ import ai.timefold.solver.service.definition.api.ModelConvertor;
 import ai.timefold.solver.service.definition.api.ModelConvertorBase;
 import ai.timefold.solver.service.definition.api.ModelInput;
 import ai.timefold.solver.service.definition.api.ModelOutput;
+import ai.timefold.solver.service.definition.api.ModelPostProcessingResult;
 import ai.timefold.solver.service.definition.api.ModelPostProcessor;
 import ai.timefold.solver.service.definition.api.SolverModel;
 import ai.timefold.solver.service.definition.api.SolvingStatus;
@@ -681,10 +683,12 @@ public class SolverWorker {
                     extractOutputMetrics(solverModel));
 
             processor.onNext(metadata);
-            sendEvent(finalSolutionEmitter, new FinalBestSolutionEvent(metadata, solverModel,
-                    new SolverWorkerJobState(SolverStatus.NOT_SOLVING, solverJob), planName, tenantName));
 
-            postProcessCompleteOutput(id, modelOutput, solverModel);
+            List<ModelPostProcessingResult> postProcessingResults = postProcessCompleteOutput(id, modelOutput, solverModel);
+
+            sendEvent(finalSolutionEmitter, new FinalBestSolutionEvent(metadata, solverModel,
+                    new SolverWorkerJobState(SolverStatus.NOT_SOLVING, solverJob), planName, tenantName,
+                    postProcessingResults));
 
             sendEvent(scheduleCompletedEmitter, new ItemCompleted(id));
 
@@ -710,15 +714,20 @@ public class SolverWorker {
         }
     }
 
-    private void postProcessCompleteOutput(String id, ModelOutput modelOutput, SolverModel solverModel) {
+    private List<ModelPostProcessingResult> postProcessCompleteOutput(String id, ModelOutput modelOutput,
+            SolverModel solverModel) {
+        List<ModelPostProcessingResult> results = new ArrayList<>();
         for (var processor : modelPostProcessors) {
             try {
-                processor.process(modelOutput, solverModel, id);
+                ModelPostProcessingResult result = processor.process(modelOutput, solverModel, id);
+                if (result != null) {
+                    results.add(result);
+                }
             } catch (Throwable e) {
-                LOGGER.warn("Unexpected error while invoking post processor {} that returned {}",
-                        processor.getClass().getSimpleName(), e.getMessage());
+                LOGGER.warn("Unexpected error while invoking post processor {}", processor.getClass().getSimpleName(), e);
             }
         }
+        return results;
     }
 
     private void storeSolvedInput(String datasetId, ModelOutput modelOutput) {
