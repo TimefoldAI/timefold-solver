@@ -108,6 +108,15 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         }
     }
 
+    private int rightSize(LeftTuple_ leftTuple, Object compositeKey) {
+        if (useJoinIndex) {
+            Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
+            return bucket.sizeRight(compositeKey);
+        } else {
+            return indexerRight.size(compositeKey);
+        }
+    }
+
     @Override
     public final void updateLeft(LeftTuple_ leftTuple) {
         var oldCompositeKey = leftTuple.getStore(inputStoreIndexLefCompositeKey);
@@ -232,9 +241,16 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         } else {
             // sameBucket: equal prefix unchanged ⇒ keep & reuse the cached bucket (no top lookup, no drop/recreate).
             var sameBucket = reuseBucketEligible && fusedEqualIndex.isSameBucket(oldCompositeKey, newCompositeKey);
-            Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> oldBucket =
-                    useJoinIndex ? rightTuple.getStore(inputStoreIndexRightBucket) : null;
-            removeRightFromIndex(oldCompositeKey, rightTuple.getStore(inputStoreIndexRightEntry), oldBucket, sameBucket);
+            ListEntry<UniTuple<Right_>> entry = rightTuple.getStore(inputStoreIndexRightEntry);
+            if (useJoinIndex) {
+                Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket = rightTuple.getStore(inputStoreIndexRightBucket);
+                bucket.removeRight(oldCompositeKey, entry);
+                if (!sameBucket) { // keepBucket: a same-bucket changed-key update re-adds immediately, so don't drop it.
+                    fusedEqualIndex.removeBucketIfEmpty(oldCompositeKey, bucket);
+                }
+            } else {
+                indexerRight.remove(oldCompositeKey, entry);
+            }
             if (!isFiltering) {
                 forEachLeftCounter(rightTuple, oldCompositeKey, this::decrementCounterRight);
             } else {
@@ -315,15 +331,6 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         }
     }
 
-    private int rightSize(LeftTuple_ leftTuple, Object compositeKey) {
-        if (useJoinIndex) {
-            Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
-            return bucket.sizeRight(compositeKey);
-        } else {
-            return indexerRight.size(compositeKey);
-        }
-    }
-
     /** Iterates the right tuples matching a left counter's composite key (its cached bucket, or {@code indexerRight}). */
     private void forEachRightFromLeft(LeftTuple_ leftTuple, Object compositeKey, Consumer<UniTuple<Right_>> consumer) {
         if (useJoinIndex) {
@@ -342,18 +349,6 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             bucket.forEachLeft(compositeKey, consumer);
         } else {
             indexerLeft.forEach(compositeKey, consumer);
-        }
-    }
-
-    private void removeRightFromIndex(Object compositeKey, ListEntry<UniTuple<Right_>> entry,
-            @Nullable Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket, boolean keepBucket) {
-        if (useJoinIndex) {
-            bucket.removeRight(compositeKey, entry);
-            if (!keepBucket) { // keepBucket: a same-bucket changed-key update re-adds immediately, so don't drop it.
-                fusedEqualIndex.removeBucketIfEmpty(compositeKey, bucket);
-            }
-        } else {
-            indexerRight.remove(compositeKey, entry);
         }
     }
 
