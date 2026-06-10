@@ -56,7 +56,7 @@ public final class BiJoinerComber<A, B> {
             case 1 -> filteringList.getFirst();
             default -> {
                 // Avoid predicate.and() for debugging and potential performance
-                var filteringArray = (BiPredicate<A, B>[]) filteringList.toArray(new BiPredicate[0]);
+                var filteringArray = filteringList.toArray(new BiPredicate[0]);
                 yield (A a, B b) -> {
                     for (var predicate : filteringArray) {
                         if (!predicate.test(a, b)) {

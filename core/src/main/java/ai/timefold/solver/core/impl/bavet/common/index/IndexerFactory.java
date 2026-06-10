@@ -562,7 +562,7 @@ public final class IndexerFactory<Right_> {
             // Equal prefix + suffix: build the per-side suffix sub-chain (the right side flips comparisons).
             var leftDownstreamSupplier = this.<L> buildIndexerChain(true, 1, LinkedListLeafIndexer::new);
             var rightDownstreamSupplier = this.<R> buildIndexerChain(false, 1, LinkedListLeafIndexer::new);
-            return new FusedEqualIndex<L, R>(topEqualKeyUnpacker, true, leftDownstreamSupplier, rightDownstreamSupplier);
+            return new FusedEqualIndex<>(topEqualKeyUnpacker, true, leftDownstreamSupplier, rightDownstreamSupplier);
         }
     }
 

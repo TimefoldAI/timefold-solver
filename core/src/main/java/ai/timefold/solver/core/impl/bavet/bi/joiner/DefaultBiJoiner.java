@@ -76,7 +76,7 @@ public final class DefaultBiJoiner<A, B>
             newJoinerTypes[i] = joinerTypes[from];
             newRightMappings[i] = rightMappings[from];
         }
-        return new DefaultBiJoiner<A, B>(newLeftMappings, newJoinerTypes, newRightMappings);
+        return new DefaultBiJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
     }
 
     public Function<A, Object> getLeftMapping(int index) {

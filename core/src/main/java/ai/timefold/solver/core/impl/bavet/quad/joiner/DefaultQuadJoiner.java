@@ -77,7 +77,7 @@ public final class DefaultQuadJoiner<A, B, C, D>
             newJoinerTypes[i] = joinerTypes[from];
             newRightMappings[i] = rightMappings[from];
         }
-        return new DefaultQuadJoiner<A, B, C, D>(newLeftMappings, newJoinerTypes, newRightMappings);
+        return new DefaultQuadJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
     }
 
     public TriFunction<A, B, C, Object> getLeftMapping(int index) {

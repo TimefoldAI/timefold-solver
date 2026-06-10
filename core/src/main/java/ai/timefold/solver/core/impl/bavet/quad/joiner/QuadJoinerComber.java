@@ -57,7 +57,7 @@ public final class QuadJoinerComber<A, B, C, D> {
             case 1 -> filteringList.getFirst();
             default -> {
                 // Avoid predicate.and() for debugging and potential performance
-                var filteringArray = (QuadPredicate<A, B, C, D>[]) filteringList.toArray(new QuadPredicate[0]);
+                var filteringArray = filteringList.toArray(new QuadPredicate[0]);
                 yield (A a, B b, C c, D d) -> {
                     for (var predicate : filteringArray) {
                         if (!predicate.test(a, b, c, d)) {

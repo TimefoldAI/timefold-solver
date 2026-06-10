@@ -77,7 +77,7 @@ public final class DefaultTriJoiner<A, B, C>
             newJoinerTypes[i] = joinerTypes[from];
             newRightMappings[i] = rightMappings[from];
         }
-        return new DefaultTriJoiner<A, B, C>(newLeftMappings, newJoinerTypes, newRightMappings);
+        return new DefaultTriJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
     }
 
     public BiFunction<A, B, Object> getLeftMapping(int index) {

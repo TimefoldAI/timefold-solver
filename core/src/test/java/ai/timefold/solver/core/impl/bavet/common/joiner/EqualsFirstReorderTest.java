@@ -67,8 +67,7 @@ class EqualsFirstReorderTest {
         assertThat(equalFirst).isNotEqualTo(equalLast);
 
         assertThat(equalFirst.reorderedEqualsFirst()).isEqualTo(equalLast.reorderedEqualsFirst());
-        assertThat(equalFirst.reorderedEqualsFirst().hashCode())
-                .isEqualTo(equalLast.reorderedEqualsFirst().hashCode());
+        assertThat(equalFirst.reorderedEqualsFirst()).hasSameHashCodeAs(equalLast.reorderedEqualsFirst());
     }
 
 }

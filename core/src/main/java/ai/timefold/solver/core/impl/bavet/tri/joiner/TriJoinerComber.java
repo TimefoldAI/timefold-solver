@@ -56,7 +56,7 @@ public final class TriJoinerComber<A, B, C> {
             case 1 -> filteringList.getFirst();
             default -> {
                 // Avoid predicate.and() for debugging and potential performance
-                var filteringArray = (TriPredicate<A, B, C>[]) filteringList.toArray(new TriPredicate[0]);
+                var filteringArray = filteringList.toArray(new TriPredicate[0]);
                 yield (A a, B b, C c) -> {
                     for (var predicate : filteringArray) {
                         if (!predicate.test(a, b, c)) {
