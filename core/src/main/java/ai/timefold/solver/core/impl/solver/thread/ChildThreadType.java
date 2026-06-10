@@ -10,5 +10,9 @@ public enum ChildThreadType {
     /**
      * Used by multithreaded incremental solving.
      */
-    MOVE_THREAD;
+    MOVE_THREAD,
+    /**
+     * Used by multithreaded evolutionary algorithm.
+     */
+    EVOLUTIONARY_AGENT_THREAD;
 }

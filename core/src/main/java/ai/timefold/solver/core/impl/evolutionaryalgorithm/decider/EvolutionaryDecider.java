@@ -53,4 +53,6 @@ public interface EvolutionaryDecider<Solution_, Score_ extends Score<Score_>> {
     void stepStarted(EvolutionaryAlgorithmStepScope<Solution_> abstractStepScope);
 
     void stepEnded(EvolutionaryAlgorithmStepScope<Solution_> abstractStepScope);
+
+    void solvingError(SolverScope<Solution_> solverScope, Exception exception);
 }

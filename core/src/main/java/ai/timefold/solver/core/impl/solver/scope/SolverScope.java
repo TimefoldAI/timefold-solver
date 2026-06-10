@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.scope;
 
+import static ai.timefold.solver.core.impl.solver.thread.ChildThreadType.EVOLUTIONARY_AGENT_THREAD;
 import static ai.timefold.solver.core.impl.util.MathUtils.getSpeed;
 
 import java.time.Clock;
@@ -76,6 +77,8 @@ public class SolverScope<Solution_> {
      * Used for tracking move count per move type
      */
     private final Map<String, Long> moveEvaluationCountPerTypeMap = new ConcurrentHashMap<>();
+
+    private boolean triggerBestSolutionEvent = true;
 
     private static AtomicLong resetAtomicLongTimeMillis(AtomicLong atomicLong) {
         atomicLong.set(-1);
@@ -264,6 +267,14 @@ public class SolverScope<Solution_> {
         return moveEvaluationCountPerTypeMap;
     }
 
+    public boolean isTriggerBestSolutionEvent() {
+        return triggerBestSolutionEvent;
+    }
+
+    public void setTriggerBestSolutionEvent(boolean triggerBestSolutionEvent) {
+        this.triggerBestSolutionEvent = triggerBestSolutionEvent;
+    }
+
     // ************************************************************************
     // Calculated methods
     // ************************************************************************
@@ -347,28 +358,26 @@ public class SolverScope<Solution_> {
     }
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {
-        var childThreadScoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
-        return copy(childThreadScoreDirector);
-    }
-
-    public <Score_ extends Score<Score_>> SolverScope<Solution_> copy(InnerScoreDirector<Solution_, Score_> newScoreDirector) {
-        var copy = new SolverScope<Solution_>(clock);
-        copy.solver = solver;
-        copy.scoreDirector = newScoreDirector;
-        copy.bestSolution.set(null);
-        copy.bestScore.set(null);
-        copy.monitoringTags = monitoringTags;
-        copy.solverMetricSet = solverMetricSet;
-        copy.startingSolverCount = startingSolverCount;
+        SolverScope<Solution_> childThreadSolverScope = new SolverScope<>(clock);
+        childThreadSolverScope.bestSolution.set(null);
+        childThreadSolverScope.bestScore.set(null);
+        childThreadSolverScope.monitoringTags = monitoringTags;
+        childThreadSolverScope.solverMetricSet = solverMetricSet;
+        childThreadSolverScope.startingSolverCount = startingSolverCount;
         // Experiments show that this trick to attain reproducibility doesn't break uniform distribution
         var delegatingRandom = (DelegatingSplittableRandomGenerator) workingRandom;
-        copy.workingRandom = new DelegatingSplittableRandomGenerator(delegatingRandom.getSeed(), delegatingRandom.split());
-        copy.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
-        resetAtomicLongTimeMillis(copy.endingSystemTimeMillis);
-        copy.startingInitializedScore = null;
-        copy.bestSolutionTimeMillis = null;
-        copy.problemSizeStatistics.set(problemSizeStatistics.get());
-        return copy;
+        childThreadSolverScope.workingRandom =
+                new DelegatingSplittableRandomGenerator(delegatingRandom.getSeed(), delegatingRandom.split());
+        childThreadSolverScope.scoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
+        childThreadSolverScope.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
+        resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);
+        childThreadSolverScope.startingInitializedScore = null;
+        childThreadSolverScope.bestSolutionTimeMillis = null;
+        if (childThreadType == EVOLUTIONARY_AGENT_THREAD) {
+            childThreadSolverScope.solver = solver;
+            childThreadSolverScope.problemSizeStatistics.set(problemSizeStatistics.get());
+        }
+        return childThreadSolverScope;
     }
 
     public void initializeYielding() {

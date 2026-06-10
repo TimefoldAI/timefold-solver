@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.
 /**
  * Stores information about individual differences, which are used for survival selection methods.
  */
-final class PopulationDiffMap<Solution_, Score_ extends Score<Score_>> {
+public final class PopulationDiffMap<Solution_, Score_ extends Score<Score_>> {
 
     private final int size;
     private final Map<Individual<Solution_, Score_>, Map<Individual<Solution_, Score_>, Double>> individualMap;

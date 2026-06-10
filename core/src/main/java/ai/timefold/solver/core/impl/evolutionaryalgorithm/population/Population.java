@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.evolutionaryalgorithm.population;
 
 import java.util.List;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.decider.EvolutionaryDecider;
@@ -45,7 +46,7 @@ public interface Population<Solution_, Score_ extends Score<Score_>> {
      * 
      * @return an individual from the population.
      */
-    Individual<Solution_, Score_> selectIndividual();
+    Individual<Solution_, Score_> selectIndividual(RandomGenerator workingRandom);
 
     /**
      * Recreate the population with new individuals.

@@ -18,7 +18,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope.EvolutionaryAlgorithmStepScope;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionState;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionStateManager;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.Population;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.Individual;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.IndividualBuilder;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator.ConstructionIndividualStrategy;
@@ -82,10 +81,10 @@ public record ListRuinRecreateIndividualStrategy<Solution_, Score_ extends Score
         updateScope(stepScope.getPhaseScope());
         // If the population has no best individual, use the deterministic construction phase
         var population = phaseScope.<Score_> getPopulation();
-        if (population.getBestIndividual() == null) {
+        if (stepScope.getBestIndividual() == null) {
             applyPhases(phaseScope, deterministicBestFitConstructionPhase, localSearchPhase, refinementPhase);
         } else {
-            applyRuinRecreate(solverScope, scoreDirector, population);
+            applyRuinRecreate(solverScope, scoreDirector, Objects.requireNonNull(stepScope.getBestIndividual()));
             updateScope(stepScope.getPhaseScope());
             applyPhases(phaseScope, localSearchPhase, refinementPhase);
         }
@@ -94,8 +93,7 @@ public record ListRuinRecreateIndividualStrategy<Solution_, Score_ extends Score
     }
 
     void applyRuinRecreate(SolverScope<Solution_> solverScope, InnerScoreDirector<Solution_, Score_> scoreDirector,
-            Population<Solution_, Score_> population) {
-        var bestIndividual = Objects.requireNonNull(population.getBestIndividual());
+            Individual<Solution_, Score_> bestIndividual) {
         var bestSolutionState = solutionStateManager.saveSolutionState(scoreDirector, bestIndividual);
         solutionStateManager.restoreSolutionState(scoreDirector, bestSolutionState);
         var listVariableDescriptor = Objects.requireNonNull(scoreDirector.getSolutionDescriptor().getListVariableDescriptor());

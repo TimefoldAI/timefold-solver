@@ -17,7 +17,6 @@ import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope.Evolution
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope.EvolutionaryAlgorithmStepScope;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionState;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionStateManager;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.Population;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.Individual;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.IndividualBuilder;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator.ConstructionIndividualStrategy;
@@ -78,21 +77,19 @@ public record BasicRuinRecreateIndividualStrategy<Solution_, Score_ extends Scor
             customPhaseIndividualCommandList.forEach(command -> command.changeWorkingSolution(commandContext));
         }
         updateScope(phaseScope);
-        var population = phaseScope.<Score_> getPopulation();
-        if (population.getBestIndividual() == null) {
+        if (stepScope.getBestIndividual() == null) {
             applyPhases(phaseScope, deterministicBestFitConstructionPhase, localSearchPhase, refinementPhase);
         } else {
-            applyRuinRecreate(solverScope, scoreDirector, phaseScope, population);
+            applyRuinRecreate(solverScope, scoreDirector, phaseScope, Objects.requireNonNull(stepScope.getBestIndividual()));
             updateScope(phaseScope);
             applyPhases(phaseScope, localSearchPhase, refinementPhase);
         }
-        return individualBuilder.build(scoreDirector.cloneSolution(solverScope.getBestSolution()),
-                solverScope.getBestScore(), null, null, scoreDirector);
+        return individualBuilder.build(scoreDirector.cloneSolution(solverScope.getBestSolution()), solverScope.getBestScore(),
+                null, null, scoreDirector);
     }
 
     void applyRuinRecreate(SolverScope<Solution_> solverScope, InnerScoreDirector<Solution_, Score_> scoreDirector,
-            EvolutionaryAlgorithmPhaseScope<Solution_> phaseScope, Population<Solution_, Score_> population) {
-        var bestIndividual = Objects.requireNonNull(population.getBestIndividual());
+            EvolutionaryAlgorithmPhaseScope<Solution_> phaseScope, Individual<Solution_, Score_> bestIndividual) {
         var bestSolutionState = solutionStateManager.saveSolutionState(scoreDirector, bestIndividual);
         solutionStateManager.restoreSolutionState(scoreDirector, bestSolutionState);
         applyRuinPhase(scoreDirector, solverScope.getWorkingRandom(), bestIndividual);

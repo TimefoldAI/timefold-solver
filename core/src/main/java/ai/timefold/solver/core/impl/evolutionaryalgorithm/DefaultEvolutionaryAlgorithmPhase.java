@@ -106,8 +106,12 @@ public final class DefaultEvolutionaryAlgorithmPhase<Solution_> extends Abstract
     public void stepEnded(EvolutionaryAlgorithmStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
         evolutionaryDecider.stepEnded(stepScope);
-        var solver = stepScope.getPhaseScope().getSolverScope().getSolver();
-        solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope);
+    }
+
+    @Override
+    public void solvingError(SolverScope<Solution_> solverScope, Exception exception) {
+        super.solvingError(solverScope, exception);
+        evolutionaryDecider.solvingError(solverScope, exception);
     }
 
     @NullMarked

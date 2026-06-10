@@ -2372,10 +2372,13 @@
           <xs:element minOccurs="0" name="complexProblem" type="xs:boolean"/>
                               
           
+          <xs:element minOccurs="0" name="agentCount" type="xs:int"/>
+                              
+          
           <xs:element minOccurs="0" name="populationConfig" type="tns:evolutionaryPopulationConfig"/>
                               
           
-          <xs:element minOccurs="0" name="workerConfig" type="tns:evolutionaryWorkerConfig"/>
+          <xs:element minOccurs="0" name="evolutionaryAgentConfig" type="tns:evolutionaryAgentConfig"/>
                             
         
         </xs:sequence>
@@ -2426,7 +2429,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="evolutionaryWorkerConfig">
+  <xs:complexType name="evolutionaryAgentConfig">
             
     
     <xs:complexContent>

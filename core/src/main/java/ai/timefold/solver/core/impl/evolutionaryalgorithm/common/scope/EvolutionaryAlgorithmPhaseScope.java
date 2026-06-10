@@ -4,7 +4,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.Population;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public final class EvolutionaryAlgorithmPhaseScope<Solution_> extends AbstractPhaseScope<Solution_> {
@@ -35,17 +34,16 @@ public final class EvolutionaryAlgorithmPhaseScope<Solution_> extends AbstractPh
         this.population = population;
     }
 
-    public EvolutionaryAlgorithmPhaseScope<Solution_> copy(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        var solverScopeCopy = getSolverScope().copy(scoreDirector);
-        var copy = new EvolutionaryAlgorithmPhaseScope<>(solverScopeCopy, phaseIndex);
-        copy.startingSystemTimeMillis = startingSystemTimeMillis;
-        copy.startingScoreCalculationCount = startingScoreCalculationCount;
-        copy.startingMoveEvaluationCount = startingMoveEvaluationCount;
-        copy.startingScore = startingScore;
-        copy.setTermination(getTermination());
-        copy.lastCompletedStepScope = lastCompletedStepScope;
-        copy.population = population;
-        return copy;
+    public EvolutionaryAlgorithmPhaseScope<Solution_> createChildThreadPhaseScope(SolverScope<Solution_> solveScope) {
+        var childThreadSPhaseScope = new EvolutionaryAlgorithmPhaseScope<>(solveScope, phaseIndex);
+        childThreadSPhaseScope.startingSystemTimeMillis = startingSystemTimeMillis;
+        childThreadSPhaseScope.startingScoreCalculationCount = startingScoreCalculationCount;
+        childThreadSPhaseScope.startingMoveEvaluationCount = startingMoveEvaluationCount;
+        childThreadSPhaseScope.startingScore = startingScore;
+        childThreadSPhaseScope.setTermination(getTermination());
+        childThreadSPhaseScope.lastCompletedStepScope = lastCompletedStepScope;
+        childThreadSPhaseScope.population = population;
+        return childThreadSPhaseScope;
     }
 
 }

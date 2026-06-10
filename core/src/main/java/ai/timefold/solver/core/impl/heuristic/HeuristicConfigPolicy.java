@@ -230,6 +230,7 @@ public class HeuristicConfigPolicy<Solution_> {
             var threadPrefix = switch (childThreadType) {
                 case MOVE_THREAD -> "MoveThread";
                 case PART_THREAD -> "PartThread";
+                case EVOLUTIONARY_AGENT_THREAD -> "EvolutionaryThread";
             };
             return new DefaultSolverThreadFactory(threadPrefix);
         }

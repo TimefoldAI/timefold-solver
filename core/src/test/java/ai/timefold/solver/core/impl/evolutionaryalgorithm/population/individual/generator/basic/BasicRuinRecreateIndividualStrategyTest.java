@@ -130,6 +130,7 @@ class BasicRuinRecreateIndividualStrategyTest {
         }).when(bestIndividual).getChromosome();
         doReturn(2).when(bestIndividual).size();
         doReturn(solutionState).when(solutionStateManager).saveSolutionState(scoreDirector, bestIndividual);
+        doReturn(bestIndividual).when(stepScope).getBestIndividual();
 
         var population = stepScope.getPhaseScope().getPopulation();
         doReturn(bestIndividual).when(population).getBestIndividual();

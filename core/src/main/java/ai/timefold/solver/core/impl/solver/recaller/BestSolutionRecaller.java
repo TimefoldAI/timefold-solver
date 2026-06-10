@@ -22,8 +22,6 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     protected boolean assertShadowVariablesAreNotStale = false;
     protected boolean assertBestScoreIsUnmodified = false;
 
-    protected boolean enableUpdateEvents = true;
-
     protected SolverEventSupport<Solution_> solverEventSupport;
 
     public void setAssertInitialScoreFromScratch(boolean assertInitialScoreFromScratch) {
@@ -40,14 +38,6 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     public void setSolverEventSupport(SolverEventSupport<Solution_> solverEventSupport) {
         this.solverEventSupport = solverEventSupport;
-    }
-
-    public boolean isEnableUpdateEvents() {
-        return enableUpdateEvents;
-    }
-
-    public void setEnableUpdateEvents(boolean enableUpdateEvents) {
-        this.enableUpdateEvents = enableUpdateEvents;
     }
 
     // ************************************************************************
@@ -132,7 +122,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     public void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, AbstractPhaseScope<Solution_> phaseScope) {
         updateBestSolutionWithoutFiring(solverScope);
-        if (enableUpdateEvents) {
+        if (solverScope.isTriggerBestSolutionEvent()) {
             solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), solverScope.getBestSolution());
         }
     }
@@ -140,7 +130,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     public void updateBestSolutionAndFireIfInitialized(SolverScope<Solution_> solverScope,
             EventProducerId eventProducerId) {
         updateBestSolutionWithoutFiring(solverScope);
-        if (solverScope.isBestSolutionInitialized() && enableUpdateEvents) {
+        if (solverScope.isBestSolutionInitialized() && solverScope.isTriggerBestSolutionEvent()) {
             solverEventSupport.fireBestSolutionChanged(solverScope, eventProducerId, solverScope.getBestSolution());
         }
     }
@@ -148,7 +138,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     private void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, AbstractPhaseScope<Solution_> phaseScope,
             InnerScore<?> bestScore, Solution_ bestSolution) {
         updateBestSolutionWithoutFiring(solverScope, bestScore, bestSolution);
-        if (enableUpdateEvents) {
+        if (solverScope.isTriggerBestSolutionEvent()) {
             solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), bestSolution);
         }
     }

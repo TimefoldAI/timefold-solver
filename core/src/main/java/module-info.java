@@ -88,6 +88,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.evolutionaryalgorithm.common.bestsolution;
     exports ai.timefold.solver.core.impl.evolutionaryalgorithm.common.phase;
     exports ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state;
+    exports ai.timefold.solver.core.impl.evolutionaryalgorithm.decider;
     exports ai.timefold.solver.core.impl.evolutionaryalgorithm.population;
     exports ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual;
     exports ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator;
@@ -213,7 +214,6 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.neighborhood to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.partitionedsearch to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.evolutionaryalgorithm to ai.timefold.solver.enterprise.core;
-    exports ai.timefold.solver.core.impl.evolutionaryalgorithm.decider to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.phase to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.stream.bavet to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.stream.bavet.uni to ai.timefold.solver.enterprise.core;

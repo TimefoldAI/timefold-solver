@@ -15,7 +15,7 @@ import org.jspecify.annotations.Nullable;
         "localSearchConfig",
 })
 @NullMarked
-public class EvolutionaryWorkerConfig extends PhaseConfig<EvolutionaryWorkerConfig> {
+public class EvolutionaryAgentConfig extends PhaseConfig<EvolutionaryAgentConfig> {
 
     @Nullable
     private EvolutionaryIndividualGeneratorConfig individualGeneratorConfig = null;
@@ -47,19 +47,19 @@ public class EvolutionaryWorkerConfig extends PhaseConfig<EvolutionaryWorkerConf
     // With methods
     // ************************************************************************
 
-    public EvolutionaryWorkerConfig
+    public EvolutionaryAgentConfig
             withIndividualGeneratorConfig(EvolutionaryIndividualGeneratorConfig individualGeneratorConfig) {
         setIndividualGeneratorConfig(individualGeneratorConfig);
         return this;
     }
 
-    public EvolutionaryWorkerConfig withLocalSearchConfig(EvolutionaryLocalSearchConfig localSearchConfig) {
+    public EvolutionaryAgentConfig withLocalSearchConfig(EvolutionaryLocalSearchConfig localSearchConfig) {
         setLocalSearchConfig(localSearchConfig);
         return this;
     }
 
     @Override
-    public EvolutionaryWorkerConfig inherit(EvolutionaryWorkerConfig inheritedConfig) {
+    public EvolutionaryAgentConfig inherit(EvolutionaryAgentConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         individualGeneratorConfig =
                 ConfigUtils.inheritConfig(individualGeneratorConfig, inheritedConfig.getIndividualGeneratorConfig());
@@ -68,8 +68,8 @@ public class EvolutionaryWorkerConfig extends PhaseConfig<EvolutionaryWorkerConf
     }
 
     @Override
-    public EvolutionaryWorkerConfig copyConfig() {
-        return new EvolutionaryWorkerConfig().inherit(this);
+    public EvolutionaryAgentConfig copyConfig() {
+        return new EvolutionaryAgentConfig().inherit(this);
     }
 
     @Override

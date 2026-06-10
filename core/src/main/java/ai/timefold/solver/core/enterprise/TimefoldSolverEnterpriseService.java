@@ -31,11 +31,8 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.Constr
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionState;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionStateManager;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.crossover.CrossoverStrategy;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.decider.EvolutionaryDecider;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.IndividualBuilder;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator.ConstructionIndividualStrategy;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.decider.HybridGeneticSearchWorkerContext;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
@@ -48,7 +45,6 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
-import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -181,13 +177,9 @@ public interface TimefoldSolverEnterpriseService {
             BiFunction<HeuristicConfigPolicy<Solution_>, SolverTermination<Solution_>, PhaseTermination<Solution_>> phaseTerminationFunction);
 
     <Solution_, Score_ extends Score<Score_>, State_ extends SolutionState<Solution_, Score_>>
-            EvolutionaryDecider<Solution_, Score_> buildHybridGeneticSearch(int populationSize, int generationSize,
-                    int eliteGroupSize, int populationRestartCount,
-                    ConstructionIndividualStrategy<Solution_, Score_> constructionIndividualStrategy,
-                    Phase<Solution_> localSearchPhase, Phase<Solution_> swapStarPhase,
-                    CrossoverStrategy<Solution_, Score_> crossoverStrategy,
-                    IndividualBuilder<Solution_, Score_> individualBuilder,
-                    SolutionStateManager<Solution_, Score_, State_> solutionInitializer,
+            EvolutionaryDecider<Solution_, Score_> buildHybridGeneticSearch(HeuristicConfigPolicy<Solution_> solverConfigPolicy,
+                    int agentCount, int populationSize, int generationSize, int eliteGroupSize, int populationRestartCount,
+                    List<HybridGeneticSearchWorkerContext<Solution_, Score_, State_>> agentContextList,
                     PhaseTermination<Solution_> phaseTermination, BestSolutionRecaller<Solution_> bestSolutionRecaller);
 
     <Solution_> EntitySelector<Solution_> applyNearbySelection(EntitySelectorConfig entitySelectorConfig,
@@ -236,7 +228,9 @@ public interface TimefoldSolverEnterpriseService {
                 "remove multistageMoveSelector and/or listMultistageMoveSelector from the solver configuration"),
         CONSTRAINT_PROFILING("Constraint profiling", "remove constraintStreamProfilingEnabled from the solver configuration"),
         SCORE_ANALYSIS("Score analysis", "do not use SolutionManager's analyze() method"),
-        RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method");
+        RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method"),
+        EVOLUTIONARY_ALGORITHM("Evolutionary Algorithm",
+                "remove the agent count property from the evolutionary algorithm configuration");
 
         private final String name;
         private final String workaround;

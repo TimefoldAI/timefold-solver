@@ -439,20 +439,23 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType) {
         // Most score directors don't need derived status; CS will override this.
-        if (childThreadType == ChildThreadType.PART_THREAD) {
-            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(lookUpEnabled)
-                    .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
-            // ScoreCalculationCountTermination takes into account previous phases
-            // but the calculationCount of partitions is maxed, not summed.
-            childThreadScoreDirector.calculationCount = calculationCount;
-            return childThreadScoreDirector;
-        } else if (childThreadType == ChildThreadType.MOVE_THREAD) {
-            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(true)
-                    .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
-            childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
-            return childThreadScoreDirector;
-        } else {
-            throw new IllegalStateException("The childThreadType (" + childThreadType + ") is not implemented.");
+        switch (childThreadType) {
+            case ChildThreadType.PART_THREAD -> {
+                var childThreadScoreDirector =
+                        scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(lookUpEnabled)
+                                .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
+                // ScoreCalculationCountTermination takes into account previous phases
+                // but the calculationCount of partitions is maxed, not summed.
+                childThreadScoreDirector.calculationCount = calculationCount;
+                return childThreadScoreDirector;
+            }
+            case ChildThreadType.EVOLUTIONARY_AGENT_THREAD, ChildThreadType.MOVE_THREAD -> {
+                var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(true)
+                        .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
+                childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
+                return childThreadScoreDirector;
+            }
+            default -> throw new IllegalStateException("The childThreadType (" + childThreadType + ") is not implemented.");
         }
     }
 

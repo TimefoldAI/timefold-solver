@@ -65,7 +65,7 @@ public record DefaultConstructionIndividualStrategy<Solution_, Score_ extends Sc
     }
 
     private Phase<Solution_> getConstructionPhase(EvolutionaryAlgorithmStepScope<Solution_> stepScope) {
-        if (stepScope.getPhaseScope().getPopulation().getBestIndividual() == null) {
+        if (stepScope.getBestIndividual() == null) {
             // The deterministic phase is used only once as its behavior always returns the same solution.
             // The shuffled phase is expected to shuffle the selector and produce different solutions.
             return deterministicBestFitConstructionPhase;

@@ -86,6 +86,7 @@ class DefaultConstructionIndividualStrategyTest {
         var bestIndividual = mock(Individual.class);
         var population = stepScope.getPhaseScope().getPopulation();
         doReturn(bestIndividual).when(population).getBestIndividual();
+        doReturn(bestIndividual).when(stepScope).getBestIndividual();
         constructionPhase.apply(stepScope);
         verify(deterministicPhase).solve(solverScope);
         verify(shuffledPhase).solve(solverScope);

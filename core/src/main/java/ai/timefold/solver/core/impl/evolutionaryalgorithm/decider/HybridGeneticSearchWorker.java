@@ -3,28 +3,27 @@ package ai.timefold.solver.core.impl.evolutionaryalgorithm.decider;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.bestsolution.BestSolutionUpdater;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope.EvolutionaryAlgorithmPhaseScope;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope.EvolutionaryAlgorithmStepScope;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionState;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionStateManager;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.crossover.CrossoverContext;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.crossover.CrossoverStrategy;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.Individual;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.IndividualBuilder;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator.ConstructionIndividualStrategy;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Implementation of the foundational components of the HGS algorithm. Each worker has its own score director, allowing it to
- * apply its logic for generating and refining new individuals without affecting the state of the root solver's scope during
+ * Implementation of the foundational components of the HGS algorithm.
+ * Each worker has its own solver scope, allowing it to
+ * apply its logic for generating and refining new individuals
+ * without affecting the state of the root solver's scope during
  * execution.
  * <p>
  * To ensure that the generation of individuals starts from a fresh phase scope, a copy of the scope is always created when
@@ -41,31 +40,18 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, State_ extends SolutionState<Solution_, Score_>> {
 
-    private final ConstructionIndividualStrategy<Solution_, Score_> constructionIndividualStrategy;
-    private final Phase<Solution_> localSearchPhase;
-    private final @Nullable Phase<Solution_> refinementPhase;
-    private final CrossoverStrategy<Solution_, Score_> crossoverStrategy;
-    private final IndividualBuilder<Solution_, Score_> individualBuilder;
-    private final SolutionStateManager<Solution_, Score_, State_> solutionManager;
+    private final HybridGeneticSearchWorkerContext<Solution_, Score_, State_> context;
     private final BestSolutionUpdater<Solution_> bestSolutionUpdater;
-    private final InnerScoreDirector<Solution_, Score_> ownScoreDirector;
+    private final SolverScope<Solution_> ownSolverScope;
 
     @Nullable
     private State_ initialState;
 
-    public HybridGeneticSearchWorker(ConstructionIndividualStrategy<Solution_, Score_> constructionIndividualStrategy,
-            Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase,
-            CrossoverStrategy<Solution_, Score_> crossoverStrategy, IndividualBuilder<Solution_, Score_> individualBuilder,
-            SolutionStateManager<Solution_, Score_, State_> solutionManager,
-            BestSolutionUpdater<Solution_> bestSolutionUpdater, InnerScoreDirector<Solution_, Score_> ownScoreDirector) {
-        this.constructionIndividualStrategy = constructionIndividualStrategy;
-        this.localSearchPhase = localSearchPhase;
-        this.refinementPhase = refinementPhase;
-        this.crossoverStrategy = crossoverStrategy;
-        this.individualBuilder = individualBuilder;
-        this.solutionManager = solutionManager;
+    public HybridGeneticSearchWorker(HybridGeneticSearchWorkerContext<Solution_, Score_, State_> context,
+            BestSolutionUpdater<Solution_> bestSolutionUpdater, SolverScope<Solution_> ownSolverScope) {
+        this.context = context;
         this.bestSolutionUpdater = bestSolutionUpdater;
-        this.ownScoreDirector = ownScoreDirector;
+        this.ownSolverScope = ownSolverScope;
     }
 
     // ************************************************************************
@@ -79,6 +65,7 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
      * @param individualConsumer the individual consumer
      */
     public void generateIndividual(EvolutionaryAlgorithmPhaseScope<Solution_> sharedPhaseScope,
+            Supplier<@Nullable Individual<Solution_, Score_>> bestSolutionSupplier,
             Consumer<Individual<Solution_, Score_>> individualConsumer) {
         if (sharedPhaseScope.getTermination().isPhaseTerminated(sharedPhaseScope)) {
             return;
@@ -86,15 +73,18 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
         // The solver's working solution is restored to its initial state, and a separate phase scope is created.
         var restoredPhaseScope = restoreState(sharedPhaseScope, Objects.requireNonNull(initialState));
         var stepScope = new EvolutionaryAlgorithmStepScope<>(restoredPhaseScope);
-        var newIndividual = constructionIndividualStrategy.apply(stepScope);
+        stepScope.setBestIndividual(bestSolutionSupplier.get());
+        var newIndividual = context.constructionIndividualStrategy().apply(stepScope);
         var addIndividual = true;
         var oldScore = newIndividual.getScore();
         if (!newIndividual.getScore().raw().isFeasible()
                 && restoredPhaseScope.getSolverScope().getWorkingRandom().nextBoolean()) {
-            individualConsumer.accept(newIndividual.clone(ownScoreDirector));
-            applyPhases(restoredPhaseScope, localSearchPhase, refinementPhase);
-            if (newIndividual.getScore().compareTo(oldScore) == 0) {
+            var clonedIndividual = newIndividual.clone(ownSolverScope.getScoreDirector());
+            individualConsumer.accept(clonedIndividual);
+            applyPhases(restoredPhaseScope, context.localSearchPhase(), context.refinementPhase());
+            if (restoredPhaseScope.<Score_> getBestScore().compareTo(oldScore) <= 0) {
                 addIndividual = false;
+                newIndividual = clonedIndividual;
             }
         }
         if (addIndividual) {
@@ -120,24 +110,34 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
         }
         var restoredPhaseScope = restoreState(sharedPhaseScope, Objects.requireNonNull(initialState));
         var crossoverContext = new CrossoverContext<>(restoredPhaseScope, firstIndividual, secondIndividual);
-        var offspringResult = crossoverStrategy.apply(crossoverContext);
-        var offspringIndividual = individualBuilder.build(offspringResult.solution(), offspringResult.score(),
-                offspringResult.firstParentScore(), offspringResult.secondParentScore(), ownScoreDirector);
+        var offspringResult = context.crossoverStrategy().apply(crossoverContext);
+        var offspringIndividual = context.individualBuilder().build(offspringResult.solution(), offspringResult.score(),
+                offspringResult.firstParentScore(), offspringResult.secondParentScore(), ownSolverScope.getScoreDirector());
         var addIndividual = true;
         var oldScore = offspringIndividual.getScore();
         if (!offspringIndividual.getScore().raw().isFeasible()
                 && restoredPhaseScope.getSolverScope().getWorkingRandom().nextBoolean()) {
-            individualConsumer.accept(offspringIndividual.clone(ownScoreDirector));
-            applyPhases(restoredPhaseScope, localSearchPhase, refinementPhase);
-            if (offspringIndividual.getScore().compareTo(oldScore) == 0) {
+            individualConsumer.accept(offspringIndividual.clone(ownSolverScope.getScoreDirector()));
+            applyPhases(restoredPhaseScope, context.localSearchPhase(), context.refinementPhase());
+            if (restoredPhaseScope.<Score_> getBestScore().compareTo(oldScore) == 0) {
                 addIndividual = false;
             }
         }
         if (addIndividual) {
-            individualConsumer.accept(offspringIndividual);
+            var otherOffspringIndividual = context.individualBuilder().build(
+                    restoredPhaseScope.getSolverScope().getBestSolution(), restoredPhaseScope.getBestScore(),
+                    offspringResult.firstParentScore(), offspringResult.secondParentScore(), ownSolverScope.getScoreDirector());
+            individualConsumer.accept(otherOffspringIndividual);
+            sharedStepScope.setStepIndividual(otherOffspringIndividual);
+            sharedStepScope.setScore(otherOffspringIndividual.getScore());
+            bestSolutionUpdater
+                    .updateBestSolution(new EvolutionaryAlgorithmStepScope<>(restoredPhaseScope, otherOffspringIndividual));
+        } else {
+            sharedStepScope.setStepIndividual(offspringIndividual);
+            sharedStepScope.setScore(offspringIndividual.getScore());
+            bestSolutionUpdater
+                    .updateBestSolution(new EvolutionaryAlgorithmStepScope<>(restoredPhaseScope, offspringIndividual));
         }
-        sharedStepScope.setStepIndividual(offspringIndividual);
-        sharedStepScope.setScore(offspringResult.score());
     }
 
     /**
@@ -146,12 +146,15 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
      *
      * @param state the state to be restored
      */
-    private EvolutionaryAlgorithmPhaseScope<Solution_> restoreState(EvolutionaryAlgorithmPhaseScope<Solution_> sharedPhaseScope,
+    protected EvolutionaryAlgorithmPhaseScope<Solution_> restoreState(
+            EvolutionaryAlgorithmPhaseScope<Solution_> sharedPhaseScope,
             State_ state) {
-        solutionManager.restoreSolutionState(ownScoreDirector, state);
-        var restoredPhaseScope = sharedPhaseScope.copy(ownScoreDirector);
+        context.solutionStateManager().restoreSolutionState(ownSolverScope.getScoreDirector(), state);
+        var restoredPhaseScope = sharedPhaseScope.createChildThreadPhaseScope(ownSolverScope);
         restoredPhaseScope.getSolverScope().setBestScore(state.getScore());
         restoredPhaseScope.getSolverScope().setBestSolutionTimeMillis(restoredPhaseScope.getSolverScope().getClock().millis());
+        // The best solution events are disabled while the inner phases are being executed
+        restoredPhaseScope.getSolverScope().setTriggerBestSolutionEvent(false);
         return restoredPhaseScope;
     }
 
@@ -162,13 +165,14 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
      * @param size the size of the population
      */
     public void restartPopulation(EvolutionaryAlgorithmPhaseScope<Solution_> sharedPhaseScope, int size,
+            Supplier<@Nullable Individual<Solution_, Score_>> bestSolutionSupplier,
             Consumer<Individual<Solution_, Score_>> individualConsumer) {
         var individualList = new ArrayList<Individual<Solution_, Score_>>(size);
         while (individualList.size() < size) {
             if (sharedPhaseScope.getTermination().isPhaseTerminated(sharedPhaseScope)) {
                 break;
             }
-            generateIndividual(sharedPhaseScope, individual -> {
+            generateIndividual(sharedPhaseScope, bestSolutionSupplier, individual -> {
                 individualList.add(individual);
                 individualConsumer.accept(individual);
             });
@@ -263,16 +267,16 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
         // The cancellation of demand is disabled, so when a resource counter reaches zero, it is not removed.
         // This allows the algorithm
         // to function without recalculating resources such as nearby matrices and value range caches.
-        ownScoreDirector.getSupplyManager().disableDemandCancellation();
+        this.ownSolverScope.getScoreDirector().getSupplyManager().disableDemandCancellation();
         // A solution that has only pinned values assigned is preferred for generating new individuals
-        this.initialState = solutionManager.saveSolutionState(ownScoreDirector, false);
+        this.initialState = context.solutionStateManager().saveSolutionState(ownSolverScope.getScoreDirector(), false);
     }
 
     public void phaseEnded(EvolutionaryAlgorithmPhaseScope<Solution_> phaseScope) {
         // Enable the cancellation of demand again and cancel all to clean up the supply manager,
         // so it doesn't hold on to any resources.
-        ownScoreDirector.getSupplyManager().enableDemandCancellation();
-        ownScoreDirector.getSupplyManager().cancelAll();
+        ownSolverScope.getScoreDirector().getSupplyManager().enableDemandCancellation();
+        ownSolverScope.getScoreDirector().getSupplyManager().cancelAll();
         this.initialState = null;
     }
 }
