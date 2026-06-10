@@ -2,12 +2,12 @@ package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.impl.bavet.common.index.FusedEqualIndex;
+import ai.timefold.solver.core.impl.bavet.common.index.FusedEqualIndex.Bucket;
 import ai.timefold.solver.core.impl.bavet.common.index.Indexer;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory.KeysExtractor;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory.UniKeysExtractor;
-import ai.timefold.solver.core.impl.bavet.common.index.JoinBucket;
-import ai.timefold.solver.core.impl.bavet.common.index.JoinIndex;
 import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
@@ -23,11 +23,11 @@ import org.jspecify.annotations.Nullable;
  * There is a strong likelihood that any change to this class, which is not related to indexing,
  * should also be made to {@link AbstractUnindexedJoinNode}.
  * <p>
- * Indexing takes one of two forms, chosen once at construction (see {@link IndexerFactory#isJoinIndexEligible()}):
+ * Indexing takes one of two forms, chosen once at construction (see {@link IndexerFactory#isFusedEqualIndexEligible()}):
  * <ul>
  * <li>the non-unified path keeps two parallel {@link Indexer}s ({@code indexerLeft}/{@code indexerRight}); a tuple
  * inserted on one side queries the OPPOSITE indexer with its OWN key (a second hash navigation of that key);</li>
- * <li>the unified path (equal-bearing joins) keeps ONE {@link JoinIndex}: a tuple looks up its bucket ONCE, adds
+ * <li>the unified path (equal-bearing joins) keeps ONE {@link FusedEqualIndex}: a tuple looks up its bucket ONCE, adds
  * itself to its side, and iterates the other side of the SAME bucket — co-location is the equal match. The resolved
  * bucket is cached on the tuple so same-key updates and retracts need no lookup at all.</li>
  * </ul>
@@ -46,12 +46,12 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
     private final int inputStoreIndexLeftEntry;
     private final int inputStoreIndexRightCompositeKey;
     private final int inputStoreIndexRightEntry;
-    private final boolean useJoinIndex;
-    // Non-unified path (useJoinIndex == false): two parallel indexers, queried cross-side.
+    private final boolean useFusedEqualIndex;
+    // Non-unified path (useFusedEqualIndex == false): two parallel indexers, queried cross-side.
     private final @Nullable Indexer<LeftTuple_> indexerLeft;
     private final @Nullable Indexer<UniTuple<Right_>> indexerRight;
-    // Unified path (useJoinIndex == true): one shared join index, plus per-side cached-bucket store slots.
-    private final @Nullable JoinIndex<LeftTuple_, UniTuple<Right_>> joinIndex;
+    // Unified path (useFusedEqualIndex == true): one shared join index, plus per-side cached-bucket store slots.
+    private final @Nullable FusedEqualIndex<LeftTuple_, UniTuple<Right_>> fusedEqualIndex;
     private final int inputStoreIndexLeftBucket;
     private final int inputStoreIndexRightBucket;
     // True only for an equal+suffix unified index: a changed-key update whose equal prefix is unchanged can reuse the
@@ -68,13 +68,13 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
         this.inputStoreIndexLeftEntry = tupleStorePositionTracker.reserveNextLeft();
         this.inputStoreIndexRightCompositeKey = tupleStorePositionTracker.reserveNextRight();
         this.inputStoreIndexRightEntry = tupleStorePositionTracker.reserveNextRight();
-        this.useJoinIndex = indexerFactory.isJoinIndexEligible();
-        this.joinIndex = useJoinIndex ? indexerFactory.buildJoinIndex() : null;
-        this.indexerLeft = useJoinIndex ? null : indexerFactory.buildIndexer(true);
-        this.indexerRight = useJoinIndex ? null : indexerFactory.buildIndexer(false);
-        this.inputStoreIndexLeftBucket = useJoinIndex ? tupleStorePositionTracker.reserveNextLeft() : -1;
-        this.inputStoreIndexRightBucket = useJoinIndex ? tupleStorePositionTracker.reserveNextRight() : -1;
-        this.reuseBucketEligible = useJoinIndex && joinIndex.hasSuffix();
+        this.useFusedEqualIndex = indexerFactory.isFusedEqualIndexEligible();
+        this.fusedEqualIndex = useFusedEqualIndex ? indexerFactory.buildFusedEqualIndex() : null;
+        this.indexerLeft = useFusedEqualIndex ? null : indexerFactory.buildIndexer(true);
+        this.indexerRight = useFusedEqualIndex ? null : indexerFactory.buildIndexer(false);
+        this.inputStoreIndexLeftBucket = useFusedEqualIndex ? tupleStorePositionTracker.reserveNextLeft() : -1;
+        this.inputStoreIndexRightBucket = useFusedEqualIndex ? tupleStorePositionTracker.reserveNextRight() : -1;
+        this.reuseBucketEligible = useFusedEqualIndex && fusedEqualIndex.hasSuffix();
     }
 
     @Override
@@ -104,15 +104,20 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             innerUpdateLeft(leftTuple, consumer -> forEachRightMatch(leftTuple, oldCompositeKey, consumer));
         } else {
             ElementAwareLinkedList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
-            var reuseBucket = reuseBucketEligible && joinIndex.isSameBucket(oldCompositeKey, newCompositeKey);
+            var reuseBucket = reuseBucketEligible && fusedEqualIndex.isSameBucket(oldCompositeKey, newCompositeKey);
             if (reuseBucket) {
                 // Equal prefix unchanged ⇒ same bucket: move within the cached bucket, no top lookup or drop/recreate.
-                JoinBucket<LeftTuple_, UniTuple<Right_>> bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
-                bucket.removeLeft(oldCompositeKey, leftTuple.getStore(inputStoreIndexLeftEntry));
+                Bucket<LeftTuple_, UniTuple<Right_>> bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
+                bucket.leftDownstream().remove(oldCompositeKey, leftTuple.getStore(inputStoreIndexLeftEntry));
             } else {
-                JoinBucket<LeftTuple_, UniTuple<Right_>> oldBucket =
-                        useJoinIndex ? leftTuple.getStore(inputStoreIndexLeftBucket) : null;
-                removeLeftFromIndex(oldCompositeKey, leftTuple.getStore(inputStoreIndexLeftEntry), oldBucket);
+                ListEntry<LeftTuple_> entry = leftTuple.getStore(inputStoreIndexLeftEntry);
+                if (useFusedEqualIndex) {
+                    Bucket<LeftTuple_, UniTuple<Right_>> oldBucket = leftTuple.getStore(inputStoreIndexLeftBucket);
+                    oldBucket.leftDownstream().remove(oldCompositeKey, entry);
+                    fusedEqualIndex.removeBucketIfEmpty(oldCompositeKey, oldBucket);
+                } else {
+                    indexerLeft.remove(oldCompositeKey, entry);
+                }
             }
             outTupleListLeft.clear(this::retractOutTupleByLeft);
             // outTupleListLeft is now empty
@@ -123,17 +128,17 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
 
     private void indexAndPropagateLeft(LeftTuple_ leftTuple, Object compositeKey, boolean reuseCachedBucket) {
         leftTuple.setStore(inputStoreIndexLeftCompositeKey, compositeKey);
-        if (useJoinIndex) {
+        if (useFusedEqualIndex) {
             // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct — no top-level
             // lookup and no re-cache; otherwise resolve the bucket (the single top-level lookup) and cache it.
-            JoinBucket<LeftTuple_, UniTuple<Right_>> bucket;
+            Bucket<LeftTuple_, UniTuple<Right_>> bucket;
             if (reuseCachedBucket) {
                 bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
             } else {
-                bucket = joinIndex.getOrCreateBucket(compositeKey);
+                bucket = fusedEqualIndex.getOrCreateBucket(compositeKey);
                 leftTuple.setStore(inputStoreIndexLeftBucket, bucket);
             }
-            leftTuple.setStore(inputStoreIndexLeftEntry, bucket.addLeft(compositeKey, leftTuple));
+            leftTuple.setStore(inputStoreIndexLeftEntry, bucket.leftDownstream().put(compositeKey, leftTuple));
         } else {
             leftTuple.setStore(inputStoreIndexLeftEntry, indexerLeft.put(compositeKey, leftTuple));
         }
@@ -164,9 +169,14 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             return;
         }
         ElementAwareLinkedList<OutTuple_> outTupleListLeft = leftTuple.removeStore(inputStoreIndexLeftOutTupleList);
-        JoinBucket<LeftTuple_, UniTuple<Right_>> bucket =
-                useJoinIndex ? leftTuple.removeStore(inputStoreIndexLeftBucket) : null;
-        removeLeftFromIndex(compositeKey, leftTuple.removeStore(inputStoreIndexLeftEntry), bucket);
+        ListEntry<LeftTuple_> entry = leftTuple.removeStore(inputStoreIndexLeftEntry);
+        if (useFusedEqualIndex) {
+            Bucket<LeftTuple_, UniTuple<Right_>> bucket = leftTuple.removeStore(inputStoreIndexLeftBucket);
+            bucket.leftDownstream().remove(compositeKey, entry);
+            fusedEqualIndex.removeBucketIfEmpty(compositeKey, bucket);
+        } else {
+            indexerLeft.remove(compositeKey, entry);
+        }
         outTupleListLeft.clear(this::retractOutTupleByLeft);
     }
 
@@ -197,15 +207,20 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             innerUpdateRight(rightTuple, consumer -> forEachLeftMatch(rightTuple, oldCompositeKey, consumer));
         } else {
             ElementAwareLinkedList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
-            var reuseBucket = reuseBucketEligible && joinIndex.isSameBucket(oldCompositeKey, newCompositeKey);
+            var reuseBucket = reuseBucketEligible && fusedEqualIndex.isSameBucket(oldCompositeKey, newCompositeKey);
             if (reuseBucket) {
                 // Equal prefix unchanged ⇒ same bucket: move within the cached bucket, no top lookup or drop/recreate.
-                JoinBucket<LeftTuple_, UniTuple<Right_>> bucket = rightTuple.getStore(inputStoreIndexRightBucket);
-                bucket.removeRight(oldCompositeKey, rightTuple.getStore(inputStoreIndexRightEntry));
+                Bucket<LeftTuple_, UniTuple<Right_>> bucket = rightTuple.getStore(inputStoreIndexRightBucket);
+                bucket.rightDownstream().remove(oldCompositeKey, rightTuple.getStore(inputStoreIndexRightEntry));
             } else {
-                JoinBucket<LeftTuple_, UniTuple<Right_>> oldBucket =
-                        useJoinIndex ? rightTuple.getStore(inputStoreIndexRightBucket) : null;
-                removeRightFromIndex(oldCompositeKey, rightTuple.getStore(inputStoreIndexRightEntry), oldBucket);
+                ListEntry<UniTuple<Right_>> entry = rightTuple.getStore(inputStoreIndexRightEntry);
+                if (useFusedEqualIndex) {
+                    Bucket<LeftTuple_, UniTuple<Right_>> bucket = rightTuple.getStore(inputStoreIndexRightBucket);
+                    bucket.rightDownstream().remove(oldCompositeKey, entry);
+                    fusedEqualIndex.removeBucketIfEmpty(oldCompositeKey, bucket);
+                } else {
+                    indexerRight.remove(oldCompositeKey, entry);
+                }
             }
             outTupleListRight.clear(this::retractOutTupleByRight);
             // outTupleListRight is now empty
@@ -216,17 +231,17 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
 
     private void indexAndPropagateRight(UniTuple<Right_> rightTuple, Object compositeKey, boolean reuseCachedBucket) {
         rightTuple.setStore(inputStoreIndexRightCompositeKey, compositeKey);
-        if (useJoinIndex) {
+        if (useFusedEqualIndex) {
             // reuseCachedBucket: the equal prefix is unchanged, so the cached bucket is still correct — no top-level
             // lookup and no re-cache; otherwise resolve the bucket (the single top-level lookup) and cache it.
-            JoinBucket<LeftTuple_, UniTuple<Right_>> bucket;
+            Bucket<LeftTuple_, UniTuple<Right_>> bucket;
             if (reuseCachedBucket) {
                 bucket = rightTuple.getStore(inputStoreIndexRightBucket);
             } else {
-                bucket = joinIndex.getOrCreateBucket(compositeKey);
+                bucket = fusedEqualIndex.getOrCreateBucket(compositeKey);
                 rightTuple.setStore(inputStoreIndexRightBucket, bucket);
             }
-            rightTuple.setStore(inputStoreIndexRightEntry, bucket.addRight(compositeKey, rightTuple));
+            rightTuple.setStore(inputStoreIndexRightEntry, bucket.rightDownstream().put(compositeKey, rightTuple));
         } else {
             rightTuple.setStore(inputStoreIndexRightEntry, indexerRight.put(compositeKey, rightTuple));
         }
@@ -241,9 +256,15 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             return;
         }
         ElementAwareLinkedList<OutTuple_> outTupleListRight = rightTuple.removeStore(inputStoreIndexRightOutTupleList);
-        JoinBucket<LeftTuple_, UniTuple<Right_>> bucket =
-                useJoinIndex ? rightTuple.removeStore(inputStoreIndexRightBucket) : null;
-        removeRightFromIndex(compositeKey, rightTuple.removeStore(inputStoreIndexRightEntry), bucket);
+        ListEntry<UniTuple<Right_>> entry = rightTuple.removeStore(inputStoreIndexRightEntry);
+        if (useFusedEqualIndex) {
+            Bucket<LeftTuple_, UniTuple<Right_>> bucket = rightTuple.removeStore(inputStoreIndexRightBucket);
+            bucket.rightDownstream().remove(compositeKey, entry);
+            fusedEqualIndex.removeBucketIfEmpty(compositeKey, bucket);
+        } else {
+            indexerRight.remove(compositeKey, entry);
+        }
+
         outTupleListRight.clear(this::retractOutTupleByRight);
     }
 
@@ -252,9 +273,9 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
      * bucket (unified), or {@code indexerRight} queried with that key (non-unified).
      */
     private void forEachRightMatch(LeftTuple_ leftTuple, Object compositeKey, Consumer<UniTuple<Right_>> consumer) {
-        if (useJoinIndex) {
-            JoinBucket<LeftTuple_, UniTuple<Right_>> bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
-            bucket.forEachRight(compositeKey, consumer);
+        if (useFusedEqualIndex) {
+            Bucket<LeftTuple_, UniTuple<Right_>> bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
+            bucket.rightDownstream().forEach(compositeKey, consumer);
         } else {
             indexerRight.forEach(compositeKey, consumer);
         }
@@ -265,31 +286,11 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
      * bucket (unified), or {@code indexerLeft} queried with that key (non-unified).
      */
     private void forEachLeftMatch(UniTuple<Right_> rightTuple, Object compositeKey, Consumer<LeftTuple_> consumer) {
-        if (useJoinIndex) {
-            JoinBucket<LeftTuple_, UniTuple<Right_>> bucket = rightTuple.getStore(inputStoreIndexRightBucket);
-            bucket.forEachLeft(compositeKey, consumer);
+        if (useFusedEqualIndex) {
+            Bucket<LeftTuple_, UniTuple<Right_>> bucket = rightTuple.getStore(inputStoreIndexRightBucket);
+            bucket.leftDownstream().forEach(compositeKey, consumer);
         } else {
             indexerLeft.forEach(compositeKey, consumer);
-        }
-    }
-
-    private void removeLeftFromIndex(Object compositeKey, ListEntry<LeftTuple_> entry,
-            @Nullable JoinBucket<LeftTuple_, UniTuple<Right_>> bucket) {
-        if (useJoinIndex) {
-            bucket.removeLeft(compositeKey, entry);
-            joinIndex.removeBucketIfEmpty(compositeKey, bucket);
-        } else {
-            indexerLeft.remove(compositeKey, entry);
-        }
-    }
-
-    private void removeRightFromIndex(Object compositeKey, ListEntry<UniTuple<Right_>> entry,
-            @Nullable JoinBucket<LeftTuple_, UniTuple<Right_>> bucket) {
-        if (useJoinIndex) {
-            bucket.removeRight(compositeKey, entry);
-            joinIndex.removeBucketIfEmpty(compositeKey, bucket);
-        } else {
-            indexerRight.remove(compositeKey, entry);
         }
     }
 

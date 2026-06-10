@@ -500,7 +500,7 @@ public final class IndexerFactory<Right_> {
      * whole composite key instead of component 1).
      * <p>
      * {@code buildIndexer(isLeftBridge)} is {@code buildIndexerChain(isLeftBridge, 0, backendSupplier)};
-     * {@link #buildJoinIndex()} uses {@code fromLevelInclusive == 1} to build the per-side suffix sub-chains.
+     * {@link #buildFusedEqualIndex()} uses {@code fromLevelInclusive == 1} to build the per-side suffix sub-chains.
      */
     private <T> Supplier<Indexer<T>> buildIndexerChain(boolean isLeftBridge, int fromLevelInclusive,
             Supplier<Indexer<T>> backendSupplier) {
@@ -531,36 +531,38 @@ public final class IndexerFactory<Right_> {
     }
 
     /**
-     * Whether this join/ifExists can use a unified {@link JoinIndex} instead of two parallel indexers.
-     * Eligible iff the joiner has a leading EQUAL run (always true iff it has any equal, since the comber
-     * reorders equal-first) and random access is not required (random access is single-indexer anyway).
+     * Whether this join/ifExists can use a unified {@link FusedEqualIndex} instead of two parallel indexers.
+     * Eligible iff the joiner has a leading EQUAL run
+     * (always true iff it has any equal, since the comber reorders equal-first)
+     * and random access is not required.
      */
-    public boolean isJoinIndexEligible() {
+    public boolean isFusedEqualIndexEligible() {
         return equalPrefixLength >= 1 && !requiresRandomAccess;
     }
 
     /**
-     * Builds a unified {@link JoinIndex} for an {@link #isJoinIndexEligible() eligible} join/ifExists.
-     * The top map is keyed by the equal prefix; each bucket holds the per-side downstream for the remaining
-     * comparison/containing suffix (built right-flipped on the right side), or a bare tuple-list backend when
-     * the join is pure-equal.
+     * Builds a unified {@link FusedEqualIndex} for an {@link #isFusedEqualIndexEligible() eligible} join/ifExists.
+     * The top map is keyed by the equal prefix;
+     * each bucket holds the per-side downstream for the remaining comparison/containing suffix
+     * (built right-flipped on the right side),
+     * or a bare tuple-list backend when the join is pure-equal.
      *
      * @param <L> the left element type (a left tuple, or {@code ExistsCounter} for ifExists)
      * @param <R> the right element type (a right {@code UniTuple})
      */
-    public <L, R> JoinIndex<L, R> buildJoinIndex() {
+    public <L, R> FusedEqualIndex<L, R> buildFusedEqualIndex() {
         var joinerCount = joiner.getJoinerCount();
         // Pure-equal ⇒ the composite key IS the equal key (SingleKeyUnpacker); otherwise it is component 0.
         KeyUnpacker<Object> topEqualKeyUnpacker =
                 equalPrefixLength == joinerCount ? new SingleKeyUnpacker<>() : new CompositeKeyUnpacker<>(0);
         if (equalPrefixLength == joinerCount) {
             // Pure equal: the per-side downstream is just the tuple list; the bucket is the equal-key group.
-            return new JoinIndex<>(topEqualKeyUnpacker, false, LinkedListLeafIndexer::new, LinkedListLeafIndexer::new);
+            return new FusedEqualIndex<>(topEqualKeyUnpacker, false, LinkedListLeafIndexer::new, LinkedListLeafIndexer::new);
         } else {
             // Equal prefix + suffix: build the per-side suffix sub-chain (the right side flips comparisons).
             var leftDownstreamSupplier = this.<L> buildIndexerChain(true, 1, LinkedListLeafIndexer::new);
             var rightDownstreamSupplier = this.<R> buildIndexerChain(false, 1, LinkedListLeafIndexer::new);
-            return new JoinIndex<L, R>(topEqualKeyUnpacker, true, leftDownstreamSupplier, rightDownstreamSupplier);
+            return new FusedEqualIndex<L, R>(topEqualKeyUnpacker, true, leftDownstreamSupplier, rightDownstreamSupplier);
         }
     }
 

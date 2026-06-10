@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Covers the NON-unified (two parallel indexer) path: joins whose indexing joiners contain no equal joiner,
- * so {@link IndexerFactory#isJoinIndexEligible()} is false and the node keeps two comparison indexers.
+ * so {@link IndexerFactory#isFusedEqualIndexEligible()} is false and the node keeps two comparison indexers.
  * Comparison is otherwise only exercised alongside a leading equal (see {@link EqualsAndComparisonIndexerTest});
  * a pure-comparison join takes the {@code useJoinIndex == false} branch and must still join correctly.
  * <p>
@@ -26,11 +26,11 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
     @Test
     void joinIndexEligibilityRouting() {
         // No equal joiner ⇒ NOT eligible ⇒ the non-unified two-indexer path.
-        assertThat(new IndexerFactory<>(lessThanAge).isJoinIndexEligible()).isFalse();
-        assertThat(new IndexerFactory<>(twoComparisons()).isJoinIndexEligible()).isFalse();
+        assertThat(new IndexerFactory<>(lessThanAge).isFusedEqualIndexEligible()).isFalse();
+        assertThat(new IndexerFactory<>(twoComparisons()).isFusedEqualIndexEligible()).isFalse();
         // A leading equal ⇒ eligible (boundary sanity check).
-        assertThat(new IndexerFactory<>(equalGender()).isJoinIndexEligible()).isTrue();
-        assertThat(new IndexerFactory<>(equalThenLessThan()).isJoinIndexEligible()).isTrue();
+        assertThat(new IndexerFactory<>(equalGender()).isFusedEqualIndexEligible()).isTrue();
+        assertThat(new IndexerFactory<>(equalThenLessThan()).isFusedEqualIndexEligible()).isTrue();
     }
 
     @Test
