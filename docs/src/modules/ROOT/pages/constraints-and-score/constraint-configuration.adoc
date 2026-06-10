@@ -5,7 +5,7 @@
 :icons: font
 
 :relevance: both
-:notes: [MDK] has some different patterns to deal with this.
+:notes: service module has some different patterns to deal with this.
 
 
 

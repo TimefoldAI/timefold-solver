@@ -5,7 +5,7 @@
 :sectnums:
 :icons: font
 :relevance: both
-:notes: Wildly different in [MDK], so potentially split.
+:notes: Wildly different in service module, so potentially split.
 
 
 The problem facts used to create a solution may change before or during the execution of that solution.

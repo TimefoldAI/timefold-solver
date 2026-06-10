@@ -68,17 +68,17 @@ The default constraint weight for these constraints is `1`. This can now be over
 For example, to make the Teacher conflict 10 times more impactful, override the weight to 10:
 
 .Example Request to change the weight.
-[json]
+[source,json]
 ----
 {
     "config": {
       "run": {
-        "name": "run name"
+        "name": "run name",
         <some fields excluded>
       },
       "model": {
         "overrides": {
-          teacherConflictWeight: 10
+          "teacherConflictWeight": 10
         }
       }
     },
@@ -90,12 +90,10 @@ For example, to make the Teacher conflict 10 times more impactful, override the 
 Only allow weight overrides if it makes sense.
 Usually, it doesn't make sense to allow weight overrides for _hard_ constraints.
 
-// TODO, i wish it ended with The SDK takes care of changing the referenced constraint with the new weight... but we continue!
-
 Next, in the xref:./rest-api.adoc#modelConverter[model converter], make sure to map these overrides to a solver specific `ConstraintWeightOverrides` object that must be on the `@PlanningSolution` class.
 
 .As part of the ModelConverter
-[java]
+[source,java]
 ----
 TimetableConfigOverrides modelConfigOverrides = modelConfig.overrides();
 
@@ -111,6 +109,6 @@ constraintWeightOverrides = ConstraintWeightOverrides.of(
 solverModel.setConstraintWeightOverrides(constraintWeightOverrides);
 ----
 
-More information about https://docs.timefold.ai/timefold-solver/latest/constraints-and-score/constraint-configuration[Adjusting constraints at runtime] in the Timefold Solver documentation.
+For more information, see xref:../constraints-and-score/constraint-configuration.adoc#constraintConfiguration[Adjusting constraints at runtime].
 
-//TODO === Adjusting Model Parameters
+//TODO === Adjusting Model Parameters https://github.com/TimefoldAI/timefold-solver/issues/2347

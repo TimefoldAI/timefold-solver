@@ -23,18 +23,20 @@ a|
 [.text-center]
 icon:cubes[4x]
 
+[.text-center]
 *xref:#embedAsALibrary[Embed as a library]*
 
 Add the solver as a dependency and wire it into your application however you like.
-Use Spring Boot or Quarkus... or no framework at all.
+Use Spring Boot, Quarkus... or no framework at all.
 
 a|
 [.text-center]
 icon:server[4x]
 
-*xref:#runAsAService[Run as a service]* [.label.label-warning]#Preview#
+[.text-center]
+*xref:#runAsAService[Run as a service]* (Preview)
 
-Deploy a fully isolated optimization service built on Quarkus.
+Deploy a fully isolated optimization service. This oppinionated approach reduces the amount of boilerplate code needed to get to a running application.
 
 |===
 
@@ -68,7 +70,7 @@ Deploy a fully isolated optimization service built on Quarkus.
 == Embed as a library
 
 The library approach gives you the solver core as a dependency.
-You integrate it into your application however you see fit — there are no constraints on your application framework or architecture.
+You integrate it into your application however you see fit. There are no constraints on your application framework or architecture.
 
 The following getting started guides demonstrate the library approach:
 

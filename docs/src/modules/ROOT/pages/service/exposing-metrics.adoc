@@ -68,10 +68,80 @@ public class Timetable implements SolverModel<HardSoftScore>, InputMetricsAware<
 [#modelOutputMetrics]
 == Output metrics
 
-Output metrics provide more information about the dataset.
-The implementation is the same as xref:#modelInputMetrics[the solver input metrics], with these differences:
+Output metrics provide more information about the result produced by the solver,
+such as solution quality indicators or key performance indicators (KPIs).
 
-- The output metrics should be contained in a class or record which implements the `ModelOutputMetrics` interface.
-- The `SolverModel` should implement the `OutputMetricsAware` interface and should construct the defined `ModelOutputMetrics` object.
+Output metrics are calculated after solving completes.
+They should be derived from the solved `SolverModel`, not from the input.
 
-// TODO: Don't be lazy and also write this out fully ;)
+[NOTE]
+====
+Like input metrics, they are exposed through the xref:./rest-api.adoc[REST API] under the `kpis` field of the response.
+It is therefore necessary to add xref:./rest-api.adoc#openAPISpecification[OpenAPI Specification] annotations to the fields.
+====
+
+.Example for School Timetabling
+[source,Java]
+----
+public record TimetableOutputMetrics(
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "unassignedLessons", title = "Unassigned lessons",
+            format = DataFormat.Values.NUMBER, description = "The number of lessons that could not be assigned a timeslot or room.",
+            type = SchemaType.NUMBER, example = "0", readOnly = true) int unassignedLessons,
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "maxConsecutiveLessons", title = "Max consecutive lessons",
+            format = DataFormat.Values.NUMBER, description = "The maximum number of consecutive lessons assigned to any single teacher.",
+            type = SchemaType.NUMBER, example = "3", readOnly = true) int maxConsecutiveLessons
+   ) implements ModelOutputMetrics {}
+----
+
+Next, the `SolverModel` should implement the `OutputMetricsAware` interface and construct the defined `ModelOutputMetrics` object from the solved state.
+
+.Example for School Timetabling
+[source,Java]
+----
+@PlanningSolution
+public class Timetable implements SolverModel<HardSoftScore>, OutputMetricsAware<TimetableOutputMetrics> {
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    private List<Timeslot> timeslots;
+
+    @PlanningEntityCollectionProperty
+    private List<Lesson> lessons;
+
+    @PlanningScore
+    private HardSoftScore score;
+
+    @Override
+    public HardSoftScore getScore() {
+        return score;
+    }
+
+    @Override
+    public TimetableOutputMetrics getOutputMetrics() {
+        int unassigned = (int) lessons.stream()
+                .filter(l -> l.getTimeslot() == null || l.getRoom() == null)
+                .count();
+        int maxConsecutive = computeMaxConsecutiveLessons(lessons);
+        return new TimetableOutputMetrics(unassigned, maxConsecutive);
+    }
+
+    // other Getters/Setters/Constructors excluded
+}
+----
+
+[#combiningMetrics]
+== Combining input and output metrics
+
+A `SolverModel` can implement both `InputMetricsAware` and `OutputMetricsAware` at the same time.
+
+[source,Java]
+----
+@PlanningSolution
+public class Timetable implements SolverModel<HardSoftScore>,
+        InputMetricsAware<TimetableInputMetrics>,
+        OutputMetricsAware<TimetableOutputMetrics> {
+
+    // fields, getInputMetrics(), getOutputMetrics() excluded
+
+}
+----

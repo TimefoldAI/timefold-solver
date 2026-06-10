@@ -5,7 +5,7 @@
 :sectnums:
 :icons: font
 :relevance: core-only
-:notes: Too much things [MDK] does automatically or with 1 single configuration.
+:notes: Too much things service module does automatically or with 1 single configuration.
 
 [#theSolverInterface]
 == The `Solver` interface

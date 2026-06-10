@@ -5,7 +5,7 @@
 :sectnums:
 :icons: font
 :relevance: both
-:notes: Mostly irrelevant in [MDK].
+:notes: Mostly irrelevant in service module.
 
 
 [#findTheBestSolverConfiguration]
