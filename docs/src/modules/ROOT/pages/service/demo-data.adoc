@@ -23,7 +23,7 @@ This interface requires you to implement 2 methods:
 Implementations of this interface must be dependency free meaning simple instantiation (even with reflection) of this class is enough to generate demo data.
 ====
 
-[source,Java]
+[source,java,options="nowrap"]
 ----
 @ApplicationScoped
 public class TimetableDemoDataGenerator implements DemoDataGenerator {

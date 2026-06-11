@@ -21,7 +21,7 @@ It is therefore necessary to add xref:./rest-api.adoc#openAPISpecification[OpenA
 ====
 
 .Example for School Timetabling
-[source,Java]
+[source,java,options="nowrap"]
 ----
 public record TimetableInputMetrics(
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "lessons", title = "Lessons",
@@ -36,7 +36,7 @@ public record TimetableInputMetrics(
 Next, the `SolverModel` should implement the `InputMetricsAware` interface and construct the defined `ModelInputMetrics` object.
 
 .Example for School Timetabling
-[source,Java]
+[source,java,options="nowrap"]
 ----
 @PlanningSolution
 public class Timetable implements SolverModel<HardSoftScore>, InputMetricsAware<TimetableInputMetrics> {
@@ -81,7 +81,7 @@ It is therefore necessary to add xref:./rest-api.adoc#openAPISpecification[OpenA
 ====
 
 .Example for School Timetabling
-[source,Java]
+[source,java,options="nowrap"]
 ----
 public record TimetableOutputMetrics(
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "unassignedLessons", title = "Unassigned lessons",
@@ -96,7 +96,7 @@ public record TimetableOutputMetrics(
 Next, the `SolverModel` should implement the `OutputMetricsAware` interface and construct the defined `ModelOutputMetrics` object from the solved state.
 
 .Example for School Timetabling
-[source,Java]
+[source,java,options="nowrap"]
 ----
 @PlanningSolution
 public class Timetable implements SolverModel<HardSoftScore>, OutputMetricsAware<TimetableOutputMetrics> {
@@ -134,7 +134,7 @@ public class Timetable implements SolverModel<HardSoftScore>, OutputMetricsAware
 
 A `SolverModel` can implement both `InputMetricsAware` and `OutputMetricsAware` at the same time.
 
-[source,Java]
+[source,java,options="nowrap"]
 ----
 @PlanningSolution
 public class Timetable implements SolverModel<HardSoftScore>,
