@@ -554,12 +554,10 @@ that both represent an interval which overlap.
 All `Joiners` methods have an overloaded method to use the same property of the same class on both stream sides.
 For example, calling `equal(Shift::getEmployee)` is the same as calling `equal(Shift::getEmployee, Shift::getEmployee)`.
 
-[NOTE]
-====
-If the other stream might match multiple times, but it must only impact the score once (for each element of the original
-stream), use <<constraintStreamsConditionalPropagation,ifExists>> instead.
+NOTE: If the other stream might match multiple times,
+but it must only impact the score once (for each element of the original stream),
+use <<constraintStreamsConditionalPropagation,ifExists>> instead.
 It does not create cartesian products and therefore generally performs better.
-====
 
 ==== Evaluation of multiple joiners
 
@@ -596,8 +594,8 @@ the key is `[the result of calling Visit.getVehicleShift() && result of calling 
 (Using the second mapping function of each joiner.)
 
 However, both of the key mapping functions are calculated independently of the other,
-and therefore the `lessThan()` joiner's mapping functions will be executed even in cases
-when the `equal()` joiner would not match.
+and therefore the `lessThan()` joiner's mapping functions will be executed
+even in cases when the `equal()` joiner would not match.
 This leads to a `NullPointerException` being thrown in the example above,
 where the `lessThan()` joiner's mapping functions are executed on a `Visit` instance
 that has a `null` `vehicleShift` property which wasn't (yet) filtered out by the `equal()` joiner.
@@ -605,7 +603,8 @@ The filtering only happens inside the joiner's indexes and to access them,
 we need these keys to be generated first.
 
 To avoid these issues,
-do not assume that subsequent joiners' mapping functions only apply after the previous joiners have matched.
+do not assume that subsequent joiners' mapping functions only apply
+after the previous joiners have matched.
 Alternatively (and possibly at the cost of reduced performance) use the filtering joiner,
 which is processed differently and does not suffer from this issue:
 
@@ -626,7 +625,8 @@ Java::
 
 ==== Performance considerations
 
-It is tempting to replace filters with joiners where applicable, expecting better performance.
+It is tempting to replace filters with joiners where applicable,
+expecting better performance.
 However, that is not always the case.
 Joiners bring overhead of maintaining indexes,
 and if the joiner does not significantly reduce the number of matches,
@@ -637,12 +637,18 @@ Some of the more advanced joiners may require very large datasets to outperform 
 
 When it comes to performance, we recommend you follow these guidelines:
 
-- Do not optimize prematurely. First, implement the constraint in the most readable way.
-- Measure performance. If any particular constraint is shown to be the bottleneck,
-try alternative implementations.
-- Do not make assumptions about performance.
+- Do not optimize prematurely. First implement the constraint in the most readable way.
+- Do not make assumptions about performance, measure it instead.
 Performance characteristics of any API may not be what you expect,
 and they may change between Timefold Solver versions as we constantly improve our technology.
+- Use xref:constraints-and-score/performance.adoc#constraintProfiling[constraint profiling] to find the most expensive constraint,
+and optimize it first. Then repeat until you reach satisfactory performance.
+
+NOTE: In order to maximize performance,
+the order of evaluation of indexes will not be the same
+as the order of joiners in the code.
+Typically, all `equal()` joiners are combined into one key and evaluated first, followed by the rest of the indexing joiners
+and finally the filtering joiners.
 
 [#constraintStreamsGroupingAndCollectors]
 === Grouping and collectors
