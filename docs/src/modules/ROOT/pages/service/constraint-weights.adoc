@@ -22,7 +22,7 @@ The implementation should have fields that refer to specific constraints using t
 To ensure both the constraint and this reference are the same, use a static field to keep the name of the constraint.
 
 .The example ConstraintProvider class.
-[source,java]
+[source,java,options="nowrap"]
 ----
 public class TimetableConstraintProvider implements ConstraintProvider {
 
@@ -46,7 +46,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
 ----
 
 .The ModelConfigOverrides class.
-[source,java]
+[source,java,options="nowrap"]
 ----
 public final class TimetableConfigOverrides implements ModelConfigOverrides {
 
@@ -93,7 +93,7 @@ Usually, it doesn't make sense to allow weight overrides for _hard_ constraints.
 Next, in the xref:./rest-api.adoc#modelConverter[model converter], make sure to map these overrides to a solver specific `ConstraintWeightOverrides` object that must be on the `@PlanningSolution` class.
 
 .As part of the ModelConverter
-[source,java]
+[source,java,options="nowrap"]
 ----
 TimetableConfigOverrides modelConfigOverrides = modelConfig.overrides();
 

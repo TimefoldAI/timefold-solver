@@ -14,7 +14,7 @@ include::_preview-note.adoc[]
 Your class which is annotated by `@PlanningSolution` should implement the `SolverModel` interface.
 
 .Example for School Timetabling
-[source,Java]
+[source,java,options="nowrap"]
 ----
 @PlanningSolution
 public class Timetable implements SolverModel<HardSoftScore> {
@@ -53,7 +53,7 @@ Especially when the field depends on external information or is difficult to com
 In this example, we enrich the Timetable PlanningSolution described above by filling in the "isHoliday" field for all Timeslot objects.
 
 .Timeslot class for the School Timetabling example
-[source,Java]
+[source,java,options="nowrap"]
 ----
 
 public class Timeslot {
@@ -74,7 +74,7 @@ public class Timeslot {
 Enrichment of the SolverModel is possible by implementing a `SolverModelEnricher`.
 
 .Timeslot Enricher for the School Timetabling example
-[source,Java]
+[source,java,options="nowrap"]
 ----
 @ApplicationScoped
 public class TimeslotHolidayEnricher implements SolverModelEnricher<Timetable> {
@@ -102,7 +102,7 @@ This might be important when 1 of your custom enrichers depends on an enricher p
 //TODO add link to maps component docs https://github.com/TimefoldAI/timefold-solver/issues/2348
 
 .Timetable Enrichment Director for the School Timetabling example
-[source,Java]
+[source,java,options="nowrap"]
 ----
 @ApplicationScoped
 public class TimetableEnrichmentDirector implements SolverModelEnrichmentDirector<Timetable> {

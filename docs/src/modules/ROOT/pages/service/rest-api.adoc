@@ -18,7 +18,7 @@ The following are expected.
 - An interface which extends `ModelRest` to define the root path of the REST API.
 
 For example, in the case of School Timetabling, those classes could look as follows.
-[source,Java]
+[source,java,options="nowrap"]
 ----
 // TimetableDto.java
 public class TimetableDto implements ModelInput, ModelOutput {
@@ -134,8 +134,8 @@ A Solving Response always contains at least 2 major elements, the `modelOutput` 
 
 Additionally, more fields might be added for specific model implementations:
 
-- `inputMetrics`: metrics about the input of the planning problem see: xref:./exposing-metrics.adoc#modelInputMetrics[]
-- `kpis`: metrics about the output of the planning problem see: xref:./exposing-metrics.adoc#modelOutputMetrics[]
+- `inputMetrics`: metrics about the input of the planning problem. See: xref:./exposing-metrics.adoc#modelInputMetrics[Input Metrics]
+- `kpis`: metrics about the output of the planning problem. See: xref:./exposing-metrics.adoc#modelOutputMetrics[Output Metrics]
 
 .Example Response
 [source,json]
@@ -199,7 +199,7 @@ it's often beneficial to decouple the classes used for the REST API interactions
 
 To convert between `ModelInput` / `ModelOutput` and the `SolverModel`, a `ModelConvertor` implementation can be provided.
 
-[source,Java]
+[source,java,options="nowrap"]
 ----
 @ApplicationScoped
 public class TimetableConvertor implements ModelConvertor<HardSoftLongScore, TimetableDto, Timetable, EmptyModelConfigOverrides, EmptyModelInputMetrics, EmptyModelOutputMetrics, Timetable> {
@@ -234,7 +234,7 @@ By default, validation on the input is based on the xref:./rest-api.adoc#openAPI
 Additional validations can be added by implementing the `ModelValidator` interface.
 
 [#timetableValidatorExample]
-[source,java]
+[source,java,options="nowrap"]
 ----
 @ApplicationScoped
 public class TimetableValidator implements ModelValidator<TimetableDto, TimetableConfigOverrides> {
@@ -339,7 +339,7 @@ You can add custom endpoints in the `ModelRest` implementation.
 For example, if you want to extend the Timetable REST API, you can add custom https://jakarta.ee/learn/docs/jakartaee-tutorial/current/websvcs/rest/rest.html[Jakarta REST endpoints].
 These endpoints should also be documented appropriately for the automatically generated xref:#openAPISpecification[OpenAPI specification].
 
-[source,Java]
+[source,java,options="nowrap"]
 ----
 @Tag(name = "School Timetabling",
         description = "School timetabling service assigning lessons to timeslots.") //OpenAPI documentation annotation
