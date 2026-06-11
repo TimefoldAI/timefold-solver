@@ -141,7 +141,11 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
             logger.trace("{}        Proposed move ({}) is tabu and is therefore not accepted.",
                     logIndentation, moveScope.getMove());
             return false;
+        } else if (workingFadingTabuSize == 0) {
+            // No comment as the move is not tabu; the tabu list needs to be adjusted.
+            return true;
         }
+        // From this point, we are guaranteed to be in a fading tabu.
         var acceptChance = calculateFadingTabuAcceptChance(tabuStepCount - workingTabuSize);
         var accepted = moveScope.getWorkingRandom().nextDouble() < acceptChance;
         if (accepted) {
