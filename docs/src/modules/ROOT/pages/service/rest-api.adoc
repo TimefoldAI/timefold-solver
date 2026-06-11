@@ -86,7 +86,7 @@ Additionally, more fields might be added for specific model implementations.
 {
     "config": {
       "run": {
-        "name": "run name",
+        "name": "dataset name",
         "termination": {
           "spentLimit": "PT5M",
           "unimprovedSpentLimit": "PT10S"

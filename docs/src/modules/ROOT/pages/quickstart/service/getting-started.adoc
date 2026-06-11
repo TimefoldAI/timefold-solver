@@ -9,7 +9,7 @@ This guide walks you through the process of creating an AI Optimization service.
 With this approach, you define your planning model: the domain objects, constraints, and planning solution.
 Timefold Solver takes care of the rest.
 There is no need to wire up a solver manually, manage thread pools, or implement REST endpoints by hand.
-The service exposes a ready-to-use REST API automatically, built on top of https://quarkus.io[Quarkus].
+The service exposes a ready-to-use REST API automatically and supports our recommended optimization architecture.
 
 NOTE: The service approach is currently only available in Java.
 
@@ -317,7 +317,7 @@ This call should return a response containing the ID of the started run.
 ----
 {
   "id" : "f401a609-403b-48c4-9487-0baf287e4f72",
-  "name" : "Run-2025-06-10T13:03:50.824454+02:00",
+  "name" : "Dataset-2025-06-10T13:03:50.824454+02:00",
   "submitDateTime" : "2025-06-10T13:03:50.824454+02:00",
   "solverStatus" : "NOT_SOLVING"
 }
@@ -338,9 +338,9 @@ This call with return the standard xref:service/rest-api.adoc#solvingResponse[re
 [source,json]
 ----
 {
-  "run": {
+  "metadata": {
     "id": "f401a609-403b-48c4-9487-0baf287e4f72",
-    "name": "Run-2025-06-10T13:03:50.824454+02:00",
+    "name": "Dataset-2025-06-10T13:03:50.824454+02:00",
     "submitDateTime": "2025-06-10T13:03:50.824454+02:00",
     "startDateTime": "2025-06-10T13:03:50.832544+02:00",
     "activeDateTime": "2025-06-10T13:03:50.833934+02:00",

@@ -4,7 +4,7 @@
 :sectnums:
 :icons: font
 
-:relevance: both
+:relevance: library-and-service
 :notes: service module has some different patterns to deal with this.
 
 

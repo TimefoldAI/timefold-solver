@@ -1,7 +1,7 @@
 = FAQ
 :doctype: book
 :icons: font
-:relevance: both
+:relevance: library-and-service
 
 == How is Timefold Solver Licensed?
 

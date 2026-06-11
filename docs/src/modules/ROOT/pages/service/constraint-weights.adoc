@@ -9,7 +9,7 @@ Having good default weights makes the model easily reusable and is an expression
 
 include::_preview-note.adoc[]
 
-Constraint weights are always an interpretation by the modeller. It might be that the consumer of the model would like to see the constraints weighed differently.
+Constraint weights are always an interpretation by the modeler. It might be that the consumer of the model would like to see the constraints weighed differently.
 `ModelConfigOverrides` allows consumers of a model to tailor constraint weights and parameters to their use case.
 
 [NOTE]

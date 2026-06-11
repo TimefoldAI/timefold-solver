@@ -7,7 +7,7 @@
 
 include::_preview-note.adoc[]
 
-Run optimization as a fully isolated service.
+Run dataset optimization as a fully isolated service.
 This opinionated approach builds on https://quarkus.io[Quarkus] and eliminates the boilerplate typically needed to expose a solver over a REST API.
 
 If you haven't done so yet, start with the xref:../quickstart/service/getting-started.adoc[Getting started: building a service] guide.

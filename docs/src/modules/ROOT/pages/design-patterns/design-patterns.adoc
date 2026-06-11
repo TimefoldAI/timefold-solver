@@ -4,7 +4,7 @@
 :sectnums:
 :icons: font
 
-:relevance: both
+:relevance: library-and-service
 :notes: Most of this should be in the "how to model" reference. Design patterns is too weak a term.
 
 

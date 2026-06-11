@@ -5,7 +5,7 @@
     use-cases-and-examples/use-cases-and-examples.adoc, \
     overview-quickstarts.adoc
 :imagesdir: ../..
-:relevance: both
+:relevance: library-and-service
 :icons: font
 
 [TIP]
@@ -36,7 +36,7 @@ icon:server[4x]
 [.text-center]
 *xref:#runAsAService[Run as a service]* (Preview)
 
-Deploy a fully isolated optimization service. This oppinionated approach reduces the amount of boilerplate code needed to get to a running application.
+Deploy a fully isolated optimization service. This opinionated approach reduces the amount of boilerplate code needed to get to a running application.
 
 |===
 
@@ -99,15 +99,23 @@ The service approach is currently in *preview*.
 It is the recommended path going forward, but the API may still change before it reaches general availability.
 ====
 
-The service approach takes an opinionated stance: it builds a fully independent optimization service on top of https://quarkus.io[Quarkus].
-The service has a single responsibility, *running optimization*, and exposes it over a well-defined API.
-You do not need to manage solver lifecycle, thread pools, or result handling yourself.
+This is the approach we recommend for integrating Timefold Solver into a larger system,
+and it is the approach we use ourselves when building optimization models at Timefold.
 
-This approach is the right choice when you want to:
+The service has a single responsibility: *running optimization*.
+It receives a dataset, solves it, and returns the result over a well-defined REST API.
+That is all it does.
 
-* Decouple optimization from the rest of your application
-* Scale the optimization service independently
-* Adopt a clean service boundary without boilerplate
+*Why no database?*
+Deliberately.
+The service does not store datasets, manage user state, or own any persistence layer.
+Your application already has a database; the service does not need one.
+This makes the service stateless, trivially scalable, and completely free of operational concerns like schema migrations or data ownership.
+When optimization is one step in a larger workflow, a stateless service with a clean API slots into any architecture without friction.
 
-To get started with the service approach, see
+*Why opinionated?*
+An opinionated framework means less boilerplate, fewer ways to get it wrong, and a consistent shape that we all can reason about together.
+The library approach gives you full control; this approach gives you a proven path.
+
+To get started, see
 xref:quickstart/service/getting-started.adoc[*Getting started: building a service*].

@@ -3,7 +3,7 @@
 :doctype: book
 :sectnums:
 :icons: font
-:relevance: both
+:relevance: library-and-service
 :notes: Relevant, needs some rewrites. Also should include the "Getting Started" for Quarkus (raw) and Spring
 
 

@@ -3,7 +3,7 @@
 :doctype: book
 :sectnums:
 :icons: font
-:relevance: both
+:relevance: library-and-service
 :notes: be adjusted to clarify difference.
 
 [#whatIsTimefold]
