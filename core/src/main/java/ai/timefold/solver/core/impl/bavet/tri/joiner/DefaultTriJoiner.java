@@ -26,7 +26,7 @@ public final class DefaultTriJoiner<A, B, C>
         this.leftMappings = new BiFunction[] { leftMapping };
     }
 
-    public DefaultTriJoiner(BiFunction<A, B, ?>[] leftMappings, JoinerType[] joinerTypes, Function<C, ?>[] rightMappings) {
+    private DefaultTriJoiner(BiFunction<A, B, ?>[] leftMappings, JoinerType[] joinerTypes, Function<C, ?>[] rightMappings) {
         super(rightMappings, joinerTypes);
         this.leftMappings = (BiFunction<A, B, Object>[]) Objects.requireNonNull(leftMappings);
     }
@@ -60,10 +60,10 @@ public final class DefaultTriJoiner<A, B, C>
     /**
      * @return this if already equal-first (or single joiner); otherwise a copy with all
      *         {@link JoinerType#EQUAL} joiners moved to the front (stable, see
-     *         {@link AbstractJoiner#equalsFirstOrder}).
+     *         {@link AbstractJoiner#equalsFirstSortedPositions}).
      */
     DefaultTriJoiner<A, B, C> reorderedEqualsFirst() {
-        var order = equalsFirstOrder(joinerTypes);
+        var order = equalsFirstSortedPositions(joinerTypes);
         if (order == null) {
             return this;
         }

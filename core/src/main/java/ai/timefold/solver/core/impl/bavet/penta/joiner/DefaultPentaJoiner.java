@@ -59,10 +59,10 @@ public final class DefaultPentaJoiner<A, B, C, D, E> extends AbstractJoiner<E> i
     /**
      * @return this if already equal-first (or single joiner); otherwise a copy with all
      *         {@link JoinerType#EQUAL} joiners moved to the front (stable, see
-     *         {@link AbstractJoiner#equalsFirstOrder}).
+     *         {@link AbstractJoiner#equalsFirstSortedPositions}).
      */
     public DefaultPentaJoiner<A, B, C, D, E> reorderedEqualsFirst() {
-        var order = equalsFirstOrder(joinerTypes);
+        var order = equalsFirstSortedPositions(joinerTypes);
         if (order == null) {
             return this;
         }

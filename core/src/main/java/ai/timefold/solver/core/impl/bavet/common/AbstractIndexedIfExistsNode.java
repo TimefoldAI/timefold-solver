@@ -165,15 +165,22 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         }
         ListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.removeStore(inputStoreIndexLeftCounterEntry);
         var element = counterEntry.element(); // Store so that the reference survives removal.
+        removeFromIndexerLeft(compositeKey, leftTuple, counterEntry, false);
+        clearLeftTrackerList(leftTuple);
+        killCounterLeft(element);
+    }
+
+    private void removeFromIndexerLeft(Object compositeKey, LeftTuple_ leftTuple,
+            ListEntry<ExistsCounter<LeftTuple_>> counterEntry, boolean keepBucket) {
         if (useFusedEqualIndex) {
-            Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket = leftTuple.removeStore(inputStoreIndexLeftBucket);
+            Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
             bucket.removeLeft(compositeKey, counterEntry);
-            fusedEqualIndex.removeBucketIfEmpty(compositeKey, bucket);
+            if (!keepBucket) { // keepBucket: a same-bucket changed-key update re-adds immediately, so don't drop it.
+                fusedEqualIndex.removeBucketIfEmpty(compositeKey, bucket);
+            }
         } else {
             indexerLeft.remove(compositeKey, counterEntry);
         }
-        clearLeftTrackerList(leftTuple);
-        killCounterLeft(element);
     }
 
     private void clearLeftTrackerList(LeftTuple_ leftTuple) {
@@ -186,15 +193,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
 
     private void updateIndexerLeft(Object compositeKey, ListEntry<ExistsCounter<LeftTuple_>> counterEntry, LeftTuple_ leftTuple,
             boolean keepBucket) {
-        if (useFusedEqualIndex) {
-            Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket = leftTuple.getStore(inputStoreIndexLeftBucket);
-            bucket.removeLeft(compositeKey, counterEntry);
-            if (!keepBucket) { // keepBucket: a same-bucket changed-key update re-adds immediately, so don't drop it.
-                fusedEqualIndex.removeBucketIfEmpty(compositeKey, bucket);
-            }
-        } else {
-            indexerLeft.remove(compositeKey, counterEntry);
-        }
+        removeFromIndexerLeft(compositeKey, leftTuple, counterEntry, keepBucket);
         clearLeftTrackerList(leftTuple);
     }
 

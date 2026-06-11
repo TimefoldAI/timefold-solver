@@ -26,7 +26,8 @@ public final class DefaultQuadJoiner<A, B, C, D>
         this.leftMappings = new TriFunction[] { leftMapping };
     }
 
-    public DefaultQuadJoiner(TriFunction<A, B, C, ?>[] leftMappings, JoinerType[] joinerTypes, Function<D, ?>[] rightMappings) {
+    private DefaultQuadJoiner(TriFunction<A, B, C, ?>[] leftMappings, JoinerType[] joinerTypes,
+            Function<D, ?>[] rightMappings) {
         super(rightMappings, joinerTypes);
         this.leftMappings = (TriFunction<A, B, C, Object>[]) Objects.requireNonNull(leftMappings);
     }
@@ -60,10 +61,10 @@ public final class DefaultQuadJoiner<A, B, C, D>
     /**
      * @return this if already equal-first (or single joiner); otherwise a copy with all
      *         {@link JoinerType#EQUAL} joiners moved to the front (stable, see
-     *         {@link AbstractJoiner#equalsFirstOrder}).
+     *         {@link AbstractJoiner#equalsFirstSortedPositions}).
      */
     DefaultQuadJoiner<A, B, C, D> reorderedEqualsFirst() {
-        var order = equalsFirstOrder(joinerTypes);
+        var order = equalsFirstSortedPositions(joinerTypes);
         if (order == null) {
             return this;
         }

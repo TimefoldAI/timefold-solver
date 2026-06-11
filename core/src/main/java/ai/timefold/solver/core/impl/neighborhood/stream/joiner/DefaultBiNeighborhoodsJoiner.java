@@ -65,10 +65,10 @@ public final class DefaultBiNeighborhoodsJoiner<A, B> extends AbstractJoiner<B> 
     /**
      * @return this if already equal-first (or single joiner); otherwise a copy with all
      *         {@link JoinerType#EQUAL} joiners moved to the front (stable, see
-     *         {@link AbstractJoiner#equalsFirstOrder}).
+     *         {@link AbstractJoiner#equalsFirstSortedPositions}).
      */
     public DefaultBiNeighborhoodsJoiner<A, B> reorderedEqualsFirst() {
-        var order = equalsFirstOrder(joinerTypes);
+        var order = equalsFirstSortedPositions(joinerTypes);
         if (order == null) {
             return this;
         }

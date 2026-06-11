@@ -492,12 +492,15 @@ public final class IndexerFactory<Right_> {
     }
 
     /**
-     * Builds the indexer chain for levels {@code [fromLevelInclusive, last]}, children-first, and returns
-     * a supplier of its top indexer. Level ids (hence the {@link CompositeKeyUnpacker} ids) are anchored to
-     * the FULL chain; {@code fromLevelInclusive} only bounds where the build stops. Therefore a suffix built
-     * with {@code fromLevelInclusive == 1} still uses {@code CompositeKeyUnpacker(1)} for its top level and
-     * never takes the {@code indexPropertyId == 0} leaf-fuse / single-key shortcut (that would hand it the
-     * whole composite key instead of component 1).
+     * Builds the indexer chain for levels {@code [fromLevelInclusive, last]}, children-first,
+     * and returns a supplier of its top indexer.
+     * Level ids (hence the {@link KeyUnpacker#composite(int)} ids)
+     * are anchored to the FULL chain;
+     * {@code fromLevelInclusive} only bounds where the build stops.
+     * Therefore a suffix built with {@code fromLevelInclusive == 1} still uses
+     * {@code KeyUnpacker.composite(1)} for its top level and never takes the
+     * {@code indexPropertyId == 0} leaf-fuse / single-key shortcut
+     * (that would hand it the whole composite key instead of component 1).
      * <p>
      * {@code buildIndexer(isLeftBridge)} is {@code buildIndexerChain(isLeftBridge, 0, backendSupplier)};
      * {@link #buildFusedEqualIndex()} uses {@code fromLevelInclusive == 1} to build the per-side suffix sub-chains.
@@ -552,7 +555,8 @@ public final class IndexerFactory<Right_> {
      */
     public <L, R> FusedEqualIndex<L, R> buildFusedEqualIndex() {
         var joinerCount = joiner.getJoinerCount();
-        // Pure-equal ⇒ the composite key IS the equal key (SingleKeyUnpacker); otherwise it is component 0.
+        // Pure-equal ⇒ the composite key IS the equal key (KeyUnpacker.single());
+        // otherwise it is component 0.
         KeyUnpacker<Object> topEqualKeyUnpacker =
                 equalPrefixLength == joinerCount ? KeyUnpacker.single() : KeyUnpacker.composite(0);
         if (equalPrefixLength == joinerCount) {

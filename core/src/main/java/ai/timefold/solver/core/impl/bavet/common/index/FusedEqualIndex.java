@@ -125,7 +125,7 @@ public final class FusedEqualIndex<L, R> {
      * <p>
      * The {@code compositeKey} passed to the per-side methods is the FULL composite key;
      * a backend downstream ignores it, a suffix sub-chain extracts its levels from it
-     * (via {@code CompositeKeyUnpacker(1)}, ...).
+     * (via {@code KeyUnpacker.composite(1)}, ...).
      * The left downstream holds left tuples and is queried with a right tuple's key;
      * the right downstream holds right tuples and is queried with a left tuple's key
      * (mirroring the two-indexer cross-side query).

@@ -35,7 +35,7 @@ public final class QuadJoinerComber<A, B, C, D> {
                 if (indexOfFirstFilter >= 0) {
                     throw new IllegalStateException("""
                             Indexing joiner (%s) must not follow a filtering joiner (%s).
-                            "Maybe reorder the joiners such that filtering() joiners are later in the parameter list."""
+                            Maybe reorder the joiners such that filtering() joiners are later in the parameter list."""
                             .formatted(joiner, joiners[indexOfFirstFilter]));
                 }
                 defaultJoinerList.add((DefaultQuadJoiner<A, B, C, D>) joiner);

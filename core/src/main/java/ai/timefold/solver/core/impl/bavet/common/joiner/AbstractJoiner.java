@@ -43,7 +43,7 @@ public abstract class AbstractJoiner<Right_> {
      * @return the index order to apply, or null when no move is needed (≤ 1 joiner, or already
      *         equal-first) so the caller can keep the joiner as-is and skip allocation
      */
-    protected static int @Nullable [] equalsFirstOrder(JoinerType[] joinerTypes) {
+    protected static int @Nullable [] equalsFirstSortedPositions(JoinerType[] joinerTypes) {
         var count = joinerTypes.length;
         if (count <= 1) {
             return null;
@@ -52,7 +52,7 @@ public abstract class AbstractJoiner<Right_> {
         for (var joinerType : joinerTypes) {
             if (joinerType == JoinerType.EQUAL) {
                 if (seenNonEqual) { // An equal joiner follows a non-equal one, so a move is needed.
-                    return buildEqualsFirstOrder(joinerTypes, count);
+                    return sortPositionsEqualsFirst(joinerTypes, count);
                 }
             } else {
                 seenNonEqual = true;
@@ -61,7 +61,7 @@ public abstract class AbstractJoiner<Right_> {
         return null; // Already equal-first.
     }
 
-    private static int[] buildEqualsFirstOrder(JoinerType[] joinerTypes, int count) {
+    private static int[] sortPositionsEqualsFirst(JoinerType[] joinerTypes, int count) {
         var order = new int[count];
         var index = 0;
         for (var i = 0; i < count; i++) { // Equal joiners first, in their original relative order.

@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Verifies the equal-first reorder primitive ({@code AbstractJoiner.equalsFirstOrder} via
- * {@code DefaultBiJoiner.reorderedEqualsFirst()}) the combers apply, including its node-sharing consequence.
+ * {@code DefaultBiJoiner.reorderedEqualsFirst()}) that the comber applies,
+ * including its node-sharing consequence.
  */
 class EqualsFirstReorderTest {
 
@@ -23,7 +24,6 @@ class EqualsFirstReorderTest {
 
     @Test
     void movesEqualToFrontCarryingMappings() {
-        @SuppressWarnings("unchecked")
         var joiner = (DefaultBiJoiner<Shift, Shift>) Joiners.lessThan(startFn).and(Joiners.equal(employeeFn));
         assertThat(joiner.getJoinerType(0)).isEqualTo(JoinerType.LESS_THAN);
         assertThat(joiner.getJoinerType(1)).isEqualTo(JoinerType.EQUAL);
@@ -40,11 +40,9 @@ class EqualsFirstReorderTest {
 
     @Test
     void noEqualReturnsSameInstance() {
-        @SuppressWarnings("unchecked")
         var lessThan = (DefaultBiJoiner<Shift, Shift>) Joiners.lessThan(startFn);
         assertThat(lessThan.reorderedEqualsFirst()).isSameAs(lessThan);
 
-        @SuppressWarnings("unchecked")
         var twoComparisons =
                 (DefaultBiJoiner<Shift, Shift>) Joiners.lessThan(startFn).and(Joiners.greaterThan(startFn));
         assertThat(twoComparisons.reorderedEqualsFirst()).isSameAs(twoComparisons);
@@ -52,17 +50,15 @@ class EqualsFirstReorderTest {
 
     @Test
     void alreadyEqualFirstReturnsSameInstance() {
-        @SuppressWarnings("unchecked")
         var joiner = (DefaultBiJoiner<Shift, Shift>) Joiners.equal(employeeFn).and(Joiners.lessThan(startFn));
         assertThat(joiner.reorderedEqualsFirst()).isSameAs(joiner);
     }
 
     @Test
     void equivalentJoinsInDifferentOrderShareViaEquality() {
-        // Same mapping instances, different declared order: unequal as declared, equal after reorder, so node sharing holds.
-        @SuppressWarnings("unchecked")
+        // Same mapping instances, different declared order:
+        // unequal as declared, equal after reorder, so node sharing holds.
         var equalFirst = (DefaultBiJoiner<Shift, Shift>) Joiners.equal(employeeFn).and(Joiners.lessThan(startFn));
-        @SuppressWarnings("unchecked")
         var equalLast = (DefaultBiJoiner<Shift, Shift>) Joiners.lessThan(startFn).and(Joiners.equal(employeeFn));
         assertThat(equalFirst).isNotEqualTo(equalLast);
 
