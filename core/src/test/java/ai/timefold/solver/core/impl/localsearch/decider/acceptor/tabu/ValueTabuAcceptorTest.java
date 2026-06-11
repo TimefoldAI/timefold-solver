@@ -303,4 +303,72 @@ class ValueTabuAcceptorTest {
         acceptor.phaseEnded(phaseScope);
     }
 
+    @Test
+    void fadingTabuSize() {
+        var acceptor = new ValueTabuAcceptor<>("");
+        acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(2));
+        acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(4));
+
+        var v0 = new TestdataValue("v0");
+        var v1 = new TestdataValue("v1");
+
+        var solverScope = new SolverScope<>();
+        solverScope.setInitializedBestScore(SimpleScore.ZERO);
+        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(new double[0]));
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        acceptor.phaseStarted(phaseScope);
+
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        stepScope0.setStep(buildMoveScope(stepScope0, v1).getMove());
+        acceptor.stepEnded(stepScope0);
+        phaseScope.setLastCompletedStepScope(stepScope0);
+
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, v1))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, v0))).isTrue();
+        stepScope1.setStep(buildMoveScope(stepScope1, v0).getMove());
+        acceptor.stepEnded(stepScope1);
+        phaseScope.setLastCompletedStepScope(stepScope1);
+
+        var stepScope2 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, v1))).isFalse();
+        stepScope2.setStep(buildMoveScope(stepScope2, v0).getMove());
+        acceptor.stepEnded(stepScope2);
+        phaseScope.setLastCompletedStepScope(stepScope2);
+
+        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(0.3));
+        var stepScope3 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, v1))).isTrue();
+        stepScope3.setStep(buildMoveScope(stepScope3, v0).getMove());
+        acceptor.stepEnded(stepScope3);
+        phaseScope.setLastCompletedStepScope(stepScope3);
+
+        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(0.5));
+        var stepScope4 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, v1))).isFalse();
+        stepScope4.setStep(buildMoveScope(stepScope4, v0).getMove());
+        acceptor.stepEnded(stepScope4);
+        phaseScope.setLastCompletedStepScope(stepScope4);
+
+        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(0.1));
+        var stepScope5 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, v1))).isTrue();
+        stepScope5.setStep(buildMoveScope(stepScope5, v0).getMove());
+        acceptor.stepEnded(stepScope5);
+        phaseScope.setLastCompletedStepScope(stepScope5);
+
+        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(0.99));
+        var stepScope6 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope6, v1))).isFalse();
+        stepScope6.setStep(buildMoveScope(stepScope6, v0).getMove());
+        acceptor.stepEnded(stepScope6);
+        phaseScope.setLastCompletedStepScope(stepScope6);
+
+        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(new double[0]));
+        var stepScope7 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope7, v1))).isTrue();
+
+        acceptor.phaseEnded(phaseScope);
+    }
+
 }

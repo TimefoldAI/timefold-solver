@@ -144,7 +144,9 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
         }
         // From this point, we are guaranteed to be in a fading tabu.
         var acceptChance = calculateFadingTabuAcceptChance(tabuStepCount - workingTabuSize);
-        var accepted = moveScope.getWorkingRandom().nextDouble() < acceptChance;
+        // Only call RNG when necessary.
+        var accepted = Double.compare(acceptChance, 1.0d) >= 0
+                || (Double.compare(acceptChance, 0.0d) > 0 && moveScope.getWorkingRandom().nextDouble() < acceptChance);
         if (accepted) {
             logger.trace("{}        Proposed move ({}) is fading tabu with acceptChance ({}) and is accepted.",
                     logIndentation,
