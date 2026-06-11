@@ -5,7 +5,7 @@
 :doctype: book
 :sectnums:
 :icons: font
-:relevance: both
+:relevance: library-and-service
 
 [#scoreTerminology]
 == Score terminology

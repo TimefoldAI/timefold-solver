@@ -4,7 +4,7 @@
 :doctype: book
 :sectnums:
 :icons: font
-:relevance: both
+:relevance: library-and-service
 :notes: Lots of shared things here, but might need to split up some things.
 
 [TIP]

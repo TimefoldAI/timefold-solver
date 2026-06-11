@@ -4,7 +4,7 @@
 :doctype: book
 :sectnums:
 :icons: font
-:relevance: both
+:relevance: library-and-service
 :notes: Mostly irrelevant in service module.
 
 
