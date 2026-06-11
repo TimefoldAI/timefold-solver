@@ -14,8 +14,9 @@ import org.junit.jupiter.api.Test;
  * Comparison is otherwise only exercised alongside a leading equal (see {@link EqualsAndComparisonIndexerTest});
  * a pure-comparison join takes the {@code useJoinIndex == false} branch and must still join correctly.
  * <p>
- * A single comparison joiner uses a {@link SingleKeyUnpacker}, so the index key is the raw (comparable) key,
- * not a {@link CompositeKey}; the tests put/query with raw keys accordingly.
+ * A single comparison joiner uses a {@link KeyUnpacker#single()},
+ * so the index key is the raw (comparable) key, not a {@link CompositeKey};
+ * the tests put/query with raw keys accordingly.
  */
 class ComparisonIndexerTest extends AbstractIndexerTest {
 
