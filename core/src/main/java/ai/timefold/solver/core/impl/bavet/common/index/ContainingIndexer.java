@@ -37,7 +37,7 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends SequencedCollectio
     private long unremovedSize = 0;
 
     /**
-     * @param keyUnpacker determines if it immediately goes to a {@link IndexerBackend} or if it uses a {@link CompositeKey}.
+     * @param keyUnpacker determines if it immediately goes to a {@link LeafIndexer} or if it uses a {@link CompositeKey}.
      * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
     @SuppressWarnings("unchecked")

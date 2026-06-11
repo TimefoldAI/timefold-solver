@@ -62,6 +62,29 @@ public final class DefaultBiNeighborhoodsJoiner<A, B> extends AbstractJoiner<B> 
         return new DefaultBiNeighborhoodsJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
     }
 
+    /**
+     * @return this if already equal-first (or single joiner); otherwise a copy with all
+     *         {@link JoinerType#EQUAL} joiners moved to the front (stable, see
+     *         {@link AbstractJoiner#equalsFirstSortedPositions}).
+     */
+    public DefaultBiNeighborhoodsJoiner<A, B> reorderedEqualsFirst() {
+        var order = equalsFirstSortedPositions(joinerTypes);
+        if (order == null) {
+            return this;
+        }
+        var count = order.length;
+        Function[] newLeftMappings = new Function[count];
+        var newJoinerTypes = new JoinerType[count];
+        Function[] newRightMappings = new Function[count];
+        for (var i = 0; i < count; i++) {
+            var from = order[i];
+            newLeftMappings[i] = leftMappings[from];
+            newJoinerTypes[i] = joinerTypes[from];
+            newRightMappings[i] = rightMappings[from];
+        }
+        return new DefaultBiNeighborhoodsJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
+    }
+
     public Function<A, Object> getLeftMapping(int index) {
         return leftMappings[index];
     }

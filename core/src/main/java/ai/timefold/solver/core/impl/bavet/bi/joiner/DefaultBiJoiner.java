@@ -9,9 +9,12 @@ import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.joiner.AbstractJoiner;
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
-public final class DefaultBiJoiner<A, B> extends AbstractJoiner<B> implements BiJoiner<A, B> {
+@NullMarked
+public final class DefaultBiJoiner<A, B>
+        extends AbstractJoiner<B>
+        implements BiJoiner<A, B> {
 
     private static final DefaultBiJoiner NONE = new DefaultBiJoiner(new Function[0], new JoinerType[0], new Function[0]);
 
@@ -28,26 +31,50 @@ public final class DefaultBiJoiner<A, B> extends AbstractJoiner<B> implements Bi
     }
 
     public static <A, B> DefaultBiJoiner<A, B> merge(List<DefaultBiJoiner<A, B>> joinerList) {
-        if (joinerList.size() == 1) {
-            return joinerList.get(0);
-        }
-        return joinerList.stream().reduce(NONE, DefaultBiJoiner::and);
+        return switch (joinerList.size()) {
+            case 0 -> NONE;
+            case 1 -> joinerList.getFirst();
+            default -> joinerList.stream().reduce(NONE, DefaultBiJoiner::and);
+        };
     }
 
     @Override
-    public @NonNull DefaultBiJoiner<A, B> and(@NonNull BiJoiner<A, B> otherJoiner) {
-        DefaultBiJoiner<A, B> castJoiner = (DefaultBiJoiner<A, B>) otherJoiner;
-        int joinerCount = getJoinerCount();
-        int castJoinerCount = castJoiner.getJoinerCount();
-        int newJoinerCount = joinerCount + castJoinerCount;
-        JoinerType[] newJoinerTypes = Arrays.copyOf(this.joinerTypes, newJoinerCount);
-        Function[] newLeftMappings = Arrays.copyOf(this.leftMappings, newJoinerCount);
-        Function[] newRightMappings = Arrays.copyOf(this.rightMappings, newJoinerCount);
-        for (int i = 0; i < castJoinerCount; i++) {
-            int newJoinerIndex = i + joinerCount;
+    public DefaultBiJoiner<A, B> and(BiJoiner<A, B> otherJoiner) {
+        var castJoiner = (DefaultBiJoiner<A, B>) otherJoiner;
+        var joinerCount = getJoinerCount();
+        var castJoinerCount = castJoiner.getJoinerCount();
+        var newJoinerCount = joinerCount + castJoinerCount;
+        var newJoinerTypes = Arrays.copyOf(this.joinerTypes, newJoinerCount);
+        var newLeftMappings = Arrays.copyOf(this.leftMappings, newJoinerCount);
+        var newRightMappings = Arrays.copyOf(this.rightMappings, newJoinerCount);
+        for (var i = 0; i < castJoinerCount; i++) {
+            var newJoinerIndex = i + joinerCount;
             newJoinerTypes[newJoinerIndex] = castJoiner.getJoinerType(i);
             newLeftMappings[newJoinerIndex] = castJoiner.getLeftMapping(i);
             newRightMappings[newJoinerIndex] = castJoiner.getRightMapping(i);
+        }
+        return new DefaultBiJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
+    }
+
+    /**
+     * @return this if already equal-first (or single joiner); otherwise a copy with all
+     *         {@link JoinerType#EQUAL} joiners moved to the front (stable, see
+     *         {@link AbstractJoiner#equalsFirstSortedPositions}).
+     */
+    public DefaultBiJoiner<A, B> reorderedEqualsFirst() {
+        var order = equalsFirstSortedPositions(joinerTypes);
+        if (order == null) {
+            return this;
+        }
+        var count = order.length;
+        var newLeftMappings = new Function[count];
+        var newJoinerTypes = new JoinerType[count];
+        var newRightMappings = new Function[count];
+        for (var i = 0; i < count; i++) {
+            var from = order[i];
+            newLeftMappings[i] = leftMappings[from];
+            newJoinerTypes[i] = joinerTypes[from];
+            newRightMappings[i] = rightMappings[from];
         }
         return new DefaultBiJoiner<>(newLeftMappings, newJoinerTypes, newRightMappings);
     }
@@ -57,11 +84,11 @@ public final class DefaultBiJoiner<A, B> extends AbstractJoiner<B> implements Bi
     }
 
     public boolean matches(A a, B b) {
-        int joinerCount = getJoinerCount();
-        for (int i = 0; i < joinerCount; i++) {
-            JoinerType joinerType = getJoinerType(i);
-            Object leftMapping = getLeftMapping(i).apply(a);
-            Object rightMapping = getRightMapping(i).apply(b);
+        var joinerCount = getJoinerCount();
+        for (var i = 0; i < joinerCount; i++) {
+            var joinerType = getJoinerType(i);
+            var leftMapping = getLeftMapping(i).apply(a);
+            var rightMapping = getRightMapping(i).apply(b);
             if (!joinerType.matches(leftMapping, rightMapping)) {
                 return false;
             }

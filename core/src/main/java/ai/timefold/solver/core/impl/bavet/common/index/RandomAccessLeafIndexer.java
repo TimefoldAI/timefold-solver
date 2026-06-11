@@ -11,14 +11,14 @@ import ai.timefold.solver.core.impl.util.ListEntry;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * An {@link IndexerBackend} that supports random access to its entries.
- * It is shown to be 10-20 % slower than {@link LinkedListIndexerBackend} in the micro benchmarks
+ * An {@link LeafIndexer} that supports random access to its entries.
+ * It is shown to be 10-20 % slower than {@link LinkedListLeafIndexer} in the micro benchmarks
  * when used as the backend for constraint streams.
  *
  * @param <T> the type of tuple being indexed
  */
 @NullMarked
-public final class RandomAccessIndexerBackend<T> implements IndexerBackend<T> {
+public final class RandomAccessLeafIndexer<T> implements LeafIndexer<T> {
 
     private final ElementAwareArrayList<T> tupleList = new ElementAwareArrayList<>();
 
