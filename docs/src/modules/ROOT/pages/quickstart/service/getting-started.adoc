@@ -258,7 +258,7 @@ getting-started-school-timetabling <version> on JVM (powered by Quarkus 3.21.4) 
 Open the http://localhost:8080/q/swagger-ui/[Swagger OpenAPI Viewer] to inspect the generated API Endpoints:
 http://localhost:8080/q/swagger-ui/
 
-image:quickstart/mdk/openapi.png[Screenshot of the Swagger OpenAPI UI showing the automatically generated REST API endpoints]
+image:quickstart/service/openapi.png[Screenshot of the Swagger OpenAPI UI showing the automatically generated REST API endpoints]
 
 As shown in the image above, just by extending the `ModelRest` interface, quite a few endpoints were automatically generated.
 We discuss these in more depth in the xref:service/rest-api.adoc[REST API] section.
