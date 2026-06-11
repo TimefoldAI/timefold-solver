@@ -339,7 +339,7 @@
               <artifactItems>
                 <artifactItem>
                   <groupId>ai.timefold.solver.enterprise</groupId>
-                  <artifactId>timefold-solver-enterprise-model-diagnostic-tools</artifactId>
+                  <artifactId>timefold-solver-enterprise-service-diagnostic-tools</artifactId>
                   <version>${version.ai.timefold.solver}</version>
                   <type>jar</type>
                   <overWrite>true</overWrite>
@@ -390,23 +390,23 @@
       <dependencies>
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-model</artifactId>
+          <artifactId>timefold-solver-enterprise-service</artifactId>
         </dependency>
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-model-storage-fs</artifactId>
+          <artifactId>timefold-solver-enterprise-service-storage-fs</artifactId>
         </dependency>
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-model-storage-azure</artifactId>
+          <artifactId>timefold-solver-enterprise-service-storage-azure</artifactId>
         </dependency>
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-model-storage-gcs</artifactId>
+          <artifactId>timefold-solver-enterprise-service-storage-gcs</artifactId>
         </dependency>
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-model-storage-s3</artifactId>
+          <artifactId>timefold-solver-enterprise-service-storage-s3</artifactId>
         </dependency>
         <dependency>
           <groupId>ai.timefold.solver</groupId>
@@ -414,12 +414,12 @@
         </dependency>
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-model-defaults</artifactId>
+          <artifactId>timefold-solver-enterprise-service-defaults</artifactId>
         </dependency>
         <!-- Testing -->
         <dependency>
           <groupId>ai.timefold.solver.enterprise</groupId>
-          <artifactId>timefold-solver-enterprise-model-test</artifactId>
+          <artifactId>timefold-solver-enterprise-service-test</artifactId>
           <scope>test</scope>
         </dependency>
       </dependencies>
