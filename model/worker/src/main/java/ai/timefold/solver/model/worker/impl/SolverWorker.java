@@ -28,7 +28,6 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
-import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.model.definition.api.ModelConvertor;
 import ai.timefold.solver.model.definition.api.ModelConvertorBase;
 import ai.timefold.solver.model.definition.api.ModelInput;
@@ -40,7 +39,6 @@ import ai.timefold.solver.model.definition.api.Status;
 import ai.timefold.solver.model.definition.api.domain.Configuration;
 import ai.timefold.solver.model.definition.api.domain.Metadata;
 import ai.timefold.solver.model.definition.api.domain.ModelConfig;
-import ai.timefold.solver.model.definition.api.domain.ModelRequest;
 import ai.timefold.solver.model.definition.api.enrichment.SolverModelEnricherService;
 import ai.timefold.solver.model.definition.api.enrichment.SolverModelEnrichmentDirectorService;
 import ai.timefold.solver.model.definition.api.metrics.InputMetricsAware;
@@ -229,14 +227,14 @@ public class SolverWorker {
 
     private void reportExecutionEnvironmentInfo() {
 
-        String nodeName = System.getenv(EnvironmentVars.K8S_INFO_NODE_NAME);
-        String memoryLimit = System.getenv(EnvironmentVars.K8S_INFO_MEMORY_LIMIT);
-        String totalMemory = String.valueOf(Runtime.getRuntime().maxMemory());
+        var nodeName = System.getenv(EnvironmentVars.K8S_INFO_NODE_NAME);
+        var memoryLimit = System.getenv(EnvironmentVars.K8S_INFO_MEMORY_LIMIT);
+        var totalMemory = String.valueOf(Runtime.getRuntime().maxMemory());
 
-        String java = System.getProperty("java.version");
-        String osArch = System.getProperty("os.arch");
-        String os = System.getProperty("os.name");
-        String cores = String.valueOf(Runtime.getRuntime().availableProcessors());
+        var java = System.getProperty("java.version");
+        var osArch = System.getProperty("os.arch");
+        var os = System.getProperty("os.name");
+        var cores = String.valueOf(Runtime.getRuntime().availableProcessors());
 
         if (modelName.isPresent() && modelVersion.isPresent() && applicationVersion.isPresent()) {
             LOGGER.info("Model {} {} ({})", modelName.get(), modelVersion.get(), applicationVersion.get());
@@ -266,8 +264,8 @@ public class SolverWorker {
      */
     public void onStart(@Observes StartupEvent event) {
         reportExecutionEnvironmentInfo();
-        String id = System.getenv(EnvironmentVars.ENV_TIMEFOLD_JOB_ID);
-        String onStartCommandEnv = System.getenv(EnvironmentVars.ENV_TIMEFOLD_ON_START_COMMAND);
+        var id = System.getenv(EnvironmentVars.ENV_TIMEFOLD_JOB_ID);
+        var onStartCommandEnv = System.getenv(EnvironmentVars.ENV_TIMEFOLD_ON_START_COMMAND);
         if (id == null && onStartCommandEnv == null) {
             LOGGER.atDebug().log("No environment variables specified; assuming the solver worked is running locally.");
             return;
@@ -282,7 +280,7 @@ public class SolverWorker {
                     true);
         }
 
-        OnStartCommand onStartCommand = OnStartCommand.valueOf(onStartCommandEnv);
+        var onStartCommand = OnStartCommand.valueOf(onStartCommandEnv);
 
         if (onStartCommand == OnStartCommand.IDLE) {
             startIdle();
@@ -295,7 +293,7 @@ public class SolverWorker {
                     true);
         }
 
-        Metadata metadata = storageService.getMetadata(id);
+        var metadata = storageService.getMetadata(id);
         // if the dataset is in any of the final states, return/shutdown immediately
         if (metadata.getSolverStatus() == SolvingStatus.DATASET_INVALID
                 || metadata.getSolverStatus() == SolvingStatus.SOLVING_FAILED
@@ -332,8 +330,8 @@ public class SolverWorker {
      * {@link EnvironmentVars#ENV_TIMEFOLD_IDLE_RUNTIME_TTL}.
      */
     private void startIdle() {
-        Duration shutdownDelay = Duration.ofMinutes(10);
-        String delayDurationEnv = System.getenv(EnvironmentVars.ENV_TIMEFOLD_IDLE_RUNTIME_TTL);
+        var shutdownDelay = Duration.ofMinutes(10);
+        var delayDurationEnv = System.getenv(EnvironmentVars.ENV_TIMEFOLD_IDLE_RUNTIME_TTL);
         if (delayDurationEnv != null) {
             shutdownDelay = Duration.parse(delayDurationEnv);
         }
@@ -343,22 +341,22 @@ public class SolverWorker {
     private void computeOutputs(String id) {
         LOGGER.info("Requesting solver for id {} to compute outputs...", id);
         try {
-            Metadata metadata = storageService.getMetadata(id);
-            ModelInput modelInput = storageService.getModelInput(id);
+            var metadata = storageService.getMetadata(id);
+            var modelInput = storageService.getModelInput(id);
             if (modelInput == null) {
                 logUnreadableInput(id);
                 return;
             }
-            Configuration configuration = storageService.getConfiguration(id);
+            var configuration = storageService.getConfiguration(id);
 
-            ModelConfig modelConfig = Configuration.getSafeModelConfig(configuration);
+            var modelConfig = Configuration.getSafeModelConfig(configuration);
 
-            SolverModel solverModel = createSolverModel(modelInput, modelConfig);
+            var solverModel = createSolverModel(modelInput, modelConfig);
             applyResolvedMapLocation(metadata);
             solutionManager.update(solverModel);
 
             // Store the updated solution
-            ModelOutput modelOutput = convertToModelOutput(id, solverModel);
+            var modelOutput = convertToModelOutput(id, solverModel);
             metadata.datasetComputed();
             storageService.storeSolution(id, modelOutput, metadata, extractInputMetrics(solverModel),
                     extractOutputMetrics(solverModel));
@@ -407,19 +405,19 @@ public class SolverWorker {
      * @param configuration the configuration to use; can be null
      */
     private void solve(Metadata metadata, ModelInput modelInput, Configuration configuration) {
-        final String id = metadata.getId();
+        final var id = metadata.getId();
         LOGGER.info("Requesting solver for id {} to start...", id);
         try {
-            TerminationConfig terminationConfig =
+            var terminationConfig =
                     terminationService.resolveTerminationConfig(
                             (configuration == null || configuration.run() == null) ? null : configuration.run().termination());
-            SolverConfigOverride solverConfigOverride = new SolverConfigOverride()
+            var solverConfigOverride = new SolverConfigOverride()
                     .withTerminationConfig(terminationConfig);
 
-            ModelConfig modelConfig = Configuration.getSafeModelConfig(configuration);
+            var modelConfig = Configuration.getSafeModelConfig(configuration);
 
             var previousModelOutput = loadModelOutput(id);
-            SolverJob<SolverModel> job = solverManager.solveBuilder()
+            var job = solverManager.solveBuilder()
                     .withProblemFinder(id_ -> notifyOnStart((String) id_, modelInput, previousModelOutput, modelConfig))
                     .withConfigOverride(solverConfigOverride)
                     .withProblemId(id)
@@ -437,7 +435,7 @@ public class SolverWorker {
     }
 
     private LegacyValidationResult validateAndUpdateRun(String id) {
-        Metadata metadata = storageService.getMetadata(id);
+        var metadata = storageService.getMetadata(id);
 
         if (metadata.getSolverStatus() == SolvingStatus.DATASET_VALIDATED
                 || metadata.getSolverStatus() == SolvingStatus.SOLVING_ACTIVE
@@ -446,8 +444,8 @@ public class SolverWorker {
             return LegacyValidationResult.successful();
         }
 
-        ModelRequest modelRequest = storageService.getModelRequest(id);
-        if (modelRequest.modelInput() == null) {
+        var modelInput = storageService.getModelInput(id);
+        if (modelInput == null) {
             logUnreadableInput(id);
             /*
              * The only case of input being null is when it cannot be parsed, in which case the metadata already
@@ -456,14 +454,15 @@ public class SolverWorker {
             return storageService.getMetadata(id).getValidationResult();
         }
 
-        ValidationBuilder validationBuilder = new ValidationBuilder();
-        modelValidator.validate(validationBuilder, modelRequest.modelInput(), modelRequest.getModelConfig());
+        var modelConfig = Configuration.getSafeModelConfig(storageService.getConfiguration(id));
+        var validationBuilder = new ValidationBuilder();
+        modelValidator.validate(validationBuilder, modelInput, modelConfig);
 
         // We store both the new and old validation result format for backward compatibility.
         ValidationResult validationResponse = validationBuilder.build();
         storageService.storeValidationResponse(id, validationResponse);
 
-        LegacyValidationResult legacyValidationResult = validationBuilder.buildLegacyValidationResult();
+        var legacyValidationResult = validationBuilder.buildLegacyValidationResult();
         metadata.datasetValidated(legacyValidationResult);
         storageService.updateMetadata(metadata.getId(), metadata);
 
@@ -473,7 +472,7 @@ public class SolverWorker {
 
     public void onShutdown(@Observes ShutdownEvent event) {
         this.shuttingDown.set(true);
-        String id = System.getenv(EnvironmentVars.ENV_TIMEFOLD_JOB_ID);
+        var id = System.getenv(EnvironmentVars.ENV_TIMEFOLD_JOB_ID);
         if (id != null) {
 
             try {
@@ -488,7 +487,7 @@ public class SolverWorker {
     @Blocking
     @Acknowledgment(Acknowledgment.Strategy.PRE_PROCESSING)
     public void onDatasetValidateComputeCommand(DatasetValidateComputeCommand command) {
-        final String id = command.getId();
+        final var id = command.getId();
         try {
             if (!validateAndUpdateRun(id).isValid()) {
                 LOGGER.error("Dataset (%s) failed validation. Please check the validation results.".formatted(id));
@@ -510,14 +509,14 @@ public class SolverWorker {
     @Blocking
     @Acknowledgment(Acknowledgment.Strategy.PRE_PROCESSING)
     public void onSolveStartCommand(SolveStartCommand command) {
-        final String id = command.getId();
-        Metadata metadata = storageService.getMetadata(id);
-        ModelInput modelInput = storageService.getModelInput(id);
+        final var id = command.getId();
+        var metadata = storageService.getMetadata(id);
+        var modelInput = storageService.getModelInput(id);
         if (modelInput == null) {
             logUnreadableInput(id);
             return;
         }
-        Configuration configuration = storageService.getConfiguration(id);
+        var configuration = storageService.getConfiguration(id);
 
         processor.onNext(metadata);
 
@@ -533,7 +532,7 @@ public class SolverWorker {
             return;
         }
 
-        String id = command.getId();
+        var id = command.getId();
         LOGGER.info("Request to terminate solver has been received for id {}", id);
         if (!solverManager.getSolverStatus(id).equals(SolverStatus.NOT_SOLVING)) {
             completionStatus.initiateCompletion(id);
@@ -566,9 +565,9 @@ public class SolverWorker {
     protected SolverModel notifyOnStart(String id, ModelInput modelInput, ModelOutput modelOutput, ModelConfig modelConfig) {
         try {
             LOGGER.debug("Notify run start for id {}", id);
-            Metadata metadata = storageService.getMetadata(id);
+            var metadata = storageService.getMetadata(id);
 
-            SolverModel solverModel = createSolverModel(modelInput, modelConfig, modelOutput);
+            var solverModel = createSolverModel(modelInput, modelConfig, modelOutput);
             applyResolvedMapLocation(metadata);
             if (metadata.getSolverStatus() == SolvingStatus.DATASET_COMPUTED
                     || metadata.getSolverStatus() == SolvingStatus.SOLVING_SCHEDULED) {
@@ -597,7 +596,7 @@ public class SolverWorker {
 
     private SolverModel createSolverModel(ModelInput modelInput, ModelConfig modelConfig, ModelOutput modelOutput) {
         try {
-            SolverModel solverModel =
+            var solverModel =
                     modelConvertor.toSolverModel(modelInput, modelConfig, Optional.ofNullable(modelOutput));
             return enrichModel(solverModel);
         } catch (TimefoldRuntimeException e) {
@@ -620,12 +619,12 @@ public class SolverWorker {
     }
 
     private void applyResolvedMapLocation(Metadata metadata) {
-        String resolved = mapEnrichmentContext.getResolvedMapLocation();
+        var resolved = mapEnrichmentContext.getResolvedMapLocation();
         if (resolved == null || metadata == null) {
             return;
         }
         metadata.setResolvedMapLocation(resolved);
-        String configuredLocation = System.getenv(EnvironmentVars.ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION);
+        var configuredLocation = System.getenv(EnvironmentVars.ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION);
         if (EnvironmentVars.MAP_SERVICE_LOCATION_AUTO_SELECT.equalsIgnoreCase(configuredLocation)) {
             LOGGER.info("Auto-select map resolved to '{}' for dataset {}.", resolved, metadata.getId());
         }
@@ -638,10 +637,10 @@ public class SolverWorker {
             LOGGER.warn("Initial solution for id {} incomplete because terminated early", id);
         }
 
-        Metadata metadata = storageService.getMetadata(id);
-        SolverJob<SolverModel> solverJob = solverJobs.get(id);
+        var metadata = storageService.getMetadata(id);
+        var solverJob = solverJobs.get(id);
         if (metadata != null && SolvingStatus.SOLVING_ACTIVE == metadata.getSolverStatus() && solverJob != null) {
-            ModelOutput modelOutput = convertToModelOutput(id, solverModel);
+            var modelOutput = convertToModelOutput(id, solverModel);
 
             metadata.updateStatusOnSave(SolvingStatus.SOLVING_ACTIVE, solverModel.getScore());
             storageService.updateSolution(id, modelOutput, metadata, extractInputMetrics(solverModel),
@@ -654,11 +653,11 @@ public class SolverWorker {
 
     protected void notifyOnSave(String id, SolverModel solverModel, EventProducerId eventProducerId) {
         LOGGER.debug("Notify run save for id {}", id);
-        Metadata metadata = storageService.getMetadata(id);
-        SolverJob<SolverModel> solverJob = solverJobs.get(id);
+        var metadata = storageService.getMetadata(id);
+        var solverJob = solverJobs.get(id);
         if (metadata != null && SolvingStatus.SOLVING_ACTIVE == metadata.getSolverStatus() && solverJob != null) {
             processor.onNext(metadata);
-            ModelOutput modelOutput = convertToModelOutput(id, solverModel);
+            var modelOutput = convertToModelOutput(id, solverModel);
 
             metadata.updateStatusOnSave(SolvingStatus.SOLVING_ACTIVE, solverModel.getScore());
             storageService.updateSolution(id, modelOutput, metadata, extractInputMetrics(solverModel),
@@ -680,15 +679,15 @@ public class SolverWorker {
         LOGGER.debug("Notify run complete for id {}", id);
         try {
             // remove it as the first thing so in case any best solution events will arrive while this method is executed they will be discarded
-            SolverJob<SolverModel> solverJob = solverJobs.remove(id);
+            var solverJob = solverJobs.remove(id);
 
             if (solverJob == null) {
                 return;
             }
-            ModelOutput modelOutput = convertToModelOutput(id, solverModel);
+            var modelOutput = convertToModelOutput(id, solverModel);
             storeSolvedInput(id, modelOutput);
 
-            Metadata metadata = storageService.getMetadata(id);
+            var metadata = storageService.getMetadata(id);
             if (metadata.getScore() == null) {
                 // If the score is null, a full solution was not found and the CH did not finish
                 metadata.updateStatusOnComplete(SolvingStatus.SOLVING_INCOMPLETE, solverModel.getScore());
@@ -719,7 +718,7 @@ public class SolverWorker {
      * Invokes post processors of the solution to compute additional (optional) outputs, like score analysis or waypoints.
      */
     private void postProcessOutput(String id, ModelOutput modelOutput, SolverModel solverModel) {
-        for (ModelPostProcessor processor : modelPostProcessors) {
+        for (var processor : modelPostProcessors) {
             try {
                 processor.processComputed(modelOutput, solverModel, id);
             } catch (Throwable e) {
@@ -730,7 +729,7 @@ public class SolverWorker {
     }
 
     private void postProcessCompleteOutput(String id, ModelOutput modelOutput, SolverModel solverModel) {
-        for (ModelPostProcessor processor : modelPostProcessors) {
+        for (var processor : modelPostProcessors) {
             try {
                 processor.process(modelOutput, solverModel, id);
             } catch (Throwable e) {
@@ -741,21 +740,21 @@ public class SolverWorker {
     }
 
     private void storeSolvedInput(String datasetId, ModelOutput modelOutput) {
-        ModelInput modelInput = storageService.getModelInput(datasetId);
+        var modelInput = storageService.getModelInput(datasetId);
         if (modelInput == null) {
             throw new ItemNotFoundException(datasetId, "Model input not found for id %s".formatted(datasetId));
         }
-        ModelInput solvedModelInput = modelConvertor.applyOutputToInput(modelInput, modelOutput);
+        var solvedModelInput = modelConvertor.applyOutputToInput(modelInput, modelOutput);
         storageService.storeSolvedModelInput(datasetId, solvedModelInput);
     }
 
     public void notifyOnFailure(Object id, Throwable throwable) {
         LOGGER.debug("Notify run failure for id {}", id, throwable);
-        String problemId = (String) id;
+        var problemId = (String) id;
         Metadata metadata = null;
         try {
             // remove it as the first thing so in case any best solution events will arrive while this method is executed they will be discarded
-            SolverJob<SolverModel> solverJob = solverJobs.remove(id);
+            var solverJob = solverJobs.remove(id);
 
             // update run status only as failed
             metadata = storageService.getMetadata(problemId);
@@ -768,7 +767,7 @@ public class SolverWorker {
             }
         } finally {
 
-            for (ModelPostProcessor processor : modelPostProcessors) {
+            for (var processor : modelPostProcessors) {
                 try {
                     processor.processFailed(problemId, throwable);
                 } catch (Throwable e) {
