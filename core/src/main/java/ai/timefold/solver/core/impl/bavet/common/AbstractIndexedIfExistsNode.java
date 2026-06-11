@@ -174,7 +174,8 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
             ListEntry<ExistsCounter<LeftTuple_>> counterEntry, boolean keepBucket) {
         if (useFusedEqualIndex) {
             Bucket<ExistsCounter<LeftTuple_>, UniTuple<Right_>> bucket =
-                    keepBucket ? leftTuple.getStore(inputStoreIndexLeftBucket) : leftTuple.removeStore(inputStoreIndexLeftBucket);
+                    keepBucket ? leftTuple.getStore(inputStoreIndexLeftBucket)
+                            : leftTuple.removeStore(inputStoreIndexLeftBucket);
             bucket.removeLeft(compositeKey, counterEntry);
             if (!keepBucket) { // keepBucket: a same-bucket changed-key update re-adds immediately, so don't drop it.
                 fusedEqualIndex.removeBucketIfEmpty(compositeKey, bucket);
