@@ -178,8 +178,8 @@ public interface TimefoldSolverEnterpriseService {
 
     <Solution_, Score_ extends Score<Score_>, State_ extends SolutionState<Solution_, Score_>>
             EvolutionaryDecider<Solution_, Score_> buildHybridGeneticSearch(HeuristicConfigPolicy<Solution_> solverConfigPolicy,
-                    int agentCount, int populationSize, int generationSize, int eliteGroupSize, int populationRestartCount,
-                    List<HybridGeneticSearchWorkerContext<Solution_, Score_, State_>> agentContextList,
+                    int workerCount, int populationSize, int generationSize, int eliteGroupSize, int populationRestartCount,
+                    List<HybridGeneticSearchWorkerContext<Solution_, Score_, State_>> workerContextList,
                     PhaseTermination<Solution_> phaseTermination, BestSolutionRecaller<Solution_> bestSolutionRecaller);
 
     <Solution_> EntitySelector<Solution_> applyNearbySelection(EntitySelectorConfig entitySelectorConfig,
@@ -230,7 +230,7 @@ public interface TimefoldSolverEnterpriseService {
         SCORE_ANALYSIS("Score analysis", "do not use SolutionManager's analyze() method"),
         RECOMMENDATIONS("Recommendations", "do not use SolutionManager's recommendAssignment() method"),
         EVOLUTIONARY_ALGORITHM("Evolutionary Algorithm",
-                "remove the agent count property from the evolutionary algorithm configuration");
+                "remove the worker count property from the evolutionary algorithm configuration");
 
         private final String name;
         private final String workaround;

@@ -4,11 +4,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope.EvolutionaryAlgorithmPhaseScope;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope.EvolutionaryAlgorithmStepScope;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionState;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionStateManager;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.crossover.CrossoverStrategy;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.IndividualBuilder;
-import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator.ConstructionIndividualStrategy;
-import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -104,17 +99,7 @@ public abstract class AbstractHybridGeneticSearchDecider<Solution_, Score_ exten
         public int eliteSolutionSize;
         public int populationRestartCount;
         @Nullable
-        public ConstructionIndividualStrategy<Solution_, Score_> constructionIndividualStrategy;
-        @Nullable
-        public Phase<Solution_> localSearchPhase;
-        @Nullable
-        public Phase<Solution_> refinementPhase;
-        @Nullable
-        public CrossoverStrategy<Solution_, Score_> crossoverStrategy;
-        @Nullable
-        public IndividualBuilder<Solution_, Score_> individualBuilder;
-        @Nullable
-        public SolutionStateManager<Solution_, Score_, State_> solutionStateManager;
+        public HybridGeneticSearchWorkerContext<Solution_, Score_, State_> context;
         @Nullable
         public PhaseTermination<Solution_> phaseTermination;
         @Nullable
@@ -146,37 +131,8 @@ public abstract class AbstractHybridGeneticSearchDecider<Solution_, Score_ exten
         }
 
         public AbstractBuilder<Solution_, Score_, State_>
-                withConstructionIndividualStrategy(
-                        ConstructionIndividualStrategy<Solution_, Score_> constructionIndividualStrategy) {
-            this.constructionIndividualStrategy = constructionIndividualStrategy;
-            return this;
-        }
-
-        public AbstractBuilder<Solution_, Score_, State_> withLocalSearchPhase(Phase<Solution_> localSearchPhase) {
-            this.localSearchPhase = localSearchPhase;
-            return this;
-        }
-
-        public AbstractBuilder<Solution_, Score_, State_> withRefinementPhase(@Nullable Phase<Solution_> swapStarPhase) {
-            this.refinementPhase = swapStarPhase;
-            return this;
-        }
-
-        public AbstractBuilder<Solution_, Score_, State_>
-                withCrossoverStrategy(CrossoverStrategy<Solution_, Score_> crossoverStrategy) {
-            this.crossoverStrategy = crossoverStrategy;
-            return this;
-        }
-
-        public AbstractBuilder<Solution_, Score_, State_>
-                withIndividualBuilder(IndividualBuilder<Solution_, Score_> individualBuilder) {
-            this.individualBuilder = individualBuilder;
-            return this;
-        }
-
-        public AbstractBuilder<Solution_, Score_, State_>
-                withSolutionStateManager(SolutionStateManager<Solution_, Score_, State_> solutionInitializer) {
-            this.solutionStateManager = solutionInitializer;
+                withContext(HybridGeneticSearchWorkerContext<Solution_, Score_, State_> workerContext) {
+            this.context = workerContext;
             return this;
         }
 

@@ -49,7 +49,7 @@ import org.jspecify.annotations.Nullable;
 public final class HybridGeneticSearchDecider<Solution_, Score_ extends Score<Score_>, State_ extends SolutionState<Solution_, Score_>>
         extends AbstractHybridGeneticSearchDecider<Solution_, Score_> {
 
-    private final HybridGeneticSearchWorkerContext<Solution_, Score_, State_> workerContext;
+    private final HybridGeneticSearchWorkerContext<Solution_, Score_, State_> context;
 
     @Nullable
     private HybridGeneticSearchWorker<Solution_, Score_, State_> worker = null;
@@ -57,9 +57,7 @@ public final class HybridGeneticSearchDecider<Solution_, Score_ extends Score<Sc
     public HybridGeneticSearchDecider(AbstractBuilder<Solution_, Score_, State_> builder) {
         super(builder.logIndentation, builder.populationSize, builder.generationSize, builder.eliteSolutionSize,
                 builder.populationRestartCount, Objects.requireNonNull(builder.bestSolutionRecaller));
-        this.workerContext = new HybridGeneticSearchWorkerContext<>(builder.constructionIndividualStrategy,
-                builder.localSearchPhase, builder.refinementPhase, builder.crossoverStrategy, builder.individualBuilder,
-                builder.solutionStateManager);
+        this.context = Objects.requireNonNull(builder.context);
     }
 
     // ************************************************************************
@@ -125,13 +123,28 @@ public final class HybridGeneticSearchDecider<Solution_, Score_ extends Score<Sc
         super.phaseStarted(phaseScope);
         var workerSolverScope = phaseScope.getSolverScope().createChildThreadSolverScope(EVOLUTIONARY_AGENT_THREAD);
         var bestSolutionUpdater = new DefaultBestSolutionUpdater<>(phaseScope, bestSolutionRecaller, phaseScope.getPopulation(),
-                workerContext.solutionStateManager());
-        var context =
-                new HybridGeneticSearchWorkerContext<>(workerContext.constructionIndividualStrategy(),
-                        workerContext.localSearchPhase(), workerContext.refinementPhase(), workerContext.crossoverStrategy(),
-                        workerContext.individualBuilder(), workerContext.solutionStateManager());
-        this.worker =
-                new HybridGeneticSearchWorker<>(context, bestSolutionUpdater, workerSolverScope);
+                context.solutionStateManager());
+        // The proposed HGS implementation can use two optimization profiles:
+        // one exploratory with a higher perturbation rate and another conservative approach with a lower perturbation rate.
+        // Experiments with academic instances have shown some benefits
+        // from using the conservative profile for problems
+        // that begin with 50 planning entities and 200 planning values.
+        // We use the scale metric to measure complexity, a value that is already computed by the solver.
+        // While this metric is not flawless,
+        // it helps prioritize the conservative profile when addressing complex problems.
+        // Specifically,
+        // this occurs
+        // when the combination of entities and values results in a scale metric
+        // that is greater than or equal to the one observed in the experiments: 427.
+        var exploratoryRate = context.exploratoryRate();
+        if (exploratoryRate == -1) { // Not set by the user
+            var scaleLog = phaseScope.getSolverScope().getScoreDirector().getValueRangeManager().getProblemSizeStatistics()
+                    .approximateProblemSizeLog();
+            // It is expected that the conservative profile will be called 90% of the time for complex problems
+            exploratoryRate = scaleLog < 427.0 ? 0.9 : 0.1;
+        }
+        this.worker = new HybridGeneticSearchWorker<>(HybridGeneticSearchWorkerContext.of(exploratoryRate, context),
+                bestSolutionUpdater, workerSolverScope.getWorkingRandom(), workerSolverScope);
         this.worker.phaseStarted(phaseScope);
     }
 

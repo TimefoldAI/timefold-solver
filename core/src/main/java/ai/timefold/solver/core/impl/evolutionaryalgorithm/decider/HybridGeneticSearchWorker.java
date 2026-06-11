@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.bestsolution.BestSolutionUpdater;
@@ -11,7 +12,9 @@ import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope.Evolution
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope.EvolutionaryAlgorithmStepScope;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionState;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.crossover.CrossoverContext;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.crossover.CrossoverStrategy;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.Individual;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator.ConstructionIndividualStrategy;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -42,15 +45,18 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
 
     private final HybridGeneticSearchWorkerContext<Solution_, Score_, State_> context;
     private final BestSolutionUpdater<Solution_> bestSolutionUpdater;
+    private final RandomGenerator workingRandom;
     private final SolverScope<Solution_> ownSolverScope;
 
     @Nullable
     private State_ initialState;
 
     public HybridGeneticSearchWorker(HybridGeneticSearchWorkerContext<Solution_, Score_, State_> context,
-            BestSolutionUpdater<Solution_> bestSolutionUpdater, SolverScope<Solution_> ownSolverScope) {
+            BestSolutionUpdater<Solution_> bestSolutionUpdater, RandomGenerator workingRandom,
+            SolverScope<Solution_> ownSolverScope) {
         this.context = context;
         this.bestSolutionUpdater = bestSolutionUpdater;
+        this.workingRandom = workingRandom;
         this.ownSolverScope = ownSolverScope;
     }
 
@@ -74,14 +80,16 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
         var restoredPhaseScope = restoreState(sharedPhaseScope, Objects.requireNonNull(initialState));
         var stepScope = new EvolutionaryAlgorithmStepScope<>(restoredPhaseScope);
         stepScope.setBestIndividual(bestSolutionSupplier.get());
-        var newIndividual = context.constructionIndividualStrategy().apply(stepScope);
+        var constructionStrategy = pickConstructionIndividualStrategy();
+        var newIndividual = constructionStrategy.apply(stepScope);
         var addIndividual = true;
         var oldScore = newIndividual.getScore();
         if (!newIndividual.getScore().raw().isFeasible()
                 && restoredPhaseScope.getSolverScope().getWorkingRandom().nextBoolean()) {
             var clonedIndividual = newIndividual.clone(ownSolverScope.getScoreDirector());
             individualConsumer.accept(clonedIndividual);
-            applyPhases(restoredPhaseScope, context.localSearchPhase(), context.refinementPhase());
+            applyPhases(restoredPhaseScope, constructionStrategy.getLocalSearchPhase(),
+                    constructionStrategy.getRefinementPhase());
             if (restoredPhaseScope.<Score_> getBestScore().compareTo(oldScore) <= 0) {
                 addIndividual = false;
                 newIndividual = clonedIndividual;
@@ -110,7 +118,8 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
         }
         var restoredPhaseScope = restoreState(sharedPhaseScope, Objects.requireNonNull(initialState));
         var crossoverContext = new CrossoverContext<>(restoredPhaseScope, firstIndividual, secondIndividual);
-        var offspringResult = context.crossoverStrategy().apply(crossoverContext);
+        var crossoverStrategy = pickCrossoverStrategy();
+        var offspringResult = crossoverStrategy.apply(crossoverContext);
         var offspringIndividual = context.individualBuilder().build(offspringResult.solution(), offspringResult.score(),
                 offspringResult.firstParentScore(), offspringResult.secondParentScore(), ownSolverScope.getScoreDirector());
         var addIndividual = true;
@@ -118,7 +127,7 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
         if (!offspringIndividual.getScore().raw().isFeasible()
                 && restoredPhaseScope.getSolverScope().getWorkingRandom().nextBoolean()) {
             individualConsumer.accept(offspringIndividual.clone(ownSolverScope.getScoreDirector()));
-            applyPhases(restoredPhaseScope, context.localSearchPhase(), context.refinementPhase());
+            applyPhases(restoredPhaseScope, crossoverStrategy.getLocalSearchPhase(), crossoverStrategy.getRefinementPhase());
             if (restoredPhaseScope.<Score_> getBestScore().compareTo(oldScore) == 0) {
                 addIndividual = false;
             }
@@ -201,48 +210,15 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
         var solverScope = phaseScope.getSolverScope();
         switch (phases.length) {
             case 1: {
-                if (phases[0] == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
-                    break;
-                }
-                phases[0].solvingStarted(solverScope);
-                phases[0].solve(solverScope);
-                phases[0].solvingEnded(solverScope);
+                applyPhases(phaseScope, phases[0]);
                 break;
             }
             case 2: {
-                if (phases[0] == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
-                    break;
-                }
-                phases[0].solvingStarted(solverScope);
-                phases[0].solve(solverScope);
-                phases[0].solvingEnded(solverScope);
-                if (phases[1] == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
-                    break;
-                }
-                phases[1].solvingStarted(solverScope);
-                phases[1].solve(solverScope);
-                phases[1].solvingEnded(solverScope);
+                applyPhases(phaseScope, phases[0], phases[1]);
                 break;
             }
             case 3: {
-                if (phases[0] == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
-                    break;
-                }
-                phases[0].solvingStarted(solverScope);
-                phases[0].solve(solverScope);
-                phases[0].solvingEnded(solverScope);
-                if (phases[1] == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
-                    break;
-                }
-                phases[1].solvingStarted(solverScope);
-                phases[1].solve(solverScope);
-                phases[1].solvingEnded(solverScope);
-                if (phases[2] == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
-                    break;
-                }
-                phases[2].solvingStarted(solverScope);
-                phases[2].solve(solverScope);
-                phases[2].solvingEnded(solverScope);
+                applyPhases(phaseScope, phases[0], phases[1], phases[2]);
                 break;
             }
             default: {
@@ -257,6 +233,77 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
                 }
             }
         }
+    }
+
+    private static <Solution_> void applyPhases(AbstractPhaseScope<Solution_> phaseScope,
+            @Nullable Phase<Solution_> phase) {
+        var solverScope = phaseScope.getSolverScope();
+        if (phase == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
+            return;
+        }
+        phase.solvingStarted(solverScope);
+        phase.solve(solverScope);
+        phase.solvingEnded(solverScope);
+    }
+
+    public static <Solution_> void applyPhases(AbstractPhaseScope<Solution_> phaseScope, @Nullable Phase<Solution_> firstPhase,
+            @Nullable Phase<Solution_> secondPhase) {
+        var solverScope = phaseScope.getSolverScope();
+        if (firstPhase == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
+            return;
+        }
+        firstPhase.solvingStarted(solverScope);
+        firstPhase.solve(solverScope);
+        firstPhase.solvingEnded(solverScope);
+        if (secondPhase == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
+            return;
+        }
+        secondPhase.solvingStarted(solverScope);
+        secondPhase.solve(solverScope);
+        secondPhase.solvingEnded(solverScope);
+    }
+
+    public static <Solution_> void applyPhases(AbstractPhaseScope<Solution_> phaseScope, @Nullable Phase<Solution_> firstPhase,
+            @Nullable Phase<Solution_> secondPhase, @Nullable Phase<Solution_> thirdPhase) {
+        var solverScope = phaseScope.getSolverScope();
+        if (firstPhase == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
+            return;
+        }
+        firstPhase.solvingStarted(solverScope);
+        firstPhase.solve(solverScope);
+        firstPhase.solvingEnded(solverScope);
+        if (secondPhase == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
+            return;
+        }
+        secondPhase.solvingStarted(solverScope);
+        secondPhase.solve(solverScope);
+        secondPhase.solvingEnded(solverScope);
+        if (thirdPhase == null || phaseScope.getTermination().isPhaseTerminated(phaseScope)) {
+            return;
+        }
+        thirdPhase.solvingStarted(solverScope);
+        thirdPhase.solve(solverScope);
+        thirdPhase.solvingEnded(solverScope);
+    }
+
+    private ConstructionIndividualStrategy<Solution_, Score_> pickConstructionIndividualStrategy() {
+        if (workingRandom.nextDouble(1) < context.exploratoryRate()) {
+            return context.exploratoryConstructionIndividualStrategy();
+        } else {
+            return context.conservativeConstructionIndividualStrategy();
+        }
+    }
+
+    private CrossoverStrategy<Solution_, Score_> pickCrossoverStrategy() {
+        if (workingRandom.nextDouble(1) < context.exploratoryRate()) {
+            return context.exploratoryCrossoverStrategy();
+        } else {
+            return context.conservativeCrossoverStrategy();
+        }
+    }
+
+    protected RandomGenerator getWorkingRandom() {
+        return workingRandom;
     }
 
     // ************************************************************************

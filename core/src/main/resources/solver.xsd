@@ -1385,13 +1385,9 @@
                 
         <xs:sequence>
                     
-          <xs:element minOccurs="0" name="complexProblem" type="xs:boolean"/>
-                    
-          <xs:element minOccurs="0" name="agentCount" type="xs:int"/>
-                    
           <xs:element minOccurs="0" name="populationConfig" type="tns:evolutionaryPopulationConfig"/>
                     
-          <xs:element minOccurs="0" name="evolutionaryAgentConfig" type="tns:evolutionaryAgentConfig"/>
+          <xs:element minOccurs="0" name="workerConfig" type="tns:evolutionaryWorkerConfig"/>
                   
         </xs:sequence>
               
@@ -1425,13 +1421,15 @@
       
   </xs:complexType>
     
-  <xs:complexType name="evolutionaryAgentConfig">
+  <xs:complexType name="evolutionaryWorkerConfig">
         
     <xs:complexContent>
             
       <xs:extension base="tns:phaseConfig">
                 
         <xs:sequence>
+                    
+          <xs:element minOccurs="0" name="exploratoryRate" type="xs:double"/>
                     
           <xs:element minOccurs="0" name="individualGeneratorConfig" type="tns:evolutionaryIndividualGeneratorConfig"/>
                     
@@ -1452,8 +1450,6 @@
       <xs:extension base="tns:phaseConfig">
                 
         <xs:sequence>
-                    
-          <xs:element minOccurs="0" name="inheritanceRate" type="xs:double"/>
                     
           <xs:element maxOccurs="unbounded" minOccurs="0" name="customPhaseCommandClass" type="xs:string"/>
                     
@@ -1476,8 +1472,6 @@
       <xs:extension base="tns:phaseConfig">
                 
         <xs:sequence>
-                    
-          <xs:element minOccurs="0" name="inheritanceRate" type="xs:double"/>
                     
           <xs:element minOccurs="0" name="localSearch" type="tns:localSearchPhaseConfig"/>
                   

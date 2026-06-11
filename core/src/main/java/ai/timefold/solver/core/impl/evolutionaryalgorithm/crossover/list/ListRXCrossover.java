@@ -75,6 +75,16 @@ public final class ListRXCrossover<Solution_, Score_ extends Score<Score_>>
         }
     }
 
+    @Override
+    public Phase<Solution_> getLocalSearchPhase() {
+        return localSearchPhase;
+    }
+
+    @Override
+    public @Nullable Phase<Solution_> getRefinementPhase() {
+        return refinementPhase;
+    }
+
     private static <Solution_, Score_ extends Score<Score_>> void generateOffspring(
             InnerScoreDirector<Solution_, Score_> scoreDirector,
             ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,

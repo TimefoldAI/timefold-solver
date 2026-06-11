@@ -18,16 +18,12 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
-        "inheritanceRate",
         "customPhaseCommandClassList",
         "customProperties",
         "constructionHeuristic"
 })
 @NullMarked
 public class EvolutionaryIndividualGeneratorConfig extends PhaseConfig<EvolutionaryIndividualGeneratorConfig> {
-
-    @Nullable
-    private Double inheritanceRate = null;
 
     @XmlElement(name = "customPhaseCommandClass")
     @Nullable
@@ -43,14 +39,6 @@ public class EvolutionaryIndividualGeneratorConfig extends PhaseConfig<Evolution
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
-
-    public @Nullable Double getInheritanceRate() {
-        return inheritanceRate;
-    }
-
-    public void setInheritanceRate(@Nullable Double inheritanceRate) {
-        this.inheritanceRate = inheritanceRate;
-    }
 
     public @Nullable List<Class<? extends PhaseCommand>> getCustomPhaseCommandClassList() {
         return customPhaseCommandClassList;
@@ -81,11 +69,6 @@ public class EvolutionaryIndividualGeneratorConfig extends PhaseConfig<Evolution
     // With methods
     // ************************************************************************
 
-    public EvolutionaryIndividualGeneratorConfig withInheritanceRate(@Nullable Double inheritanceRate) {
-        setInheritanceRate(inheritanceRate);
-        return this;
-    }
-
     public EvolutionaryIndividualGeneratorConfig withCustomPhaseCommandClassList(
             List<Class<? extends PhaseCommand>> customPhaseCommandClassList) {
         setCustomPhaseCommandClassList(customPhaseCommandClassList);
@@ -106,7 +89,6 @@ public class EvolutionaryIndividualGeneratorConfig extends PhaseConfig<Evolution
     @Override
     public EvolutionaryIndividualGeneratorConfig inherit(EvolutionaryIndividualGeneratorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
-        inheritanceRate = ConfigUtils.inheritOverwritableProperty(inheritanceRate, inheritedConfig.getInheritanceRate());
         customPhaseCommandClassList = ConfigUtils.inheritMergeableListProperty(customPhaseCommandClassList,
                 inheritedConfig.getCustomPhaseCommandClassList());
         customProperties = ConfigUtils.inheritMergeableMapProperty(customProperties, inheritedConfig.getCustomProperties());

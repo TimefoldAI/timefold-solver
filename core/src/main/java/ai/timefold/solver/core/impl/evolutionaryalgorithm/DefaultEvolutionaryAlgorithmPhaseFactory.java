@@ -1,13 +1,11 @@
 package ai.timefold.solver.core.impl.evolutionaryalgorithm;
 
-import static ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService.Feature.EVOLUTIONARY_ALGORITHM;
 import static ai.timefold.solver.core.impl.AbstractFromConfigFactory.deduceEntityDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
@@ -18,11 +16,11 @@ import ai.timefold.solver.core.config.constructionheuristic.decider.forager.Cons
 import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
-import ai.timefold.solver.core.config.evolutionaryalgorithm.EvolutionaryAgentConfig;
 import ai.timefold.solver.core.config.evolutionaryalgorithm.EvolutionaryAlgorithmPhaseConfig;
 import ai.timefold.solver.core.config.evolutionaryalgorithm.EvolutionaryIndividualGeneratorConfig;
 import ai.timefold.solver.core.config.evolutionaryalgorithm.EvolutionaryLocalSearchConfig;
 import ai.timefold.solver.core.config.evolutionaryalgorithm.EvolutionaryPopulationConfig;
+import ai.timefold.solver.core.config.evolutionaryalgorithm.EvolutionaryWorkerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
@@ -51,7 +49,6 @@ import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhaseFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedEntityPlacerFactory;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionState;
@@ -104,31 +101,31 @@ public final class DefaultEvolutionaryAlgorithmPhaseFactory<Solution_>
         if (populationConfig == null) {
             populationConfig = new EvolutionaryPopulationConfig();
         }
+        // The default population settings are based on the original HGS article
         var populationSize = Objects.requireNonNullElse(populationConfig.getPopulationSize(), 40);
         var generationSize = Objects.requireNonNullElse(populationConfig.getGenerationSize(), 20);
         var eliteGroupSize = Objects.requireNonNullElse(populationConfig.getEliteSolutionSize(), 10);
         var populationRestartCount = Objects.requireNonNullElse(populationConfig.getPopulationRestartCount(), 400);
-        var workerConfig = phaseConfig.getEvolutionaryAgentConfig();
+        var workerConfig = phaseConfig.getWorkerConfig();
         if (workerConfig == null) {
-            workerConfig = new EvolutionaryAgentConfig();
+            workerConfig = new EvolutionaryWorkerConfig();
         }
         var isListVariable = solverConfigPolicy.getSolutionDescriptor().hasListVariable();
         var phaseTermination = buildPhaseTermination(solverConfigPolicy, solverTermination);
         // Research has shown
-        // that simpler models perform better in operations with a higher perturbation rate.
+        // that simpler problems perform better in operations with a higher perturbation rate.
         // Conversely,
-        // complex models that work with complex datasets tend
+        // models that work with complex datasets tend
         // to be more effective with smaller perturbation rates, such as an inheritance rate of at least 95%.
         // This means that an individual will incorporate 95% of a parent's solution for crossover operations
         // or ruin only 5% of it when creating a new individual.
-        boolean isComplex = phaseConfig.getComplexProblem() != null && phaseConfig.getComplexProblem();
-        var agentCount = phaseConfig.getAgentCount() != null ? phaseConfig.getAgentCount() : 0;
+        var conservativeInheritanceRate = 0.95;
+        var exploratoryInheritanceRate = 0.5;
         var evolutionaryDecider =
                 buildEvolutionaryAlgorithmDecider(workerConfig, solverConfigPolicy, solverTermination, phaseTermination,
-                        bestSolutionRecaller, isComplex, isListVariable, agentCount, populationSize, generationSize,
-                        eliteGroupSize, populationRestartCount);
-        return new DefaultEvolutionaryAlgorithmPhase.Builder<>(phaseIndex, "", phaseTermination, evolutionaryDecider,
-                isComplex).build();
+                        bestSolutionRecaller, conservativeInheritanceRate, exploratoryInheritanceRate, isListVariable,
+                        populationSize, generationSize, eliteGroupSize, populationRestartCount);
+        return new DefaultEvolutionaryAlgorithmPhase.Builder<>(phaseIndex, "", phaseTermination, evolutionaryDecider).build();
     }
 
     /**
@@ -136,77 +133,73 @@ public final class DefaultEvolutionaryAlgorithmPhaseFactory<Solution_>
      */
     private static <Solution_, Score_ extends Score<Score_>, State_ extends SolutionState<Solution_, Score_>>
             EvolutionaryDecider<Solution_, Score_>
-            buildEvolutionaryAlgorithmDecider(EvolutionaryAgentConfig workerConfig,
+            buildEvolutionaryAlgorithmDecider(EvolutionaryWorkerConfig workerConfig,
                     HeuristicConfigPolicy<Solution_> solverConfigPolicy, SolverTermination<Solution_> solverTermination,
                     PhaseTermination<Solution_> phaseTermination, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-                    boolean isComplex, boolean isListVariable, int agentCount, int populationSize, int generationSize,
-                    int eliteGroupSize, int populationRestartCount) {
+                    double exploratoryInheritanceRate, double conservativeInheritanceRate, boolean isListVariable,
+                    int populationSize, int generationSize, int eliteGroupSize, int populationRestartCount) {
 
         IndividualBuilder<Solution_, Score_> individualBuilder = buildIndividualBuilder(isListVariable);
         SolutionStateManager<Solution_, Score_, State_> solutionStateManager = buildSolutionStateManager(isListVariable);
-        var requiresEnterpriseService = agentCount > 0;
-        if (requiresEnterpriseService) {
-            if (solverConfigPolicy.getMoveThreadCount() != null) {
-                throw new IllegalStateException(
-                        "The move thread count setting cannot be used in conjunction with the agent count.");
-            }
-            if (agentCount < 2) {
-                throw new IllegalStateException("The agent count must be at least 2.");
-            }
-            var agentContextList = new ArrayList<HybridGeneticSearchWorkerContext<Solution_, Score_, State_>>(agentCount);
-            for (var i = 0; i < agentCount; i++) {
-                agentContextList.add(buildAgentContext(workerConfig, solverConfigPolicy, solverTermination,
-                        bestSolutionRecaller, solutionStateManager, individualBuilder, isComplex, isListVariable));
-            }
-            return TimefoldSolverEnterpriseService.loadOrFail(EVOLUTIONARY_ALGORITHM)
-                    .buildHybridGeneticSearch(solverConfigPolicy, agentCount, populationSize, generationSize, eliteGroupSize,
-                            populationRestartCount, agentContextList, phaseTermination, bestSolutionRecaller);
-        } else {
-            var agentContext = buildAgentContext(workerConfig, solverConfigPolicy, solverTermination,
-                    bestSolutionRecaller, solutionStateManager, individualBuilder, isComplex, isListVariable);
-            return new HybridGeneticSearchDecider.Builder<Solution_, Score_, State_>()
-                    .withLogIndentation(solverConfigPolicy.getLogIndentation())
-                    .withPopulationSize(populationSize)
-                    .withGenerationSize(generationSize)
-                    .withEliteSolutionSize(eliteGroupSize)
-                    .withPopulationRestartCount(populationRestartCount)
-                    .withConstructionIndividualStrategy(agentContext.constructionIndividualStrategy())
-                    .withLocalSearchPhase(agentContext.localSearchPhase())
-                    .withRefinementPhase(agentContext.refinementPhase())
-                    .withCrossoverStrategy(agentContext.crossoverStrategy())
-                    .withIndividualBuilder(individualBuilder)
-                    .withSolutionStateManager(solutionStateManager)
-                    .withPhaseTermination(phaseTermination)
-                    .withBestSolutionRecaller(bestSolutionRecaller)
-                    .build();
-        }
+        var workerContext = buildWorkerContext(workerConfig, solverConfigPolicy, solverTermination, bestSolutionRecaller,
+                solutionStateManager, individualBuilder, isListVariable, exploratoryInheritanceRate,
+                conservativeInheritanceRate);
+        return new HybridGeneticSearchDecider.Builder<Solution_, Score_, State_>()
+                .withLogIndentation(solverConfigPolicy.getLogIndentation())
+                .withPopulationSize(populationSize)
+                .withGenerationSize(generationSize)
+                .withEliteSolutionSize(eliteGroupSize)
+                .withPopulationRestartCount(populationRestartCount)
+                .withContext(workerContext)
+                .withPhaseTermination(phaseTermination)
+                .withBestSolutionRecaller(bestSolutionRecaller)
+                .build();
     }
 
     private static <Solution_, Score_ extends Score<Score_>, State_ extends SolutionState<Solution_, Score_>>
-            HybridGeneticSearchWorkerContext<Solution_, Score_, State_> buildAgentContext(EvolutionaryAgentConfig workerConfig,
-                    HeuristicConfigPolicy<Solution_> solverConfigPolicy, SolverTermination<Solution_> solverTermination,
-                    BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            HybridGeneticSearchWorkerContext<Solution_, Score_, State_>
+            buildWorkerContext(EvolutionaryWorkerConfig workerConfig, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
+                    SolverTermination<Solution_> solverTermination, BestSolutionRecaller<Solution_> bestSolutionRecaller,
                     SolutionStateManager<Solution_, Score_, State_> solutionStateManager,
-                    IndividualBuilder<Solution_, Score_> individualBuilder, boolean isComplex, boolean isListVariable) {
+                    IndividualBuilder<Solution_, Score_> individualBuilder, boolean isListVariable,
+                    double exploratoryInheritanceRate, double conservativeInheritanceRate) {
         Phase<Solution_> deterministicBestFitConstructionPhase =
                 disableLogging(buildDeterministicConstructionHeuristicPhase(solverConfigPolicy,
                         workerConfig.getIndividualGeneratorConfig(), solverTermination));
         Phase<Solution_> shuffledFirstFitConstructionPhase = disableLogging(
                 buildShuffledConstructionHeuristicPhase(solverConfigPolicy, solverTermination, isListVariable));
-        Phase<Solution_> localSearchPhase =
+        Phase<Solution_> fasterLocalSearchPhase =
                 disableLogging(buildLocalSearchPhase(solverConfigPolicy, workerConfig.getLocalSearchConfig(),
-                        solverTermination, bestSolutionRecaller, isComplex, isListVariable));
+                        solverTermination, bestSolutionRecaller, false, isListVariable));
+        Phase<Solution_> regularLocalSearchPhase =
+                disableLogging(buildLocalSearchPhase(solverConfigPolicy, workerConfig.getLocalSearchConfig(),
+                        solverTermination, bestSolutionRecaller, true, isListVariable));
         Phase<Solution_> refinmentPhase =
                 disableLogging(buildRefinmentPhase(solverConfigPolicy, solverTermination, isListVariable));
-        ConstructionIndividualStrategy<Solution_, Score_> constructionIndividualStrategy =
+
+        ConstructionIndividualStrategy<Solution_, Score_> exploratoryConstructionIndividualStrategy =
                 buildConstructionIndividualPhase(workerConfig, workerConfig.getIndividualGeneratorConfig(),
-                        deterministicBestFitConstructionPhase, shuffledFirstFitConstructionPhase, localSearchPhase,
-                        refinmentPhase, solutionStateManager, individualBuilder, isComplex, isListVariable);
-        CrossoverStrategy<Solution_, Score_> crossoverStrategy =
-                buildCrossoverStrategy(workerConfig.getLocalSearchConfig(), localSearchPhase, refinmentPhase, isComplex,
+                        deterministicBestFitConstructionPhase, shuffledFirstFitConstructionPhase, fasterLocalSearchPhase,
+                        refinmentPhase, solutionStateManager, individualBuilder, exploratoryInheritanceRate, isListVariable);
+        ConstructionIndividualStrategy<Solution_, Score_> conservativeConstructionIndividualStrategy =
+                buildConstructionIndividualPhase(workerConfig, workerConfig.getIndividualGeneratorConfig(),
+                        deterministicBestFitConstructionPhase, shuffledFirstFitConstructionPhase, regularLocalSearchPhase,
+                        refinmentPhase, solutionStateManager, individualBuilder, conservativeInheritanceRate, isListVariable);
+
+        CrossoverStrategy<Solution_, Score_> exploratoryCrossoverStrategy =
+                buildCrossoverStrategy(fasterLocalSearchPhase, refinmentPhase, false, exploratoryInheritanceRate,
                         isListVariable);
-        return new HybridGeneticSearchWorkerContext<>(constructionIndividualStrategy, localSearchPhase, refinmentPhase,
-                crossoverStrategy, individualBuilder, solutionStateManager);
+        CrossoverStrategy<Solution_, Score_> conservativeCrossoverStrategy = buildCrossoverStrategy(regularLocalSearchPhase,
+                refinmentPhase, true, conservativeInheritanceRate, isListVariable);
+
+        if (workerConfig.getExploratoryRate() != null && (workerConfig.getExploratoryRate() < 0.0
+                || workerConfig.getExploratoryRate() > 1.0)) {
+            throw new IllegalArgumentException("Exploratory rate must be between 0.0 and 1.0");
+        }
+        var exploratoryRate = workerConfig.getExploratoryRate() == null ? -1 : workerConfig.getExploratoryRate();
+        return new HybridGeneticSearchWorkerContext<>(exploratoryRate, exploratoryConstructionIndividualStrategy,
+                conservativeConstructionIndividualStrategy, exploratoryCrossoverStrategy, conservativeCrossoverStrategy,
+                individualBuilder, solutionStateManager);
     }
 
     @SuppressWarnings("unchecked")
@@ -231,11 +224,8 @@ public final class DefaultEvolutionaryAlgorithmPhaseFactory<Solution_>
     }
 
     private static <Solution_, Score_ extends Score<Score_>> CrossoverStrategy<Solution_, Score_> buildCrossoverStrategy(
-            @Nullable EvolutionaryLocalSearchConfig localSearchConfig, Phase<Solution_> localSearchPhase,
-            @Nullable Phase<Solution_> refinementPhase, boolean isComplex,
-            boolean isListVariable) {
-        double inheritanceRate = Optional.ofNullable(localSearchConfig).map(EvolutionaryLocalSearchConfig::getInheritanceRate)
-                .orElse(isComplex ? 0.95 : 0.5);
+            Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase, boolean isComplex,
+            double inheritanceRate, boolean isListVariable) {
         if (isListVariable) {
             return new ListOXCrossover<>(localSearchPhase, refinementPhase, inheritanceRate, !isComplex);
         } else {
@@ -278,14 +268,12 @@ public final class DefaultEvolutionaryAlgorithmPhaseFactory<Solution_>
 
     private static <Solution_, Score_ extends Score<Score_>, State_ extends SolutionState<Solution_, Score_>>
             ConstructionIndividualStrategy<Solution_, Score_>
-            buildConstructionIndividualPhase(EvolutionaryAgentConfig workerConfig,
+            buildConstructionIndividualPhase(EvolutionaryWorkerConfig workerConfig,
                     @Nullable EvolutionaryIndividualGeneratorConfig individualGeneratorConfig,
                     Phase<Solution_> deterministicBestFitConstructionPhase, Phase<Solution_> shuffledFirstFitConstructionPhase,
                     Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase,
                     SolutionStateManager<Solution_, Score_, State_> solutionStateManager,
-                    IndividualBuilder<Solution_, Score_> individualBuilder, boolean isComplex, boolean isListVariable) {
-        double inheritanceRate = Optional.ofNullable(individualGeneratorConfig)
-                .map(EvolutionaryIndividualGeneratorConfig::getInheritanceRate).orElse(isComplex ? 0.95 : 0.5);
+                    IndividualBuilder<Solution_, Score_> individualBuilder, double inheritanceRate, boolean isListVariable) {
         List<PhaseCommand<Solution_>> customIndividualPhaseCommandList =
                 buildPhaseCommandList(workerConfig, individualGeneratorConfig);
         if (isListVariable) {
@@ -299,7 +287,7 @@ public final class DefaultEvolutionaryAlgorithmPhaseFactory<Solution_>
         }
     }
 
-    private static <Solution_> List<PhaseCommand<Solution_>> buildPhaseCommandList(EvolutionaryAgentConfig workerConfig,
+    private static <Solution_> List<PhaseCommand<Solution_>> buildPhaseCommandList(EvolutionaryWorkerConfig workerConfig,
             @Nullable EvolutionaryIndividualGeneratorConfig individualGeneratorConfig) {
         var customIndividualPhaseCommandList = Collections.<PhaseCommand<Solution_>> emptyList();
         if (individualGeneratorConfig != null && individualGeneratorConfig.getCustomPhaseCommandClassList() != null) {

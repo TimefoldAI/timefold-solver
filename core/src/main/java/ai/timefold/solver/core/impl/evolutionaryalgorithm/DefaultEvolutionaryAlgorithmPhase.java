@@ -18,12 +18,10 @@ public final class DefaultEvolutionaryAlgorithmPhase<Solution_> extends Abstract
         implements EvolutionaryAlgorithmPhase<Solution_>, EvolutionaryAlgorithmPhaseLifecycleListener<Solution_> {
 
     private final EvolutionaryDecider<Solution_, ?> evolutionaryDecider;
-    private final boolean isComplex;
 
     public DefaultEvolutionaryAlgorithmPhase(Builder<Solution_> builder) {
         super(builder);
         this.evolutionaryDecider = builder.evolutionaryDecider;
-        this.isComplex = builder.isComplex;
     }
 
     // ************************************************************************
@@ -90,10 +88,10 @@ public final class DefaultEvolutionaryAlgorithmPhase<Solution_> extends Abstract
         phaseScope.endingNow();
         var statistics = phaseScope.getPopulation().getStatistics();
         logger.info(
-                "Evolutionary Algorithm phase ({}) ended: time spent ({}), best score ({}), best generation ({}), best iteration ({}), generation total ({}), iteration total ({}), overconstrained ({}).",
+                "Evolutionary Algorithm phase ({}) ended: time spent ({}), best score ({}), best generation ({}), best iteration ({}), generation total ({}), iteration total ({}).",
                 phaseScope.getPhaseIndex(), phaseScope.calculateSolverTimeMillisSpentUpToNow(), phaseScope.getBestScore().raw(),
                 statistics.bestGeneration(), statistics.bestIteration(), statistics.generationCount(),
-                statistics.individualCount(), isComplex);
+                statistics.individualCount());
     }
 
     @Override
@@ -118,13 +116,11 @@ public final class DefaultEvolutionaryAlgorithmPhase<Solution_> extends Abstract
     public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
 
         private final EvolutionaryDecider<Solution_, ?> evolutionaryDecider;
-        private final boolean isComplex;
 
         public Builder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination,
-                EvolutionaryDecider<Solution_, ?> evolutionaryDecider, boolean isComplex) {
+                EvolutionaryDecider<Solution_, ?> evolutionaryDecider) {
             super(phaseIndex, logIndentation, phaseTermination);
             this.evolutionaryDecider = evolutionaryDecider;
-            this.isComplex = isComplex;
         }
 
         @Override

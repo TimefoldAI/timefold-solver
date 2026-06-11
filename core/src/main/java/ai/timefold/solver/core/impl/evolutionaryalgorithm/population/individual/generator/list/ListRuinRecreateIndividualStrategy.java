@@ -92,6 +92,16 @@ public record ListRuinRecreateIndividualStrategy<Solution_, Score_ extends Score
                 null, null, scoreDirector);
     }
 
+    @Override
+    public Phase<Solution_> getLocalSearchPhase() {
+        return localSearchPhase;
+    }
+
+    @Override
+    public @Nullable Phase<Solution_> getRefinementPhase() {
+        return refinementPhase;
+    }
+
     void applyRuinRecreate(SolverScope<Solution_> solverScope, InnerScoreDirector<Solution_, Score_> scoreDirector,
             Individual<Solution_, Score_> bestIndividual) {
         var bestSolutionState = solutionStateManager.saveSolutionState(scoreDirector, bestIndividual);

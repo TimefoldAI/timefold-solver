@@ -64,6 +64,16 @@ public record DefaultConstructionIndividualStrategy<Solution_, Score_ extends Sc
                 null, null, scoreDirector);
     }
 
+    @Override
+    public Phase<Solution_> getLocalSearchPhase() {
+        return localSearchPhase;
+    }
+
+    @Override
+    public @Nullable Phase<Solution_> getRefinementPhase() {
+        return refinementPhase;
+    }
+
     private Phase<Solution_> getConstructionPhase(EvolutionaryAlgorithmStepScope<Solution_> stepScope) {
         if (stepScope.getBestIndividual() == null) {
             // The deterministic phase is used only once as its behavior always returns the same solution.

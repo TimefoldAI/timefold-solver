@@ -11,10 +11,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
-        "complexProblem",
-        "agentCount",
         "populationConfig",
-        "evolutionaryAgentConfig",
+        "workerConfig",
 })
 @NullMarked
 public class EvolutionaryAlgorithmPhaseConfig extends PhaseConfig<EvolutionaryAlgorithmPhaseConfig> {
@@ -22,36 +20,14 @@ public class EvolutionaryAlgorithmPhaseConfig extends PhaseConfig<EvolutionaryAl
     public static final String XML_ELEMENT_NAME = "evolutionaryAlgorithm";
 
     @Nullable
-    private Boolean complexProblem;
-
-    @Nullable
-    private Integer agentCount;
-
-    @Nullable
     private EvolutionaryPopulationConfig populationConfig = null;
 
     @Nullable
-    private EvolutionaryAgentConfig evolutionaryAgentConfig = null;
+    private EvolutionaryWorkerConfig workerConfig = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
-
-    public @Nullable Boolean getComplexProblem() {
-        return complexProblem;
-    }
-
-    public void setComplexProblem(@Nullable Boolean complexProblem) {
-        this.complexProblem = complexProblem;
-    }
-
-    public @Nullable Integer getAgentCount() {
-        return agentCount;
-    }
-
-    public void setAgentCount(@Nullable Integer agentCount) {
-        this.agentCount = agentCount;
-    }
 
     public @Nullable EvolutionaryPopulationConfig getPopulationConfig() {
         return populationConfig;
@@ -61,46 +37,33 @@ public class EvolutionaryAlgorithmPhaseConfig extends PhaseConfig<EvolutionaryAl
         this.populationConfig = populationConfig;
     }
 
-    public @Nullable EvolutionaryAgentConfig getEvolutionaryAgentConfig() {
-        return evolutionaryAgentConfig;
+    public @Nullable EvolutionaryWorkerConfig getWorkerConfig() {
+        return workerConfig;
     }
 
-    public void setEvolutionaryAgentConfig(@Nullable EvolutionaryAgentConfig evolutionaryAgentConfig) {
-        this.evolutionaryAgentConfig = evolutionaryAgentConfig;
+    public void setWorkerConfig(@Nullable EvolutionaryWorkerConfig workerConfig) {
+        this.workerConfig = workerConfig;
     }
 
     // ************************************************************************
     // With methods
     // ************************************************************************
 
-    public EvolutionaryAlgorithmPhaseConfig withComplexProblem(Boolean complexProblem) {
-        setComplexProblem(complexProblem);
-        return this;
-    }
-
-    public EvolutionaryAlgorithmPhaseConfig withAgentCount(Integer agentCount) {
-        setAgentCount(agentCount);
-        return this;
-    }
-
     public EvolutionaryAlgorithmPhaseConfig withPopulationConfig(EvolutionaryPopulationConfig populationConfig) {
         setPopulationConfig(populationConfig);
         return this;
     }
 
-    public EvolutionaryAlgorithmPhaseConfig withEvolutionaryAgentConfig(EvolutionaryAgentConfig evolutionaryAgentConfig) {
-        setEvolutionaryAgentConfig(evolutionaryAgentConfig);
+    public EvolutionaryAlgorithmPhaseConfig withWorkerConfig(EvolutionaryWorkerConfig workerConfig) {
+        setWorkerConfig(workerConfig);
         return this;
     }
 
     @Override
     public EvolutionaryAlgorithmPhaseConfig inherit(EvolutionaryAlgorithmPhaseConfig inheritedConfig) {
         super.inherit(inheritedConfig);
-        complexProblem = ConfigUtils.inheritOverwritableProperty(complexProblem, inheritedConfig.getComplexProblem());
-        agentCount = ConfigUtils.inheritOverwritableProperty(agentCount, inheritedConfig.getAgentCount());
         populationConfig = ConfigUtils.inheritConfig(populationConfig, inheritedConfig.getPopulationConfig());
-        evolutionaryAgentConfig =
-                ConfigUtils.inheritConfig(evolutionaryAgentConfig, inheritedConfig.getEvolutionaryAgentConfig());
+        workerConfig = ConfigUtils.inheritConfig(workerConfig, inheritedConfig.getWorkerConfig());
         return this;
     }
 
@@ -114,8 +77,8 @@ public class EvolutionaryAlgorithmPhaseConfig extends PhaseConfig<EvolutionaryAl
         if (populationConfig != null) {
             populationConfig.visitReferencedClasses(classVisitor);
         }
-        if (evolutionaryAgentConfig != null) {
-            evolutionaryAgentConfig.visitReferencedClasses(classVisitor);
+        if (workerConfig != null) {
+            workerConfig.visitReferencedClasses(classVisitor);
         }
     }
 }

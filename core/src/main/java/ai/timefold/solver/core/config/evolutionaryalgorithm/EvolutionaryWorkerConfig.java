@@ -11,11 +11,15 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
+        "exploratoryRate",
         "individualGeneratorConfig",
         "localSearchConfig",
 })
 @NullMarked
-public class EvolutionaryAgentConfig extends PhaseConfig<EvolutionaryAgentConfig> {
+public class EvolutionaryWorkerConfig extends PhaseConfig<EvolutionaryWorkerConfig> {
+
+    @Nullable
+    private Double exploratoryRate;
 
     @Nullable
     private EvolutionaryIndividualGeneratorConfig individualGeneratorConfig = null;
@@ -26,6 +30,14 @@ public class EvolutionaryAgentConfig extends PhaseConfig<EvolutionaryAgentConfig
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
+
+    public @Nullable Double getExploratoryRate() {
+        return exploratoryRate;
+    }
+
+    public void setExploratoryRate(@Nullable Double exploratoryRate) {
+        this.exploratoryRate = exploratoryRate;
+    }
 
     public @Nullable EvolutionaryIndividualGeneratorConfig getIndividualGeneratorConfig() {
         return individualGeneratorConfig;
@@ -47,20 +59,26 @@ public class EvolutionaryAgentConfig extends PhaseConfig<EvolutionaryAgentConfig
     // With methods
     // ************************************************************************
 
-    public EvolutionaryAgentConfig
+    public EvolutionaryWorkerConfig withExploratoryRate(Double exploratoryRate) {
+        setExploratoryRate(exploratoryRate);
+        return this;
+    }
+
+    public EvolutionaryWorkerConfig
             withIndividualGeneratorConfig(EvolutionaryIndividualGeneratorConfig individualGeneratorConfig) {
         setIndividualGeneratorConfig(individualGeneratorConfig);
         return this;
     }
 
-    public EvolutionaryAgentConfig withLocalSearchConfig(EvolutionaryLocalSearchConfig localSearchConfig) {
+    public EvolutionaryWorkerConfig withLocalSearchConfig(EvolutionaryLocalSearchConfig localSearchConfig) {
         setLocalSearchConfig(localSearchConfig);
         return this;
     }
 
     @Override
-    public EvolutionaryAgentConfig inherit(EvolutionaryAgentConfig inheritedConfig) {
+    public EvolutionaryWorkerConfig inherit(EvolutionaryWorkerConfig inheritedConfig) {
         super.inherit(inheritedConfig);
+        exploratoryRate = ConfigUtils.inheritOverwritableProperty(exploratoryRate, inheritedConfig.getExploratoryRate());
         individualGeneratorConfig =
                 ConfigUtils.inheritConfig(individualGeneratorConfig, inheritedConfig.getIndividualGeneratorConfig());
         localSearchConfig = ConfigUtils.inheritConfig(localSearchConfig, inheritedConfig.getLocalSearchConfig());
@@ -68,8 +86,8 @@ public class EvolutionaryAgentConfig extends PhaseConfig<EvolutionaryAgentConfig
     }
 
     @Override
-    public EvolutionaryAgentConfig copyConfig() {
-        return new EvolutionaryAgentConfig().inherit(this);
+    public EvolutionaryWorkerConfig copyConfig() {
+        return new EvolutionaryWorkerConfig().inherit(this);
     }
 
     @Override

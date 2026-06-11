@@ -12,14 +12,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
-        "inheritanceRate",
         "localSearch",
 })
 @NullMarked
 public class EvolutionaryLocalSearchConfig extends PhaseConfig<EvolutionaryLocalSearchConfig> {
-
-    @Nullable
-    private Double inheritanceRate = null;
 
     @Nullable
     private LocalSearchPhaseConfig localSearch = null;
@@ -27,14 +23,6 @@ public class EvolutionaryLocalSearchConfig extends PhaseConfig<EvolutionaryLocal
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
-
-    public @Nullable Double getInheritanceRate() {
-        return inheritanceRate;
-    }
-
-    public void setInheritanceRate(@Nullable Double inheritanceRate) {
-        this.inheritanceRate = inheritanceRate;
-    }
 
     public @Nullable LocalSearchPhaseConfig getLocalSearch() {
         return localSearch;
@@ -48,11 +36,6 @@ public class EvolutionaryLocalSearchConfig extends PhaseConfig<EvolutionaryLocal
     // With methods
     // ************************************************************************
 
-    public EvolutionaryLocalSearchConfig withInheritanceRate(@Nullable Double inheritanceRate) {
-        setInheritanceRate(inheritanceRate);
-        return this;
-    }
-
     public EvolutionaryLocalSearchConfig withLocalSearch(LocalSearchPhaseConfig localSearch) {
         setLocalSearch(localSearch);
         return this;
@@ -61,7 +44,6 @@ public class EvolutionaryLocalSearchConfig extends PhaseConfig<EvolutionaryLocal
     @Override
     public EvolutionaryLocalSearchConfig inherit(EvolutionaryLocalSearchConfig inheritedConfig) {
         super.inherit(inheritedConfig);
-        inheritanceRate = ConfigUtils.inheritOverwritableProperty(inheritanceRate, inheritedConfig.getInheritanceRate());
         localSearch = ConfigUtils.inheritConfig(localSearch, inheritedConfig.getLocalSearch());
         return this;
     }

@@ -52,6 +52,16 @@ public record BasicOXCrossover<Solution_, Score_ extends Score<Score_>>(Phase<So
                 context.firstIndividual().getScore(), context.secondIndividual().getScore());
     }
 
+    @Override
+    public Phase<Solution_> getLocalSearchPhase() {
+        return localSearchPhase;
+    }
+
+    @Override
+    public @Nullable Phase<Solution_> getRefinementPhase() {
+        return refinementPhase;
+    }
+
     private static <Solution_, Score_ extends Score<Score_>> void generateOffspring(
             InnerScoreDirector<Solution_, Score_> scoreDirector, Individual<Solution_, Score_> firstIndividual,
             Individual<Solution_, Score_> secondIndividual, double inheritanceRate, RandomGenerator workingRandom) {
