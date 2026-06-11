@@ -24,7 +24,6 @@ import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.custom.DefaultPhaseCommandContext;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 
@@ -47,15 +46,15 @@ public record BasicRuinRecreateIndividualStrategy<Solution_, Score_ extends Scor
         List<PhaseCommand<Solution_>> customPhaseIndividualCommandList, Phase<Solution_> deterministicBestFitConstructionPhase,
         Phase<Solution_> shuffledFirstFitConstructionPhase, Phase<Solution_> localSearchPhase,
         @Nullable Phase<Solution_> refinementPhase, SolutionStateManager<Solution_, Score_, State_> solutionStateManager,
-        IndividualBuilder<Solution_, Score_> individualBuilder,
-        double inheritanceRate) implements ConstructionIndividualStrategy<Solution_, Score_> {
+        IndividualBuilder<Solution_, Score_> individualBuilder, double inheritanceRate,
+        RandomGenerator workingRandom) implements ConstructionIndividualStrategy<Solution_, Score_> {
 
     public BasicRuinRecreateIndividualStrategy(List<PhaseCommand<Solution_>> customPhaseIndividualCommandList,
             Phase<Solution_> deterministicBestFitConstructionPhase,
             Phase<Solution_> shuffledFirstFitConstructionPhase,
             Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase,
             SolutionStateManager<Solution_, Score_, State_> solutionStateManager,
-            IndividualBuilder<Solution_, Score_> individualBuilder, double inheritanceRate) {
+            IndividualBuilder<Solution_, Score_> individualBuilder, double inheritanceRate, RandomGenerator workingRandom) {
         this.customPhaseIndividualCommandList = Objects.requireNonNull(customPhaseIndividualCommandList);
         this.deterministicBestFitConstructionPhase = Objects.requireNonNull(deterministicBestFitConstructionPhase);
         this.shuffledFirstFitConstructionPhase = Objects.requireNonNull(shuffledFirstFitConstructionPhase);
@@ -64,6 +63,7 @@ public record BasicRuinRecreateIndividualStrategy<Solution_, Score_ extends Scor
         this.solutionStateManager = solutionStateManager;
         this.individualBuilder = Objects.requireNonNull(individualBuilder);
         this.inheritanceRate = inheritanceRate;
+        this.workingRandom = Objects.requireNonNull(workingRandom);
     }
 
     @Override
@@ -80,7 +80,7 @@ public record BasicRuinRecreateIndividualStrategy<Solution_, Score_ extends Scor
         if (stepScope.getBestIndividual() == null) {
             applyPhases(phaseScope, deterministicBestFitConstructionPhase, localSearchPhase, refinementPhase);
         } else {
-            applyRuinRecreate(solverScope, scoreDirector, phaseScope, Objects.requireNonNull(stepScope.getBestIndividual()));
+            applyRuinRecreate(scoreDirector, phaseScope, Objects.requireNonNull(stepScope.getBestIndividual()));
             updateScope(phaseScope);
             applyPhases(phaseScope, localSearchPhase, refinementPhase);
         }
@@ -98,11 +98,11 @@ public record BasicRuinRecreateIndividualStrategy<Solution_, Score_ extends Scor
         return refinementPhase;
     }
 
-    void applyRuinRecreate(SolverScope<Solution_> solverScope, InnerScoreDirector<Solution_, Score_> scoreDirector,
+    void applyRuinRecreate(InnerScoreDirector<Solution_, Score_> scoreDirector,
             EvolutionaryAlgorithmPhaseScope<Solution_> phaseScope, Individual<Solution_, Score_> bestIndividual) {
         var bestSolutionState = solutionStateManager.saveSolutionState(scoreDirector, bestIndividual);
         solutionStateManager.restoreSolutionState(scoreDirector, bestSolutionState);
-        applyRuinPhase(scoreDirector, solverScope.getWorkingRandom(), bestIndividual);
+        applyRuinPhase(scoreDirector, workingRandom, bestIndividual);
         updateScope(phaseScope);
         applyPhases(phaseScope, shuffledFirstFitConstructionPhase);
     }

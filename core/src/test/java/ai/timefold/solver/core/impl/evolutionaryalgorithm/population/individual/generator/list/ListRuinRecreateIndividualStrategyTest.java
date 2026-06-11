@@ -47,6 +47,8 @@ class ListRuinRecreateIndividualStrategyTest {
     @SuppressWarnings("unchecked")
     private EvolutionaryAlgorithmStepScope<TestdataListSolution> prepareStepScope() {
         var solverScope = mock(SolverScope.class);
+        var randomGenerator = new Random(0);
+        doReturn(randomGenerator).when(solverScope).getWorkingRandom();
         var phaseScope = mock(EvolutionaryAlgorithmPhaseScope.class);
         doReturn(solverScope).when(phaseScope).getSolverScope();
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
@@ -88,7 +90,7 @@ class ListRuinRecreateIndividualStrategyTest {
         var strategy =
                 new ListRuinRecreateIndividualStrategy<TestdataListSolution, SimpleScore, SolutionState<TestdataListSolution, SimpleScore>>(
                         Collections.emptyList(), deterministicPhase, localSearchPhase, null, solutionStateManager,
-                        individualBuilder, 0.95);
+                        individualBuilder, 0.95, solverScope.getWorkingRandom());
 
         var generatedIndividual = strategy.apply(stepScope);
 
@@ -147,7 +149,7 @@ class ListRuinRecreateIndividualStrategyTest {
         var strategy =
                 new ListRuinRecreateIndividualStrategy<TestdataListSolution, SimpleScore, SolutionState<TestdataListSolution, SimpleScore>>(
                         Collections.emptyList(), deterministicPhase, localSearchPhase, null, solutionStateManager,
-                        individualBuilder, 0.95);
+                        individualBuilder, 0.95, solverScope.getWorkingRandom());
 
         var generatedIndividual = strategy.apply(stepScope);
 
@@ -178,7 +180,7 @@ class ListRuinRecreateIndividualStrategyTest {
         var strategy =
                 new ListRuinRecreateIndividualStrategy<TestdataListSolution, SimpleScore, SolutionState<TestdataListSolution, SimpleScore>>(
                         List.of(command), deterministicPhase, localSearchPhase, null, solutionStateManager, individualBuilder,
-                        0.95);
+                        0.95, solverScope.getWorkingRandom());
 
         strategy.apply(stepScope);
 
@@ -207,7 +209,7 @@ class ListRuinRecreateIndividualStrategyTest {
         var strategy =
                 new ListRuinRecreateIndividualStrategy<TestdataListSolution, SimpleScore, SolutionState<TestdataListSolution, SimpleScore>>(
                         List.of(command), deterministicPhase, localSearchPhase, refinementPhase, solutionStateManager,
-                        individualBuilder, 0.95);
+                        individualBuilder, 0.95, solverScope.getWorkingRandom());
 
         strategy.apply(stepScope);
 

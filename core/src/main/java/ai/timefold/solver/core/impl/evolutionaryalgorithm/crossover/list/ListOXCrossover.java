@@ -45,8 +45,8 @@ public final class ListOXCrossover<Solution_, Score_ extends Score<Score_>>
     private final boolean applyBestFitFirstPhase;
 
     public ListOXCrossover(Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase,
-            double inheritanceRate, boolean applyBestFitFirstPhase) {
-        super(localSearchPhase, refinementPhase, inheritanceRate);
+            double inheritanceRate, boolean applyBestFitFirstPhase, RandomGenerator workingRandom) {
+        super(localSearchPhase, refinementPhase, inheritanceRate, workingRandom);
         this.applyBestFitFirstPhase = applyBestFitFirstPhase;
     }
 
@@ -63,7 +63,7 @@ public final class ListOXCrossover<Solution_, Score_ extends Score<Score_>>
             // Produce the offspring based on the two parents.
             generateOffspring(scoreDirector, listVariableStateSupply, listVariableDescriptor, listVariableModel,
                     valueRangeManager, context.firstIndividual(), context.secondIndividual(), inheritanceRate,
-                    applyBestFitFirstPhase, phaseScope.getWorkingRandom());
+                    applyBestFitFirstPhase, workingRandom);
             // We need to update the best solution, best score,
             // and initialized score to avoid inconsistencies in the next phases
             updateScope(phaseScope);

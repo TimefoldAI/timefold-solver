@@ -75,6 +75,7 @@ import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
+import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
@@ -178,19 +179,19 @@ public final class DefaultEvolutionaryAlgorithmPhaseFactory<Solution_>
                 disableLogging(buildRefinmentPhase(solverConfigPolicy, solverTermination, isListVariable));
 
         ConstructionIndividualStrategy<Solution_, Score_> exploratoryConstructionIndividualStrategy =
-                buildConstructionIndividualPhase(workerConfig, workerConfig.getIndividualGeneratorConfig(),
+                buildConstructionIndividualPhase(solverConfigPolicy, workerConfig, workerConfig.getIndividualGeneratorConfig(),
                         deterministicBestFitConstructionPhase, shuffledFirstFitConstructionPhase, fasterLocalSearchPhase,
                         refinmentPhase, solutionStateManager, individualBuilder, exploratoryInheritanceRate, isListVariable);
         ConstructionIndividualStrategy<Solution_, Score_> conservativeConstructionIndividualStrategy =
-                buildConstructionIndividualPhase(workerConfig, workerConfig.getIndividualGeneratorConfig(),
+                buildConstructionIndividualPhase(solverConfigPolicy, workerConfig, workerConfig.getIndividualGeneratorConfig(),
                         deterministicBestFitConstructionPhase, shuffledFirstFitConstructionPhase, regularLocalSearchPhase,
                         refinmentPhase, solutionStateManager, individualBuilder, conservativeInheritanceRate, isListVariable);
 
         CrossoverStrategy<Solution_, Score_> exploratoryCrossoverStrategy =
-                buildCrossoverStrategy(fasterLocalSearchPhase, refinmentPhase, false, exploratoryInheritanceRate,
-                        isListVariable);
-        CrossoverStrategy<Solution_, Score_> conservativeCrossoverStrategy = buildCrossoverStrategy(regularLocalSearchPhase,
-                refinmentPhase, true, conservativeInheritanceRate, isListVariable);
+                buildCrossoverStrategy(solverConfigPolicy, fasterLocalSearchPhase, refinmentPhase, false,
+                        exploratoryInheritanceRate, isListVariable);
+        CrossoverStrategy<Solution_, Score_> conservativeCrossoverStrategy = buildCrossoverStrategy(solverConfigPolicy,
+                regularLocalSearchPhase, refinmentPhase, true, conservativeInheritanceRate, isListVariable);
 
         if (workerConfig.getExploratoryRate() != null && (workerConfig.getExploratoryRate() < 0.0
                 || workerConfig.getExploratoryRate() > 1.0)) {
@@ -224,12 +225,14 @@ public final class DefaultEvolutionaryAlgorithmPhaseFactory<Solution_>
     }
 
     private static <Solution_, Score_ extends Score<Score_>> CrossoverStrategy<Solution_, Score_> buildCrossoverStrategy(
-            Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase, boolean isComplex,
-            double inheritanceRate, boolean isListVariable) {
+            HeuristicConfigPolicy<Solution_> solverConfigPolicy, Phase<Solution_> localSearchPhase,
+            @Nullable Phase<Solution_> refinementPhase, boolean isComplex, double inheritanceRate, boolean isListVariable) {
+        var mainRandomGenerator = (DelegatingSplittableRandomGenerator) solverConfigPolicy.getRandom();
         if (isListVariable) {
-            return new ListOXCrossover<>(localSearchPhase, refinementPhase, inheritanceRate, !isComplex);
+            return new ListOXCrossover<>(localSearchPhase, refinementPhase, inheritanceRate, !isComplex,
+                    mainRandomGenerator.split());
         } else {
-            return new BasicOXCrossover<>(localSearchPhase, refinementPhase, inheritanceRate);
+            return new BasicOXCrossover<>(localSearchPhase, refinementPhase, inheritanceRate, mainRandomGenerator.split());
         }
     }
 
@@ -268,7 +271,8 @@ public final class DefaultEvolutionaryAlgorithmPhaseFactory<Solution_>
 
     private static <Solution_, Score_ extends Score<Score_>, State_ extends SolutionState<Solution_, Score_>>
             ConstructionIndividualStrategy<Solution_, Score_>
-            buildConstructionIndividualPhase(EvolutionaryWorkerConfig workerConfig,
+            buildConstructionIndividualPhase(HeuristicConfigPolicy<Solution_> solverConfigPolicy,
+                    EvolutionaryWorkerConfig workerConfig,
                     @Nullable EvolutionaryIndividualGeneratorConfig individualGeneratorConfig,
                     Phase<Solution_> deterministicBestFitConstructionPhase, Phase<Solution_> shuffledFirstFitConstructionPhase,
                     Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase,
@@ -276,14 +280,15 @@ public final class DefaultEvolutionaryAlgorithmPhaseFactory<Solution_>
                     IndividualBuilder<Solution_, Score_> individualBuilder, double inheritanceRate, boolean isListVariable) {
         List<PhaseCommand<Solution_>> customIndividualPhaseCommandList =
                 buildPhaseCommandList(workerConfig, individualGeneratorConfig);
+        var mainRandomGenerator = (DelegatingSplittableRandomGenerator) solverConfigPolicy.getRandom();
         if (isListVariable) {
             return new ListRuinRecreateIndividualStrategy<>(customIndividualPhaseCommandList,
                     deterministicBestFitConstructionPhase, localSearchPhase, refinementPhase, solutionStateManager,
-                    individualBuilder, inheritanceRate);
+                    individualBuilder, inheritanceRate, mainRandomGenerator.split());
         } else {
             return new BasicRuinRecreateIndividualStrategy<>(customIndividualPhaseCommandList,
                     deterministicBestFitConstructionPhase, shuffledFirstFitConstructionPhase, localSearchPhase, refinementPhase,
-                    solutionStateManager, individualBuilder, inheritanceRate);
+                    solutionStateManager, individualBuilder, inheritanceRate, mainRandomGenerator.split());
         }
     }
 

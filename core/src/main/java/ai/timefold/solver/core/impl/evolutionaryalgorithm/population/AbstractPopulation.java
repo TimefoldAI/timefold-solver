@@ -289,31 +289,25 @@ public abstract class AbstractPopulation<Solution_, Score_ extends Score<Score_>
         if (otherIndividualsCount == 0) {
             return 0.0;
         }
-        // Hot path for a size of one
-        if (size == 1) {
-            var min = Double.MAX_VALUE;
-            for (var diff : individualDiffMap.values()) {
-                if (diff < min) {
-                    min = diff;
-                }
-            }
-            return min;
-        }
-        // All other individuals fit within the limit, so we can calculate the average without sorting
-        if (otherIndividualsCount <= size) {
-            var result = 0.d;
-            for (var diff : individualDiffMap.values()) {
-                result += diff;
-            }
-            return result / (double) otherIndividualsCount;
-        }
-        // Sort the individuals ascending and compute only k nearst ones
+        // Load and sort the diffs for deterministic floating-point summation
         var diffs = new double[otherIndividualsCount];
         var i = 0;
         for (var diff : individualDiffMap.values()) {
             diffs[i++] = diff;
         }
         Arrays.sort(diffs);
+        // Hot path for a size of one
+        if (size == 1) {
+            return diffs[0];
+        }
+        if (otherIndividualsCount <= size) {
+            var result = 0.d;
+            for (var diff : diffs) {
+                result += diff;
+            }
+            return result / (double) otherIndividualsCount;
+        }
+        // Compute only k nearest ones
         var result = 0.d;
         for (var j = 0; j < size; j++) {
             result += diffs[j];

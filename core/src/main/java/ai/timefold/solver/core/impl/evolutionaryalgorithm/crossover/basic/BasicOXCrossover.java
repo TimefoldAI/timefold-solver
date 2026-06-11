@@ -36,15 +36,15 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public record BasicOXCrossover<Solution_, Score_ extends Score<Score_>>(Phase<Solution_> localSearchPhase,
-        @Nullable Phase<Solution_> refinementPhase, double inheritanceRate) implements CrossoverStrategy<Solution_, Score_> {
+        @Nullable Phase<Solution_> refinementPhase, double inheritanceRate,
+        RandomGenerator workingRandom) implements CrossoverStrategy<Solution_, Score_> {
 
     @Override
     public CrossoverResult<Solution_, Score_> apply(CrossoverContext<Solution_, Score_> context) {
         var phaseScope = context.phaseScope();
         var solverScope = phaseScope.getSolverScope();
         var scoreDirector = phaseScope.<Score_> getScoreDirector();
-        generateOffspring(scoreDirector, context.firstIndividual(), context.secondIndividual(),
-                inheritanceRate, phaseScope.getWorkingRandom());
+        generateOffspring(scoreDirector, context.firstIndividual(), context.secondIndividual(), inheritanceRate, workingRandom);
         updateScope(phaseScope);
         applyPhases(phaseScope, localSearchPhase, refinementPhase);
         return new CrossoverResult<>(scoreDirector.cloneSolution(solverScope.getBestSolution()),

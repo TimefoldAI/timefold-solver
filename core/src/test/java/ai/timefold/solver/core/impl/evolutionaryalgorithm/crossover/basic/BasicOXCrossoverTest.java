@@ -159,7 +159,7 @@ class BasicOXCrossoverTest {
 
         var localSearchPhase = mock(Phase.class);
         var context = new CrossoverContext<TestdataSolution, SimpleScore>(phaseScope, firstIndividual, secondIndividual);
-        var result = new BasicOXCrossover<TestdataSolution, SimpleScore>(localSearchPhase, null, 0).apply(context);
+        var result = new BasicOXCrossover<TestdataSolution, SimpleScore>(localSearchPhase, null, 0, random).apply(context);
         var offspring = result.solution();
 
         assertThat(offspring.getEntityList().get(0).getValue().getCode()).isEqualTo("va2"); // e1 from P2
@@ -257,7 +257,8 @@ class BasicOXCrossoverTest {
         var localSearchPhase = mock(Phase.class);
         var context =
                 new CrossoverContext<TestdataMultiVarSolution, SimpleScore>(phaseScope, firstIndividual, secondIndividual);
-        var result = new BasicOXCrossover<TestdataMultiVarSolution, SimpleScore>(localSearchPhase, null, 0).apply(context);
+        var result =
+                new BasicOXCrossover<TestdataMultiVarSolution, SimpleScore>(localSearchPhase, null, 0, random).apply(context);
         var offspring = result.solution();
         var entities = offspring.getMultiVarEntityList();
 

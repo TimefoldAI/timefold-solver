@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope.Evolution
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state.SolutionState;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.DefaultPopulation;
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.Population;
+import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -144,7 +145,8 @@ public final class HybridGeneticSearchDecider<Solution_, Score_ extends Score<Sc
             exploratoryRate = scaleLog < 427.0 ? 0.9 : 0.1;
         }
         this.worker = new HybridGeneticSearchWorker<>(HybridGeneticSearchWorkerContext.of(exploratoryRate, context),
-                bestSolutionUpdater, workerSolverScope.getWorkingRandom(), workerSolverScope);
+                bestSolutionUpdater, (DelegatingSplittableRandomGenerator) workerSolverScope.getWorkingRandom(),
+                workerSolverScope);
         this.worker.phaseStarted(phaseScope);
     }
 

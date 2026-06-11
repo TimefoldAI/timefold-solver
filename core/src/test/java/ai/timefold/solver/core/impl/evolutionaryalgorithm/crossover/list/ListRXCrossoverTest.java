@@ -154,7 +154,7 @@ class ListRXCrossoverTest {
         var context = new CrossoverContext<>(phaseScope, firstIndividual, secondIndividual);
         var localSearchPhase = mock(Phase.class);
         var result = new ListRXCrossover<TestdataListSolution, SimpleScore>(
-                localSearchPhase, null, 1.0, false).apply(context);
+                localSearchPhase, null, 1.0, false, random).apply(context);
         var offspring = result.solution();
 
         // inheritanceRate=1.0 → all entities pick P1; Phase 1 appends in order; Phase 2 finds nothing
@@ -256,7 +256,7 @@ class ListRXCrossoverTest {
         var context = new CrossoverContext<>(phaseScope, firstIndividual, secondIndividual);
         var localSearchPhase = mock(Phase.class);
         var result = new ListRXCrossover<TestdataListSolution, SimpleScore>(
-                localSearchPhase, null, 0, false).apply(context);
+                localSearchPhase, null, 0, false, random).apply(context);
         var offspring = result.solution();
 
         // inheritanceRate=0 → all entities pick P2; Phase 1 appends in order; Phase 2 finds nothing
@@ -367,7 +367,7 @@ class ListRXCrossoverTest {
         var context = new CrossoverContext<>(phaseScope, firstIndividual, secondIndividual);
         var localSearchPhase = mock(Phase.class);
         var result = new ListRXCrossover<TestdataListSolution, SimpleScore>(
-                localSearchPhase, null, 0, false).apply(context);
+                localSearchPhase, null, 0, false, random).apply(context);
         var offspring = result.solution();
 
         assertThat(offspring.getEntityList().get(0).getValueList())
@@ -485,7 +485,7 @@ class ListRXCrossoverTest {
         var context = new CrossoverContext<>(phaseScope, firstIndividual, secondIndividual);
         var localSearchPhase = mock(Phase.class);
         var result = new ListRXCrossover<TestdataListSolution, SimpleScore>(
-                localSearchPhase, null, 0.5, false).apply(context);
+                localSearchPhase, null, 0.5, false, random).apply(context);
         var offspring = result.solution();
 
         // a: Phase 1 [v1,v2,v3] from P1; Phase 2 prepends v4, v6, v7 → [v7,v6,v4,v1,v2,v3]

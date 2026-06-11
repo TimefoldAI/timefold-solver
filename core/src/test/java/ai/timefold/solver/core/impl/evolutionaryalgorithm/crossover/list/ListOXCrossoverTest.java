@@ -152,7 +152,7 @@ class ListOXCrossoverTest {
         var context = new CrossoverContext<TestdataListSolution, SimpleScore>(phaseScope, firstIndividual, secondIndividual);
         // No inheritance rate
         var result =
-                new ListOXCrossover<TestdataListSolution, SimpleScore>(localSearchPhase, null, 0, false).apply(context);
+                new ListOXCrossover<TestdataListSolution, SimpleScore>(localSearchPhase, null, 0, false, random).apply(context);
         var offspring = result.solution();
 
         // a inherit all P1 values with the same position from the parent
@@ -269,7 +269,7 @@ class ListOXCrossoverTest {
         var localSearchPhase = mock(Phase.class);
         // No inheritance rate
         var result =
-                new ListOXCrossover<TestdataListSolution, SimpleScore>(localSearchPhase, null, 0, false)
+                new ListOXCrossover<TestdataListSolution, SimpleScore>(localSearchPhase, null, 0, false, random)
                         .apply(context);
         var offspring = result.solution();
 
@@ -389,7 +389,7 @@ class ListOXCrossoverTest {
         var localSearchPhase = mock(Phase.class);
         // No inheritance rate
         var result =
-                new ListOXCrossover<TestdataListSolution, SimpleScore>(localSearchPhase, null, 0, false)
+                new ListOXCrossover<TestdataListSolution, SimpleScore>(localSearchPhase, null, 0, false, random)
                         .apply(context);
         var offspring = result.solution();
 
@@ -511,7 +511,7 @@ class ListOXCrossoverTest {
         var context = new CrossoverContext<TestdataListSolution, SimpleScore>(phaseScope, firstIndividual, secondIndividual);
         var localSearchPhase = mock(Phase.class);
         var result =
-                new ListOXCrossover<TestdataListSolution, SimpleScore>(localSearchPhase, null, 0.5, false)
+                new ListOXCrossover<TestdataListSolution, SimpleScore>(localSearchPhase, null, 0.5, false, random)
                         .apply(context);
         var offspring = result.solution();
 

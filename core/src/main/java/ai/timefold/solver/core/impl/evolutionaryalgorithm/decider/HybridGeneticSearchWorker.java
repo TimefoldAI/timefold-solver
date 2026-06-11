@@ -17,6 +17,7 @@ import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.
 import ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator.ConstructionIndividualStrategy;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.jspecify.annotations.NullMarked;
@@ -45,18 +46,18 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
 
     private final HybridGeneticSearchWorkerContext<Solution_, Score_, State_> context;
     private final BestSolutionUpdater<Solution_> bestSolutionUpdater;
-    private final RandomGenerator workingRandom;
+    private final RandomGenerator workerRandom;
     private final SolverScope<Solution_> ownSolverScope;
 
     @Nullable
     private State_ initialState;
 
     public HybridGeneticSearchWorker(HybridGeneticSearchWorkerContext<Solution_, Score_, State_> context,
-            BestSolutionUpdater<Solution_> bestSolutionUpdater, RandomGenerator workingRandom,
+            BestSolutionUpdater<Solution_> bestSolutionUpdater, DelegatingSplittableRandomGenerator workingRandom,
             SolverScope<Solution_> ownSolverScope) {
         this.context = context;
         this.bestSolutionUpdater = bestSolutionUpdater;
-        this.workingRandom = workingRandom;
+        this.workerRandom = workingRandom.split();
         this.ownSolverScope = ownSolverScope;
     }
 
@@ -84,8 +85,7 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
         var newIndividual = constructionStrategy.apply(stepScope);
         var addIndividual = true;
         var oldScore = newIndividual.getScore();
-        if (!newIndividual.getScore().raw().isFeasible()
-                && restoredPhaseScope.getSolverScope().getWorkingRandom().nextBoolean()) {
+        if (!newIndividual.getScore().raw().isFeasible() && workerRandom.nextBoolean()) {
             var clonedIndividual = newIndividual.clone(ownSolverScope.getScoreDirector());
             individualConsumer.accept(clonedIndividual);
             applyPhases(restoredPhaseScope, constructionStrategy.getLocalSearchPhase(),
@@ -124,8 +124,7 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
                 offspringResult.firstParentScore(), offspringResult.secondParentScore(), ownSolverScope.getScoreDirector());
         var addIndividual = true;
         var oldScore = offspringIndividual.getScore();
-        if (!offspringIndividual.getScore().raw().isFeasible()
-                && restoredPhaseScope.getSolverScope().getWorkingRandom().nextBoolean()) {
+        if (!offspringIndividual.getScore().raw().isFeasible() && workerRandom.nextBoolean()) {
             individualConsumer.accept(offspringIndividual.clone(ownSolverScope.getScoreDirector()));
             applyPhases(restoredPhaseScope, crossoverStrategy.getLocalSearchPhase(), crossoverStrategy.getRefinementPhase());
             if (restoredPhaseScope.<Score_> getBestScore().compareTo(oldScore) == 0) {
@@ -287,7 +286,7 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
     }
 
     private ConstructionIndividualStrategy<Solution_, Score_> pickConstructionIndividualStrategy() {
-        if (workingRandom.nextDouble(1) < context.exploratoryRate()) {
+        if (workerRandom.nextDouble(1) < context.exploratoryRate()) {
             return context.exploratoryConstructionIndividualStrategy();
         } else {
             return context.conservativeConstructionIndividualStrategy();
@@ -295,15 +294,11 @@ public class HybridGeneticSearchWorker<Solution_, Score_ extends Score<Score_>, 
     }
 
     private CrossoverStrategy<Solution_, Score_> pickCrossoverStrategy() {
-        if (workingRandom.nextDouble(1) < context.exploratoryRate()) {
+        if (workerRandom.nextDouble(1) < context.exploratoryRate()) {
             return context.exploratoryCrossoverStrategy();
         } else {
             return context.conservativeCrossoverStrategy();
         }
-    }
-
-    protected RandomGenerator getWorkingRandom() {
-        return workingRandom;
     }
 
     // ************************************************************************

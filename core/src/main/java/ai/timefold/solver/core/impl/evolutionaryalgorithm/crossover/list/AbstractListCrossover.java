@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.evolutionaryalgorithm.crossover.list;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -27,12 +28,14 @@ public abstract sealed class AbstractListCrossover<Solution_, Score_ extends Sco
     final Phase<Solution_> localSearchPhase;
     final @Nullable Phase<Solution_> refinementPhase;
     final double inheritanceRate;
+    final RandomGenerator workingRandom;
 
-    AbstractListCrossover(Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase,
-            double inheritanceRate) {
+    AbstractListCrossover(Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase, double inheritanceRate,
+            RandomGenerator workingRandom) {
         this.localSearchPhase = localSearchPhase;
         this.refinementPhase = refinementPhase;
         this.inheritanceRate = inheritanceRate;
+        this.workingRandom = workingRandom;
     }
 
     /**

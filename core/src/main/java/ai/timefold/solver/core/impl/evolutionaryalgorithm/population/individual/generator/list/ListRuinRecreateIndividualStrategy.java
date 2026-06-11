@@ -26,7 +26,6 @@ import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.custom.DefaultPhaseCommandContext;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.builtin.Moves;
@@ -51,12 +50,12 @@ public record ListRuinRecreateIndividualStrategy<Solution_, Score_ extends Score
         Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase,
         SolutionStateManager<Solution_, Score_, State_> solutionStateManager,
         IndividualBuilder<Solution_, Score_> individualBuilder,
-        double inheritanceRate) implements ConstructionIndividualStrategy<Solution_, Score_> {
+        double inheritanceRate, RandomGenerator workingRandom) implements ConstructionIndividualStrategy<Solution_, Score_> {
 
     public ListRuinRecreateIndividualStrategy(List<PhaseCommand<Solution_>> customPhaseIndividualCommandList,
             Phase<Solution_> deterministicBestFitConstructionPhase, Phase<Solution_> localSearchPhase,
             @Nullable Phase<Solution_> refinementPhase, SolutionStateManager<Solution_, Score_, State_> solutionStateManager,
-            IndividualBuilder<Solution_, Score_> individualBuilder, double inheritanceRate) {
+            IndividualBuilder<Solution_, Score_> individualBuilder, double inheritanceRate, RandomGenerator workingRandom) {
         this.customPhaseIndividualCommandList = Objects.requireNonNull(customPhaseIndividualCommandList);
         this.deterministicBestFitConstructionPhase = Objects.requireNonNull(deterministicBestFitConstructionPhase);
         this.localSearchPhase = Objects.requireNonNull(localSearchPhase);
@@ -64,6 +63,7 @@ public record ListRuinRecreateIndividualStrategy<Solution_, Score_ extends Score
         this.solutionStateManager = solutionStateManager;
         this.individualBuilder = Objects.requireNonNull(individualBuilder);
         this.inheritanceRate = inheritanceRate;
+        this.workingRandom = Objects.requireNonNull(workingRandom);
     }
 
     @Override
@@ -80,11 +80,10 @@ public record ListRuinRecreateIndividualStrategy<Solution_, Score_ extends Score
         }
         updateScope(stepScope.getPhaseScope());
         // If the population has no best individual, use the deterministic construction phase
-        var population = phaseScope.<Score_> getPopulation();
         if (stepScope.getBestIndividual() == null) {
             applyPhases(phaseScope, deterministicBestFitConstructionPhase, localSearchPhase, refinementPhase);
         } else {
-            applyRuinRecreate(solverScope, scoreDirector, Objects.requireNonNull(stepScope.getBestIndividual()));
+            applyRuinRecreate(scoreDirector, Objects.requireNonNull(stepScope.getBestIndividual()));
             updateScope(stepScope.getPhaseScope());
             applyPhases(phaseScope, localSearchPhase, refinementPhase);
         }
@@ -102,17 +101,16 @@ public record ListRuinRecreateIndividualStrategy<Solution_, Score_ extends Score
         return refinementPhase;
     }
 
-    void applyRuinRecreate(SolverScope<Solution_> solverScope, InnerScoreDirector<Solution_, Score_> scoreDirector,
-            Individual<Solution_, Score_> bestIndividual) {
+    void applyRuinRecreate(InnerScoreDirector<Solution_, Score_> scoreDirector, Individual<Solution_, Score_> bestIndividual) {
         var bestSolutionState = solutionStateManager.saveSolutionState(scoreDirector, bestIndividual);
         solutionStateManager.restoreSolutionState(scoreDirector, bestSolutionState);
         var listVariableDescriptor = Objects.requireNonNull(scoreDirector.getSolutionDescriptor().getListVariableDescriptor());
         var listVariableMetaModel = listVariableDescriptor.getVariableMetaModel();
         var valueRangeManager = scoreDirector.getValueRangeManager();
         try (var listVariableStateSupply = scoreDirector.getListVariableStateSupply(listVariableDescriptor)) {
-            var ruinedValues = applyRuinPhase(scoreDirector, listVariableStateSupply, listVariableMetaModel,
-                    solverScope.getWorkingRandom(), bestIndividual);
-            Collections.shuffle(ruinedValues, solverScope.getWorkingRandom());
+            var ruinedValues = applyRuinPhase(scoreDirector, listVariableStateSupply, listVariableMetaModel, workingRandom,
+                    bestIndividual);
+            Collections.shuffle(ruinedValues, workingRandom);
             applyRecreatePhase(scoreDirector, listVariableStateSupply, listVariableMetaModel, listVariableDescriptor,
                     valueRangeManager, ruinedValues);
         }

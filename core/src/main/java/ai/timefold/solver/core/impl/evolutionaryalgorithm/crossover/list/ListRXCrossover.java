@@ -45,8 +45,8 @@ public final class ListRXCrossover<Solution_, Score_ extends Score<Score_>>
     private final boolean applyBestFitFirstPhase;
 
     public ListRXCrossover(Phase<Solution_> localSearchPhase, @Nullable Phase<Solution_> refinementPhase,
-            double inheritanceRage, boolean applyBestFitFirstPhase) {
-        super(localSearchPhase, refinementPhase, inheritanceRage);
+            double inheritanceRage, boolean applyBestFitFirstPhase, RandomGenerator randomGenerator) {
+        super(localSearchPhase, refinementPhase, inheritanceRage, randomGenerator);
         this.applyBestFitFirstPhase = applyBestFitFirstPhase;
     }
 
@@ -64,8 +64,8 @@ public final class ListRXCrossover<Solution_, Score_ extends Score<Score_>>
             // The offspring is expected to inherit approximately 90% of their planning values from the first parent.
             // Some experiments have demonstrated that this approach is more effective in overconstrained models.
             generateOffspring(scoreDirector, listVariableStateSupply, listVariableDescriptor, listVariableMetaModel,
-                    valueRangeManager, context.firstIndividual(), context.secondIndividual(), phaseScope.getWorkingRandom(),
-                    inheritanceRate, applyBestFitFirstPhase);
+                    valueRangeManager, context.firstIndividual(), context.secondIndividual(), workingRandom, inheritanceRate,
+                    applyBestFitFirstPhase);
             // We need to update the best solution, best score,
             // and initialized score to avoid inconsistencies in the next phases
             updateScope(phaseScope);
