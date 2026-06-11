@@ -31,10 +31,10 @@
       The 'revision' property value is conserved by the flatten-maven-plugin, so the model project does not override it.
     -->
     <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
-    <version.ch.qos.logback>1.5.33</version.ch.qos.logback>
+    <version.ch.qos.logback>1.5.34</version.ch.qos.logback>
     <version.com.networknt.json-schem-validator>1.5.9</version.com.networknt.json-schem-validator>
     <version.jakarta.enterprise.cdi-api>4.1.0</version.jakarta.enterprise.cdi-api>
-    <version.io.quarkus>3.35.4</version.io.quarkus>
+    <version.io.quarkus>3.36.1</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.26.0</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.7</version.org.assertj>
@@ -44,7 +44,7 @@
     <version.org.jspecify>1.0.0</version.org.jspecify>
     <version.org.junit.jupiter>6.1.0</version.org.junit.jupiter>
     <version.org.mapstruct>1.6.3</version.org.mapstruct>
-    <version.org.openrewrite.recipe>3.31.0</version.org.openrewrite.recipe>
+    <version.org.openrewrite.recipe>3.32.0</version.org.openrewrite.recipe>
     <version.org.testcontainers>2.0.5</version.org.testcontainers>
     <version.org.springframework.boot>4.0.6</version.org.springframework.boot>
     <version.org.wiremock>3.13.2</version.org.wiremock>
@@ -64,7 +64,7 @@
     <version.exec.plugin>3.6.3</version.exec.plugin>
     <version.enforcer.plugin>3.6.3</version.enforcer.plugin>
     <version.install.plugin>3.1.4</version.install.plugin>
-    <version.jacoco.plugin>0.8.14</version.jacoco.plugin>
+    <version.jacoco.plugin>0.8.15</version.jacoco.plugin>
     <version.jandex.plugin>3.5.3</version.jandex.plugin>
     <version.jar.plugin>3.5.0</version.jar.plugin>
     <version.javadoc.plugin>3.12.0</version.javadoc.plugin>

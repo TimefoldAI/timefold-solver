@@ -6,7 +6,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class RecordingTupleLifecycle<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_>, AutoCloseable {
+public class RecordingTupleLifecycle<Tuple_ extends Tuple>
+        implements TupleLifecycle<Tuple_>, AutoCloseable {
+
     @Nullable
     TupleRecorder<Tuple_> tupleRecorder;
 
@@ -21,11 +23,19 @@ public class RecordingTupleLifecycle<Tuple_ extends Tuple> implements TupleLifec
     }
 
     @Override
+    public void afterAllFactsInserted(boolean upstreamCanProduceTuples) {
+        // Nothing to propagate to.
+    }
+
+    @Override
+    public boolean isActive() {
+        return true; // Always active.
+    }
+
+    @Override
     public void insert(Tuple_ tuple) {
         if (tupleRecorder != null) {
-            throw new IllegalStateException("""
-                    Impossible state: tuple %s was inserted during recording.
-                    """.formatted(tuple));
+            throw new IllegalStateException("Impossible state: tuple %s was inserted during recording.".formatted(tuple));
         }
     }
 

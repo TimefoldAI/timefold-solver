@@ -29,4 +29,9 @@ public record ConstraintRef(String id)
         return id.compareTo(other.id);
     }
 
+    @Override
+    public String toString() {
+        return id;
+    }
+
 }
