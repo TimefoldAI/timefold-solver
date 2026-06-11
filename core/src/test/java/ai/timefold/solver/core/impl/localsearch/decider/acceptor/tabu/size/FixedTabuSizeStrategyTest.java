@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.mock;
 
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
@@ -14,6 +15,12 @@ class FixedTabuSizeStrategyTest {
         LocalSearchStepScope stepScope = mock(LocalSearchStepScope.class);
         assertThat(new FixedTabuSizeStrategy(5).determineTabuSize(stepScope)).isEqualTo(5);
         assertThat(new FixedTabuSizeStrategy(17).determineTabuSize(stepScope)).isEqualTo(17);
+    }
+
+    @Test
+    void invalidTabuSize() {
+        assertThatIllegalArgumentException().isThrownBy(() -> new FixedTabuSizeStrategy<>(0));
+        assertThatIllegalArgumentException().isThrownBy(() -> new FixedTabuSizeStrategy<>(-1));
     }
 
 }

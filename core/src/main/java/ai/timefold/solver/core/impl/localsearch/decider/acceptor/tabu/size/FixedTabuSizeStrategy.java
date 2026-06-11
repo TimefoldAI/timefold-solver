@@ -8,9 +8,9 @@ public final class FixedTabuSizeStrategy<Solution_> extends AbstractTabuSizeStra
 
     public FixedTabuSizeStrategy(int tabuSize) {
         this.tabuSize = tabuSize;
-        if (tabuSize < 0) {
-            throw new IllegalArgumentException("The tabuSize (" + tabuSize
-                    + ") cannot be negative.");
+        if (tabuSize < 1) {
+            throw new IllegalArgumentException("The tabuSize (%d) must be at least 1."
+                    .formatted(tabuSize));
         }
     }
 

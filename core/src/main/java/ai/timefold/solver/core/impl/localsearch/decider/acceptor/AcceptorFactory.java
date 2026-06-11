@@ -54,7 +54,7 @@ public class AcceptorFactory<Solution_> {
                 .collect(Collectors.toList());
 
         if (acceptorList.size() == 1) {
-            return acceptorList.get(0);
+            return acceptorList.getFirst();
         } else if (acceptorList.size() > 1) {
             return new CompositeAcceptor<>(acceptorList);
         } else {
@@ -134,14 +134,12 @@ public class AcceptorFactory<Solution_> {
     private Optional<ValueTabuAcceptor<Solution_>> buildValueTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.VALUE_TABU)
                 || acceptorConfig.getValueTabuSize() != null || acceptorConfig.getFadingValueTabuSize() != null) {
+            if (acceptorConfig.getValueTabuSize() == null && acceptorConfig.getFadingValueTabuSize() == null) {
+                throw new IllegalArgumentException(
+                        "The acceptorType (%s) requires either valueTabuSize or fadingValueTabuSize to be configured."
+                                .formatted(AcceptorType.VALUE_TABU));
+            }
             var acceptor = new ValueTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
-            if (acceptorConfig.getValueTabuSize() != null) {
-                acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getValueTabuSize()));
-            }
-            if (acceptorConfig.getFadingValueTabuSize() != null) {
-                acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getFadingValueTabuSize()));
-            }
-
             if (acceptorConfig.getValueTabuSize() != null) {
                 acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getValueTabuSize()));
             }
@@ -159,6 +157,11 @@ public class AcceptorFactory<Solution_> {
     private Optional<MoveTabuAcceptor<Solution_>> buildMoveTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.MOVE_TABU)
                 || acceptorConfig.getMoveTabuSize() != null || acceptorConfig.getFadingMoveTabuSize() != null) {
+            if (acceptorConfig.getMoveTabuSize() == null && acceptorConfig.getFadingMoveTabuSize() == null) {
+                throw new IllegalArgumentException(
+                        "The acceptorType (%s) requires either moveTabuSize or fadingMoveTabuSize to be configured."
+                                .formatted(AcceptorType.MOVE_TABU));
+            }
             var acceptor = new MoveTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
             if (acceptorConfig.getMoveTabuSize() != null) {
                 acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getMoveTabuSize()));
