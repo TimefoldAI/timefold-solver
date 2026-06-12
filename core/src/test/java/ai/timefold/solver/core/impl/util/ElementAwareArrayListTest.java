@@ -8,13 +8,20 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @NullMarked
 class ElementAwareArrayListTest {
@@ -1097,10 +1104,10 @@ class ElementAwareArrayListTest {
             var it = list.listIterator();
             assertThat(it.next()).isEqualTo("a");
             it.remove();
-            assertThat(list).containsExactly("b", "c");
             assertThat(it.hasPrevious()).isFalse();
-            assertThat(it.hasNext()).isTrue();
+            assertThat(it).hasNext();
             assertThat(it.next()).isEqualTo("b");
+            assertThat(list).containsExactly("b", "c");
         }
 
         @Test
@@ -1409,6 +1416,154 @@ class ElementAwareArrayListTest {
 
             assertThatExceptionOfType(ConcurrentModificationException.class)
                     .isThrownBy(it::next);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("compact() and firstGapPosition tests")
+    class CompactAndFirstGapPositionTests {
+
+        @Test
+        @DisplayName("compact() removes all gaps and preserves insertion order")
+        void compactRemovesAllGaps() {
+            var list = new ElementAwareArrayList<String>();
+            list.addEntry("a");
+            var e1 = list.addEntry("b");
+            list.addEntry("c");
+            var e2 = list.addEntry("d");
+            list.addEntry("e");
+            e1.remove();
+            e2.remove();
+
+            list.compact();
+
+            assertThat(list).containsExactly("a", "c", "e");
+            assertThat(list.get(0)).isEqualTo("a");
+            assertThat(list.get(1)).isEqualTo("c");
+            assertThat(list.get(2)).isEqualTo("e");
+        }
+
+        @Test
+        @DisplayName("compact() on already-compact list is a no-op")
+        void compactNoOpWhenAlreadyCompact() {
+            var list = new ElementAwareArrayList<String>();
+            list.addEntry("a");
+            list.addEntry("b");
+            list.addEntry("c");
+
+            list.compact();
+
+            assertThat(list).containsExactly("a", "b", "c");
+        }
+
+        @Test
+        @DisplayName("compact() on empty list is a no-op")
+        void compactEmptyList() {
+            var list = new ElementAwareArrayList<String>();
+
+            assertThatCode(list::compact).doesNotThrowAnyException();
+            assertThat(list).isEmpty();
+        }
+
+        @Test
+        @DisplayName("get() indices below the first gap return correct elements without compacting suffix")
+        void getBeforeFirstGapFastPath() {
+            var list = new ElementAwareArrayList<String>();
+            list.addEntry("a");
+            list.addEntry("b");
+            var e2 = list.addEntry("c");
+            list.addEntry("d");
+            e2.remove(); // gap at physical 2; firstGapPosition ≤ 2
+
+            // get(0) and get(1) are below the boundary — return correct values
+            assertThat(list.get(0)).isEqualTo("a");
+            assertThat(list.get(1)).isEqualTo("b");
+            // get(2) is at/above the boundary — triggers compaction
+            assertThat(list.get(2)).isEqualTo("d");
+        }
+
+        @Test
+        @DisplayName("firstGapPosition advances after partialCompact; prefix stays fast-path-valid")
+        void firstGapAdvancesAfterPartialCompact() {
+            var list = new ElementAwareArrayList<String>();
+            list.addEntry("a");
+            var e1 = list.addEntry("b");
+            list.addEntry("c");
+            var e2 = list.addEntry("d");
+            list.addEntry("e");
+            e1.remove();
+            e2.remove();
+
+            assertThat(list.get(1)).isEqualTo("c"); // triggers partialCompact(1), firstGapPosition advances
+            assertThat(list.get(0)).isEqualTo("a"); // still correct after boundary move
+            assertThat(list.get(1)).isEqualTo("c");
+            assertThat(list.get(2)).isEqualTo("e"); // next compaction round
+            assertThat(list).containsExactly("a", "c", "e");
+        }
+
+        @Test
+        @DisplayName("remove that lowers the boundary still compacts correctly on next get")
+        void removeLoweringBoundaryStillCompacts() {
+            var list = new ElementAwareArrayList<String>();
+            var e0 = list.addEntry("a");
+            list.addEntry("b");
+            var e2 = list.addEntry("c");
+            list.addEntry("d");
+
+            e2.remove(); // gap at 2; firstGapPosition ≤ 2
+            list.get(2); // compact to index 2; firstGapPosition = 3
+            e0.remove(); // gap at 0; firstGapPosition must drop back to ≤ 0
+
+            // After removing a0, logical list = [b, d]; get(0) must still work
+            assertThat(list.get(0)).isEqualTo("b");
+            assertThat(list.get(1)).isEqualTo("d");
+            assertThat(list).containsExactly("b", "d");
+        }
+
+        @Execution(ExecutionMode.CONCURRENT)
+        @ParameterizedTest
+        @MethodSource("randomSeeds")
+        @DisplayName("randomized stress test: EAAL matches ArrayList reference under mixed add/remove/get/compact")
+        void stressTestAgainstReferenceArrayList(long seed) {
+            var random = new Random(seed);
+            var reference = new ArrayList<String>();
+            var list = new ElementAwareArrayList<String>();
+            var liveEntries = new ArrayList<ElementAwareArrayList<String>.Entry>();
+            var counter = new AtomicInteger(0);
+
+            for (var i = 0; i < 10_000; i++) {
+                var op = random.nextInt(reference.isEmpty() ? 2 : 5);
+                switch (op) {
+                    case 0, 1 -> { // addEntry (weighted so the list doesn't starve)
+                        var element = "e" + counter.getAndIncrement();
+                        reference.add(element);
+                        liveEntries.add(list.addEntry(element));
+                    }
+                    case 2 -> { // remove(Entry)
+                        var idx = random.nextInt(liveEntries.size());
+                        var entry = liveEntries.remove(idx);
+                        reference.remove(entry.element());
+                        entry.remove();
+                    }
+                    case 3 -> { // get(int) — exercises firstGapPosition fast-path + partialCompact
+                        var idx = random.nextInt(reference.size());
+                        assertThat(list.get(idx)).isEqualTo(reference.get(idx));
+                    }
+                    case 4 -> { // compact() then full equality check
+                        list.compact();
+                        assertThat(list).containsExactlyElementsOf(reference);
+                    }
+                }
+                assertThat(list.size()).isEqualTo(reference.size());
+            }
+            assertThat(list).containsExactlyElementsOf(reference);
+        }
+
+        static Stream<Arguments> randomSeeds() {
+            var random = new Random(0xCAFEBABEL);
+            return random.longs(10)
+                    .mapToObj(Arguments::of);
         }
 
     }

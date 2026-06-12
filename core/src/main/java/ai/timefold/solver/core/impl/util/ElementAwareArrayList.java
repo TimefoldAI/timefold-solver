@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.util;
 
-import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
@@ -8,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.jspecify.annotations.NullMarked;
@@ -38,12 +36,15 @@ import org.jspecify.annotations.Nullable;
 public final class ElementAwareArrayList<T extends @Nullable Object>
         extends AbstractList<T> {
 
+    private static final Object[] EMPTY_ARRAY = new Object[0];
     private static final int REMOVED_POSITION = -1;
 
     private static final int DEFAULT_CAPACITY = 16;
-    private @Nullable Entry @Nullable [] entries;
+    private static final int RETAIN_THRESHOLD = DEFAULT_CAPACITY; // Retain backing array when length <= this.
+    private Object @Nullable [] entries = EMPTY_ARRAY;
     private int lastElementPosition = -1;
     private int gapCount = 0; // Always equals the total number of null slots in entryList.
+    private int firstGapPosition = 0; // Pessimistic lower bound: positions [0, firstGapPosition) are guaranteed gap-free and positionally compact (logical i == physical i).
 
     /**
      * Appends the specified element to the end of this list.
@@ -64,16 +65,24 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         return newEntry;
     }
 
-    @SuppressWarnings("unchecked")
     private void resize(int minCapacity) {
-        if (entries == null) {
-            entries = (Entry[]) Array.newInstance(Entry.class, Math.max(DEFAULT_CAPACITY, minCapacity));
+        if (entries.length == 0) {
+            entries = new Object[Math.max(DEFAULT_CAPACITY, minCapacity)];
             return;
         }
         if (minCapacity <= entries.length) {
             return;
         }
         entries = Arrays.copyOf(entries, Math.max(entries.length * 2, minCapacity));
+    }
+
+    /**
+     * Returns the entry at the given physical position, or {@code null} if the slot is a gap.
+     * Callers in fast-path loops can skip calling this and check {@code entries[i] == null} directly.
+     */
+    @SuppressWarnings("unchecked")
+    private @Nullable Entry entryAt(int position) {
+        return (Entry) entries[position];
     }
 
     @Override
@@ -85,20 +94,35 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         if (index < 0 || index >= size()) {
             throw new IndexOutOfBoundsException(
                     "The index (%d) must be >= 0 and < size (%d).".formatted(index, size()));
-        } else if (gapCount == 0) {
-            return Objects.requireNonNull(entries[index]);
+        } else if (gapCount == 0 || index < firstGapPosition) {
+            return entryAt(index);
         }
         return partialCompact(index);
+    }
+
+    /**
+     * Removes all gaps from the list in O(n), preserving insertion order.
+     * After this call, {@code gapCount == 0} and every subsequent {@code get(int)} runs in O(1).
+     * No-op when the list is already compact or empty.
+     */
+    void compact() {
+        if (gapCount > 0 && !isEmpty()) {
+            partialCompact(size() - 1);
+        }
     }
 
     /**
      * Avoid calling this when {@code gapCount == 0}.
      */
     private Entry partialCompact(int rightBoundaryPosition) {
+        if (rightBoundaryPosition < firstGapPosition) {
+            // The entire target range is in the already-compacted prefix; no work needed.
+            return entryAt(rightBoundaryPosition);
+        }
         var encounteredGaps = 0;
-        var lastNonNullPosition = -1;
-        for (var currentPosition = 0; currentPosition <= lastElementPosition; currentPosition++) {
-            var entry = entries[currentPosition];
+        var lastNonNullPosition = firstGapPosition - 1; // firstGapPosition non-nulls are already in place before us.
+        for (var currentPosition = firstGapPosition; currentPosition <= lastElementPosition; currentPosition++) {
+            var entry = entryAt(currentPosition);
             if (entry == null) {
                 encounteredGaps++;
             } else {
@@ -111,11 +135,13 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
                     modCount++;
                 }
                 if (lastNonNullPosition == rightBoundaryPosition) {
-                    // Invariant: positions [0, index] are all non-null,
-                    // so all gapCount nulls lie in [index+1, lastElementPosition].
-                    // If that suffix is entirely nulls (equivalent to index == size()-1), trim it now.
+                    // Invariant: positions [0, rightBoundaryPosition] are all non-null,
+                    // so all gapCount nulls lie in [rightBoundaryPosition+1, lastElementPosition].
+                    // If that suffix is entirely nulls (equivalent to rightBoundaryPosition == size()-1), trim it now.
                     if (gapCount == lastElementPosition - rightBoundaryPosition) {
                         truncateTo(rightBoundaryPosition);
+                    } else {
+                        firstGapPosition = rightBoundaryPosition + 1;
                     }
                     return entry;
                 }
@@ -133,6 +159,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         Arrays.fill(entries, newLastPosition + 1, lastElementPosition + 1, null);
         lastElementPosition = newLastPosition;
         gapCount = 0;
+        firstGapPosition = lastElementPosition + 1; // [0, lastElementPosition] are all non-null.
         modCount++;
     }
 
@@ -143,7 +170,6 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     }
 
     @Override
-    @SuppressWarnings("DataFlowIssue")
     public void add(int index, T element) {
         var size = size();
         if (index < 0 || index > size) {
@@ -178,7 +204,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         var newEntry = new Entry(element, index);
         resize(lastElementPosition + 2);
         for (var i = lastElementPosition; i >= index; i--) {
-            var shifted = entries[i];
+            var shifted = entryAt(i);
             entries[i + 1] = shifted;
             shifted.moveTo(i + 1);
         }
@@ -190,7 +216,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         modCount++;
         var displaced = newEntry;
         for (var i = index; i <= lastElementPosition; i++) {
-            var current = entries[i];
+            var current = entryAt(i);
             displaced.moveTo(i);
             entries[i] = displaced;
             if (current == null) {
@@ -225,11 +251,16 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
                     .formatted(entry));
         }
         var positionPreRemoval = entry.position;
-        if (positionPreRemoval == lastElementPosition) { // Removing the last element; just trim the list.
+        if (positionPreRemoval == lastElementPosition) { // Removing the last element; trim list and retract trailing gaps.
             entries[lastElementPosition--] = null;
+            while (lastElementPosition >= 0 && entries[lastElementPosition] == null) {
+                lastElementPosition--;
+                gapCount--;
+            }
         } else {
             entries[positionPreRemoval] = null;
             gapCount++;
+            firstGapPosition = Math.min(firstGapPosition, positionPreRemoval);
         }
         entry.moveTo(REMOVED_POSITION); // Mark the entry as removed.
         modCount++;
@@ -237,8 +268,18 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     }
 
     private void clearIfPossible() {
-        if (isEmpty()) {
-            // All positions, if any, are gaps. Clear the list entirely.
+        if (!isEmpty()) {
+            return;
+        }
+        // List is empty: either retain the backing array (cheap re-add) or free it (large arrays).
+        // Trailing-gap retraction in remove() guarantees lastElementPosition == -1, gapCount == 0,
+        // and every slot already null — no fill is needed.
+        var length = entries.length;
+        if (length > 0 && length <= RETAIN_THRESHOLD) {
+            lastElementPosition = -1; // Already -1; explicit for clarity.
+            gapCount = 0; // Required: guards addEntry's gap-reuse branch (entries[-1]).
+            firstGapPosition = 0; // Already 0; explicit for clarity.
+        } else {
             innerClear();
         }
     }
@@ -250,9 +291,10 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     }
 
     private void innerClear() {
-        entries = null;
+        entries = EMPTY_ARRAY;
         gapCount = 0;
         lastElementPosition = -1;
+        firstGapPosition = 0;
     }
 
     @Override
@@ -281,7 +323,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     @SuppressWarnings("DataFlowIssue")
     private void forEachWithoutGaps(Consumer<? super T> elementConsumer) {
         for (var currentPosition = 0; currentPosition <= lastElementPosition; currentPosition++) {
-            elementConsumer.accept(entries[currentPosition].element());
+            elementConsumer.accept(entryAt(currentPosition).element); // entries[i] is provably non-null (gapCount==0)
         }
     }
 
@@ -301,11 +343,11 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         }
         var compactPosition = 0;
         for (var currentPosition = 0; currentPosition <= lastElementPosition; currentPosition++) {
-            var entry = entries[currentPosition];
+            var entry = entryAt(currentPosition);
             if (entry == null) {
                 continue;
             }
-            elementConsumer.accept(entry.element());
+            elementConsumer.accept(entry.element); // entry is provably live (post null-skip)
             if (currentPosition != compactPosition) {
                 entry.moveTo(compactPosition);
                 entries[compactPosition] = entry;
@@ -325,7 +367,13 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     }
 
     @Override
+    public ListIterator<T> listIterator() {
+        return this.listIterator(0);
+    }
+
+    @Override
     public ListIterator<T> listIterator(int index) {
+        compact(); // Ensure fast-path iteration; remove all gaps at once.
         return new ElementAwareListIterator(index);
     }
 
@@ -393,15 +441,15 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
             if (logicalPosition >= size()) {
                 throw new NoSuchElementException();
             }
-            var entry = entries[currentPosition];
+            var entry = entryAt(currentPosition);
             while (entry == null) {
-                entry = entries[++currentPosition];
+                entry = entryAt(++currentPosition);
             }
             currentPosition++;
             logicalPosition++;
             lastEntry = entry;
             lastWasFwd = true;
-            return entry.element();
+            return entry.element; // provably live: entry is from a non-null slot after the null-skip loop
         }
 
         @Override
@@ -412,12 +460,12 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
             }
             Entry entry = null;
             while (entry == null) {
-                entry = entries[--currentPosition];
+                entry = entryAt(--currentPosition);
             }
             logicalPosition--;
             lastEntry = entry;
             lastWasFwd = false;
-            return entry.element();
+            return entry.element; // provably live: entry is from a non-null slot after the null-skip loop
         }
 
         @Override
