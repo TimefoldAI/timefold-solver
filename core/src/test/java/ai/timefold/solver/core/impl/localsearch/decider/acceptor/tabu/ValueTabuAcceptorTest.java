@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
 
@@ -314,7 +315,7 @@ class ValueTabuAcceptorTest {
 
         var solverScope = new SolverScope<>();
         solverScope.setInitializedBestScore(SimpleScore.ZERO);
-        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(new double[0]));
+        solverScope.setWorkingRandom(new TestRandom(new double[0]));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         acceptor.phaseStarted(phaseScope);
 
@@ -336,35 +337,35 @@ class ValueTabuAcceptorTest {
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
-        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(0.3));
+        solverScope.setWorkingRandom(new TestRandom(0.3));
         var stepScope3 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, v1))).isTrue();
         stepScope3.setStep(buildMoveScope(stepScope3, v0).getMove());
         acceptor.stepEnded(stepScope3);
         phaseScope.setLastCompletedStepScope(stepScope3);
 
-        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(0.5));
+        solverScope.setWorkingRandom(new TestRandom(0.5));
         var stepScope4 = new LocalSearchStepScope<>(phaseScope);
-        assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, v1))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, v1))).isTrue();
         stepScope4.setStep(buildMoveScope(stepScope4, v0).getMove());
         acceptor.stepEnded(stepScope4);
         phaseScope.setLastCompletedStepScope(stepScope4);
 
-        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(0.1));
+        solverScope.setWorkingRandom(new TestRandom(0.99));
         var stepScope5 = new LocalSearchStepScope<>(phaseScope);
-        assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, v1))).isTrue();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, v1))).isFalse();
         stepScope5.setStep(buildMoveScope(stepScope5, v0).getMove());
         acceptor.stepEnded(stepScope5);
         phaseScope.setLastCompletedStepScope(stepScope5);
 
-        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(0.99));
+        solverScope.setWorkingRandom(new TestRandom(new double[0]));
         var stepScope6 = new LocalSearchStepScope<>(phaseScope);
-        assertThat(acceptor.isAccepted(buildMoveScope(stepScope6, v1))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope6, v1))).isTrue();
         stepScope6.setStep(buildMoveScope(stepScope6, v0).getMove());
         acceptor.stepEnded(stepScope6);
         phaseScope.setLastCompletedStepScope(stepScope6);
 
-        solverScope.setWorkingRandom(new ai.timefold.solver.core.testutil.TestRandom(new double[0]));
+        solverScope.setWorkingRandom(new TestRandom(new double[0]));
         var stepScope7 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope7, v1))).isTrue();
 

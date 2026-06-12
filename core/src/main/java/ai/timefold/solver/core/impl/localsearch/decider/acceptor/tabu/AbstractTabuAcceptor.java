@@ -142,21 +142,15 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
                     logIndentation, moveScope.getMove());
             return false;
         }
-        // From this point, we are guaranteed to be in a fading tabu.
-        var acceptChance = calculateFadingTabuAcceptChance(tabuStepCount - workingTabuSize);
-        // Only call RNG when necessary.
-        var accepted = Double.compare(acceptChance, 1.0d) >= 0
-                || (Double.compare(acceptChance, 0.0d) > 0 && moveScope.getWorkingRandom().nextDouble() < acceptChance);
-        if (accepted) {
+        var decision = decideFadingTabuAcceptance(moveScope, tabuStepCount - workingTabuSize);
+        if (decision.accepted()) {
             logger.trace("{}        Proposed move ({}) is fading tabu with acceptChance ({}) and is accepted.",
-                    logIndentation,
-                    moveScope.getMove(), acceptChance);
+                    logIndentation, moveScope.getMove(), decision.acceptChance());
         } else {
             logger.trace("{}        Proposed move ({}) is fading tabu with acceptChance ({}) and is not accepted.",
-                    logIndentation,
-                    moveScope.getMove(), acceptChance);
+                    logIndentation, moveScope.getMove(), decision.acceptChance());
         }
-        return accepted;
+        return decision.accepted();
     }
 
     private int locateMaximumTabuStepIndex(LocalSearchMoveScope<Solution_> moveScope) {
@@ -188,12 +182,32 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
 
     /**
      * @param fadingTabuStepCount {@code 0 < fadingTabuStepCount <= fadingTabuSize}
-     * @return {@code 0.0 < acceptChance < 1.0}
+     * @return a record with the accept chance, and the decision
      */
-    protected double calculateFadingTabuAcceptChance(int fadingTabuStepCount) {
-        // The + 1's are because acceptChance should not be 0.0 or 1.0
-        // when (fadingTabuStepCount == 0) or (fadingTabuStepCount + 1 == workingFadingTabuSize)
-        return (workingFadingTabuSize - fadingTabuStepCount) / ((double) (workingFadingTabuSize + 1));
+    private FadingTabuDecision decideFadingTabuAcceptance(LocalSearchMoveScope<Solution_> moveScope, int fadingTabuStepCount) {
+        // Invert the chance; the longer the element is in the tabu list, the higher the chance should be.
+        var numerator = workingFadingTabuSize - fadingTabuStepCount;
+        if (numerator <= 0) { // The inverted chance would be >= 1.
+            return FadingTabuDecision.CERTAIN;
+        }
+        var denominator = workingFadingTabuSize + 1;
+        if (numerator >= denominator) { // The inverted chance would be <= 0.
+            return FadingTabuDecision.IMPOSSIBLE;
+        }
+        var acceptChance = 1.0d - (numerator / (double) denominator);
+        var accepted = Double.compare(moveScope.getWorkingRandom().nextDouble(), acceptChance) < 0;
+        return new FadingTabuDecision(acceptChance, accepted);
+    }
+
+    /**
+     * @param acceptChance 0.0 <= acceptChance <= 1.0
+     * @param accepted
+     */
+    private record FadingTabuDecision(double acceptChance, boolean accepted) {
+
+        private static final FadingTabuDecision CERTAIN = new FadingTabuDecision(1.0d, true);
+        private static final FadingTabuDecision IMPOSSIBLE = new FadingTabuDecision(0.0d, false);
+
     }
 
     /**

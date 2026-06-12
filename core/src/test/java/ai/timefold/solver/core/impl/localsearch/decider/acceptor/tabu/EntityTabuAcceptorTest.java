@@ -273,7 +273,7 @@ class EntityTabuAcceptorTest {
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
-        // Step 3: fading zone, fadingCount=1, acceptChance=0.6; random=0.3 → accepted
+        // Step 3: fading zone, fadingCount=1, acceptChance=0.4; random=0.3 → accepted
         solverScope.setWorkingRandom(new TestRandom(0.3));
         var stepScope3 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, e1))).isTrue();
@@ -281,15 +281,15 @@ class EntityTabuAcceptorTest {
         acceptor.stepEnded(stepScope3);
         phaseScope.setLastCompletedStepScope(stepScope3);
 
-        // Step 4: fadingCount=2, acceptChance=0.4; random=0.5 → rejected
+        // Step 4: fadingCount=2, acceptChance=0.6; random=0.5 → accepted
         solverScope.setWorkingRandom(new TestRandom(0.5));
         var stepScope4 = new LocalSearchStepScope<>(phaseScope);
-        assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, e1))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, e1))).isTrue();
         stepScope4.setStep(buildMoveScope(stepScope4, e0).getMove());
         acceptor.stepEnded(stepScope4);
         phaseScope.setLastCompletedStepScope(stepScope4);
 
-        // Step 5: fadingCount=3, acceptChance=0.2; random=0.1 → accepted
+        // Step 5: fadingCount=3, acceptChance=0.8; random=0.1 → accepted
         solverScope.setWorkingRandom(new TestRandom(0.1));
         var stepScope5 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, e1))).isTrue();
@@ -297,11 +297,11 @@ class EntityTabuAcceptorTest {
         acceptor.stepEnded(stepScope5);
         phaseScope.setLastCompletedStepScope(stepScope5);
 
-        // Step 6: fadingCount=4, acceptChance=0.0; random consumed but always false
+        // Step 6: fadingCount=4, acceptChance=1.0; random not consumed and accepted
         // adjustTabuList removes e1 (tabuStepCount=6 ≥ totalTabuListSize=6)
-        solverScope.setWorkingRandom(new TestRandom(0.99));
+        solverScope.setWorkingRandom(new TestRandom(new double[0]));
         var stepScope6 = new LocalSearchStepScope<>(phaseScope);
-        assertThat(acceptor.isAccepted(buildMoveScope(stepScope6, e1))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope6, e1))).isTrue();
         stepScope6.setStep(buildMoveScope(stepScope6, e0).getMove());
         acceptor.stepEnded(stepScope6);
         phaseScope.setLastCompletedStepScope(stepScope6);
