@@ -828,8 +828,11 @@ public interface NearbyDistanceMeter<Origin_, Destination_> {
 ----
 ====
 
-In a nutshell, when nearby selection is used in a list move selector,
-`Origin_` is always a planning value (for example `Customer`)
+In a nutshell, the `Origin_` type follows the selector that is mimicked by the `nearbySelection` configuration,
+and the `Destination_` type follows the selector that is selected nearby.
+With a basic variable, `Origin_` is the planning entity selected by the mimicking entity selector,
+while `Destination_` is the planning value or planning entity selected nearby.
+With a list variable, `Origin_` is always a planning value (for example `Customer`),
 but `Destination_` can be either a planning value or a planning entity.
 That means that in VRP the distance meter must be able to handle both `Customer` and `Vehicle` as the `Destination_` argument:
 
@@ -859,6 +862,76 @@ because the method will analyze all possible moves.
 Adding Nearby in this situation would only result in unnecessary costs
 involving the generation of the distance matrix and sorting operations without taking advantage of the feature.
 ====
+
+==== Nearby selection with a basic variable
+
+To quickly configure nearby selection for a solution that only uses basic variables,
+add `nearbyDistanceMeterClass` element to your configuration file.
+The following enables nearby selection with a basic variable
+for the local search:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<solver xmlns="https://timefold.ai/xsd/solver">
+    ...
+    <nearbyDistanceMeterClass>org.acme.schooltimetabling.domain.solver.nearby.LectureNearbyDistanceMeter</nearbyDistanceMeterClass>
+    ...
+</solver>
+----
+
+By default, the following move selectors are included:
+xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change],
+xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap],
+Change with Nearby,
+and Swap with Nearby.
+
+For a model that mixes basic and list variables,
+configure nearby selection for basic-variable move selectors explicitly.
+
+===== Advanced configuration for local search
+
+To customize the move selectors,
+add a `nearbySelection` element in the `valueSelector` of a `changeMoveSelector`
+or in the `secondaryEntitySelector` of a `swapMoveSelector`,
+and use xref:optimization-algorithms/move-selector-reference.adoc#mimicSelection[mimic selection]
+to specify which entity should be the origin of the distance calculation.
+
+For a `changeMoveSelector`,
+`Origin_` is the entity selected by the mimicking `entitySelector`
+and `Destination_` is the planning value selected by the `valueSelector`.
+For a `swapMoveSelector`,
+`Origin_` is the entity selected by the mimicking `entitySelector`
+and `Destination_` is the other planning entity selected by the `secondaryEntitySelector`.
+If one distance meter is reused for both selectors,
+its `Destination_` type must accept both destination types.
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <changeMoveSelector>
+        <entitySelector id="entitySelector1"/>
+        <valueSelector variableName="room">
+          <nearbySelection>
+            <originEntitySelector mimicSelectorRef="entitySelector1"/>
+            <nearbyDistanceMeterClass>org.acme.schooltimetabling.domain.solver.nearby.LectureNearbyDistanceMeter</nearbyDistanceMeterClass>
+          </nearbySelection>
+        </valueSelector>
+      </changeMoveSelector>
+      <swapMoveSelector>
+        <entitySelector id="entitySelector2"/>
+        <secondaryEntitySelector>
+          <nearbySelection>
+            <originEntitySelector mimicSelectorRef="entitySelector2"/>
+            <nearbyDistanceMeterClass>org.acme.schooltimetabling.domain.solver.nearby.LectureNearbyDistanceMeter</nearbyDistanceMeterClass>
+          </nearbySelection>
+        </secondaryEntitySelector>
+        <variableNameIncludes>
+          <variableNameInclude>room</variableNameInclude>
+        </variableNameIncludes>
+      </swapMoveSelector>
+    </unionMoveSelector>
+----
 
 ==== Nearby selection with a list variable
 
