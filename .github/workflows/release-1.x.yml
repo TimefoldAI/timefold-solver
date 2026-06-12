@@ -9,7 +9,7 @@
 # Should any of these axioms change, the release pipeline will need to be (significantly) refactored.
 # 0.8.x releases existed before this pipeline; they are done differently, similarities are coincidental.
 
-name: Release
+name: Release Community 1.x to Maven Central
 on:
   workflow_dispatch:
     inputs:
@@ -21,9 +21,10 @@ on:
         default: 1.x
         required: true
       dryRun:
-        description: 'Do a dry run? (true or false)'
+        description: 'Do a dry run?'
         default: true
         required: true
+        type: boolean
 jobs:
   build:
     env:
