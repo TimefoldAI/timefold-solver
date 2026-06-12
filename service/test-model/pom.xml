@@ -7,7 +7,7 @@
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-service-parent</artifactId>
     <version>${revision}</version>
-    <relativePath>../facade/model-parent/pom.xml</relativePath>
+    <relativePath>../facade/service-parent/pom.xml</relativePath>
   </parent>
 
   <artifactId>timefold-test-model</artifactId>

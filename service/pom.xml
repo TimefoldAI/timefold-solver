@@ -32,10 +32,10 @@
     <module>quarkus</module>
     <module>maps</module>
     <module>test</module>
-    <module>facade/model</module>
-    <module>facade/model-with-maps</module>
-    <module>facade/model-parent</module>
-    <module>model-defaults</module>
+    <module>facade/service</module>
+    <module>facade/service-with-maps</module>
+    <module>facade/service-parent</module>
+    <module>service-defaults</module>
     <module>tools/maven-plugin</module>
   </modules>
 
