@@ -186,8 +186,8 @@ include::../shared/school-timetabling/_school-timetabling-solution-facts-and-ent
 
 == Add the Solver Configuration
 
+// TODO: CHECK IF STILL THE CASE
 [NOTE]
-TODO: CHECK IF STILL THE CASE
 This will be replaced in the near future so this configuration will no longer be explicitly needed.
 
 At time of writing, the application will not start without explicitly configuring the solver spent limit.
