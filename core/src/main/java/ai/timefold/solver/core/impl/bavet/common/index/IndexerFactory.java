@@ -483,8 +483,7 @@ public final class IndexerFactory<Right_> {
     }
 
     public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
-        Supplier<Indexer<T>> backendSupplier =
-                requiresRandomAccess ? RandomAccessLeafIndexer::new : LinkedListLeafIndexer::new;
+        Supplier<Indexer<T>> backendSupplier = RandomAccessLeafIndexer::new;
         if (!hasJoiners()) { // NoneJoiner results in a bare backend (NoneIndexer).
             return backendSupplier.get();
         }
@@ -517,8 +516,7 @@ public final class IndexerFactory<Right_> {
                 // Leaf-most level whose index key equals the whole composite key: no KeyUnpacker indirection.
                 if (joinerType == JoinerType.EQUAL) {
                     // Fuse the leaf-most equal indexer with its backend.
-                    downstreamIndexerSupplier = () -> new EqualIndexer<>(KeyUnpacker.single(),
-                            requiresRandomAccess ? RandomAccessLeafIndexer::new : LinkedListLeafIndexer::new);
+                    downstreamIndexerSupplier = () -> new EqualIndexer<>(KeyUnpacker.single(), RandomAccessLeafIndexer::new);
                 } else {
                     KeyUnpacker<?> keyUnpacker = KeyUnpacker.single();
                     downstreamIndexerSupplier = () -> buildIndexerPart(isLeftBridge, joinerType, keyUnpacker, backendSupplier);
@@ -561,11 +559,12 @@ public final class IndexerFactory<Right_> {
                 equalPrefixLength == joinerCount ? KeyUnpacker.single() : KeyUnpacker.composite(0);
         if (equalPrefixLength == joinerCount) {
             // Pure equal: the per-side downstream is just the tuple list; the bucket is the equal-key group.
-            return new FusedEqualIndex<>(topEqualKeyUnpacker, false, LinkedListLeafIndexer::new, LinkedListLeafIndexer::new);
+            return new FusedEqualIndex<>(topEqualKeyUnpacker, false, RandomAccessLeafIndexer::new,
+                    RandomAccessLeafIndexer::new);
         } else {
             // Equal prefix + suffix: build the per-side suffix sub-chain (the right side flips comparisons).
-            var leftDownstreamSupplier = this.<L> buildIndexerChain(true, 1, LinkedListLeafIndexer::new);
-            var rightDownstreamSupplier = this.<R> buildIndexerChain(false, 1, LinkedListLeafIndexer::new);
+            var leftDownstreamSupplier = this.<L> buildIndexerChain(true, 1, RandomAccessLeafIndexer::new);
+            var rightDownstreamSupplier = this.<R> buildIndexerChain(false, 1, RandomAccessLeafIndexer::new);
             return new FusedEqualIndex<>(topEqualKeyUnpacker, true, leftDownstreamSupplier, rightDownstreamSupplier);
         }
     }
