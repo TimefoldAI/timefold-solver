@@ -1014,16 +1014,17 @@ class SolverManagerTest {
     @Test
     @Timeout(60)
     void submitMoreProblemsThanCpus_allGetSolved() throws InterruptedException, ExecutionException {
-        // Use twice the amount of problems than available processors.
-        var problemCount = Runtime.getRuntime().availableProcessors() * 2;
-        try (var solverManager = createSolverManagerTestableByDifferentConsumers()) {
+        var parallelSolverCount = 2;
+        // Use twice the amount of problems than available solver threads.
+        var problemCount = parallelSolverCount * 2;
+        try (var solverManager = createSolverManagerTestableByDifferentConsumers(parallelSolverCount)) {
             assertSolveWithoutConsumer(problemCount, solverManager);
             assertSolveWithConsumer(problemCount, solverManager, true);
             assertSolveWithConsumer(problemCount, solverManager, false);
         }
     }
 
-    private SolverManager<TestdataSolution> createSolverManagerTestableByDifferentConsumers() {
+    private SolverManager<TestdataSolution> createSolverManagerTestableByDifferentConsumers(int parallelSolverCount) {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(IntStream.of(0, 1)
                         .mapToObj(x -> new CustomPhaseConfig().withCustomPhaseCommands(
@@ -1037,7 +1038,8 @@ class SolverManagerTest {
                                     context.executeAndCalculateScore(move);
                                 }))
                         .toArray(PhaseConfig[]::new));
-        return createDefaultSolverManager(solverConfig);
+        return createSolverManager(solverConfig,
+                new SolverManagerConfig().withParallelSolverCount(Integer.toString(parallelSolverCount)));
     }
 
     private void assertSolveWithoutConsumer(int problemCount, SolverManager<TestdataSolution> solverManager)
