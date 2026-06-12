@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
@@ -109,20 +108,53 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("addEntry reuses the null slot at lastElementPosition when it is a gap")
-        void addEntryReusesGapAtTail() {
+        @DisplayName("addEntry after churn appends in insertion order")
+        void addEntryAfterChurnAppendsInOrder() {
             var list = new ElementAwareArrayList<String>();
             list.addEntry("a");
             var entryB = list.addEntry("b");
             var entryC = list.addEntry("c");
 
-            entryB.remove(); // gap at slot 1; physical [a@0, null, c@2]
-            entryC.remove(); // c is last element → trim; physical [a@0, null], gapCount=1, lastElementPosition=1
+            entryB.remove(); // interior gap at slot 1
+            entryC.remove(); // last element: trim + retract trailing null → lastElementPosition=0, gapCount=0
 
-            var entryX = list.addEntry("x"); // reuses slot 1 (null at lastElementPosition)
+            // addEntry appends at lastElementPosition+1 (==1); insertion order a, x preserved.
+            var entryX = list.addEntry("x");
 
             assertThat(list).containsExactly("a", "x");
             assertThat(entryX.toString()).contains("@1");
+        }
+
+        @Test
+        @DisplayName("remove-to-empty frees large backing array (length > RETAIN_THRESHOLD)")
+        void removeToEmptyFreesLargeBackingArray() {
+            var list = new ElementAwareArrayList<String>();
+            // 30 elements force entries.length to 32 (> RETAIN_THRESHOLD=16), triggering the free path on empty.
+            List<ElementAwareArrayList<String>.Entry> entryList = new ArrayList<>();
+            for (var i = 0; i < 30; i++) {
+                entryList.add(list.addEntry("e" + i));
+            }
+            for (var entry : entryList) {
+                entry.remove();
+            }
+            assertThat(list).isEmpty();
+        }
+
+        @Test
+        @DisplayName("add after free-path empty re-allocates and preserves insertion order")
+        void addAfterLargeArrayFreePathPreservesOrder() {
+            var list = new ElementAwareArrayList<String>();
+            List<ElementAwareArrayList<String>.Entry> entryList = new ArrayList<>();
+            for (var i = 0; i < 30; i++) {
+                entryList.add(list.addEntry("e" + i));
+            }
+            for (var entry : entryList) {
+                entry.remove();
+            }
+            list.addEntry("x");
+            list.addEntry("y");
+            list.addEntry("z");
+            assertThat(list).containsExactly("x", "y", "z");
         }
 
     }
@@ -1191,21 +1223,6 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("external remove(Entry) causes CME on subsequent iterator call")
-        void cmeOnExternalModify() {
-            var list = new ElementAwareArrayList<String>();
-            var entry = list.addEntry("a");
-            list.add("b");
-
-            var it = list.listIterator();
-            it.next();
-            entry.remove();
-
-            assertThatExceptionOfType(ConcurrentModificationException.class)
-                    .isThrownBy(it::next);
-        }
-
-        @Test
         @DisplayName("remove() without preceding next() or previous() throws IllegalStateException")
         void removeWithoutNext() {
             var list = new ElementAwareArrayList<String>();
@@ -1365,57 +1382,6 @@ class ElementAwareArrayListTest {
             var it = list.listIterator();
             assertThatExceptionOfType(IllegalStateException.class)
                     .isThrownBy(() -> it.set("x"));
-        }
-
-    }
-
-    @Nested
-    @DisplayName("Fail-fast behavior tests (implementation-specific)")
-    class FailFastBehaviorTests {
-
-        @Test
-        @DisplayName("listIterator fail-fast on add (implementation-specific)")
-        void cmeOnAdd() {
-            var list = new ElementAwareArrayList<String>();
-            list.add("a");
-            list.add("b");
-
-            var it = list.listIterator();
-            it.next();
-            list.add("c");
-
-            assertThatExceptionOfType(ConcurrentModificationException.class)
-                    .isThrownBy(it::next);
-        }
-
-        @Test
-        @DisplayName("listIterator fail-fast on remove(int) (implementation-specific)")
-        void cmeOnRemove() {
-            var list = new ElementAwareArrayList<String>();
-            list.add("a");
-            list.add("b");
-
-            var it = list.listIterator();
-            it.next();
-            list.removeFirst();
-
-            assertThatExceptionOfType(ConcurrentModificationException.class)
-                    .isThrownBy(it::next);
-        }
-
-        @Test
-        @DisplayName("listIterator fail-fast on remove(Entry) (implementation-specific)")
-        void cmeOnEntryRemove() {
-            var list = new ElementAwareArrayList<String>();
-            var entry = list.addEntry("a");
-            list.add("b");
-
-            var it = list.listIterator();
-            it.next();
-            entry.remove();
-
-            assertThatExceptionOfType(ConcurrentModificationException.class)
-                    .isThrownBy(it::next);
         }
 
     }

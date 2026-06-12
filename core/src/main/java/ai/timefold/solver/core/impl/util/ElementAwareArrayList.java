@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.util;
 
 import java.util.AbstractList;
 import java.util.Arrays;
-import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -29,6 +28,7 @@ import org.jspecify.annotations.Nullable;
  * All standard {@link List} methods are also available and may run in O(n) or worse.
  * <p>
  * This class is so very not thread safe.
+ * {@code modCount} is intentionally not maintained; iteration is not fail-fast (matches {@link ElementAwareLinkedList}).
  *
  * @param <T>
  */
@@ -52,16 +52,12 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
      * @return the entry for later O(1) removal via {@link Entry#remove()}
      */
     public Entry addEntry(T element) {
-        modCount++;
-        if (gapCount > 0 && entries[lastElementPosition] == null) { // Reuse a gap if it exists.
-            var newEntry = new Entry(element, lastElementPosition);
-            entries[lastElementPosition] = newEntry;
-            gapCount--;
-            return newEntry;
+        var newPosition = ++lastElementPosition;
+        if (newPosition == entries.length) { // Full (also covers EMPTY_ARRAY); grow on the cold path only.
+            resize(newPosition + 1);
         }
-        var newEntry = new Entry(element, ++lastElementPosition);
-        resize(lastElementPosition + 1);
-        entries[lastElementPosition] = newEntry;
+        var newEntry = new Entry(element, newPosition);
+        entries[newPosition] = newEntry;
         return newEntry;
     }
 
@@ -132,7 +128,6 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
                     entry.moveTo(targetPosition);
                     entries[targetPosition] = entry;
                     entries[currentPosition] = null; // For consistency; the list is never in an invalid state.
-                    modCount++;
                 }
                 if (lastNonNullPosition == rightBoundaryPosition) {
                     // Invariant: positions [0, rightBoundaryPosition] are all non-null,
@@ -160,7 +155,6 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         lastElementPosition = newLastPosition;
         gapCount = 0;
         firstGapPosition = lastElementPosition + 1; // [0, lastElementPosition] are all non-null.
-        modCount++;
     }
 
     @Override
@@ -200,7 +194,6 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     }
 
     private void addWithoutGaps(int index, T element) {
-        modCount++;
         var newEntry = new Entry(element, index);
         resize(lastElementPosition + 2);
         for (var i = lastElementPosition; i >= index; i--) {
@@ -213,7 +206,6 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     }
 
     private void addWithGaps(int index, Entry newEntry) {
-        modCount++;
         var displaced = newEntry;
         for (var i = index; i <= lastElementPosition; i++) {
             var current = entryAt(i);
@@ -246,48 +238,38 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
      * @throws IllegalStateException if the entry was already removed
      */
     private void remove(Entry entry) {
-        if (entry.isRemoved()) {
+        var position = entry.position;
+        if (position == REMOVED_POSITION) {
             throw new IllegalStateException("The entry (%s) was already removed."
                     .formatted(entry));
         }
-        var positionPreRemoval = entry.position;
-        if (positionPreRemoval == lastElementPosition) { // Removing the last element; trim list and retract trailing gaps.
-            entries[lastElementPosition--] = null;
+        entry.moveTo(REMOVED_POSITION); // Mark the entry as removed.
+        if (position == lastElementPosition) { // Removing the last element; trim and retract trailing gaps.
+            entries[position] = null;
+            lastElementPosition--;
             while (lastElementPosition >= 0 && entries[lastElementPosition] == null) {
                 lastElementPosition--;
                 gapCount--;
             }
-        } else {
-            entries[positionPreRemoval] = null;
+            if (lastElementPosition < 0) { // List now empty: retain a small backing array, free a large one.
+                gapCount = 0; // Already 0 after retraction; explicit for clarity.
+                firstGapPosition = 0;
+                if (entries.length > RETAIN_THRESHOLD) {
+                    entries = EMPTY_ARRAY;
+                }
+            }
+        } else { // Interior removal; cannot empty the list, so no empty-handling needed.
+            entries[position] = null;
             gapCount++;
-            firstGapPosition = Math.min(firstGapPosition, positionPreRemoval);
-        }
-        entry.moveTo(REMOVED_POSITION); // Mark the entry as removed.
-        modCount++;
-        clearIfPossible();
-    }
-
-    private void clearIfPossible() {
-        if (!isEmpty()) {
-            return;
-        }
-        // List is empty: either retain the backing array (cheap re-add) or free it (large arrays).
-        // Trailing-gap retraction in remove() guarantees lastElementPosition == -1, gapCount == 0,
-        // and every slot already null — no fill is needed.
-        var length = entries.length;
-        if (length > 0 && length <= RETAIN_THRESHOLD) {
-            lastElementPosition = -1; // Already -1; explicit for clarity.
-            gapCount = 0; // Required: guards addEntry's gap-reuse branch (entries[-1]).
-            firstGapPosition = 0; // Already 0; explicit for clarity.
-        } else {
-            innerClear();
+            if (position < firstGapPosition) {
+                firstGapPosition = position;
+            }
         }
     }
 
     @Override
     public void clear() {
         innerClear();
-        modCount++;
     }
 
     private void innerClear() {
@@ -352,7 +334,6 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
                 entry.moveTo(compactPosition);
                 entries[compactPosition] = entry;
                 entries[currentPosition] = null; // Prevent stale data.
-                modCount++;
             }
             if (++compactPosition == liveCount) {
                 break;
@@ -398,7 +379,6 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         private int logicalPosition;
         private @Nullable Entry lastEntry;
         private boolean lastWasFwd;
-        private int expectedModCount;
 
         private ElementAwareListIterator(int startingPosition) {
             var currentSize = size();
@@ -412,7 +392,6 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
                 currentPosition = startingPosition;
             }
             logicalPosition = startingPosition;
-            expectedModCount = modCount;
         }
 
         @Override
@@ -437,7 +416,6 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
 
         @Override
         public T next() {
-            checkModCount();
             if (logicalPosition >= size()) {
                 throw new NoSuchElementException();
             }
@@ -454,7 +432,6 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
 
         @Override
         public T previous() {
-            checkModCount();
             if (logicalPosition <= 0) {
                 throw new NoSuchElementException();
             }
@@ -474,12 +451,10 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
                 throw new IllegalStateException(
                         "remove() called without a preceding next() or previous().");
             }
-            checkModCount();
             lastEntry.remove(); // Adjusts lastElementPosition.
             if (lastWasFwd) {
                 logicalPosition--;
             }
-            expectedModCount = modCount;
             lastEntry = null;
         }
 
@@ -488,24 +463,15 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
             if (lastEntry == null) {
                 throw new IllegalStateException("set() called without a preceding next() or previous().");
             }
-            checkModCount();
             lastEntry.replaceElement(element);
         }
 
         @Override
         public void add(T element) {
-            checkModCount();
             ElementAwareArrayList.this.add(logicalPosition, element);
             logicalPosition++;
             currentPosition = logicalPosition;
-            expectedModCount = modCount;
             lastEntry = null;
-        }
-
-        private void checkModCount() {
-            if (modCount != expectedModCount) {
-                throw new ConcurrentModificationException();
-            }
         }
 
     }
