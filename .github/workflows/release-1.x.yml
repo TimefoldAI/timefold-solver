@@ -99,6 +99,8 @@ jobs:
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.JRELEASER_MAVEN_CENTRAL_TOKEN_USER }}
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.JRELEASER_MAVEN_CENTRAL_TOKEN }}
+        with:
+          arguments: full-release --config-file jreleaser-1.x.yml
 
       - name: JReleaser release output
         uses: actions/upload-artifact@v7

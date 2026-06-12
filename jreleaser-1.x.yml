@@ -1,0 +1,58 @@
+project:
+  java:
+    groupId: "ai.timefold.solver"
+
+signing:
+  active: ALWAYS
+  armored: true
+
+release:
+  github:
+    commitAuthor:
+      name: "Timefold Release Bot"
+      email: "release@timefold.ai"
+    releaseName: "Timefold Solver {{projectVersion}}"
+    draft: true
+    overwrite: false
+    sign: true
+    milestone:
+      close: true
+    changelog:
+      formatted: ALWAYS
+      preset: "conventional-commits"
+      contentTemplate: ".github/workflows/release-changelog-template.md"
+      contributors:
+        format: '- {{contributorName}} ({{contributorUsernameAsLink}})'
+      hide:
+        uncategorized: true
+        categories:
+          - build
+          - ci
+        contributors:
+          - "Timefold Release Bot"
+
+deploy:
+  maven:
+    mavenCentral:
+      timefold-solver:
+        active: ALWAYS
+        url: https://central.sonatype.com/api/v1/publisher
+        authorization: BASIC
+        # TODO Remove verifyPom tag, hack for https://github.com/jreleaser/jreleaser/issues/1397
+        verifyPom: false
+        maxRetries: 180 # the timeout for Maven state verification is now 30 minutes: 180 retries * 10-second delay
+        stagingRepositories:
+          - "target/staging-deploy"
+        artifactOverrides:
+          - groupId: ai.timefold.solver
+            artifactId: timefold-solver-spring-boot-starter
+            sourceJar: false
+            javadocJar: false
+          - groupId: ai.timefold.solver
+            artifactId: timefold-solver-ide-config
+            sourceJar: true
+            javadocJar: false
+          - groupId: ai.timefold.solver
+            artifactId: timefold-solver-webui
+            sourceJar: true
+            javadocJar: false
