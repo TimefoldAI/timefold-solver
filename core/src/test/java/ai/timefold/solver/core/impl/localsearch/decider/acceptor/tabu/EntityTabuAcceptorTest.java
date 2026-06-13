@@ -273,10 +273,10 @@ class EntityTabuAcceptorTest {
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
-        // Step 3: fading zone, fadingCount=1, acceptChance=0.4; random=0.3 → accepted
-        solverScope.setWorkingRandom(new TestRandom(0.3));
+        // Step 3: fading zone, fadingCount=1, acceptChance=0.4; random=0.5 → rejected
+        solverScope.setWorkingRandom(new TestRandom(0.5));
         var stepScope3 = new LocalSearchStepScope<>(phaseScope);
-        assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, e1))).isTrue();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, e1))).isFalse();
         stepScope3.setStep(buildMoveScope(stepScope3, e0).getMove());
         acceptor.stepEnded(stepScope3);
         phaseScope.setLastCompletedStepScope(stepScope3);

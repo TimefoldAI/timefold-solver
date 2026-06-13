@@ -143,14 +143,15 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
             return false;
         }
         var decision = decideFadingTabuAcceptance(moveScope, tabuStepCount - workingTabuSize);
-        if (decision.accepted()) {
+        var accepted = decision > 0;
+        if (accepted) {
             logger.trace("{}        Proposed move ({}) is fading tabu with acceptChance ({}) and is accepted.",
-                    logIndentation, moveScope.getMove(), decision.acceptChance());
+                    logIndentation, moveScope.getMove(), Math.abs(decision));
         } else {
             logger.trace("{}        Proposed move ({}) is fading tabu with acceptChance ({}) and is not accepted.",
-                    logIndentation, moveScope.getMove(), decision.acceptChance());
+                    logIndentation, moveScope.getMove(), Math.abs(decision));
         }
-        return decision.accepted();
+        return accepted;
     }
 
     private int locateMaximumTabuStepIndex(LocalSearchMoveScope<Solution_> moveScope) {
@@ -182,32 +183,24 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
 
     /**
      * @param fadingTabuStepCount {@code 0 < fadingTabuStepCount <= fadingTabuSize}
-     * @return a record with the accept chance, and the decision
+     * @return in absolute value, the accept chance;
+     *         negative signum or 0 means not accepted, positive signum means accepted.
+     *         This is hacky, but we can represent 2 things with one number
+     *         and avoid allocation new types for this multiple return.
      */
-    private FadingTabuDecision decideFadingTabuAcceptance(LocalSearchMoveScope<Solution_> moveScope, int fadingTabuStepCount) {
+    private double decideFadingTabuAcceptance(LocalSearchMoveScope<Solution_> moveScope, int fadingTabuStepCount) {
         // Invert the chance; the longer the element is in the tabu list, the higher the chance should be.
         var numerator = workingFadingTabuSize - fadingTabuStepCount;
         if (numerator <= 0) { // The inverted chance would be >= 1.
-            return FadingTabuDecision.CERTAIN;
+            return 1.0d;
         }
         var denominator = workingFadingTabuSize + 1;
         if (numerator >= denominator) { // The inverted chance would be <= 0.
-            return FadingTabuDecision.IMPOSSIBLE;
+            return 0.0d;
         }
         var acceptChance = 1.0d - (numerator / (double) denominator);
-        var accepted = Double.compare(moveScope.getWorkingRandom().nextDouble(), acceptChance) < 0;
-        return new FadingTabuDecision(acceptChance, accepted);
-    }
-
-    /**
-     * @param acceptChance 0.0 <= acceptChance <= 1.0
-     * @param accepted
-     */
-    private record FadingTabuDecision(double acceptChance, boolean accepted) {
-
-        private static final FadingTabuDecision CERTAIN = new FadingTabuDecision(1.0d, true);
-        private static final FadingTabuDecision IMPOSSIBLE = new FadingTabuDecision(0.0d, false);
-
+        var accepted = moveScope.getWorkingRandom().nextDouble() < acceptChance;
+        return accepted ? acceptChance : -acceptChance;
     }
 
     /**

@@ -319,11 +319,13 @@ class ValueTabuAcceptorTest {
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         acceptor.phaseStarted(phaseScope);
 
+        // Step 0: tabu v1 at stepIndex=0
         var stepScope0 = new LocalSearchStepScope<>(phaseScope);
         stepScope0.setStep(buildMoveScope(stepScope0, v1).getMove());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
+        // Steps 1-2: hard tabu (tabuStepCount 1,2 ≤ 2) — no random consumed
         var stepScope1 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, v1))).isFalse();
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, v0))).isTrue();
@@ -337,13 +339,15 @@ class ValueTabuAcceptorTest {
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
-        solverScope.setWorkingRandom(new TestRandom(0.3));
+        // Step 3: fading zone, fadingCount=1, acceptChance=0.4; random=0.5 → rejected
+        solverScope.setWorkingRandom(new TestRandom(0.5));
         var stepScope3 = new LocalSearchStepScope<>(phaseScope);
-        assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, v1))).isTrue();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, v1))).isFalse();
         stepScope3.setStep(buildMoveScope(stepScope3, v0).getMove());
         acceptor.stepEnded(stepScope3);
         phaseScope.setLastCompletedStepScope(stepScope3);
 
+        // Step 4: fading zone, fadingCount=2, acceptChance=0.6; random=0.5 → accepted
         solverScope.setWorkingRandom(new TestRandom(0.5));
         var stepScope4 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, v1))).isTrue();
@@ -351,13 +355,15 @@ class ValueTabuAcceptorTest {
         acceptor.stepEnded(stepScope4);
         phaseScope.setLastCompletedStepScope(stepScope4);
 
-        solverScope.setWorkingRandom(new TestRandom(0.99));
+        // Step 5: fading zone, fadingCount=3, acceptChance=0.8; random=0.5 → accepted
+        solverScope.setWorkingRandom(new TestRandom(0.5));
         var stepScope5 = new LocalSearchStepScope<>(phaseScope);
-        assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, v1))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, v1))).isTrue();
         stepScope5.setStep(buildMoveScope(stepScope5, v0).getMove());
         acceptor.stepEnded(stepScope5);
         phaseScope.setLastCompletedStepScope(stepScope5);
 
+        // Step 6: fading zone, fadingCount=4, acceptChance=1.0; random not consumed and accepted
         solverScope.setWorkingRandom(new TestRandom(new double[0]));
         var stepScope6 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope6, v1))).isTrue();
@@ -365,6 +371,7 @@ class ValueTabuAcceptorTest {
         acceptor.stepEnded(stepScope6);
         phaseScope.setLastCompletedStepScope(stepScope6);
 
+        // Step 7: v1 expired, no random consumed
         solverScope.setWorkingRandom(new TestRandom(new double[0]));
         var stepScope7 = new LocalSearchStepScope<>(phaseScope);
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope7, v1))).isTrue();
