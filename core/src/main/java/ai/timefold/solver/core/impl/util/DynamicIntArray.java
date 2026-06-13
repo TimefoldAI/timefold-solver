@@ -24,10 +24,6 @@ public final class DynamicIntArray {
         this(Integer.MAX_VALUE);
     }
 
-    public DynamicIntArray(ClearingStrategy clearingStrategy) {
-        this(Integer.MAX_VALUE, clearingStrategy);
-    }
-
     public DynamicIntArray(int maxLength) {
         this(maxLength, ClearingStrategy.FULL);
     }
@@ -211,7 +207,6 @@ public final class DynamicIntArray {
          * The GC will be allowed to reclaim the array.
          * This means that, on next access, the array will have to be reallocated and gradually resized,
          * possibly leading to excessive GC pressure.
-         *
          * This is the default.
          */
         FULL,
