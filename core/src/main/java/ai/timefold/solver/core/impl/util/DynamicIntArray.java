@@ -20,7 +20,7 @@ public final class DynamicIntArray {
     private int firstIndex;
     private int lastIndex;
 
-    public DynamicIntArray() {
+    DynamicIntArray() {
         this(Integer.MAX_VALUE);
     }
 
