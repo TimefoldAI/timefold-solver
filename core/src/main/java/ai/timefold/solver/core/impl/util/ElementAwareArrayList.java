@@ -45,6 +45,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     private int lastElementPosition = -1;
     private int gapCount = 0; // Always equals the total number of null slots in entryList.
     private int firstGapPosition = 0; // Pessimistic lower bound: positions [0, firstGapPosition) are guaranteed gap-free and positionally compact (logical i == physical i).
+    private int size = 0;
 
     /**
      * Appends the specified element to the end of this list.
@@ -58,6 +59,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         }
         var newEntry = new Entry(element, newPosition);
         entries[newPosition] = newEntry;
+        size++;
         return newEntry;
     }
 
@@ -146,6 +148,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         lastElementPosition = newLastPosition;
         gapCount = 0;
         firstGapPosition = lastElementPosition + 1; // [0, lastElementPosition] are all non-null.
+        size = newLastPosition + 1;
     }
 
     @Override
@@ -156,12 +159,12 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
 
     @Override
     public void add(int index, T element) {
-        var size = size();
-        if (index < 0 || index > size) {
+        var currentSize = size;
+        if (index < 0 || index > currentSize) {
             throw new IndexOutOfBoundsException(
-                    "The index (%d) must be >= 0 and <= size (%d).".formatted(index, size));
+                    "The index (%d) must be >= 0 and <= size (%d).".formatted(index, currentSize));
         }
-        if (index == size) {
+        if (index == currentSize) {
             addEntry(element);
             return;
         }
@@ -177,6 +180,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
             // Gap at the target position: fill it directly without shifting the array.
             entries[index] = new Entry(element, index);
             gapCount--;
+            size++;
         } else {
             // No gap at the target position: rotate entries rightward into the nearest gap in the suffix,
             // consuming that gap rather than growing the backing list.
@@ -194,6 +198,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         }
         entries[index] = newEntry;
         lastElementPosition++;
+        size++;
     }
 
     private void addWithGaps(int index, Entry newEntry) {
@@ -204,6 +209,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
             entries[i] = displaced;
             if (current == null) {
                 gapCount--;
+                size++;
                 break;
             }
             displaced = current;
@@ -235,6 +241,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
                     .formatted(entry));
         }
         entry.moveTo(REMOVED_POSITION); // Mark the entry as removed.
+        size--;
         entries[position] = null;
         if (position == lastElementPosition) { // Removing the last element; trim and retract trailing gaps.
             lastElementPosition--;
@@ -267,11 +274,12 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         gapCount = 0;
         lastElementPosition = -1;
         firstGapPosition = 0;
+        size = 0;
     }
 
     @Override
     public int size() {
-        return lastElementPosition - gapCount + 1;
+        return size;
     }
 
     /**
