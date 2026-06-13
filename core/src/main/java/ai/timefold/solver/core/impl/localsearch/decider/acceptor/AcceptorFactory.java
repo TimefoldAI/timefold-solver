@@ -17,6 +17,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.AbstractTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.EntityTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.ValueTabuAcceptor;
@@ -54,15 +55,14 @@ public class AcceptorFactory<Solution_> {
                 .collect(Collectors.toList());
 
         if (acceptorList.size() == 1) {
-            return acceptorList.get(0);
+            return acceptorList.getFirst();
         } else if (acceptorList.size() > 1) {
             return new CompositeAcceptor<>(acceptorList);
         } else {
-            throw new IllegalArgumentException(
-                    "The acceptor does not specify any acceptorType (" + acceptorConfig.getAcceptorTypeList()
-                            + ") or other acceptor property.\n"
-                            + "For a good starting values,"
-                            + " see the docs section \"Which optimization algorithms should I use?\".");
+            throw new IllegalArgumentException("""
+                    The acceptor does not specify any acceptorType (%s) or other acceptor property.
+                    For good starting values, see the docs section "Which optimization algorithms should I use?"."""
+                    .formatted(acceptorConfig.getAcceptorTypeList()));
         }
     }
 
@@ -94,34 +94,35 @@ public class AcceptorFactory<Solution_> {
     }
 
     private Optional<EntityTabuAcceptor<Solution_>> buildEntityTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
+        var entityTabuSize = acceptorConfig.getEntityTabuSize();
+        var entityTabuRatio = acceptorConfig.getEntityTabuRatio();
+        var fadingEntityTabuSize = acceptorConfig.getFadingEntityTabuSize();
+        var fadingEntityTabuRatio = acceptorConfig.getFadingEntityTabuRatio();
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.ENTITY_TABU)
-                || acceptorConfig.getEntityTabuSize() != null || acceptorConfig.getEntityTabuRatio() != null
-                || acceptorConfig.getFadingEntityTabuSize() != null || acceptorConfig.getFadingEntityTabuRatio() != null) {
+                || entityTabuSize != null || entityTabuRatio != null
+                || fadingEntityTabuSize != null || fadingEntityTabuRatio != null) {
             var acceptor = new EntityTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
-            if (acceptorConfig.getEntityTabuSize() != null) {
-                if (acceptorConfig.getEntityTabuRatio() != null) {
-                    throw new IllegalArgumentException("The acceptor cannot have both acceptorConfig.getEntityTabuSize() ("
-                            + acceptorConfig.getEntityTabuSize() + ") and acceptorConfig.getEntityTabuRatio() ("
-                            + acceptorConfig.getEntityTabuRatio() + ").");
+            if (entityTabuSize != null) {
+                if (entityTabuRatio != null) {
+                    throw new IllegalArgumentException(
+                            "The acceptor cannot have both entityTabuSize (%d) and entityTabuRatio (%f)."
+                                    .formatted(entityTabuSize, entityTabuRatio));
                 }
-                acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getEntityTabuSize()));
-            } else if (acceptorConfig.getEntityTabuRatio() != null) {
-                acceptor.setTabuSizeStrategy(new EntityRatioTabuSizeStrategy<>(acceptorConfig.getEntityTabuRatio()));
-            } else if (acceptorConfig.getFadingEntityTabuSize() == null && acceptorConfig.getFadingEntityTabuRatio() == null) {
+                acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(entityTabuSize));
+            } else if (entityTabuRatio != null) {
+                acceptor.setTabuSizeStrategy(new EntityRatioTabuSizeStrategy<>(entityTabuRatio));
+            } else if (fadingEntityTabuSize == null && fadingEntityTabuRatio == null) {
                 acceptor.setTabuSizeStrategy(new EntityRatioTabuSizeStrategy<>(0.1));
             }
-            if (acceptorConfig.getFadingEntityTabuSize() != null) {
-                if (acceptorConfig.getFadingEntityTabuRatio() != null) {
+            if (fadingEntityTabuSize != null) {
+                if (fadingEntityTabuRatio != null) {
                     throw new IllegalArgumentException(
-                            "The acceptor cannot have both acceptorConfig.getFadingEntityTabuSize() ("
-                                    + acceptorConfig.getFadingEntityTabuSize()
-                                    + ") and acceptorConfig.getFadingEntityTabuRatio() ("
-                                    + acceptorConfig.getFadingEntityTabuRatio() + ").");
+                            "The acceptor cannot have both fadingEntityTabuSize (%d) and fadingEntityTabuRatio (%f)."
+                                    .formatted(fadingEntityTabuSize, fadingEntityTabuRatio));
                 }
-                acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getFadingEntityTabuSize()));
-            } else if (acceptorConfig.getFadingEntityTabuRatio() != null) {
-                acceptor.setFadingTabuSizeStrategy(
-                        new EntityRatioTabuSizeStrategy<>(acceptorConfig.getFadingEntityTabuRatio()));
+                acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(fadingEntityTabuSize));
+            } else if (fadingEntityTabuRatio != null) {
+                acceptor.setFadingTabuSizeStrategy(new EntityRatioTabuSizeStrategy<>(fadingEntityTabuRatio));
             }
             if (configPolicy.getEnvironmentMode().isFullyAsserted()) {
                 acceptor.setAssertTabuHashCodeCorrectness(true);
@@ -132,43 +133,47 @@ public class AcceptorFactory<Solution_> {
     }
 
     private Optional<ValueTabuAcceptor<Solution_>> buildValueTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
+        var valueTabuSize = acceptorConfig.getValueTabuSize();
+        var fadingValueTabuSize = acceptorConfig.getFadingValueTabuSize();
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.VALUE_TABU)
-                || acceptorConfig.getValueTabuSize() != null || acceptorConfig.getFadingValueTabuSize() != null) {
+                || valueTabuSize != null || fadingValueTabuSize != null) {
+            if (valueTabuSize == null && fadingValueTabuSize == null) {
+                throw new IllegalArgumentException(
+                        "The acceptorType (%s) requires either valueTabuSize or fadingValueTabuSize to be configured."
+                                .formatted(AcceptorType.VALUE_TABU));
+            }
             var acceptor = new ValueTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
-            if (acceptorConfig.getValueTabuSize() != null) {
-                acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getValueTabuSize()));
-            }
-            if (acceptorConfig.getFadingValueTabuSize() != null) {
-                acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getFadingValueTabuSize()));
-            }
-
-            if (acceptorConfig.getValueTabuSize() != null) {
-                acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getValueTabuSize()));
-            }
-            if (acceptorConfig.getFadingValueTabuSize() != null) {
-                acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getFadingValueTabuSize()));
-            }
-            if (configPolicy.getEnvironmentMode().isFullyAsserted()) {
-                acceptor.setAssertTabuHashCodeCorrectness(true);
-            }
+            configureFixedSizeTabuAcceptor(acceptor, configPolicy, valueTabuSize, fadingValueTabuSize);
             return Optional.of(acceptor);
         }
         return Optional.empty();
     }
 
+    private static <Solution_> void configureFixedSizeTabuAcceptor(AbstractTabuAcceptor<Solution_> acceptor,
+            HeuristicConfigPolicy<Solution_> configPolicy, Integer tabuSize, Integer fadingTabuSize) {
+        if (tabuSize != null) {
+            acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(tabuSize));
+        }
+        if (fadingTabuSize != null) {
+            acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(fadingTabuSize));
+        }
+        if (configPolicy.getEnvironmentMode().isFullyAsserted()) {
+            acceptor.setAssertTabuHashCodeCorrectness(true);
+        }
+    }
+
     private Optional<MoveTabuAcceptor<Solution_>> buildMoveTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
+        var moveTabuSize = acceptorConfig.getMoveTabuSize();
+        var fadingMoveTabuSize = acceptorConfig.getFadingMoveTabuSize();
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.MOVE_TABU)
-                || acceptorConfig.getMoveTabuSize() != null || acceptorConfig.getFadingMoveTabuSize() != null) {
+                || moveTabuSize != null || fadingMoveTabuSize != null) {
+            if (moveTabuSize == null && fadingMoveTabuSize == null) {
+                throw new IllegalArgumentException(
+                        "The acceptorType (%s) requires either moveTabuSize or fadingMoveTabuSize to be configured."
+                                .formatted(AcceptorType.MOVE_TABU));
+            }
             var acceptor = new MoveTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
-            if (acceptorConfig.getMoveTabuSize() != null) {
-                acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getMoveTabuSize()));
-            }
-            if (acceptorConfig.getFadingMoveTabuSize() != null) {
-                acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getFadingMoveTabuSize()));
-            }
-            if (configPolicy.getEnvironmentMode().isFullyAsserted()) {
-                acceptor.setAssertTabuHashCodeCorrectness(true);
-            }
+            configureFixedSizeTabuAcceptor(acceptor, configPolicy, moveTabuSize, fadingMoveTabuSize);
             return Optional.of(acceptor);
         }
         return Optional.empty();
@@ -181,9 +186,9 @@ public class AcceptorFactory<Solution_> {
             var acceptor = new SimulatedAnnealingAcceptor<Solution_>();
             if (acceptorConfig.getSimulatedAnnealingStartingTemperature() == null) {
                 // TODO Support SA without a parameter
-                throw new IllegalArgumentException("The acceptorType (" + AcceptorType.SIMULATED_ANNEALING
-                        + ") currently requires a acceptorConfig.getSimulatedAnnealingStartingTemperature() ("
-                        + acceptorConfig.getSimulatedAnnealingStartingTemperature() + ").");
+                throw new IllegalArgumentException(
+                        "The acceptorType (%s) requires non-null acceptorConfig.getSimulatedAnnealingStartingTemperature()."
+                                .formatted(AcceptorType.SIMULATED_ANNEALING));
             }
             acceptor.setStartingTemperature(
                     configPolicy.getScoreDefinition().parseScore(acceptorConfig.getSimulatedAnnealingStartingTemperature()));
@@ -221,19 +226,20 @@ public class AcceptorFactory<Solution_> {
             var acceptor = new GreatDelugeAcceptor<Solution_>();
             if (acceptorConfig.getGreatDelugeWaterLevelIncrementScore() != null) {
                 if (acceptorConfig.getGreatDelugeWaterLevelIncrementRatio() != null) {
-                    throw new IllegalArgumentException("The acceptor cannot have both a "
-                            + "acceptorConfig.getGreatDelugeWaterLevelIncrementScore() ("
-                            + acceptorConfig.getGreatDelugeWaterLevelIncrementScore()
-                            + ") and a acceptorConfig.getGreatDelugeWaterLevelIncrementRatio() ("
-                            + acceptorConfig.getGreatDelugeWaterLevelIncrementRatio() + ").");
+                    throw new IllegalArgumentException("""
+                            The acceptor cannot have both acceptorConfig.getGreatDelugeWaterLevelIncrementScore() (%s) \
+                            and acceptorConfig.getGreatDelugeWaterLevelIncrementRatio() (%s)."""
+                            .formatted(acceptorConfig.getGreatDelugeWaterLevelIncrementScore(),
+                                    acceptorConfig.getGreatDelugeWaterLevelIncrementRatio()));
                 }
                 acceptor.setWaterLevelIncrementScore(
                         configPolicy.getScoreDefinition().parseScore(acceptorConfig.getGreatDelugeWaterLevelIncrementScore()));
             } else if (acceptorConfig.getGreatDelugeWaterLevelIncrementRatio() != null) {
                 if (acceptorConfig.getGreatDelugeWaterLevelIncrementRatio() <= 0.0) {
-                    throw new IllegalArgumentException("The acceptorConfig.getGreatDelugeWaterLevelIncrementRatio() ("
-                            + acceptorConfig.getGreatDelugeWaterLevelIncrementRatio()
-                            + ") must be positive because the water level should increase.");
+                    throw new IllegalArgumentException("""
+                            The acceptorConfig.getGreatDelugeWaterLevelIncrementRatio() (%s) must be positive \
+                            because the water level should increase."""
+                            .formatted(acceptorConfig.getGreatDelugeWaterLevelIncrementRatio()));
                 }
                 acceptor.setWaterLevelIncrementRatio(acceptorConfig.getGreatDelugeWaterLevelIncrementRatio());
             } else {
