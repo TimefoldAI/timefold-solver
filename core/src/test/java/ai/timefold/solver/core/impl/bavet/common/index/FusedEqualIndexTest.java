@@ -127,10 +127,10 @@ class FusedEqualIndexTest {
         var index = new FusedEqualIndex<String, String>(
                 KeyUnpacker.single(), // identity: pure-equal, single-component key
                 false, // hasSuffix
-                RandomAccessLeafIndexer::new,
+                LinkedListLeafIndexer::new,
                 () -> {
                     rightInitCount.incrementAndGet();
-                    return new RandomAccessLeafIndexer<>();
+                    return new LinkedListLeafIndexer<>();
                 });
 
         // right downstream must NOT be allocated on bucket creation
