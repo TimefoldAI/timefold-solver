@@ -23,7 +23,7 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
                 entityToVariableReferenceMap.computeIfAbsent(entity, ignored -> new ArrayList<>())
                         .add(instance);
             } else {
-                for (var groupEntity : instance.variableReferences().get(0).groupEntities()) {
+                for (var groupEntity : instance.variableReferences().getFirst().groupEntities()) {
                     entityToVariableReferenceMap.computeIfAbsent(groupEntity, ignored -> new ArrayList<>())
                             .add(instance);
                 }
