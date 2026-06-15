@@ -17,8 +17,8 @@ import ai.timefold.solver.service.maps.api.model.TimeInterval;
 import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByAvailabilityWithMetadata;
 import ai.timefold.solver.service.maps.service.client.impl.MapServiceOptionsSupplier;
 import ai.timefold.solver.service.maps.service.client.impl.error.MapServiceIllegalArgumentException;
-import ai.timefold.solver.service.maps.service.integration.api.LocationsAndTrafficAwareSolverModel;
 import ai.timefold.solver.service.maps.service.integration.api.LocationsAwareSolverModel;
+import ai.timefold.solver.service.maps.service.integration.api.TimeAwareLocationsSolverModel;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceConverterException;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceWithMetadata;
 
@@ -56,12 +56,12 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
         //   - LocationsAwareSolverModel              -> single matrix, scalar setters. Whether the underlying data is
         //     plain or traffic-aware-at-default-timeframe is decided inside MapServiceClientImpl based on the
         //     use-traffic flag.
-        //   - LocationsAndTrafficAwareSolverModel    -> per-timeframe matrices, array setters. With traffic on, that's
+        //   - TimeAwareLocationsSolverModel          -> per-timeframe matrices, array setters. With traffic on, that's
         //     one matrix per overlapping timeframe; with traffic off, MapServiceClientImpl wraps a single plain matrix
         //     as a one-bucket array (resolver always returns 0).
         // The use-traffic config flag lives in MapServiceClientImpl; the enricher doesn't read it.
-        if (solverModel instanceof LocationsAndTrafficAwareSolverModel<?> trafficAwareSolverModel) {
-            return enrichAvailabilityAware(trafficAwareSolverModel);
+        if (solverModel instanceof TimeAwareLocationsSolverModel<?> timeAwareSolverModel) {
+            return enrichAvailabilityAware(timeAwareSolverModel);
         }
         return enrichSingleMatrix(solverModel);
     }
@@ -89,7 +89,7 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
         return solverModel;
     }
 
-    private LocationsAwareSolverModel<?> enrichAvailabilityAware(LocationsAndTrafficAwareSolverModel<?> solverModel) {
+    private LocationsAwareSolverModel<?> enrichAvailabilityAware(TimeAwareLocationsSolverModel<?> solverModel) {
         List<Location> locations = solverModel.getLocations();
         Map<Location, List<TimeInterval>> availability = solverModel.getLocationsWithTimeAvailability();
 

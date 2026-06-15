@@ -24,8 +24,8 @@ import ai.timefold.solver.service.maps.api.model.travel.TravelTime;
 import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByAvailabilityWithMetadata;
 import ai.timefold.solver.service.maps.service.client.impl.MapServiceOptionsSupplier;
 import ai.timefold.solver.service.maps.service.client.impl.bucketing.StaticDaypartBucketing;
-import ai.timefold.solver.service.maps.service.integration.api.LocationsAndTrafficAwareSolverModel;
 import ai.timefold.solver.service.maps.service.integration.api.LocationsAwareSolverModel;
+import ai.timefold.solver.service.maps.service.integration.api.TimeAwareLocationsSolverModel;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistance;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceWithMetadata;
 
@@ -272,7 +272,7 @@ class TravelTimeMatrixEnricherTrafficTest {
     }
 
     private static final class StubTrafficModel extends StubLocationsModel
-            implements LocationsAndTrafficAwareSolverModel<HardSoftScore> {
+            implements TimeAwareLocationsSolverModel<HardSoftScore> {
 
         private final Map<Location, List<TimeInterval>> availability;
 

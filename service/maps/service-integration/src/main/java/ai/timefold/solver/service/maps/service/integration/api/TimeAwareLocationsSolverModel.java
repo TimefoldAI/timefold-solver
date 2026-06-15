@@ -13,7 +13,7 @@ import ai.timefold.solver.service.maps.api.model.TimeInterval;
  * for each of them, the time intervals during which travel may occur. The enricher uses this map to decide which
  * timeframes (buckets of time) to fetch from the maps service.
  */
-public interface LocationsAndTrafficAwareSolverModel<Score_ extends Score<Score_>>
+public interface TimeAwareLocationsSolverModel<Score_ extends Score<Score_>>
         extends LocationsAwareSolverModel<Score_> {
 
     /**
@@ -27,7 +27,7 @@ public interface LocationsAndTrafficAwareSolverModel<Score_ extends Score<Score_
     Map<Location, List<TimeInterval>> getLocationsWithTimeAvailability();
 
     /**
-     * Location sets are not supported on the traffic-aware path.
+     * Location sets are not supported on the time-aware path.
      */
     @Override
     default Optional<String> getLocationSetName() {
