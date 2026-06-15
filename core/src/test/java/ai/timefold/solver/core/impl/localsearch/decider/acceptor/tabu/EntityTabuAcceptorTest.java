@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
 
@@ -233,6 +234,82 @@ class EntityTabuAcceptorTest {
         stepScope1.setStep(buildMoveScope(stepScope1, -20, e1).getMove());
         acceptor.stepEnded(stepScope1);
         phaseScope.setLastCompletedStepScope(stepScope1);
+
+        acceptor.phaseEnded(phaseScope);
+    }
+
+    @Test
+    void fadingTabuSize() {
+        var acceptor = new EntityTabuAcceptor<>("");
+        acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(2));
+        acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(4));
+
+        var e0 = new TestdataEntity("e0");
+        var e1 = new TestdataEntity("e1");
+
+        var solverScope = new SolverScope<>();
+        solverScope.setInitializedBestScore(SimpleScore.ZERO);
+        solverScope.setWorkingRandom(new TestRandom(new double[0]));
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        acceptor.phaseStarted(phaseScope);
+
+        // Step 0: tabu e1 at stepIndex=0
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        stepScope0.setStep(buildMoveScope(stepScope0, e1).getMove());
+        acceptor.stepEnded(stepScope0);
+        phaseScope.setLastCompletedStepScope(stepScope0);
+
+        // Steps 1-2: hard tabu (tabuStepCount 1,2 ≤ 2) — no random consumed
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, e1))).isFalse();
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope1, e0))).isTrue();
+        stepScope1.setStep(buildMoveScope(stepScope1, e0).getMove());
+        acceptor.stepEnded(stepScope1);
+        phaseScope.setLastCompletedStepScope(stepScope1);
+
+        var stepScope2 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope2, e1))).isFalse();
+        stepScope2.setStep(buildMoveScope(stepScope2, e0).getMove());
+        acceptor.stepEnded(stepScope2);
+        phaseScope.setLastCompletedStepScope(stepScope2);
+
+        // Step 3: fading zone, fadingCount=1, acceptChance=0.4; random=0.5 → rejected
+        solverScope.setWorkingRandom(new TestRandom(0.5));
+        var stepScope3 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope3, e1))).isFalse();
+        stepScope3.setStep(buildMoveScope(stepScope3, e0).getMove());
+        acceptor.stepEnded(stepScope3);
+        phaseScope.setLastCompletedStepScope(stepScope3);
+
+        // Step 4: fadingCount=2, acceptChance=0.6; random=0.5 → accepted
+        solverScope.setWorkingRandom(new TestRandom(0.5));
+        var stepScope4 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope4, e1))).isTrue();
+        stepScope4.setStep(buildMoveScope(stepScope4, e0).getMove());
+        acceptor.stepEnded(stepScope4);
+        phaseScope.setLastCompletedStepScope(stepScope4);
+
+        // Step 5: fadingCount=3, acceptChance=0.8; random=0.1 → accepted
+        solverScope.setWorkingRandom(new TestRandom(0.1));
+        var stepScope5 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope5, e1))).isTrue();
+        stepScope5.setStep(buildMoveScope(stepScope5, e0).getMove());
+        acceptor.stepEnded(stepScope5);
+        phaseScope.setLastCompletedStepScope(stepScope5);
+
+        // Step 6: fadingCount=4, acceptChance=1.0; random not consumed and accepted
+        // adjustTabuList removes e1 (tabuStepCount=6 ≥ totalTabuListSize=6)
+        solverScope.setWorkingRandom(new TestRandom(new double[0]));
+        var stepScope6 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope6, e1))).isTrue();
+        stepScope6.setStep(buildMoveScope(stepScope6, e0).getMove());
+        acceptor.stepEnded(stepScope6);
+        phaseScope.setLastCompletedStepScope(stepScope6);
+
+        // Step 7: e1 expired, no random consumed
+        solverScope.setWorkingRandom(new TestRandom(new double[0]));
+        var stepScope7 = new LocalSearchStepScope<>(phaseScope);
+        assertThat(acceptor.isAccepted(buildMoveScope(stepScope7, e1))).isTrue();
 
         acceptor.phaseEnded(phaseScope);
     }

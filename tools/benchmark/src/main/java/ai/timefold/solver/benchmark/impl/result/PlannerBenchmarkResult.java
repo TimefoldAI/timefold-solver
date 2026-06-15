@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -23,7 +24,7 @@ import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
-import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.util.MathUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +68,7 @@ public class PlannerBenchmarkResult {
     // ************************************************************************
 
     private Integer failureCount = null;
-    private Long averageProblemScale = null;
+    private String averageProblemScale = null;
     private Score averageScore = null;
     private SolverBenchmarkResult favoriteSolverBenchmarkResult = null;
 
@@ -184,7 +185,7 @@ public class PlannerBenchmarkResult {
         return failureCount;
     }
 
-    public Long getAverageProblemScale() {
+    public String getAverageProblemScale() {
         return averageProblemScale;
     }
 
@@ -316,22 +317,24 @@ public class PlannerBenchmarkResult {
 
     private <Score_ extends Score<Score_>> void determineTotalsAndAverages() {
         failureCount = 0;
-        long totalProblemScale = 0L;
-        int problemScaleCount = 0;
-        for (ProblemBenchmarkResult problemBenchmarkResult : unifiedProblemBenchmarkResultList) {
-            Long problemScale = problemBenchmarkResult.getProblemScale();
+        var totalProblemScale = 0L;
+        var problemScaleCount = 0;
+        for (var problemBenchmarkResult : unifiedProblemBenchmarkResultList) {
+            var problemScale = problemBenchmarkResult.getProblemScale();
             if (problemScale != null && problemScale >= 0L) {
                 totalProblemScale += problemScale;
                 problemScaleCount++;
             }
             failureCount += problemBenchmarkResult.getFailureCount();
         }
-        averageProblemScale = problemScaleCount == 0 ? null : totalProblemScale / problemScaleCount;
+        averageProblemScale = problemScaleCount == 0 ? null
+                : MathUtils.approximateProblemScaleAsFormattedString(
+                        (double) totalProblemScale / problemScaleCount / MathUtils.LOG_PRECISION, Locale.getDefault());
         Score_ totalScore = null;
-        int solverBenchmarkCount = 0;
-        boolean firstSolverBenchmarkResult = true;
-        for (SolverBenchmarkResult solverBenchmarkResult : solverBenchmarkResultList) {
-            EnvironmentMode solverEnvironmentMode = solverBenchmarkResult.getEnvironmentMode();
+        var solverBenchmarkCount = 0;
+        var firstSolverBenchmarkResult = true;
+        for (var solverBenchmarkResult : solverBenchmarkResultList) {
+            var solverEnvironmentMode = solverBenchmarkResult.getEnvironmentMode();
             if (firstSolverBenchmarkResult && solverEnvironmentMode != null) {
                 environmentMode = solverEnvironmentMode;
                 firstSolverBenchmarkResult = false;
@@ -339,9 +342,9 @@ public class PlannerBenchmarkResult {
                 environmentMode = null;
             }
 
-            Score_ score = (Score_) solverBenchmarkResult.getAverageScore();
+            var score = (Score_) solverBenchmarkResult.getAverageScore();
             if (score != null) {
-                ScoreDefinition<Score_> scoreDefinition = solverBenchmarkResult.getScoreDefinition();
+                var scoreDefinition = solverBenchmarkResult.getScoreDefinition();
                 if (totalScore != null && !scoreDefinition.isCompatibleArithmeticArgument(totalScore)) {
                     // Mixing different use cases with different score definitions.
                     totalScore = null;

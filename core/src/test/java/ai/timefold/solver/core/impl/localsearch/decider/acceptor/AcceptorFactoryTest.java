@@ -110,4 +110,22 @@ class AcceptorFactoryTest {
         AcceptorFactory<Solution_> badAcceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
         assertThatIllegalStateException().isThrownBy(() -> badAcceptorFactory.buildAcceptor(heuristicConfigPolicy));
     }
+
+    @Test
+    <Solution_> void valueTabuWithoutSizes_throwsException() {
+        var config = new LocalSearchAcceptorConfig()
+                .withAcceptorTypeList(List.of(AcceptorType.VALUE_TABU));
+        var factory = AcceptorFactory.create(config);
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> factory.buildAcceptor(mock(HeuristicConfigPolicy.class)));
+    }
+
+    @Test
+    <Solution_> void moveTabuWithoutSizes_throwsException() {
+        var config = new LocalSearchAcceptorConfig()
+                .withAcceptorTypeList(List.of(AcceptorType.MOVE_TABU));
+        var factory = AcceptorFactory.create(config);
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> factory.buildAcceptor(mock(HeuristicConfigPolicy.class)));
+    }
 }

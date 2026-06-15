@@ -13,10 +13,21 @@ public abstract class AbstractDatasetInstance<Solution_, Tuple_ extends Tuple>
 
     private final AbstractDataset<Solution_> parent;
     protected final int entryStoreIndex;
+    private boolean upstreamCanProduceTuples;
 
     protected AbstractDatasetInstance(AbstractDataset<Solution_> parent, int entryStoreIndex) {
         this.parent = Objects.requireNonNull(parent);
         this.entryStoreIndex = entryStoreIndex;
+    }
+
+    @Override
+    public void afterAllFactsInserted(boolean upstreamCanProduceTuples) {
+        this.upstreamCanProduceTuples = upstreamCanProduceTuples;
+    }
+
+    @Override
+    public boolean isActive() {
+        return upstreamCanProduceTuples;
     }
 
     public AbstractDataset<Solution_> getParent() {

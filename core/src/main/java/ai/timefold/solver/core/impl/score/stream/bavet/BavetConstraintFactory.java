@@ -63,7 +63,7 @@ public final class BavetConstraintFactory<Solution_>
      * If a constraint already exists in this factory, it replaces it with the old copy.
      * {@link BavetAbstractConstraintStream} implement equals/hashcode ignoring child streams.
      * <p>
-     * {@link BavetConstraintSessionFactory#buildSession(Object, ConsistencyTracker, ConstraintMatchPolicy, boolean, Consumer)}
+     * {@link BavetConstraintSessionFactory#buildSession(Object, ConsistencyTracker, ConstraintMatchPolicy, boolean)}
      * needs
      * this to happen
      * for all streams.

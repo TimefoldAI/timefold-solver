@@ -1,5 +1,9 @@
 package ai.timefold.solver.core.impl.util;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+
 /**
  * Includes code taken from Apache's commons-math library, v3.6.1 (Apache 2.0-licensed)
  * These methods are clearly marked in comments, their modifications listed.
@@ -9,6 +13,11 @@ public class MathUtils {
     public static final long LOG_PRECISION = 1_000_000L;
     private static final int FACTORIAL_MAX_N = 20;
     private static final long[] FACTORIAL_CACHE = new long[FACTORIAL_MAX_N - 1]; // 0 and 1 are hard-coded.
+    public static final Locale FORMATTER_LOCALE = Locale.getDefault();
+    private static final DecimalFormat BASIC_FORMATTER = new DecimalFormat("#,###");
+    // Exponent should not use grouping, unlike basic
+    private static final DecimalFormat EXPONENT_FORMATTER = new DecimalFormat("#");
+    private static final DecimalFormat SIGNIFICANT_FIGURE_FORMATTER = new DecimalFormat("0.######");
 
     private MathUtils() {
     }
@@ -346,4 +355,44 @@ public class MathUtils {
         }
     }
 
+    public static String approximateProblemScaleAsFormattedString(double approximateProblemSizeLog, Locale locale) {
+        if (Double.isNaN(approximateProblemSizeLog) || Double.isInfinite(approximateProblemSizeLog)) {
+            return "0";
+        }
+
+        if (approximateProblemSizeLog < 10) { // log_10(10_000_000_000) = 10
+            return "%s".formatted(formatNumber(Math.pow(10d, approximateProblemSizeLog), BASIC_FORMATTER, locale));
+        }
+        // The actual number will often be too large to fit in a double, so cannot use basic
+        // formatting.
+        // Separate the exponent into its integral and fractional parts
+        // Use the integral part as the power of 10, and the fractional part as the significant digits.
+        double exponentPart = Math.floor(approximateProblemSizeLog);
+        double remainderPartAsExponent = approximateProblemSizeLog - exponentPart;
+        double remainderPart = Math.pow(10, remainderPartAsExponent);
+        return "%s × 10^%s".formatted(
+                formatNumber(remainderPart, SIGNIFICANT_FIGURE_FORMATTER, locale),
+                formatNumber(exponentPart, EXPONENT_FORMATTER, locale));
+    }
+
+    /**
+     * In order for tests to work currently regardless of the default system locale,
+     * we need to set the locale to a known value before running the tests.
+     * And because the {@link DecimalFormat} instances are initialized statically for reasons of performance,
+     * we cannot expect them to be in the locale that the test expects them to be in.
+     * This method exists to allow for an override.
+     *
+     * @return the given decimalFormat with the given locale
+     */
+    private static String formatNumber(double number, DecimalFormat decimalFormat, Locale locale) {
+        if (locale.equals(MathUtils.FORMATTER_LOCALE)) {
+            return decimalFormat.format(number);
+        }
+        try { // Slow path for corner cases where input locale doesn't match the default locale.
+            decimalFormat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(locale));
+            return decimalFormat.format(number);
+        } finally {
+            decimalFormat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(MathUtils.FORMATTER_LOCALE));
+        }
+    }
 }

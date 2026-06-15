@@ -25,4 +25,5 @@ public final class PrecomputeUniNode<A> extends AbstractPrecomputeNode<UniTuple<
     protected UniTuple<A> remapTuple(UniTuple<A> tuple) {
         return UniTuple.of(tuple.getA(), outputStoreSize);
     }
+
 }

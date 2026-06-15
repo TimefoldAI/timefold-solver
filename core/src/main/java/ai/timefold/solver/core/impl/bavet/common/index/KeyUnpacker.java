@@ -9,7 +9,15 @@ import java.util.function.Function;
  * 
  * @param <Key_>
  */
-sealed interface KeyUnpacker<Key_> extends Function<Object, Key_>
-        permits CompositeKeyUnpacker, SingleKeyUnpacker {
+@FunctionalInterface
+interface KeyUnpacker<Key_> extends Function<Object, Key_> {
+
+    static <Key_> KeyUnpacker<Key_> single() {
+        return a -> (Key_) a;
+    }
+
+    static <Key_> KeyUnpacker<Key_> composite(int index) {
+        return a -> ((CompositeKey) a).get(index);
+    }
 
 }

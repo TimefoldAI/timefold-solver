@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
+import ai.timefold.solver.core.impl.bavet.AbstractBavetNodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -22,13 +22,14 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * The implementation records the tuples each object affects inside
- * an internal {@link NodeNetwork} and replays them on update.
+ * an internal {@link AbstractBavetNodeNetwork} and replays them on update.
  * Used by {@link AbstractPrecomputeNode} to precompute constraint streams.
  *
  * @param <Tuple_>
  */
 @NullMarked
-public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Propagator {
+public final class RecordAndReplayPropagator<Tuple_ extends Tuple>
+        implements Propagator {
 
     private final Set<Object> retractQueue;
     private final Set<Object> insertQueue;
@@ -41,6 +42,14 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Pr
     private final Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier;
     private final UnaryOperator<Tuple_> internalTupleToOutputTupleMapper;
     private final Map<Object, List<Tuple_>> objectToOutputTuplesMap;
+    /**
+     * Output tuples which depend only on problem facts.
+     * Unlike entity-derived output, these are not stored per-source
+     * (facts never update, so they need no replay),
+     * but they must still be delivered downstream exactly once.
+     * Retained between recalculations so they can be retracted on cache invalidation.
+     */
+    private final List<Tuple_> factOutputTupleList = new ArrayList<>();
     private final Set<Object> alreadyUpdatingSet = Collections.newSetFromMap(new IdentityHashMap<>());
     private final Map<Class<?>, Boolean> objectClassToIsEntitySourceClassMap;
 
@@ -65,6 +74,15 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Pr
     public RecordAndReplayPropagator(Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
             UnaryOperator<Tuple_> internalTupleToOutputTupleMapper, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         this(precomputeBuildHelperSupplier, internalTupleToOutputTupleMapper, nextNodesTupleLifecycle, 1000);
+    }
+
+    public boolean canProduceTuples() {
+        // This is correct, but not optimal.
+        // These conditions guarantee that deactivation will only happen when safe,
+        // but it will not deactivate in all cases;
+        // for that, the activity check would have to happen after all inserts, updates and retracts were propagated once.
+        return !objectToOutputTuplesMap.isEmpty() // Tuples were produced.
+                || !insertQueue.isEmpty(); // Tuples will be produced, unless retract removes them from the insert queue.
     }
 
     public void insert(Object object) {
@@ -100,7 +118,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Pr
         if (!retractQueue.isEmpty() || !insertQueue.isEmpty()) {
             var precomputeBuildHelper = precomputeBuildHelperSupplier.get();
             var internalNodeNetwork = precomputeBuildHelper.getNodeNetwork();
-            var objectClassToRootNodes = new HashMap<Class<?>, List<BavetRootNode<?>>>();
+            var objectClassToRootNodes = new HashMap<Class<?>, List<AbstractRootNode<?>>>();
             var recordingTupleLifecycle = precomputeBuildHelper.getRecordingTupleLifecycle();
 
             invalidateCache();
@@ -146,10 +164,10 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Pr
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static <A> List<BavetRootNode<A>> getRootNodes(Object object, NodeNetwork internalNodeNetwork,
-            Map<Class<?>, List<BavetRootNode<?>>> objectClassToRootNodes) {
+    private static <A> List<AbstractRootNode<A>> getRootNodes(Object object, AbstractBavetNodeNetwork internalNodeNetwork,
+            Map<Class<?>, List<AbstractRootNode<?>>> objectClassToRootNodes) {
         return (List) objectClassToRootNodes.computeIfAbsent(object.getClass(), clazz -> {
-            var out = new ArrayList<BavetRootNode<?>>();
+            var out = new ArrayList<AbstractRootNode<?>>();
             internalNodeNetwork.getRootNodesAcceptingType(object.getClass()).forEach(out::add);
             return out;
         });
@@ -189,13 +207,20 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Pr
     }
 
     private void invalidateCache() {
-        objectToOutputTuplesMap.values().stream().flatMap(List::stream).forEach(this::retractIfPresent);
+        objectToOutputTuplesMap.values()
+                .stream()
+                .flatMap(List::stream)
+                .forEach(this::retractIfPresent);
         objectToOutputTuplesMap.clear();
+        factOutputTupleList.forEach(this::retractIfPresent);
+        factOutputTupleList.clear();
     }
 
-    private void recalculateTuples(NodeNetwork internalNodeNetwork, Map<Class<?>, List<BavetRootNode<?>>> classToRootNodeList,
+    private void recalculateTuples(AbstractBavetNodeNetwork internalNodeNetwork,
+            Map<Class<?>, List<AbstractRootNode<?>>> classToRootNodeList,
             RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle) {
-        var internalTupleToOutputTupleMap = new IdentityHashMap<Tuple_, Tuple_>(seenEntitySet.size());
+        var internalTupleToOutputTupleMap =
+                new IdentityHashMap<Tuple_, Tuple_>(seenEntitySet.size() + seenFactSet.size());
         for (var invalidated : seenEntitySet) {
             var mappedTuples = new ArrayList<Tuple_>();
             try (var unusedActiveRecordingLifecycle = recordingTupleLifecycle.recordInto(
@@ -203,7 +228,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Pr
                 // Do a fake update on the object and settle the network; this will update precisely the
                 // tuples mapped to this node, which will then be recorded
                 classToRootNodeList.get(invalidated.getClass())
-                        .forEach(node -> ((BavetRootNode<Object>) node).update(invalidated));
+                        .forEach(node -> ((AbstractRootNode<Object>) node).update(invalidated));
                 internalNodeNetwork.settle();
             }
             if (mappedTuples.isEmpty()) {
@@ -212,7 +237,28 @@ public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Pr
                 objectToOutputTuplesMap.put(invalidated, mappedTuples);
             }
         }
-        objectToOutputTuplesMap.values().stream().flatMap(List::stream).forEach(this::insertIfAbsent);
+        objectToOutputTuplesMap.values()
+                .stream()
+                .flatMap(List::stream)
+                .forEach(this::insertIfAbsent);
+        // Output tuples derived purely from facts are not re-emitted by any entity update above,
+        // so they would never be delivered.
+        // Facts never update during solving,
+        // so a single recording pass over all facts is enough to capture every fact-dependent output tuple exactly once.
+        // Tuples also derived from an entity were already delivered above;
+        // insertIfAbsent skips them via tuple-state deduplication.
+        if (!seenFactSet.isEmpty()) {
+            try (var unusedActiveRecordingLifecycle =
+                    recordingTupleLifecycle.recordInto(new TupleRecorder<>(factOutputTupleList,
+                            internalTupleToOutputTupleMapper, internalTupleToOutputTupleMap))) {
+                for (var fact : seenFactSet) {
+                    classToRootNodeList.get(fact.getClass())
+                            .forEach(node -> ((AbstractRootNode<Object>) node).update(fact));
+                }
+                internalNodeNetwork.settle();
+            }
+            factOutputTupleList.forEach(this::insertIfAbsent);
+        }
     }
 
 }
