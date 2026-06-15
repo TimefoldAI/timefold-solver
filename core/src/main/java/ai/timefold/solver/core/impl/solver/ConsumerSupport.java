@@ -84,7 +84,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         }
         if (activeConsumption.tryAcquire()) {
             scheduleIntermediateBestSolutionConsumption()
-                    .whenComplete((solution, throwable) -> {
+                    .whenComplete((unused, throwable) -> {
                         activeConsumption.release();
                         tryConsumeWaitingIntermediateBestSolution();
                     });
