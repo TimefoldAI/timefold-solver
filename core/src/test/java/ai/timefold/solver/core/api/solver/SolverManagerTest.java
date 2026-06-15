@@ -1015,8 +1015,8 @@ class SolverManagerTest {
     @Timeout(60)
     void submitMoreProblemsThanCpus_allGetSolved() throws InterruptedException, ExecutionException {
         var parallelSolverCount = 2;
-        // Use twice the amount of problems than available solver threads.
-        var problemCount = parallelSolverCount * 2;
+        // Keep the test invariant: submit more jobs than CPUs.
+        var problemCount = Math.max(parallelSolverCount * 2, Runtime.getRuntime().availableProcessors() + 1);
         try (var solverManager = createSolverManagerTestableByDifferentConsumers(parallelSolverCount)) {
             assertSolveWithoutConsumer(problemCount, solverManager);
             assertSolveWithConsumer(problemCount, solverManager, true);
