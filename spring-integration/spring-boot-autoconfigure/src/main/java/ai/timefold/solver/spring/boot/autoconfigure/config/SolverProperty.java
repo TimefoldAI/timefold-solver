@@ -47,6 +47,8 @@ public enum SolverProperty {
             SolverProperties::setConstraintStreamAutomaticNodeSharing,
             value -> Boolean.valueOf(value.toString())),
     RANDOM_SEED("random-seed", SolverProperties::setRandomSeed, value -> Long.parseLong(value.toString())),
+    REUSE_BEST_SOLUTION("reuse-best-solution", SolverProperties::setReuseBestSolution,
+            value -> Boolean.parseBoolean(value.toString())),
     TERMINATION("termination", SolverProperties::setTermination, value -> {
         if (value instanceof TerminationProperties terminationProperties) {
             return terminationProperties;

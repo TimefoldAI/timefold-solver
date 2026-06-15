@@ -12,6 +12,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -33,6 +34,7 @@ import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.solver.event.LockableSolverEventListener;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
@@ -138,7 +140,7 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
             solver.addPhaseLifecycleListener(new FirstInitializedSolutionPhaseLifecycleListener(currentConsumerSupport));
             // add a phase lifecycle listener once when the solver starts its execution
             solver.addPhaseLifecycleListener(new StartSolverJobPhaseLifecycleListener(currentConsumerSupport));
-            solver.addEventListener(this::onBestSolutionChangedEvent);
+            solver.addEventListener(new BestSolutionChangedEventListener());
             final var finalBestSolution = solver.solve(problem);
             currentConsumerSupport.consumeFinalBestSolution(finalBestSolution);
             return finalBestSolution;
@@ -159,20 +161,6 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
             }
             solvingTerminated();
         }
-    }
-
-    private void onBestSolutionChangedEvent(BestSolutionChangedEvent<Solution_> bestSolutionChangedEvent) {
-        var currentConsumerSupport = consumerSupport.get();
-        if (currentConsumerSupport == null) { // We set this, we should only set it once and before any event is emitted.
-            throw new IllegalStateException(
-                    """
-                            Impossible state: Asked to consume a best solution changed event for problemId (%s), but the consumer is not set.
-                            This means the solver job did not start properly or has already been terminated. This is likely a bug.
-                            Please report this issue to Timefold with details on how to reproduce it."""
-                            .formatted(problemId));
-        }
-        currentConsumerSupport.consumeIntermediateBestSolution(bestSolutionChangedEvent.getNewBestSolution(),
-                bestSolutionChangedEvent.getProducerId(), bestSolutionChangedEvent::isEveryProblemChangeProcessed);
     }
 
     private void solvingTerminated() {
@@ -441,6 +429,25 @@ public final class DefaultSolverJob<Solution_> implements SolverJob<Solution_>, 
         @Override
         public void solvingStarted(SolverScope<Solution_> solverScope) {
             consumerSupport.consumeStartSolverJob(solverScope.getWorkingSolution());
+        }
+    }
+
+    private class BestSolutionChangedEventListener implements LockableSolverEventListener<Solution_> {
+
+        @Override
+        public void bestSolutionChanged(BestSolutionChangedEvent<Solution_> bestSolutionChangedEvent, Lock lock) {
+            var currentConsumerSupport = consumerSupport.get();
+            if (currentConsumerSupport == null) { // We set this, we should only set it once and before any event is emitted.
+                throw new IllegalStateException(
+                        """
+                                Impossible state: Asked to consume a best solution changed event for problemId (%s), but the consumer is not set.
+                                This means the solver job did not start properly or has already been terminated. This is likely a bug.
+                                Please report this issue to Timefold with details on how to reproduce it."""
+                                .formatted(problemId));
+            }
+            currentConsumerSupport.consumeIntermediateBestSolution(bestSolutionChangedEvent.getNewBestSolution(),
+                    bestSolutionChangedEvent.getProducerId(), bestSolutionChangedEvent::isEveryProblemChangeProcessed,
+                    lock);
         }
     }
 }

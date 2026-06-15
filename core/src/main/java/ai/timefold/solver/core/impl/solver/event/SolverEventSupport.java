@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.solver.event;
 
+import java.util.concurrent.locks.Lock;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
@@ -20,7 +22,7 @@ public class SolverEventSupport<Solution_> extends AbstractEventSupport<SolverEv
     }
 
     public void fireBestSolutionChanged(SolverScope<Solution_> solverScope, EventProducerId eventProducerId,
-            Solution_ newBestSolution) {
+            Solution_ newBestSolution, Lock readLock) {
         var it = getEventListeners().iterator();
         var timeMillisSpent = solverScope.getBestSolutionTimeMillisSpent();
         var bestScore = solverScope.getBestScore();
@@ -28,7 +30,12 @@ public class SolverEventSupport<Solution_> extends AbstractEventSupport<SolverEv
             var event =
                     new DefaultBestSolutionChangedEvent<>(solver, eventProducerId, timeMillisSpent, newBestSolution, bestScore);
             do {
-                it.next().bestSolutionChanged(event);
+                var eventListener = it.next();
+                if (eventListener instanceof LockableSolverEventListener<Solution_> lockableSolverEventListener) {
+                    lockableSolverEventListener.bestSolutionChanged(event, readLock);
+                } else {
+                    eventListener.bestSolutionChanged(event);
+                }
             } while (it.hasNext());
         }
     }

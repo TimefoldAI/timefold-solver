@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.solver.Solver;
@@ -139,6 +140,7 @@ class ConsumerSupportTest {
     }
 
     private void consumeIntermediateBestSolution(TestdataSolution bestSolution) {
-        consumerSupport.consumeIntermediateBestSolution(bestSolution, EventProducerId.constructionHeuristic(0), () -> true);
+        consumerSupport.consumeIntermediateBestSolution(bestSolution, EventProducerId.constructionHeuristic(0), () -> true,
+                new ReentrantLock());
     }
 }

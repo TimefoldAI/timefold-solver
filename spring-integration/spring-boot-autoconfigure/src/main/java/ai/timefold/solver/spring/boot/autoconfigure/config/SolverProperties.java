@@ -66,6 +66,8 @@ public class SolverProperties {
      */
     private Long randomSeed;
 
+    private Boolean reuseBestSolution;
+
     @NestedConfigurationProperty
     private TerminationProperties termination;
 
@@ -143,6 +145,14 @@ public class SolverProperties {
 
     public void setRandomSeed(Long randomSeed) {
         this.randomSeed = randomSeed;
+    }
+
+    public Boolean getReuseBestSolution() {
+        return reuseBestSolution;
+    }
+
+    public void setReuseBestSolution(Boolean reuseBestSolution) {
+        this.reuseBestSolution = reuseBestSolution;
     }
 
     public TerminationProperties getTermination() {

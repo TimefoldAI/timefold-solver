@@ -44,6 +44,17 @@
           "old": "field ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_>>.subPillarSequenceComparatorClass",
           "new": "field ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.generic.AbstractPillarMoveSelectorConfig<Config_>>.subPillarSequenceComparatorClass",
           "justification": "Internal protected fields; safe."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "new": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"enablePreviewFeatureSet\", \"environmentMode\", \"daemon\", \"randomSeed\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"phaseConfigList\"}",
+          "newValue": "{\"enablePreviewFeatureSet\", \"environmentMode\", \"daemon\", \"randomSeed\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"phaseConfigList\", \"reuseBestSolution\"}",
+          "justification": "add support for reusing the best solution"
         }
       ]
     }

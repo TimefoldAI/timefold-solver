@@ -121,7 +121,8 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         stepScope.getScoreDirector().executeMove(step);
         predictWorkingStepScore(stepScope, step);
         var solver = stepScope.getPhaseScope().getSolverScope().getSolver();
-        solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope);
+        solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope,
+                stepScope.getPhaseScope().getAcceptedMoveList());
     }
 
     @Override

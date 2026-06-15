@@ -50,6 +50,8 @@
             <xs:element name="partitionedSearch" type="tns:partitionedSearchPhaseConfig"/>
                       
           </xs:choice>
+                    
+          <xs:element minOccurs="0" name="reuseBestSolution" type="xs:boolean"/>
                   
         </xs:sequence>
               

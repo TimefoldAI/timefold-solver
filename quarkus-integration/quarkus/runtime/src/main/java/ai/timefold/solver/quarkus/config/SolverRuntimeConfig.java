@@ -47,4 +47,16 @@ public interface SolverRuntimeConfig {
      * Configuration of the random seed.
      */
     Optional<Long> randomSeed();
+
+    /**
+     * Enable reusing the best solution instance in events, improving performance.
+     * When enabled, the same best solution instance is reused and modified by the
+     * solver whenever the best solution changes. When enabled, ensure the best solution
+     * instance and entities are not saved outside the event handler.
+     * Defaults to "false".
+     * <p>
+     * Note: this setting is only available in Timefold Solver
+     * <a href="https://timefold.ai/docs/timefold-solver/latest/commercial-editions/commercial-editions">Enterprise Edition</a>.
+     */
+    Optional<Boolean> reuseBestSolution();
 }

@@ -30,17 +30,20 @@ public class LocalSearchDecider<Solution_> {
     protected final MoveRepository<Solution_> moveRepository;
     protected final Acceptor<Solution_> acceptor;
     protected final LocalSearchForager<Solution_> forager;
+    protected final boolean reuseBestSolution;
 
     protected boolean assertMoveScoreFromScratch = false;
     protected boolean assertExpectedUndoMoveScore = false;
 
     public LocalSearchDecider(String logIndentation, PhaseTermination<Solution_> termination,
-            MoveRepository<Solution_> moveRepository, Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager) {
+            MoveRepository<Solution_> moveRepository, Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager,
+            boolean reuseBestSolution) {
         this.logIndentation = logIndentation;
         this.termination = termination;
         this.moveRepository = moveRepository;
         this.acceptor = acceptor;
         this.forager = forager;
+        this.reuseBestSolution = reuseBestSolution;
     }
 
     public Termination<Solution_> getTermination() {
@@ -137,6 +140,9 @@ public class LocalSearchDecider<Solution_> {
                 stepScope.setStepString(step.toString());
             }
             stepScope.setScore(pickedMoveScope.getScore());
+            if (reuseBestSolution) {
+                stepScope.getPhaseScope().addAcceptedMove(step);
+            }
         }
     }
 

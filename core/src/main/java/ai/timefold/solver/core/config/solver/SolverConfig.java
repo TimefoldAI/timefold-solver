@@ -73,6 +73,7 @@ import org.jspecify.annotations.Nullable;
         "terminationConfig",
         "nearbyDistanceMeterClass",
         "phaseConfigList",
+        "reuseBestSolution",
 })
 public final class SolverConfig extends AbstractConfig<SolverConfig> {
 
@@ -247,6 +248,8 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
 
     @XmlElement(name = "monitoring")
     private MonitoringConfig monitoringConfig = null;
+
+    private Boolean reuseBestSolution = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -448,6 +451,14 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         this.monitoringConfig = monitoringConfig;
     }
 
+    public @Nullable Boolean getReuseBestSolution() {
+        return reuseBestSolution;
+    }
+
+    public void setReuseBestSolution(@Nullable Boolean reuseBestSolution) {
+        this.reuseBestSolution = reuseBestSolution;
+    }
+
     // ************************************************************************
     // With methods
     // ************************************************************************
@@ -600,6 +611,11 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
+    public @NonNull SolverConfig withReuseBestSolution(@NonNull Boolean reuseBestSolution) {
+        this.reuseBestSolution = reuseBestSolution;
+        return this;
+    }
+
     // ************************************************************************
     // Smart getters
     // ************************************************************************
@@ -677,6 +693,7 @@ public final class SolverConfig extends AbstractConfig<SolverConfig> {
                 inheritedConfig.nearbyDistanceMeterClass);
         phaseConfigList = ConfigUtils.inheritMergeableListConfig(phaseConfigList, inheritedConfig.getPhaseConfigList());
         monitoringConfig = ConfigUtils.inheritConfig(monitoringConfig, inheritedConfig.getMonitoringConfig());
+        reuseBestSolution = ConfigUtils.inheritOverwritableProperty(reuseBestSolution, inheritedConfig.getReuseBestSolution());
         return this;
     }
 

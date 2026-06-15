@@ -8,12 +8,16 @@ public class BestSolutionRecallerFactory {
         return new BestSolutionRecallerFactory();
     }
 
-    public <Solution_> BestSolutionRecaller<Solution_> buildBestSolutionRecaller(EnvironmentMode environmentMode) {
+    public <Solution_> BestSolutionRecaller<Solution_> buildBestSolutionRecaller(EnvironmentMode environmentMode,
+            Boolean reuseBestSolution) {
         BestSolutionRecaller<Solution_> bestSolutionRecaller = new BestSolutionRecaller<>();
         if (environmentMode.isFullyAsserted()) {
             bestSolutionRecaller.setAssertInitialScoreFromScratch(true);
             bestSolutionRecaller.setAssertShadowVariablesAreNotStale(true);
             bestSolutionRecaller.setAssertBestScoreIsUnmodified(true);
+        }
+        if (reuseBestSolution != null && reuseBestSolution) {
+            bestSolutionRecaller.setReuseBestSolution(true);
         }
         return bestSolutionRecaller;
     }
