@@ -68,7 +68,7 @@
     <!-- Keep in sync with the build-parent -->
     <!-- ************************************************************************ -->
     <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
-    <version.io.quarkus>3.36.1</version.io.quarkus>
+    <version.io.quarkus>3.36.2</version.io.quarkus>
     <version.org.assertj>3.27.7</version.org.assertj>
     <version.org.awaitility>4.3.0</version.org.awaitility>
     <version.org.webjars.bootstrap>5.3.8</version.org.webjars.bootstrap>
