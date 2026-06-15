@@ -39,7 +39,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     private static final Object[] EMPTY_ARRAY = new Object[0];
     private static final int REMOVED_POSITION = -1;
 
-    private static final int DEFAULT_CAPACITY = 8;
+    private static final int DEFAULT_CAPACITY = 2;
     private static final int RETAIN_THRESHOLD = DEFAULT_CAPACITY; // Retain backing array when length <= this.
     private Object @Nullable [] entries = EMPTY_ARRAY;
     private int lastElementPosition = -1;
