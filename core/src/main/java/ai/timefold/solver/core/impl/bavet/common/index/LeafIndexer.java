@@ -12,6 +12,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public sealed interface LeafIndexer<T>
         extends Indexer<T>
-        permits RandomAccessLeafIndexer, LinkedListLeafIndexer {
+        permits RandomAccessLeafIndexer {
 
 }
