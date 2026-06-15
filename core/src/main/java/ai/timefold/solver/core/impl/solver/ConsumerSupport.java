@@ -84,10 +84,10 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         }
         if (activeConsumption.tryAcquire()) {
             scheduleIntermediateBestSolutionConsumption()
-                    .whenCompleteAsync((solution, throwable) -> {
+                    .whenComplete((solution, throwable) -> {
                         activeConsumption.release();
                         tryConsumeWaitingIntermediateBestSolution();
-                    }, consumerExecutor);
+                    });
         }
     }
 
@@ -120,7 +120,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         this.firstInitializedSolution.getAndSet(solution); // Reachable more than once; problem change triggers restart.
         scheduleFirstInitializedSolutionConsumption(s -> firstInitializedSolutionConsumer
                 .accept(new FirstInitializedSolutionEventImpl<>(s, producerId, isTerminatedEarly)))
-                .whenCompleteAsync((unused, throwable) -> firstSolutionConsumption.release(), consumerExecutor);
+                .whenComplete((unused, throwable) -> firstSolutionConsumption.release());
     }
 
     private CompletableFuture<Void> scheduleFirstInitializedSolutionConsumption(Consumer<? super Solution_> solutionConsumer) {
@@ -153,8 +153,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
             throw new IllegalStateException("Interrupted when waiting for the start solver job consumption.");
         }
         this.initialSolution.getAndSet(solution); // Reachable more than once; problem change triggers restart.
-        scheduleStartJobConsumption().whenCompleteAsync((unused, throwable) -> startSolverJobConsumption.release(),
-                consumerExecutor);
+        scheduleStartJobConsumption().whenComplete((unused, throwable) -> startSolverJobConsumption.release());
     }
 
     private CompletableFuture<Void> scheduleStartJobConsumption() {
