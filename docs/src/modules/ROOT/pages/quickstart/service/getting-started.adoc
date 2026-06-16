@@ -13,7 +13,7 @@ The service exposes a ready-to-use REST API automatically and supports our recom
 
 NOTE: The service approach is currently only available in Java.
 
-IMPORTANT: The service approach is currently in preview.
+IMPORTANT: This is a preview feature subject to change.
 
 [sectnums!]
 include::../shared/_whatyoubuild.adoc[]

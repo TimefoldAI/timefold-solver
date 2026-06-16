@@ -69,7 +69,7 @@ If your model provides xref:./demo-data.adoc[demo data], the following endpoints
 == Request and response structure
 
 The generated endpoints do not accept/return the pure `ModelInput`/`ModelOutput` objects as JSON.
-Instead, a fixed envelop is used for both the requests and responses of solver actions.
+Instead, a fixed envelope is used for both the requests and responses of solver actions.
 
 === Structured solving request
 
@@ -158,7 +158,7 @@ Additionally, more fields might be added for specific model implementations:
       "warnings": []
     }
   },
-  "modelOutput": <ModelOutput class as JSON>,
+  "modelOutput": "<ModelOutput class as JSON>",
   "inputMetrics": {
     "lessons": 200,
     "timeslots": 50
@@ -202,20 +202,21 @@ To convert between `ModelInput` / `ModelOutput` and the `SolverModel`, a `ModelC
 [source,java,options="nowrap"]
 ----
 @ApplicationScoped
-public class TimetableConvertor implements ModelConvertor<HardSoftLongScore, TimetableDto, Timetable, EmptyModelConfigOverrides, EmptyModelInputMetrics, EmptyModelOutputMetrics, Timetable> {
+public class TimetableConvertor implements ModelConvertor<HardSoftLongScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     @Override
-    public Timetable toSolverModel(TimetableDto modelInput, TimetableDto previousModelOutput, ModelConfig<EmptyModelConfigOverrides> modelConfig) {
-        return // Mapping logic
-    }
-
-    @Override
-    public Timetable toSolverModel(TimetableDto modelInput, ModelConfig<EmptyModelConfigOverrides> modelConfig) {
+    public Timetable toSolverModel(TimetableDto modelInput, ModelConfig<EmptyModelConfigOverrides> modelConfig,
+            Optional<TimetableDto> lastModelOutput) {
         return // Mapping logic
     }
 
     @Override
     public TimetableDto toModelOutput(Timetable solverModel) {
+        return // Mapping logic
+    }
+
+    @Override
+    public TimetableDto applyOutputToInput(TimetableDto modelInput, TimetableDto modelOutput) {
         return // Mapping logic
     }
 }
@@ -309,11 +310,11 @@ The `metadata` object is a part of the model response json and contains the vali
 
 Additionally, a richer validation result can be obtained by a dedicated REST endpoint:
 
-`GET /v1/timetables/+{id}+/validation-result`
+`GET /v1/timetables/\{id\}/validation-result`
 
 Assuming the xref:timetableValidatorExample[example TimetableValidator], the endpoint provides the following response:
 
-.Validation result available via `GET /v1/timetables/+{id}+/validation-result`.
+.Validation result available via `GET /v1/timetables/\{id\}/validation-result`.
 [source,json, highlight=13..17]
 ----
 {

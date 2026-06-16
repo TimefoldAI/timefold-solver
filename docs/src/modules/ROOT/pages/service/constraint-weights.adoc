@@ -97,14 +97,14 @@ Next, in the xref:./rest-api.adoc#modelConverter[model converter], make sure to 
 ----
 TimetableConfigOverrides modelConfigOverrides = modelConfig.overrides();
 
-ConstraintWeightOverrides<HardMediumSoftLongScore> constraintWeightOverrides = ConstraintWeightOverrides.none();
-constraintWeightOverrides = ConstraintWeightOverrides.of(
-                    Map.ofEntries(
-                        Map.entry(TEACHER_CONFLICT,
-                                HardMediumSoftLongScore.ofHard(modelConfigOverrides.getTeacherConflictWeight())),
-                        Map.entry(ROOM_COMFLICT,
-                                HardMediumSoftLongScore
-                                        .ofSoft(modelConfigOverrides.getRoomConflictWeight()));
+ConstraintWeightOverrides<HardMediumSoftLongScore> constraintWeightOverrides = ConstraintWeightOverrides.of(
+        Map.ofEntries(
+                Map.entry(TimetableConstraintProvider.TEACHER_CONFLICT,
+                        HardMediumSoftLongScore.ofHard(modelConfigOverrides.getTeacherConflictWeight())),
+                Map.entry(TimetableConstraintProvider.ROOM_CONFLICT,
+                        HardMediumSoftLongScore.ofSoft(modelConfigOverrides.getRoomConflictWeight()))
+        )
+);
 
 solverModel.setConstraintWeightOverrides(constraintWeightOverrides);
 ----

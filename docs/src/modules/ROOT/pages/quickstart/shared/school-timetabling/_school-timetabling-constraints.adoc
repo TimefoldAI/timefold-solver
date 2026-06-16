@@ -19,7 +19,7 @@ Soft constraints are weighted too, against other soft constraints.
 *Hard constraints always outweigh soft constraints*, regardless of their respective weights.
 
 To calculate the score, implement a `TimetableConstraintProvider` class.
-It uses Timefold Solver's xref:https://docs.timefold.ai/timefold-solver/latest/constraints-and-score/score-calculation[Constraint Streams API]
+It uses Timefold Solver's xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]
 which is inspired by Java Streams and SQL:
 
 [tabs]
