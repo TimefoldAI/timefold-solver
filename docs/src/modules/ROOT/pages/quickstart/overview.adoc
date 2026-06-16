@@ -47,7 +47,7 @@ Deploy a fully isolated optimization service. This opinionated approach reduces 
 
 | *Best for*
 | Embedding the solver into an existing application
-| Running optimization as a standalone, isolated service
+| Running optimization as a standalone, isolated service that is easier to integrate, orchestrate & scale
 
 | *Ease of use*
 | Requires manual wiring: you manage configuration, lifecycle, and integration
@@ -75,7 +75,7 @@ You integrate it into your application however you see fit. There are no constra
 The following getting started guides demonstrate the library approach:
 
 * xref:quickstart/hello-world/hello-world-quickstart.adoc#helloWorldQuickStart[*Hello World*]
-** The simplest starting point. Build a plain Java or Kotlin application with no additional framework.
+** The minimal starting point. Build a plain Java or Kotlin application with no additional framework.
 * xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusQuickStart[*Quarkus*]
 ** Build a REST application with Java or Kotlin on top of https://quarkus.io[Quarkus], a popular Java platform that supports native compilation.
 * xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQuickStart[*Spring Boot*]

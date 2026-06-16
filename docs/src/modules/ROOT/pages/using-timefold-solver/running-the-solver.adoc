@@ -5,7 +5,7 @@
 :sectnums:
 :icons: font
 :relevance: core-only
-:notes: Too much things service module does automatically or with 1 single configuration.
+:notes: Too many things the service module does automatically, or with a single configuration.
 
 [#theSolverInterface]
 == The `Solver` interface
