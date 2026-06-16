@@ -3,6 +3,7 @@ package ai.timefold.solver.service.maps.service.client.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
@@ -65,7 +66,8 @@ class TravelTimeMatrixEnricherTrafficTest {
 
         StubMapService stub = new StubMapService(new TravelTimesByAvailabilityWithMetadata(
                 travelTimesByTimeframe, distancesByTimeframe, List.of(), resolver), null);
-        TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(stub, optionsSupplier, new MapEnrichmentContext());
+        TravelTimeMatrixEnricher enricher =
+                new TravelTimeMatrixEnricher(stub, optionsSupplier, new MapEnrichmentContext(), Optional.empty());
 
         Map<Location, List<TimeInterval>> availability = new LinkedHashMap<>();
         // Single interval spanning morning and afternoon covers both timeframes
@@ -97,7 +99,8 @@ class TravelTimeMatrixEnricherTrafficTest {
         DistanceMatrix distance = matrixOf(l1, l2, 750L);
         StubMapService stub = new StubMapService(null,
                 new TravelTimeAndDistanceWithMetadata(new TravelTimeAndDistance(travel, distance), List.of()));
-        TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(stub, optionsSupplier, new MapEnrichmentContext());
+        TravelTimeMatrixEnricher enricher =
+                new TravelTimeMatrixEnricher(stub, optionsSupplier, new MapEnrichmentContext(), Optional.empty());
 
         enricher.enrich(new StubLocationsModel(List.of(l1, l2)));
 
@@ -120,7 +123,8 @@ class TravelTimeMatrixEnricherTrafficTest {
 
         StubMapService stub = new StubMapService(new TravelTimesByAvailabilityWithMetadata(
                 travelTimesByTimeframe, distancesByTimeframe, List.of(), bucketing::indexOf), null);
-        TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(stub, optionsSupplier, new MapEnrichmentContext());
+        TravelTimeMatrixEnricher enricher =
+                new TravelTimeMatrixEnricher(stub, optionsSupplier, new MapEnrichmentContext(), Optional.empty());
 
         Map<Location, List<TimeInterval>> availability =
                 Map.of(l1, List.of(new TimeInterval(MORNING_AT, MORNING_AT)),
@@ -133,9 +137,84 @@ class TravelTimeMatrixEnricherTrafficTest {
     }
 
     @Test
+    void regularModelWithTrafficEnabledFetchesAllTimeframes() {
+        Location l1 = new Location(0, 0);
+        Location l2 = new Location(1, 1);
+
+        DistanceMatrix morningTravel = matrixOf(l1, l2, 100L);
+        DistanceMatrix morningDistance = matrixOf(l1, l2, 1_000L);
+        DistanceMatrix afternoonTravel = matrixOf(l1, l2, 500L);
+        DistanceMatrix afternoonDistance = matrixOf(l1, l2, 1_200L);
+
+        StaticDaypartBucketing bucketing = new StaticDaypartBucketing();
+        int n = bucketing.allTimeframes().size();
+        DistanceMatrix[] travelTimesByTimeframe = new DistanceMatrix[n];
+        DistanceMatrix[] distancesByTimeframe = new DistanceMatrix[n];
+        int morningIdx = bucketing.indexOf(MORNING_AT);
+        int afternoonIdx = bucketing.indexOf(AFTERNOON_AT);
+        travelTimesByTimeframe[morningIdx] = morningTravel;
+        distancesByTimeframe[morningIdx] = morningDistance;
+        travelTimesByTimeframe[afternoonIdx] = afternoonTravel;
+        distancesByTimeframe[afternoonIdx] = afternoonDistance;
+
+        // Traffic on + plain model: the enricher fetches per-timeframe matrices by passing the map service an
+        // availability map covering every location across all timeframes, via the regular 3-arg method.
+        StubMapService stub = new StubMapService(new TravelTimesByAvailabilityWithMetadata(
+                travelTimesByTimeframe, distancesByTimeframe, List.of(), bucketing::indexOf), null);
+        TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(stub, optionsSupplier, new MapEnrichmentContext(),
+                Optional.of(true));
+
+        enricher.enrich(new StubLocationsModel(List.of(l1, l2)));
+
+        assertThat(stub.trafficInvocationCount.get()).isEqualTo(1);
+        assertThat(stub.singleInvocationCount.get()).isZero();
+        // Every location was made available across a full 24h window (a single interval that overlaps every timeframe).
+        assertThat(stub.lastAvailability)
+                .containsOnlyKeys(l1, l2)
+                .allSatisfy((location, intervals) -> {
+                    assertThat(intervals).hasSize(1);
+                    assertThat(Duration.between(intervals.get(0).from(), intervals.get(0).to())).isEqualTo(Duration.ofDays(1));
+                });
+
+        // Time-aware lookups resolve the per-timeframe matrices.
+        assertThat(l1.getTravelTimeTo(l2, MORNING_AT)).isEqualTo(TravelTime.of(100L));
+        assertThat(l1.getTravelTimeTo(l2, AFTERNOON_AT)).isEqualTo(TravelTime.of(500L));
+        assertThat(l1.getDistanceTo(l2, AFTERNOON_AT)).isEqualTo(TravelDistance.of(1_200L));
+
+        // Timestamp-less lookups fall back to the first available (morning) timeframe matrix.
+        assertThat(l1.getTravelTimeTo(l2)).isEqualTo(TravelTime.of(100L));
+        assertThat(l1.getDistanceTo(l2)).isEqualTo(TravelDistance.of(1_000L));
+    }
+
+    @Test
+    void singleBucketAvailabilityResultUsesScalarMatrices() {
+        Location l1 = new Location(0, 0);
+        Location l2 = new Location(1, 1);
+        // Traffic disabled: the map service wraps a single plain matrix as a one-bucket array (resolver always 0).
+        DistanceMatrix travel = matrixOf(l1, l2, 75L);
+        DistanceMatrix distance = matrixOf(l1, l2, 750L);
+        StubMapService stub = new StubMapService(new TravelTimesByAvailabilityWithMetadata(
+                new DistanceMatrix[] { travel }, new DistanceMatrix[] { distance }, List.of(), t -> 0), null);
+        TravelTimeMatrixEnricher enricher =
+                new TravelTimeMatrixEnricher(stub, optionsSupplier, new MapEnrichmentContext(), Optional.empty());
+
+        Map<Location, List<TimeInterval>> availability =
+                Map.of(l1, List.of(new TimeInterval(MORNING_AT, AFTERNOON_AT)),
+                        l2, List.of(new TimeInterval(MORNING_AT, AFTERNOON_AT)));
+        enricher.enrich(new StubTrafficModel(availability));
+
+        // Both the timestamp-less and the time-aware overloads resolve to the single matrix.
+        assertThat(l1.getTravelTimeTo(l2)).isEqualTo(TravelTime.of(75L));
+        assertThat(l1.getDistanceTo(l2)).isEqualTo(TravelDistance.of(750L));
+        assertThat(l1.getTravelTimeTo(l2, MORNING_AT)).isEqualTo(TravelTime.of(75L));
+        assertThat(l1.getDistanceTo(l2, AFTERNOON_AT)).isEqualTo(TravelDistance.of(750L));
+    }
+
+    @Test
     void acceptsLocationsAwareSolverModel() {
         TravelTimeMatrixEnricher enricher =
-                new TravelTimeMatrixEnricher(new StubMapService(null, null), optionsSupplier, new MapEnrichmentContext());
+                new TravelTimeMatrixEnricher(new StubMapService(null, null), optionsSupplier, new MapEnrichmentContext(),
+                        Optional.empty());
 
         assertThat(enricher.accept(new StubLocationsModel(List.of()))).isTrue();
         assertThat(enricher.accept(new Object())).isFalse();
@@ -144,7 +223,8 @@ class TravelTimeMatrixEnricherTrafficTest {
     @Test
     void wrapsNonTimefoldExceptionFromMapService() {
         MapService failing = new FailingMapService();
-        TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(failing, optionsSupplier, new MapEnrichmentContext());
+        TravelTimeMatrixEnricher enricher =
+                new TravelTimeMatrixEnricher(failing, optionsSupplier, new MapEnrichmentContext(), Optional.empty());
 
         Location l1 = new Location(0, 0);
         Map<Location, List<TimeInterval>> availability = new LinkedHashMap<>();
@@ -168,7 +248,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         private final TravelTimeAndDistanceWithMetadata singleResult;
         private final AtomicInteger trafficInvocationCount = new AtomicInteger(0);
         private final AtomicInteger singleInvocationCount = new AtomicInteger(0);
-        private Map<? extends Location, List<TimeInterval>> lastAvailability;
+        private Map<Location, List<TimeInterval>> lastAvailability;
 
         StubMapService(TravelTimesByAvailabilityWithMetadata trafficResult,
                 TravelTimeAndDistanceWithMetadata singleResult) {

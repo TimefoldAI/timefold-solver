@@ -110,19 +110,26 @@ public class Location {
 
     /**
      * Returns the travel time for a route between this location and the given location.
+     * <p>
+     * Works whether the location was enriched with a single matrix ({@link #setTravelTimeMatrix(DistanceMatrix)}) or with
+     * per-timeframe matrices ({@link #setTravelTimeMatrices(DistanceMatrix[], ToIntFunction)}): the single matrix is used
+     * when present, otherwise the first available timeframe matrix is used as a representative, timestamp-independent
+     * matrix.
      *
      * @param location the location representing the route destination
      * @return {@link TravelTime} instance representing the travel time in seconds and indicating if the destination is
      *         unreachable from this location.
      * @throws IllegalArgumentException When both locations are not included in the travel time matrix (either missing from the
      *         map or from the pre-configured location set).
-     * @throws IllegalStateException When there is no travel time matrix configured for this location.
+     * @throws IllegalStateException When there is neither a single nor a per-timeframe travel time matrix configured for
+     *         this location.
      */
     public TravelTime getTravelTimeTo(Location location) {
-        if (travelTimeMatrix == null) {
+        DistanceMatrix matrix = travelTimeMatrix != null ? travelTimeMatrix : firstAvailableMatrix(travelTimesByTimeframe);
+        if (matrix == null) {
             throw new IllegalStateException("No travel time matrix configured for a location (%s).".formatted(this));
         }
-        long travelTimeFromMatrix = travelTimeMatrix.get(this, location);
+        long travelTimeFromMatrix = matrix.get(this, location);
         if (travelTimeFromMatrix == -1) {
             throw new IllegalArgumentException(("No travel time information found for a route from (%s) to (%s). " +
                     "Are both locations in the configured map and in the location set (if used)?").formatted(this, location));
@@ -132,6 +139,11 @@ public class Location {
 
     /**
      * Returns the travel time for a route between this location and the given location at the given departure time.
+     * <p>
+     * Works whether the location was enriched with per-timeframe matrices
+     * ({@link #setTravelTimeMatrices(DistanceMatrix[], ToIntFunction)}) or with a single matrix
+     * ({@link #setTravelTimeMatrix(DistanceMatrix)}): the per-timeframe matrix for {@code departureTime} is used when
+     * timeframe matrices are configured, otherwise the single matrix is used and {@code departureTime} is ignored.
      *
      * @param location the location representing the route destination
      * @param departureTime the instant used to select the traffic timeframe matrix
@@ -139,10 +151,16 @@ public class Location {
      *         unreachable from this location.
      * @throws IllegalArgumentException When the resolved matrix does not include both locations, or the resolver returns
      *         an out-of-bounds index.
-     * @throws IllegalStateException When there is no timeframe travel time matrix configured for this location.
+     * @throws IllegalStateException When there is neither a per-timeframe nor a single travel time matrix configured for
+     *         this location.
      */
     public TravelTime getTravelTimeTo(Location location, OffsetDateTime departureTime) {
-        DistanceMatrix matrix = resolveTimeframeMatrix(travelTimesByTimeframe, departureTime, "travel time");
+        DistanceMatrix matrix = hasTimeframeMatrices(travelTimesByTimeframe)
+                ? resolveTimeframeMatrix(travelTimesByTimeframe, departureTime, "travel time")
+                : travelTimeMatrix;
+        if (matrix == null) {
+            throw new IllegalStateException("No travel time matrix configured for a location (%s).".formatted(this));
+        }
         long travelTime = matrix.get(this, location);
         if (travelTime == -1) {
             throw new IllegalArgumentException(
@@ -159,19 +177,26 @@ public class Location {
 
     /**
      * Returns the travel distance for a route between this location and the given location.
+     * <p>
+     * Works whether the location was enriched with a single matrix ({@link #setDistanceMatrix(DistanceMatrix)}) or with
+     * per-timeframe matrices ({@link #setDistanceMatrices(DistanceMatrix[], ToIntFunction)}): the single matrix is used
+     * when present, otherwise the first available timeframe matrix is used as a representative, timestamp-independent
+     * matrix.
      *
      * @param location the location representing the route destination
      * @return {@link TravelDistance} instance representing the travel distance in meters and indicating if the destination is
      *         unreachable from this location.
      * @throws IllegalArgumentException When both locations are not included in the travel distance matrix (either missing from
      *         the map or from the pre-configured location set).
-     * @throws IllegalStateException When there is no travel distance matrix configured for this location.
+     * @throws IllegalStateException When there is neither a single nor a per-timeframe distance matrix configured for this
+     *         location.
      */
     public TravelDistance getDistanceTo(Location location) {
-        if (distanceMatrix == null) {
+        DistanceMatrix matrix = distanceMatrix != null ? distanceMatrix : firstAvailableMatrix(distancesByTimeframe);
+        if (matrix == null) {
             throw new IllegalStateException("No distance matrix configured for a location (%s).".formatted(this));
         }
-        long travelDistanceFromMatrix = distanceMatrix.get(this, location);
+        long travelDistanceFromMatrix = matrix.get(this, location);
         if (travelDistanceFromMatrix == -1) {
             throw new IllegalArgumentException(("No travel distance information found for a route from (%s) to (%s). " +
                     "Are both locations in the configured map and in the location set (if used)?").formatted(this, location));
@@ -181,6 +206,11 @@ public class Location {
 
     /**
      * Returns the travel distance for a route between this location and the given location at the given departure time.
+     * <p>
+     * Works whether the location was enriched with per-timeframe matrices
+     * ({@link #setDistanceMatrices(DistanceMatrix[], ToIntFunction)}) or with a single matrix
+     * ({@link #setDistanceMatrix(DistanceMatrix)}): the per-timeframe matrix for {@code departureTime} is used when
+     * timeframe matrices are configured, otherwise the single matrix is used and {@code departureTime} is ignored.
      *
      * @param location the location representing the route destination
      * @param departureTime the instant used to select the traffic timeframe matrix
@@ -188,10 +218,16 @@ public class Location {
      *         unreachable from this location.
      * @throws IllegalArgumentException When the resolved matrix does not include both locations, or the resolver returns
      *         an out-of-bounds index.
-     * @throws IllegalStateException When there is no timeframe distance matrix configured for this location.
+     * @throws IllegalStateException When there is neither a per-timeframe nor a single distance matrix configured for this
+     *         location.
      */
     public TravelDistance getDistanceTo(Location location, OffsetDateTime departureTime) {
-        DistanceMatrix matrix = resolveTimeframeMatrix(distancesByTimeframe, departureTime, "distance");
+        DistanceMatrix matrix = hasTimeframeMatrices(distancesByTimeframe)
+                ? resolveTimeframeMatrix(distancesByTimeframe, departureTime, "distance")
+                : distanceMatrix;
+        if (matrix == null) {
+            throw new IllegalStateException("No distance matrix configured for a location (%s).".formatted(this));
+        }
         long distance = matrix.get(this, location);
         if (distance == -1) {
             throw new IllegalArgumentException(("No distance information found for a route from (%s) to (%s) at (%s).")
@@ -216,6 +252,22 @@ public class Location {
         } else if (matrix == distanceMatrix) {
             distanceMatrixIndex = index;
         }
+    }
+
+    private boolean hasTimeframeMatrices(DistanceMatrix[] matrices) {
+        return matrices != null && timeframeIndexResolver != null;
+    }
+
+    private static DistanceMatrix firstAvailableMatrix(DistanceMatrix[] matrices) {
+        if (matrices == null) {
+            return null;
+        }
+        for (DistanceMatrix matrix : matrices) {
+            if (matrix != null) {
+                return matrix;
+            }
+        }
+        return null;
     }
 
     private DistanceMatrix resolveTimeframeMatrix(DistanceMatrix[] matrices, OffsetDateTime departureTime, String what) {

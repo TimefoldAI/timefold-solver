@@ -1,9 +1,15 @@
 package ai.timefold.solver.service.maps.service.client.api;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -12,6 +18,7 @@ import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnricher;
 import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
+import ai.timefold.solver.service.maps.api.DistanceMatrix;
 import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.api.model.TimeInterval;
 import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByAvailabilityWithMetadata;
@@ -22,6 +29,7 @@ import ai.timefold.solver.service.maps.service.integration.api.TimeAwareLocation
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceConverterException;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceWithMetadata;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,18 +39,26 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TravelTimeMatrixEnricher.class);
 
+    private static final TimeInterval FULL_DAY = new TimeInterval(
+            OffsetDateTime.of(LocalDate.EPOCH, LocalTime.MIDNIGHT, ZoneOffset.UTC),
+            OffsetDateTime.of(LocalDate.EPOCH.plusDays(1), LocalTime.MIDNIGHT, ZoneOffset.UTC));
+
     private final MapService mapService;
 
     private final MapServiceOptionsSupplier optionsSupplier;
 
     private final MapEnrichmentContext mapEnrichmentContext;
 
+    private final boolean useTraffic;
+
     @Inject
     public TravelTimeMatrixEnricher(MapService mapService, MapServiceOptionsSupplier optionsSupplier,
-            MapEnrichmentContext mapEnrichmentContext) {
+            MapEnrichmentContext mapEnrichmentContext,
+            @ConfigProperty(name = "ai.timefold.platform.map-service.use-traffic") Optional<Boolean> useTraffic) {
         this.mapService = mapService;
         this.optionsSupplier = optionsSupplier;
         this.mapEnrichmentContext = mapEnrichmentContext;
+        this.useTraffic = useTraffic.orElse(false);
     }
 
     @Retry(maxRetries = 5, delay = 1, delayUnit = ChronoUnit.SECONDS, abortOn = {
@@ -52,16 +68,19 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
     })
     @Override
     public LocationsAwareSolverModel<?> enrich(LocationsAwareSolverModel<?> solverModel) {
-        // Two enricher paths driven by the model interface:
-        //   - LocationsAwareSolverModel              -> single matrix, scalar setters. Whether the underlying data is
-        //     plain or traffic-aware-at-default-timeframe is decided inside MapServiceClientImpl based on the
-        //     use-traffic flag.
-        //   - TimeAwareLocationsSolverModel          -> per-timeframe matrices, array setters. With traffic on, that's
-        //     one matrix per overlapping timeframe; with traffic off, MapServiceClientImpl wraps a single plain matrix
-        //     as a one-bucket array (resolver always returns 0).
-        // The use-traffic config flag lives in MapServiceClientImpl; the enricher doesn't read it.
+        // Three enricher paths:
+        //   - TimeAwareLocationsSolverModel          -> per-timeframe matrices from the model's own availability.
+        //   - LocationsAwareSolverModel + traffic on -> per-timeframe matrices, fetched by handing the map service a
+        //     synthesized availability map that makes every location available across every timeframe.
+        //   - LocationsAwareSolverModel + traffic off -> single matrix, scalar setters (keeps the
+        //     IndexableDistanceMatrix index-cache optimization and location-set caching).
+        // Timestamp-less lookups (getTravelTimeTo(other)) keep working on the traffic-on path because Location falls
+        // back to a per-timeframe matrix when no single matrix is set.
         if (solverModel instanceof TimeAwareLocationsSolverModel<?> timeAwareSolverModel) {
-            return enrichAvailabilityAware(timeAwareSolverModel);
+            return enrichFromAvailability(timeAwareSolverModel, timeAwareSolverModel.getLocationsWithTimeAvailability());
+        }
+        if (useTraffic) {
+            return enrichAllTimeframes(solverModel);
         }
         return enrichSingleMatrix(solverModel);
     }
@@ -89,10 +108,20 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
         return solverModel;
     }
 
-    private LocationsAwareSolverModel<?> enrichAvailabilityAware(TimeAwareLocationsSolverModel<?> solverModel) {
-        List<Location> locations = solverModel.getLocations();
-        Map<Location, List<TimeInterval>> availability = solverModel.getLocationsWithTimeAvailability();
+    private LocationsAwareSolverModel<?> enrichAllTimeframes(LocationsAwareSolverModel<?> solverModel) {
+        // No per-location availability on the plain path: make every location available across every timeframe by
+        // mapping each to a full-day interval that overlaps all of them, then reuse the availability-based fetch.
+        List<TimeInterval> fullCoverage = List.of(FULL_DAY);
+        Map<Location, List<TimeInterval>> availability = new LinkedHashMap<>();
+        for (Location location : solverModel.getLocations()) {
+            availability.put(location, fullCoverage);
+        }
+        return enrichFromAvailability(solverModel, availability);
+    }
 
+    private LocationsAwareSolverModel<?> enrichFromAvailability(LocationsAwareSolverModel<?> solverModel,
+            Map<Location, List<TimeInterval>> availability) {
+        List<Location> locations = solverModel.getLocations();
         TravelTimesByAvailabilityWithMetadata result;
         try {
             result = mapService.getTravelTimeAndDistance(locations, optionsSupplier.getOptions(), availability);
@@ -103,9 +132,22 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
                     "Error getting travel time and distances from map service", e, false);
         }
 
-        for (Location location : locations) {
-            location.setTravelTimeMatrices(result.travelTimesByTimeframe(), result.timeframeIndexResolver());
-            location.setDistanceMatrices(result.distancesByTimeframe(), result.timeframeIndexResolver());
+        DistanceMatrix[] travelTimes = result.travelTimesByTimeframe();
+        DistanceMatrix[] distances = result.distancesByTimeframe();
+        if (travelTimes.length == 1) {
+            // Single timeframe (e.g. traffic disabled, where the map service wraps one plain matrix as a one-bucket
+            // array): stamp the scalar matrices so lookups use the IndexableDistanceMatrix index-cache fast path. The
+            // time-aware overloads keep working because Location falls back to the single matrix when no per-timeframe
+            // matrices are set.
+            for (Location location : locations) {
+                location.setTravelTimeMatrix(travelTimes[0]);
+                location.setDistanceMatrix(distances[0]);
+            }
+        } else {
+            for (Location location : locations) {
+                location.setTravelTimeMatrices(travelTimes, result.timeframeIndexResolver());
+                location.setDistanceMatrices(distances, result.timeframeIndexResolver());
+            }
         }
         solverModel.setLocationsNotInMap(result.locationsNotInMap());
         return solverModel;

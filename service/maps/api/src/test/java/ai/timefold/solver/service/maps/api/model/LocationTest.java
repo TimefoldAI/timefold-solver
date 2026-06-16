@@ -105,6 +105,50 @@ class LocationTest {
     }
 
     @Test
+    void timeframelessLookupFallsBackToFirstTimeframeMatrix() {
+        Location from = new Location(0, 0);
+        Location to = new Location(1, 1);
+
+        // Only per-timeframe matrices configured, no single matrix. The timestamp-less overloads must still work,
+        // falling back to the first available timeframe matrix.
+        DistanceMatrix afternoonTravel = DistanceMatrix.getInstance(2);
+        afternoonTravel.put(from, to, 500L);
+        DistanceMatrix afternoonDistance = DistanceMatrix.getInstance(2);
+        afternoonDistance.put(from, to, 1_200L);
+
+        DistanceMatrix[] travelByTimeframe = new DistanceMatrix[3];
+        travelByTimeframe[AFTERNOON] = afternoonTravel;
+        DistanceMatrix[] distanceByTimeframe = new DistanceMatrix[3];
+        distanceByTimeframe[AFTERNOON] = afternoonDistance;
+
+        from.setTravelTimeMatrices(travelByTimeframe, INDEX_RESOLVER);
+        from.setDistanceMatrices(distanceByTimeframe, INDEX_RESOLVER);
+
+        assertThat(from.getTravelTimeTo(to)).isEqualTo(TravelTime.of(500L));
+        assertThat(from.getDistanceTo(to)).isEqualTo(TravelDistance.of(1_200L));
+    }
+
+    @Test
+    void timeframeLookupFallsBackToSingleMatrix() {
+        Location from = new Location(0, 0);
+        Location to = new Location(1, 1);
+
+        // Only a single matrix configured, no per-timeframe matrices. The timeframe overloads must still work,
+        // falling back to the single matrix and ignoring the departure time.
+        DistanceMatrix singleTravel = DistanceMatrix.getInstance(2);
+        singleTravel.put(from, to, 10L);
+        DistanceMatrix singleDistance = DistanceMatrix.getInstance(2);
+        singleDistance.put(from, to, 20L);
+
+        from.setTravelTimeMatrix(singleTravel);
+        from.setDistanceMatrix(singleDistance);
+
+        assertThat(from.getTravelTimeTo(to, MORNING_AT)).isEqualTo(TravelTime.of(10L));
+        assertThat(from.getTravelTimeTo(to, NIGHT_AT)).isEqualTo(TravelTime.of(10L));
+        assertThat(from.getDistanceTo(to, AFTERNOON_AT)).isEqualTo(TravelDistance.of(20L));
+    }
+
+    @Test
     void missingTimeframeCellThrows() {
         Location from = new Location(0, 0);
         Location to = new Location(1, 1);
