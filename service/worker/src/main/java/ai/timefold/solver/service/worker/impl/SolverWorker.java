@@ -49,7 +49,6 @@ import ai.timefold.solver.service.definition.api.validation.LegacyValidationResu
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
 import ai.timefold.solver.service.definition.api.validation.dto.ValidationResult;
-import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
@@ -118,8 +117,6 @@ public class SolverWorker {
 
     private final SolverModelEnrichmentDirectorService enrichmentDirectorService;
 
-    private final MapEnrichmentContext mapEnrichmentContext;
-
     private final TerminationService terminationService;
 
     private final Emitter<DatasetValidatedEvent> datasetValidatedEventEmitter;
@@ -174,7 +171,6 @@ public class SolverWorker {
             ModelConvertorBase modelConvertor,
             SolverModelEnricherService enricherService,
             SolverModelEnrichmentDirectorService enrichmentDirectorService,
-            MapEnrichmentContext mapEnrichmentContext,
             TerminationService terminationService,
             ShutdownExecutor shutdownExecutor,
             ShutdownOnTerminate shutdownOnTerminate,
@@ -201,7 +197,6 @@ public class SolverWorker {
         this.modelConvertor = (ModelConvertor) modelConvertor;
         this.enricherService = enricherService;
         this.enrichmentDirectorService = enrichmentDirectorService;
-        this.mapEnrichmentContext = mapEnrichmentContext;
         this.terminationService = terminationService;
         this.shutdownExecutor = shutdownExecutor;
         this.shutdownOnTerminate = shutdownOnTerminate;
@@ -352,7 +347,6 @@ public class SolverWorker {
             var modelConfig = Configuration.getSafeModelConfig(configuration);
 
             var solverModel = createSolverModel(modelInput, modelConfig);
-            applyResolvedMapLocation(metadata);
             solutionManager.update(solverModel);
 
             // Store the updated solution
@@ -568,7 +562,6 @@ public class SolverWorker {
             var metadata = storageService.getMetadata(id);
 
             var solverModel = createSolverModel(modelInput, modelConfig, modelOutput);
-            applyResolvedMapLocation(metadata);
             if (metadata.getSolverStatus() == SolvingStatus.DATASET_COMPUTED
                     || metadata.getSolverStatus() == SolvingStatus.SOLVING_SCHEDULED) {
                 metadata.solvingStarted();
@@ -616,18 +609,6 @@ public class SolverWorker {
         // if there is a compatible model-specific enrichment director, use it, otherwise fall back to the generic enricher service
         return enrichmentDirectorService.accepts(solverModel) ? enrichmentDirectorService.enrich(solverModel)
                 : enricherService.enrich(solverModel);
-    }
-
-    private void applyResolvedMapLocation(Metadata metadata) {
-        var resolved = mapEnrichmentContext.getResolvedMapLocation();
-        if (resolved == null || metadata == null) {
-            return;
-        }
-        metadata.setResolvedMapLocation(resolved);
-        var configuredLocation = System.getenv(EnvironmentVars.ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION);
-        if (EnvironmentVars.MAP_SERVICE_LOCATION_AUTO_SELECT.equalsIgnoreCase(configuredLocation)) {
-            LOGGER.info("Auto-select map resolved to '{}' for dataset {}.", resolved, metadata.getId());
-        }
     }
 
     protected void notifyOnInit(String id, SolverModel solverModel, boolean isTerminatedEarly,

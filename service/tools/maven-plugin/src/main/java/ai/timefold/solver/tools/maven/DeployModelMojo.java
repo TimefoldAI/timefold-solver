@@ -132,7 +132,6 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                                     "Model %s (%s) has been successfully deployed into platform %s with registration key %s",
                                     modelDescriptor.get("name").asText(), modelDescriptor.get("id").asText(), platformUrl,
                                     key));
-                    printErrorInfo(response);
                 } else if (response.statusCode() >= 409) {
                     if (getPropertyOrParameter(PROP_MODEL_OVERWRITE, overwrite)) {
 
@@ -147,7 +146,6 @@ public class DeployModelMojo extends AbstractPlatformModelMojo {
                                     "Model %s (%s) has been successfully updated on platform %s with registration key %s",
                                     modelDescriptor.get("name").asText(), modelDescriptor.get("id").asText(), platformUrl,
                                     key));
-                            printErrorInfo(response);
                         } else {
                             throw new IllegalStateException(
                                     "Model deployment (override) failed with " + response.statusCode() + " status code");

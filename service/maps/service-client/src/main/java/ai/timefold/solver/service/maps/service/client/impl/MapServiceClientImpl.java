@@ -4,7 +4,6 @@ import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_CACH
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_INVALIDATE_MATRIX_HEADER;
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_LOCATIONS_CHUNK_BYTES;
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_LOCATIONS_NOT_IN_MAP;
-import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_LOCATION_HEADER;
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_MATRIX_HASH_HEADER;
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_PROVIDER_HEADER;
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_RESPONSE_CHUNK_BYTES;
@@ -167,9 +166,8 @@ public class MapServiceClientImpl implements MapService {
                 // If there are no updates, return from cache
                 LOGGER.info("Distance matrix in cache is up-to-date, returning from cache");
                 assertLocationsAreInCache(locations);
-                CacheItem cached = travelTimeAndDistanceSingleItemCache.get();
-                return new TravelTimeAndDistanceWithMetadata(cached.travelTimeAndDistance(),
-                        cached.locationsOutOfMap(), cached.resolvedMapLocation());
+                return new TravelTimeAndDistanceWithMetadata(travelTimeAndDistanceSingleItemCache.get().travelTimeAndDistance(),
+                        travelTimeAndDistanceSingleItemCache.get().locationsOutOfMap());
             } else {
                 // If there are updates, process them and update cache
                 LOGGER.info("Distance matrix in cache is not up-to-date, processing updates");
@@ -400,8 +398,7 @@ public class MapServiceClientImpl implements MapService {
         if (travelTimeAndDistanceSingleItemCache.isInCache(id)) {
             LOGGER.info("Distance matrix without location set name in cache, returning from cache");
             CacheItem cacheItem = travelTimeAndDistanceSingleItemCache.get();
-            return new TravelTimeAndDistanceWithMetadata(cacheItem.travelTimeAndDistance(), cacheItem.locationsOutOfMap(),
-                    cacheItem.resolvedMapLocation());
+            return new TravelTimeAndDistanceWithMetadata(cacheItem.travelTimeAndDistance(), cacheItem.locationsOutOfMap());
         }
 
         // If it does not exist, request from maps-service and store by hash of locations
@@ -433,7 +430,6 @@ public class MapServiceClientImpl implements MapService {
     private TravelTimeAndDistanceWithMetadata processResponseAndStoreInCache(Response response, String localCacheId) {
         String matrixHash = response.getHeaderString(X_MAPS_MATRIX_HASH_HEADER);
         String provider = response.getHeaderString(X_MAPS_PROVIDER_HEADER);
-        String resolvedMapLocation = response.getHeaderString(X_MAPS_LOCATION_HEADER);
         String tenant = response.getHeaderString(X_TENANT_ID_HEADER);
         String cacheId = response.getHeaderString(X_MAPS_CACHE_ID);
         String locationsNotInMapString = response.getHeaderString(X_MAPS_LOCATIONS_NOT_IN_MAP);
@@ -453,13 +449,11 @@ public class MapServiceClientImpl implements MapService {
                 throw new IllegalArgumentException("No provider found to convert travel time and distance response.");
             }
 
-            TravelTimeAndDistanceWithMetadata raw =
+            TravelTimeAndDistanceWithMetadata travelTimeAndDistance =
                     convertResponse(provider, chunkBytes, responseLocations, data, locationsNotInMap);
-            TravelTimeAndDistanceWithMetadata travelTimeAndDistance = new TravelTimeAndDistanceWithMetadata(
-                    raw.travelTimeAndDistance(), raw.locationsNotInMapIdx(), resolvedMapLocation);
             travelTimeAndDistanceSingleItemCache.put(localCacheId,
                     new CacheItem(travelTimeAndDistance.travelTimeAndDistance(), responseLocations, matrixHash,
-                            locationsNotInMap, resolvedMapLocation));
+                            locationsNotInMap));
             return travelTimeAndDistance;
 
         } catch (IllegalDistanceResponseException e) {
@@ -474,7 +468,6 @@ public class MapServiceClientImpl implements MapService {
     private TravelTimeAndDistanceWithMetadata processUpdateAndStoreInCache(Response response, String locationSetName) {
         String matrixHash = response.getHeaderString(X_MAPS_MATRIX_HASH_HEADER);
         String provider = response.getHeaderString(X_MAPS_PROVIDER_HEADER);
-        String resolvedMapLocation = response.getHeaderString(X_MAPS_LOCATION_HEADER);
         String tenant = response.getHeaderString(X_TENANT_ID_HEADER);
         String cacheId = response.getHeaderString(X_MAPS_CACHE_ID);
         String locationsNotInMapString = response.getHeaderString(X_MAPS_LOCATIONS_NOT_IN_MAP);
@@ -494,18 +487,15 @@ public class MapServiceClientImpl implements MapService {
                 throw new IllegalArgumentException("No provider found to convert travel time and distance update.");
             }
 
-            TravelTimeAndDistanceWithMetadata raw =
+            TravelTimeAndDistanceWithMetadata travelTimeAndDistance =
                     convertUpdate(provider, chunkBytes, responseLocations, data, cacheItem.locationsOutOfMap(),
                             locationsNotInMap);
-            String effectiveMapLocation = resolvedMapLocation != null ? resolvedMapLocation : cacheItem.resolvedMapLocation();
-            TravelTimeAndDistanceWithMetadata travelTimeAndDistance = new TravelTimeAndDistanceWithMetadata(
-                    raw.travelTimeAndDistance(), raw.locationsNotInMapIdx(), effectiveMapLocation);
 
             List<Location> newLocations = Stream.concat(cacheItem.locations().stream(), responseLocations.stream()).toList();
             if (locationSetName != null && matrixHash != null) {
                 travelTimeAndDistanceSingleItemCache.put(locationSetName,
                         new CacheItem(travelTimeAndDistance.travelTimeAndDistance(), newLocations, matrixHash,
-                                locationsNotInMap, effectiveMapLocation));
+                                locationsNotInMap));
             }
             return travelTimeAndDistance;
 
