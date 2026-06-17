@@ -70,8 +70,7 @@ public final class Metadata<Score_> implements Status<Score_> {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String failureMessage;
 
-    @Schema(nullable = true,
-            description = "The map-service region resolved when location is auto-select.")
+    @Schema(hidden = true)
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String resolvedMapLocation;
 

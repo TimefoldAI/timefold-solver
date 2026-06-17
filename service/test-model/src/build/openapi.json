@@ -2243,6 +2243,20 @@
             "description" : "Maximum solver step count. The solver will stop solving after a pre-determined amount of steps. Use when you require results independently of the hardware resources performance. Use this termination if you want to benchmark your models, not recommended for production use. If set, unimprovedSpentLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.",
             "type" : "integer",
             "example" : 1000
+          },
+          "slidingWindowDuration" : {
+            "description" : "Sliding window (ISO 8601 duration format) over which score improvement is measured by the diminished returns termination. Defaults to PT30S when omitted. Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit and stepCountLimit are both empty).",
+            "type" : "string",
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/Duration"
+            } ],
+            "example" : "PT30S"
+          },
+          "minimumImprovementRatio" : {
+            "format" : "double",
+            "description" : "Minimum ratio between current and initial improvement before the diminished returns termination kicks in. Must be strictly positive. Defaults to 0.0001 when omitted. Only takes effect when diminished returns is active (i.e. unimprovedSpentLimit and stepCountLimit are both empty).",
+            "type" : "number",
+            "example" : 0.0001
           }
         },
         "additionalProperties" : false
