@@ -405,9 +405,9 @@ public final class DefaultEvolutionaryAlgorithmPhaseFactory<Solution_>
         }
         if (updatedLocalSearchPhaseConfig.getTerminationConfig() == null) {
             var terminationConfig = new TerminationConfig();
-            var windowTime = isComplex ? 20L : 1L;
+            var windowTime = isComplex ? 30L : 1L;
             terminationConfig.setDiminishedReturnsConfig(new DiminishedReturnsTerminationConfig()
-                    .withMinimumImprovementRatio(0.01).withSlidingWindowSeconds(windowTime));
+                    .withMinimumImprovementRatio(0.001).withSlidingWindowSeconds(windowTime));
             updatedLocalSearchPhaseConfig.setTerminationConfig(terminationConfig);
         }
         var clearNearbyClass = updatedLocalSearchPhaseConfig.getMoveSelectorConfig() == null;

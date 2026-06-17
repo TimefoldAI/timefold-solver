@@ -102,6 +102,10 @@ public record BasicRuinRecreateIndividualStrategy<Solution_, Score_ extends Scor
             EvolutionaryAlgorithmPhaseScope<Solution_> phaseScope, Individual<Solution_, Score_> bestIndividual) {
         var bestSolutionState = solutionStateManager.saveSolutionState(scoreDirector, bestIndividual);
         solutionStateManager.restoreSolutionState(scoreDirector, bestSolutionState);
+        if (workingRandom.nextBoolean()) {
+            // The method can also maintain the current best solution and restart the search from it
+            return;
+        }
         applyRuinPhase(scoreDirector, workingRandom, bestIndividual);
         updateScope(phaseScope);
         applyPhases(phaseScope, shuffledFirstFitConstructionPhase);

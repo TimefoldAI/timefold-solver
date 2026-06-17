@@ -104,6 +104,10 @@ public record ListRuinRecreateIndividualStrategy<Solution_, Score_ extends Score
     void applyRuinRecreate(InnerScoreDirector<Solution_, Score_> scoreDirector, Individual<Solution_, Score_> bestIndividual) {
         var bestSolutionState = solutionStateManager.saveSolutionState(scoreDirector, bestIndividual);
         solutionStateManager.restoreSolutionState(scoreDirector, bestSolutionState);
+        if (workingRandom.nextBoolean()) {
+            // The method can also maintain the current best solution and restart the search from it
+            return;
+        }
         var listVariableDescriptor = Objects.requireNonNull(scoreDirector.getSolutionDescriptor().getListVariableDescriptor());
         var listVariableMetaModel = listVariableDescriptor.getVariableMetaModel();
         var valueRangeManager = scoreDirector.getValueRangeManager();

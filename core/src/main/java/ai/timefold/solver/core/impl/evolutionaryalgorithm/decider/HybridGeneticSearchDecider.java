@@ -141,8 +141,8 @@ public final class HybridGeneticSearchDecider<Solution_, Score_ extends Score<Sc
         if (exploratoryRate == -1) { // Not set by the user
             var scaleLog = phaseScope.getSolverScope().getScoreDirector().getValueRangeManager().getProblemSizeStatistics()
                     .approximateProblemSizeLog();
-            // It is expected that the conservative profile will be called 90% of the time for complex problems
-            exploratoryRate = scaleLog < 427.0 ? 0.9 : 0.1;
+            // It is expected that the conservative profile will be called 95% of the time for complex problems
+            exploratoryRate = scaleLog < 427.0 ? 0.95 : 0.05;
         }
         this.worker = new HybridGeneticSearchWorker<>(HybridGeneticSearchWorkerContext.of(exploratoryRate, context),
                 bestSolutionUpdater, (DelegatingSplittableRandomGenerator) workerSolverScope.getWorkingRandom(),
