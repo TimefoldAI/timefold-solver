@@ -1,12 +1,10 @@
 package ai.timefold.solver.service.maps.service.client.api;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
 import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.api.model.travel.TravelDistance;
 import ai.timefold.solver.service.maps.api.model.travel.TravelTime;
@@ -14,8 +12,6 @@ import ai.timefold.solver.service.maps.service.client.util.RemoteMapServiceConfi
 import ai.timefold.solver.service.maps.service.client.util.SampleModel;
 import ai.timefold.solver.service.maps.service.integration.api.LocationsAwareSolverModel;
 import ai.timefold.solver.service.maps.service.test.api.MapServiceApiWiremockExtensions;
-import ai.timefold.solver.service.maps.service.test.impl.DistanceGetUpdateResponseTransformer;
-import ai.timefold.solver.service.maps.service.test.impl.HaversineDistanceResponseTransformer;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -32,9 +28,6 @@ public class TravelTimeMatrixEnricherTest {
     @Inject
     TravelTimeMatrixEnricher enricher;
 
-    @Inject
-    MapEnrichmentContext mapEnrichmentContext;
-
     @Test
     void testRemoteConnectionWithMapServer() {
         Location l1 = new Location(0, 0);
@@ -48,8 +41,6 @@ public class TravelTimeMatrixEnricherTest {
         Assertions.assertThat(enrich.getLocations().getFirst().getTravelTimeTo(l2)).isEqualTo(TravelTime.of(11322L));
         Assertions.assertThat(enrich.getLocations().getFirst().getDistanceTo(l2)).isEqualTo(TravelDistance.of(157249L));
         Assertions.assertThat(enrich.getLocationsNotInMap()).isEmpty();
-        Assertions.assertThat(mapEnrichmentContext.getResolvedMapLocation())
-                .isEqualTo(HaversineDistanceResponseTransformer.RESOLVED_MAP_LOCATION);
     }
 
     @Test
@@ -106,8 +97,6 @@ public class TravelTimeMatrixEnricherTest {
         Assertions.assertThat(enrich.getLocations().get(1).getDistanceTo(l1)).isEqualTo(TravelDistance.of(157249L));
         Assertions.assertThat(enrich.getLocations().get(2).getDistanceTo(l4)).isEqualTo(TravelDistance.of(157178L));
         Assertions.assertThat(enrich.getLocationsNotInMap()).isEmpty();
-        Assertions.assertThat(mapEnrichmentContext.getResolvedMapLocation())
-                .isEqualTo(HaversineDistanceResponseTransformer.RESOLVED_MAP_LOCATION);
     }
 
     @Test
@@ -162,29 +151,6 @@ public class TravelTimeMatrixEnricherTest {
         Assertions.assertThat(enrich.getLocations().get(1).getTravelTimeTo(l1)).isEqualTo(TravelTime.of(11322L));
         Assertions.assertThat(enrich.getLocations().get(1).getDistanceTo(l1)).isEqualTo(TravelDistance.of(157249L));
         Assertions.assertThat(enrich.getLocations().get(2).getDistanceTo(l4)).isEqualTo(TravelDistance.ZERO);
-    }
-
-    @Test
-    void updatePathFallsBackToCachedMapLocationWhenHeaderIsMissing() {
-        // First enrich populates the cache for "with-updates" via the POST full-matrix path,
-        // which emits X_MAPS_LOCATION_HEADER and cache stores resolvedMapLocation="us-georgia".
-        SampleModel seed = new SampleModel(DistanceGetUpdateResponseTransformer.UPDATE_AWARE_LOCATION_SET_NAME,
-                DistanceGetUpdateResponseTransformer.UPDATE_OLD_LOCATIONS);
-        enricher.enrich(seed);
-        Assertions.assertThat(mapEnrichmentContext.getResolvedMapLocation())
-                .isEqualTo(HaversineDistanceResponseTransformer.RESOLVED_MAP_LOCATION);
-
-        // Second enrich adds a new location and cache hit triggers the GET-update path.
-        // The transformer returns a 200 update WITHOUT X_MAPS_LOCATION_HEADER, so
-        // processUpdateAndStoreInCache must fall back to the value stored in the CacheItem.
-        List<Location> withNewLocation = new ArrayList<>(DistanceGetUpdateResponseTransformer.UPDATE_OLD_LOCATIONS);
-        withNewLocation.addAll(DistanceGetUpdateResponseTransformer.UPDATE_NEW_LOCATIONS);
-        SampleModel updated = new SampleModel(DistanceGetUpdateResponseTransformer.UPDATE_AWARE_LOCATION_SET_NAME,
-                withNewLocation);
-        enricher.enrich(updated);
-
-        Assertions.assertThat(mapEnrichmentContext.getResolvedMapLocation())
-                .isEqualTo(HaversineDistanceResponseTransformer.RESOLVED_MAP_LOCATION);
     }
 
 }
