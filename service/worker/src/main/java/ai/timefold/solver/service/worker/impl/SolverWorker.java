@@ -161,6 +161,8 @@ public class SolverWorker {
 
     private AtomicBoolean shuttingDown = new AtomicBoolean(false);
 
+    private final AtomicBoolean resolvedMapLocationLogged = new AtomicBoolean(false);
+
     private BroadcastProcessor<Metadata<?>> processor = BroadcastProcessor.create();
 
     @Inject
@@ -791,7 +793,8 @@ public class SolverWorker {
         }
         datasetEvent.setResolvedMapLocation(resolved);
         String configuredLocation = System.getenv(EnvironmentVars.ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION);
-        if (EnvironmentVars.MAP_SERVICE_LOCATION_AUTO_SELECT.equalsIgnoreCase(configuredLocation)) {
+        if (EnvironmentVars.MAP_SERVICE_LOCATION_AUTO_SELECT.equalsIgnoreCase(configuredLocation)
+                && resolvedMapLocationLogged.compareAndSet(false, true)) {
             LOGGER.info("Auto-select map resolved to '{}' for dataset {}.", resolved, datasetEvent.getId());
         }
     }
