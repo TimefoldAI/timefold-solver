@@ -12,6 +12,27 @@
     This module is in a preview state and thus is a subject to changes.
   </description>
 
+  <url>https://solver.timefold.ai</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:git@github.com:TimefoldAI/timefold-solver.git</connection>
+    <developerConnection>scm:git:git@github.com:TimefoldAI/timefold-solver.git</developerConnection>
+    <url>https://github.com/TimefoldAI/timefold-solver</url>
+  </scm>
+  <developers>
+    <developer>
+      <name>Timefold Community</name>
+      <organization>Timefold</organization>
+      <organizationUrl>https://timefold.ai</organizationUrl>
+    </developer>
+  </developers>
+
   <properties>
     <revision>999-SNAPSHOT</revision>
     <ai.timefold.solver.enterprise>false</ai.timefold.solver.enterprise>
