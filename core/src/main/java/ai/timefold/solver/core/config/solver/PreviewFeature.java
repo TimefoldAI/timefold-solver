@@ -21,6 +21,7 @@ public enum PreviewFeature {
 
     DIVERSIFIED_LATE_ACCEPTANCE,
     PLANNING_SOLUTION_DIFF,
+    IGNORE_INCONSISTENT_SOLUTIONS,
     /**
      * Unlike other preview features, Neighborhoods are an active research project.
      * It is intended to simplify the creation of custom moves, eventually replacing move selectors.

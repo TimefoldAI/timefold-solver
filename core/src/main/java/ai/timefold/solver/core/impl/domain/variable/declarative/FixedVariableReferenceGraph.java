@@ -74,13 +74,13 @@ public final class FixedVariableReferenceGraph<Solution_>
     }
 
     @Override
-    void innerUpdateChanged() {
+    boolean innerUpdateChanged() {
         BitSet visited;
         if (!changeTracker.isEmpty()) {
             visited = new BitSet(nodeList.size());
             visited.set(changeTracker.peek().nodeId());
         } else {
-            return;
+            return true;
         }
 
         // NOTE: This assumes the user did not add any fixed loops to
@@ -104,5 +104,6 @@ public final class FixedVariableReferenceGraph<Solution_>
             }
         }
         isChanged.clear();
+        return true;
     }
 }

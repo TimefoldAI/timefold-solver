@@ -79,7 +79,7 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public InnerScore<Score_> calculateScore() {
+    public InnerScore<Score_> innerCalculateScore() {
         variableListenerSupport.assertNotificationQueuesAreEmpty();
         var score = Objects.requireNonNull(incrementalScoreCalculator.calculateScore(),
                 () -> "The incrementalScoreCalculator (%s) must return a non-null score in the method calculateScore()."

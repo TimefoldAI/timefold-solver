@@ -162,29 +162,31 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         }
     }
 
-    public static <Solution_> VariableReferenceGraph buildGraph(GraphDescriptor<Solution_> graphDescriptor) {
+    public static <Solution_> VariableReferenceGraph buildGraph(GraphDescriptor<Solution_> graphDescriptor,
+            boolean ignoreInconsistentSolutions) {
         var graphStructureAndDirection = GraphStructure.determineGraphStructure(graphDescriptor.solutionDescriptor(),
                 graphDescriptor.entities());
         LOGGER.trace("Shadow variable graph structure: {}", graphStructureAndDirection);
-        return buildGraphForStructureAndDirection(graphStructureAndDirection, graphDescriptor);
+        return buildGraphForStructureAndDirection(graphStructureAndDirection, graphDescriptor, ignoreInconsistentSolutions);
     }
 
     static <Solution_> VariableReferenceGraph buildGraphForStructureAndDirection(
-            GraphStructure.GraphStructureAndDirection graphStructureAndDirection, GraphDescriptor<Solution_> graphDescriptor) {
+            GraphStructure.GraphStructureAndDirection graphStructureAndDirection, GraphDescriptor<Solution_> graphDescriptor,
+            boolean ignoreInconsistentSolutions) {
         return switch (graphStructureAndDirection.structure()) {
             case EMPTY -> EmptyVariableReferenceGraph.INSTANCE;
             case SINGLE_DIRECTIONAL_PARENT -> {
                 var scoreDirector =
                         graphDescriptor.variableReferenceGraphBuilder().changedVariableNotifier.innerScoreDirector();
                 if (scoreDirector == null) {
-                    yield buildArbitraryGraph(graphDescriptor);
+                    yield buildArbitraryGraph(graphDescriptor, ignoreInconsistentSolutions);
                 }
                 yield buildSingleDirectionalParentGraph(graphDescriptor, graphStructureAndDirection);
             }
             case ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE ->
-                buildArbitrarySingleEntityGraph(graphDescriptor);
+                buildArbitrarySingleEntityGraph(graphDescriptor, ignoreInconsistentSolutions);
             case NO_DYNAMIC_EDGES, ARBITRARY ->
-                buildArbitraryGraph(graphDescriptor);
+                buildArbitraryGraph(graphDescriptor, ignoreInconsistentSolutions);
         };
     }
 
@@ -280,7 +282,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         };
     }
 
-    private static <Solution_> VariableReferenceGraph buildArbitraryGraph(GraphDescriptor<Solution_> graphDescriptor) {
+    private static <Solution_> VariableReferenceGraph buildArbitraryGraph(GraphDescriptor<Solution_> graphDescriptor,
+            boolean ignoreInconsistentSolutions) {
         var declarativeShadowVariableDescriptors =
                 graphDescriptor.solutionDescriptor().getDeclarativeShadowVariableDescriptors();
         var variableIdToUpdater = EntityVariableUpdaterLookup.<Solution_> entityIndependentLookup();
@@ -294,13 +297,14 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 graphDescriptor,
                 declarativeShadowVariableDescriptors, variableIdToUpdater);
         return buildVariableReferenceGraph(graphDescriptor, declarativeShadowVariableDescriptors,
-                declarativeShadowVariableToAliasMap);
+                declarativeShadowVariableToAliasMap, ignoreInconsistentSolutions);
     }
 
     private static <Solution_> VariableReferenceGraph buildVariableReferenceGraph(
             GraphDescriptor<Solution_> graphDescriptor,
             List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors,
-            Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> declarativeShadowVariableToAliasMap) {
+            Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> declarativeShadowVariableToAliasMap,
+            boolean ignoreInconsistentSolutions) {
         // Create variable processors for each declarative shadow variable descriptor
         for (var declarativeShadowVariable : declarativeShadowVariableDescriptors) {
             var fromVariableId = declarativeShadowVariable.getVariableMetaModel();
@@ -315,7 +319,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         // Create the fixed edges in the graph
         createFixedVariableRelationEdges(graphDescriptor.variableReferenceGraphBuilder(), graphDescriptor.entities(),
                 declarativeShadowVariableDescriptors);
-        return graphDescriptor.variableReferenceGraphBuilder().build(graphDescriptor.graphCreator());
+        return graphDescriptor.variableReferenceGraphBuilder().build(graphDescriptor.graphCreator(),
+                ignoreInconsistentSolutions);
     }
 
     private record GroupVariableUpdaterInfo<Solution_>(
@@ -443,7 +448,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     }
 
     private static <Solution_> VariableReferenceGraph buildArbitrarySingleEntityGraph(
-            GraphDescriptor<Solution_> graphDescriptor) {
+            GraphDescriptor<Solution_> graphDescriptor, boolean ignoreInconsistentSolutions) {
         var declarativeShadowVariableDescriptors =
                 graphDescriptor.solutionDescriptor().getDeclarativeShadowVariableDescriptors();
         // Use a dependent lookup; if an entity does not use groups, then all variables can share the same node.
@@ -475,7 +480,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 (entity, declarativeShadowVariable, variableId) -> variableIdToGroupedUpdater.get(variableId)
                         .getUpdatersForEntityVariable(entity, declarativeShadowVariable));
         return buildVariableReferenceGraph(graphDescriptor, declarativeShadowVariableDescriptors,
-                declarativeShadowVariableToAliasMap);
+                declarativeShadowVariableToAliasMap, ignoreInconsistentSolutions);
     }
 
     private static <Solution_> Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> createGraphNodes(
@@ -691,18 +696,21 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     }
 
     public DefaultShadowVariableSession<Solution_> forSolution(ConsistencyTracker<Solution_> consistencyTracker,
+            boolean ignoreInconsistentSolutions,
             Solution_ solution) {
         var entities = new ArrayList<>();
         solutionDescriptor.visitAllEntities(solution, entities::add);
-        return forEntities(consistencyTracker, entities.toArray());
+        return forEntities(consistencyTracker, ignoreInconsistentSolutions, entities.toArray());
     }
 
     public DefaultShadowVariableSession<Solution_> forEntities(ConsistencyTracker<Solution_> consistencyTracker,
+            boolean ignoreInconsistentSolutions,
             Object... entities) {
         var graph = buildGraph(
                 new GraphDescriptor<>(solutionDescriptor, ChangedVariableNotifier.of(scoreDirector), entities)
                         .withConsistencyTracker(consistencyTracker)
-                        .withGraphCreator(graphCreator));
+                        .withGraphCreator(graphCreator),
+                ignoreInconsistentSolutions);
         return new DefaultShadowVariableSession<>(graph);
     }
 }

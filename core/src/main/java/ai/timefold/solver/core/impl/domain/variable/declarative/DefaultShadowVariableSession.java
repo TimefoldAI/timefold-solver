@@ -34,7 +34,7 @@ public final class DefaultShadowVariableSession<Solution_> implements Supply {
                 entity);
     }
 
-    public void updateVariables() {
-        graph.updateChanged();
+    public boolean updateVariables() {
+        return graph.updateChanged();
     }
 }

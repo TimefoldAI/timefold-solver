@@ -125,6 +125,9 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
         var castScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
                 .withLookUpEnabled(true) // Custom phases and problem changes may rely on lookups.
+                .withIgnoreInconsistentSolutions(Objects.requireNonNullElse(
+                        solverConfig.getEnablePreviewFeatureSet(), Collections.emptySet())
+                        .contains(PreviewFeature.IGNORE_INCONSISTENT_SOLUTIONS))
                 .withConstraintMatchPolicy(
                         constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED)
                 .build();

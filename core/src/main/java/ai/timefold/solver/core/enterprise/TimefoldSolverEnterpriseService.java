@@ -151,7 +151,7 @@ public interface TimefoldSolverEnterpriseService {
         }
     }
 
-    TopologicalOrderGraph buildTopologyGraph(int size);
+    TopologicalOrderGraph buildTopologyGraph(int size, boolean ignoreInconsistentSolutions);
 
     /**
      * Will create new classes that apply node-sharing to the given {@link ConstraintProvider}.

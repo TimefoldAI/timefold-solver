@@ -7,8 +7,9 @@ final class EmptyVariableReferenceGraph implements VariableReferenceGraph {
     public static final EmptyVariableReferenceGraph INSTANCE = new EmptyVariableReferenceGraph();
 
     @Override
-    public void updateChanged() {
+    public boolean updateChanged() {
         // No need to do anything.
+        return true;
     }
 
     @Override

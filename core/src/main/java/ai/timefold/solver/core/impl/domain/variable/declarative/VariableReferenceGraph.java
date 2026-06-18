@@ -13,8 +13,10 @@ public sealed interface VariableReferenceGraph
      * Called after all {@link ai.timefold.solver.core.impl.domain.variable.VariableListener} are
      * triggered. Declarative {@link ai.timefold.solver.core.api.domain.variable.ShadowVariable}
      * are guaranteed to be the last variables to update.
+     *
+     * @return true if the update successful; false otherwise
      */
-    void updateChanged();
+    boolean updateChanged();
 
     /**
      * Called before the variable corresponding to the {@link VariableMetaModel} on the given entity changes.

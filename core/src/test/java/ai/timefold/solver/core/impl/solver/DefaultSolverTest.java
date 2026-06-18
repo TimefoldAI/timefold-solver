@@ -1449,6 +1449,87 @@ class DefaultSolverTest {
         assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0, -240));
     }
 
+    @Test
+    void solveWhenIgnoringInconsistentSolutionsThrowsIfInitialSolutionInconsistent() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataConcurrentSolution.class, TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
+                .withEasyScoreCalculatorClass(null)
+                .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class)
+                .withPreviewFeature(PreviewFeature.IGNORE_INCONSISTENT_SOLUTIONS);
+
+        var e1 = new TestdataConcurrentEntity("e1");
+        var e2 = new TestdataConcurrentEntity("e2");
+
+        var a1 = new TestdataConcurrentValue("a1");
+        var a2 = new TestdataConcurrentValue("a2");
+        var b1 = new TestdataConcurrentValue("b1");
+        var b2 = new TestdataConcurrentValue("b2");
+
+        a1.setConcurrentValueGroup(List.of(a1, a2));
+        a2.setConcurrentValueGroup(List.of(a1, a2));
+
+        b1.setConcurrentValueGroup(List.of(b1, b2));
+        b2.setConcurrentValueGroup(List.of(b1, b2));
+
+        e1.setValues(List.of(a1, b1));
+        e2.setValues(List.of(b2, a2));
+
+        var entities = List.of(e1, e2);
+        var values = List.of(a1, a2, b1, b2);
+
+        var problem = new TestdataConcurrentSolution();
+
+        problem.setEntities(entities);
+        problem.setValues(values);
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem)).isInstanceOf(IllegalStateException.class)
+                .hasMessageContainingAll("The initial solution passed to the solver",
+                        "is invalid because it has dependency loops");
+    }
+
+    @Test
+    void solveIgnoreInconsistent() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataConcurrentSolution.class, TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
+                .withEasyScoreCalculatorClass(null)
+                .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class);
+
+        var e1 = new TestdataConcurrentEntity("e1");
+        var e2 = new TestdataConcurrentEntity("e2");
+
+        var a1 = new TestdataConcurrentValue("a1");
+        var a2 = new TestdataConcurrentValue("a2");
+        var b1 = new TestdataConcurrentValue("b1");
+        var b2 = new TestdataConcurrentValue("b2");
+
+        a1.setConcurrentValueGroup(List.of(a1, a2));
+        a2.setConcurrentValueGroup(List.of(a1, a2));
+
+        b1.setConcurrentValueGroup(List.of(b1, b2));
+        b2.setConcurrentValueGroup(List.of(b1, b2));
+
+        e1.setValues(List.of(a1, b2));
+        e2.setValues(List.of(a2, b1));
+
+        var entities = List.of(e1, e2);
+        var values = List.of(a1, a2, b1, b2);
+
+        var problem = new TestdataConcurrentSolution();
+
+        problem.setEntities(entities);
+        problem.setValues(values);
+
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+
+        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("a1",
+                "b2");
+        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("a2", "b1");
+
+        assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0, -240));
+    }
+
     private static List<MoveSelectorConfig<?>> generateMovesForMixedModel() {
         // Local Search
         var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig<?>>();

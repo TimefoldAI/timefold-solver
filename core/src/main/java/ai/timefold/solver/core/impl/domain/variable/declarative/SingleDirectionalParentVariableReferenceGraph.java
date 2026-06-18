@@ -80,7 +80,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     }
 
     @Override
-    public void updateChanged() {
+    public boolean updateChanged() {
         isUpdating = true;
         changedEntities.sort(topologicalOrderComparator);
         for (var changedEntity : changedEntities) {
@@ -94,6 +94,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         isUpdating = false;
         changedEntities.clear();
         keyToLastProcessedObject.clear();
+        return true;
     }
 
     /**

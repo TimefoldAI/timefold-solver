@@ -8,11 +8,13 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 
+import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.CompositeAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
@@ -66,6 +68,8 @@ class CompositeAcceptorTest {
             acceptorList.add(acceptor);
         }
         var acceptor = new CompositeAcceptor<>(acceptorList);
-        return acceptor.isAccepted(mock(LocalSearchMoveScope.class));
+        var moveScope = mock(LocalSearchMoveScope.class);
+        when(moveScope.getScore()).thenReturn(InnerScore.fullyAssigned(new SimpleScore(0)));
+        return acceptor.isAccepted(moveScope);
     }
 }
