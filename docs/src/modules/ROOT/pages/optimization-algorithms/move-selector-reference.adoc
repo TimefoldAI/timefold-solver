@@ -837,7 +837,7 @@ In the case of a <<listVariableNearbySelection, list variable>>,
 `Origin_` is always a planning value (for example `Customer`),
 but `Destination_` can be either a planning value or a planning entity.
 
-As an example, consider the Vehicle Routing Problem and list variable to store the customer list for each vehicle.
+As an example, consider the Vehicle Routing Problem and a list variable to store the customer list for each vehicle.
 The distance meter must be able to handle both `Customer` and `Vehicle` as the `Destination_` argument:
 
 [tabs]
@@ -961,7 +961,7 @@ for the local search:
 By default, the following move selectors are included:
 xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change],
 xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap],
-xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelector[K-OPT]
+xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelector[K-OPT],
 Change with Nearby,
 Swap with Nearby,
 and K-OPT with Nearby.
