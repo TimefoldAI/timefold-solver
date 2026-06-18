@@ -49,9 +49,11 @@ import ai.timefold.solver.service.definition.api.validation.LegacyValidationResu
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
 import ai.timefold.solver.service.definition.api.validation.dto.ValidationResult;
+import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
+import ai.timefold.solver.service.definition.internal.events.AbstractDatasetEvent;
 import ai.timefold.solver.service.definition.internal.events.AbstractEvent;
 import ai.timefold.solver.service.definition.internal.events.BestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.DatasetComputedEvent;
@@ -117,6 +119,8 @@ public class SolverWorker {
 
     private final SolverModelEnrichmentDirectorService enrichmentDirectorService;
 
+    private final MapEnrichmentContext mapEnrichmentContext;
+
     private final TerminationService terminationService;
 
     private final Emitter<DatasetValidatedEvent> datasetValidatedEventEmitter;
@@ -171,6 +175,7 @@ public class SolverWorker {
             ModelConvertorBase modelConvertor,
             SolverModelEnricherService enricherService,
             SolverModelEnrichmentDirectorService enrichmentDirectorService,
+            MapEnrichmentContext mapEnrichmentContext,
             TerminationService terminationService,
             ShutdownExecutor shutdownExecutor,
             ShutdownOnTerminate shutdownOnTerminate,
@@ -197,6 +202,7 @@ public class SolverWorker {
         this.modelConvertor = (ModelConvertor) modelConvertor;
         this.enricherService = enricherService;
         this.enrichmentDirectorService = enrichmentDirectorService;
+        this.mapEnrichmentContext = mapEnrichmentContext;
         this.terminationService = terminationService;
         this.shutdownExecutor = shutdownExecutor;
         this.shutdownOnTerminate = shutdownOnTerminate;
@@ -241,6 +247,7 @@ public class SolverWorker {
 
     private void sendEvent(Emitter emitter, AbstractEvent event) {
         try {
+            enrichResolvedMapLocation(event);
             emitter.send(event).toCompletableFuture().get(EMITTER_TIMEOUT, TimeUnit.SECONDS);
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
             if (e instanceof InterruptedException) {
@@ -774,6 +781,18 @@ public class SolverWorker {
                 // shutdown has to be executed last to ensure everything executed before pod shuts down
                 shutdownOnTerminate.processFailed(problemId, throwable);
             }
+        }
+    }
+
+    private void enrichResolvedMapLocation(AbstractEvent event) {
+        String resolved = mapEnrichmentContext.getResolvedMapLocation();
+        if (resolved == null || !(event instanceof AbstractDatasetEvent datasetEvent)) {
+            return;
+        }
+        datasetEvent.setResolvedMapLocation(resolved);
+        String configuredLocation = System.getenv(EnvironmentVars.ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION);
+        if (EnvironmentVars.MAP_SERVICE_LOCATION_AUTO_SELECT.equalsIgnoreCase(configuredLocation)) {
+            LOGGER.info("Auto-select map resolved to '{}' for dataset {}.", resolved, datasetEvent.getId());
         }
     }
 

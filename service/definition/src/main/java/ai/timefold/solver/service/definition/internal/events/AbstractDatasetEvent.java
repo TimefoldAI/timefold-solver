@@ -10,6 +10,8 @@ public abstract sealed class AbstractDatasetEvent extends AbstractEvent
 
     private final Metadata metadata;
 
+    private String resolvedMapLocation;
+
     protected AbstractDatasetEvent(Metadata metadata) {
         super(metadata.getId());
         // Safe copy of the run to avoid external modifications.
@@ -18,6 +20,14 @@ public abstract sealed class AbstractDatasetEvent extends AbstractEvent
 
     public Metadata getMetadata() {
         return metadata;
+    }
+
+    public String getResolvedMapLocation() {
+        return resolvedMapLocation;
+    }
+
+    public void setResolvedMapLocation(String resolvedMapLocation) {
+        this.resolvedMapLocation = resolvedMapLocation;
     }
 
     @Override
