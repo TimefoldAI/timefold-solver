@@ -19,7 +19,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -62,7 +61,7 @@ public class MapServiceClientImpl implements MapService {
 
     private final MapServiceClient mapService;
     private final List<TravelTimeAndDistanceConverter> converters;
-    private final Optional<Boolean> fallbackEnabled;
+    private final Boolean fallbackEnabled;
     private final boolean useTraffic;
     private final Timeframe defaultTimeframe;
     private final MapServiceLocalHaversineImpl fallbackService;
@@ -75,10 +74,12 @@ public class MapServiceClientImpl implements MapService {
     @Inject
     public MapServiceClientImpl(@RestClient MapServiceClient mapService,
             @All List<TravelTimeAndDistanceConverter> converters,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.enable-fallback") Optional<Boolean> fallbackEnabled,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.use-traffic") Optional<Boolean> useTraffic,
+            @ConfigProperty(name = "ai.timefold.platform.map-service.enable-fallback",
+                    defaultValue = "false") Boolean fallbackEnabled,
+            @ConfigProperty(name = "ai.timefold.platform.map-service.use-traffic", defaultValue = "false") Boolean useTraffic,
             @ConfigProperty(
-                    name = "ai.timefold.platform.map-service.default-timeframe") Optional<String> defaultTimeframeOverride,
+                    name = "ai.timefold.platform.map-service.default-timeframe",
+                    defaultValue = "") String defaultTimeframeOverride,
             HaversineTravelTimeAndDistanceMatrixProvider travelTimeAndDistanceMatrixProvider,
             HaversineWaypointsProvider haversineWaypointsProvider,
             TimeframeBucketing timeframeBucketing,
@@ -87,7 +88,7 @@ public class MapServiceClientImpl implements MapService {
         this.mapService = mapService;
         this.converters = converters;
         this.fallbackEnabled = fallbackEnabled;
-        this.useTraffic = useTraffic.orElse(false);
+        this.useTraffic = useTraffic;
         this.timeframeBucketing = timeframeBucketing;
         this.defaultTimeframe = resolveDefaultTimeframe(timeframeBucketing, defaultTimeframeOverride);
         this.managedExecutor = managedExecutor;
@@ -247,7 +248,7 @@ public class MapServiceClientImpl implements MapService {
             assembled = fetchBundledTimeframedMatrices(options, locationsByTimeframe, locations);
         } catch (CompletionException e) {
             Throwable cause = e.getCause() != null ? e.getCause() : e;
-            if (fallbackEnabled.orElse(false)) {
+            if (fallbackEnabled) {
                 LOGGER.warn("Could not get travel time and distance using maps service, will fallback using Haversine.", cause);
                 return fallbackAvailabilityMatrices(locations, options, locationsByTimeframe);
             }
@@ -286,19 +287,19 @@ public class MapServiceClientImpl implements MapService {
             Map<Timeframe, LinkedHashSet<Location>> locationsByTimeframe,
             List<Location> outerLocations) {
         List<Timeframe> allTimeframes = timeframeBucketing.allTimeframes();
-        int n = allTimeframes.size();
+        int allTimeframesSize = allTimeframes.size();
         LOGGER.info("Requesting up to {} bundled travel-time + distance matrix(es) concurrently... ",
                 locationsByTimeframe.size());
 
-        DistanceMatrix[] travelTimesByTimeframe = new DistanceMatrix[n];
-        DistanceMatrix[] distancesByTimeframe = new DistanceMatrix[n];
+        DistanceMatrix[] travelTimesByTimeframe = new DistanceMatrix[allTimeframesSize];
+        DistanceMatrix[] distancesByTimeframe = new DistanceMatrix[allTimeframesSize];
         Set<Location> notInMapSet = new HashSet<>();
 
         // Futures indexed by bucketing position; null means either "timeframe not needed" or "zero-matrix short-circuit".
-        CompletableFuture<TravelTimeAndDistanceWithMetadata>[] futures = new CompletableFuture[n];
-        List<Location>[] subsets = new List[n];
+        CompletableFuture<TravelTimeAndDistanceWithMetadata>[] futures = new CompletableFuture[allTimeframesSize];
+        List<Location>[] subsets = new List[allTimeframesSize];
 
-        for (int idx = 0; idx < n; idx++) {
+        for (int idx = 0; idx < allTimeframesSize; idx++) {
             Timeframe timeframe = allTimeframes.get(idx);
             LinkedHashSet<Location> subsetRaw = locationsByTimeframe.get(timeframe);
             if (subsetRaw == null) {
@@ -323,7 +324,7 @@ public class MapServiceClientImpl implements MapService {
             CompletableFuture.allOf(pending).join();
         }
 
-        for (int idx = 0; idx < n; idx++) {
+        for (int idx = 0; idx < allTimeframesSize; idx++) {
             CompletableFuture<TravelTimeAndDistanceWithMetadata> future = futures[idx];
             if (future == null) {
                 continue; // already filled (zero matrix) or not needed
@@ -346,12 +347,7 @@ public class MapServiceClientImpl implements MapService {
         return new AssembledTimeframedMatrices(travelTimesByTimeframe, distancesByTimeframe, locationsNotInMap);
     }
 
-    private record AssembledTimeframedMatrices(DistanceMatrix[] travelTimesByTimeframe,
-            DistanceMatrix[] distancesByTimeframe,
-            List<Location> locationsNotInMap) {
-    }
-
-    private DistanceMatrix zeroMatrixFor(List<Location> locations) {
+    private static DistanceMatrix zeroMatrixFor(List<Location> locations) {
         DistanceMatrix matrix = DistanceMatrix.getInstance(locations.size());
         for (Location from : locations) {
             for (Location to : locations) {
@@ -369,7 +365,7 @@ public class MapServiceClientImpl implements MapService {
         try {
             return mapService.getWaypoints(locations, options);
         } catch (Exception e) {
-            if (fallbackEnabled.orElse(false)) {
+            if (fallbackEnabled) {
                 LOGGER.warn("Could not get waypoints using maps service, will fallback using Haversine.", e);
                 return fallbackService.getWaypoints(locations, options);
             } else {
@@ -383,7 +379,7 @@ public class MapServiceClientImpl implements MapService {
         try {
             return mapService.getLocationsOutOfMap(locations, options);
         } catch (Exception e) {
-            if (fallbackEnabled.orElse(false)) {
+            if (fallbackEnabled) {
                 LOGGER.warn("Could not get locations out of map using maps service, will fallback using Haversine.", e);
                 return fallbackService.getLocationsOutOfMap(locations, options);
             } else {
@@ -414,7 +410,7 @@ public class MapServiceClientImpl implements MapService {
         try {
             response = mapService.getTravelTimeAndDistance(locations, options);
         } catch (Exception e) {
-            if (fallbackEnabled.orElse(false)) {
+            if (fallbackEnabled) {
                 LOGGER.warn("Could not get travel time and distance using maps service, will fallback using Haversine", e);
                 return fallbackService.getTravelTimeAndDistance(locations, options);
             } else {
@@ -624,17 +620,47 @@ public class MapServiceClientImpl implements MapService {
         }
     }
 
-    private Timeframe resolveDefaultTimeframe(TimeframeBucketing bucketing, Optional<String> override) {
-        if (override.isEmpty() || override.get().isBlank()) {
+    private static Timeframe resolveDefaultTimeframe(TimeframeBucketing bucketing, String override) {
+        if (override == null || override.isBlank()) {
             return bucketing.defaultTimeframe();
         }
-        String requested = override.get();
+
         return bucketing.allTimeframes().stream()
-                .filter(t -> t.name().equalsIgnoreCase(requested))
+                .filter(t -> t.name().equalsIgnoreCase(override))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         ("Configured default timeframe '%s' is not one of the supported timeframes %s. " +
                                 "Check the ai.timefold.platform.map-service.default-timeframe property.")
-                                .formatted(requested, bucketing.allTimeframes())));
+                                .formatted(override, bucketing.allTimeframes())));
+    }
+
+    private record AssembledTimeframedMatrices(DistanceMatrix[] travelTimesByTimeframe,
+            DistanceMatrix[] distancesByTimeframe,
+            List<Location> locationsNotInMap) {
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass())
+                return false;
+            AssembledTimeframedMatrices that = (AssembledTimeframedMatrices) o;
+            return Objects.equals(locationsNotInMap(), that.locationsNotInMap())
+                    && Objects.deepEquals(distancesByTimeframe(), that.distancesByTimeframe())
+                    && Objects.deepEquals(travelTimesByTimeframe(), that.travelTimesByTimeframe());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(Arrays.hashCode(travelTimesByTimeframe()), Arrays.hashCode(distancesByTimeframe()),
+                    locationsNotInMap());
+        }
+
+        @Override
+        public String toString() {
+            return "AssembledTimeframedMatrices{" +
+                    "travelTimesByTimeframe=" + Arrays.toString(travelTimesByTimeframe) +
+                    ", distancesByTimeframe=" + Arrays.toString(distancesByTimeframe) +
+                    ", locationsNotInMap=" + locationsNotInMap +
+                    '}';
+        }
     }
 }

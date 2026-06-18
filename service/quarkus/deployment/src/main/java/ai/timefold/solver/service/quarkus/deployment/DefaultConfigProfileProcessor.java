@@ -93,7 +93,7 @@ public class DefaultConfigProfileProcessor {
         String location = config.getOptionalValue(MODEL_CONFIG_MAP_LOCATION, String.class).orElse(null);
         Double maxDistanceFromRoad = config.getOptionalValue(MODEL_CONFIG_MAP_DISTANCE, Double.class).orElse(null);
         String transportType = config.getOptionalValue(MODEL_CONFIG_MAP_TRANSPORT_TYPE, String.class).orElse(null);
-        Boolean useTraffic = config.getOptionalValue(MODEL_CONFIG_MAP_USE_TRAFFIC, Boolean.class).orElse(null);
+        Boolean useTraffic = config.getOptionalValue(MODEL_CONFIG_MAP_USE_TRAFFIC, Boolean.class).orElse(false);
         Integer maxThreadCount = config.getOptionalValue(MODEL_CONFIG_MAX_THREAD_COUNT, Integer.class).orElse(null);
         Duration spentLimit = config.getOptionalValue(MODEL_CONFIG_TERMINATION_SPENT_LIMIT, Duration.class).orElse(null);
         Duration unimprovedSpentLimit =

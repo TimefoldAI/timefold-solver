@@ -110,11 +110,6 @@ public class Location {
 
     /**
      * Returns the travel time for a route between this location and the given location.
-     * <p>
-     * Works whether the location was enriched with a single matrix ({@link #setTravelTimeMatrix(DistanceMatrix)}) or with
-     * per-timeframe matrices ({@link #setTravelTimeMatrices(DistanceMatrix[], ToIntFunction)}): the single matrix is used
-     * when present, otherwise the first available timeframe matrix is used as a representative, timestamp-independent
-     * matrix.
      *
      * @param location the location representing the route destination
      * @return {@link TravelTime} instance representing the travel time in seconds and indicating if the destination is
@@ -139,11 +134,6 @@ public class Location {
 
     /**
      * Returns the travel time for a route between this location and the given location at the given departure time.
-     * <p>
-     * Works whether the location was enriched with per-timeframe matrices
-     * ({@link #setTravelTimeMatrices(DistanceMatrix[], ToIntFunction)}) or with a single matrix
-     * ({@link #setTravelTimeMatrix(DistanceMatrix)}): the per-timeframe matrix for {@code departureTime} is used when
-     * timeframe matrices are configured, otherwise the single matrix is used and {@code departureTime} is ignored.
      *
      * @param location the location representing the route destination
      * @param departureTime the instant used to select the traffic timeframe matrix
@@ -177,11 +167,6 @@ public class Location {
 
     /**
      * Returns the travel distance for a route between this location and the given location.
-     * <p>
-     * Works whether the location was enriched with a single matrix ({@link #setDistanceMatrix(DistanceMatrix)}) or with
-     * per-timeframe matrices ({@link #setDistanceMatrices(DistanceMatrix[], ToIntFunction)}): the single matrix is used
-     * when present, otherwise the first available timeframe matrix is used as a representative, timestamp-independent
-     * matrix.
      *
      * @param location the location representing the route destination
      * @return {@link TravelDistance} instance representing the travel distance in meters and indicating if the destination is
@@ -206,11 +191,6 @@ public class Location {
 
     /**
      * Returns the travel distance for a route between this location and the given location at the given departure time.
-     * <p>
-     * Works whether the location was enriched with per-timeframe matrices
-     * ({@link #setDistanceMatrices(DistanceMatrix[], ToIntFunction)}) or with a single matrix
-     * ({@link #setDistanceMatrix(DistanceMatrix)}): the per-timeframe matrix for {@code departureTime} is used when
-     * timeframe matrices are configured, otherwise the single matrix is used and {@code departureTime} is ignored.
      *
      * @param location the location representing the route destination
      * @param departureTime the instant used to select the traffic timeframe matrix

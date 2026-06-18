@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -50,10 +49,10 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
 
     @Inject
     public TravelTimeMatrixEnricher(MapService mapService, MapServiceOptionsSupplier optionsSupplier,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.use-traffic") Optional<Boolean> useTraffic) {
+            @ConfigProperty(name = "ai.timefold.platform.map-service.use-traffic", defaultValue = "false") Boolean useTraffic) {
         this.mapService = mapService;
         this.optionsSupplier = optionsSupplier;
-        this.useTraffic = useTraffic.orElse(false);
+        this.useTraffic = useTraffic;
     }
 
     @Retry(maxRetries = 5, delay = 1, delayUnit = ChronoUnit.SECONDS, abortOn = {

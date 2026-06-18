@@ -12,7 +12,7 @@ import ai.timefold.solver.service.maps.api.model.TimeInterval;
 
 import org.junit.jupiter.api.Test;
 
-public class TimeAwareUniqueLocationAccumulatorTest {
+class TimeAwareUniqueLocationAccumulatorTest {
 
     private static final OffsetDateTime T0 = OffsetDateTime.of(2024, 1, 1, 8, 0, 0, 0, ZoneOffset.UTC);
     private static final OffsetDateTime T1 = OffsetDateTime.of(2024, 1, 1, 10, 0, 0, 0, ZoneOffset.UTC);

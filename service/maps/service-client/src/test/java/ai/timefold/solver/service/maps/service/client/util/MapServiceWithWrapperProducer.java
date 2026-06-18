@@ -1,7 +1,6 @@
 package ai.timefold.solver.service.maps.service.client.util;
 
 import java.util.List;
-import java.util.Optional;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.Dependent;
@@ -36,7 +35,7 @@ public class MapServiceWithWrapperProducer {
     private final HaversineWaypointsProvider waypointsProvider;
     private final MapServiceClient mapService;
     private final List<TravelTimeAndDistanceConverter> converters;
-    private final Optional<Boolean> fallbackEnabled;
+    private final Boolean fallbackEnabled;
     private final TimeframeBucketing timeframeBucketing;
     private final ManagedExecutor managedExecutor;
     private final ObjectMapper mapper;
@@ -49,7 +48,8 @@ public class MapServiceWithWrapperProducer {
             HaversineWaypointsProvider waypointsProvider,
             @RestClient MapServiceClient mapService,
             @All List<TravelTimeAndDistanceConverter> converters,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.enable-fallback") Optional<Boolean> fallbackEnabled,
+            @ConfigProperty(name = "ai.timefold.platform.map-service.enable-fallback",
+                    defaultValue = "false") Boolean fallbackEnabled,
             TimeframeBucketing timeframeBucketing,
             ManagedExecutor managedExecutor,
             ObjectMapper mapper,
@@ -71,8 +71,8 @@ public class MapServiceWithWrapperProducer {
         MapService mapService;
 
         if (useRemote) {
-            mapService = new MapServiceClientImpl(this.mapService, converters, fallbackEnabled, Optional.empty(),
-                    Optional.empty(), travelTimeAndDistanceProvider, waypointsProvider, timeframeBucketing,
+            mapService = new MapServiceClientImpl(this.mapService, converters, fallbackEnabled, false,
+                    "", travelTimeAndDistanceProvider, waypointsProvider, timeframeBucketing,
                     managedExecutor, mapper);
         } else {
             mapService = new MapServiceLocalHaversineImpl(travelTimeAndDistanceProvider, waypointsProvider);

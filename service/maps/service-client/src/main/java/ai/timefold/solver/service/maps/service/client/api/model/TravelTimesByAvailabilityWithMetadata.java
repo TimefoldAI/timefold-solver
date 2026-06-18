@@ -1,7 +1,9 @@
 package ai.timefold.solver.service.maps.service.client.api.model;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.service.maps.api.DistanceMatrix;
@@ -21,4 +23,31 @@ public record TravelTimesByAvailabilityWithMetadata(DistanceMatrix[] travelTimes
         DistanceMatrix[] distancesByTimeframe,
         List<Location> locationsNotInMap,
         ToIntFunction<OffsetDateTime> timeframeIndexResolver) {
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass())
+            return false;
+        TravelTimesByAvailabilityWithMetadata that = (TravelTimesByAvailabilityWithMetadata) o;
+        return Objects.equals(locationsNotInMap(), that.locationsNotInMap())
+                && Objects.deepEquals(distancesByTimeframe(), that.distancesByTimeframe())
+                && Objects.deepEquals(travelTimesByTimeframe(), that.travelTimesByTimeframe())
+                && Objects.equals(timeframeIndexResolver(), that.timeframeIndexResolver());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.hashCode(travelTimesByTimeframe()), Arrays.hashCode(distancesByTimeframe()),
+                locationsNotInMap(), timeframeIndexResolver());
+    }
+
+    @Override
+    public String toString() {
+        return "TravelTimesByAvailabilityWithMetadata{" +
+                "travelTimesByTimeframe=" + Arrays.toString(travelTimesByTimeframe) +
+                ", distancesByTimeframe=" + Arrays.toString(distancesByTimeframe) +
+                ", locationsNotInMap=" + locationsNotInMap +
+                ", timeframeIndexResolver=" + timeframeIndexResolver +
+                '}';
+    }
 }

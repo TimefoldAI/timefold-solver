@@ -45,7 +45,7 @@ class StaticDaypartBucketingTest {
 
     @Test
     void indexOfMatchesAllTimeframesOrder() {
-        assertThat(bucketing.indexOf(at(8, 0))).isEqualTo(0); // morning
+        assertThat(bucketing.indexOf(at(8, 0))).isZero(); // morning
         assertThat(bucketing.indexOf(at(14, 0))).isEqualTo(1); // afternoon
         assertThat(bucketing.indexOf(at(22, 0))).isEqualTo(2); // night
         // Invariant: allTimeframes().get(indexOf(t)) == timeframeOf(t)

@@ -66,7 +66,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         StubMapService stub = new StubMapService(new TravelTimesByAvailabilityWithMetadata(
                 travelTimesByTimeframe, distancesByTimeframe, List.of(), resolver), null);
         TravelTimeMatrixEnricher enricher =
-                new TravelTimeMatrixEnricher(stub, optionsSupplier, Optional.empty());
+                new TravelTimeMatrixEnricher(stub, optionsSupplier, false);
 
         Map<Location, List<TimeInterval>> availability = new LinkedHashMap<>();
         // Single interval spanning morning and afternoon covers both timeframes
@@ -99,7 +99,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         StubMapService stub = new StubMapService(null,
                 new TravelTimeAndDistanceWithMetadata(new TravelTimeAndDistance(travel, distance), List.of()));
         TravelTimeMatrixEnricher enricher =
-                new TravelTimeMatrixEnricher(stub, optionsSupplier, Optional.empty());
+                new TravelTimeMatrixEnricher(stub, optionsSupplier, false);
 
         enricher.enrich(new StubLocationsModel(List.of(l1, l2)));
 
@@ -123,7 +123,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         StubMapService stub = new StubMapService(new TravelTimesByAvailabilityWithMetadata(
                 travelTimesByTimeframe, distancesByTimeframe, List.of(), bucketing::indexOf), null);
         TravelTimeMatrixEnricher enricher =
-                new TravelTimeMatrixEnricher(stub, optionsSupplier, Optional.empty());
+                new TravelTimeMatrixEnricher(stub, optionsSupplier, false);
 
         Map<Location, List<TimeInterval>> availability =
                 Map.of(l1, List.of(new TimeInterval(MORNING_AT, MORNING_AT)),
@@ -161,7 +161,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         StubMapService stub = new StubMapService(new TravelTimesByAvailabilityWithMetadata(
                 travelTimesByTimeframe, distancesByTimeframe, List.of(), bucketing::indexOf), null);
         TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(stub, optionsSupplier,
-                Optional.of(true));
+                true);
 
         enricher.enrich(new StubLocationsModel(List.of(l1, l2)));
 
@@ -195,7 +195,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         StubMapService stub = new StubMapService(new TravelTimesByAvailabilityWithMetadata(
                 new DistanceMatrix[] { travel }, new DistanceMatrix[] { distance }, List.of(), t -> 0), null);
         TravelTimeMatrixEnricher enricher =
-                new TravelTimeMatrixEnricher(stub, optionsSupplier, Optional.empty());
+                new TravelTimeMatrixEnricher(stub, optionsSupplier, false);
 
         Map<Location, List<TimeInterval>> availability =
                 Map.of(l1, List.of(new TimeInterval(MORNING_AT, AFTERNOON_AT)),
@@ -213,7 +213,7 @@ class TravelTimeMatrixEnricherTrafficTest {
     void acceptsLocationsAwareSolverModel() {
         TravelTimeMatrixEnricher enricher =
                 new TravelTimeMatrixEnricher(new StubMapService(null, null), optionsSupplier,
-                        Optional.empty());
+                        false);
 
         assertThat(enricher.accept(new StubLocationsModel(List.of()))).isTrue();
         assertThat(enricher.accept(new Object())).isFalse();
@@ -223,13 +223,14 @@ class TravelTimeMatrixEnricherTrafficTest {
     void wrapsNonTimefoldExceptionFromMapService() {
         MapService failing = new FailingMapService();
         TravelTimeMatrixEnricher enricher =
-                new TravelTimeMatrixEnricher(failing, optionsSupplier, Optional.empty());
+                new TravelTimeMatrixEnricher(failing, optionsSupplier, false);
 
         Location l1 = new Location(0, 0);
         Map<Location, List<TimeInterval>> availability = new LinkedHashMap<>();
         availability.put(l1, List.of(new TimeInterval(MORNING_AT, MORNING_AT)));
 
-        assertThatThrownBy(() -> enricher.enrich(new StubTrafficModel(availability)))
+        StubTrafficModel model = new StubTrafficModel(availability);
+        assertThatThrownBy(() -> enricher.enrich(model))
                 .isInstanceOf(TimefoldRuntimeException.class)
                 .hasMessageContaining("Error getting travel time and distances");
     }

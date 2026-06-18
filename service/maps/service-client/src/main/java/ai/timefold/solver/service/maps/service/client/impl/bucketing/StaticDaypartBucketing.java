@@ -73,7 +73,7 @@ public class StaticDaypartBucketing implements TimeframeBucketing {
 
     // Returns the first bucket boundary (06:00, 12:00, or 18:00 on the same date, or 06:00 next day)
     // that is strictly after t, using t's own offset.
-    private OffsetDateTime nextBucketBoundaryAfter(OffsetDateTime t) {
+    private static OffsetDateTime nextBucketBoundaryAfter(OffsetDateTime t) {
         LocalDate date = t.toLocalDate();
         ZoneOffset offset = t.getOffset();
         for (int bucketHours : BUCKET_HOURS) {
