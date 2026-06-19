@@ -67,7 +67,9 @@ These are the most important configuration properties for the plugin. They are s
 
 === Authentication (environment)
 
-- `TIMEFOLD_PAT` — personal access token for Timefold Platform. The plugin reads this environment variable (via `AccessTokenProvider.getAccessToken()`) and sets the `Authorization: Bearer <token>` header on requests.
+- `TIMEFOLD_PAT` — personal access token for Timefold Platform. The plugin reads this environment variable and sets the `Authorization: Bearer <token>` header on requests.
+  The token must have the `registered-model:create` and `registered-model:update` scopes; requests will fail with an authorization error if either scope is missing.
+  See link:https://docs.timefold.ai/timefold-platform/latest/api/platform-api#_authentication_with_personal_access_tokens[Authentication with Personal Access Tokens] for how to create a token.
 
 == Headers & HTTP details
 
