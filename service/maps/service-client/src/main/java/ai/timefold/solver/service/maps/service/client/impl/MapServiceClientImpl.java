@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -78,8 +79,7 @@ public class MapServiceClientImpl implements MapService {
                     defaultValue = "false") Boolean fallbackEnabled,
             @ConfigProperty(name = "ai.timefold.platform.map-service.use-traffic", defaultValue = "false") Boolean useTraffic,
             @ConfigProperty(
-                    name = "ai.timefold.platform.map-service.default-timeframe",
-                    defaultValue = "") String defaultTimeframeOverride,
+                    name = "ai.timefold.platform.map-service.default-timeframe") Optional<String> defaultTimeframeOverride,
             HaversineTravelTimeAndDistanceMatrixProvider travelTimeAndDistanceMatrixProvider,
             HaversineWaypointsProvider haversineWaypointsProvider,
             TimeframeBucketing timeframeBucketing,
@@ -620,18 +620,18 @@ public class MapServiceClientImpl implements MapService {
         }
     }
 
-    private static Timeframe resolveDefaultTimeframe(TimeframeBucketing bucketing, String override) {
-        if (override == null || override.isBlank()) {
+    private static Timeframe resolveDefaultTimeframe(TimeframeBucketing bucketing, Optional<String> override) {
+        if (override.isEmpty() || override.get().isBlank()) {
             return bucketing.defaultTimeframe();
         }
-
+        String requested = override.get();
         return bucketing.allTimeframes().stream()
-                .filter(t -> t.name().equalsIgnoreCase(override))
+                .filter(t -> t.name().equalsIgnoreCase(requested))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         ("Configured default timeframe '%s' is not one of the supported timeframes %s. " +
                                 "Check the ai.timefold.platform.map-service.default-timeframe property.")
-                                .formatted(override, bucketing.allTimeframes())));
+                                .formatted(requested, bucketing.allTimeframes())));
     }
 
     private record AssembledTimeframedMatrices(DistanceMatrix[] travelTimesByTimeframe,

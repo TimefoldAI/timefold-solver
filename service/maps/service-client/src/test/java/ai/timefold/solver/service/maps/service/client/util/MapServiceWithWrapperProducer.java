@@ -1,6 +1,7 @@
 package ai.timefold.solver.service.maps.service.client.util;
 
 import java.util.List;
+import java.util.Optional;
 
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.Dependent;
@@ -72,7 +73,7 @@ public class MapServiceWithWrapperProducer {
 
         if (useRemote) {
             mapService = new MapServiceClientImpl(this.mapService, converters, fallbackEnabled, false,
-                    "", travelTimeAndDistanceProvider, waypointsProvider, timeframeBucketing,
+                    Optional.empty(), travelTimeAndDistanceProvider, waypointsProvider, timeframeBucketing,
                     managedExecutor, mapper);
         } else {
             mapService = new MapServiceLocalHaversineImpl(travelTimeAndDistanceProvider, waypointsProvider);

@@ -1,6 +1,7 @@
 package ai.timefold.solver.service.maps.service.client.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;
@@ -30,7 +31,7 @@ public class MapServiceProducer {
     private final List<TravelTimeAndDistanceConverter> converters;
     private final Boolean fallbackEnabled;
     private final Boolean useTraffic;
-    private final String defaultTimeframeOverride;
+    private final Optional<String> defaultTimeframeOverride;
     private final TimeframeBucketing timeframeBucketing;
     private final ManagedExecutor managedExecutor;
     private final ObjectMapper mapper;
@@ -46,8 +47,7 @@ public class MapServiceProducer {
                     defaultValue = "false") Boolean fallbackEnabled,
             @ConfigProperty(name = "ai.timefold.platform.map-service.use-traffic", defaultValue = "false") Boolean useTraffic,
             @ConfigProperty(
-                    name = "ai.timefold.platform.map-service.default-timeframe",
-                    defaultValue = "") String defaultTimeframeOverride,
+                    name = "ai.timefold.platform.map-service.default-timeframe") Optional<String> defaultTimeframeOverride,
             TimeframeBucketing timeframeBucketing,
             ManagedExecutor managedExecutor,
             ObjectMapper mapper) {
