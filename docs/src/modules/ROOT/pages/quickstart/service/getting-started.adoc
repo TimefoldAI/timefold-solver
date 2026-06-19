@@ -22,8 +22,8 @@ include::../shared/_whatyoubuild.adoc[]
 == Solution source code
 
 In case you get stuck during this Getting Started guide, it might be worth checking the solution project.
-// todo: fix link
-This https://github.com/TimefoldAI/timefold-models-sdk-getting-started[solution can be found on GitHub].
+
+This https://github.com/TimefoldAI/timefold-service-getting-started[solution can be found on GitHub].
 
 [sectnums!]
 == Prerequisites
@@ -55,8 +55,8 @@ Your `pom.xml` file has the following content:
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <groupId>ai.timefold.sdk</groupId>
-    <artifactId>timefold-sdk-model-parent</artifactId>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-service-parent</artifactId>
     <version>{timefold-sdk-version}</version>
   </parent>
 
@@ -69,15 +69,7 @@ Your `pom.xml` file has the following content:
 
   <properties>
     <revision>1.0.0-SNAPSHOT</revision>
-    <version.ai.timefold.sdk>{timefold-sdk-version}</version.ai.timefold.sdk>
   </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>ai.timefold.sdk.enterprise</groupId>
-      <artifactId>timefold-sdk-enterprise</artifactId>
-    </dependency>
-  </dependencies>
 
 </project>
 ----
@@ -114,12 +106,14 @@ package org.acme.schooltimetabling.domain;
 
 import java.util.List;
 
-import ai.timefold.sdk.core.api.AbstractSimpleModel;
+import ai.timefold.solver.service.definition.api.AbstractSimpleModel;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
+import ai.timefold.solver.core.api.solver.change.ConstraintWeightOverrides;
 
 @PlanningSolution
 public class Timetable extends AbstractSimpleModel {
@@ -132,7 +126,6 @@ public class Timetable extends AbstractSimpleModel {
     private List<Room> rooms;
     @PlanningEntityCollectionProperty
     private List<Lesson> lessons;
-
     public Timetable() {
     }
 
@@ -152,6 +145,15 @@ public class Timetable extends AbstractSimpleModel {
 
     public List<Lesson> getLessons() {
         return lessons;
+    }
+
+    @Override
+    public ConstraintWeightOverrides<HardMediumSoftLongScore> getConstraintWeightOverrides() {
+        return ConstraintWeightOverrides.none();
+    }
+
+    public void setConstraintWeightOverrides(ConstraintWeightOverrides<HardMediumSoftLongScore> constraintWeightOverrides) {
+        // Left empty for now; see constraint weights documentation
     }
 }
 ----
@@ -179,6 +181,10 @@ However, this class is also the output of the solution:
 
 * The `lessons` field for which each `Lesson` instance has non-null `timeslot` and `room` fields after solving.
 
+NOTE: The `getConstraintWeightOverrides()` and `setConstraintWeightOverrides()` methods are required by the `AbstractSimpleModel` superclass.
+For now they are left as stubs — `none()` means no constraint weights can be overridden per request.
+Configuring this properly is covered in the xref:service/constraint-weights.adoc[Constraint weights] section and is not part of this guide.
+
 === The value range providers
 include::../shared/school-timetabling/_school-timetabling-solution-value-range-providers.adoc[]
 
@@ -186,20 +192,33 @@ include::../shared/school-timetabling/_school-timetabling-solution-facts-and-ent
 
 == Add the Solver Configuration
 
-// TODO: CHECK IF STILL THE CASE
-[NOTE]
-This will be replaced in the near future so this configuration will no longer be explicitly needed.
+Without a termination setting, the solver runs forever.
+You also need to provide some basic metadata about your application.
 
-At time of writing, the application will not start without explicitly configuring the solver spent limit.
-This should be configured in a `src/main/resources/application.properties` file.
+Create the `src/main/resources/application.properties` file:
 
-[source,text]
+[source,properties]
 ----
+# The solver runs for 30 seconds by default.
+# Increase this for larger datasets to find a better solution.
 ai.timefold.platform.termination.spent-limit=PT30S
+
+# Application metadata — included in the generated OpenAPI specification
+timefold.application.name=my-model
+timefold.application.version=v1
+timefold.application.contact.email=info@example.com
+timefold.application.contact.name=Your Name
+timefold.application.contact.url=https://example.com
 ----
 
-This sets up the maximum time the solver will run to be 30 seconds by default, which is enough for this guide.
-Detailed instruction on how to set this up more correctly will be found in the xref:service/modeling-changes.adoc[solver part of the documentation].
+`ai.timefold.platform.termination.spent-limit` sets the default maximum time the solver will run.
+The value uses the https://www.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm[ISO 8601 duration format]: `PT30S` means 30 seconds.
+For production use, consider at least five minutes (`PT5M`) to allow the solver more time to find a better solution.
+
+NOTE: The per-request `config.run.termination.spentLimit` field in the POST body (shown later) overrides this default for individual runs.
+
+`timefold.application.name`, `timefold.application.version`, and the contact fields are *required* metadata.
+They are used to identify your service, validate the JSON schema of requests, and populate the generated OpenAPI specification.
 
 == REST API
 
@@ -222,7 +241,7 @@ Create the `src/main/java/org/acme/schooltimetabling/rest/TimetableResource.java
 package org.acme.schooltimetabling.rest;
 
 import jakarta.ws.rs.Path;
-import ai.timefold.sdk.rest.api.ModelRest;
+import ai.timefold.solver.service.rest.api.ModelRest;
 
 @Path("/v1/timetables")
 public interface TimetableResource extends ModelRest {
@@ -249,11 +268,8 @@ You should see the following line in the log on successful start
 
 [source,bash]
 ----
-getting-started-school-timetabling <version> on JVM (powered by Quarkus 3.21.4) started in 1.552s. Listening on: http://localhost:8080
+getting-started-school-timetabling <version> on JVM (powered by Quarkus {quarkus-version}) started in 1.552s. Listening on: http://localhost:8080
 ----
-
-//TODO PARAMETERIZE service module QUARKUS VERSION
-//TODO PARAMETERIZE service module VERSION
 
 Open the http://localhost:8080/q/swagger-ui/[Swagger OpenAPI Viewer] to inspect the generated API Endpoints:
 http://localhost:8080/q/swagger-ui/
@@ -274,7 +290,7 @@ To showcase that the model is now ready for use we only need 2 of those endpoint
 
 [source,bash]
 ----
-curl -X 'POST' \
+curl -v -X 'POST' \
   'http://localhost:8080/v1/timetables' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -290,8 +306,8 @@ curl -X 'POST' \
     "timeslots": [
       {
         "dayOfWeek": "MONDAY",
-        "startTime": "13:45:30.123456789",
-        "endTime": "13:45:30.123456789"
+        "startTime": "13:45:30",
+        "endTime": "14:45:30"
       }
     ],
     "rooms": [
