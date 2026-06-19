@@ -67,7 +67,7 @@
     <module>spring-integration</module>
     <module>quarkus-integration</module>
     <module>tools</module>
-    <module>model</module>
+    <module>service</module>
   </modules>
 
   <build>

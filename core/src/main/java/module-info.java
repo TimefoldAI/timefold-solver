@@ -67,6 +67,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.preview.api.move.test;
     exports ai.timefold.solver.core.preview.api.neighborhood;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream;
+    exports ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.collector;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream.function;
     exports ai.timefold.solver.core.preview.api.neighborhood.stream.joiner;
@@ -181,6 +182,7 @@ module ai.timefold.solver.core {
 
     // enterprise-specific exports
     exports ai.timefold.solver.core.impl.bavet.common to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.bavet.uni to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.constructionheuristic to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.constructionheuristic.decider to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.constructionheuristic.decider.forager to ai.timefold.solver.enterprise.core;
@@ -201,6 +203,8 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.neighborhood to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.partitionedsearch to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.phase to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.score.stream.bavet to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.score.stream.bavet.uni to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.random to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.recaller to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.solver.event to ai.timefold.solver.enterprise.core;

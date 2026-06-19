@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.bavet.common;
 
 public record ProfilingPropagator(InnerConstraintProfiler profiler, ConstraintNodeProfileId profileId,
         Propagator delegate) implements Propagator {
+
     @Override
     public void propagateRetracts() {
         profiler.measure(profileId,

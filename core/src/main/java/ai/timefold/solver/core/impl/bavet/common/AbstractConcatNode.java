@@ -36,6 +36,7 @@ public abstract class AbstractConcatNode<LeftTuple_ extends Tuple, RightTuple_ e
             int leftSourceTupleCloneStoreIndex,
             int rightSourceTupleCloneStoreIndex,
             int outputStoreSize) {
+        super(nextNodesTupleLifecycle);
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
         this.leftSourceTupleCloneStoreIndex = leftSourceTupleCloneStoreIndex;
         this.rightSourceTupleCloneStoreIndex = rightSourceTupleCloneStoreIndex;
@@ -54,6 +55,13 @@ public abstract class AbstractConcatNode<LeftTuple_ extends Tuple, RightTuple_ e
     protected abstract void updateOutTupleFromLeft(LeftTuple_ leftTuple, OutTuple_ outTuple);
 
     protected abstract void updateOutTupleFromRight(RightTuple_ rightTuple, OutTuple_ outTuple);
+
+    @Override
+    protected boolean canProduceTuples() {
+        // Unlike other two-input nodes,
+        // this node will produce tuples even if one of its inputs won't.
+        return leftCanProduceTuples || rightCanProduceTuples;
+    }
 
     @Override
     public final void insertLeft(LeftTuple_ tuple) {

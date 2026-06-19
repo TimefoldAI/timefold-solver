@@ -88,6 +88,19 @@ set the xref:constraints-and-score/constraint-configuration.adoc#definingAndOver
 In xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams],
 this will result in the constraint not being added to the node network and therefore have no performance impact at all.
 
+Should you forget to set the constraint weight to zero,
+the constraint may still be deactivated at runtime,
+if the engine can prove that it will never contribute to the score.
+For example, a constraint using `forEach(Visit.class)` will be deactivated
+if there are no `Visit` instances in the solution.
+
+This is inferior to manually setting the constraint weight to zero,
+as the engine can only perform optimizations it can guarantee are safe
+based on the limited information it has.
+With full understanding of the domain,
+you are in a much better position to know which constraints are relevant and which are not,
+and you can set the weights accordingly.
+
 [#buildInHardConstraint]
 == Built-in hard constraint
 
@@ -100,7 +113,7 @@ to define that Course A should only be assigned a `Room` different than X.
 
 This can give a good performance gain in some use cases, not just because the move evaluation is faster,
 but mainly because most optimization algorithms will spend less time evaluating infeasible solutions.
-However, usually this is not a good idea because there is a real risk of trading short-term benefits for long-term harm:
+However, there is a real risk of trading short-term benefits for long-term harm:
 
 * Many optimization algorithms rely on the freedom to break hard constraints when changing planning entities,
 to get out of local optima.

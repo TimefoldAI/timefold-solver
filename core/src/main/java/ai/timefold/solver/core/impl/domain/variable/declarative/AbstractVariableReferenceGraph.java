@@ -43,11 +43,11 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
         nodeList = List.copyOf(outerGraph.nodeList);
         var instanceCount = nodeList.size();
         // Often the maps are a singleton; we improve performance by actually making it so.
-        variableReferenceToContainingNodeMap = mapOfMapsDeepCopyOf(outerGraph.variableReferenceToContainingNodeMap);
-        variableReferenceToBeforeProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToBeforeProcessor);
-        variableReferenceToAfterProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToAfterProcessor);
+        variableReferenceToContainingNodeMap = Map.copyOf(outerGraph.variableReferenceToContainingNodeMap);
+        variableReferenceToBeforeProcessor = Map.copyOf(outerGraph.variableReferenceToBeforeProcessor);
+        variableReferenceToAfterProcessor = Map.copyOf(outerGraph.variableReferenceToAfterProcessor);
         edgeCount = new DynamicLinearProbeNonNegativeIntCounter[instanceCount];
-        for (int i = 0; i < instanceCount; i++) {
+        for (var i = 0; i < instanceCount; i++) {
             edgeCount[i] = new DynamicLinearProbeNonNegativeIntCounter();
         }
         graph = graphCreator.apply(instanceCount);
@@ -171,7 +171,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
         var processorCount = processorList.size();
         // Avoid creation of iterators on the hot path.
         // The short-lived instances were observed to cause considerable GC pressure.
-        for (int i = 0; i < processorCount; i++) {
+        for (var i = 0; i < processorCount; i++) {
             processorList.get(i).accept(this, entity);
         }
     }
@@ -205,24 +205,6 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
                         "{" + System.lineSeparator() + "  ",
                         "}"));
 
-    }
-
-    @SuppressWarnings("unchecked")
-    static <K1, K2, V> Map<K1, Map<K2, V>> mapOfMapsDeepCopyOf(Map<K1, Map<K2, V>> map) {
-        var entryArray = map.entrySet()
-                .stream()
-                .map(e -> Map.entry(e.getKey(), Map.copyOf(e.getValue())))
-                .toArray(Map.Entry[]::new);
-        return Map.ofEntries(entryArray);
-    }
-
-    @SuppressWarnings("unchecked")
-    static <K1, V> Map<K1, List<V>> mapOfListsDeepCopyOf(Map<K1, List<V>> map) {
-        var entryArray = map.entrySet()
-                .stream()
-                .map(e -> Map.entry(e.getKey(), List.copyOf(e.getValue())))
-                .toArray(Map.Entry[]::new);
-        return Map.ofEntries(entryArray);
     }
 
 }

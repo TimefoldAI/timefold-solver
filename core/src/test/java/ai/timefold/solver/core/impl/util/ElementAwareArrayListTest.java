@@ -5,16 +5,22 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @NullMarked
 class ElementAwareArrayListTest {
@@ -102,20 +108,38 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("addEntry reuses the null slot at lastElementPosition when it is a gap")
-        void addEntryReusesGapAtTail() {
+        @DisplayName("addEntry after churn appends in insertion order")
+        void addEntryAfterChurnAppendsInOrder() {
             var list = new ElementAwareArrayList<String>();
             list.addEntry("a");
             var entryB = list.addEntry("b");
             var entryC = list.addEntry("c");
 
-            entryB.remove(); // gap at slot 1; physical [a@0, null, c@2]
-            entryC.remove(); // c is last element → trim; physical [a@0, null], gapCount=1, lastElementPosition=1
+            entryB.remove(); // interior gap at slot 1
+            entryC.remove(); // last element: trim + retract trailing null → lastElementPosition=0, gapCount=0
 
-            var entryX = list.addEntry("x"); // reuses slot 1 (null at lastElementPosition)
+            // addEntry appends at lastElementPosition+1 (==1); insertion order a, x preserved.
+            var entryX = list.addEntry("x");
 
             assertThat(list).containsExactly("a", "x");
             assertThat(entryX.toString()).contains("@1");
+        }
+
+        @Test
+        @DisplayName("add after free-path empty re-allocates and preserves insertion order")
+        void addAfterLargeArrayFreePathPreservesOrder() {
+            var list = new ElementAwareArrayList<String>();
+            List<ElementAwareArrayList<String>.Entry> entryList = new ArrayList<>();
+            for (var i = 0; i < 30; i++) {
+                entryList.add(list.addEntry("e" + i));
+            }
+            for (var entry : entryList) {
+                entry.remove();
+            }
+            list.addEntry("x");
+            list.addEntry("y");
+            list.addEntry("z");
+            assertThat(list).containsExactly("x", "y", "z");
         }
 
     }
@@ -211,77 +235,6 @@ class ElementAwareArrayListTest {
             assertThat(list).hasSize(2);
             assertThat(entry1.toString()).contains("@0");
             assertThat(entry2.toString()).contains("@1");
-        }
-    }
-
-    @Nested
-    @DisplayName("Compaction tests")
-    class CompactionTests {
-
-        @Test
-        @DisplayName("Access compacts the list when gaps exist")
-        void accessCompactsWithGaps() {
-            var list = new ElementAwareArrayList<String>();
-            list.addEntry("first");
-            var entry2 = list.addEntry("second");
-            list.addEntry("third");
-
-            entry2.remove();
-
-            assertThat(list).hasSize(2);
-            assertThat(list.get(0)).isEqualTo("first");
-            assertThat(list.get(1)).isEqualTo("third");
-        }
-
-        @Test
-        @DisplayName("Access returns empty when all elements removed")
-        void accessWhenAllRemoved() {
-            var list = new ElementAwareArrayList<String>();
-            var entry1 = list.addEntry("first");
-
-            entry1.remove();
-
-            assertThat(list).isEmpty();
-        }
-
-        @Test
-        @DisplayName("Access compacts with tail gaps")
-        void accessCompactsWithTailGaps() {
-            var list = new ElementAwareArrayList<String>();
-            list.add("first");
-            list.add("second");
-            var entry3 = list.addEntry("third");
-            var entry4 = list.addEntry("fourth");
-            var entry5 = list.addEntry("fifth");
-
-            entry3.remove();
-            entry4.remove();
-            entry5.remove();
-
-            assertThat(list).hasSize(2);
-            assertThat(entry3.isRemoved()).isTrue();
-            assertThat(entry4.isRemoved()).isTrue();
-            assertThat(entry5.isRemoved()).isTrue();
-        }
-
-        @Test
-        @DisplayName("addAt with trailing gaps only rotates entry into first suffix gap")
-        void addAtAfterTrailingGapOnly() {
-            var list = new ElementAwareArrayList<String>();
-            var e1 = list.addEntry("a");
-            var e2 = list.addEntry("b");
-            var e3 = list.addEntry("c");
-            var e4 = list.addEntry("d");
-
-            e3.remove();
-            e4.remove();
-            // Physical: [a, b, null], gapCount=1, size=2 (d trim reduced lastElementPosition)
-
-            list.add(1, "x"); // partialCompact(0): no prefix gap; slot 1 non-null → rotate b into gap at slot 2
-            assertThat(list).hasSize(3);
-            assertThat(copyUsingForEach(list)).containsExactly("a", "x", "b");
-            assertThat(e1.toString()).contains("@0");
-            assertThat(e2.toString()).contains("@2");
         }
     }
 
@@ -651,14 +604,35 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("iterator visits null elements")
+        @DisplayName("listIterator visits null elements in forward and backward order")
         void iterator() {
             var list = new ElementAwareArrayList<@Nullable String>();
             list.addEntry(null);
             list.addEntry("a");
             list.addEntry(null);
-            var result = copyUsingForEach(list);
-            assertThat(result).containsExactly(null, "a", null);
+
+            // Forward traversal returns null elements.
+            var it = list.listIterator();
+            assertThat(it.next()).isNull();
+            assertThat(it.next()).isEqualTo("a");
+            assertThat(it.next()).isNull();
+            assertThat(it.hasNext()).isFalse();
+
+            // Backward traversal returns null elements.
+            assertThat(it.previous()).isNull();
+            assertThat(it.previous()).isEqualTo("a");
+            assertThat(it.previous()).isNull();
+            assertThat(it.hasPrevious()).isFalse();
+
+            // remove() creates a gap (Entry == null) adjacent to a live null element (Entry != null, element == null);
+            // next() must skip the former without skipping the latter.
+            it = list.listIterator();
+            assertThat(it.next()).isNull(); // null element at logical 0
+            it.remove(); // slot 0 becomes a removed gap; live null element remains at slot 2
+            assertThat(it.next()).isEqualTo("a");
+            assertThat(it.next()).isNull(); // live null element still reachable
+            assertThat(it.hasNext()).isFalse();
+            assertThat(list).containsExactly("a", null);
         }
 
         @Test
@@ -1068,25 +1042,6 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("forward iteration skips null slots")
-        void forwardWithGaps() {
-            var list = new ElementAwareArrayList<String>();
-            list.add("a");
-            var entryB = list.addEntry("b");
-            list.add("c");
-            var entryD = list.addEntry("d");
-            list.add("e");
-            entryB.remove();
-            entryD.remove();
-
-            var it = list.listIterator();
-            assertThat(it.next()).isEqualTo("a");
-            assertThat(it.next()).isEqualTo("c");
-            assertThat(it.next()).isEqualTo("e");
-            assertThat(it.hasNext()).isFalse();
-        }
-
-        @Test
         @DisplayName("remove after next() removes correct element, adjusts cursor")
         void removeFwd() {
             var list = new ElementAwareArrayList<String>();
@@ -1097,10 +1052,10 @@ class ElementAwareArrayListTest {
             var it = list.listIterator();
             assertThat(it.next()).isEqualTo("a");
             it.remove();
-            assertThat(list).containsExactly("b", "c");
             assertThat(it.hasPrevious()).isFalse();
-            assertThat(it.hasNext()).isTrue();
+            assertThat(it).hasNext();
             assertThat(it.next()).isEqualTo("b");
+            assertThat(list).containsExactly("b", "c");
         }
 
         @Test
@@ -1172,6 +1127,30 @@ class ElementAwareArrayListTest {
         }
 
         @Test
+        @DisplayName("add() appending to list made gappy mid-iteration positions cursor for previous()")
+        void addAtEndAfterMidIterationRemoval() {
+            var list = new ElementAwareArrayList<String>();
+            list.add("a");
+            list.add("b");
+            list.add("c");
+            list.add("d");
+
+            var it = list.listIterator();
+            it.next(); // a
+            it.next(); // b
+            it.remove(); // gap at physical 1; logical [a, c, d]
+            it.next(); // c
+            it.next(); // d -> logical end, interior gap still present
+            it.add("e"); // append via addEntry while gap exists
+
+            assertThat(it.hasNext()).isFalse();
+            assertThat(it.previous()).isEqualTo("e");
+            assertThat(it.previous()).isEqualTo("d");
+            assertThat(it.previous()).isEqualTo("c");
+            assertThat(list).containsExactly("a", "c", "d", "e");
+        }
+
+        @Test
         @DisplayName("next() past end throws NoSuchElementException")
         void noSuchElement() {
             var list = new ElementAwareArrayList<String>();
@@ -1180,21 +1159,6 @@ class ElementAwareArrayListTest {
             var it = list.listIterator();
             it.next();
             assertThatExceptionOfType(NoSuchElementException.class)
-                    .isThrownBy(it::next);
-        }
-
-        @Test
-        @DisplayName("external remove(Entry) causes CME on subsequent iterator call")
-        void cmeOnExternalModify() {
-            var list = new ElementAwareArrayList<String>();
-            var entry = list.addEntry("a");
-            list.add("b");
-
-            var it = list.listIterator();
-            it.next();
-            entry.remove();
-
-            assertThatExceptionOfType(ConcurrentModificationException.class)
                     .isThrownBy(it::next);
         }
 
@@ -1226,67 +1190,6 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("listIterator(index) on gappy list compacts before starting")
-        void startAtIndexWithGaps() {
-            var list = new ElementAwareArrayList<String>();
-            list.add("a");
-            var entry = list.addEntry("b");
-            list.add("c");
-            list.add("d");
-            entry.remove();
-
-            var it = list.listIterator(1);
-            assertThat(it.next()).isEqualTo("c");
-            assertThat(it.previous()).isEqualTo("c");
-            assertThat(it.previous()).isEqualTo("a");
-        }
-
-        @Test
-        @DisplayName("forward iteration through gaps then full backward traversal")
-        void forwardWithGapsThenBackward() {
-            var list = new ElementAwareArrayList<String>();
-            list.add("a");
-            var entryB = list.addEntry("b");
-            list.add("c");
-            var entryD = list.addEntry("d");
-            list.add("e");
-            entryB.remove();
-            entryD.remove();
-            // Physical: [a, null, c, null, e]; gaps never compacted during forward scan.
-
-            var it = list.listIterator();
-            assertThat(it.next()).isEqualTo("a");
-            assertThat(it.next()).isEqualTo("c");
-            assertThat(it.next()).isEqualTo("e");
-            assertThat(it.hasNext()).isFalse();
-
-            // previous() must traverse back through the uncompacted gaps.
-            assertThat(it.previous()).isEqualTo("e");
-            assertThat(it.previous()).isEqualTo("c");
-            assertThat(it.previous()).isEqualTo("a");
-            assertThat(it.hasPrevious()).isFalse();
-        }
-
-        @Test
-        @DisplayName("backward iteration from end of gappy list (gaps at head and middle)")
-        void backwardFromEndWithGaps() {
-            var list = new ElementAwareArrayList<String>();
-            var entryA = list.addEntry("a");
-            list.add("b");
-            var entryC = list.addEntry("c");
-            list.add("d");
-            entryA.remove();
-            entryC.remove();
-            // Physical: [null, b, null, d], logical: [b, d].
-
-            var it = list.listIterator(list.size());
-            assertThat(it.hasPrevious()).isTrue();
-            assertThat(it.previous()).isEqualTo("d");
-            assertThat(it.previous()).isEqualTo("b");
-            assertThat(it.hasPrevious()).isFalse();
-        }
-
-        @Test
         @DisplayName("iterator remove on list that already has gaps")
         void removeViaIteratorOnGappyList() {
             var list = new ElementAwareArrayList<String>();
@@ -1295,7 +1198,7 @@ class ElementAwareArrayListTest {
             list.add("c");
             list.add("d");
             entryB.remove();
-            // Physical: [a, null, c, d], logical: [a, c, d].
+            // listIterator() compacts the b-gap away first; the gap under test is the one it.remove() creates mid-iteration.
 
             var it = list.listIterator();
             assertThat(it.next()).isEqualTo("a");
@@ -1319,7 +1222,7 @@ class ElementAwareArrayListTest {
             list.add("b");
             list.add("c");
             entryX.remove();
-            // Physical: [a, null, b, c], logical: [a, b, c].
+            // listIterator() compacts the x-gap away first; the gap under test is the one it.remove() creates mid-iteration.
 
             var it = list.listIterator();
             assertThat(it.next()).isEqualTo("a");
@@ -1363,52 +1266,152 @@ class ElementAwareArrayListTest {
     }
 
     @Nested
-    @DisplayName("Fail-fast behavior tests (implementation-specific)")
-    class FailFastBehaviorTests {
+    @DisplayName("compact() and firstGapPosition tests")
+    class CompactAndFirstGapPositionTests {
 
         @Test
-        @DisplayName("listIterator fail-fast on add (implementation-specific)")
-        void cmeOnAdd() {
+        @DisplayName("compact() removes all gaps and preserves insertion order")
+        void compactRemovesAllGaps() {
             var list = new ElementAwareArrayList<String>();
-            list.add("a");
-            list.add("b");
+            list.addEntry("a");
+            var e1 = list.addEntry("b");
+            list.addEntry("c");
+            var e2 = list.addEntry("d");
+            list.addEntry("e");
+            e1.remove();
+            e2.remove();
 
-            var it = list.listIterator();
-            it.next();
-            list.add("c");
+            list.compact();
 
-            assertThatExceptionOfType(ConcurrentModificationException.class)
-                    .isThrownBy(it::next);
+            assertThat(list).containsExactly("a", "c", "e");
+            assertThat(list.get(0)).isEqualTo("a");
+            assertThat(list.get(1)).isEqualTo("c");
+            assertThat(list.get(2)).isEqualTo("e");
         }
 
         @Test
-        @DisplayName("listIterator fail-fast on remove(int) (implementation-specific)")
-        void cmeOnRemove() {
+        @DisplayName("compact() on already-compact list is a no-op")
+        void compactNoOpWhenAlreadyCompact() {
             var list = new ElementAwareArrayList<String>();
-            list.add("a");
-            list.add("b");
+            list.addEntry("a");
+            list.addEntry("b");
+            list.addEntry("c");
 
-            var it = list.listIterator();
-            it.next();
-            list.removeFirst();
+            list.compact();
 
-            assertThatExceptionOfType(ConcurrentModificationException.class)
-                    .isThrownBy(it::next);
+            assertThat(list).containsExactly("a", "b", "c");
         }
 
         @Test
-        @DisplayName("listIterator fail-fast on remove(Entry) (implementation-specific)")
-        void cmeOnEntryRemove() {
+        @DisplayName("compact() on empty list is a no-op")
+        void compactEmptyList() {
             var list = new ElementAwareArrayList<String>();
-            var entry = list.addEntry("a");
-            list.add("b");
 
-            var it = list.listIterator();
-            it.next();
-            entry.remove();
+            assertThatCode(list::compact).doesNotThrowAnyException();
+            assertThat(list).isEmpty();
+        }
 
-            assertThatExceptionOfType(ConcurrentModificationException.class)
-                    .isThrownBy(it::next);
+        @Test
+        @DisplayName("get() indices below the first gap return correct elements without compacting suffix")
+        void getBeforeFirstGapFastPath() {
+            var list = new ElementAwareArrayList<String>();
+            list.addEntry("a");
+            list.addEntry("b");
+            var e2 = list.addEntry("c");
+            list.addEntry("d");
+            e2.remove(); // gap at physical 2; firstGapPosition ≤ 2
+
+            // get(0) and get(1) are below the boundary — return correct values
+            assertThat(list.get(0)).isEqualTo("a");
+            assertThat(list.get(1)).isEqualTo("b");
+            // get(2) is at/above the boundary — triggers compaction
+            assertThat(list.get(2)).isEqualTo("d");
+        }
+
+        @Test
+        @DisplayName("firstGapPosition advances after partialCompact; prefix stays fast-path-valid")
+        void firstGapAdvancesAfterPartialCompact() {
+            var list = new ElementAwareArrayList<String>();
+            list.addEntry("a");
+            var e1 = list.addEntry("b");
+            list.addEntry("c");
+            var e2 = list.addEntry("d");
+            list.addEntry("e");
+            e1.remove();
+            e2.remove();
+
+            assertThat(list.get(1)).isEqualTo("c"); // triggers partialCompact(1), firstGapPosition advances
+            assertThat(list.get(0)).isEqualTo("a"); // still correct after boundary move
+            assertThat(list.get(1)).isEqualTo("c");
+            assertThat(list.get(2)).isEqualTo("e"); // next compaction round
+            assertThat(list).containsExactly("a", "c", "e");
+        }
+
+        @Test
+        @DisplayName("remove that lowers the boundary still compacts correctly on next get")
+        void removeLoweringBoundaryStillCompacts() {
+            var list = new ElementAwareArrayList<String>();
+            var e0 = list.addEntry("a");
+            list.addEntry("b");
+            var e2 = list.addEntry("c");
+            list.addEntry("d");
+
+            e2.remove(); // gap at 2; firstGapPosition ≤ 2
+            list.get(2); // compact to index 2; firstGapPosition = 3
+            e0.remove(); // gap at 0; firstGapPosition must drop back to ≤ 0
+
+            // After removing a0, logical list = [b, d]; get(0) must still work
+            assertThat(list.get(0)).isEqualTo("b");
+            assertThat(list.get(1)).isEqualTo("d");
+            assertThat(list).containsExactly("b", "d");
+        }
+
+        @Execution(ExecutionMode.CONCURRENT)
+        @ParameterizedTest
+        @MethodSource("randomSeeds")
+        @DisplayName("randomized stress test: EAAL matches ArrayList reference under mixed add/remove/get/compact")
+        void stressTestAgainstReferenceArrayList(long seed) {
+            var random = new Random(seed);
+            var reference = new ArrayList<String>();
+            var list = new ElementAwareArrayList<String>();
+            var liveEntries = new ArrayList<ElementAwareArrayList<String>.Entry>();
+            var counter = new AtomicInteger(0);
+
+            for (var i = 0; i < 10_000; i++) {
+                var op = random.nextInt(reference.isEmpty() ? 2 : 5);
+                switch (op) {
+                    case 0, 1 -> { // addEntry (weighted so the list doesn't starve)
+                        var element = "e" + counter.getAndIncrement();
+                        reference.add(element);
+                        liveEntries.add(list.addEntry(element));
+                    }
+                    case 2 -> { // remove(Entry)
+                        var idx = random.nextInt(liveEntries.size());
+                        var entry = liveEntries.remove(idx);
+                        reference.remove(entry.element());
+                        entry.remove();
+                    }
+                    case 3 -> { // get(int) — exercises firstGapPosition fast-path + partialCompact
+                        var idx = random.nextInt(reference.size());
+                        assertThat(list.get(idx)).isEqualTo(reference.get(idx));
+                    }
+                    case 4 -> { // compact() then full equality check
+                        list.compact();
+                        assertThat(list).containsExactlyElementsOf(reference);
+                    }
+                    default -> {
+                        throw new IllegalStateException("Unexpected operation code: %d".formatted(op));
+                    }
+                }
+                assertThat(list).hasSameSizeAs(reference);
+            }
+            assertThat(list).containsExactlyElementsOf(reference);
+        }
+
+        static Stream<Arguments> randomSeeds() {
+            var random = new Random(0xCAFEBABEL);
+            return random.longs(10)
+                    .mapToObj(Arguments::of);
         }
 
     }
