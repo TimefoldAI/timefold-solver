@@ -13,29 +13,34 @@ The plugin uses a goal prefix of `timefold` (see the plugin configuration in the
 - `timefold:undeploy` — remove a registered model from the platform (default phase: post-integration-test)
 
 == Features & behavior
-Configure goal (timefold:configure)
+
+=== Configure goal (timefold:configure)
+
 - Fetches platform identity/config by calling GET /api/platform/v1/aboutme?includeConfig=true
 - Requires a platform personal access token available via environment variable `TIMEFOLD_PAT` (see "Authentication" below)
 - If a single accountId is returned by the platform and `timefold.accountId` wasn't provided, the plugin will use it
 - Writes a properties file at `target/generated-resources/timefold-build.properties` with entries such as:
-  - `quarkus.container-image.registry` — value taken from platform config.containerRegistry
-  - `quarkus.container-image.group` — the account id used
-  - `quarkus.container-image.push` — set to `true`
-  - `image.native-suffix` — set to `""` when native support is disabled (default)
+** `quarkus.container-image.registry` — value taken from platform config.containerRegistry
+** `quarkus.container-image.group` — the account id used
+** `quarkus.container-image.push` — set to `true`
+** `image.native-suffix` — set to `""` when native support is disabled (default)
 
-Deploy goal (timefold:deploy)
+=== Deploy goal (timefold:deploy)
+
 - Uploads a model descriptor ZIP located at `${project.build.directory}/model-descriptor.zip` (default build directory) to the platform POST /api/platform/v1/models
 - The request query string includes parameters such as `type`, `registrationKey`, `handleSubscription`, and (for shared type) multiple `restrictedTo` entries for tenants
 - If the platform responds with 409 (conflict) and `timefold.model.overwrite=true`, the plugin will PATCH `/api/platform/v1/models/{registrationKey}` to update the existing model
 - The plugin reads the model descriptor to obtain name/id by extracting `timefold-model-descriptor.json` from the archive (or reading `target/timefold/timefold-model-descriptor.json` when present)
 
-Undeploy goal (timefold:undeploy)
+=== Undeploy goal (timefold:undeploy)
+
 - Deletes `/api/platform/v1/models/{registrationKey}` with `handleSubscription` query parameter
 
 == Important parameters (properties)
+
 These are the most important configuration properties for the plugin. They are set either via the plugin configuration in a POM or via system properties (e.g., `-Dtimefold.platformUrl=...`).
 
-Parameters (all configurable via plugin configuration or system properties)
+=== All goals
 
 - `timefold.platformUrl` (URI) — REQUIRED. Platform base URL (e.g. https://api.timefold.example). Set via `<platformUrl>` in plugin configuration or `-Dtimefold.platformUrl=...` on the CLI.
 - `timefold.model.key` (String) — REQUIRED for `deploy`/`undeploy`. Unique registration key for the model. Set via `<key>` in plugin configuration or `-Dtimefold.model.key=...`.
@@ -44,31 +49,39 @@ Parameters (all configurable via plugin configuration or system properties)
 - `project.build.directory` (String) — standard Maven property for build dir; plugin uses `${project.build.directory}/model-descriptor.zip` by default (configurable via Maven project settings).
 - `timefold.dryRun` (boolean, default=false) — when true, `configure`, `deploy` and `undeploy` will perform a dry run (no changes or uploads). Used as `-Dtimefold.dryRun=true`.
 
-Configure goal specific:
+=== Configure goal specific
+
 - `timefold.accountId` (String) — optional account id to use; if not provided and platform returns a single account, the plugin uses it. Set via `<accountId>` or `-Dtimefold.accountId=...`.
 - `timefold.model.configuration.skip` (boolean, default=false) — skip `timefold:configure`. Property name remains `timefold.model.configuration.skip`.
 - `timefold.model.nativeSupported` (boolean, default=false) — whether target image should use native suffix; when `false` `image.native-suffix` is set to an empty string allowing JVM builds to be used for native image use cases. Use `-Dtimefold.model.nativeSupported=true` to mark native support.
 
-Deploy goal specific:
+=== Deploy goal specific
+
 - `timefold.model.type` (String) — registration type ("Private" or "Shared"). If not set the plugin infers it from `timefold.model.tenants` (multiple tenants -> `Shared`, otherwise `Private`). Set via `<type>` or `-Dtimefold.model.type=Shared`.
 - `timefold.model.overwrite` (boolean, default=false) — when true and registration conflicts (HTTP 409), update existing model using PATCH. Use `-Dtimefold.model.overwrite=true`.
 - `timefold.model.deploy.skip` (boolean, default=false) — skip deploy goal.
 
-Undeploy goal specific:
+=== Undeploy goal specific
+
 - `tfp.model.undeploy.skip` (boolean, default=false) — skip undeploy goal. Note: the property used by the plugin for undeploy skip is `tfp.model.undeploy.skip` (not `timefold.model.undeploy.skip`).
 
-Authentication (environment)
+=== Authentication (environment)
+
 - `TIMEFOLD_PAT` — personal access token for Timefold Platform. The plugin reads this environment variable (via `AccessTokenProvider.getAccessToken()`) and sets the `Authorization: Bearer <token>` header on requests.
 
 == Headers & HTTP details
-- Requests include headers:
-  - `Authorization: Bearer <token>` (from TIMEFOLD_PAT)
-  - `Content-Type: application/octet-stream` for model upload requests
-  - `Accept: application/json`
-  - `X-TF-TENANT-ID` — set to the first tenant if `timefold.model.tenants` is provided
-- The plugin uses the JDK HttpClient API (java.net.http.HttpClient) to perform network calls.
+
+Requests include the following headers:
+
+- `Authorization: Bearer <token>` (from TIMEFOLD_PAT)
+- `Content-Type: application/octet-stream` for model upload requests
+- `Accept: application/json`
+- `X-TF-TENANT-ID` — set to the first tenant if `timefold.model.tenants` is provided
+
+The plugin uses the JDK HttpClient API (java.net.http.HttpClient) to perform network calls.
 
 == Example usage (pom)
+
 Add plugin configuration in your project's POM (example snippet):
 
 [source,xml]
@@ -106,12 +119,16 @@ mvn -Dtimefold.platformUrl=https://api.timefold.example -Dtimefold.model.key=my-
 When using shared models, also set `-Dtimefold.model.tenants=tenant1,tenant2` (or configure in the plugin section).
 
 == Generated files
+
 - `target/generated-resources/timefold-build.properties` — produced by `timefold:configure`. This file contains image registry/group/push configuration that can be picked up by your build (Quarkus or image-building workflows).
 
 == Implementation notes / tips for contributors
-- Goals are implemented as Mojos in `src/main/java/ai/timefold/sdk/tools/maven`:
-  - `ConfigureMojo` — writes build properties
-  - `DeployModelMojo` — handles upload/register/patch flow
-  - `UndeployModelMojo` — handles deletion
-  - `AbstractPlatformModelMojo` — common behavior, HTTP client, descriptor reading
-- The plugin relies on the environment variable `TIMEFOLD_PAT` for authentication; tests provide a test helper to mock token retrieval.
+
+Goals are implemented as Mojos in `src/main/java/ai/timefold/sdk/tools/maven`:
+
+- `ConfigureMojo` — writes build properties
+- `DeployModelMojo` — handles upload/register/patch flow
+- `UndeployModelMojo` — handles deletion
+- `AbstractPlatformModelMojo` — common behavior, HTTP client, descriptor reading
+
+The plugin relies on the environment variable `TIMEFOLD_PAT` for authentication; tests provide a test helper to mock token retrieval.
