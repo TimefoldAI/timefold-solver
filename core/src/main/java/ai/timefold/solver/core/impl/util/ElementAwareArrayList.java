@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
  * It uses internal state of the entry to track insertion position of the element.
  * When an entry is removed, its slot in the underlying collection is replaced with {@code null} (a gap);
  * therefore, the insertion position of later elements isn't changed.
- * Gaps are removed (the list is fully compacted) when {@link #forEach(Consumer)} or {@link #add(int, Object)} is called.
+ * Gaps are removed (the list is fully compacted) when {@link #listIterator()} is called.
  * {@link #get(int)} and related index-based operations compact only the prefix up to the requested index.
  * This keeps the overhead low while giving us most benefits of an array-backed list.
  * <p>
@@ -385,13 +385,8 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
                 throw new IndexOutOfBoundsException(
                         "The index (%d) must be >= 0 and <= size (%d).".formatted(startingPosition, currentSize));
             }
-            if (startingPosition > 0 && gapCount > 0) {
-                var index = startingPosition - 1;
-                partialCompact(index);
-                currentPosition = ((Entry) entries[index]).position + 1;
-            } else {
-                currentPosition = startingPosition;
-            }
+            // listIterator() compacts before construction ⟹ gapless: logical position == physical position.
+            currentPosition = startingPosition;
             logicalPosition = startingPosition;
         }
 
@@ -471,9 +466,12 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
 
         @Override
         public void add(T element) {
+            var appending = logicalPosition == size();
             ElementAwareArrayList.this.add(logicalPosition, element);
             logicalPosition++;
-            currentPosition = logicalPosition;
+            // Appended entries land at physical lastElementPosition (may exceed logicalPosition when gaps exist);
+            // interior inserts land at physical logicalPosition (prefix is compacted by add(int,T)).
+            currentPosition = appending ? lastElementPosition + 1 : logicalPosition;
             lastEntry = null;
         }
 

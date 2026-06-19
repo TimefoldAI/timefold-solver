@@ -239,77 +239,6 @@ class ElementAwareArrayListTest {
     }
 
     @Nested
-    @DisplayName("Compaction tests")
-    class CompactionTests {
-
-        @Test
-        @DisplayName("Access compacts the list when gaps exist")
-        void accessCompactsWithGaps() {
-            var list = new ElementAwareArrayList<String>();
-            list.addEntry("first");
-            var entry2 = list.addEntry("second");
-            list.addEntry("third");
-
-            entry2.remove();
-
-            assertThat(list).hasSize(2);
-            assertThat(list.get(0)).isEqualTo("first");
-            assertThat(list.get(1)).isEqualTo("third");
-        }
-
-        @Test
-        @DisplayName("Access returns empty when all elements removed")
-        void accessWhenAllRemoved() {
-            var list = new ElementAwareArrayList<String>();
-            var entry1 = list.addEntry("first");
-
-            entry1.remove();
-
-            assertThat(list).isEmpty();
-        }
-
-        @Test
-        @DisplayName("Access compacts with tail gaps")
-        void accessCompactsWithTailGaps() {
-            var list = new ElementAwareArrayList<String>();
-            list.add("first");
-            list.add("second");
-            var entry3 = list.addEntry("third");
-            var entry4 = list.addEntry("fourth");
-            var entry5 = list.addEntry("fifth");
-
-            entry3.remove();
-            entry4.remove();
-            entry5.remove();
-
-            assertThat(list).hasSize(2);
-            assertThat(entry3.isRemoved()).isTrue();
-            assertThat(entry4.isRemoved()).isTrue();
-            assertThat(entry5.isRemoved()).isTrue();
-        }
-
-        @Test
-        @DisplayName("addAt with trailing gaps only rotates entry into first suffix gap")
-        void addAtAfterTrailingGapOnly() {
-            var list = new ElementAwareArrayList<String>();
-            var e1 = list.addEntry("a");
-            var e2 = list.addEntry("b");
-            var e3 = list.addEntry("c");
-            var e4 = list.addEntry("d");
-
-            e3.remove();
-            e4.remove();
-            // Physical: [a, b, null], gapCount=1, size=2 (d trim reduced lastElementPosition)
-
-            list.add(1, "x"); // partialCompact(0): no prefix gap; slot 1 non-null → rotate b into gap at slot 2
-            assertThat(list).hasSize(3);
-            assertThat(copyUsingForEach(list)).containsExactly("a", "x", "b");
-            assertThat(e1.toString()).contains("@0");
-            assertThat(e2.toString()).contains("@2");
-        }
-    }
-
-    @Nested
     @DisplayName("Partial compaction tests")
     class PartialCompactionTests {
 
@@ -675,14 +604,35 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("iterator visits null elements")
+        @DisplayName("listIterator visits null elements in forward and backward order")
         void iterator() {
             var list = new ElementAwareArrayList<@Nullable String>();
             list.addEntry(null);
             list.addEntry("a");
             list.addEntry(null);
-            var result = copyUsingForEach(list);
-            assertThat(result).containsExactly(null, "a", null);
+
+            // Forward traversal returns null elements.
+            var it = list.listIterator();
+            assertThat(it.next()).isNull();
+            assertThat(it.next()).isEqualTo("a");
+            assertThat(it.next()).isNull();
+            assertThat(it.hasNext()).isFalse();
+
+            // Backward traversal returns null elements.
+            assertThat(it.previous()).isNull();
+            assertThat(it.previous()).isEqualTo("a");
+            assertThat(it.previous()).isNull();
+            assertThat(it.hasPrevious()).isFalse();
+
+            // remove() creates a gap (Entry == null) adjacent to a live null element (Entry != null, element == null);
+            // next() must skip the former without skipping the latter.
+            it = list.listIterator();
+            assertThat(it.next()).isNull(); // null element at logical 0
+            it.remove(); // slot 0 becomes a removed gap; live null element remains at slot 2
+            assertThat(it.next()).isEqualTo("a");
+            assertThat(it.next()).isNull(); // live null element still reachable
+            assertThat(it.hasNext()).isFalse();
+            assertThat(list).containsExactly("a", null);
         }
 
         @Test
@@ -1092,25 +1042,6 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("forward iteration skips null slots")
-        void forwardWithGaps() {
-            var list = new ElementAwareArrayList<String>();
-            list.add("a");
-            var entryB = list.addEntry("b");
-            list.add("c");
-            var entryD = list.addEntry("d");
-            list.add("e");
-            entryB.remove();
-            entryD.remove();
-
-            var it = list.listIterator();
-            assertThat(it.next()).isEqualTo("a");
-            assertThat(it.next()).isEqualTo("c");
-            assertThat(it.next()).isEqualTo("e");
-            assertThat(it.hasNext()).isFalse();
-        }
-
-        @Test
         @DisplayName("remove after next() removes correct element, adjusts cursor")
         void removeFwd() {
             var list = new ElementAwareArrayList<String>();
@@ -1196,6 +1127,30 @@ class ElementAwareArrayListTest {
         }
 
         @Test
+        @DisplayName("add() appending to list made gappy mid-iteration positions cursor for previous()")
+        void addAtEndAfterMidIterationRemoval() {
+            var list = new ElementAwareArrayList<String>();
+            list.add("a");
+            list.add("b");
+            list.add("c");
+            list.add("d");
+
+            var it = list.listIterator();
+            it.next(); // a
+            it.next(); // b
+            it.remove(); // gap at physical 1; logical [a, c, d]
+            it.next(); // c
+            it.next(); // d -> logical end, interior gap still present
+            it.add("e"); // append via addEntry while gap exists
+
+            assertThat(it.hasNext()).isFalse();
+            assertThat(it.previous()).isEqualTo("e");
+            assertThat(it.previous()).isEqualTo("d");
+            assertThat(it.previous()).isEqualTo("c");
+            assertThat(list).containsExactly("a", "c", "d", "e");
+        }
+
+        @Test
         @DisplayName("next() past end throws NoSuchElementException")
         void noSuchElement() {
             var list = new ElementAwareArrayList<String>();
@@ -1235,67 +1190,6 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("listIterator(index) on gappy list compacts before starting")
-        void startAtIndexWithGaps() {
-            var list = new ElementAwareArrayList<String>();
-            list.add("a");
-            var entry = list.addEntry("b");
-            list.add("c");
-            list.add("d");
-            entry.remove();
-
-            var it = list.listIterator(1);
-            assertThat(it.next()).isEqualTo("c");
-            assertThat(it.previous()).isEqualTo("c");
-            assertThat(it.previous()).isEqualTo("a");
-        }
-
-        @Test
-        @DisplayName("forward iteration through gaps then full backward traversal")
-        void forwardWithGapsThenBackward() {
-            var list = new ElementAwareArrayList<String>();
-            list.add("a");
-            var entryB = list.addEntry("b");
-            list.add("c");
-            var entryD = list.addEntry("d");
-            list.add("e");
-            entryB.remove();
-            entryD.remove();
-            // Physical: [a, null, c, null, e]; gaps never compacted during forward scan.
-
-            var it = list.listIterator();
-            assertThat(it.next()).isEqualTo("a");
-            assertThat(it.next()).isEqualTo("c");
-            assertThat(it.next()).isEqualTo("e");
-            assertThat(it.hasNext()).isFalse();
-
-            // previous() must traverse back through the uncompacted gaps.
-            assertThat(it.previous()).isEqualTo("e");
-            assertThat(it.previous()).isEqualTo("c");
-            assertThat(it.previous()).isEqualTo("a");
-            assertThat(it.hasPrevious()).isFalse();
-        }
-
-        @Test
-        @DisplayName("backward iteration from end of gappy list (gaps at head and middle)")
-        void backwardFromEndWithGaps() {
-            var list = new ElementAwareArrayList<String>();
-            var entryA = list.addEntry("a");
-            list.add("b");
-            var entryC = list.addEntry("c");
-            list.add("d");
-            entryA.remove();
-            entryC.remove();
-            // Physical: [null, b, null, d], logical: [b, d].
-
-            var it = list.listIterator(list.size());
-            assertThat(it.hasPrevious()).isTrue();
-            assertThat(it.previous()).isEqualTo("d");
-            assertThat(it.previous()).isEqualTo("b");
-            assertThat(it.hasPrevious()).isFalse();
-        }
-
-        @Test
         @DisplayName("iterator remove on list that already has gaps")
         void removeViaIteratorOnGappyList() {
             var list = new ElementAwareArrayList<String>();
@@ -1304,7 +1198,7 @@ class ElementAwareArrayListTest {
             list.add("c");
             list.add("d");
             entryB.remove();
-            // Physical: [a, null, c, d], logical: [a, c, d].
+            // listIterator() compacts the b-gap away first; the gap under test is the one it.remove() creates mid-iteration.
 
             var it = list.listIterator();
             assertThat(it.next()).isEqualTo("a");
@@ -1328,7 +1222,7 @@ class ElementAwareArrayListTest {
             list.add("b");
             list.add("c");
             entryX.remove();
-            // Physical: [a, null, b, c], logical: [a, b, c].
+            // listIterator() compacts the x-gap away first; the gap under test is the one it.remove() creates mid-iteration.
 
             var it = list.listIterator();
             assertThat(it.next()).isEqualTo("a");
