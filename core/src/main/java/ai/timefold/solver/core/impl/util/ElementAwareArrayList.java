@@ -86,7 +86,8 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         } else if (gapCount == 0 || index < firstGapPosition) {
             return (Entry) entries[index];
         }
-        return partialCompact(index);
+        partialCompact(index);
+        return (Entry) entries[index];
     }
 
     /**
@@ -103,10 +104,10 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
     /**
      * Avoid calling this when {@code gapCount == 0}.
      */
-    private Entry partialCompact(int rightBoundaryPosition) {
+    private void partialCompact(int rightBoundaryPosition) {
         if (rightBoundaryPosition < firstGapPosition) {
             // The entire target range is in the already-compacted prefix; no work needed.
-            return (Entry) entries[rightBoundaryPosition];
+            return;
         }
         var encounteredGaps = 0;
         var lastNonNullPosition = firstGapPosition - 1; // firstGapPosition non-nulls are already in place before us.
@@ -131,7 +132,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
                     } else {
                         firstGapPosition = rightBoundaryPosition + 1;
                     }
-                    return entry;
+                    return;
                 }
             }
         }
@@ -174,7 +175,7 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
         }
         // Compact prefix [0, index-1] so physical position k == logical position k for all k < index.
         if (index > 0) {
-            partialCompact(index - 1); // Increases modCount.
+            partialCompact(index - 1);
         }
         if (entries[index] == null) {
             // Gap at the target position: fill it directly without shifting the array.
@@ -385,7 +386,9 @@ public final class ElementAwareArrayList<T extends @Nullable Object>
                         "The index (%d) must be >= 0 and <= size (%d).".formatted(startingPosition, currentSize));
             }
             if (startingPosition > 0 && gapCount > 0) {
-                currentPosition = partialCompact(startingPosition - 1).position + 1;
+                var index = startingPosition - 1;
+                partialCompact(index);
+                currentPosition = ((Entry) entries[index]).position + 1;
             } else {
                 currentPosition = startingPosition;
             }

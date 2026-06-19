@@ -126,21 +126,6 @@ class ElementAwareArrayListTest {
         }
 
         @Test
-        @DisplayName("remove-to-empty frees large backing array (length > RETAIN_THRESHOLD)")
-        void removeToEmptyFreesLargeBackingArray() {
-            var list = new ElementAwareArrayList<String>();
-            // 30 elements force entries.length to 32 (> RETAIN_THRESHOLD=16), triggering the free path on empty.
-            List<ElementAwareArrayList<String>.Entry> entryList = new ArrayList<>();
-            for (var i = 0; i < 30; i++) {
-                entryList.add(list.addEntry("e" + i));
-            }
-            for (var entry : entryList) {
-                entry.remove();
-            }
-            assertThat(list).isEmpty();
-        }
-
-        @Test
         @DisplayName("add after free-path empty re-allocates and preserves insertion order")
         void addAfterLargeArrayFreePathPreservesOrder() {
             var list = new ElementAwareArrayList<String>();
@@ -1520,8 +1505,11 @@ class ElementAwareArrayListTest {
                         list.compact();
                         assertThat(list).containsExactlyElementsOf(reference);
                     }
+                    default -> {
+                        throw new IllegalStateException("Unexpected operation code: %d".formatted(op));
+                    }
                 }
-                assertThat(list.size()).isEqualTo(reference.size());
+                assertThat(list).hasSameSizeAs(reference);
             }
             assertThat(list).containsExactlyElementsOf(reference);
         }
