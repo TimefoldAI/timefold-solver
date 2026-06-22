@@ -281,7 +281,7 @@ We discuss these in more depth in the xref:service/rest-api.adoc[REST API] secti
 To showcase that the model is now ready for use we only need 2 of those endpoints:
 
 - `POST /v1/timetables`: To request a problem to be solved. This returns a unique identifier which can be used to request the resulting schedule.
-- `GET /v1/timetables/+{id}+`: Get the calculated schedule with the given identifier.
+- `GET /v1/timetables/\{id\}`: Get the calculated schedule with the given identifier.
 
 === Sending the problem
 
