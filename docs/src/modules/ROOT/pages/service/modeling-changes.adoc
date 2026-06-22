@@ -90,7 +90,8 @@ public class TimeslotHolidayEnricher implements SolverModelEnricher<Timetable> {
     }
 
     private boolean overlapsWithKnownHoliday(LocalDateTime start, LocalDateTime end) {
-        //Implementation excluded. Potential call external service / database
+        // Implementation excluded; potentially call external service / database.
+        return false;
     }
 }
 

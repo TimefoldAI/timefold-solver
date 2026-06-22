@@ -76,5 +76,5 @@ public class TimetableDemoDataGenerator implements DemoDataGenerator {
 
 With this interface implemented, Timefold Solver will automatically expose these methods as REST endpoints:
 
-- `GET /<root>/demo-data`: Retrieve all available demo dataset names.
-- `GET /<root>/demo-data/\{name\}`: Retrieve demo dataset with given identifier
+- `GET /&lt;root&gt;/demo-data`: Retrieve all available demo dataset names.
+- `GET /&lt;root&gt;/demo-data/\{name\}`: Retrieve demo dataset with given identifier

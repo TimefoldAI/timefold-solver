@@ -350,7 +350,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ----
 
-This call with return the standard xref:service/rest-api.adoc#solvingResponse[response structure].
+This call will return the standard xref:service/rest-api.adoc#solvingResponse[response structure].
 [source,json]
 ----
 {
@@ -373,7 +373,7 @@ This call with return the standard xref:service/rest-api.adoc#solvingResponse[re
       {
         "dayOfWeek": "MONDAY",
         "startTime": "13:45:30.123456789",
-        "endTime": "13:45:30.123456789"
+        "endTime": "14:45:30.123456789"
       }
     ],
     "rooms": [
@@ -390,8 +390,8 @@ This call with return the standard xref:service/rest-api.adoc#solvingResponse[re
         "timeslot": {
           "dayOfWeek": "MONDAY",
           "startTime": "13:45:30.123456789",
-          "endTime": "13:45:30.123456789"
-        },
+          "endTime": "14:45:30.123456789"
+        }
         "room": {
           "name": "Room1"
         }
