@@ -1,2 +1,2 @@
-IMPORTANT: This page describes features which are only relevant when running xref:quickstart/overview.adoc[Timefold Solver as a Service]
+IMPORTANT: This page describes features which are only relevant when running xref:quickstart/overview.adoc#runAsAService[Timefold Solver as a service]. +
 The information on these pages may describe functionality which may be changed or even removed in a future release.

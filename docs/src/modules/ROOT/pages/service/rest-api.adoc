@@ -271,8 +271,7 @@ public enum TimetableValidationIssue {
 ----
 
 The `ValidationBuilder` supports issue types of different severity:
-
-- `IssueSeverity.ERROR`: error level: processing can not continue. Results in a BAD_REQUEST (400) HTTP error.
+- `IssueSeverity.ERROR`: error level: processing cannot continue. Results in a BAD_REQUEST (400) HTTP error.
 - `IssueSeverity.WARNING`: warning level: processing will continue.
 
 All validation information can be accessed either in a simple textual form, or as structured machine-readable objects.
@@ -312,8 +311,7 @@ Additionally, a richer validation result can be obtained by a dedicated REST end
 
 `GET /v1/timetables/\{id\}/validation-result`
 
-Assuming the xref:timetableValidatorExample[example TimetableValidator], the endpoint provides the following response:
-
+Assuming the xref:#timetableValidatorExample[example TimetableValidator], the endpoint provides the following response:
 .Validation result available via `GET /v1/timetables/\{id\}/validation-result`.
 [source,json, highlight=13..17]
 ----

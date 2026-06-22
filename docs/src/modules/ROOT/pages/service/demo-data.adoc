@@ -32,23 +32,28 @@ public class TimetableDemoDataGenerator implements DemoDataGenerator {
         BASIC(
             new DemoMetaData("BASIC", "SHORT_DESCRIPTION", "LONG_DESCRIPTION", List.of("TAGS"),
                 List.of("Configuration Overrides")),
-            this::generateBasicDemoData // could also delegate to another class instead
+            DemoDataKind::generateBasicDemoData // could also delegate to another class instead
         ),
         COMPLEX_SET(
             new DemoMetaData("COMPLEX_SET", "SHORT_DESCRIPTION", "LONG_DESCRIPTION", List.of("TAGS"),
                 List.of("Configuration Overrides")),
-            this::generateComplexSet
+            DemoDataKind::generateComplexSet
         );
 
-        private DemoMetaData metaData;
-        private Supplier<ModelRequest<?>> supplier;
+        private final DemoMetaData metaData;
+        private final Function<DemoDataKind, ModelRequest<?>> requestFunction;
+
+        DemoDataKind(DemoMetaData metaData, Function<DemoDataKind, ModelRequest<?>> requestFunction) {
+            this.metaData = metaData;
+            this.requestFunction = requestFunction;
+        }
 
         public DemoMetaData getMetaData() {
             return metaData;
         }
 
         public DemoData getDemoData() {
-            return new DemoData(metaData, supplier.get());
+            return new DemoData(metaData, requestFunction.apply(this));
         }
 
         public ModelRequest<TimetableInput, TimetableConfigOverrides> generateBasicDemoData() {
