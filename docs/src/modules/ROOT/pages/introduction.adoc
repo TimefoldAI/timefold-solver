@@ -4,7 +4,7 @@
 :sectnums:
 :icons: font
 :relevance: library-and-service
-:notes: be adjusted to clarify difference.
+:notes: to be adjusted to clarify the differences.
 
 [#whatIsTimefold]
 = Introduction
