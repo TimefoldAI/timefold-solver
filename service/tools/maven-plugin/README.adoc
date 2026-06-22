@@ -91,7 +91,7 @@ Add plugin configuration in your project's POM (example snippet):
 <build>
   <plugins>
     <plugin>
-      <groupId>ai.timefold.sdk.tools</groupId>
+      <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-maven-plugin</artifactId>
       <version>PUT_PLUGIN_VERSION_HERE</version>
       <configuration>
@@ -126,7 +126,7 @@ When using shared models, also set `-Dtimefold.model.tenants=tenant1,tenant2` (o
 
 == Implementation notes / tips for contributors
 
-Goals are implemented as Mojos in `src/main/java/ai/timefold/sdk/tools/maven`:
+Goals are implemented as Mojos in `src/main/java/ai/timefold/solver/tools/maven`:
 
 - `ConfigureMojo` — writes build properties
 - `DeployModelMojo` — handles upload/register/patch flow
