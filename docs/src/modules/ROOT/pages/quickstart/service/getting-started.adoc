@@ -41,7 +41,7 @@ To complete this guide, you need:
 
 == The build file and the dependencies
 
-Create a Maven file and add these dependencies:
+Create a Maven file with the following content:
 
 [tabs]
 ====
