@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.move.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -65,6 +66,7 @@ public final class SelectorBasedRuinRecreateMove<Solution_> extends AbstractSele
         var nestedSolverScope = new SolverScope<Solution_>(solverScope.getClock());
         nestedSolverScope.setSolver(solverScope.getSolver());
         nestedSolverScope.setScoreDirector(innerScoreDirector);
+        nestedSolverScope.setWorkingRandom(DefaultRandomSource.seeded(0L));
         constructionHeuristicPhase.solvingStarted(nestedSolverScope);
         constructionHeuristicPhase.solve(nestedSolverScope);
         constructionHeuristicPhase.solvingEnded(nestedSolverScope);

@@ -1,12 +1,11 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size;
 
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +13,7 @@ class EntityRatioTabuSizeStrategyTest {
 
     @Test
     <Solution_> void tabuSize() {
-        var phaseScope = new LocalSearchPhaseScope<Solution_>(mock(SolverScope.class), 0);
+        var phaseScope = new LocalSearchPhaseScope<Solution_>(mockSolverScope(), 0);
         when(phaseScope.getWorkingEntityCount()).thenReturn(100);
         var stepScope = new LocalSearchStepScope<>(phaseScope);
         assertThat(new EntityRatioTabuSizeStrategy<Solution_>(0.1).determineTabuSize(stepScope)).isEqualTo(10);

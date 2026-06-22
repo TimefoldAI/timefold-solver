@@ -75,7 +75,7 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
             }
             acceptChance *= acceptChanceLevel;
         }
-        return moveScope.getWorkingRandom().nextDouble() < acceptChance;
+        return moveScope.getWorkingRandom().acceptorUsage().nextDouble() < acceptChance;
     }
 
     @Override

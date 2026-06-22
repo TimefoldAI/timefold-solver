@@ -29,6 +29,7 @@ import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
+import ai.timefold.solver.core.impl.solver.random.MockRandomSource;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -99,7 +100,7 @@ class NeighborhoodsTest {
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
         var solverScope = new SolverScope<TestdataSolution>();
         solverScope.setSolver(solver);
-        solverScope.setWorkingRandom(new Random());
+        solverScope.setWorkingRandom(new MockRandomSource(new Random(0)));
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setBestScore(score);
         solverScope.setBestSolution(scoreDirector.cloneSolution(solution));

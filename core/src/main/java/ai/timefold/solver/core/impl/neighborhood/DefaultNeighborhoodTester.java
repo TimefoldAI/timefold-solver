@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSo
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.move.DefaultMoveTestContext;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.move.test.MoveTester;
@@ -39,6 +40,7 @@ public final class DefaultNeighborhoodTester<Solution_>
         var moveTestContext = (DefaultMoveTestContext<Solution_>) moveTester.using(solution);
         var scoreDirector = moveTestContext.getScoreDirector();
         var solverScope = new SolverScope<Solution_>();
+        solverScope.setWorkingRandom(RandomSource.seeded(0L));
         solverScope.setScoreDirector(scoreDirector);
         repository.solvingStarted(solverScope);
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);

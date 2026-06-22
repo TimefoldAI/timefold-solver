@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
-import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
+import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
@@ -131,16 +131,16 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         globalTermination.stepStarted(stepScope);
         // To ensure reproducibility even when the number of random calls is not deterministic,
         // split the random at step start.
-        var delegatingRandom = ((DelegatingSplittableRandomGenerator) stepScope.getWorkingRandom());
-        savedRandom = delegatingRandom.getDelegate();
-        delegatingRandom.setDelegate(delegatingRandom.split());
+        var delegatingRandom = ((DefaultRandomSource) stepScope.getWorkingRandom());
+        savedRandom = delegatingRandom.sourceRandom().getDelegate();
+        delegatingRandom.restoreState(delegatingRandom.saveState());
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         // Restore from the split random
-        var delegatingRandom = ((DelegatingSplittableRandomGenerator) stepScope.getWorkingRandom());
-        delegatingRandom.setDelegate(Objects.requireNonNull(savedRandom));
+        var delegatingRandom = ((DefaultRandomSource) stepScope.getWorkingRandom());
+        delegatingRandom.restoreState(Objects.requireNonNull(savedRandom));
         bestSolutionRecaller.stepEnded(stepScope);
         phaseLifecycleSupport.fireStepEnded(stepScope);
         globalTermination.stepEnded(stepScope);

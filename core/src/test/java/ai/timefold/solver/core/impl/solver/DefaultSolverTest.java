@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.random.RandomGenerator;
@@ -1408,12 +1409,15 @@ class DefaultSolverTest {
     }
 
     @Test
+    @Timeout(value = 10, unit = TimeUnit.SECONDS)
     void solveStaleDeclarativeShadows() {
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataConcurrentSolution.class, TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
                 .withEasyScoreCalculatorClass(null)
-                .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class);
+                .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class)
+                .withPhases(new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig()
+                        .withBestScoreFeasible(true)));
 
         var e1 = new TestdataConcurrentEntity("e1");
         var e2 = new TestdataConcurrentEntity("e2");
@@ -1442,9 +1446,12 @@ class DefaultSolverTest {
 
         var solution = PlannerTestUtils.solve(solverConfig, problem);
 
-        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("b2",
-                "a1");
-        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("b1", "a2");
+        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("a2",
+                "b1");
+        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("a1", "b2");
+
+        // assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("b2","a1");
+        //assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("b1", "a2");
 
         assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0, -240));
     }

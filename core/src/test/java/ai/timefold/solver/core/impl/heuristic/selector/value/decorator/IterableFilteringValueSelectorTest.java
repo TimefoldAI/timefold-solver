@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -12,7 +13,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -30,20 +30,20 @@ class IterableFilteringValueSelectorTest {
         SelectionFilter<TestdataSolution, TestdataValue> filter = (scoreDirector, value) -> !value.getCode().equals("v3");
         IterableValueSelector valueSelector = new IterableFilteringValueSelector(childValueSelector, filter);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mockSolverScope();
         valueSelector.solvingStarted(solverScope);
 
-        AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
         valueSelector.phaseStarted(phaseScopeA);
 
-        AbstractStepScope stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         valueSelector.stepStarted(stepScopeA1);
         assertAllCodesOfValueSelector(valueSelector, 4L, "v1", "v2", "v4");
         valueSelector.stepEnded(stepScopeA1);
 
-        AbstractStepScope stepScopeA2 = mock(AbstractStepScope.class);
+        var stepScopeA2 = mock(AbstractStepScope.class);
         when(stepScopeA2.getPhaseScope()).thenReturn(phaseScopeA);
         valueSelector.stepStarted(stepScopeA2);
         assertAllCodesOfValueSelector(valueSelector, 4L, "v1", "v2", "v4");
@@ -51,23 +51,23 @@ class IterableFilteringValueSelectorTest {
 
         valueSelector.phaseEnded(phaseScopeA);
 
-        AbstractPhaseScope phaseScopeB = mock(AbstractPhaseScope.class);
+        var phaseScopeB = mock(AbstractPhaseScope.class);
         when(phaseScopeB.getSolverScope()).thenReturn(solverScope);
         valueSelector.phaseStarted(phaseScopeB);
 
-        AbstractStepScope stepScopeB1 = mock(AbstractStepScope.class);
+        var stepScopeB1 = mock(AbstractStepScope.class);
         when(stepScopeB1.getPhaseScope()).thenReturn(phaseScopeB);
         valueSelector.stepStarted(stepScopeB1);
         assertAllCodesOfValueSelector(valueSelector, 4L, "v1", "v2", "v4");
         valueSelector.stepEnded(stepScopeB1);
 
-        AbstractStepScope stepScopeB2 = mock(AbstractStepScope.class);
+        var stepScopeB2 = mock(AbstractStepScope.class);
         when(stepScopeB2.getPhaseScope()).thenReturn(phaseScopeB);
         valueSelector.stepStarted(stepScopeB2);
         assertAllCodesOfValueSelector(valueSelector, 4L, "v1", "v2", "v4");
         valueSelector.stepEnded(stepScopeB2);
 
-        AbstractStepScope stepScopeB3 = mock(AbstractStepScope.class);
+        var stepScopeB3 = mock(AbstractStepScope.class);
         when(stepScopeB3.getPhaseScope()).thenReturn(phaseScopeB);
         valueSelector.stepStarted(stepScopeB3);
         assertAllCodesOfValueSelector(valueSelector, 4L, "v1", "v2", "v4");

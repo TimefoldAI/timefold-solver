@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Offset.offset;
 import static org.mockito.Mockito.doReturn;
@@ -19,7 +20,7 @@ class ScoreCalculationCountTerminationTest {
     @Test
     void solveTermination() {
         SolverTermination<TestdataSolution> termination = new ScoreCalculationCountTermination<>(1000L);
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
         doReturn(scoreDirector).when(solverScope).getScoreDirector();
 

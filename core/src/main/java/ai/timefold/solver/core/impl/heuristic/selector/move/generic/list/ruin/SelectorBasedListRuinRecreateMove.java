@@ -18,6 +18,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreate
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.move.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -96,6 +97,7 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
             var nestedSolverScope = new SolverScope<Solution_>(solverScope.getClock());
             nestedSolverScope.setSolver(solverScope.getSolver());
             nestedSolverScope.setScoreDirector(nonRecordingScoreDirector);
+            nestedSolverScope.setWorkingRandom(DefaultRandomSource.seeded(0L));
             constructionHeuristicPhase.solvingStarted(nestedSolverScope);
             constructionHeuristicPhase.solve(nestedSolverScope);
             constructionHeuristicPhase.solvingEnded(nestedSolverScope);

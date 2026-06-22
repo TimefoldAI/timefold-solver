@@ -46,6 +46,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.ManualValueMi
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.random.MockRandomSource;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -371,7 +372,7 @@ class ElementDestinationSelectorTest {
 
         var solverScope = new SolverScope<TestdataPinnedUnassignedValuesListSolution>();
         solverScope.setScoreDirector(scoreDirector);
-        solverScope.setWorkingRandom(random);
+        solverScope.setWorkingRandom(new MockRandomSource(random));
         var entitySelector = new FromSolutionEntitySelector<>(
                 solutionDescriptor.findEntityDescriptorOrFail(TestdataPinnedUnassignedValuesListEntity.class),
                 SelectionCacheType.PHASE, true);
@@ -415,7 +416,7 @@ class ElementDestinationSelectorTest {
         solverScope.setScoreDirector(scoreDirector);
         // This needs to use a real Random instance, otherwise the test never covers the situation where
         // the random value of 1 needs to be produced to get to the entity.
-        solverScope.setWorkingRandom(new Random(0));
+        solverScope.setWorkingRandom(new MockRandomSource(new Random(0)));
         var entitySelector = new FromSolutionEntitySelector<>(
                 solutionDescriptor.findEntityDescriptorOrFail(TestdataAllowsUnassignedValuesListEntity.class),
                 SelectionCacheType.PHASE, true);
@@ -467,7 +468,7 @@ class ElementDestinationSelectorTest {
 
         var solverScope = new SolverScope<TestdataPinnedWithIndexListSolution>();
         solverScope.setScoreDirector(scoreDirector);
-        solverScope.setWorkingRandom(random);
+        solverScope.setWorkingRandom(new MockRandomSource(random));
         selector.solvingStarted(solverScope);
         selector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
 

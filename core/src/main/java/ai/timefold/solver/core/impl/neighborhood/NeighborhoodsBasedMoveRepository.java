@@ -73,7 +73,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_> implements MoveRe
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        workingRandom = phaseScope.getWorkingRandom();
+        workingRandom = phaseScope.getWorkingRandom().moveUsage();
         phaseScope.getScoreDirector().setMoveRepository(this);
     }
 

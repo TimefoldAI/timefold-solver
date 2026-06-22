@@ -5,10 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.random.RandomGenerator;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 
 /**
  * On the later JDKs, it is no longer possible to mock {@link Random} to return custom sequences.
@@ -23,7 +26,7 @@ import java.util.stream.Stream;
  * we need to be able to reset the same random to start running a new sequence of numbers.
  * That is what {@link #reset(int...)} et al. are for.
  */
-public final class TestRandom extends Random {
+public final class TestRandom extends Random implements RandomSource {
 
     private BigDecimal[] toReturn;
     private int returnCount = 0;
@@ -217,4 +220,13 @@ public final class TestRandom extends Random {
         lastRequestedIntBound = null;
     }
 
+    @Override
+    public RandomGenerator moveUsage() {
+        return this;
+    }
+
+    @Override
+    public RandomGenerator acceptorUsage() {
+        return this;
+    }
 }

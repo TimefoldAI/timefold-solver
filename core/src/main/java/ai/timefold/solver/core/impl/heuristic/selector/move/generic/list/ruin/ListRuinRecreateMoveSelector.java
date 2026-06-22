@@ -70,7 +70,7 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
         this.listVariableStateSupply = solverScope.getScoreDirector()
                 .getSupplyManager()
                 .demand(listVariableDescriptor.getStateDemand());
-        this.workingRandom = solverScope.getWorkingRandom();
+        this.workingRandom = solverScope.getWorkingRandom().moveUsage();
     }
 
     @Override

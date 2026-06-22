@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.constructionheuristic.placer.entity;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +35,7 @@ class PooledEntityPlacerTest {
 
         var placer = new PooledEntityPlacer<>(null, null, moveSelector);
 
-        var solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
         placer.solvingStarted(solverScope);
 
         var phaseScopeA = mock(AbstractPhaseScope.class);

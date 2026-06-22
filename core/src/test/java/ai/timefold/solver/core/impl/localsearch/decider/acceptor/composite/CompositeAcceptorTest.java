@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.composite;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
@@ -22,7 +23,7 @@ class CompositeAcceptorTest {
 
     @Test
     void phaseLifecycle() {
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
         LocalSearchPhaseScope<TestdataSolution> phaseScope = mock(LocalSearchPhaseScope.class);
         LocalSearchStepScope<TestdataSolution> stepScope = mock(LocalSearchStepScope.class);
 

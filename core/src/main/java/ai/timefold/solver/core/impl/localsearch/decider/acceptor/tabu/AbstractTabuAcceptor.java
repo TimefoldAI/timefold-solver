@@ -199,7 +199,7 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
             return 0.0d;
         }
         var acceptChance = 1.0d - (numerator / (double) denominator);
-        var accepted = moveScope.getWorkingRandom().nextDouble() < acceptChance;
+        var accepted = moveScope.getWorkingRandom().acceptorUsage().nextDouble() < acceptChance;
         return accepted ? acceptChance : -acceptChance;
     }
 
