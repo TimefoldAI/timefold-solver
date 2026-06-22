@@ -88,7 +88,7 @@ it is known as a _planning solution_.
 Extending `AbstractSimpleModel`:
 
 - Configures this class to be (de-)serialized as part of the `ModelInput` and `ModelOutput` of the xref:service/rest-api.adoc[REST API].
-- Implements the `SolverModel` interface using the default HardMediumSoftLongScore.
+- Implements the `SolverModel` interface using the default `HardMediumSoftScore`.
 
 [NOTE]
 It's ok if you are not familiar with these terms yet. We'll get to them later.
@@ -112,8 +112,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
-import ai.timefold.solver.core.api.solver.change.ConstraintWeightOverrides;
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 
 @PlanningSolution
 public class Timetable extends AbstractSimpleModel {
@@ -148,11 +148,11 @@ public class Timetable extends AbstractSimpleModel {
     }
 
     @Override
-    public ConstraintWeightOverrides<HardMediumSoftLongScore> getConstraintWeightOverrides() {
+    public ConstraintWeightOverrides<HardMediumSoftScore> getConstraintWeightOverrides() {
         return ConstraintWeightOverrides.none();
     }
 
-    public void setConstraintWeightOverrides(ConstraintWeightOverrides<HardMediumSoftLongScore> constraintWeightOverrides) {
+    public void setConstraintWeightOverrides(ConstraintWeightOverrides<HardMediumSoftScore> constraintWeightOverrides) {
         // Left empty for now; see constraint weights documentation
     }
 }
@@ -181,14 +181,13 @@ However, this class is also the output of the solution:
 
 * The `lessons` field for which each `Lesson` instance has non-null `timeslot` and `room` fields after solving.
 
-NOTE: The `getConstraintWeightOverrides()` and `setConstraintWeightOverrides()` methods are required by the `AbstractSimpleModel` superclass.
-For now they are left as stubs — `none()` means no constraint weights can be overridden per request.
+NOTE: The `getConstraintWeightOverrides()` method is required by the `SolverModel` interface (implemented by `AbstractSimpleModel`), and `setConstraintWeightOverrides()` is optional.
+For now `getConstraintWeightOverrides()` is left as a stub — `none()` means no constraint weights can be overridden per request.
 Configuring this properly is covered in the xref:service/constraint-weights.adoc[Constraint weights] section and is not part of this guide.
 
-=== The value range providers
-include::../shared/school-timetabling/_school-timetabling-solution-value-range-providers.adoc[]
+include::../shared/school-timetabling/_school-timetabling-solution-value-range-providers.adoc[leveloffset=+1]
 
-include::../shared/school-timetabling/_school-timetabling-solution-facts-and-entities.adoc[]
+include::../shared/school-timetabling/_school-timetabling-solution-facts-and-entities.adoc[leveloffset=+1]
 
 == Add the Solver Configuration
 
@@ -391,7 +390,7 @@ This call will return the standard xref:service/rest-api.adoc#solvingResponse[re
           "dayOfWeek": "MONDAY",
           "startTime": "13:45:30.123456789",
           "endTime": "14:45:30.123456789"
-        }
+        },
         "room": {
           "name": "Room1"
         }
