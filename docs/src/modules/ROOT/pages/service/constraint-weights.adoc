@@ -92,7 +92,7 @@ Usually, it doesn't make sense to allow weight overrides for _hard_ constraints.
 
 Next, in the xref:./rest-api.adoc#modelConverter[model converter], make sure to map these overrides to a solver specific `ConstraintWeightOverrides` object that must be on the `@PlanningSolution` class.
 
-.As part of the ModelConverter
+.As part of the ModelConvertor
 [source,java,options="nowrap"]
 ----
 TimetableConfigOverrides modelConfigOverrides = modelConfig.overrides();
