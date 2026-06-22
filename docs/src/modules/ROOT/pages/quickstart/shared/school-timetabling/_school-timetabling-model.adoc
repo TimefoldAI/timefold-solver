@@ -98,7 +98,7 @@ so it is easier to read Timefold Solver's `DEBUG` or `TRACE` log, as shown later
 
 == Room
 
-The `Room` record represents a location where lessons are taught,
+The `Room` class represents a location where lessons are taught,
 for example, `Room A` or `Room B`.
 For simplicity's sake, all rooms are without capacity limits
 and they can accommodate all lessons.
