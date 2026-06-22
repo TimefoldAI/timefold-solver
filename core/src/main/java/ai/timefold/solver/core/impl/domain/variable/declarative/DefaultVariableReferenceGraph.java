@@ -37,7 +37,8 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
         affectedEntitiesUpdater =
                 new AffectedEntitiesUpdater<>(graph, nodeList, nodeTopologicalOrders,
                         entityToVariableReferenceMap::get,
-                        outerGraph.entityToEntityId.size(), outerGraph.changedVariableNotifier);
+                        outerGraph.entityToEntityId.size(), outerGraph.changedVariableNotifier,
+                        ignoreInconsistentSolutions);
     }
 
     @Override
