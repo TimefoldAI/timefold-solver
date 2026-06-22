@@ -78,7 +78,7 @@
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
     <version.sonar.plugin>5.7.0.6970</version.sonar.plugin>
     <version.source.plugin>3.4.0</version.source.plugin>
-    <version.spotless.plugin>3.6.0</version.spotless.plugin>
+    <version.spotless.plugin>3.7.0</version.spotless.plugin>
     <version.surefire.plugin>3.5.6</version.surefire.plugin>
     <version.versions.plugin>2.21.0</version.versions.plugin>
 
