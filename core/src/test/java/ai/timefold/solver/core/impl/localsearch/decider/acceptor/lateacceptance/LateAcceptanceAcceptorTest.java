@@ -2,12 +2,20 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import ai.timefold.solver.core.api.score.BendableScore;
+import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.definition.BendableScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.HardSoftScoreDefinition;
+import ai.timefold.solver.core.impl.score.definition.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.junit.jupiter.api.Test;
@@ -26,6 +34,9 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setInitializedScore(SimpleScore.of(Integer.MIN_VALUE));
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
+        var scoreDirector = mock(InnerScoreDirector.class);
+        when(scoreDirector.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
+        solverScope.setScoreDirector(scoreDirector);
         acceptor.phaseStarted(phaseScope);
 
         // lateScore = -1000
@@ -139,6 +150,9 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
+        var scoreDirector = mock(InnerScoreDirector.class);
+        when(scoreDirector.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
+        solverScope.setScoreDirector(scoreDirector);
         acceptor.phaseStarted(phaseScope);
 
         // lateScore = -1000, lastCompletedStepScore = Integer.MIN_VALUE
@@ -236,6 +250,92 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         // bestScore unchanged
         acceptor.stepEnded(stepScope5);
         phaseScope.setLastCompletedStepScope(stepScope5);
+
+        acceptor.phaseEnded(phaseScope);
+    }
+
+    @Test
+    void resetLateScoresOnHardScoreImprovement() {
+        var acceptor = new LateAcceptanceAcceptor<>();
+        acceptor.setLateAcceptanceSize(3);
+        acceptor.setHillClimbingEnabled(false);
+
+        var scoreDirector = mock(InnerScoreDirector.class);
+        when(scoreDirector.getScoreDefinition()).thenReturn(new HardSoftScoreDefinition());
+
+        var solverScope = new SolverScope<>();
+        solverScope.setScoreDirector(scoreDirector);
+        var initialBestScore = HardSoftScore.of(-1, -1000);
+        solverScope.setInitializedBestScore(initialBestScore);
+
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
+        lastCompletedStepScope.setInitializedScore(initialBestScore);
+        phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
+        acceptor.phaseStarted(phaseScope);
+
+        // Step 0: soft-only improvement — no reset expected
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        acceptor.stepStarted(stepScope0);
+        var softImprovedScore = HardSoftScore.of(-1, -500);
+        phaseScope.setBestSolutionStepIndex(0);
+        solverScope.setInitializedBestScore(softImprovedScore);
+        stepScope0.setInitializedScore(softImprovedScore);
+        acceptor.stepEnded(stepScope0);
+        phaseScope.setLastCompletedStepScope(stepScope0);
+
+        var initialInnerScore = InnerScore.fullyAssigned(initialBestScore);
+        assertThat(acceptor.previousScores[1]).isEqualTo(initialInnerScore);
+        assertThat(acceptor.previousScores[2]).isEqualTo(initialInnerScore);
+
+        // Step 1: hard improvement — reset expected
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        acceptor.stepStarted(stepScope1);
+        var hardImprovedScore = InnerScore.fullyAssigned(HardSoftScore.of(0, -200));
+        phaseScope.setBestSolutionStepIndex(1);
+        solverScope.setInitializedBestScore(hardImprovedScore.raw());
+        stepScope1.setInitializedScore(hardImprovedScore.raw());
+        acceptor.stepEnded(stepScope1);
+        phaseScope.setLastCompletedStepScope(stepScope1);
+
+        assertThat(acceptor.previousScores).allSatisfy(s -> assertThat(s).isEqualTo(hardImprovedScore));
+
+        acceptor.phaseEnded(phaseScope);
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void neverResetLateScoresForBendableScore() {
+        var acceptor = new LateAcceptanceAcceptor<>();
+        acceptor.setLateAcceptanceSize(3);
+        acceptor.setHillClimbingEnabled(false);
+
+        var scoreDirector = (InnerScoreDirector) mock(InnerScoreDirector.class);
+        when(scoreDirector.getScoreDefinition()).thenReturn(new BendableScoreDefinition(1, 1));
+
+        var solverScope = new SolverScope<>();
+        solverScope.setScoreDirector(scoreDirector);
+        var initialBestScore = BendableScore.ofHard(1, 1, 0, -1L);
+        solverScope.setInitializedBestScore(initialBestScore);
+
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
+        lastCompletedStepScope.setInitializedScore(initialBestScore);
+        phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
+        acceptor.phaseStarted(phaseScope);
+
+        // Step: hard improvement — no reset because canResetLastBestScores = false for IBendableScore
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        acceptor.stepStarted(stepScope0);
+        var hardImprovedScore = BendableScore.ofHard(1, 1, 0, 0L);
+        phaseScope.setBestSolutionStepIndex(0);
+        solverScope.setInitializedBestScore(hardImprovedScore);
+        stepScope0.setInitializedScore(hardImprovedScore);
+        acceptor.stepEnded(stepScope0);
+
+        var initialInnerScore = InnerScore.fullyAssigned(initialBestScore);
+        assertThat(acceptor.previousScores[1]).isEqualTo(initialInnerScore);
+        assertThat(acceptor.previousScores[2]).isEqualTo(initialInnerScore);
 
         acceptor.phaseEnded(phaseScope);
     }

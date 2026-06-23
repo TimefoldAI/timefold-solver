@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 
 import java.util.Arrays;
 
+import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
@@ -16,6 +17,10 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
 
     protected InnerScore<?>[] previousScores;
     protected int lateScoreIndex = -1;
+
+    private boolean canResetLastBestScores = false;
+    private long previousBestScoreIndex;
+    private double[] previousBestScoreDoubles;
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
         this.lateAcceptanceSize = lateAcceptanceSize;
@@ -37,6 +42,13 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         var initialScore = phaseScope.getBestScore();
         Arrays.fill(previousScores, initialScore);
         lateScoreIndex = 0;
+        var scoreDefinition = phaseScope.getSolverScope().getScoreDefinition();
+        canResetLastBestScores =
+                !IBendableScore.class.isAssignableFrom(scoreDefinition.getScoreClass()) && scoreDefinition.getLevelsSize() > 1;
+        if (canResetLastBestScores) {
+            previousBestScoreIndex = 0;
+            previousBestScoreDoubles = initialScore.raw().toLevelDoubles();
+        }
     }
 
     private void validate() {
@@ -68,10 +80,36 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     }
 
     @Override
+    public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
+        super.stepStarted(stepScope);
+        if (canResetLastBestScores && previousBestScoreIndex != stepScope.getPhaseScope().getBestSolutionStepIndex()) {
+            this.previousBestScoreIndex = stepScope.getPhaseScope().getBestSolutionStepIndex();
+            this.previousBestScoreDoubles = stepScope.getPhaseScope().getBestScore().raw().toLevelDoubles();
+        }
+    }
+
+    @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
         previousScores[lateScoreIndex] = stepScope.getScore();
         lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
+        if (canResetLastBestScores && previousBestScoreIndex != stepScope.getPhaseScope().getBestSolutionStepIndex()) {
+            var newBestScore = stepScope.getPhaseScope().getBestScore();
+            var newBestScoreDoubles = newBestScore.raw().toLevelDoubles();
+            var hardOrMediumChanged = false;
+            for (var i = 0; i < newBestScoreDoubles.length - 1; i++) {
+                if (newBestScoreDoubles[i] != previousBestScoreDoubles[i]) {
+                    hardOrMediumChanged = true;
+                    break;
+                }
+            }
+            if (hardOrMediumChanged) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Late elements reset to {}", newBestScore);
+                }
+                Arrays.fill(previousScores, newBestScore);
+            }
+        }
     }
 
     @Override
