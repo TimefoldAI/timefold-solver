@@ -1,13 +1,11 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance;
 
-import java.util.Arrays;
-
 import ai.timefold.solver.core.api.score.IBendableScore;
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
@@ -15,12 +13,8 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     protected int lateAcceptanceSize = -1;
     protected boolean hillClimbingEnabled = true;
 
-    protected InnerScore<?>[] previousScores;
-    protected int lateScoreIndex = -1;
-
-    private boolean canResetLastBestScores = false;
-    private long previousBestScoreIndex;
-    private double[] previousBestScoreDoubles;
+    LateAcceptanceScoreBuffer scoreBuffer;
+    private BestScoreState<Solution_> bestBestScoreState;
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
         this.lateAcceptanceSize = lateAcceptanceSize;
@@ -38,16 +32,11 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         validate();
-        previousScores = new InnerScore[lateAcceptanceSize];
         var initialScore = phaseScope.getBestScore();
-        Arrays.fill(previousScores, initialScore);
-        lateScoreIndex = 0;
+        scoreBuffer = new LateAcceptanceScoreBuffer(lateAcceptanceSize, initialScore);
         var scoreDefinition = phaseScope.getSolverScope().getScoreDefinition();
-        canResetLastBestScores =
-                !IBendableScore.class.isAssignableFrom(scoreDefinition.getScoreClass()) && scoreDefinition.getLevelsSize() > 1;
-        if (canResetLastBestScores) {
-            previousBestScoreIndex = 0;
-            previousBestScoreDoubles = initialScore.raw().toLevelDoubles();
+        if (scoreDefinition.getLevelsSize() > 1) {
+            bestBestScoreState = new BestScoreState<>(initialScore, scoreDefinition);
         }
     }
 
@@ -62,7 +51,7 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = (InnerScore) moveScope.getScore();
-        var lateScore = getPreviousScore(lateScoreIndex);
+        var lateScore = scoreBuffer.getCurrent();
         if (moveScore.compareTo(lateScore) >= 0) {
             return true;
         }
@@ -74,49 +63,85 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         return false;
     }
 
-    @SuppressWarnings("unchecked")
-    private <Score_ extends Score<Score_>> InnerScore<Score_> getPreviousScore(int lateScoreIndex) {
-        return (InnerScore<Score_>) previousScores[lateScoreIndex];
-    }
-
     @Override
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
-        if (canResetLastBestScores && previousBestScoreIndex != stepScope.getPhaseScope().getBestSolutionStepIndex()) {
-            this.previousBestScoreIndex = stepScope.getPhaseScope().getBestSolutionStepIndex();
-            this.previousBestScoreDoubles = stepScope.getPhaseScope().getBestScore().raw().toLevelDoubles();
+        if (bestBestScoreState != null) {
+            bestBestScoreState.update(stepScope);
         }
     }
 
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        previousScores[lateScoreIndex] = stepScope.getScore();
-        lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
-        if (canResetLastBestScores && previousBestScoreIndex != stepScope.getPhaseScope().getBestSolutionStepIndex()) {
-            var newBestScore = stepScope.getPhaseScope().getBestScore();
-            var newBestScoreDoubles = newBestScore.raw().toLevelDoubles();
-            var hardOrMediumChanged = false;
-            for (var i = 0; i < newBestScoreDoubles.length - 1; i++) {
-                if (newBestScoreDoubles[i] != previousBestScoreDoubles[i]) {
-                    hardOrMediumChanged = true;
-                    break;
-                }
+        scoreBuffer.update(stepScope.getScore());
+        if (bestBestScoreState != null && bestBestScoreState.isNonDominatedScoreChanged(stepScope)) {
+            if (logger.isTraceEnabled()) {
+                logger.trace("Late elements reset to {}", stepScope.getPhaseScope().getBestScore().raw());
             }
-            if (hardOrMediumChanged) {
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Late elements reset to {}", newBestScore);
-                }
-                Arrays.fill(previousScores, newBestScore);
-            }
+            scoreBuffer.tryReset(stepScope.getPhaseScope().getBestScore());
         }
     }
 
     @Override
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        previousScores = null;
-        lateScoreIndex = -1;
+        scoreBuffer = null;
+        bestBestScoreState = null;
+    }
+
+    private static class BestScoreState<Solution_> {
+
+        private final int nonDominatedLevelCount;
+        private long previousBestScoreIndex;
+        private double[] previousBestScoreDoubles;
+        private boolean firstEvaluation = true;
+
+        @SuppressWarnings("rawtypes")
+        BestScoreState(InnerScore initialScore, ScoreDefinition scoreDefinition) {
+            previousBestScoreDoubles = initialScore.raw().toLevelDoubles();
+            if (IBendableScore.class.isAssignableFrom(scoreDefinition.getScoreClass())) {
+                // We only evaluate the hard score levels
+                nonDominatedLevelCount = scoreDefinition.getFeasibleLevelsSize();
+            } else {
+                // We only evaluate the hard or medium levels
+                nonDominatedLevelCount = scoreDefinition.getLevelsSize() - 1;
+            }
+        }
+
+        void update(LocalSearchStepScope<Solution_> stepScope) {
+            if (previousBestScoreIndex != stepScope.getPhaseScope().getBestSolutionStepIndex()) {
+                // Update the current best score information
+                this.previousBestScoreIndex = stepScope.getPhaseScope().getBestSolutionStepIndex();
+                this.previousBestScoreDoubles = stepScope.getPhaseScope().getBestScore().raw().toLevelDoubles();
+            }
+        }
+
+        /**
+         * If non-dominated levels are updated (hard or medium), it is necessary to reset the late scores.
+         * Failing to do so may cause the solver
+         * to accept poor moves that do not affect the non-dominated scores but degrade the soft scores.
+         * As a result,
+         * any move that does not decrease the hard or medium score
+         * but significantly worsens the soft score may be mistakenly accepted.
+         * This could cause the working solution
+         * to enter a bad region and require many additional steps to escape it.
+         * 
+         * @return true if any non-dominated score has changed; otherwise, returns false
+         */
+        boolean isNonDominatedScoreChanged(LocalSearchStepScope<Solution_> stepScope) {
+            if (firstEvaluation || previousBestScoreIndex != stepScope.getPhaseScope().getBestSolutionStepIndex()) {
+                firstEvaluation = false;
+                var newBestScore = stepScope.getPhaseScope().getBestScore();
+                var newBestScoreDoubles = newBestScore.raw().toLevelDoubles();
+                for (var i = 0; i < nonDominatedLevelCount; i++) {
+                    if (newBestScoreDoubles[i] != previousBestScoreDoubles[i]) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     }
 
 }
