@@ -330,8 +330,6 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         acceptor.phaseStarted(phaseScope);
 
         // Step 0: soft[0] improvement — reset not expected
-        // previousBestScoreIndex starts at -1,
-        // so we need index 0 to satisfy (previousBestScoreIndex != index)
         var stepScope0 = new LocalSearchStepScope<>(phaseScope);
         acceptor.stepStarted(stepScope0);
         var softImprovedScore = BendableScore.of(new long[] { -1 }, new long[] { 1, 0 });
