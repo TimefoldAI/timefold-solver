@@ -1,0 +1,121 @@
+name: Downstream Model Build
+
+on:
+  workflow_call:
+    inputs:
+      repository:
+        description: 'The downstream repository to build and test (e.g. timefold-field-service-routing).'
+        type: string
+        required: true
+      name:
+        description: 'Display name for the downstream project (e.g. Field Service Routing).'
+        type: string
+        required: true
+      head_ref:
+        description: 'The PR branch name used to check out matching branches in downstream repos.'
+        type: string
+        required: true
+      head_sha:
+        description: 'The exact commit SHA to check out for timefold-solver.'
+        type: string
+        required: false
+    secrets:
+      JRELEASER_GITHUB_TOKEN:
+        required: true
+      TIMEFOLD_SOLVER_CI_PROD_LICENSE:
+        required: true
+
+jobs:
+  downstream:
+    name: ${{ inputs.name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: downstream-${{ inputs.repository }}-${{ github.event_name }}-${{ inputs.head_ref }}
+      cancel-in-progress: true
+    timeout-minutes: 120
+    steps:
+      # Clone timefold-solver
+      # No need to check for stale repo, as GitHub merges the main repo into the fork automatically.
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v4
+        with:
+          path: ./timefold-solver
+          ref: ${{ inputs.head_sha }}
+
+      # Clone timefold-solver-enterprise
+      # Need to check for stale repo, since GitHub is not aware of the build chain and therefore doesn't automate it.
+      - name: Checkout timefold-solver-enterprise (PR)
+        id: checkout-solver-enterprise
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: TimefoldAI/timefold-solver-enterprise
+          ref: ${{ inputs.head_ref }}
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          path: ./timefold-solver-enterprise
+          fetch-depth: 0
+      - name: Checkout timefold-solver-enterprise (main)
+        if: steps.checkout-solver-enterprise.outcome != 'success'
+        uses: actions/checkout@v4
+        with:
+          repository: TimefoldAI/timefold-solver-enterprise
+          ref: main
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          path: ./timefold-solver-enterprise
+          fetch-depth: 0
+
+      # Clone the downstream repository
+      - name: Checkout ${{ inputs.name }} (PR)
+        id: checkout-downstream
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: "TimefoldAI/${{ inputs.repository }}"
+          ref: ${{ inputs.head_ref }}
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          path: ./${{ inputs.repository }}
+          fetch-depth: 0
+      - name: Checkout ${{ inputs.name }} (main)
+        if: steps.checkout-downstream.outcome != 'success'
+        uses: actions/checkout@v4
+        with:
+          repository: "TimefoldAI/${{ inputs.repository }}"
+          ref: main
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+          path: ./${{ inputs.repository }}
+          fetch-depth: 0
+
+      - name: Setup Temurin 21 and Maven
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Quickly build timefold-solver
+        working-directory: ./timefold-solver
+        shell: bash
+        run: ./mvnw -B -Dquickly clean install
+
+      - name: Quickly build timefold-solver-enterprise
+        working-directory: ./timefold-solver-enterprise
+        shell: bash
+        env:
+          TIMEFOLD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
+        run: ./mvnw -B -Dquickly clean install
+
+      - name: Build and test ${{ inputs.name }}
+        working-directory: ./${{ inputs.repository }}
+        shell: bash
+        env:
+          TIMEFOLD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
+        run: ./mvnw -B clean verify
+
+      - name: Test Summary
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
+        with:
+          paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
