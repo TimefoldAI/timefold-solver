@@ -132,7 +132,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         // To ensure reproducibility even when the number of random calls is not deterministic,
         // split the random at step start.
         var delegatingRandom = ((DefaultRandomSource) stepScope.getWorkingRandom());
-        savedRandom = delegatingRandom.sourceRandom().getDelegate();
+        savedRandom = delegatingRandom.moveRandom().getDelegate();
         delegatingRandom.restoreState(delegatingRandom.saveState());
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }

@@ -221,7 +221,12 @@ public final class TestRandom extends Random implements RandomSource {
     }
 
     @Override
-    public RandomGenerator moveUsage() {
+    public RandomGenerator moveIteratorUsage() {
+        return this;
+    }
+
+    @Override
+    public RandomGenerator factoryUsage() {
         return this;
     }
 

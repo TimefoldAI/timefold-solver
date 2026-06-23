@@ -51,7 +51,7 @@ public class SwapMoveSelectorFactory<Solution_>
             if (entitySelectorConfig.getId() == null && entitySelectorConfig.getMimicSelectorRef() == null) {
                 var entityName = Objects.requireNonNull(entityDescriptor.getEntityClass().getSimpleName());
                 // We set the id to make sure the value selector will use the mimic recorder
-                entityRecorderId = ConfigUtils.addRandomSuffix(entityName, configPolicy.getRandom().moveUsage());
+                entityRecorderId = ConfigUtils.addRandomSuffix(entityName, configPolicy.getRandom().factoryUsage());
                 entitySelectorConfig.setId(entityRecorderId);
             } else {
                 entityRecorderId = entitySelectorConfig.getId() != null ? entitySelectorConfig.getId()

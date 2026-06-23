@@ -55,7 +55,7 @@ final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solu
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
         this.solverScope = solverScope;
-        this.workingRandom = solverScope.getWorkingRandom().moveUsage();
+        this.workingRandom = solverScope.getWorkingRandom().moveIteratorUsage();
     }
 
     @Override

@@ -4,7 +4,12 @@ import java.util.random.RandomGenerator;
 
 public record MockRandomSource(RandomGenerator source) implements RandomSource {
     @Override
-    public RandomGenerator moveUsage() {
+    public RandomGenerator moveIteratorUsage() {
+        return source;
+    }
+
+    @Override
+    public RandomGenerator factoryUsage() {
         return source;
     }
 

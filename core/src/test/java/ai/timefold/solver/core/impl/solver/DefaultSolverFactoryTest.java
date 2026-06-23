@@ -115,9 +115,9 @@ class DefaultSolverFactoryTest {
                 .withRandomSeed(123456L);
         var defaultSolverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
         var randomGenerator = (DelegatingSplittableRandomGenerator) defaultSolverFactory
-                .buildRandomSupplier(EnvironmentMode.PHASE_ASSERT).get().moveUsage();
+                .buildRandomSupplier(EnvironmentMode.PHASE_ASSERT).get().moveIteratorUsage();
         var otherRandomGenerator =
-                (DelegatingSplittableRandomGenerator) RandomSource.seeded(solverConfig.getRandomSeed()).moveUsage();
+                (DelegatingSplittableRandomGenerator) RandomSource.seeded(solverConfig.getRandomSeed()).moveIteratorUsage();
         assertThat(randomGenerator.getSeed()).isEqualTo(otherRandomGenerator.getSeed());
         assertThat(otherRandomGenerator.nextLong()).isEqualTo(randomGenerator.nextLong());
     }

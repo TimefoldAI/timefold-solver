@@ -83,7 +83,7 @@ public class ListChangeMoveSelectorFactory<Solution_>
             if (mimicSelectorConfig.getMimicSelectorRef() == null && mimicSelectorConfig.getId() == null) {
                 var variableName = Objects.requireNonNull(mimicSelectorConfig.getVariableName());
                 // We set the id to make sure the value selector will use the mimic recorder
-                entityValueRangeRecorderId = ConfigUtils.addRandomSuffix(variableName, configPolicy.getRandom().moveUsage());
+                entityValueRangeRecorderId = ConfigUtils.addRandomSuffix(variableName, configPolicy.getRandom().factoryUsage());
                 mimicSelectorConfig.setId(entityValueRangeRecorderId);
             } else {
                 entityValueRangeRecorderId =
