@@ -388,7 +388,7 @@ If there is any difference between the 2 files, the build will fail.
 
 If the API changes are intentional, run the following command which will copy the generated `target/openapi-schema/openapi.json` to `src/build/openapi.json` file.
 
-[source,shell script]
+[source,bash]
 ----
 mvn clean package -Dupdate-api
 ----
