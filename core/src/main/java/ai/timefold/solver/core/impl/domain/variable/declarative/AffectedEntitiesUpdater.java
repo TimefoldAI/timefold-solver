@@ -25,7 +25,6 @@ final class AffectedEntitiesUpdater<Solution_>
     private final PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder> changeQueue;
     private boolean consistencyProcessed;
 
-
     AffectedEntitiesUpdater(BaseTopologicalOrderGraph graph, List<GraphNode<Solution_>> nodeList,
             BaseTopologicalOrderGraph.NodeTopologicalOrder[] nodeTopologicalOrders,
             Function<Object, List<GraphNode<Solution_>>> entityToContainingNode,

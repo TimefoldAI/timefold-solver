@@ -134,6 +134,10 @@ import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverse
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationEntity;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationSolution;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationValue;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldEntity;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldSolution;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldValue;
 import ai.timefold.solver.core.testdomain.sort.comparator.OneValuePerEntityComparatorEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableEntity;
 import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableSolution;
@@ -1453,36 +1457,34 @@ class DefaultSolverTest {
     void solveWhenIgnoringInconsistentSolutionsThrowsIfInitialSolutionInconsistent() {
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataConcurrentSolution.class, TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
+                TestdataDependencyNoInconsistentFieldSolution.class, TestdataDependencyNoInconsistentFieldEntity.class,
+                TestdataDependencyNoInconsistentFieldValue.class)
                 .withEasyScoreCalculatorClass(null)
-                .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class)
-                .withPreviewFeature(PreviewFeature.IGNORE_INCONSISTENT_SOLUTIONS);
+                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class);
 
-        var e1 = new TestdataConcurrentEntity("e1");
-        var e2 = new TestdataConcurrentEntity("e2");
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var e2 = new TestdataDependencyNoInconsistentFieldEntity("b");
 
-        var a1 = new TestdataConcurrentValue("a1");
-        var a2 = new TestdataConcurrentValue("a2");
-        var b1 = new TestdataConcurrentValue("b1");
-        var b2 = new TestdataConcurrentValue("b2");
+        var a1 = new TestdataDependencyNoInconsistentFieldValue("a1");
+        var a2 = new TestdataDependencyNoInconsistentFieldValue("a2");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
 
-        a1.setConcurrentValueGroup(List.of(a1, a2));
-        a2.setConcurrentValueGroup(List.of(a1, a2));
+        a2.setDependencies(List.of(a1));
+        b2.setDependencies(List.of(b1));
 
-        b1.setConcurrentValueGroup(List.of(b1, b2));
-        b2.setConcurrentValueGroup(List.of(b1, b2));
-
-        e1.setValues(List.of(a1, b1));
-        e2.setValues(List.of(b2, a2));
+        e1.setValues(List.of(b2, b1));
+        e2.setValues(List.of(a2, a1));
 
         var entities = List.of(e1, e2);
         var values = List.of(a1, a2, b1, b2);
 
-        var problem = new TestdataConcurrentSolution();
+        var problem = new TestdataDependencyNoInconsistentFieldSolution();
 
         problem.setEntities(entities);
         problem.setValues(values);
 
+        // TODO: Verify the values were unassigned instead
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem)).isInstanceOf(IllegalStateException.class)
                 .hasMessageContainingAll("The initial solution passed to the solver",
                         "is invalid because it has dependency loops");
@@ -1492,42 +1494,40 @@ class DefaultSolverTest {
     void solveIgnoreInconsistent() {
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataConcurrentSolution.class, TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
+                TestdataDependencyNoInconsistentFieldSolution.class, TestdataDependencyNoInconsistentFieldEntity.class,
+                TestdataDependencyNoInconsistentFieldValue.class)
                 .withEasyScoreCalculatorClass(null)
-                .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class);
+                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class);
 
-        var e1 = new TestdataConcurrentEntity("e1");
-        var e2 = new TestdataConcurrentEntity("e2");
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var e2 = new TestdataDependencyNoInconsistentFieldEntity("b");
 
-        var a1 = new TestdataConcurrentValue("a1");
-        var a2 = new TestdataConcurrentValue("a2");
-        var b1 = new TestdataConcurrentValue("b1");
-        var b2 = new TestdataConcurrentValue("b2");
+        var a1 = new TestdataDependencyNoInconsistentFieldValue("a1");
+        var a2 = new TestdataDependencyNoInconsistentFieldValue("a2");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
 
-        a1.setConcurrentValueGroup(List.of(a1, a2));
-        a2.setConcurrentValueGroup(List.of(a1, a2));
-
-        b1.setConcurrentValueGroup(List.of(b1, b2));
-        b2.setConcurrentValueGroup(List.of(b1, b2));
-
-        e1.setValues(List.of(a1, b2));
-        e2.setValues(List.of(a2, b1));
+        a2.setDependencies(List.of(a1));
+        b2.setDependencies(List.of(b1));
 
         var entities = List.of(e1, e2);
         var values = List.of(a1, a2, b1, b2);
 
-        var problem = new TestdataConcurrentSolution();
+        var problem = new TestdataDependencyNoInconsistentFieldSolution();
 
         problem.setEntities(entities);
         problem.setValues(values);
 
         var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0L, -360L));
+        var solutionValues = solution.getValues();
+        var solutionA1 = solutionValues.get(0);
+        var solutionA2 = solutionValues.get(1);
+        var solutionB1 = solutionValues.get(2);
+        var solutionB2 = solutionValues.get(3);
 
-        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("a1",
-                "b2");
-        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("a2", "b1");
-
-        assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0, -240));
+        assertThat(solutionA2.getStartTime()).isAfterOrEqualTo(solutionA1.getEndTime());
+        assertThat(solutionB2.getStartTime()).isAfterOrEqualTo(solutionB1.getEndTime());
     }
 
     private static List<MoveSelectorConfig<?>> generateMovesForMixedModel() {
