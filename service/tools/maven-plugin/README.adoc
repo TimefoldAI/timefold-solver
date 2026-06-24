@@ -31,6 +31,7 @@ The plugin uses a goal prefix of `timefold` (see the plugin configuration in the
 - The request query string includes parameters such as `type`, `registrationKey`, `handleSubscription`, and (for shared type) multiple `restrictedTo` entries for tenants
 - If the platform responds with 409 (conflict) and `timefold.model.overwrite=true`, the plugin will PATCH `/api/platform/v1/models/{registrationKey}` to update the existing model
 - The plugin reads the model descriptor to obtain name/id by extracting `timefold-model-descriptor.json` from the archive (or reading `target/timefold/timefold-model-descriptor.json` when present)
+- The platform validates the model version (`timefold.application.version`) on registration. It must be a release version `vN` (e.g. `v1`), a git commit hash (1–40 lowercase hex characters), or the literal `SNAPSHOT`; any other value is rejected with HTTP 400.
 
 === Undeploy goal (timefold:undeploy)
 
