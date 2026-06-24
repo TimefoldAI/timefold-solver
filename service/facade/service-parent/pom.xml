@@ -896,18 +896,6 @@
     </profile>
 
     <profile>
-      <id>solver-snapshot</id>
-      <activation>
-        <property>
-          <name>solver-snapshot</name>
-        </property>
-      </activation>
-      <properties>
-        <version.ai.timefold.solver>999-SNAPSHOT</version.ai.timefold.solver>
-      </properties>
-    </profile>
-
-    <profile>
       <id>quickProfile</id>
       <activation>
         <property>
