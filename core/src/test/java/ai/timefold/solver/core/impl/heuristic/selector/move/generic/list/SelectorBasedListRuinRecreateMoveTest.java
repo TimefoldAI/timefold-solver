@@ -50,7 +50,7 @@ class SelectorBasedListRuinRecreateMoveTest {
 
         var move = new SelectorBasedListRuinRecreateMove<TestdataListSolution>(mock(ListVariableDescriptor.class),
                 mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mockSolverScope(), Arrays.asList(v1, v2),
-                new LinkedHashSet<>(Set.of(e1, e2, e3)));
+                new LinkedHashSet<>(Set.of(e1, e2, e3)), 0L);
         var rebasedMove = move.rebase(destinationScoreDirector.getMoveDirector());
 
         assertSoftly(softly -> {
@@ -73,26 +73,26 @@ class SelectorBasedListRuinRecreateMoveTest {
         var descriptor = mock(ListVariableDescriptor.class);
         var move = new SelectorBasedListRuinRecreateMove<TestdataListSolution>(descriptor,
                 mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mockSolverScope(), List.of(e1),
-                new LinkedHashSet<>(Set.of(v1)));
+                new LinkedHashSet<>(Set.of(v1)), 0L);
         var sameMove = new SelectorBasedListRuinRecreateMove<TestdataListSolution>(descriptor,
                 mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mockSolverScope(), List.of(e1),
-                new LinkedHashSet<>(Set.of(v1)));
+                new LinkedHashSet<>(Set.of(v1)), 0L);
         assertThat(move).isEqualTo(sameMove);
 
         var differentMove = new SelectorBasedListRuinRecreateMove<TestdataListSolution>(descriptor,
                 mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mockSolverScope(), List.of(e1),
-                new LinkedHashSet<>(Set.of(v2)));
+                new LinkedHashSet<>(Set.of(v2)), 0L);
         assertThat(move).isNotEqualTo(differentMove);
 
         var anotherDifferentMove = new SelectorBasedListRuinRecreateMove<TestdataListSolution>(descriptor,
                 mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mockSolverScope(), List.of(e2),
-                new LinkedHashSet<>(Set.of(v1)));
+                new LinkedHashSet<>(Set.of(v1)), 0L);
         assertThat(move).isNotEqualTo(anotherDifferentMove);
 
         var yetAnotherDifferentMove =
                 new SelectorBasedListRuinRecreateMove<TestdataListSolution>(mock(ListVariableDescriptor.class),
                         mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mockSolverScope(), List.of(e1),
-                        new LinkedHashSet<>(Set.of(v1)));
+                        new LinkedHashSet<>(Set.of(v1)), 0L);
         assertThat(move).isNotEqualTo(yetAnotherDifferentMove);
     }
 

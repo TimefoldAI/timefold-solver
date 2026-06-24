@@ -33,16 +33,19 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final SolverScope<Solution_> solverScope;
     private final Map<Object, NavigableSet<RuinedPosition>> entityToNewPositionMap;
+    private final long randomSeed;
 
     public SelectorBasedListRuinRecreateMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
-            SolverScope<Solution_> solverScope, List<Object> ruinedValueList, SequencedSet<Object> affectedEntitySet) {
+            SolverScope<Solution_> solverScope, List<Object> ruinedValueList, SequencedSet<Object> affectedEntitySet,
+            long randomSeed) {
         this.listVariableDescriptor = listVariableDescriptor;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.solverScope = solverScope;
         this.ruinedValueList = ruinedValueList;
         this.affectedEntitySet = affectedEntitySet;
         this.entityToNewPositionMap = new IdentityHashMap<>(affectedEntitySet.size());
+        this.randomSeed = randomSeed;
     }
 
     @Override
@@ -97,7 +100,7 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
             var nestedSolverScope = new SolverScope<Solution_>(solverScope.getClock());
             nestedSolverScope.setSolver(solverScope.getSolver());
             nestedSolverScope.setScoreDirector(nonRecordingScoreDirector);
-            nestedSolverScope.setWorkingRandom(DefaultRandomSource.seeded(0L));
+            nestedSolverScope.setWorkingRandom(DefaultRandomSource.seeded(randomSeed));
             constructionHeuristicPhase.solvingStarted(nestedSolverScope);
             constructionHeuristicPhase.solve(nestedSolverScope);
             constructionHeuristicPhase.solvingEnded(nestedSolverScope);
@@ -172,7 +175,7 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
                 .getSolutionDescriptor()
                 .getListVariableDescriptor();
         return new SelectorBasedListRuinRecreateMove<>(rebasedListVariableDescriptor, constructionHeuristicPhaseBuilder,
-                solverScope, rebasedRuinedValueList, rebasedAffectedEntitySet);
+                solverScope, rebasedRuinedValueList, rebasedAffectedEntitySet, randomSeed);
     }
 
     @Override

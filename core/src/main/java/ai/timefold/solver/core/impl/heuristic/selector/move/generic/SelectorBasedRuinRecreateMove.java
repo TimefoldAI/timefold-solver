@@ -27,18 +27,21 @@ public final class SelectorBasedRuinRecreateMove<Solution_> extends AbstractSele
     private final SolverScope<Solution_> solverScope;
     private final List<Object> ruinedEntityList;
     private final SequencedSet<Object> affectedValueSet;
+    private final long randomSeed;
 
     private Object @Nullable [] recordedNewValues;
 
     public SelectorBasedRuinRecreateMove(GenuineVariableDescriptor<Solution_> genuineVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
-            SolverScope<Solution_> solverScope, List<Object> ruinedEntityList, SequencedSet<Object> affectedValueSet) {
+            SolverScope<Solution_> solverScope, List<Object> ruinedEntityList, SequencedSet<Object> affectedValueSet,
+            long randomSeed) {
         this.genuineVariableDescriptor = genuineVariableDescriptor;
         this.ruinedEntityList = ruinedEntityList;
         this.affectedValueSet = affectedValueSet;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.solverScope = solverScope;
         this.recordedNewValues = null;
+        this.randomSeed = randomSeed;
     }
 
     @Override
@@ -66,7 +69,7 @@ public final class SelectorBasedRuinRecreateMove<Solution_> extends AbstractSele
         var nestedSolverScope = new SolverScope<Solution_>(solverScope.getClock());
         nestedSolverScope.setSolver(solverScope.getSolver());
         nestedSolverScope.setScoreDirector(innerScoreDirector);
-        nestedSolverScope.setWorkingRandom(DefaultRandomSource.seeded(0L));
+        nestedSolverScope.setWorkingRandom(DefaultRandomSource.seeded(randomSeed));
         constructionHeuristicPhase.solvingStarted(nestedSolverScope);
         constructionHeuristicPhase.solve(nestedSolverScope);
         constructionHeuristicPhase.solvingEnded(nestedSolverScope);
@@ -92,7 +95,7 @@ public final class SelectorBasedRuinRecreateMove<Solution_> extends AbstractSele
         var rebasedRuinedEntityList = rebaseList(ruinedEntityList, lookup);
         var rebasedAffectedValueSet = rebaseSet(affectedValueSet, lookup);
         return new SelectorBasedRuinRecreateMove<>(genuineVariableDescriptor, constructionHeuristicPhaseBuilder, solverScope,
-                rebasedRuinedEntityList, rebasedAffectedValueSet);
+                rebasedRuinedEntityList, rebasedAffectedValueSet, randomSeed);
     }
 
     @Override
