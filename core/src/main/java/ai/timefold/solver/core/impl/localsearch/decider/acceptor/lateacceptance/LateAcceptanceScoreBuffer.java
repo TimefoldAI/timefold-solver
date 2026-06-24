@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
  * an epoch counter is incremented,
  * allowing the action to avoid reloading the score array with the new score.
  */
-class LateAcceptanceScoreBuffer {
+final class LateAcceptanceScoreBuffer {
 
     // Late score fields
     private final InnerScore<?>[] scores;

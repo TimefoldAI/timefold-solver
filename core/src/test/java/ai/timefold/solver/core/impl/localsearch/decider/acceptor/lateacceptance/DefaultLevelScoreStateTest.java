@@ -83,9 +83,9 @@ class DefaultLevelScoreStateTest {
         var state = new DefaultLevelScoreState<>(initialScore, new HardSoftScoreDefinition());
 
         var hardImprovedScore = InnerScore.fullyAssigned(HardSoftScore.of(0, -200));
-        var stepScope0 = buildStepScope(hardImprovedScore, 0, 1);
-        state.update(stepScope0);
-        state.isNonDominatedLevelChanged(stepScope0); // previousBestScoreIndex stays 0 (only update() can change it)
+        var stepScope0 = buildStepScope(hardImprovedScore, 1, 1);
+        state.update(stepScope0); // previousBestScoreIndex changes to 1 and levels move to [0, 200]
+        assertThat(state.isNonDominatedLevelChanged(stepScope0)).isFalse();
 
         // Step 1 scope: start index 1 (best from step 0), end index 2 (new best after step 1)
         var softImprovedScore = InnerScore.fullyAssigned(HardSoftScore.of(0, -100));
@@ -94,7 +94,7 @@ class DefaultLevelScoreStateTest {
         when(stepScope1.getPhaseScope()).thenReturn(phaseScope1);
         when(phaseScope1.getBestSolutionStepIndex()).thenReturn(1, 2);
         when(phaseScope1.getBestScore()).thenReturn(hardImprovedScore, softImprovedScore);
-        state.update(stepScope1); // 1 != 0 → refresh cache to [0, -200]
+        state.update(stepScope1);
         assertThat(state.isNonDominatedLevelChanged(stepScope1)).isFalse(); // [0,-100] vs [0,-200]: hard unchanged
     }
 

@@ -34,9 +34,11 @@ final class DefaultLevelScoreState<Solution_> implements LevelScoreState<Solutio
 
     @Override
     public void update(LocalSearchStepScope<Solution_> stepScope) {
-        if (previousBestScoreIndex != stepScope.getPhaseScope().getBestSolutionStepIndex()) {
+        var phaseScope = stepScope.getPhaseScope();
+        var bestSolutionStepIndex = phaseScope.getBestSolutionStepIndex();
+        if (previousBestScoreIndex != bestSolutionStepIndex) {
             // Update the current best score information
-            this.previousBestScoreIndex = stepScope.getPhaseScope().getBestSolutionStepIndex();
+            this.previousBestScoreIndex = bestSolutionStepIndex;
             this.previousBestScoreLevels = stepScope.getPhaseScope().getBestScore().raw().toLevelNumbers();
         }
     }
@@ -55,11 +57,13 @@ final class DefaultLevelScoreState<Solution_> implements LevelScoreState<Solutio
      */
     @Override
     public boolean isNonDominatedLevelChanged(LocalSearchStepScope<Solution_> stepScope) {
-        if (previousBestScoreIndex != stepScope.getPhaseScope().getBestSolutionStepIndex()) {
+        var phaseScope = stepScope.getPhaseScope();
+        var bestSolutionStepIndex = phaseScope.getBestSolutionStepIndex();
+        if (previousBestScoreIndex != bestSolutionStepIndex) {
             var newBestScore = stepScope.getPhaseScope().getBestScore();
-            var newBestScoreDoubles = newBestScore.raw().toLevelNumbers();
+            var newBestScoreLevels = newBestScore.raw().toLevelNumbers();
             for (var i = 0; i < nonDominatedLevelCount; i++) {
-                if (!newBestScoreDoubles[i].equals(previousBestScoreLevels[i])) {
+                if (!newBestScoreLevels[i].equals(previousBestScoreLevels[i])) {
                     return true;
                 }
             }

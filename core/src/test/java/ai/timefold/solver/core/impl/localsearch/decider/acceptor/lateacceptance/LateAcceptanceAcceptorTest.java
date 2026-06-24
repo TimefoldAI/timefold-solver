@@ -285,8 +285,8 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope0);
 
         var initialInnerScore = InnerScore.fullyAssigned(initialBestScore);
-        assertThat(acceptor.scoreBuffer.get(1)).isEqualTo(initialInnerScore);
-        assertThat(acceptor.scoreBuffer.get(2)).isEqualTo(initialInnerScore);
+        assertThat(acceptor.getScore(1)).isEqualTo(initialInnerScore);
+        assertThat(acceptor.getScore(2)).isEqualTo(initialInnerScore);
 
         // Step 1: hard improvement — reset expected
         var stepScope1 = new LocalSearchStepScope<>(phaseScope);
@@ -300,7 +300,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
         var hardImprovedInnerScore = InnerScore.fullyAssigned(hardImprovedScore);
         for (var i = 0; i < 3; i++) {
-            assertThat(acceptor.scoreBuffer.get(i)).isEqualTo(hardImprovedInnerScore);
+            assertThat(acceptor.getScore(i)).isEqualTo(hardImprovedInnerScore);
         }
 
         acceptor.phaseEnded(phaseScope);
@@ -340,9 +340,9 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         phaseScope.setLastCompletedStepScope(stepScope0);
 
         var softImprovedInnerScore = InnerScore.fullyAssigned(softImprovedScore);
-        assertThat(acceptor.scoreBuffer.get(0)).isEqualTo(softImprovedInnerScore);
+        assertThat(acceptor.getScore(0)).isEqualTo(softImprovedInnerScore);
         for (var i = 1; i < 3; i++) {
-            assertThat(acceptor.scoreBuffer.get(i)).isEqualTo(initialInnerBestScore);
+            assertThat(acceptor.getScore(i)).isEqualTo(initialInnerBestScore);
         }
 
         // Step 1: only soft[1] (last level) improvement — no reset
@@ -356,9 +356,9 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
         // Slots 0 and 2 still return the reset value from step 0
         var lastSoftImprovedInnerScore = InnerScore.fullyAssigned(lastSoftImprovedScore);
-        assertThat(acceptor.scoreBuffer.get(0)).isEqualTo(softImprovedInnerScore);
-        assertThat(acceptor.scoreBuffer.get(1)).isEqualTo(lastSoftImprovedInnerScore);
-        assertThat(acceptor.scoreBuffer.get(2)).isEqualTo(initialInnerBestScore);
+        assertThat(acceptor.getScore(0)).isEqualTo(softImprovedInnerScore);
+        assertThat(acceptor.getScore(1)).isEqualTo(lastSoftImprovedInnerScore);
+        assertThat(acceptor.getScore(2)).isEqualTo(initialInnerBestScore);
 
         // Step 2: hard[0] improvement — reset required
         var stepScope2 = new LocalSearchStepScope<>(phaseScope);
@@ -371,7 +371,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
         var hardImprovedInnerScore = InnerScore.fullyAssigned(hardImprovedScore);
         for (var i = 0; i < 3; i++) {
-            assertThat(acceptor.scoreBuffer.get(i)).isEqualTo(hardImprovedInnerScore);
+            assertThat(acceptor.getScore(i)).isEqualTo(hardImprovedInnerScore);
         }
 
         acceptor.phaseEnded(phaseScope);
