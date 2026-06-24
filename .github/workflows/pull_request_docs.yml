@@ -96,6 +96,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || 'main' }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
           path: "./timefold-solver"
           fetch-depth: 0
+          # "approval_required" + PR-level maintainer approval ensures that the PR is from a trusted source.
+          allow-unsafe-pr-checkout: true
 
       - name: Updating Antora configuration
         working-directory: "./timefold-solver"
