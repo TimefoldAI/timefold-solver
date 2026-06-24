@@ -33,11 +33,8 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         var initialScore = phaseScope.getBestScore();
         scoreBuffer = new LateAcceptanceScoreBuffer(lateAcceptanceSize, initialScore);
         var scoreDefinition = phaseScope.getSolverScope().getScoreDefinition();
-        if (scoreDefinition.getLevelsSize() > 1) {
-            bestScoreState = new DefaultLevelScoreState<>(initialScore, scoreDefinition);
-        } else {
-            bestScoreState = new NoOpLevelScoreState<>();
-        }
+        bestScoreState = scoreDefinition.getLevelsSize() > 1 ? new DefaultLevelScoreState<>(initialScore, scoreDefinition)
+                : new NoOpLevelScoreState<>();
     }
 
     private void validate() {

@@ -5,12 +5,20 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
+/**
+ * Default implementation of {@link LevelScoreState} for scores with more than one level.
+ * <p>
+ * Caches the best-solution step index and the corresponding score level values.
+ * On each step, {@link #update} refreshes the cache when the best solution has changed,
+ * and {@link #isNonDominatedLevelChanged} compares the non-dominated levels
+ * (hard for {@link IBendableScore IBendableScore}, hard and medium for all others)
+ * against the cached values to determine whether the {@link LateAcceptanceScoreBuffer} should be reset.
+ */
 final class DefaultLevelScoreState<Solution_> implements LevelScoreState<Solution_> {
 
     private final int nonDominatedLevelCount;
     private long previousBestScoreIndex;
     private Number[] previousBestScoreLevels;
-    private boolean firstEvaluation = true;
 
     @SuppressWarnings("rawtypes")
     DefaultLevelScoreState(InnerScore initialScore, ScoreDefinition scoreDefinition) {
@@ -47,8 +55,7 @@ final class DefaultLevelScoreState<Solution_> implements LevelScoreState<Solutio
      */
     @Override
     public boolean isNonDominatedLevelChanged(LocalSearchStepScope<Solution_> stepScope) {
-        if (firstEvaluation || previousBestScoreIndex != stepScope.getPhaseScope().getBestSolutionStepIndex()) {
-            firstEvaluation = false;
+        if (previousBestScoreIndex != stepScope.getPhaseScope().getBestSolutionStepIndex()) {
             var newBestScore = stepScope.getPhaseScope().getBestScore();
             var newBestScoreDoubles = newBestScore.raw().toLevelNumbers();
             for (var i = 0; i < nonDominatedLevelCount; i++) {
