@@ -31,19 +31,20 @@ public class TimetableDemoDataGenerator implements DemoDataGenerator {
     public enum DemoDataKind {
         BASIC(
             new DemoMetaData("BASIC", "SHORT_DESCRIPTION", "LONG_DESCRIPTION", List.of("TAGS"),
-                List.of("Configuration Overrides")),
+                List.of()),
             DemoDataKind::generateBasicDemoData // could also delegate to another class instead
         ),
         COMPLEX_SET(
             new DemoMetaData("COMPLEX_SET", "SHORT_DESCRIPTION", "LONG_DESCRIPTION", List.of("TAGS"),
-                List.of("Configuration Overrides")),
+                List.of()),
             DemoDataKind::generateComplexSet
         );
 
         private final DemoMetaData metaData;
-        private final Function<DemoDataKind, ModelRequest<?>> requestFunction;
+        private final Function<DemoDataKind, ModelRequest<TimetableInput, TimetableConfigOverrides>> requestFunction;
 
-        DemoDataKind(DemoMetaData metaData, Function<DemoDataKind, ModelRequest<?>> requestFunction) {
+        DemoDataKind(DemoMetaData metaData,
+                Function<DemoDataKind, ModelRequest<TimetableInput, TimetableConfigOverrides>> requestFunction) {
             this.metaData = metaData;
             this.requestFunction = requestFunction;
         }

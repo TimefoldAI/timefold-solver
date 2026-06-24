@@ -49,7 +49,7 @@ Since an xref:#openAPISpecification[OpenAPI specification] will also be automati
 == Generated endpoints
 
 The REST module generates several endpoints; the following are the core endpoints.
-The <root> is determined by the @Path annotation on the interface extending ModelRest (`/v1/timetables` in the example above).
+The `<root>` is determined by the @Path annotation on the interface extending ModelRest (`/v1/timetables` in the example above).
 
 - `GET /<root>`: Retrieve all registered optimization datasets
 - `POST /<root>`: Create a new optimization dataset
