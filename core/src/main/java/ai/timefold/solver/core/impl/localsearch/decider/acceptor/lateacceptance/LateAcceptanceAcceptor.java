@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance;
 
-import java.util.Arrays;
-
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
@@ -14,8 +12,8 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     protected int lateAcceptanceSize = -1;
     protected boolean hillClimbingEnabled = true;
 
-    protected InnerScore<?>[] previousScores;
-    protected int lateScoreIndex = -1;
+    private LateAcceptanceScoreBuffer scoreBuffer;
+    private LevelScoreState<Solution_> bestScoreState;
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
         this.lateAcceptanceSize = lateAcceptanceSize;
@@ -33,10 +31,11 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         validate();
-        previousScores = new InnerScore[lateAcceptanceSize];
         var initialScore = phaseScope.getBestScore();
-        Arrays.fill(previousScores, initialScore);
-        lateScoreIndex = 0;
+        scoreBuffer = new LateAcceptanceScoreBuffer(lateAcceptanceSize, initialScore);
+        var scoreDefinition = phaseScope.getSolverScope().getScoreDefinition();
+        bestScoreState = scoreDefinition.getLevelsSize() > 1 ? new DefaultLevelScoreState<>(initialScore, scoreDefinition)
+                : new NoOpLevelScoreState<>();
     }
 
     private void validate() {
@@ -50,7 +49,7 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = (InnerScore) moveScope.getScore();
-        var lateScore = getPreviousScore(lateScoreIndex);
+        var lateScore = scoreBuffer.getCurrent();
         if (moveScore.compareTo(lateScore) >= 0) {
             return true;
         }
@@ -62,23 +61,30 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         return false;
     }
 
-    @SuppressWarnings("unchecked")
-    private <Score_ extends Score<Score_>> InnerScore<Score_> getPreviousScore(int lateScoreIndex) {
-        return (InnerScore<Score_>) previousScores[lateScoreIndex];
+    @Override
+    public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
+        super.stepStarted(stepScope);
+        bestScoreState.update(stepScope);
     }
 
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        previousScores[lateScoreIndex] = stepScope.getScore();
-        lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
+        scoreBuffer.update(stepScope.getScore());
+        if (bestScoreState.isNonDominatedLevelChanged(stepScope)) {
+            scoreBuffer.tryReset(stepScope.getPhaseScope().getBestScore());
+        }
     }
 
     @Override
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        previousScores = null;
-        lateScoreIndex = -1;
+        scoreBuffer = null;
+        bestScoreState = null;
+    }
+
+    protected <Score_ extends Score<Score_>> InnerScore<Score_> getScore(int i) {
+        return scoreBuffer.get(i);
     }
 
 }
