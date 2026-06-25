@@ -50,7 +50,7 @@ Maven::
 --
 Your `pom.xml` file has the following content:
 
-[source,xml,subs=attributes+]
+[source,xml,subs=attributes+,options="nowrap"]
 ----
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -100,7 +100,7 @@ Java::
 --
 Create the `src/main/java/org/acme/schooltimetabling/domain/Timetable.java` class:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 package org.acme.schooltimetabling.domain;
 
@@ -196,7 +196,7 @@ You also need to provide some basic metadata about your application.
 
 Create the `src/main/resources/application.properties` file:
 
-[source,properties]
+[source,properties,options="nowrap"]
 ----
 # The solver runs for 30 seconds by default.
 # Increase this for larger datasets to find a better solution.
@@ -235,7 +235,7 @@ Java::
 --
 Create the `src/main/java/org/acme/schooltimetabling/rest/TimetableResource.java` class:
 
-[source,java]
+[source,java,options="nowrap"]
 ----
 package org.acme.schooltimetabling.rest;
 
@@ -258,14 +258,14 @@ Everything is now configured to run the model.
 
 Start the model in `development mode` by executing:
 
-[source,bash]
+[source,bash,options="nowrap"]
 ----
 mvn quarkus:dev
 ----
 
 You should see the following line in the log on successful start
 
-[source,bash]
+[source,bash,options="nowrap"]
 ----
 getting-started-school-timetabling <version> on JVM (powered by Quarkus {quarkus-version}) started in 1.552s. Listening on: http://localhost:8080
 ----
@@ -287,7 +287,7 @@ To showcase that the model is now ready for use we only need 2 of those endpoint
 
 // TODO: MAKE THIS INTERACTIVE IN THE UI!
 
-[source,bash]
+[source,bash,options="nowrap"]
 ----
 curl -v -X 'POST' \
   'http://localhost:8080/v1/timetables' \
@@ -328,7 +328,7 @@ curl -v -X 'POST' \
 
 This call should return a response containing the ID of the started run.
 
-[source,json]
+[source,json,options="nowrap"]
 ----
 {
   "id" : "f401a609-403b-48c4-9487-0baf287e4f72",
@@ -342,7 +342,7 @@ This call should return a response containing the ID of the started run.
 
 Using the ID received in the previous run, the current status of the run can be retrieved.
 
-[source,bash]
+[source,bash,options="nowrap"]
 ----
 curl -X 'GET' \
   'http://localhost:8080/v1/timetables/{id}' \
@@ -350,7 +350,7 @@ curl -X 'GET' \
 ----
 
 This call will return the standard xref:service/rest-api.adoc#solvingResponse[response structure].
-[source,json]
+[source,json,options="nowrap"]
 ----
 {
   "metadata": {
