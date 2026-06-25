@@ -3,8 +3,6 @@
 :doctype: book
 :sectnums:
 :icons: font
-:relevance: library-and-service
-:notes: to be adjusted to clarify the differences.
 
 [#whatIsTimefold]
 = Introduction
@@ -30,6 +28,9 @@ Timefold Solver is 100% pure Java^TM^ and runs on Java {java-version} or higher.
 It xref:integration/integration.adoc#integration[integrates very easily] with other technologies.
 Timefold Solver works on any Java Virtual Machine and is compatible with the major JVM languages and all major platforms.
 It also supports Kotlin.
+
+You can use Timefold Solver to build an xref:quickstart/overview.adoc#runAsAService[optimization service],
+or embed it into your software as a xref:quickstart/overview.adoc#embedAsALibrary[library].
 
 :!sectnums:
 == Next
