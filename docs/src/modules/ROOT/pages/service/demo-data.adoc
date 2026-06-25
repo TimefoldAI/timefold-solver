@@ -9,7 +9,7 @@ This page describes how to provide dedicated support for exposing demo data.
 
 include::_preview-note.adoc[]
 
-// TODO To be simplified with: https://github.com/TimefoldAI/timefold-models-sdk/issues/550
+// TODO To be simplified with: https://github.com/TimefoldAI/timefold-solver-enterprise/issues/630
 == Generating demo data
 
 To provide consumers of your model with example datasets, implement the `DemoDataGenerator` interface.
