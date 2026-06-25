@@ -158,6 +158,55 @@ public class Timetable extends AbstractSimpleModel {
 }
 ----
 --
+
+Kotlin::
++
+--
+Create the `src/main/kotlin/org/acme/schooltimetabling/domain/Timetable.kt` class:
+
+[source,kotlin,options="nowrap"]
+----
+package org.acme.schooltimetabling.domain
+
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution
+import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider
+import ai.timefold.solver.core.api.score.HardMediumSoftScore
+import ai.timefold.solver.service.definition.api.AbstractSimpleModel
+
+@PlanningSolution
+class Timetable : AbstractSimpleModel() {
+
+    @ValueRangeProvider
+    @ProblemFactCollectionProperty
+    var timeslots: List<Timeslot> = emptyList()
+
+    @ValueRangeProvider
+    @ProblemFactCollectionProperty
+    var rooms: List<Room> = emptyList()
+
+    @PlanningEntityCollectionProperty
+    var lessons: List<Lesson> = emptyList()
+
+    constructor()
+
+    constructor(timeslots: List<Timeslot>, rooms: List<Room>, lessons: List<Lesson>) {
+        this.timeslots = timeslots
+        this.rooms = rooms
+        this.lessons = lessons
+    }
+
+    override fun getConstraintWeightOverrides(): ConstraintWeightOverrides<HardMediumSoftScore> =
+        ConstraintWeightOverrides.none()
+
+    fun setConstraintWeightOverrides(constraintWeightOverrides: ConstraintWeightOverrides<HardMediumSoftScore>) {
+        // Left empty for now; see constraint weights documentation
+    }
+}
+----
+--
 ====
 
 The `Timetable` class has an `@PlanningSolution` annotation,
