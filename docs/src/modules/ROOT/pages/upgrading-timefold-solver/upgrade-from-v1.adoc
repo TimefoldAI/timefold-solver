@@ -830,7 +830,7 @@ void onFinalBestSolution(FinalBestSolutionEvent<Timetable> event) {
 }
 ----
 
-Users of xref:using-timefold-solver/running-the-solver.adoc#throttlingBestSolutionEvents[solution throttling]
+Users of xref:using-timefold-solver/library-integration.adoc#throttlingBestSolutionEvents[solution throttling]
 should also update their code to use `ThrottlingBestSolutionEventConsumer`
 instead of the now removed `ThrottlingBestSolutionConsumer`.
 ====

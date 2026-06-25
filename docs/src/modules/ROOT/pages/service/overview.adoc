@@ -12,19 +12,46 @@ This opinionated approach builds on https://quarkus.io[Quarkus] and eliminates t
 
 If you haven't done so yet, start with the xref:../quickstart/service/getting-started.adoc[Getting started: building a service] guide.
 
+[#howSolvingWorks]
+== How solving works
+
+Once your service is running, solving is driven entirely through the REST API — no solver management code required.
+
+. *Submit a problem* — `POST /<root>` with your planning problem as a JSON body.
+The service registers the dataset, starts optimizing asynchronously, and returns an ID immediately.
+. *Poll for results* — `GET /<root>/\{id\}` returns the best solution found so far, along with the current score.
+Call this repeatedly to show progress to the end-user, or once after a known time limit.
+. *Terminate early* — `DELETE /<root>/\{id\}` stops solving and returns the best solution reached.
+. *Inspect score analysis* — `GET /<root>/\{id\}/score-analysis` breaks down which constraints are violated and by how much.
+
+See xref:rest-api.adoc[REST API] for the full endpoint reference and request/response formats.
+
 [#foundationsStillApply]
-== Foundations still apply
+== Built on Timefold Solver (the library)
 
-Building a service does not replace the core Timefold Solver concepts, it builds on top of them.
-Everything covered in the following sections is still relevant and applies directly to your service model:
+The service module is not a separate product, it is Timefold Solver with an opinionated runtime on top.
+Under the hood, the same `Solver`, `SolverManager`, constraint streams, and optimization algorithms are running.
+Everything you know about modeling planning problems and writing constraints transfers directly.
 
-xref:../using-timefold-solver/overview.adoc#usingTimefoldSolverOverview[*Using Timefold Solver*]::
-How to model your planning problem, configure the solver, and understand the solving lifecycle.
-This knowledge is required regardless of whether you embed the solver as a library or run it as a service.
+If you are coming from the library, think of the service as the infrastructure layer you no longer have to write yourself:
+instead of wiring up a `SolverManager`, a REST endpoint, or thinking about good model ergonomics,
+the service module provides all of that out of the box.
+
+Your modeling and constraint knowledge is the same, only the plumbing changes.
+
+The following areas of the documentation apply equally to both service and library mode:
+
+xref:../using-timefold-solver/modeling-planning-problems.adoc[*Modeling planning problems*]::
+How to annotate your domain with `@PlanningSolution`, `@PlanningEntity`, `@PlanningVariable`, and related annotations.
+This is identical whether you run as a service or embed as a library.
 
 xref:../constraints-and-score/overview.adoc#constraintsAndScoreOverview[*Constraints and Score*]::
 How to define hard and soft constraints, choose a score type, and analyze solution quality.
-Constraint streams and score calculation work identically in a service model.
+Constraint streams and score calculation work identically in both modes.
 
-The pages in this section cover only what is *specific* to running the solver as a service:
+xref:../using-timefold-solver/running-the-solver.adoc[*Tuning and diagnostics*]::
+Environment modes, logging, monitoring, multi-threaded solving, and random seed configuration.
+These concepts and most configuration options apply regardless of how you run the solver.
+
+The pages in this section cover only what is *specific* to the service module:
 the REST API contract, model enrichment, constraint weight overrides, demo data, and metrics.
