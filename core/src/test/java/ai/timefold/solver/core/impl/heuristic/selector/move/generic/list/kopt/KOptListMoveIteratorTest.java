@@ -146,7 +146,7 @@ public class KOptListMoveIteratorTest {
                 when(mocks.listVariableStateSupply.getElementPosition(entityList.get(i)))
                         .thenReturn(ElementPosition.of(entity, i));
                 when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
-                when(mocks.listVariableStateSupply.getIndex(entityList.get(i))).thenReturn(i);
+                when(mocks.listVariableStateSupply.getIndexOrFail(entityList.get(i))).thenReturn(i);
                 when(mocks.listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(mocks.listVariableDescriptor);
             }
             when(mocks.listVariableDescriptor.getListSize(entity)).thenReturn(entityList.size());
@@ -251,7 +251,7 @@ public class KOptListMoveIteratorTest {
                 when(mocks.listVariableStateSupply.getElementPosition(entityList.get(i)))
                         .thenReturn(ElementPosition.of(entity, i));
                 when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
-                when(mocks.listVariableStateSupply.getIndex(entityList.get(i))).thenReturn(i);
+                when(mocks.listVariableStateSupply.getIndexOrFail(entityList.get(i))).thenReturn(i);
                 when(mocks.listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(mocks.listVariableDescriptor);
             }
             when(mocks.listVariableDescriptor.getListSize(entity)).thenReturn(entityList.size());
