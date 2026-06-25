@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelector;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -64,7 +65,7 @@ class FilteringValueRangeSelectorTest {
         var secondEntity = new TestdataListEntityProvidingEntity("e2", List.of(apr, may, jun));
         solution.setEntityList(List.of(firstEntity, secondEntity));
 
-        var solverScope = mock(SolverScope.class);
+        SolverScope<TestdataListEntityProvidingSolution> solverScope = mockSolverScope();
         InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);
         doReturn(scoreDirector).when(solverScope).getScoreDirector();
         doReturn(solution).when(scoreDirector).getWorkingSolution();

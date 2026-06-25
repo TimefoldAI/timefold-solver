@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelectorForEntity;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
@@ -37,7 +38,7 @@ class ReinitializeVariableValueSelectorTest {
 
         ValueSelector valueSelector = new ReinitializeVariableValueSelector(childValueSelector);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        SolverScope solverScope = mockSolverScope();
         valueSelector.solvingStarted(solverScope);
 
         AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
@@ -101,7 +102,7 @@ class ReinitializeVariableValueSelectorTest {
 
         ValueSelector valueSelector = new ReinitializeVariableValueSelector(childValueSelector);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        SolverScope solverScope = mockSolverScope();
         valueSelector.solvingStarted(solverScope);
 
         AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);

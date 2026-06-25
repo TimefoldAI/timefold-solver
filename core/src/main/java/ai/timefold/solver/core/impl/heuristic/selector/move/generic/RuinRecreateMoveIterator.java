@@ -68,7 +68,7 @@ final class RuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIterato
             }
         }
         return new SelectorBasedRuinRecreateMove<>(variableDescriptor, constructionHeuristicPhaseBuilder, solverScope,
-                selectedEntityList, affectedValueSet);
+                selectedEntityList, affectedValueSet, workingRandom.nextLong());
     }
 
 }

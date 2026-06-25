@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
@@ -11,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Iterator;
-import java.util.Random;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
@@ -19,7 +19,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
@@ -52,14 +51,14 @@ class ProbabilityEntitySelectorTest {
         EntitySelector entitySelector = new ProbabilityEntitySelector(childEntitySelector, SelectionCacheType.STEP,
                 probabilityWeightFactory);
 
-        Random workingRandom = new TestRandom(
+        var workingRandom = new TestRandom(
                 1222.0 / 1234.0,
                 111.0 / 1234.0,
                 0.0,
                 1230.0 / 1234.0,
                 1199.0 / 1234.0);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mockSolverScope();
         when(solverScope.getWorkingRandom()).thenReturn(workingRandom);
         entitySelector.solvingStarted(solverScope);
         AbstractPhaseScope phaseScopeA = PlannerTestUtils.delegatingPhaseScope(solverScope);
@@ -118,7 +117,7 @@ class ProbabilityEntitySelectorTest {
         };
         ProbabilityEntitySelector entitySelector = new ProbabilityEntitySelector(childEntitySelector, SelectionCacheType.STEP,
                 probabilityWeightFactory);
-        entitySelector.constructCache(mock(SolverScope.class));
+        entitySelector.constructCache(mockSolverScope());
         assertThat(entitySelector.getSize()).isEqualTo(4);
     }
 

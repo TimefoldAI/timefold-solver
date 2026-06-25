@@ -787,7 +787,7 @@ class SolverMetricsIT extends AbstractMeterTest {
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         var phaseConfig = new LocalSearchPhaseConfig();
-        phaseConfig.setTerminationConfig(new TerminationConfig().withScoreCalculationCountLimit(10L));
+        phaseConfig.setTerminationConfig(new TerminationConfig().withStepCountLimit(20));
         solverConfig.withPhases(phaseConfig)
                 .withMonitoringConfig(new MonitoringConfig().withSolverMetricList(List.of(SolverMetric.MOVE_COUNT_PER_TYPE)));
 

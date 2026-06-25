@@ -1408,12 +1408,18 @@ class DefaultSolverTest {
     }
 
     @Test
+    @Timeout(60)
     void solveStaleDeclarativeShadows() {
+        // Timeout is necessary since we use best score feasible as changes to random affect
+        // the step count to get to a feasible solution, and if we somehow broke LS so it never
+        // find a feasible solution, it would run forever otherwise.
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataConcurrentSolution.class, TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
                 .withEasyScoreCalculatorClass(null)
-                .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class);
+                .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class)
+                .withPhases(new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig()
+                        .withBestScoreFeasible(true)));
 
         var e1 = new TestdataConcurrentEntity("e1");
         var e2 = new TestdataConcurrentEntity("e2");
@@ -1442,9 +1448,9 @@ class DefaultSolverTest {
 
         var solution = PlannerTestUtils.solve(solverConfig, problem);
 
-        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("b2",
+        assertThat(solution.getEntities().getFirst().getValues()).map(TestdataConcurrentValue::getId).containsExactly("b1",
                 "a1");
-        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("b1", "a2");
+        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("b2", "a2");
 
         assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0, -240));
     }

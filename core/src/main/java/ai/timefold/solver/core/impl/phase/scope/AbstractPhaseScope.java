@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.phase.scope;
 
-import java.util.random.RandomGenerator;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
@@ -9,6 +7,7 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -239,7 +238,7 @@ public abstract class AbstractPhaseScope<Solution_> {
         innerScoreDirector.assertShadowVariablesAreNotStale(workingScore, completedAction);
     }
 
-    public RandomGenerator getWorkingRandom() {
+    public RandomSource getWorkingRandom() {
         return getSolverScope().getWorkingRandom();
     }
 

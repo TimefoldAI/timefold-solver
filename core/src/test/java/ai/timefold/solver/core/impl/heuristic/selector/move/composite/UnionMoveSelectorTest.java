@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.composite;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -10,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.impl.heuristic.move.SelectorBasedDummyMove;
@@ -37,7 +37,7 @@ class UnionMoveSelectorTest {
         UnionMoveSelector<TestdataSolution> moveSelector =
                 new UnionMoveSelector<>(childMoveSelectorList, false);
 
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
         moveSelector.solvingStarted(solverScope);
         AbstractPhaseScope<TestdataSolution> phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
@@ -64,7 +64,7 @@ class UnionMoveSelectorTest {
         UnionMoveSelector<TestdataSolution> moveSelector =
                 new UnionMoveSelector<>(childMoveSelectorList, false);
 
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
         moveSelector.solvingStarted(solverScope);
         AbstractPhaseScope<TestdataSolution> phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
@@ -97,13 +97,13 @@ class UnionMoveSelectorTest {
                 new UnionMoveSelector<>(childMoveSelectorList, true,
                         new FixedSelectorProbabilityWeightFactory<>(fixedProbabilityWeightMap));
 
-        Random workingRandom = new TestRandom(
+        var workingRandom = new TestRandom(
                 1.0 / 1020.0,
                 1019.0 / 1020.0,
                 1000.0 / 1020.0,
                 0.0,
                 999.0 / 1020.0);
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
         when(solverScope.getWorkingRandom()).thenReturn(workingRandom);
         moveSelector.solvingStarted(solverScope);
         AbstractPhaseScope<TestdataSolution> phaseScopeA = PlannerTestUtils.delegatingPhaseScope(solverScope);
@@ -131,8 +131,8 @@ class UnionMoveSelectorTest {
         UnionMoveSelector<TestdataSolution> moveSelector =
                 new UnionMoveSelector<>(childMoveSelectorList, true, null);
 
-        Random workingRandom = new TestRandom(0, 1, 1, 0, 0);
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        var workingRandom = new TestRandom(0, 1, 1, 0, 0);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
         when(solverScope.getWorkingRandom()).thenReturn(workingRandom);
         moveSelector.solvingStarted(solverScope);
         AbstractPhaseScope<TestdataSolution> phaseScopeA = PlannerTestUtils.delegatingPhaseScope(solverScope);
@@ -159,9 +159,9 @@ class UnionMoveSelectorTest {
         UnionMoveSelector<TestdataSolution> moveSelector =
                 new UnionMoveSelector<>(childMoveSelectorList, true, null);
 
-        Random workingRandom = new TestRandom(1);
+        var workingRandom = new TestRandom(1);
 
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
         when(solverScope.getWorkingRandom()).thenReturn(workingRandom);
         moveSelector.solvingStarted(solverScope);
         AbstractPhaseScope<TestdataSolution> phaseScopeA = PlannerTestUtils.delegatingPhaseScope(solverScope);
@@ -192,9 +192,9 @@ class UnionMoveSelectorTest {
                 new UnionMoveSelector<>(childMoveSelectorList, true,
                         new FixedSelectorProbabilityWeightFactory<>(fixedProbabilityWeightMap));
 
-        Random workingRandom = new TestRandom(1);
+        var workingRandom = new TestRandom(1);
 
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
         when(solverScope.getWorkingRandom()).thenReturn(workingRandom);
         moveSelector.solvingStarted(solverScope);
         AbstractPhaseScope<TestdataSolution> phaseScopeA = PlannerTestUtils.delegatingPhaseScope(solverScope);

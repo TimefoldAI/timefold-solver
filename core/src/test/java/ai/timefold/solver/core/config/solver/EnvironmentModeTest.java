@@ -186,14 +186,14 @@ class EnvironmentModeTest {
     }
 
     private void assertReproducibility(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
-        assertGeneratingSameNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomGenerator(),
-                ((DefaultSolver<TestdataSolution>) solver2).getRandomGenerator());
+        assertGeneratingSameNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomSource().moveIteratorUsage(),
+                ((DefaultSolver<TestdataSolution>) solver2).getRandomSource().moveIteratorUsage());
         assertSameScoreSeries(solver1, solver2);
     }
 
     private void assertNonReproducibility(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
-        assertGeneratingDifferentNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomGenerator(),
-                ((DefaultSolver<TestdataSolution>) solver2).getRandomGenerator());
+        assertGeneratingDifferentNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomSource().moveIteratorUsage(),
+                ((DefaultSolver<TestdataSolution>) solver2).getRandomSource().moveIteratorUsage());
         assertDifferentScoreSeries(solver1, solver2);
     }
 

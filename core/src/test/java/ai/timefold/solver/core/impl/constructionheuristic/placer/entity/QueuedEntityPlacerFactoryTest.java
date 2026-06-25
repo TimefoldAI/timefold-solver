@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.constructionheuristic.placer.entity;
 
 import static ai.timefold.solver.core.impl.constructionheuristic.placer.entity.PlacementAssertions.assertEntityPlacement;
 import static ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicyTestUtils.buildHeuristicConfigPolicy;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -57,7 +58,7 @@ class QueuedEntityPlacerFactoryTest {
                 new QueuedEntityPlacerFactory<TestdataMultiVarSolution>(placerConfig)
                         .buildEntityPlacer(configPolicy);
 
-        SolverScope<TestdataMultiVarSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataMultiVarSolution> solverScope = mockSolverScope();
         entityPlacer.solvingStarted(solverScope);
         AbstractPhaseScope<TestdataMultiVarSolution> phaseScope = mock(AbstractPhaseScope.class);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);

@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicyTestUt
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -81,8 +82,8 @@ class SortingMoveSelectorTest {
                 moveSelectorFactory.buildBaseMoveSelector(buildHeuristicConfigPolicy(), SelectionCacheType.PHASE, false);
 
         var scoreDirector = mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
-        var solverScope = mock(SolverScope.class);
-        when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
+        when(solverScope.getScoreDirector()).thenReturn((InnerScoreDirector) scoreDirector);
         moveSelector.solvingStarted(solverScope);
 
         var phaseScope = mock(AbstractPhaseScope.class);
@@ -103,7 +104,7 @@ class SortingMoveSelectorTest {
         MoveSelector moveSelector =
                 new SortingMoveSelector(childMoveSelector, cacheType, new CodeAssertableSorter<SelectorBasedDummyMove>());
 
-        SolverScope solverScope = mock(SolverScope.class);
+        SolverScope solverScope = mockSolverScope();
         InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);
         doReturn(scoreDirector).when(solverScope).getScoreDirector();
         doReturn(new TestdataSolution()).when(scoreDirector).getWorkingSolution();

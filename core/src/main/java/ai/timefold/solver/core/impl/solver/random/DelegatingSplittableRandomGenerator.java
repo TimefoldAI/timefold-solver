@@ -1,11 +1,9 @@
 package ai.timefold.solver.core.impl.solver.random;
 
 import java.util.SplittableRandom;
-import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.solver.AbstractSolver;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -155,30 +153,6 @@ public final class DelegatingSplittableRandomGenerator implements RandomGenerato
     public void nextBytes(byte[] bytes) {
         assertIsOwnedByCurrentThread();
         delegate.nextBytes(bytes);
-    }
-
-    /**
-     * Return a supplier of {@link DelegatingSplittableRandomGenerator} with the specified
-     * seed with the seed included in {@link Object#toString()}.
-     * <p>
-     * Required so the {@link RandomGenerator} is created in the thread {@link AbstractSolver#solve}
-     * is called.
-     *
-     * @param seed The seed to use for the {@link RandomGenerator}.
-     * @return A supplier include the seed in its {@link Object#toString()}
-     */
-    public static Supplier<RandomGenerator> getSupplier(long seed) {
-        return new Supplier<>() {
-            @Override
-            public RandomGenerator get() {
-                return new DelegatingSplittableRandomGenerator(seed);
-            }
-
-            @Override
-            public String toString() {
-                return "seed %d".formatted(seed);
-            }
-        };
     }
 
     @Override
