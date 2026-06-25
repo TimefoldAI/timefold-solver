@@ -115,6 +115,8 @@ jobs:
         shell: bash
         env:
           TIMEFOLD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
+          JRELEASER_JFROG_USERNAME: ${{ secrets.JRELEASER_JFROG_USERNAME }}
+          JRELEASER_JFROG_TOKEN: ${{ secrets.JRELEASER_JFROG_TOKEN }}
         run: |
           mvn versions:update-parent -DskipResolution=true -DallowSnapshots=true -DparentVersion=999-SNAPSHOT
           mvn -B clean verify
