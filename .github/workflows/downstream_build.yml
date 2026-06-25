@@ -93,6 +93,10 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: 'maven'
+          # Set the JFrog credentials that will be used for downloading the solver service parent in the downstream build.
+          server-id: timefold
+          server-username: JRELEASER_JFROG_USERNAME
+          server-password: JRELEASER_JFROG_TOKEN
 
       - name: Quickly build timefold-solver
         working-directory: ./timefold-solver
