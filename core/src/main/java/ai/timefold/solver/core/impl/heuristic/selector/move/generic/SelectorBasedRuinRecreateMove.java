@@ -31,6 +31,23 @@ public final class SelectorBasedRuinRecreateMove<Solution_> extends AbstractSele
 
     private Object @Nullable [] recordedNewValues;
 
+    /**
+     * Prefer
+     * {@link #SelectorBasedRuinRecreateMove(GenuineVariableDescriptor, RuinRecreateConstructionHeuristicPhaseBuilder, SolverScope, List, SequencedSet, long)}
+     * with explicitly provided random seed.
+     *
+     * @param genuineVariableDescriptor
+     * @param constructionHeuristicPhaseBuilder
+     * @param solverScope
+     * @param ruinedEntityList
+     * @param affectedValueSet
+     */
+    public SelectorBasedRuinRecreateMove(GenuineVariableDescriptor<Solution_> genuineVariableDescriptor,
+            RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
+            SolverScope<Solution_> solverScope, List<Object> ruinedEntityList, SequencedSet<Object> affectedValueSet) {
+        this(genuineVariableDescriptor, constructionHeuristicPhaseBuilder, solverScope, ruinedEntityList, affectedValueSet, 0);
+    }
+
     public SelectorBasedRuinRecreateMove(GenuineVariableDescriptor<Solution_> genuineVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope, List<Object> ruinedEntityList, SequencedSet<Object> affectedValueSet,

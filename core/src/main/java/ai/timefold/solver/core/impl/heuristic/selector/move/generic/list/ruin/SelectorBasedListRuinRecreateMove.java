@@ -35,6 +35,23 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
     private final Map<Object, NavigableSet<RuinedPosition>> entityToNewPositionMap;
     private final long randomSeed;
 
+    /**
+     * Prefer
+     * {@link #SelectorBasedListRuinRecreateMove(ListVariableDescriptor, RuinRecreateConstructionHeuristicPhaseBuilder, SolverScope, List, SequencedSet, long)}
+     * with explicitly provided random seed.
+     *
+     * @param listVariableDescriptor
+     * @param constructionHeuristicPhaseBuilder
+     * @param solverScope
+     * @param ruinedValueList
+     * @param affectedEntitySet
+     */
+    public SelectorBasedListRuinRecreateMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
+            SolverScope<Solution_> solverScope, List<Object> ruinedValueList, SequencedSet<Object> affectedEntitySet) {
+        this(listVariableDescriptor, constructionHeuristicPhaseBuilder, solverScope, ruinedValueList, affectedEntitySet, 0);
+    }
+
     public SelectorBasedListRuinRecreateMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope, List<Object> ruinedValueList, SequencedSet<Object> affectedEntitySet,
