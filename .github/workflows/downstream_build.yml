@@ -112,7 +112,7 @@ jobs:
         env:
           TIMEFOLD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
         run: |
-          awk '/<parent>/{inParent=1} /<\/parent>/{inParent=0} inParent && /<version>/{sub(/<version>.*<\/version>/,"<version>999-SNAPSHOT</version>");replaced=1} {print} END{exit !replaced}' pom.xml > pom.xml.tmp && mv pom.xml.tmp pom.xml
+          awk '/<parent>/{inParent=1} /<\/parent>/{inParent=0} inParent && /<version>/{if (sub(/<version>[^<]*<\/version>/,"<version>999-SNAPSHOT</version>")) replaced=1} {print} END{exit !replaced}' pom.xml > pom.xml.tmp && mv pom.xml.tmp pom.xml
           mvn -B clean verify
 
       - name: Test Summary
