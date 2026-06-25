@@ -57,6 +57,24 @@ final class ExternalizedListVariableStateSupply<Solution_, Entity_>
     }
 
     @Override
+    public int getIndexOrFail(Object planningValue) {
+        var index = listVariableState.getIndex(planningValue);
+        if (index < 0) {
+            throw new IllegalStateException("The element (%s) is not assigned to any list variable.");
+        }
+        return index;
+    }
+
+    @Override
+    public int getIndexOrElse(Object planningValue, int defaultValue) {
+        var index = listVariableState.getIndex(planningValue);
+        if (index < 0) {
+            return defaultValue;
+        }
+        return index;
+    }
+
+    @Override
     public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
         workingSolution = scoreDirector.getWorkingSolution();
 
@@ -104,11 +122,6 @@ final class ExternalizedListVariableStateSupply<Solution_, Entity_>
     @Override
     public ElementPosition getElementPosition(Object planningValue) {
         return listVariableState.getElementPosition(planningValue);
-    }
-
-    @Override
-    public @Nullable Integer getIndex(Object planningValue) {
-        return listVariableState.getIndex(planningValue);
     }
 
     @Override

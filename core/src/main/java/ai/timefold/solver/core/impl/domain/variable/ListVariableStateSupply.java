@@ -1,6 +1,10 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
+import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedListVariableListener;
@@ -23,10 +27,8 @@ import org.jspecify.annotations.Nullable;
  * it means that there is a field on an entity holding the value of the shadow variable.
  * In this case, we will attempt to use that value.
  * Otherwise, we will keep an internal track of all the possible shadow variables
- * ({@link ai.timefold.solver.core.api.domain.variable.IndexShadowVariable},
- * {@link ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable},
- * {@link ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable},
- * {@link ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable}),
+ * ({@link IndexShadowVariable}, {@link InverseRelationShadowVariable},
+ * {@link PreviousElementShadowVariable}, {@link NextElementShadowVariable}),
  * and use values from this internal representation.
  * 
  * @param <Solution_>
@@ -50,26 +52,20 @@ public interface ListVariableStateSupply<Solution_, Entity_, Element_>
      * Get {@code planningValue}'s index in the {@link PlanningListVariable list variable} it is an element of.
      *
      * @param planningValue never null
-     * @return {@code planningValue}'s index in the list variable it is an element of or {@code null} if the value is unassigned
+     * @return {@code planningValue}'s index in the list variable it is an element of
+     * @throws IllegalStateException if the value is unassigned
      */
-    @Nullable
-    Integer getIndex(Object planningValue);
+    int getIndexOrFail(Object planningValue);
 
-    default int getIndexOrFail(Object planningValue) {
-        var index = getIndex(planningValue);
-        if (index == null) {
-            throw new IllegalStateException("The element (%s) is not assigned to any list variable.");
-        }
-        return index;
-    }
-
-    default int getIndexOrElse(Object planningValue, int defaultValue) {
-        var index = getIndex(planningValue);
-        if (index == null) {
-            return defaultValue;
-        }
-        return index;
-    }
+    /**
+     * Get {@code planningValue}'s index in the {@link PlanningListVariable list variable} it is an element of.
+     *
+     * @param planningValue never null
+     * @param defaultValue the value to return if {@code planningValue} is unassigned
+     * @return {@code planningValue}'s index in the list variable it is an element of or {@code defaultValue} if the value is
+     *         unassigned
+     */
+    int getIndexOrElse(Object planningValue, int defaultValue);
 
     /**
      * If entity1.varA = x then the inverse of x is entity1.

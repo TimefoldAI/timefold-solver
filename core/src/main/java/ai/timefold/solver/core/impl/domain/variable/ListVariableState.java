@@ -228,7 +228,7 @@ final class ListVariableState<Solution_> {
                 return ChangeType.BOTH;
             }
             var oldIndex = getIndex(element);
-            if (oldIndex == null) { // Technically impossible, but we handle it anyway.
+            if (oldIndex < 0) { // Technically impossible, but we handle it anyway.
                 return ChangeType.BOTH;
             }
             return comparePositions(entity, oldEntity, index, oldIndex);
@@ -261,15 +261,16 @@ final class ListVariableState<Solution_> {
         }
     }
 
-    public Integer getIndex(Object planningValue) {
+    public int getIndex(Object planningValue) {
         if (externalizedIndexProcessor == null) {
             var position = elementPositionMap.get(planningValue);
             if (position == null) {
-                return null;
+                return -1;
             }
             return position.getIndex();
         }
-        return externalizedIndexProcessor.getIndex(planningValue);
+        var indexOrNull = externalizedIndexProcessor.getIndex(planningValue);
+        return indexOrNull == null ? -1 : indexOrNull;
     }
 
     public Object getInverseSingleton(Object planningValue) {
