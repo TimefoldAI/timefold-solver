@@ -11,8 +11,6 @@ Timefold Solver takes care of the rest.
 There is no need to wire up a solver manually, manage thread pools, or implement REST endpoints by hand.
 The service exposes a ready-to-use REST API automatically and supports our recommended optimization architecture.
 
-NOTE: The service approach is currently only available in Java.
-
 IMPORTANT: This is a preview feature subject to change.
 
 [sectnums!]

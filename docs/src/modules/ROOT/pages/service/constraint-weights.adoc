@@ -82,7 +82,7 @@ For example, to make the Teacher conflict 10 times more impactful, override the 
         }
       }
     },
-    "modelInput" : <ModelInput class as JSON>
+    "modelInput" : "<ModelInput class as JSON>"
 }
 ----
 
