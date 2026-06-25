@@ -22,6 +22,11 @@ It is therefore necessary to add xref:./rest-api.adoc#openAPISpecification[OpenA
 ====
 
 .Example for School Timetabling
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 public record TimetableInputMetrics(
@@ -33,10 +38,33 @@ public record TimetableInputMetrics(
             type = SchemaType.NUMBER, example = "30", readOnly = true) int timeslots
    ) implements ModelInputMetrics {}
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+data class TimetableInputMetrics(
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "lessons", title = "Lessons",
+            format = DataFormat.Values.NUMBER, description = "The number of lessons submitted in the input dataset.",
+            type = SchemaType.NUMBER, example = "10", readOnly = true) val lessons: Int,
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "timeslots", title = "Timeslots",
+            format = DataFormat.Values.NUMBER, description = "The number of timeslots submitted in the input dataset.",
+            type = SchemaType.NUMBER, example = "30", readOnly = true) val timeslots: Int
+) : ModelInputMetrics
+----
+--
+====
 
 Next, the `SolverModel` should implement the `InputMetricsAware` interface and construct the defined `ModelInputMetrics` object.
 
 .Example for School Timetabling
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
@@ -65,6 +93,37 @@ public class Timetable implements SolverModel<HardSoftScore>, InputMetricsAware<
     // other Getters/Setters/Constructors excluded
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@PlanningSolution
+class Timetable : SolverModel<HardSoftScore>, InputMetricsAware<TimetableInputMetrics> {
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    var timeslots: List<Timeslot> = emptyList()
+
+    @PlanningEntityCollectionProperty
+    var lessons: List<Lesson> = emptyList()
+
+    @PlanningScore
+    var score: HardSoftScore? = null
+
+    override fun getScore(): HardSoftScore? = score
+
+    override fun getInputMetrics(): TimetableInputMetrics {
+        return TimetableInputMetrics(lessons.size, timeslots.size)
+    }
+
+    // other Getters/Setters/Constructors excluded
+}
+----
+--
+====
 
 [#modelOutputMetrics]
 == Output metrics
@@ -82,6 +141,11 @@ It is therefore necessary to add xref:./rest-api.adoc#openAPISpecification[OpenA
 ====
 
 .Example for School Timetabling
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 public record TimetableOutputMetrics(
@@ -93,10 +157,33 @@ public record TimetableOutputMetrics(
             type = SchemaType.NUMBER, example = "3", readOnly = true) int maxConsecutiveLessons
    ) implements ModelOutputMetrics {}
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+data class TimetableOutputMetrics(
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "unassignedLessons", title = "Unassigned lessons",
+            format = DataFormat.Values.NUMBER, description = "The number of lessons that could not be assigned a timeslot or room.",
+            type = SchemaType.NUMBER, example = "0", readOnly = true) val unassignedLessons: Int,
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "maxConsecutiveLessons", title = "Max consecutive lessons",
+            format = DataFormat.Values.NUMBER, description = "The maximum number of consecutive lessons assigned to any single teacher.",
+            type = SchemaType.NUMBER, example = "3", readOnly = true) val maxConsecutiveLessons: Int
+) : ModelOutputMetrics
+----
+--
+====
 
 Next, the `SolverModel` should implement the `OutputMetricsAware` interface and construct the defined `ModelOutputMetrics` object from the solved state.
 
 .Example for School Timetabling
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
@@ -129,12 +216,50 @@ public class Timetable implements SolverModel<HardSoftScore>, OutputMetricsAware
     // other Getters/Setters/Constructors excluded
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@PlanningSolution
+class Timetable : SolverModel<HardSoftScore>, OutputMetricsAware<TimetableOutputMetrics> {
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    var timeslots: List<Timeslot> = emptyList()
+
+    @PlanningEntityCollectionProperty
+    var lessons: List<Lesson> = emptyList()
+
+    @PlanningScore
+    var score: HardSoftScore? = null
+
+    override fun getScore(): HardSoftScore? = score
+
+    override fun getOutputMetrics(): TimetableOutputMetrics {
+        val unassigned = lessons.count { it.timeslot == null || it.room == null }
+        val maxConsecutive = computeMaxConsecutiveLessons(lessons)
+        return TimetableOutputMetrics(unassigned, maxConsecutive)
+    }
+
+    // other Getters/Setters/Constructors excluded
+}
+----
+--
+====
 
 [#combiningMetrics]
 == Combining input and output metrics
 
 A `SolverModel` can implement both `InputMetricsAware` and `OutputMetricsAware` at the same time.
 
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
@@ -146,3 +271,21 @@ public class Timetable implements SolverModel<HardSoftScore>,
 
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@PlanningSolution
+class Timetable : SolverModel<HardSoftScore>,
+        InputMetricsAware<TimetableInputMetrics>,
+        OutputMetricsAware<TimetableOutputMetrics> {
+
+    // fields, getInputMetrics(), getOutputMetrics() excluded
+
+}
+----
+--
+====

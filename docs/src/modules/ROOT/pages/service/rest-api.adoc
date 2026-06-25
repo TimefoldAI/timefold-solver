@@ -18,6 +18,11 @@ The following are expected.
 - An interface which extends `ModelRest` to define the root path of the REST API.
 
 For example, in the case of School Timetabling, those classes could look as follows.
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 // TimetableDto.java
@@ -40,6 +45,31 @@ public class TimetableDto implements ModelInput, ModelOutput {
 public interface TimetableSchedulingResource extends ModelRest {
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+// TimetableDto.kt
+class TimetableDto(
+    @Schema(required = true, description = "The unique identifier of timetable")
+    var name: String? = null,
+    @Schema(required = true, description = "List of timeslots")
+    var timeslots: List<Timeslot> = emptyList(),
+    @Schema(required = true, description = "List of lessons")
+    var lessons: List<Lesson> = emptyList()
+) : ModelInput, ModelOutput
+
+// TimetableSchedulingResource.kt
+@Tag(name = "School Timetabling",
+        description = "School timetabling service assigning lessons to timeslots.") // OpenAPI documentation annotation
+@Path("/v1/timetables") //sets the root path
+interface TimetableSchedulingResource : ModelRest
+----
+--
+====
 
 Note how the `ModelInput` and `ModelOutput` interface can be placed on the same class.
 
@@ -199,6 +229,11 @@ it's often beneficial to decouple the classes used for the REST API interactions
 
 To convert between `ModelInput` / `ModelOutput` and the `SolverModel`, a `ModelConvertor` implementation can be provided.
 
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 @ApplicationScoped
@@ -221,6 +256,32 @@ public class TimetableConvertor implements ModelConvertor<HardSoftLongScore, Tim
     }
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@ApplicationScoped
+class TimetableConvertor : ModelConvertor<HardSoftLongScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+
+    override fun toSolverModel(modelInput: TimetableDto, modelConfig: ModelConfig<EmptyModelConfigOverrides>,
+            lastModelOutput: Optional<TimetableDto>): Timetable {
+        return // Mapping logic
+    }
+
+    override fun toModelOutput(solverModel: Timetable): TimetableDto {
+        return // Mapping logic
+    }
+
+    override fun applyOutputToInput(modelInput: TimetableDto, modelOutput: TimetableDto): TimetableDto {
+        return // Mapping logic
+    }
+}
+----
+--
+====
 
 [NOTE]
 ====
@@ -235,6 +296,11 @@ By default, validation on the input is based on the xref:./rest-api.adoc#openAPI
 Additional validations can be added by implementing the `ModelValidator` interface.
 
 [#timetableValidatorExample]
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 @ApplicationScoped
@@ -269,6 +335,39 @@ public enum TimetableValidationIssue {
     }
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@ApplicationScoped
+class TimetableValidator : ModelValidator<TimetableDto, TimetableConfigOverrides> {
+
+    override fun validate(validationBuilder: ValidationBuilder, input: TimetableDto, modelConfig: ModelConfig<TimetableConfigOverrides>) {
+
+        //validation logic here, simplified example here.
+        if (hasDuplicateTeacherNames(input)) {
+            validationBuilder.addIssue(TimetableValidationIssue.DUPLICATE_TEACHER.asIssueType(), DuplicateTeacherDetail("Ann"))
+        }
+    }
+}
+
+enum class TimetableValidationIssue(
+    private val issueType: IssueType
+) {
+
+    DUPLICATE_TEACHER(IssueType(IssueCode.of("DUPLICATE_TEACHER"), IssueSeverity.ERROR,
+            "Duplicate teacher names found."));
+
+    fun asIssueType(): IssueType = issueType
+
+    data class DuplicateTeacherDetail(val teacherName: String) : IssueDetail
+}
+----
+--
+====
 
 The `ValidationBuilder` supports issue types of different severity:
 - `IssueSeverity.ERROR`: error level: processing cannot continue. Results in a BAD_REQUEST (400) HTTP error.
@@ -338,6 +437,11 @@ You can add custom endpoints in the `ModelRest` implementation.
 For example, if you want to extend the Timetable REST API, you can add custom https://jakarta.ee/learn/docs/jakartaee-tutorial/current/websvcs/rest/rest.html[Jakarta REST endpoints].
 These endpoints should also be documented appropriately for the automatically generated xref:#openAPISpecification[OpenAPI specification].
 
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 @Tag(name = "School Timetabling",
@@ -363,6 +467,38 @@ public interface TimetableSchedulingResource extends ModelRest {
     }
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@Tag(name = "School Timetabling",
+        description = "School timetabling service assigning lessons to timeslots.") //OpenAPI documentation annotation
+@Path("/v1/timetables") //sets the root path
+interface TimetableSchedulingResource : ModelRest {
+
+    @APIResponses(value = [
+        APIResponse(responseCode = "500", description = "In case of processing errors",
+                content = [Content(mediaType = MediaType.APPLICATION_JSON,
+                        schema = Schema(implementation = ErrorInfo::class))]),
+        APIResponse(responseCode = "200", description = "List of all teachers in all optimization runs.",
+                content = [Content(mediaType = MediaType.APPLICATION_JSON,
+                        schema = Schema(implementation = ListTeachersResponseDto::class))])])
+    @Operation(operationId = "list-teachers-in-solver-model",
+            summary = "Lists all teachers in the solver model.")
+    @GET
+    @Path("/insights/teachers")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun insightsTeachers(): Response {
+        val teachers = //get the list of teachers
+        return Response.ok(teachers).build()
+    }
+}
+----
+--
+====
 
 [#openAPISpecification]
 == OpenAPI specification

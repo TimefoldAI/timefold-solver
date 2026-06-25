@@ -22,6 +22,11 @@ The implementation should have fields that refer to specific constraints using t
 To ensure both the constraint and this reference are the same, use a static field to keep the name of the constraint.
 
 .The example ConstraintProvider class.
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 public class TimetableConstraintProvider implements ConstraintProvider {
@@ -44,8 +49,44 @@ public class TimetableConstraintProvider implements ConstraintProvider {
     // other constraints excluded
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+class TimetableConstraintProvider : ConstraintProvider {
+
+    companion object {
+        const val TEACHER_CONFLICT = "Teacher conflict"
+        const val ROOM_CONFLICT = "Room conflict"
+    }
+
+    fun roomConflict(constraintFactory: ConstraintFactory): Constraint {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(ROOM_CONFLICT)
+    }
+
+    fun teacherConflict(constraintFactory: ConstraintFactory): Constraint {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(TEACHER_CONFLICT)
+    }
+
+    // other constraints excluded
+}
+----
+--
+====
 
 .The ModelConfigOverrides class.
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 public final class TimetableConfigOverrides implements ModelConfigOverrides {
@@ -63,6 +104,30 @@ public final class TimetableConfigOverrides implements ModelConfigOverrides {
 
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+class TimetableConfigOverrides : ModelConfigOverrides {
+
+    companion object {
+        const val DEFAULT_WEIGHT_ZERO = 0L
+        const val DEFAULT_WEIGHT_ONE = 1L
+    }
+
+    @ConstraintReference(TimetableConstraintProvider.TEACHER_CONFLICT)
+    var teacherConflictWeight: Long = DEFAULT_WEIGHT_ONE
+
+    @ConstraintReference(TimetableConstraintProvider.ROOM_CONFLICT)
+    var roomConflictWeight: Long = DEFAULT_WEIGHT_ONE
+
+}
+----
+--
+====
 
 The default constraint weight for these constraints is `1`. This can now be overridden by the consumer by passing in the model overrides object in a request.
 For example, to make the Teacher conflict 10 times more impactful, override the weight to 10:
@@ -93,6 +158,11 @@ Usually, it doesn't make sense to allow weight overrides for _hard_ constraints.
 Next, in the xref:./rest-api.adoc#modelConverter[model converter], make sure to map these overrides to a solver specific `ConstraintWeightOverrides` object that must be on the `@PlanningSolution` class.
 
 .As part of the ModelConvertor
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 TimetableConfigOverrides modelConfigOverrides = modelConfig.overrides();
@@ -108,6 +178,28 @@ ConstraintWeightOverrides<HardMediumSoftLongScore> constraintWeightOverrides = C
 
 solverModel.setConstraintWeightOverrides(constraintWeightOverrides);
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+val modelConfigOverrides = modelConfig.overrides()
+
+val constraintWeightOverrides = ConstraintWeightOverrides.of(
+        mapOf(
+                TimetableConstraintProvider.TEACHER_CONFLICT to
+                        HardMediumSoftLongScore.ofHard(modelConfigOverrides.teacherConflictWeight),
+                TimetableConstraintProvider.ROOM_CONFLICT to
+                        HardMediumSoftLongScore.ofSoft(modelConfigOverrides.roomConflictWeight)
+        )
+)
+
+solverModel.constraintWeightOverrides = constraintWeightOverrides
+----
+--
+====
 
 For more information, see xref:../constraints-and-score/constraint-configuration.adoc#constraintConfiguration[Adjusting constraints at runtime].
 
