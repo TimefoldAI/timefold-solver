@@ -14,6 +14,7 @@ on:
       - '**.md'
       - '**.adoc'
       - '*.txt'
+      - 'docs/**'
 
 jobs:
   java:
