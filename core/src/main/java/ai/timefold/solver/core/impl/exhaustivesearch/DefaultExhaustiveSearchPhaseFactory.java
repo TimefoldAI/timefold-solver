@@ -162,7 +162,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
             boolean scoreBounderEnabled, boolean isListVariable) {
         var manualEntityMimicRecorder = new ManualEntityMimicRecorder<>(sourceEntitySelector);
         var entityClassName = sourceEntitySelector.getEntityDescriptor().getEntityClass().getName();
-        var mimicSelectorId = ConfigUtils.addRandomSuffix(entityClassName, configPolicy.getRandom());
+        var mimicSelectorId = ConfigUtils.addRandomSuffix(entityClassName, configPolicy.getRandom().factoryUsage());
         configPolicy.addEntityMimicRecorder(mimicSelectorId, manualEntityMimicRecorder);
         var variableDescriptorList = getGenuineVariableDescriptorList(sourceEntitySelector, isListVariable);
         MoveSelectorConfig<?> moveSelectorConfig = phaseConfig.getMoveSelectorConfig();

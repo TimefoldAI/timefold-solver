@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
-import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -18,6 +17,7 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
@@ -39,7 +39,7 @@ import io.micrometer.core.instrument.Tags;
 public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     protected final EnvironmentMode environmentMode;
-    protected final Supplier<RandomGenerator> randomFactory;
+    protected final Supplier<RandomSource> randomFactory;
     protected final BasicPlumbingTermination<Solution_> basicPlumbingTermination;
     protected final AtomicBoolean solving = new AtomicBoolean(false);
     protected final SolverScope<Solution_> solverScope;
@@ -49,7 +49,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public DefaultSolver(EnvironmentMode environmentMode, Supplier<RandomGenerator> randomFactory,
+    public DefaultSolver(EnvironmentMode environmentMode, Supplier<RandomSource> randomFactory,
             BestSolutionRecaller<Solution_> bestSolutionRecaller, BasicPlumbingTermination<Solution_> basicPlumbingTermination,
             UniversalTermination<Solution_> termination, List<Phase<Solution_>> phaseList,
             SolverScope<Solution_> solverScope, String moveThreadCountDescription) {
@@ -66,7 +66,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         return environmentMode;
     }
 
-    public RandomGenerator getRandomGenerator() {
+    public RandomSource getRandomSource() {
         return randomFactory.get();
     }
 

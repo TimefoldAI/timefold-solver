@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.EnumSet;
-import java.util.Random;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType;
@@ -218,7 +217,7 @@ class AcceptedLocalSearchForagerTest {
         when(scoreDirector.getSolutionDescriptor()).thenReturn(TestdataSolution.buildSolutionDescriptor());
         when(scoreDirector.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
         solverScope.setScoreDirector(scoreDirector);
-        Random workingRandom = new TestRandom(1, 1);
+        var workingRandom = new TestRandom(1, 1);
         solverScope.setWorkingRandom(workingRandom);
         solverScope.setInitializedBestScore(SimpleScore.of(-10));
         solverScope.setSolverMetricSet(EnumSet.of(SolverMetric.MOVE_EVALUATION_COUNT));

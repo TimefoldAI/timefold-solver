@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.SubPillarConfigPolicy;
@@ -105,7 +104,7 @@ class DefaultPillarSelectorTest {
         doReturn(solutionDescriptor).when(scoreDirector).getSolutionDescriptor();
         doReturn(VariableListenerSupport.create(scoreDirector)).when(scoreDirector).getSupplyManager();
 
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = PlannerTestUtils.mockSolverScope();
         doReturn(scoreDirector).when(solverScope).getScoreDirector();
         return solverScope;
     }
@@ -260,7 +259,7 @@ class DefaultPillarSelectorTest {
 
         // nextInt pattern: pillarIndex, subPillarSize, element 0, element 1, element 2, ...
         // Expected pillar cache: [b, d], [c, e, f]
-        Random workingRandom = new TestRandom(
+        var workingRandom = new TestRandom(
                 1, 0, 0, 0, // [c, e]
                 0, 0, 0, 0); // [b, d]
 
@@ -307,7 +306,7 @@ class DefaultPillarSelectorTest {
 
         // nextInt pattern: pillarIndex, subPillarSize, subPillarStartingIndex
         // Expected pillar cache: [a], [b, d], [c, e, f]
-        Random workingRandom = new TestRandom(
+        var workingRandom = new TestRandom(
                 1, 1, // [b, d]
                 2, 2, // [c, e, f]
                 2, 1, 1, // [c, e, f]

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.data.Offset.offset;
@@ -18,7 +19,7 @@ class MoveCountTerminationTest {
     void phaseTermination() {
         var termination = new MoveCountTermination<TestdataSolution>(4);
         var phaseScope = Mockito.mock(AbstractPhaseScope.class);
-        var moveScope = Mockito.mock(SolverScope.class);
+        var moveScope = mockSolverScope();
         when(phaseScope.getSolverScope()).thenReturn(moveScope);
 
         when(moveScope.getMoveEvaluationCount()).thenReturn(0L);
@@ -44,7 +45,7 @@ class MoveCountTerminationTest {
     @Test
     void solverTermination() {
         var termination = new MoveCountTermination<TestdataSolution>(4);
-        var solverScope = Mockito.mock(SolverScope.class);
+        SolverScope<TestdataSolution> solverScope = mockSolverScope();
 
         when(solverScope.getMoveEvaluationCount()).thenReturn(0L);
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();

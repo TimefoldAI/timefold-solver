@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.decorator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -14,7 +15,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 import ai.timefold.solver.core.testutil.TestRandom;
 
@@ -44,7 +44,7 @@ class CachingMoveSelectorTest {
         CachingMoveSelector moveSelector = new CachingMoveSelector(childMoveSelector, cacheType, false);
         verify(childMoveSelector, times(1)).isNeverEnding();
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mockSolverScope();
         moveSelector.solvingStarted(solverScope);
 
         AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
@@ -120,7 +120,7 @@ class CachingMoveSelectorTest {
 
         TestRandom workingRandom = new TestRandom(1, 0, 2);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        var solverScope = mockSolverScope();
         when(solverScope.getWorkingRandom()).thenReturn(workingRandom);
         moveSelector.solvingStarted(solverScope);
 

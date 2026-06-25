@@ -1,12 +1,11 @@
 package ai.timefold.solver.core.impl.phase.scope;
 
-import java.util.random.RandomGenerator;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -66,7 +65,7 @@ public abstract class AbstractStepScope<Solution_> {
         return getPhaseScope().getWorkingSolution();
     }
 
-    public RandomGenerator getWorkingRandom() {
+    public RandomSource getWorkingRandom() {
         return getPhaseScope().getWorkingRandom();
     }
 
