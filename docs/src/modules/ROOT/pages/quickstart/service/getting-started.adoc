@@ -1,0 +1,463 @@
+= Getting started: building a service (Preview)
+:description: Getting started with the service module
+:doctype: book
+:sectnums:
+:icons: font
+
+This guide walks you through the process of creating an AI Optimization service.
+
+With this approach, you define your planning model: the domain objects, constraints, and planning solution.
+Timefold Solver takes care of the rest.
+There is no need to wire up a solver manually, manage thread pools, or implement REST endpoints by hand.
+The service exposes a ready-to-use REST API automatically and supports our recommended optimization architecture.
+
+IMPORTANT: This is a preview feature subject to change.
+
+[sectnums!]
+include::../shared/_whatyoubuild.adoc[]
+
+[sectnums!]
+== Solution source code
+
+In case you get stuck during this Getting Started guide, it might be worth checking the solution project.
+
+This https://github.com/TimefoldAI/timefold-service-getting-started[solution can be found on GitHub].
+
+[sectnums!]
+== Prerequisites
+
+To complete this guide, you need:
+
+* **Tools**
+** {java-version} or higher
+** Maven
+** An IDE of your choice (IntelliJ IDEA, VSCode, ...)
+
+* **Knowledge**
+** Java (Basic)
+** Quarkus (Basic)
+
+== The build file and the dependencies
+
+Create a Maven file and use the following parent POM:
+
+[tabs]
+====
+Maven::
++
+--
+Your `pom.xml` file has the following content:
+
+[source,xml,subs=attributes+,options="nowrap"]
+----
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>ai.timefold.solver</groupId>
+    <artifactId>timefold-solver-service-parent</artifactId>
+    <version>{timefold-solver-version}</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.acme</groupId>
+  <artifactId>schooltimetabling</artifactId>
+  <version>${revision}</version>
+  <name>School Timetabling</name>
+  <description>Solution for the Timefold Service getting started example</description>
+
+  <properties>
+    <revision>1.0.0-SNAPSHOT</revision>
+  </properties>
+
+</project>
+----
+--
+====
+
+include::../shared/school-timetabling/_school-timetabling-model.adoc[leveloffset=+1]
+include::../shared/school-timetabling/_school-timetabling-constraints.adoc[leveloffset=+1]
+
+== Gather the domain objects in a planning solution
+
+A `Timetable` wraps all `Timeslot`, `Room`, and `Lesson` instances of a single dataset.
+Furthermore, because it contains all lessons, each with a specific planning variable state,
+it is known as a _planning solution_.
+
+Extending `AbstractSimpleModel`:
+
+- Configures this class to be (de-)serialized as part of the `ModelInput` and `ModelOutput` of the xref:service/rest-api.adoc[REST API].
+- Implements the `SolverModel` interface using the default `HardMediumSoftScore`.
+
+[NOTE]
+It's ok if you are not familiar with these terms yet. We'll get to them later.
+
+[tabs]
+====
+Java::
++
+--
+Create the `src/main/java/org/acme/schooltimetabling/domain/Timetable.java` class:
+
+[source,java,options="nowrap"]
+----
+package org.acme.schooltimetabling.domain;
+
+import java.util.List;
+
+import ai.timefold.solver.service.definition.api.AbstractSimpleModel;
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
+import ai.timefold.solver.core.api.domain.solution.PlanningScore;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
+
+@PlanningSolution
+public class Timetable extends AbstractSimpleModel {
+
+    @ValueRangeProvider
+    @ProblemFactCollectionProperty
+    private List<Timeslot> timeslots;
+    @ValueRangeProvider
+    @ProblemFactCollectionProperty
+    private List<Room> rooms;
+    @PlanningEntityCollectionProperty
+    private List<Lesson> lessons;
+    public Timetable() {
+    }
+
+    public Timetable(List<Timeslot> timeslots, List<Room> rooms, List<Lesson> lessons) {
+        this.timeslots = timeslots;
+        this.rooms = rooms;
+        this.lessons = lessons;
+    }
+
+    public List<Timeslot> getTimeslots() {
+        return timeslots;
+    }
+
+    public List<Room> getRooms() {
+        return rooms;
+    }
+
+    public List<Lesson> getLessons() {
+        return lessons;
+    }
+
+    @Override
+    public ConstraintWeightOverrides<HardMediumSoftScore> getConstraintWeightOverrides() {
+        return ConstraintWeightOverrides.none();
+    }
+
+    public void setConstraintWeightOverrides(ConstraintWeightOverrides<HardMediumSoftScore> constraintWeightOverrides) {
+        // Left empty for now; see constraint weights documentation
+    }
+}
+----
+--
+
+Kotlin::
++
+--
+Create the `src/main/kotlin/org/acme/schooltimetabling/domain/Timetable.kt` class:
+
+[source,kotlin,options="nowrap"]
+----
+package org.acme.schooltimetabling.domain
+
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution
+import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider
+import ai.timefold.solver.core.api.score.HardMediumSoftScore
+import ai.timefold.solver.service.definition.api.AbstractSimpleModel
+
+@PlanningSolution
+class Timetable : AbstractSimpleModel() {
+
+    @ValueRangeProvider
+    @ProblemFactCollectionProperty
+    var timeslots: List<Timeslot> = emptyList()
+
+    @ValueRangeProvider
+    @ProblemFactCollectionProperty
+    var rooms: List<Room> = emptyList()
+
+    @PlanningEntityCollectionProperty
+    var lessons: List<Lesson> = emptyList()
+
+    constructor()
+
+    constructor(timeslots: List<Timeslot>, rooms: List<Room>, lessons: List<Lesson>) {
+        this.timeslots = timeslots
+        this.rooms = rooms
+        this.lessons = lessons
+    }
+
+    override fun getConstraintWeightOverrides(): ConstraintWeightOverrides<HardMediumSoftScore> =
+        ConstraintWeightOverrides.none()
+
+    fun setConstraintWeightOverrides(constraintWeightOverrides: ConstraintWeightOverrides<HardMediumSoftScore>) {
+        // Left empty for now; see constraint weights documentation
+    }
+}
+----
+--
+====
+
+The `Timetable` class has an `@PlanningSolution` annotation,
+so Timefold Solver knows that this class contains all of the input and output data.
+
+Specifically, these classes are the input of the problem:
+
+* The `timeslots` field with all time slots
+** This is a list of problem facts, because they do not change during solving.
+* The `rooms` field with all rooms
+** This is a list of problem facts, because they do not change during solving.
+* The `lessons` field with all lessons
+** This is a list of planning entities, because they change during solving.
+** Of each `Lesson`:
+*** The values of the `timeslot` and `room` fields are typically still `null`, so unassigned.
+They are planning variables.
+*** The other fields, such as `subject`, `teacher` and `studentGroup`, are filled in.
+These fields are problem properties.
+
+However, this class is also the output of the solution:
+
+* The `lessons` field for which each `Lesson` instance has non-null `timeslot` and `room` fields after solving.
+
+NOTE: The `getConstraintWeightOverrides()` method is required by the `SolverModel` interface (implemented by `AbstractSimpleModel`), and `setConstraintWeightOverrides()` is optional.
+For now `getConstraintWeightOverrides()` is left as a stub — `none()` means no constraint weights can be overridden per request.
+Configuring this properly is covered in the xref:service/constraint-weights.adoc[Constraint weights] section and is not part of this guide.
+
+include::../shared/school-timetabling/_school-timetabling-solution-value-range-providers.adoc[leveloffset=+1]
+
+include::../shared/school-timetabling/_school-timetabling-solution-facts-and-entities.adoc[leveloffset=+1]
+
+== Add the Solver Configuration
+
+Without a termination setting, the solver runs forever.
+You also need to provide some basic metadata about your application.
+
+Create the `src/main/resources/application.properties` file:
+
+[source,properties,options="nowrap"]
+----
+# The solver runs for 30 seconds by default.
+# Increase this for larger datasets to find a better solution.
+ai.timefold.platform.termination.spent-limit=PT30S
+
+# Application metadata — included in the generated OpenAPI specification
+timefold.application.name=my-model
+timefold.application.version=v1
+timefold.application.contact.email=info@example.com
+timefold.application.contact.name=Your Name
+timefold.application.contact.url=https://example.com
+----
+
+`ai.timefold.platform.termination.spent-limit` sets the default maximum time the solver will run.
+The value uses the https://www.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm[ISO 8601 duration format]: `PT30S` means 30 seconds.
+For production use, consider at least five minutes (`PT5M`) to allow the solver more time to find a better solution.
+
+NOTE: The per-request `config.run.termination.spentLimit` field in the POST body (shown later) overrides this default for individual runs.
+
+`timefold.application.name`, `timefold.application.version`, and the contact fields are *required* metadata.
+They are used to identify your service, validate the JSON schema of requests, and populate the generated OpenAPI specification.
+
+== REST API
+
+The standard way to interact with the optimization service is through a REST API.
+
+Using the service module, most of the REST Endpoints will be automatically generated thanks to the use of the `ModelInput`, `ModelOutput` and `SolverModel` interfaces.
+You didn't have to implement those interfaces in this guide, because they were already implemented for you in the `AbstractSimpleModel`.
+
+To configure the REST API, you need to provide an interface which extends the `ModelRest` interface.
+
+[tabs]
+====
+Java::
++
+--
+Create the `src/main/java/org/acme/schooltimetabling/rest/TimetableResource.java` class:
+
+[source,java,options="nowrap"]
+----
+package org.acme.schooltimetabling.rest;
+
+import jakarta.ws.rs.Path;
+import ai.timefold.solver.service.rest.api.ModelRest;
+
+@Path("/v1/timetables")
+public interface TimetableResource extends ModelRest {
+}
+----
+--
+====
+
+This is the most basic version of the interface. The SDK will automatically create multiple xref:service/rest-api.adoc[REST API endpoints] for optimization actions.
+The `@Path` annotation is used to configure the base path of all those endpoints.
+
+== Running and manually testing the model
+
+Everything is now configured to run the model.
+
+Start the model in `development mode` by executing:
+
+[source,bash,options="nowrap"]
+----
+mvn quarkus:dev
+----
+
+You should see the following line in the log on successful start
+
+[source,bash,options="nowrap"]
+----
+getting-started-school-timetabling <version> on JVM (powered by Quarkus {quarkus-version}) started in 1.552s. Listening on: http://localhost:8080
+----
+
+Open the http://localhost:8080/q/swagger-ui/[Swagger OpenAPI Viewer] to inspect the generated API Endpoints:
+http://localhost:8080/q/swagger-ui/
+
+image:quickstart/service/openapi.png[Screenshot of the Swagger OpenAPI UI showing the automatically generated REST API endpoints]
+
+As shown in the image above, just by extending the `ModelRest` interface, quite a few endpoints were automatically generated.
+We discuss these in more depth in the xref:service/rest-api.adoc[REST API] section.
+
+To showcase that the model is now ready for use we only need 2 of those endpoints:
+
+- `POST /v1/timetables`: To request a problem to be solved. This returns a unique identifier which can be used to request the resulting schedule.
+- `GET /v1/timetables/\{id\}`: Get the calculated schedule with the given identifier.
+
+=== Sending the problem
+
+// TODO: MAKE THIS INTERACTIVE IN THE UI!
+
+[source,bash,options="nowrap"]
+----
+curl -v -X 'POST' \
+  'http://localhost:8080/v1/timetables' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "config": {
+    "run": {
+      "termination": {
+        "spentLimit": "PT10S"
+      }
+    }
+  },
+  "modelInput": {
+    "timeslots": [
+      {
+        "dayOfWeek": "MONDAY",
+        "startTime": "13:45:30",
+        "endTime": "14:45:30"
+      }
+    ],
+    "rooms": [
+      {
+        "name": "Room1"
+      }
+    ],
+    "lessons": [
+      {
+        "id": "Lesson1",
+        "subject": "English",
+        "teacher": "Ann Deans",
+        "studentGroup": "1st Grade"
+      }
+    ]
+  }
+}'
+----
+
+This call should return a response containing the ID of the started run.
+
+[source,json,options="nowrap"]
+----
+{
+  "id" : "f401a609-403b-48c4-9487-0baf287e4f72",
+  "name" : "Dataset-2025-06-10T13:03:50.824454+02:00",
+  "submitDateTime" : "2025-06-10T13:03:50.824454+02:00",
+  "solverStatus" : "NOT_SOLVING"
+}
+----
+
+=== Getting the solution
+
+Using the ID received in the previous run, the current status of the run can be retrieved.
+
+[source,bash,options="nowrap"]
+----
+curl -X 'GET' \
+  'http://localhost:8080/v1/timetables/{id}' \
+  -H 'accept: application/json'
+----
+
+This call will return the standard xref:service/rest-api.adoc#solvingResponse[response structure].
+[source,json,options="nowrap"]
+----
+{
+  "metadata": {
+    "id": "f401a609-403b-48c4-9487-0baf287e4f72",
+    "name": "Dataset-2025-06-10T13:03:50.824454+02:00",
+    "submitDateTime": "2025-06-10T13:03:50.824454+02:00",
+    "startDateTime": "2025-06-10T13:03:50.832544+02:00",
+    "activeDateTime": "2025-06-10T13:03:50.833934+02:00",
+    "completeDateTime": "2025-06-10T13:03:50.843229+02:00",
+    "shutdownDateTime": "2025-06-10T13:03:50.844522+02:00",
+    "solverStatus": "SOLVING_COMPLETED",
+    "score": "0hard/0medium/0soft",
+    "validationResult": {
+      "summary": "VALIDATION_NOT_SUPPORTED"
+    }
+  },
+  "modelOutput": {
+    "timeslots": [
+      {
+        "dayOfWeek": "MONDAY",
+        "startTime": "13:45:30.123456789",
+        "endTime": "14:45:30.123456789"
+      }
+    ],
+    "rooms": [
+      {
+        "name": "Room1"
+      }
+    ],
+    "lessons": [
+      {
+        "id": "Lesson1",
+        "subject": "English",
+        "teacher": "Ann Deans",
+        "studentGroup": "1st Grade",
+        "timeslot": {
+          "dayOfWeek": "MONDAY",
+          "startTime": "13:45:30.123456789",
+          "endTime": "14:45:30.123456789"
+        },
+        "room": {
+          "name": "Room1"
+        }
+      }
+    ]
+  }
+}
+----
+
+Important elements to observe in the JSON above:
+
+- The `Lesson` object now has an assigned `Room` and `Timeslot`.
+- The `solverStatus` is `SOLVING_COMPLETED`, indicating the solver has finished optimizing.
+- The `score` is `0hard/0medium/0soft`, signaling that no constraints were broken.
+
+[sectnums!]
+== Next
+
+Since this is a "Getting Started" guide, not everything is covered yet.
+
+* Learn about improvements you can make to your model:
+** How to set up the underlying xref:service/modeling-changes.adoc[Timefold model and constraints].
+** How to configure your xref:service/rest-api.adoc[REST API] with validations, custom endpoints, etc.

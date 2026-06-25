@@ -1,11 +1,9 @@
 == What you will build
 
-You will build a REST application that optimizes a school timetable for students and teachers:
+You will build an optimization service that runs locally on your machine, and optimizes a school timetable for students and teachers.
 
-image::quickstart/school-timetabling/schoolTimetablingScreenshot.png[]
-
-Your service will assign `Lesson` instances to `Timeslot` and `Room` instances automatically
-by using AI to adhere to hard and soft scheduling _constraints_, such as the following examples:
+Your application will assign `Lesson` instances to `Timeslot` and `Room` instances automatically
+by using AI to adhere to hard and soft scheduling _constraints_, for example:
 
 * A room can have at most one lesson at the same time.
 * A teacher can teach at most one lesson at the same time.
@@ -18,6 +16,6 @@ Mathematically speaking, school timetabling is an _NP-hard_ problem.
 This means it is difficult to scale.
 Simply brute force iterating through all possible combinations takes millions of years
 for a non-trivial dataset, even on a supercomputer.
-Luckily, AI constraint solvers such as Timefold Solver have advanced algorithms
-that deliver a near-optimal solution in a reasonable amount of time.
 
+Fortunately, AI constraint solvers such as Timefold Solver have advanced algorithms
+that deliver a near-optimal solution in a reasonable amount of time.

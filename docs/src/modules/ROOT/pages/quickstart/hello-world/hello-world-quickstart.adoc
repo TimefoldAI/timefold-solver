@@ -353,7 +353,7 @@ public class TimetableApp {
                 .filter(lesson -> lesson.getTimeslot() != null && lesson.getRoom() != null)
                 .collect(Collectors.groupingBy(Lesson::getTimeslot, Collectors.groupingBy(Lesson::getRoom)));
         LOGGER.info("|            | " + rooms.stream()
-                .map(room -> String.format("%-10s", room.getName())).collect(Collectors.joining(" | ")) + " |");
+                .map(room -> String.format("%-10s", room.name())).collect(Collectors.joining(" | ")) + " |");
         LOGGER.info("|" + "------------|".repeat(rooms.size() + 1));
         for (Timeslot timeslot : timetable.getTimeslots()) {
             List<List<Lesson>> cells = rooms.stream()

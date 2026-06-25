@@ -5,6 +5,8 @@
     use-cases-and-examples/use-cases-and-examples.adoc, \
     overview-quickstarts.adoc
 :imagesdir: ../..
+:relevance: library-and-service
+:icons: font
 
 [TIP]
 ====
@@ -12,26 +14,108 @@ This documentation covers our Open Source solver to build a model from scratch.
 We also provide off-the-shelf models to solve common planning problems. https://docs.timefold.ai/[These can be found here.]
 ====
 
-Each _quick start guide_ gets you up and running with Timefold Solver quickly.
-Pick one that aligns with your requirements:
+Timefold Solver can be used in two ways.
+Pick the approach that best fits your architecture:
+
+[cols="1,1", frame=none, grid=none, role="approach-cards"]
+|===
+a|
+[.text-center]
+icon:cubes[4x]
+
+[.text-center]
+*xref:#embedAsALibrary[Embed as a library]*
+
+Add the solver as a dependency and wire it into your application however you like.
+Use Spring Boot, Quarkus... or no framework at all.
+
+a|
+[.text-center]
+icon:server[4x]
+
+[.text-center]
+*xref:#runAsAService[Run as a service]* (Preview)
+
+Deploy a fully isolated optimization service. This opinionated approach reduces the amount of boilerplate code needed to get to a running application.
+
+|===
+
+.Comparison
+[cols="2,5,5", options="header"]
+|===
+| | Embed as a library | Run as a service
+
+| *Best for*
+| Embedding the solver into an existing application
+| Running optimization as a standalone, isolated service that is easier to integrate, orchestrate & scale
+
+| *Ease of use*
+| Requires manual wiring: you manage configuration, lifecycle, and integration
+| Minimal setup: the framework handles REST endpoints and lifecycle for you
+
+| *Integration*
+| You control how the solver is wired into your application. Integrations for Spring Boot and Quarkus available.
+| Opinionated, ready-to-run service built on Quarkus
+
+| *Flexibility*
+| Use any framework or no framework at all
+| Constrained by design, the service only runs optimization
+
+| *Status*
+| Stable
+| Preview
+|===
+
+[#embedAsALibrary]
+== Embed as a library
+
+The library approach gives you the solver core as a dependency.
+You integrate it into your application however you see fit. There are no constraints on your application framework or architecture.
+
+The following getting started guides demonstrate the library approach:
 
 * xref:quickstart/hello-world/hello-world-quickstart.adoc#helloWorldQuickStart[*Hello World*]
-** Build a simple Java or Kotlin application that uses Timefold Solver to optimize a school timetable for students and teachers.
+** The minimal starting point. Build a plain Java or Kotlin application with no additional framework.
 * xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusQuickStart[*Quarkus*]
-** Build a REST application with Java or Kotlin that uses Timefold Solver to optimize a school timetable for students and teachers.
-** https://quarkus.io[Quarkus] is a popular platform in the Java ecosystem that supports native compilation.
+** Build a REST application with Java or Kotlin on top of https://quarkus.io[Quarkus], a popular Java platform that supports native compilation.
 * xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQuickStart[*Spring Boot*]
-** Build a REST application with Java or Kotlin that uses Timefold Solver to optimize a school timetable for students and teachers.
-** https://spring.io[Spring Boot] is a popular platform in the Java ecosystem that supports native compilation.
+** Build a REST application with Java or Kotlin on top of https://spring.io[Spring Boot], a popular Java platform that supports native compilation.
 
-All three quick starts use Timefold Solver to optimize a school timetable for student and teachers:
-
-IMPORTANT: The https://github.com/TimefoldAI/timefold-quickstarts[timefold-quickstarts] repository contains the source code for all these guides and more.
+All three guides optimize a school timetable for students and teachers:
 
 image::quickstart/school-timetabling/schoolTimetablingInputOutput.png[]
 
-You can also find out
-how to build xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStart[Vehicle Routing with Quarkus].
+IMPORTANT: The https://github.com/TimefoldAI/timefold-quickstarts[timefold-quickstarts] repository contains the source code for all these guides.
 
-For other use cases,
+For additional use cases using the library approach,
 take a look at https://github.com/TimefoldAI/timefold-quickstarts[the `timefold-quickstarts` GitHub repository].
+
+[#runAsAService]
+== Run as a service (Preview)
+
+[IMPORTANT]
+====
+The service approach is currently in *preview*.
+It is the recommended path going forward, but the API may still change before it reaches general availability.
+====
+
+This is the approach we recommend for integrating Timefold Solver into a larger system,
+and it is the approach we use ourselves when building optimization models at Timefold.
+
+The service has a single responsibility: *running optimization*.
+It receives a dataset, solves it, and returns the result over a well-defined REST API.
+That is all it does.
+
+*Why no database?*
+Deliberately.
+The service does not store datasets, manage user state, or own any persistence layer.
+Your application already has a database; the service does not need one.
+This makes the service stateless, trivially scalable, and completely free of operational concerns like schema migrations or data ownership.
+When optimization is one step in a larger workflow, a stateless service with a clean API slots into any architecture without friction.
+
+*Why opinionated?*
+An opinionated framework means less boilerplate, fewer ways to get it wrong, and a consistent shape that we all can reason about together.
+The library approach gives you full control; this approach gives you a proven path.
+
+To get started, see
+xref:quickstart/service/getting-started.adoc[*Getting started: building a service*].

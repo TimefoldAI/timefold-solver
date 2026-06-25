@@ -4,6 +4,8 @@
 :doctype: book
 :sectnums:
 :icons: font
+:relevance: core-only
+:notes: Too many things the service module does automatically, or with a single configuration.
 
 [#theSolverInterface]
 == The `Solver` interface
