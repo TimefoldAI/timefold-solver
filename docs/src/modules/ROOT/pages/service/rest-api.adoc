@@ -268,15 +268,15 @@ class TimetableConvertor : ModelConvertor<HardSoftLongScore, TimetableDto, Empty
 
     override fun toSolverModel(modelInput: TimetableDto, modelConfig: ModelConfig<EmptyModelConfigOverrides>,
             lastModelOutput: Optional<TimetableDto>): Timetable {
-        return // Mapping logic
+        return TODO("Mapping logic")
     }
 
     override fun toModelOutput(solverModel: Timetable): TimetableDto {
-        return // Mapping logic
+        return TODO("Mapping logic")
     }
 
     override fun applyOutputToInput(modelInput: TimetableDto, modelOutput: TimetableDto): TimetableDto {
-        return // Mapping logic
+        return TODO("Mapping logic")
     }
 }
 ----
@@ -349,7 +349,7 @@ class TimetableValidator : ModelValidator<TimetableDto, TimetableConfigOverrides
 
         //validation logic here, simplified example here.
         if (hasDuplicateTeacherNames(input)) {
-            validationBuilder.addIssue(TimetableValidationIssue.DUPLICATE_TEACHER.asIssueType(), DuplicateTeacherDetail("Ann"))
+            validationBuilder.addIssue(TimetableValidationIssue.DUPLICATE_TEACHER.asIssueType(), TimetableValidationIssue.DuplicateTeacherDetail("Ann"))
         }
     }
 }
@@ -492,7 +492,7 @@ interface TimetableSchedulingResource : ModelRest {
     @Path("/insights/teachers")
     @Produces(MediaType.APPLICATION_JSON)
     fun insightsTeachers(): Response {
-        val teachers = //get the list of teachers
+        val teachers = TODO("Get the list of teachers")
         return Response.ok(teachers).build()
     }
 }

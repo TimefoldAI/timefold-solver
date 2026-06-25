@@ -111,18 +111,17 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
-class TimetableConfigOverrides : ModelConfigOverrides {
+data class TimetableConfigOverrides(
+    @ConstraintReference(TimetableConstraintProvider.TEACHER_CONFLICT)
+    val teacherConflictWeight: Long = DEFAULT_WEIGHT_ONE,
+    @ConstraintReference(TimetableConstraintProvider.ROOM_CONFLICT)
+    val roomConflictWeight: Long = DEFAULT_WEIGHT_ONE
+) : ModelConfigOverrides {
 
     companion object {
         const val DEFAULT_WEIGHT_ZERO = 0L
         const val DEFAULT_WEIGHT_ONE = 1L
     }
-
-    @ConstraintReference(TimetableConstraintProvider.TEACHER_CONFLICT)
-    var teacherConflictWeight: Long = DEFAULT_WEIGHT_ONE
-
-    @ConstraintReference(TimetableConstraintProvider.ROOM_CONFLICT)
-    var roomConflictWeight: Long = DEFAULT_WEIGHT_ONE
 
 }
 ----

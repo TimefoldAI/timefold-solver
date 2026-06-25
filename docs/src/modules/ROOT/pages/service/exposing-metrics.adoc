@@ -105,10 +105,10 @@ class Timetable : SolverModel<HardSoftScore>, InputMetricsAware<TimetableInputMe
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider
-    var timeslots: List<Timeslot> = emptyList()
+    val timeslots: List<Timeslot> = emptyList()
 
     @PlanningEntityCollectionProperty
-    var lessons: List<Lesson> = emptyList()
+    val lessons: List<Lesson> = emptyList()
 
     @PlanningScore
     var score: HardSoftScore? = null
@@ -228,10 +228,10 @@ class Timetable : SolverModel<HardSoftScore>, OutputMetricsAware<TimetableOutput
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider
-    var timeslots: List<Timeslot> = emptyList()
+    val timeslots: List<Timeslot> = emptyList()
 
     @PlanningEntityCollectionProperty
-    var lessons: List<Lesson> = emptyList()
+    val lessons: List<Lesson> = emptyList()
 
     @PlanningScore
     var score: HardSoftScore? = null

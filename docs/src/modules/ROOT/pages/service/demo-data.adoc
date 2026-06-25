@@ -112,11 +112,11 @@ class TimetableDemoDataGenerator : DemoDataGenerator {
         fun getDemoData(): DemoData = DemoData(metaData, requestFunction(this))
 
         fun generateBasicDemoData(): ModelRequest<TimetableInput, TimetableConfigOverrides> {
-            // Generate basic request.
+            return TODO("Generate basic request.")
         }
 
         fun generateComplexSet(): ModelRequest<TimetableInput, TimetableConfigOverrides> {
-            // Generate complex request.
+            return TODO("Generate complex request.")
         }
     }
 

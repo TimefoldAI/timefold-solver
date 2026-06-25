@@ -54,10 +54,10 @@ class Timetable : SolverModel<HardSoftScore> {
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider
-    var timeslots: List<Timeslot> = emptyList()
+    val timeslots: List<Timeslot> = emptyList()
 
     @PlanningEntityCollectionProperty
-    var lessons: List<Lesson> = emptyList()
+    val lessons: List<Lesson> = emptyList()
 
     @PlanningScore
     var score: HardSoftScore? = null
@@ -113,14 +113,11 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
-class Timeslot {
-
-    var startTime: LocalDateTime? = null
-    var endTime: LocalDateTime? = null
-
+data class Timeslot(
+    val startTime: LocalDateTime? = null,
+    val endTime: LocalDateTime? = null
+) {
     var isHoliday: Boolean = false
-
-    // other Getters/Setters/Constructors excluded
 }
 ----
 --
