@@ -318,7 +318,7 @@ curl -v -X 'POST' \
       {
         "id": "Lesson1",
         "subject": "English",
-        "teacher": "Mrs. Joos",
+        "teacher": "Ann Deans",
         "studentGroup": "1st Grade"
       }
     ]
@@ -384,7 +384,7 @@ This call will return the standard xref:service/rest-api.adoc#solvingResponse[re
       {
         "id": "Lesson1",
         "subject": "English",
-        "teacher": "Mrs. Joos",
+        "teacher": "Ann Deans",
         "studentGroup": "1st Grade",
         "timeslot": {
           "dayOfWeek": "MONDAY",
@@ -412,5 +412,5 @@ Important elements to observe in the JSON above:
 Since this is a "Getting Started" guide, not everything is covered yet.
 
 * Learn about improvements you can make to your model:
-** How to set up the underlying xref:service/modeling-changes.adoc[Timefold Constraint Solver].
+** How to set up the underlying xref:service/modeling-changes.adoc[Timefold model and constraints].
 ** How to configure your xref:service/rest-api.adoc[REST API] with validations, custom endpoints, etc.
