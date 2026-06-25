@@ -1460,7 +1460,9 @@ class DefaultSolverTest {
                 TestdataDependencyNoInconsistentFieldSolution.class, TestdataDependencyNoInconsistentFieldEntity.class,
                 TestdataDependencyNoInconsistentFieldValue.class)
                 .withEasyScoreCalculatorClass(null)
-                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class);
+                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class)
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommands(command -> {}));
 
         var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
         var e2 = new TestdataDependencyNoInconsistentFieldEntity("b");
@@ -1484,10 +1486,26 @@ class DefaultSolverTest {
         problem.setEntities(entities);
         problem.setValues(values);
 
-        // TODO: Verify the values were unassigned instead
-        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem)).isInstanceOf(IllegalStateException.class)
-                .hasMessageContainingAll("The initial solution passed to the solver",
-                        "is invalid because it has dependency loops");
+        var solution = PlannerTestUtils.solve(solverConfig, problem, false);
+        assertThat(solution.getEntities().getFirst().getValues().isEmpty());
+        assertThat(solution.getEntities().getLast().getValues().isEmpty());
+
+        var sA1 = solution.getValues().get(0);
+        var sA2 = solution.getValues().get(1);
+        var sB1 = solution.getValues().get(2);
+        var sB2 = solution.getValues().get(3);
+
+        assertThat(sA1.getEntity()).isNull();
+        assertThat(sA1.getPreviousValue()).isNull();
+
+        assertThat(sA2.getEntity()).isNull();
+        assertThat(sA2.getPreviousValue()).isNull();
+
+        assertThat(sB1.getEntity()).isNull();
+        assertThat(sB1.getPreviousValue()).isNull();
+
+        assertThat(sB2.getEntity()).isNull();
+        assertThat(sB2.getPreviousValue()).isNull();
     }
 
     @Test

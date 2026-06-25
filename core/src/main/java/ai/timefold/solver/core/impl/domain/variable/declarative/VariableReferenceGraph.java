@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.List;
+
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public sealed interface VariableReferenceGraph
@@ -34,4 +36,5 @@ public sealed interface VariableReferenceGraph
      */
     void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity);
 
+    List<Object> getInconsistentEntities();
 }

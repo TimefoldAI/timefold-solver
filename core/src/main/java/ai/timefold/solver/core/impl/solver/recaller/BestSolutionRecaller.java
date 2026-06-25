@@ -11,6 +11,9 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Remembers the {@link PlanningSolution best solution} that a {@link Solver} encounters.
  *
@@ -18,6 +21,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  */
 public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapter<Solution_> {
 
+    private static final Logger log = LoggerFactory.getLogger(BestSolutionRecaller.class);
     protected boolean assertInitialScoreFromScratch = false;
     protected boolean assertShadowVariablesAreNotStale = false;
     protected boolean assertBestScoreIsUnmodified = false;
@@ -44,16 +48,20 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     // Worker methods
     // ************************************************************************
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
+    @SuppressWarnings("unchecked")
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         // Starting bestSolution is already set by Solver.solve(Solution)
         var scoreDirector = solverScope.getScoreDirector();
+        @SuppressWarnings("rawtypes")
         InnerScore innerScore = scoreDirector.calculateScore();
         if (innerScore.isInvalid()) {
-            throw new IllegalStateException(
-                    "The initial solution passed to the solver (%s) is invalid because it has dependency loops."
-                            .formatted(solverScope.getWorkingSolution()));
+            log.warn("The initial solution passed to the solver is inconsistent. Unassigning involved entities.");
+            scoreDirector.unassignInconsistentEntities();
+            innerScore = scoreDirector.calculateScore();
+            if (innerScore.isInvalid()) {
+                throw new IllegalStateException("The initial solution passed to the solver is inconsistent even after unassigning involved entities.");
+            }
         }
         var score = innerScore.raw();
         solverScope.setBestScore(innerScore);

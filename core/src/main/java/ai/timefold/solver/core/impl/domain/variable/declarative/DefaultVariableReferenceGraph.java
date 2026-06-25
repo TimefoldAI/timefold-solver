@@ -6,6 +6,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.function.IntFunction;
 
+import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
+
 import org.jspecify.annotations.NonNull;
 
 final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableReferenceGraph<Solution_, BitSet> {
@@ -70,5 +72,21 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
     public void setUnknownInconsistencyValues() {
         graph.commitChanges(changeTracker);
         affectedEntitiesUpdater.setUnknownInconsistencyValues();
+    }
+
+    @Override
+    public List<Object> getInconsistentEntities() {
+        var out = new LinkedIdentityHashSet<>();
+        var graphTrackingInconsistentEntities = new DefaultTopologicalOrderGraph(this.nodeTopologicalOrders.length);
+        graph.forEachEdge(graphTrackingInconsistentEntities::addEdge);
+        graphTrackingInconsistentEntities.commitChanges(new BitSet());
+        var loopedComponentList = graphTrackingInconsistentEntities.getLoopedComponentList();
+        for (var loopedComponent : loopedComponentList) {
+            for (var nodeId : loopedComponent) {
+                var node = this.nodeList.get(nodeId);
+                out.add(node.entity());
+            }
+        }
+        return new ArrayList<>(out);
     }
 }
