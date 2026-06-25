@@ -25,6 +25,7 @@ on:
       - '.gitignore'
       - '**.md'
       - '*.txt'
+      - 'docs/**'
 
 jobs:
   # Check if the user is a member of the organization; if so, allow the PR to sail through.
