@@ -349,7 +349,7 @@ class TimetableValidator : ModelValidator<TimetableDto, TimetableConfigOverrides
 
         //validation logic here, simplified example here.
         if (hasDuplicateTeacherNames(input)) {
-            validationBuilder.addIssue(TimetableValidationIssue.DUPLICATE_TEACHER.asIssueType(), TimetableValidationIssue.DuplicateTeacherDetail("Ann"))
+            validationBuilder.addIssue(TimetableValidationIssue.DUPLICATE_TEACHER.asIssueType(), DuplicateTeacherDetail("Ann"))
         }
     }
 }
