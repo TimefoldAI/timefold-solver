@@ -23,8 +23,7 @@
 ** https://github.com/TimefoldAI/timefold-quickstarts#-project-job-scheduling[Project Job Scheduling^]
 ** https://github.com/TimefoldAI/timefold-quickstarts#-sports-league-scheduling[Sports League Scheduling^]
 ** https://github.com/TimefoldAI/timefold-quickstarts#-tournament-scheduling[Tournament Scheduling^]
-* Using Timefold Solver
-** xref:using-timefold-solver/overview.adoc[leveloffset=+1]
+* xref:using-timefold-solver/overview.adoc[Using Timefold Solver]
 ** xref:using-timefold-solver/modeling-planning-problems.adoc[leveloffset=+1]
 ** xref:service/overview.adoc[Run as a Service (Preview)]
 *** xref:service/rest-api.adoc[leveloffset=+1]
