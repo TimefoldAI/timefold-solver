@@ -33,7 +33,6 @@
 *** xref:service/exposing-metrics.adoc[leveloffset=+1]
 ** xref:using-timefold-solver/library-integration.adoc[Use as a Library (Advanced)]
 *** xref:using-timefold-solver/configuration.adoc[leveloffset=+1]
-** xref:using-timefold-solver/running-the-solver.adoc[leveloffset=+1]
 * Constraints and score
 ** xref:constraints-and-score/overview.adoc[leveloffset=+1]
 ** xref:constraints-and-score/score-calculation.adoc[leveloffset=+1]
@@ -43,6 +42,7 @@
 ** xref:constraints-and-score/performance.adoc[leveloffset=+1]
 
 * Tuning the Solver
+** xref:using-timefold-solver/running-the-solver.adoc[leveloffset=+1]
 ** xref:using-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
 ** xref:optimization-algorithms/overview.adoc[Optimization algorithms]
 *** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]

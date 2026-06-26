@@ -10,7 +10,7 @@ When embedding Timefold Solver as a library, your code drives the entire solving
 This page covers what that means in practice.
 
 [#howLibrarySolvingWorks]
-== How library solving works
+== Solver basics
 
 At its core, a `Solver` takes a planning problem and returns the best solution it finds within the configured time limit:
 
@@ -366,36 +366,6 @@ may use the <<throttlingBestSolutionEvents,throttling feature>>
 to limit the number of best solution events fired over any period of time.
 
 Open-source users may implement their own throttling mechanism within the `Consumer` itself.
-====
-
-[#noSolverModelInterface]
-== No `SolverModel` interface
-
-In library mode, your `@PlanningSolution` class is a plain Java class with Timefold annotations.
-You do not implement any framework interface on the solution class itself.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-public class Timetable {
-
-    @ProblemFactCollectionProperty
-    @ValueRangeProvider
-    private List<Timeslot> timeslots;
-
-    @PlanningEntityCollectionProperty
-    private List<Lesson> lessons;
-
-    @PlanningScore
-    private HardSoftScore score;
-
-    // Getters, Setters, Constructors
-}
-----
 ====
 
 [#manualEnrichment]

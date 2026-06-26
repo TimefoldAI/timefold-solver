@@ -2404,6 +2404,36 @@ whereas a planning solution will.
 ====
 
 
+[#noSolverModelInterface]
+=== No `SolverModel` interface
+
+Your `@PlanningSolution` class is a plain Java class with Timefold annotations.
+You do not implement any framework interface on the solution class itself.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class Timetable {
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    private List<Timeslot> timeslots;
+
+    @PlanningEntityCollectionProperty
+    private List<Lesson> lessons;
+
+    @PlanningScore
+    private HardSoftScore score;
+
+    // Getters, Setters, Constructors
+}
+----
+====
+
 [#planningEntitiesOfASolution]
 === Planning entities of a solution (`@PlanningEntityCollectionProperty`)
 
