@@ -23,6 +23,11 @@ This interface requires you to implement 2 methods:
 Implementations of this interface must be dependency free meaning simple instantiation (even with reflection) of this class is enough to generate demo data.
 ====
 
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 @ApplicationScoped
@@ -79,6 +84,53 @@ public class TimetableDemoDataGenerator implements DemoDataGenerator {
     }
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@ApplicationScoped
+class TimetableDemoDataGenerator : DemoDataGenerator {
+
+    enum class DemoDataKind(
+        private val metaData: DemoMetaData,
+        private val requestFunction: (DemoDataKind) -> ModelRequest<TimetableInput, TimetableConfigOverrides>
+    ) {
+        BASIC(
+            DemoMetaData("BASIC", "SHORT_DESCRIPTION", "LONG_DESCRIPTION", listOf("TAGS"), listOf()),
+            { it.generateBasicDemoData() } // could also delegate to another class instead
+        ),
+        COMPLEX_SET(
+            DemoMetaData("COMPLEX_SET", "SHORT_DESCRIPTION", "LONG_DESCRIPTION", listOf("TAGS"), listOf()),
+            { it.generateComplexSet() }
+        );
+
+        fun getMetaData(): DemoMetaData = metaData
+
+        fun getDemoData(): DemoData = DemoData(metaData, requestFunction(this))
+
+        fun generateBasicDemoData(): ModelRequest<TimetableInput, TimetableConfigOverrides> {
+            return TODO("Generate basic request.")
+        }
+
+        fun generateComplexSet(): ModelRequest<TimetableInput, TimetableConfigOverrides> {
+            return TODO("Generate complex request.")
+        }
+    }
+
+    override fun demoMetaData(): List<DemoMetaData> {
+        return DemoDataKind.entries.map { it.getMetaData() }
+    }
+
+    override fun generateDemoData(demoDataId: String): DemoData {
+        return DemoDataKind.fromString(demoDataId).getDemoData()
+    }
+}
+----
+--
+====
 
 With this interface implemented, Timefold Solver will automatically expose these methods as REST endpoints:
 

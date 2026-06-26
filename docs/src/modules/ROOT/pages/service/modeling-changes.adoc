@@ -14,6 +14,11 @@ include::_preview-note.adoc[]
 Your class which is annotated by `@PlanningSolution` should implement the `SolverModel` interface.
 
 .Example for School Timetabling
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
@@ -37,6 +42,33 @@ public class Timetable implements SolverModel<HardSoftScore> {
     // other Getters/Setters/Constructors excluded
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@PlanningSolution
+class Timetable : SolverModel<HardSoftScore> {
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    val timeslots: List<Timeslot> = emptyList()
+
+    @PlanningEntityCollectionProperty
+    val lessons: List<Lesson> = emptyList()
+
+    private var _score: HardSoftScore? = null
+
+    @PlanningScore
+    override fun getScore(): HardSoftScore? = _score
+
+    // other Getters/Setters/Constructors excluded
+}
+----
+--
+====
 
 In case you don't want control over the `score` class used, you can also extend the `AbstractSimpleModel` as used in the xref:../quickstart/service/getting-started.adoc[getting started guide].
 
@@ -53,9 +85,13 @@ Especially when the field depends on external information or is difficult to com
 In this example, we enrich the Timetable PlanningSolution described above by filling in the "isHoliday" field for all Timeslot objects.
 
 .Timeslot class for the School Timetabling example
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
-
 public class Timeslot {
 
     private LocalDateTime startTime;
@@ -70,10 +106,31 @@ public class Timeslot {
     // other Getters/Setters/Constructors excluded
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+data class Timeslot(
+    val startTime: LocalDateTime? = null,
+    val endTime: LocalDateTime? = null
+) {
+    var isHoliday: Boolean = false
+}
+----
+--
+====
 
 Enrichment of the SolverModel is possible by implementing a `SolverModelEnricher`.
 
 .Timeslot Enricher for the School Timetabling example
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 @ApplicationScoped
@@ -94,8 +151,33 @@ public class TimeslotHolidayEnricher implements SolverModelEnricher<Timetable> {
         return false;
     }
 }
-
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@ApplicationScoped
+class TimeslotHolidayEnricher : SolverModelEnricher<Timetable> {
+
+    override fun enrich(solverModel: Timetable): Timetable {
+        for (timeslot in solverModel.timeslots) {
+            timeslot.isHoliday = overlapsWithKnownHoliday(timeslot.startTime, timeslot.endTime)
+        }
+
+        return solverModel
+    }
+
+    private fun overlapsWithKnownHoliday(start: LocalDateTime?, end: LocalDateTime?): Boolean {
+        // Implementation excluded; potentially call external service / database.
+        return false
+    }
+}
+----
+--
+====
 
 Next, register a `SolverModelEnrichmentDirector` implementation.
 This class allows you to determine the order in which enrichers are executed.
@@ -103,6 +185,11 @@ This might be important when 1 of your custom enrichers depends on an enricher p
 //TODO add link to maps component docs https://github.com/TimefoldAI/timefold-solver/issues/2348
 
 .Timetable Enrichment Director for the School Timetabling example
+[tabs]
+====
+Java::
++
+--
 [source,java,options="nowrap"]
 ----
 @ApplicationScoped
@@ -123,3 +210,24 @@ public class TimetableEnrichmentDirector implements SolverModelEnrichmentDirecto
     }
 }
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@ApplicationScoped
+class TimetableEnrichmentDirector @Inject constructor(
+    private val timeslotEnricher: TimeslotHolidayEnricher
+) : SolverModelEnrichmentDirector<Timetable> {
+
+    override fun enrich(solverModel: Timetable): Timetable {
+        val enrichedModel = timeslotEnricher.enrich(solverModel)
+        // Additional enrichers.
+        return enrichedModel
+    }
+}
+----
+--
+====
