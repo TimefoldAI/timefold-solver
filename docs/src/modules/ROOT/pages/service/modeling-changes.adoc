@@ -1,76 +1,10 @@
-= Service Model and Enricher
-:description: The core of any model is the solver
+= Model Enrichment
+:description: Enrich your SolverModel with additional information before solving starts.
 :doctype: book
 :sectnums:
 :icons: font
 
-Building Timefold Solver as a service introduces a few concepts which are not relevant when using it as a library when it comes to modeling your problem domain.
-
 include::_preview-note.adoc[]
-
-[#solverModel]
-== SolverModel interface
-
-Your class which is annotated by `@PlanningSolution` should implement the `SolverModel` interface.
-
-.Example for School Timetabling
-[tabs]
-====
-Java::
-+
---
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-public class Timetable implements SolverModel<HardSoftScore> {
-
-    @ProblemFactCollectionProperty
-    @ValueRangeProvider
-    private List<Timeslot> timeslots;
-
-    @PlanningEntityCollectionProperty
-    private List<Lesson> lessons;
-
-    @PlanningScore
-    private HardSoftScore score;
-
-    @Override
-    public HardSoftScore getScore() {
-        return score;
-    }
-
-    // other Getters/Setters/Constructors excluded
-}
-----
---
-
-Kotlin::
-+
---
-[source,kotlin,options="nowrap"]
-----
-@PlanningSolution
-class Timetable : SolverModel<HardSoftScore> {
-
-    @ProblemFactCollectionProperty
-    @ValueRangeProvider
-    val timeslots: List<Timeslot> = emptyList()
-
-    @PlanningEntityCollectionProperty
-    val lessons: List<Lesson> = emptyList()
-
-    private var _score: HardSoftScore? = null
-
-    @PlanningScore
-    override fun getScore(): HardSoftScore? = _score
-
-    // other Getters/Setters/Constructors excluded
-}
-----
---
-====
-
-In case you don't want control over the `score` class used, you can also extend the `AbstractSimpleModel` as used in the xref:../quickstart/service/getting-started.adoc[getting started guide].
 
 [#solverModelEnrichment]
 == SolverModel enrichment

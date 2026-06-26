@@ -2,7 +2,7 @@
 * xref:planning-ai-concepts.adoc[leveloffset=+1]
 * Getting started
 ** xref:quickstart/overview.adoc[leveloffset=+1]
-** xref:quickstart/service/getting-started.adoc[Service Quickstart (Preview)]
+** xref:quickstart/service/getting-started.adoc[Building as a service]
 ** Embed as a library
 *** xref:quickstart/hello-world/hello-world-quickstart.adoc[Hello World Guide]
 *** xref:quickstart/quarkus/quarkus-quickstart.adoc[Quarkus Guide]
@@ -41,13 +41,14 @@
 ** xref:deployment/cloud-architecture.adoc[leveloffset=+1]
 ** xref:deployment/infrastructure-requirements.adoc[leveloffset=+1]
 
-* Tuning the Solver
+* Diagnosing the Solver
 ** xref:running-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
 ** xref:running-timefold-solver/solver-diagnostics.adoc[leveloffset=+1]
-** xref:optimization-algorithms/overview.adoc[Optimization algorithms]
-*** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
-*** xref:optimization-algorithms/local-search.adoc[leveloffset=+1]
-*** xref:optimization-algorithms/exhaustive-search.adoc[leveloffset=+1]
+
+* xref:optimization-algorithms/overview.adoc[Optimization algorithms]
+** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
+** xref:optimization-algorithms/local-search.adoc[leveloffset=+1]
+** xref:optimization-algorithms/exhaustive-search.adoc[leveloffset=+1]
 ** Custom moves
 *** xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API]
 *** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
