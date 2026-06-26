@@ -2473,18 +2473,6 @@ When xref:using-timefold-solver/library-integration.adoc[using Timefold Solver a
 Your `@PlanningSolution` class is a plain Java class with no framework interface to implement.
 ====
 
-The solver configuration needs to declare the planning solution class:
-
-[source,xml,options="nowrap"]
-----
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  ...
-  <solutionClass>org.acme.schooltimetabling.Timetable</solutionClass>
-  ...
-</solver>
-----
-
 [NOTE]
 ====
 Solution class must not be of Java's `enum` or `record` types.
