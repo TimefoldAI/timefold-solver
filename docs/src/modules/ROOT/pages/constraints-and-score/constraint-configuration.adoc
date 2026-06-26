@@ -4,6 +4,11 @@
 :sectnums:
 :icons: font
 
+:relevance: library-and-service
+:notes: service module has some different patterns to deal with this.
+
+
+
 Deciding the correct xref:constraints-and-score/overview.adoc#scoreConstraintWeight[weight] and
 xref:constraints-and-score/overview.adoc#scoreLevel[level] for each constraint is not easy.
 It often involves negotiating with different stakeholders and their priorities.

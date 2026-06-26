@@ -73,13 +73,13 @@ jobs:
     steps:
       - name: Checkout frontend
         id: checkout-frontend
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: TimefoldAI/frontend
           token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Install pnpm
-        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
       - name: Use Aikido Sec Safe Chain
         run: |
           pnpm install -g @aikidosec/safe-chain@1.1.7
@@ -90,12 +90,14 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Checkout timefold-solver
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: "${{ github.event.pull_request.head.repo.owner.login || 'TimefoldAI' }}/timefold-solver"
           ref: ${{ github.event.pull_request.head.sha || 'main' }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
           path: "./timefold-solver"
           fetch-depth: 0
+          # "approval_required" + PR-level maintainer approval ensures that the PR is from a trusted source.
+          allow-unsafe-pr-checkout: true
 
       - name: Updating Antora configuration
         working-directory: "./timefold-solver"

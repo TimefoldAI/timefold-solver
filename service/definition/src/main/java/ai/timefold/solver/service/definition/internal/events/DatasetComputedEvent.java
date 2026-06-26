@@ -9,7 +9,20 @@ import ai.timefold.solver.service.definition.api.domain.Metadata;
  */
 public final class DatasetComputedEvent extends SolverWorkerEvent {
 
-    public DatasetComputedEvent(Metadata metadata, SolverModel solverModel, String planName, String tenantName) {
+    /**
+     * Indicates whether a solving operation was requested.
+     * When {@code true}, computation is followed by solving, which progresses the dataset to the next state.
+     * When {@code false}, {@code SolvingStatus.DATASET_COMPUTED} is the final state and no solving takes place.
+     */
+    private final boolean solveRequested;
+
+    public DatasetComputedEvent(Metadata metadata, SolverModel solverModel, String planName, String tenantName,
+            boolean solveRequested) {
         super(metadata, solverModel, null, planName, tenantName, null);
+        this.solveRequested = solveRequested;
+    }
+
+    public boolean isSolveRequested() {
+        return solveRequested;
     }
 }

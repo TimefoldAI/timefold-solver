@@ -1,0 +1,138 @@
+= Demo data (optional)
+:description: How to configure the model to generate Demo Data
+:doctype: book
+:sectnums:
+:icons: font
+
+Providing example datasets is a good way to help consumers understand the expected input of your model.
+This page describes how to provide dedicated support for exposing demo data.
+
+include::_preview-note.adoc[]
+
+// TODO To be simplified with: https://github.com/TimefoldAI/timefold-solver-enterprise/issues/630
+== Generating demo data
+
+To provide consumers of your model with example datasets, implement the `DemoDataGenerator` interface.
+This interface requires you to implement 2 methods:
+
+- `demoMetaData()`: returns a list of metadata, listing all the different datasets available.
+- `generateDemoData(String demoDataId)`: generates the dataset with the given id, usually retrieved from the metadata.
+
+[WARNING]
+====
+Implementations of this interface must be dependency free meaning simple instantiation (even with reflection) of this class is enough to generate demo data.
+====
+
+[tabs]
+====
+Java::
++
+--
+[source,java,options="nowrap"]
+----
+@ApplicationScoped
+public class TimetableDemoDataGenerator implements DemoDataGenerator {
+
+    public enum DemoDataKind {
+        BASIC(
+            new DemoMetaData("BASIC", "SHORT_DESCRIPTION", "LONG_DESCRIPTION", List.of("TAGS"),
+                List.of()),
+            DemoDataKind::generateBasicDemoData // could also delegate to another class instead
+        ),
+        COMPLEX_SET(
+            new DemoMetaData("COMPLEX_SET", "SHORT_DESCRIPTION", "LONG_DESCRIPTION", List.of("TAGS"),
+                List.of()),
+            DemoDataKind::generateComplexSet
+        );
+
+        private final DemoMetaData metaData;
+        private final Function<DemoDataKind, ModelRequest<TimetableInput, TimetableConfigOverrides>> requestFunction;
+
+        DemoDataKind(DemoMetaData metaData,
+                Function<DemoDataKind, ModelRequest<TimetableInput, TimetableConfigOverrides>> requestFunction) {
+            this.metaData = metaData;
+            this.requestFunction = requestFunction;
+        }
+
+        public DemoMetaData getMetaData() {
+            return metaData;
+        }
+
+        public DemoData getDemoData() {
+            return new DemoData(metaData, requestFunction.apply(this));
+        }
+
+        public ModelRequest<TimetableInput, TimetableConfigOverrides> generateBasicDemoData() {
+            // Generate basic request.
+        }
+
+        public ModelRequest<TimetableInput, TimetableConfigOverrides> generateComplexSet() {
+            // Generate complex request.
+        }
+    }
+
+    @Override
+    public List<DemoMetaData> demoMetaData() {
+        return Stream.of(DemoDataKind.values())
+                .map(demoDataKind -> demoDataKind.getMetaData())
+                .toList();
+    }
+
+    @Override
+    public DemoData generateDemoData(String demoDataId) {
+        return DemoDataKind.fromString(demoDataId).getDemoData();
+    }
+}
+----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+@ApplicationScoped
+class TimetableDemoDataGenerator : DemoDataGenerator {
+
+    enum class DemoDataKind(
+        private val metaData: DemoMetaData,
+        private val requestFunction: (DemoDataKind) -> ModelRequest<TimetableInput, TimetableConfigOverrides>
+    ) {
+        BASIC(
+            DemoMetaData("BASIC", "SHORT_DESCRIPTION", "LONG_DESCRIPTION", listOf("TAGS"), listOf()),
+            { it.generateBasicDemoData() } // could also delegate to another class instead
+        ),
+        COMPLEX_SET(
+            DemoMetaData("COMPLEX_SET", "SHORT_DESCRIPTION", "LONG_DESCRIPTION", listOf("TAGS"), listOf()),
+            { it.generateComplexSet() }
+        );
+
+        fun getMetaData(): DemoMetaData = metaData
+
+        fun getDemoData(): DemoData = DemoData(metaData, requestFunction(this))
+
+        fun generateBasicDemoData(): ModelRequest<TimetableInput, TimetableConfigOverrides> {
+            return TODO("Generate basic request.")
+        }
+
+        fun generateComplexSet(): ModelRequest<TimetableInput, TimetableConfigOverrides> {
+            return TODO("Generate complex request.")
+        }
+    }
+
+    override fun demoMetaData(): List<DemoMetaData> {
+        return DemoDataKind.entries.map { it.getMetaData() }
+    }
+
+    override fun generateDemoData(demoDataId: String): DemoData {
+        return DemoDataKind.fromString(demoDataId).getDemoData()
+    }
+}
+----
+--
+====
+
+With this interface implemented, Timefold Solver will automatically expose these methods as REST endpoints:
+
+- `GET /&lt;root&gt;/demo-data`: Retrieve all available demo dataset ids.
+- `GET /&lt;root&gt;/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier

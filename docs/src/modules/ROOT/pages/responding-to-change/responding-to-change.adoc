@@ -4,6 +4,9 @@
 :doctype: book
 :sectnums:
 :icons: font
+:relevance: library-and-service
+:notes: Wildly different in service module, so potentially split.
+
 
 The problem facts used to create a solution may change before or during the execution of that solution.
 Delaying planning in order to lower the risk of problem facts changing is not ideal,

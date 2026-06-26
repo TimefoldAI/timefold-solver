@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.heuristic.move.AbstractSelectorBasedMove;
 import ai.timefold.solver.core.impl.move.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -26,18 +27,38 @@ public final class SelectorBasedRuinRecreateMove<Solution_> extends AbstractSele
     private final SolverScope<Solution_> solverScope;
     private final List<Object> ruinedEntityList;
     private final SequencedSet<Object> affectedValueSet;
+    private final long randomSeed;
 
     private Object @Nullable [] recordedNewValues;
 
+    /**
+     * Prefer
+     * {@link #SelectorBasedRuinRecreateMove(GenuineVariableDescriptor, RuinRecreateConstructionHeuristicPhaseBuilder, SolverScope, List, SequencedSet, long)}
+     * with explicitly provided random seed.
+     *
+     * @param genuineVariableDescriptor
+     * @param constructionHeuristicPhaseBuilder
+     * @param solverScope
+     * @param ruinedEntityList
+     * @param affectedValueSet
+     */
     public SelectorBasedRuinRecreateMove(GenuineVariableDescriptor<Solution_> genuineVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope, List<Object> ruinedEntityList, SequencedSet<Object> affectedValueSet) {
+        this(genuineVariableDescriptor, constructionHeuristicPhaseBuilder, solverScope, ruinedEntityList, affectedValueSet, 0);
+    }
+
+    public SelectorBasedRuinRecreateMove(GenuineVariableDescriptor<Solution_> genuineVariableDescriptor,
+            RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
+            SolverScope<Solution_> solverScope, List<Object> ruinedEntityList, SequencedSet<Object> affectedValueSet,
+            long randomSeed) {
         this.genuineVariableDescriptor = genuineVariableDescriptor;
         this.ruinedEntityList = ruinedEntityList;
         this.affectedValueSet = affectedValueSet;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.solverScope = solverScope;
         this.recordedNewValues = null;
+        this.randomSeed = randomSeed;
     }
 
     @Override
@@ -65,6 +86,7 @@ public final class SelectorBasedRuinRecreateMove<Solution_> extends AbstractSele
         var nestedSolverScope = new SolverScope<Solution_>(solverScope.getClock());
         nestedSolverScope.setSolver(solverScope.getSolver());
         nestedSolverScope.setScoreDirector(innerScoreDirector);
+        nestedSolverScope.setWorkingRandom(DefaultRandomSource.seeded(randomSeed));
         constructionHeuristicPhase.solvingStarted(nestedSolverScope);
         constructionHeuristicPhase.solve(nestedSolverScope);
         constructionHeuristicPhase.solvingEnded(nestedSolverScope);
@@ -90,7 +112,7 @@ public final class SelectorBasedRuinRecreateMove<Solution_> extends AbstractSele
         var rebasedRuinedEntityList = rebaseList(ruinedEntityList, lookup);
         var rebasedAffectedValueSet = rebaseSet(affectedValueSet, lookup);
         return new SelectorBasedRuinRecreateMove<>(genuineVariableDescriptor, constructionHeuristicPhaseBuilder, solverScope,
-                rebasedRuinedEntityList, rebasedAffectedValueSet);
+                rebasedRuinedEntityList, rebasedAffectedValueSet, randomSeed);
     }
 
     @Override

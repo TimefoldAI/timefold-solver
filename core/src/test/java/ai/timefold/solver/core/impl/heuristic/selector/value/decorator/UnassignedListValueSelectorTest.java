@@ -6,6 +6,7 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfIte
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelectorForEntity;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -47,7 +48,7 @@ class UnassignedListValueSelectorTest {
                 mockIterableValueSelector(getListVariableDescriptor(scoreDirector), v1, v2, v3, v4, v5);
         var valueSelector = new UnassignedListValueSelector<>(childValueSelector);
 
-        SolverScope<TestdataListSolution> solverScope = mock(SolverScope.class);
+        SolverScope<TestdataListSolution> solverScope = mockSolverScope();
         valueSelector.solvingStarted(solverScope);
 
         AbstractPhaseScope<TestdataListSolution> phaseScope = mock(AbstractPhaseScope.class);

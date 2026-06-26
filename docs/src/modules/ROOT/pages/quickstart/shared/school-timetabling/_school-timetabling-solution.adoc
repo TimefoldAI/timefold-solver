@@ -136,24 +136,6 @@ However, this class is also the output of the solution:
 * The `lessons` field for which each `Lesson` instance has non-null `timeslot` and `room` fields after solving.
 * The `score` field that represents the quality of the output solution, for example, `0hard/-5soft`.
 
-== The value range providers
+include::_school-timetabling-solution-value-range-providers.adoc[]
 
-The `timeslots` field is a value range provider.
-It holds the `Timeslot` instances which Timefold Solver can pick from to assign to the `timeslot` field of `Lesson` instances.
-The `timeslots` field has an `@ValueRangeProvider` annotation to connect the `@PlanningVariable` with the `@ValueRangeProvider`,
-by matching the type of the planning variable with the type returned by the xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueRangeProvider[value range provider].
-
-Following the same logic, the `rooms` field also has an `@ValueRangeProvider` annotation.
-
-== The problem fact and planning entity properties
-
-Furthermore, Timefold Solver needs to know which `Lesson` instances it can change
-as well as how to retrieve the `Timeslot` and `Room` instances used for score calculation
-by your `TimetableConstraintProvider`.
-
-The `timeslots` and `rooms` fields have an `@ProblemFactCollectionProperty` annotation,
-so your `TimetableConstraintProvider` can select _from_ those instances.
-
-The `lessons` has an `@PlanningEntityCollectionProperty` annotation,
-so Timefold Solver can change them during solving
-and your `TimetableConstraintProvider` can select _from_ those too.
+include::_school-timetabling-solution-facts-and-entities.adoc[]

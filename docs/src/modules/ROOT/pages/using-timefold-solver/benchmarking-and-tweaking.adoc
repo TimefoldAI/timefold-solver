@@ -4,6 +4,8 @@
 :doctype: book
 :sectnums:
 :icons: font
+:relevance: library-and-service
+:notes: Mostly irrelevant in service module.
 
 
 [#findTheBestSolverConfiguration]

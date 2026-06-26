@@ -23,20 +23,18 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
                 entityToVariableReferenceMap.computeIfAbsent(entity, ignored -> new ArrayList<>())
                         .add(instance);
             } else {
-                for (var groupEntity : instance.variableReferences().get(0).groupEntities()) {
+                for (var groupEntity : instance.variableReferences().getFirst().groupEntities()) {
                     entityToVariableReferenceMap.computeIfAbsent(groupEntity, ignored -> new ArrayList<>())
                             .add(instance);
                 }
             }
         }
-        // Immutable optimized version of the map, now that it won't be updated anymore.
-        var immutableEntityToVariableReferenceMap = mapOfListsDeepCopyOf(entityToVariableReferenceMap);
         // This mutable structure is created once, and reused from there on.
         // Otherwise its internal collections were observed being re-created so often
         // that the allocation of arrays would become a major bottleneck.
         affectedEntitiesUpdater =
                 new AffectedEntitiesUpdater<>(graph, nodeList, nodeTopologicalOrders,
-                        immutableEntityToVariableReferenceMap::get,
+                        entityToVariableReferenceMap::get,
                         outerGraph.entityToEntityId.size(), outerGraph.changedVariableNotifier);
     }
 

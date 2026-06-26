@@ -3,6 +3,10 @@
 :doctype: book
 :sectnums:
 :icons: font
+:relevance: library-and-service
+:notes: Relevant, needs some rewrites. Also should include the "Getting Started" for Quarkus (raw) and Spring
+
+
 
 
 [#integrationOverview]

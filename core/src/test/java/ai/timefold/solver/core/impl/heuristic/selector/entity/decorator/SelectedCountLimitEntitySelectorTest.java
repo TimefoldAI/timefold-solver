@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfEntitySelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockSolverScope;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -27,7 +28,7 @@ class SelectedCountLimitEntitySelectorTest {
                 new TestdataEntity("e5"));
         EntitySelector entitySelector = new SelectedCountLimitEntitySelector(childEntitySelector, true, 3L);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        SolverScope solverScope = mockSolverScope();
         entitySelector.solvingStarted(solverScope);
 
         AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
@@ -85,7 +86,7 @@ class SelectedCountLimitEntitySelectorTest {
                 new TestdataEntity("e1"), new TestdataEntity("e2"), new TestdataEntity("e3"));
         EntitySelector entitySelector = new SelectedCountLimitEntitySelector(childEntitySelector, true, 5L);
 
-        SolverScope solverScope = mock(SolverScope.class);
+        SolverScope solverScope = mockSolverScope();
         entitySelector.solvingStarted(solverScope);
 
         AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);

@@ -1558,7 +1558,7 @@ class MoveDirectorTest {
         var ephemeralMoveDirector = moveDirector.ephemeral();
         var move = new SelectorBasedListRuinRecreateMove<TestdataListSolution>(listVariableDescriptor,
                 ruinRecreateConstructionHeuristicPhaseBuilder, new SolverScope<>(), List.of(v1),
-                new LinkedHashSet<>(Set.of(e1)));
+                new LinkedHashSet<>(Set.of(e1)), 0L);
         move.execute(ephemeralMoveDirector);
         var undoMove = (RecordedUndoMove<TestdataListSolution>) ephemeralMoveDirector.createUndoMove();
         // e1 must be analyzed at the beginning of the move execution
@@ -1610,7 +1610,8 @@ class MoveDirectorTest {
         when(ruinRecreateConstructionHeuristicPhaseBuilder.build()).thenReturn(constructionHeuristicPhase);
         var ephemeralMoveDirector = moveDirector.ephemeral();
         var move = new SelectorBasedRuinRecreateMove<TestdataSolution>(genuineVariableDescriptor,
-                ruinRecreateConstructionHeuristicPhaseBuilder, mainSolverScope, List.of(v1), new LinkedHashSet<>(Set.of(e1)));
+                ruinRecreateConstructionHeuristicPhaseBuilder, mainSolverScope, List.of(v1), new LinkedHashSet<>(Set.of(e1)),
+                0L);
         move.execute(ephemeralMoveDirector);
         // Not using the main solver scope
         verify(constructionHeuristicPhase, times(0)).solve(mainSolverScope);

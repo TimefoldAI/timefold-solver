@@ -33,7 +33,7 @@
     <version.rewrite.plugin>6.28.1</version.rewrite.plugin>
     <version.source.plugin>3.4.0</version.source.plugin>
     <version.resources.plugin>3.5.0</version.resources.plugin>
-    <version.cyclonedx.plugin>2.9.1</version.cyclonedx.plugin>
+    <version.cyclonedx.plugin>2.9.2</version.cyclonedx.plugin>
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
     <sonar.sources>.</sonar.sources>
     <sonar.tests>.</sonar.tests>

@@ -37,6 +37,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -215,6 +216,16 @@ public final class PlannerTestUtils {
     // ************************************************************************
     // Scope helpers
     // ************************************************************************
+
+    /**
+     * Returns a mock {@link SolverScope} with {@link SolverScope#getWorkingRandom()} returning a mock random.
+     */
+    @SuppressWarnings("unchecked")
+    public static <Solution_> SolverScope<Solution_> mockSolverScope() {
+        var out = mock(SolverScope.class);
+        when(out.getWorkingRandom()).thenReturn(mock(RandomSource.class));
+        return (SolverScope<Solution_>) out;
+    }
 
     /**
      * Returns {@link AbstractPhaseScope} instance that will delegate to {@link SolverScope#getWorkingRandom()}.

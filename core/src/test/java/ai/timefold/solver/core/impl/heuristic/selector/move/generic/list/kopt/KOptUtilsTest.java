@@ -260,8 +260,8 @@ public class KOptUtilsTest {
         return new KOptDescriptor<>(tourArray,
                 incl,
                 item -> originalTour.get((originalTour.indexOf(item) + 1) % originalTour.size()),
-                getBetweenPredicate(
-                        new DelegatingListVariableStateSupply<>(mock(ListVariableStateSupply.class), originalTour::indexOf)));
+                getBetweenPredicate(new DelegatingListVariableStateSupply<Object>(mock(ListVariableStateSupply.class),
+                        originalTour::indexOf)));
     }
 
     private static int identityIndexOf(List<TestdataListValue> sourceList, TestdataListValue query) {

@@ -1,0 +1,12 @@
+== The problem fact and planning entity properties
+
+Furthermore, Timefold Solver needs to know which `Lesson` instances it can change
+as well as how to retrieve the `Timeslot` and `Room` instances used for score calculation
+by your `TimetableConstraintProvider`.
+
+The `timeslots` and `rooms` fields have an `@ProblemFactCollectionProperty` annotation,
+so your `TimetableConstraintProvider` can select _from_ those instances.
+
+The `lessons` has an `@PlanningEntityCollectionProperty` annotation,
+so Timefold Solver can change them during solving
+and your `TimetableConstraintProvider` can select _from_ those too.

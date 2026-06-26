@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
-import java.util.function.Function;
+import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.impl.domain.variable.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListElementsChangeEvent;
@@ -17,7 +17,9 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 record DelegatingListVariableStateSupply<Solution_>(ListVariableStateSupply<Solution_, Object, Object> delegate,
-        Function<Object, @Nullable Integer> indexFunction) implements ListVariableStateSupply<Solution_, Object, Object> {
+        ToIntFunction<Object> indexFunction)
+        implements
+            ListVariableStateSupply<Solution_, Object, Object> {
 
     @Override
     public void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
@@ -40,8 +42,21 @@ record DelegatingListVariableStateSupply<Solution_>(ListVariableStateSupply<Solu
     }
 
     @Override
-    public @Nullable Integer getIndex(Object planningValue) {
-        return indexFunction.apply(planningValue);
+    public int getIndexOrFail(Object planningValue) {
+        var index = indexFunction.applyAsInt(planningValue);
+        if (index < 0) {
+            throw new IllegalStateException("The element (%s) is not assigned to any list variable.");
+        }
+        return index;
+    }
+
+    @Override
+    public int getIndexOrElse(Object planningValue, int defaultValue) {
+        var index = indexFunction.applyAsInt(planningValue);
+        if (index < 0) {
+            return defaultValue;
+        }
+        return index;
     }
 
     @Override

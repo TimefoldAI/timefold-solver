@@ -718,7 +718,7 @@ class SelectorBasedKOptListMoveTest {
         return node -> {
             var entity = listVariableStateSupply.getInverseSingleton(node);
             var valueList = (List<Node_>) listVariableDescriptor.getValue(entity);
-            var index = listVariableStateSupply.getIndex(node);
+            var index = listVariableStateSupply.getIndexOrFail(node);
             if (index == valueList.size() - 1) {
                 var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(entity);
                 return valueList.get(firstUnpinnedIndex);

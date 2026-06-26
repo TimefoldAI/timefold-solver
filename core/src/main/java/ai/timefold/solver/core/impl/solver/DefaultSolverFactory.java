@@ -37,7 +37,8 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
-import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
+import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecallerFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -212,14 +213,14 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         return scoreDirectorFactoryFactory.buildScoreDirectorFactory(environmentMode, solutionDescriptor);
     }
 
-    public Supplier<RandomGenerator> buildRandomSupplier(EnvironmentMode environmentMode_) {
+    public Supplier<RandomSource> buildRandomSupplier(EnvironmentMode environmentMode_) {
         var randomSeed_ = solverConfig.getRandomSeed();
         if (randomSeed_ == null && environmentMode_ != EnvironmentMode.NON_REPRODUCIBLE) {
             randomSeed_ = DEFAULT_RANDOM_SEED;
         } else if (randomSeed_ == null) {
             randomSeed_ = RandomGenerator.getDefault().nextLong();
         }
-        return DelegatingSplittableRandomGenerator.getSupplier(randomSeed_);
+        return DefaultRandomSource.seededSupplier(randomSeed_);
     }
 
     public List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,

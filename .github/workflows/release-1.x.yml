@@ -51,7 +51,7 @@ jobs:
           fi
 
       - name: Checkout timefold-solver
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.sourceBranch }}
@@ -85,7 +85,7 @@ jobs:
           cp docs/target/antora.yml docs/src/antora.yml
           git add docs/src/antora.yml
           find . -name 'pom.xml' | xargs git add
-          git commit -m "build: release version ${{ github.event.inputs.version }}"
+          git commit -m "build: release version $NEW_VERSION"
           git push origin $RELEASE_BRANCH_NAME
 
       - name: Run JReleaser

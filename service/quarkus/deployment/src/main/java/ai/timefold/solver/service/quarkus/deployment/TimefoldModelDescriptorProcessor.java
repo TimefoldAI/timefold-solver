@@ -218,7 +218,7 @@ class TimefoldModelDescriptorProcessor {
                 // copy enhanced OpenAPI spec file to target folder for validation purpose
                 Path enhancedOpenApiPath =
                         Paths.get(out.getOutputDirectory().toString(), "timefold-model-enhanced-openapi.json");
-                Files.copy(openAPIDefinition, enhancedOpenApiPath);
+                Files.copy(openAPIDefinition, enhancedOpenApiPath, StandardCopyOption.REPLACE_EXISTING);
 
                 // check if there is JSON schema definition for the schedule operation
                 Path jsonSchemaDefinition =

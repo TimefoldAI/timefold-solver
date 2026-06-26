@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
@@ -27,7 +26,8 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
-import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
+import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
@@ -50,7 +50,7 @@ public class SolverScope<Solution_> {
     private Set<SolverMetric> solverMetricSet = Collections.emptySet();
     private Tags monitoringTags;
     private int startingSolverCount;
-    private RandomGenerator workingRandom;
+    private RandomSource workingRandom;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
     private AbstractSolver<Solution_> solver;
     private DefaultProblemChangeDirector<Solution_> problemChangeDirector;
@@ -143,11 +143,11 @@ public class SolverScope<Solution_> {
         this.startingSolverCount = startingSolverCount;
     }
 
-    public RandomGenerator getWorkingRandom() {
+    public RandomSource getWorkingRandom() {
         return workingRandom;
     }
 
-    public void setWorkingRandom(RandomGenerator workingRandom) {
+    public void setWorkingRandom(RandomSource workingRandom) {
         this.workingRandom = workingRandom;
     }
 
@@ -354,9 +354,8 @@ public class SolverScope<Solution_> {
         childThreadSolverScope.solverMetricSet = solverMetricSet;
         childThreadSolverScope.startingSolverCount = startingSolverCount;
         // Experiments show that this trick to attain reproducibility doesn't break uniform distribution
-        var delegatingRandom = (DelegatingSplittableRandomGenerator) workingRandom;
-        childThreadSolverScope.workingRandom =
-                new DelegatingSplittableRandomGenerator(delegatingRandom.getSeed(), delegatingRandom.split());
+        var delegatingRandom = (DefaultRandomSource) workingRandom;
+        childThreadSolverScope.workingRandom = delegatingRandom.split();
         childThreadSolverScope.scoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
         childThreadSolverScope.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
         resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);

@@ -25,6 +25,7 @@ on:
       - '.gitignore'
       - '**.md'
       - '*.txt'
+      - 'docs/**'
 
 jobs:
   # Check if the user is a member of the organization; if so, allow the PR to sail through.
@@ -76,16 +77,18 @@ jobs:
       # Clone timefold-solver
       # No need to check for stale repo, as GitHub merges the main repo into the fork automatically.
       - name: Checkout timefold-solver
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: ./timefold-solver
           ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
+          # "approval_required" + PR-level maintainer approval ensures that the PR is from a trusted source.
+          allow-unsafe-pr-checkout: true
 
       # Clone timefold-solver-enterprise
       # Need to check for stale repo, since GitHub is not aware of the build chain and therefore doesn't automate it.
       - name: Checkout timefold-solver-enterprise (PR) # Checkout the PR branch first, if it exists
         id: checkout-solver-enterprise
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         continue-on-error: true
         with:
           repository: TimefoldAI/timefold-solver-enterprise
@@ -95,7 +98,7 @@ jobs:
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Checkout timefold-solver-enterprise (main) # Checkout the main branch if the PR branch does not exist
         if: steps.checkout-solver-enterprise.outcome != 'success'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: TimefoldAI/timefold-solver-enterprise
           ref: main
@@ -136,10 +139,12 @@ jobs:
       checks: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
           ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
+          # "approval_required" + PR-level maintainer approval ensures that the PR is from a trusted source.
+          allow-unsafe-pr-checkout: true
       - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:

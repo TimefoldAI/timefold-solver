@@ -121,7 +121,7 @@ public final class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSe
         if (finalistList.size() == 1 || !breakTieRandomly) {
             return finalistList.get(0);
         }
-        int randomIndex = stepScope.getWorkingRandom().nextInt(finalistList.size());
+        int randomIndex = stepScope.getWorkingRandom().acceptorUsage().nextInt(finalistList.size());
         return finalistList.get(randomIndex);
     }
 

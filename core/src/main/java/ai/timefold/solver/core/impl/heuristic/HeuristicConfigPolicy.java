@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadFactory;
-import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
@@ -23,6 +22,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.ValueMimicRec
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.impl.solver.thread.DefaultSolverThreadFactory;
 
@@ -42,7 +42,7 @@ public class HeuristicConfigPolicy<Solution_> {
     private final boolean reinitializeVariableFilterEnabled;
     private final boolean unassignedValuesAllowed;
     private final Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
-    private final RandomGenerator random;
+    private final RandomSource random;
 
     private final Map<String, EntityMimicRecorder<Solution_>> entityMimicRecorderMap = new HashMap<>();
     private final Map<String, SubListMimicRecorder<Solution_>> subListMimicRecorderMap = new HashMap<>();
@@ -118,7 +118,7 @@ public class HeuristicConfigPolicy<Solution_> {
         return nearbyDistanceMeterClass;
     }
 
-    public RandomGenerator getRandom() {
+    public RandomSource getRandom() {
         return random;
     }
 
@@ -275,7 +275,7 @@ public class HeuristicConfigPolicy<Solution_> {
         private boolean unassignedValuesAllowed = false;
 
         private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
-        private RandomGenerator random;
+        private RandomSource random;
 
         public Builder<Solution_> withPreviewFeatureSet(Set<PreviewFeature> previewFeatureSet) {
             this.previewFeatureSet = previewFeatureSet;
@@ -308,7 +308,7 @@ public class HeuristicConfigPolicy<Solution_> {
             return this;
         }
 
-        public Builder<Solution_> withRandom(RandomGenerator random) {
+        public Builder<Solution_> withRandom(RandomSource random) {
             this.random = random;
             return this;
         }

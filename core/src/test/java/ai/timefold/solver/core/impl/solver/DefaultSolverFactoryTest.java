@@ -13,6 +13,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverTest.DummyEasyScoreCalculator;
 import ai.timefold.solver.core.impl.solver.random.DelegatingSplittableRandomGenerator;
+import ai.timefold.solver.core.impl.solver.random.RandomSource;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -113,10 +114,10 @@ class DefaultSolverFactoryTest {
                 .withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class)
                 .withRandomSeed(123456L);
         var defaultSolverFactory = new DefaultSolverFactory<TestdataSolution>(solverConfig);
-        DelegatingSplittableRandomGenerator randomGenerator = (DelegatingSplittableRandomGenerator) defaultSolverFactory
-                .buildRandomSupplier(EnvironmentMode.PHASE_ASSERT).get();
-        DelegatingSplittableRandomGenerator otherRandomGenerator =
-                new DelegatingSplittableRandomGenerator(solverConfig.getRandomSeed());
+        var randomGenerator = (DelegatingSplittableRandomGenerator) defaultSolverFactory
+                .buildRandomSupplier(EnvironmentMode.PHASE_ASSERT).get().moveIteratorUsage();
+        var otherRandomGenerator =
+                (DelegatingSplittableRandomGenerator) RandomSource.seeded(solverConfig.getRandomSeed()).moveIteratorUsage();
         assertThat(randomGenerator.getSeed()).isEqualTo(otherRandomGenerator.getSeed());
         assertThat(otherRandomGenerator.nextLong()).isEqualTo(randomGenerator.nextLong());
     }

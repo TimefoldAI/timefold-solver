@@ -828,10 +828,17 @@ public interface NearbyDistanceMeter<Origin_, Destination_> {
 ----
 ====
 
-In a nutshell, when nearby selection is used in a list move selector,
-`Origin_` is always a planning value (for example `Customer`)
+In a nutshell, when nearby selection is applied,
+the `Origin_` and `Destination_` types are determined by the relevant selectors within the `nearbySelection` configuration.
+For a <<basicVariableNearbySelection, basic variable>>, `Origin_`
+is defined by the planning entity (for example `Lesson`) of the nearby definition,
+while `Destination_` can be either a planning value or a planning entity.
+In the case of a <<listVariableNearbySelection, list variable>>,
+`Origin_` is always a planning value (for example `Customer`),
 but `Destination_` can be either a planning value or a planning entity.
-That means that in VRP the distance meter must be able to handle both `Customer` and `Vehicle` as the `Destination_` argument:
+
+As an example, consider the Vehicle Routing Problem and a list variable to store the customer list for each vehicle.
+The distance meter must be able to handle both `Customer` and `Vehicle` as the `Destination_` argument:
 
 [tabs]
 ====
@@ -858,8 +865,82 @@ The Nearby configuration is not enabled for the Construction Heuristics
 because the method will analyze all possible moves.
 Adding Nearby in this situation would only result in unnecessary costs
 involving the generation of the distance matrix and sorting operations without taking advantage of the feature.
+
+The previous code snippet exemplifies the implementation of a distance meter for a list variable,
+but the general idea remains the same for basic variables,
+which is that the implementation must handle the related planning values and planning entities.
 ====
 
+[#basicVariableNearbySelection]
+==== Nearby selection with a basic variable
+
+To quickly configure nearby selection for a solution that only uses basic variables,
+add `nearbyDistanceMeterClass` element to your configuration file.
+The following enables nearby selection with a basic variable
+for the local search:
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<solver xmlns="https://timefold.ai/xsd/solver">
+    ...
+    <nearbyDistanceMeterClass>org.acme.schooltimetabling.domain.solver.nearby.LectureNearbyDistanceMeter</nearbyDistanceMeterClass>
+    ...
+</solver>
+----
+
+By default, the following move selectors are included:
+xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change],
+xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap],
+Change with Nearby,
+and Swap with Nearby.
+
+[IMPORTANT]
+====
+For a mixed model,
+configure nearby selection for basic-variable move selectors explicitly.
+====
+
+===== Advanced configuration for local search
+
+To customize the move selectors,
+add a `nearbySelection` element in the `valueSelector` of a `changeMoveSelector`
+or in the `secondaryEntitySelector` of a `swapMoveSelector`,
+and use xref:optimization-algorithms/move-selector-reference.adoc#mimicSelection[mimic selection]
+to specify which entity should be nearby the selection.
+
+For a `changeMoveSelector`,
+`Origin_` is the entity selected
+and `Destination_` is the nearby planning value selected by the `valueSelector`.
+For a `swapMoveSelector`,
+both `Origin_` and `Destination_` are planning entities.
+The `Destination_` is determined by the configuration setting `secondaryEntitySelector`.
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <changeMoveSelector>
+        <entitySelector id="entitySelector1"/>
+        <valueSelector variableName="room">
+          <nearbySelection>
+            <originEntitySelector mimicSelectorRef="entitySelector1"/>
+            <nearbyDistanceMeterClass>org.acme.schooltimetabling.domain.solver.nearby.LectureNearbyDistanceMeter</nearbyDistanceMeterClass>
+          </nearbySelection>
+        </valueSelector>
+      </changeMoveSelector>
+      <swapMoveSelector>
+        <entitySelector id="entitySelector2"/>
+        <secondaryEntitySelector>
+          <nearbySelection>
+            <originEntitySelector mimicSelectorRef="entitySelector2"/>
+            <nearbyDistanceMeterClass>org.acme.schooltimetabling.domain.solver.nearby.LectureNearbyDistanceMeter</nearbyDistanceMeterClass>
+          </nearbySelection>
+        </secondaryEntitySelector>
+      </swapMoveSelector>
+    </unionMoveSelector>
+----
+
+[#listVariableNearbySelection]
 ==== Nearby selection with a list variable
 
 To quickly configure nearby selection with a planning list variable,
@@ -880,9 +961,10 @@ for the local search:
 By default, the following move selectors are included:
 xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change],
 xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap],
+xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelector[K-OPT],
 Change with Nearby,
 Swap with Nearby,
-and xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelector[2-OPT] with Nearby.
+and K-OPT with Nearby.
 
 ===== Advanced configuration for local search
 
@@ -1064,7 +1146,7 @@ Simplest configuration:
     <swapMoveSelector/>
 ----
 
-If there are multiple entity classes, a simple configuration will automatically unfold 
+If there are multiple entity classes, a simple configuration will automatically unfold
 into an <<unionMoveSelector,union>> of `SwapMove` selectors for every entity class.
 
 Advanced configuration:
