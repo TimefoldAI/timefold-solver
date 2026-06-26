@@ -55,7 +55,7 @@ Kotlin::
 // TimetableDto.kt
 class TimetableDto(
     @Schema(required = true, description = "The unique identifier of timetable")
-    var name: String? = null,
+    var name: String = "",
     @Schema(required = true, description = "List of timeslots")
     var timeslots: List<Timeslot> = emptyList(),
     @Schema(required = true, description = "List of lessons")
