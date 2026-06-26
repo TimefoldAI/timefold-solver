@@ -96,7 +96,7 @@ include::../shared/_java-prerequisites.adoc[]
 Create a Maven or Gradle build file and add these dependencies:
 
 * `timefold-solver-core` (compile scope) to solve the school timetable problem.
-* A xref:running-timefold-solver/multithreaded-solving.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold Solver is doing.
+* A xref:running-timefold-solver/solver-diagnostics.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold Solver is doing.
 
 [tabs]
 ====

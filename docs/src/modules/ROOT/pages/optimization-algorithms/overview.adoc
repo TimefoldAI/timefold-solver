@@ -273,7 +273,7 @@ These form four nested scopes:
 
 image::optimization-algorithms/overview/scopeOverview.png[align="center"]
 
-Configure xref:running-timefold-solver/multithreaded-solving.adoc#logging[logging] to display the log messages of each scope.
+Configure xref:running-timefold-solver/solver-diagnostics.adoc#logging[logging] to display the log messages of each scope.
 
 
 [#termination]
@@ -716,7 +716,7 @@ This is useful for benchmarking.
   </termination>
 ----
 
-Switching xref:running-timefold-solver/multithreaded-solving.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
+Switching xref:running-timefold-solver/solver-diagnostics.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
 
 [#moveCountTermination]
 ===== `MoveCountTermination`
@@ -731,7 +731,7 @@ This is useful for benchmarking.
   </termination>
 ----
 
-Switching xref:running-timefold-solver/multithreaded-solving.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
+Switching xref:running-timefold-solver/solver-diagnostics.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
 
 [#diminishedReturnsTermination]
 ===== `DiminishedReturnsTermination`

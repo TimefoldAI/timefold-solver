@@ -110,7 +110,7 @@ There are 2 different types of planning variables we can distinguish: *genuine* 
 
 *Genuine* planning variables are variables to which the solver will assign *planning values*.
 There are 3 variants of genuine planning variables. The variants you use depends on the problem you are solving.
-For more detailed guidance on when to use which variant, read the xref:design-patterns/design-patterns.adoc#domainModelingGuide[domain modeling guide].
+For more detailed guidance on when to use which variant, read the xref:design-patterns/domain-modeling.adoc#domainModelingGuide[domain modeling guide].
 
 - xref:planningVariable[@PlanningVariable]: contains a single *planning value*. *Planning values* can be assigned to multiple *planning entities*.
 - xref:planningListVariable[@PlanningListVariable]: contains multiple *planning values* in a specific order. *Planning values* can only be assigned to a single *planning entity*.

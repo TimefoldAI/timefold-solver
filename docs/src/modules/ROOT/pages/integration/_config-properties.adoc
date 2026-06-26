@@ -25,7 +25,7 @@ located in the classpath.
 The random seed to be used in the solving process.
 
 {property_prefix}timefold.solver.{solver_name_prefix}environment-mode::
-Enable xref:running-timefold-solver/multithreaded-solving.adoc#environmentMode[runtime assertions] to detect common bugs in your
+Enable xref:running-timefold-solver/solver-diagnostics.adoc#environmentMode[runtime assertions] to detect common bugs in your
 implementation during development.
 
 {property_prefix}timefold.solver.{solver_name_prefix}constraint-stream-profiling-enabled::

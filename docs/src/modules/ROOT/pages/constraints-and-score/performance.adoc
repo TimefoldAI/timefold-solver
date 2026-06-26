@@ -372,7 +372,7 @@ quarkus.timefold.solver.constraint-stream-profiling-enabled=true
 ====
 
 Constraint profiling will log its results to the `ai.timefold.solver.enterprise.core.api.ConstraintProfiler` class at the end of solving.
-For the report to be generated, xref:running-timefold-solver/multithreaded-solving.adoc#logging[the particular logging levels must be configured and enabled].
+For the report to be generated, xref:running-timefold-solver/solver-diagnostics.adoc#logging[the particular logging levels must be configured and enabled].
 
 IMPORTANT: Constraint profiling is only supported for xref:constraints-and-score/score-calculation.adoc#constraintStreams[constraint stream score calculation]
 when xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedSolving[multi-threaded solving] is disabled.
@@ -498,7 +498,7 @@ NOTE: Traditional profiling tools such as Java Mission Control will report the i
 
 [#fullAssert]
 == Validate the implementation using FULL_ASSERT
-When you are done optimizing your score calculation, make sure to validate it using xref:running-timefold-solver/multithreaded-solving.adoc#environmentModeFullAssert[`FULL_ASSERT`] mode. Make sure not to run with this mode in production.
+When you are done optimizing your score calculation, make sure to validate it using xref:running-timefold-solver/solver-diagnostics.adoc#environmentModeFullAssert[`FULL_ASSERT`] mode. Make sure not to run with this mode in production.
 
 [#otherScoreCalculationPerformanceTricks]
 == Other score calculation performance tricks

@@ -265,7 +265,7 @@ so it is easier to read Timefold Solver's `DEBUG` or `TRACE` log, as shown later
 ====
 Determining the `@PlanningListVariable` fields for an arbitrary constraint solving use case
 is often challenging the first time.
-Read xref:design-patterns/design-patterns.adoc#domainModelingGuide[the domain modeling guidelines] to avoid common pitfalls.
+Read xref:design-patterns/domain-modeling.adoc#domainModelingGuide[the domain modeling guidelines] to avoid common pitfalls.
 ====
 
 == Visit

@@ -202,7 +202,7 @@ However, it is stored in the database and used as a starting point for the next 
 Planning entities that are not in the current planning window.
 +
 ** If the planning window is too small to plan all entities, you're dealing with <<overconstrainedPlanning,overconstrained planning>>.
-** If xref:design-patterns/design-patterns.adoc#assigningTimeToPlanningEntities[time is a planning variable], the size of the planning window is determined dynamically,
+** If xref:design-patterns/time-patterns.adoc#assigningTimeToPlanningEntities[time is a planning variable], the size of the planning window is determined dynamically,
 in which case the _unplanned_ stage is not applicable.
 
 image::responding-to-change/continuousPublishingWithRotation.png[align="center"]
