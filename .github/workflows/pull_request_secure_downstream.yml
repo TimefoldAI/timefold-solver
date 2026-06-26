@@ -72,7 +72,9 @@ jobs:
       name: Field Service Routing
       head_ref: ${{ github.head_ref }}
       head_sha: ${{ github.event.pull_request.head.sha }}
-    secrets: inherit
+    secrets:
+      JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+      TIMEFOLD_SOLVER_CI_PROD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
 
   timefold-employee-scheduling:
     needs: approval_required
@@ -82,7 +84,9 @@ jobs:
       name: Employee Scheduling
       head_ref: ${{ github.head_ref }}
       head_sha: ${{ github.event.pull_request.head.sha }}
-    secrets: inherit
+    secrets:
+      JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+      TIMEFOLD_SOLVER_CI_PROD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
 
   timefold-pickup-delivery-routing:
     needs: approval_required
@@ -92,4 +96,6 @@ jobs:
       name: Pickup and Delivery Routing
       head_ref: ${{ github.head_ref }}
       head_sha: ${{ github.event.pull_request.head.sha }}
-    secrets: inherit
+    secrets:
+      JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
+      TIMEFOLD_SOLVER_CI_PROD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
