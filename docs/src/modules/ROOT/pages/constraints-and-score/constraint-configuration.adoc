@@ -172,8 +172,8 @@ Overrides are part of the planning solution,
 and as such they are automatically serialized into JSON using Jackson,
 assuming either of the following conditions are met:
 
-* You use Timefold Solver's xref:integration/integration.adoc#integrationWithQuarkus[Quarkus integration],
-* you use Timefold Solver's xref:integration/integration.adoc#integrationWithSpringBoot[Spring Boot integration],
+* You use Timefold Solver's xref:integration/quarkus.adoc#integrationWithQuarkus[Quarkus integration],
+* you use Timefold Solver's xref:integration/spring-boot.adoc#integrationWithSpringBoot[Spring Boot integration],
 * or you directly included the `timefold-solver-jackson` module in your project.
 
 Overrides doesn't natively deserialize from JSON back to Java objects.

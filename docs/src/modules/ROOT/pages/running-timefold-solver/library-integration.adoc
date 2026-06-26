@@ -56,7 +56,7 @@ This avoids timeout issues of HTTP and other technologies.
 Internally a `SolverManager` manages a thread pool of solver threads, which call `Solver.solve(...)`,
 and a thread pool of consumer threads, which handle best solution changed events.
 
-In xref:integration/integration.adoc#integrationWithQuarkus[Quarkus] and xref:integration/integration.adoc#integrationWithSpringBoot[Spring Boot],
+In xref:integration/quarkus.adoc#integrationWithQuarkus[Quarkus] and xref:integration/spring-boot.adoc#integrationWithSpringBoot[Spring Boot],
 the `SolverManager` instance is automatically injected in your code.
 Otherwise, build a `SolverManager` instance with the `create(...)` method:
 
@@ -263,7 +263,7 @@ such as the termination configuration, you can use the `withConfigOverride(...)`
 
 [NOTE]
 ====
-The solver also permits the configuration of multiple solver managers with distinct settings in xref:integration/integration.adoc#integrationWithQuarkusMultipleResources[Quarkus] or xref:integration/integration.adoc#integrationWithSpringBootMultipleResources[Spring Boot].
+The solver also permits the configuration of multiple solver managers with distinct settings in xref:integration/quarkus.adoc#integrationWithQuarkusMultipleResources[Quarkus] or xref:integration/spring-boot.adoc#integrationWithSpringBootMultipleResources[Spring Boot].
 ====
 
 [#solverManagerSolveBatch]
@@ -368,22 +368,44 @@ to limit the number of best solution events fired over any period of time.
 Open-source users may implement their own throttling mechanism within the `Consumer` itself.
 ====
 
-[#manualEnrichment]
-== Manual enrichment
+[#integrationWithJPMS]
+== Java Platform Module System (JPMS)
 
-The service module's xref:service/modeling-changes.adoc#solverModelEnrichment[`SolverModelEnricher`] is not available in library mode.
-Any pre-processing or enrichment of the planning problem — such as fetching external data,
-computing derived fields, or pinning entities from a previous solution — must be performed
-before calling `Solver.solve()`:
+Starting in version 2.0, Timefold Solver has official support for the https://openjdk.org/projects/jigsaw/spec/[Java Platform Module System (JPMS)].
 
-[tabs]
-====
-Java::
-+
+When using Timefold Solver from code on the modulepath,
+_export_ the packages that contain your domain objects, constraints and solver configuration, and _open_ them to the Timefold Solver module(s)
+in your `module-info.java` file:
+
 [source,java,options="nowrap"]
 ----
-Timetable problem = loadFromDatabase();
-enrichWithExternalData(problem); // your own enrichment logic
-Timetable solution = solver.solve(problem);
+module org.acme.vehiclerouting {
+    requires ai.timefold.solver.core;
+    ...
+
+    exports org.acme.vehiclerouting.domain; // Domain classes
+    exports org.acme.vehiclerouting.solver; // Constraints
+
+    opens org.acme.vehiclerouting.domain to ai.timefold.solver.core; // Domain classes
+    opens org.acme.vehiclerouting.solver to ai.timefold.solver.core; // Constraints
+    ...
+}
 ----
+
+If this is not set up correctly, you will get errors. Usually, these mention the `unnamed module` and give detailed information of what needs to be changed.
+
+[source,options="nowrap"]
+----
+class org.acme.schooltimetabling.domain.Timetable$Timefold$MemberAccessor$Field$lessons (in unnamed module @0x273444fe)
+cannot access class org.acme.schooltimetabling.domain.Timetable (in module hello.world.school.timetabling)
+because module hello.world.school.timetabling does not export org.acme.schooltimetabling.domain to unnamed module @0x273444fe
+----
+
+[WARNING]
 ====
+Only JPMS exported packages are part of the supported public API.
+====
+If you access non-exported classes (for example by running on the classpath), and we later change or remove them, we will not treat that as a breaking change.
+Those classes are not covered by compatibility guarantees.
+
+You can opt-out of JPMS by running all JAR files on the classpath instead of using the module path (for example, by not configuring a module path in your build or runtime setup).

@@ -22,6 +22,56 @@ These models are built upon _Timefold Solver Enterprise Edition_ technology and 
 
 See all available models on https://app.timefold.ai/[our platform].
 
+== Which versions of Java, Quarkus, and Spring Boot are supported?
+
+[#compatibilityMatrix]
+Timefold Solver integrates with xref:integration/quarkus.adoc[Quarkus] and xref:integration/spring-boot.adoc[Spring Boot] out of the box.
+Get started quickly with the xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusQuickStart[Quarkus quick start]
+or the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQuickStart[Spring Boot quick start].
+
+The following table lists the supported versions of Java, Quarkus, and Spring Boot for each Timefold Solver major version:
+
+[cols="1,2,2,2",options="header"]
+|===
+|Timefold Solver |Java Baseline |Quarkus |Spring Boot
+
+|1.x
+|17
+|3.x
+|3.x
+
+|2.x
+|21
+|3.x
+|4.x
+|===
+
+== Will Timefold Solver replace our human planners?
+
+A good Timefold Solver implementation beats any good human planner for non-trivial datasets.
+Many human planners fail to accept this, often because they feel threatened by an automated system.
+
+But despite that, both can benefit if the human planner becomes the supervisor of Timefold Solver:
+
+* *The human planner defines, validates, and tweaks the score function.*
+** The human planner tweaks the constraint weights of the xref:constraints-and-score/constraint-configuration.adoc[constraint configuration] in a UI,
+as the business priorities change over time.
+** When the business changes, the score function often needs to change too.
+The human planner can notify the developers to add, change or remove score constraints.
+* *The human planner is always in control of Timefold Solver.*
+** The human planner can pin down one or more planning variables to a specific planning value.
+Because they are xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[pinned],
+Timefold Solver does not change them: it optimizes the planning around the enforcements made by the human.
+If the human planner pins down all planning variables, he/she sidelines Timefold Solver completely.
+** In a prototype implementation, the human planner occasionally uses pinning to intervene,
+but as the implementation matures, this should become obsolete.
+The feature should be kept available as a reassurance for the humans,
+and in the event that the business changes dramatically before the score constraints are adjusted accordingly.
+
+For this reason, it is recommended that the human planner is actively involved in your project.
+
+image::integration/keepTheUserInControl.png[align="center"]
+
 == Can Timefold Solver be included in a (GraalVM) native application?
 
 Yes. Timefold Solver has been tested with Quarkus and Spring Boot plugins to create native executables.

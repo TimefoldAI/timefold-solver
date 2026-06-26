@@ -30,9 +30,12 @@
 *** xref:constraints-and-score/constraint-configuration.adoc#serviceWeightOverrides[Constraint weights]
 *** xref:service/demo-data.adoc[leveloffset=+1]
 *** xref:service/exposing-metrics.adoc[leveloffset=+1]
-** xref:running-timefold-solver/library-integration.adoc[Use as a Library (Advanced)]
+** xref:running-timefold-solver/library-integration.adoc[Use as a Library]
 *** xref:running-timefold-solver/configuration.adoc[leveloffset=+1]
 *** xref:constraints-and-score/constraint-configuration.adoc#libraryWeightOverrides[Constraint weights]
+*** xref:integration/quarkus.adoc[leveloffset=+1]
+*** xref:integration/spring-boot.adoc[leveloffset=+1]
+*** xref:integration/persistent-storage.adoc[leveloffset=+1]
 
 * Deployment
 ** xref:deployment/cloud-architecture.adoc[leveloffset=+1]
@@ -41,7 +44,6 @@
 * Tuning the Solver
 ** xref:running-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
 ** xref:running-timefold-solver/solver-diagnostics.adoc[leveloffset=+1]
-** xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[Multithreaded solving]
 ** xref:optimization-algorithms/overview.adoc[Optimization algorithms]
 *** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
 *** xref:optimization-algorithms/local-search.adoc[leveloffset=+1]
@@ -50,7 +52,6 @@
 *** xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API]
 *** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
-* xref:integration/integration.adoc[leveloffset=+1]
 * xref:frequently-asked-questions.adoc[leveloffset=+1]
 * https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy][leveloffset=+1]
 * Upgrading Timefold Solver
