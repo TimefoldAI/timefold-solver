@@ -3,9 +3,9 @@
 * xref:quickstart/overview.adoc[Getting started]
 ** xref:quickstart/service/getting-started.adoc[Build as a service]
 ** Embed as a library
-*** xref:quickstart/hello-world/hello-world-quickstart.adoc[Hello World Guide]
-*** xref:quickstart/quarkus/quarkus-quickstart.adoc[Quarkus Guide]
-*** xref:quickstart/spring-boot/spring-boot-quickstart.adoc[Spring Boot Guide]
+*** xref:quickstart/hello-world/hello-world-quickstart.adoc[Hello World guide]
+*** xref:quickstart/quarkus/quarkus-quickstart.adoc[Quarkus guide]
+*** xref:quickstart/spring-boot/spring-boot-quickstart.adoc[Spring Boot guide]
 
 * Domain modeling
 ** xref:running-timefold-solver/modeling-planning-problems.adoc[leveloffset=+1]
@@ -20,13 +20,13 @@
 ** xref:constraints-and-score/performance.adoc[leveloffset=+1]
 
 * xref:running-timefold-solver/overview.adoc[Running the Solver]
-** xref:service/overview.adoc[Service Reference (Preview)]
+** xref:service/overview.adoc[As a service]
 *** xref:service/rest-api.adoc[leveloffset=+1]
 *** xref:service/modeling-changes.adoc[leveloffset=+1]
 *** xref:constraints-and-score/constraint-configuration.adoc#serviceWeightOverrides[Constraint weights]
 *** xref:service/demo-data.adoc[leveloffset=+1]
 *** xref:service/exposing-metrics.adoc[leveloffset=+1]
-** xref:running-timefold-solver/library-integration.adoc[Use as a Library]
+** xref:running-timefold-solver/library-integration.adoc[As a library]
 *** xref:running-timefold-solver/configuration.adoc[leveloffset=+1]
 *** xref:constraints-and-score/constraint-configuration.adoc#libraryWeightOverrides[Constraint weights]
 *** xref:integration/quarkus.adoc[leveloffset=+1]
@@ -37,10 +37,6 @@
 ** xref:running-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
 ** xref:running-timefold-solver/solver-diagnostics.adoc[leveloffset=+1]
 
-* Deployment
-** xref:deployment/cloud-architecture.adoc[leveloffset=+1]
-** xref:deployment/infrastructure-requirements.adoc[leveloffset=+1]
-
 * xref:optimization-algorithms/overview.adoc[Optimization algorithms]
 ** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
 ** xref:optimization-algorithms/local-search.adoc[leveloffset=+1]
@@ -49,10 +45,14 @@
 *** xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API]
 *** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
 
+* Deployment
+** xref:deployment/cloud-architecture.adoc[leveloffset=+1]
+** xref:deployment/infrastructure-requirements.adoc[leveloffset=+1]
+
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
 
 * Example use cases
-** xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing (Guide)]
+** xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle routing (guide)]
 ** https://github.com/TimefoldAI/timefold-quickstarts[More examples on GitHub^]
 
 
@@ -64,7 +64,7 @@
 ** xref:upgrading-timefold-solver/upgrade-from-v1.adoc[leveloffset=+1]
 ** https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-from-optaplanner[Upgrading from OptaPlanner][leveloffset=+1]
 ** xref:upgrading-timefold-solver/backwards-compatibility.adoc[leveloffset=+1]
-** Migration Guides
+** Migration guides
 *** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
 *** xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
 * xref:commercial-editions/commercial-editions.adoc[leveloffset=+1]
