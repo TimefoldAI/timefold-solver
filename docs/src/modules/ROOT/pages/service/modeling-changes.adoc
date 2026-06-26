@@ -59,10 +59,10 @@ class Timetable : SolverModel<HardSoftScore> {
     @PlanningEntityCollectionProperty
     val lessons: List<Lesson> = emptyList()
 
-    private var score: HardSoftScore? = null
+    private var _score: HardSoftScore? = null
 
     @PlanningScore
-    override fun getScore(): HardSoftScore? = score
+    override fun getScore(): HardSoftScore? = _score
 
     // other Getters/Setters/Constructors excluded
 }

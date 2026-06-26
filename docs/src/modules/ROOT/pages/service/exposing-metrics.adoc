@@ -110,10 +110,10 @@ class Timetable : SolverModel<HardSoftScore>, InputMetricsAware<TimetableInputMe
     @PlanningEntityCollectionProperty
     val lessons: List<Lesson> = emptyList()
 
-    private var score: HardSoftScore? = null
+    private var _score: HardSoftScore? = null
 
     @PlanningScore
-    override fun getScore(): HardSoftScore? = score
+    override fun getScore(): HardSoftScore? = _score
 
     override fun getInputMetrics(): TimetableInputMetrics {
         return TimetableInputMetrics(lessons.size, timeslots.size)
@@ -233,10 +233,10 @@ class Timetable : SolverModel<HardSoftScore>, OutputMetricsAware<TimetableOutput
     @PlanningEntityCollectionProperty
     val lessons: List<Lesson> = emptyList()
 
-    private var score: HardSoftScore? = null
+    private var _score: HardSoftScore? = null
 
     @PlanningScore
-    override fun getScore(): HardSoftScore? = score
+    override fun getScore(): HardSoftScore? = _score
 
     override fun getOutputMetrics(): TimetableOutputMetrics {
         val unassigned = lessons.count { it.timeslot == null || it.room == null }
