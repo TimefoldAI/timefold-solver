@@ -121,7 +121,7 @@ xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solve
 Setting `moveThreadCount` to `AUTO` allows Timefold Solver to decide how many move threads to run in parallel.
 This formula is based on experience and does not hog all CPU cores on a multi-core machine.
 
-A `moveThreadCount` of `4` xref:integration/integration.adoc#sizingHardwareAndSoftware[saturates almost 5 CPU cores].
+A `moveThreadCount` of `4` xref:deployment/infrastructure-requirements.adoc#sizingHardwareAndSoftware[saturates almost 5 CPU cores].
 The 4 move threads fill up 4 CPU cores completely
 and the solver thread uses most of another CPU core.
 
@@ -320,7 +320,7 @@ However, Timefold Solver has a system to prevent CPU starving of
 other processes (such as an SSH connection in production or your IDE in development)
 or other threads (such as the servlet threads that handle REST requests).
 
-As explained in xref:integration/integration.adoc#sizingHardwareAndSoftware[sizing hardware and software],
+As explained in xref:deployment/infrastructure-requirements.adoc#sizingHardwareAndSoftware[sizing hardware and software],
 each solver (including each child solver) does no IO during `solve()` and therefore saturates one CPU core completely.
 In Partitioned Search, every partition always has its own thread, called a part thread.
 It is impossible for two partitions to share a thread,

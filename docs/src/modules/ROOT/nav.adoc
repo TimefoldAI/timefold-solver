@@ -24,7 +24,6 @@
 ** xref:constraints-and-score/performance.adoc[leveloffset=+1]
 
 * xref:running-timefold-solver/overview.adoc[Running the Solver]
-** xref:design-patterns/cloud-architecture.adoc[leveloffset=+1]
 ** xref:service/overview.adoc[Service Reference (Preview)]
 *** xref:service/rest-api.adoc[leveloffset=+1]
 *** xref:service/modeling-changes.adoc[leveloffset=+1]
@@ -34,6 +33,10 @@
 ** xref:running-timefold-solver/library-integration.adoc[Use as a Library (Advanced)]
 *** xref:running-timefold-solver/configuration.adoc[leveloffset=+1]
 *** xref:constraints-and-score/constraint-configuration.adoc#libraryWeightOverrides[Constraint weights]
+
+* Deployment
+** xref:deployment/cloud-architecture.adoc[leveloffset=+1]
+** xref:deployment/infrastructure-requirements.adoc[leveloffset=+1]
 
 * Tuning the Solver
 ** xref:running-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
