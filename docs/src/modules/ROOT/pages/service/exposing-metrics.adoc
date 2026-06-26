@@ -1,4 +1,4 @@
-= Exposing metrics (optional)
+= Exposing metrics
 :description: How to expose input and output metrics.
 :doctype: book
 :sectnums:

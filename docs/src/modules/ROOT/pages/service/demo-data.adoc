@@ -1,4 +1,4 @@
-= Demo data (optional)
+= Demo data
 :description: How to configure the model to generate Demo Data
 :doctype: book
 :sectnums:

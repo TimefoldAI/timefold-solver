@@ -230,7 +230,7 @@ However, this class is also the output of the solution:
 
 NOTE: The `getConstraintWeightOverrides()` method is required by the `SolverModel` interface (implemented by `AbstractSimpleModel`), and `setConstraintWeightOverrides()` is optional.
 For now `getConstraintWeightOverrides()` is left as a stub — `none()` means no constraint weights can be overridden per request.
-Configuring this properly is covered in the xref:service/constraint-weights.adoc[Constraint weights] section and is not part of this guide.
+Configuring this properly is covered in the xref:constraints-and-score/constraint-configuration.adoc#serviceWeightOverrides[constraint weights] section and is not part of this guide.
 
 include::../shared/school-timetabling/_school-timetabling-solution-value-range-providers.adoc[leveloffset=+1]
 

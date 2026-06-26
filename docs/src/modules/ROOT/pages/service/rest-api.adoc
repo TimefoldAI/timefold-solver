@@ -6,8 +6,6 @@
 
 The REST API module will automatically generate REST API endpoints so you can interact with the optimization service.
 
-include::_preview-note.adoc[]
-
 == Setup
 
 In order for the API to be automatically generated, Timefold Solver will look for implementations of a couple of interfaces.
@@ -151,8 +149,8 @@ The diminished returns termination is the recommended default setting.
 This termination is desirable since it terminates based on the relative rate of improvement, and behaves similarly on different hardware and different problem instances.
 `unimprovedSpentLimit` should be set only when necessary.
 
-The `model` configuration is a model-specific field, that contains additional global model configuration attributes.
-See xref:./constraint-weights.adoc[Model Configuration Overrides] for more information.
+The `model` configuration is a model-specific field that contains additional global model configuration attributes.
+See xref:constraints-and-score/constraint-configuration.adoc#serviceWeightOverrides[constraint weights] for more information.
 
 [#solvingResponse]
 === Structured solving response

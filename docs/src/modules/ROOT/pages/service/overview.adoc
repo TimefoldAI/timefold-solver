@@ -1,14 +1,12 @@
 [#serviceOverview]
-= Building a service (Preview)
+= Building a service
 :description: Overview of running Timefold Solver as a fully isolated optimization service.
 :doctype: book
 :sectnums:
 :icons: font
 
-include::_preview-note.adoc[]
-
 Run dataset optimization as a fully isolated service.
-This opinionated approach builds on https://quarkus.io[Quarkus] and eliminates the boilerplate typically needed to expose a solver over a REST API.
+This opinionated approach eliminates the boilerplate typically needed to expose a solver over a REST API.
 
 If you haven't done so yet, start with the xref:../quickstart/service/getting-started.adoc[Getting started: building a service] guide.
 

@@ -6,11 +6,8 @@
 *** xref:quickstart/hello-world/hello-world-quickstart.adoc[Hello World Guide]
 *** xref:quickstart/quarkus/quarkus-quickstart.adoc[Quarkus Guide]
 *** xref:quickstart/spring-boot/spring-boot-quickstart.adoc[Spring Boot Guide]
-* Example use cases
-** xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing (Guide)]
-** https://github.com/TimefoldAI/timefold-quickstarts[More examples on GitHub^]
 
-* Building your model
+* Domain modeling
 ** xref:running-timefold-solver/modeling-planning-problems.adoc[leveloffset=+1]
 ** xref:design-patterns/domain-modeling.adoc[leveloffset=+1]
 ** xref:design-patterns/time-patterns.adoc[leveloffset=+1]
@@ -36,13 +33,13 @@
 *** xref:integration/spring-boot.adoc[leveloffset=+1]
 *** xref:integration/persistent-storage.adoc[leveloffset=+1]
 
-* Deployment
-** xref:deployment/cloud-architecture.adoc[leveloffset=+1]
-** xref:deployment/infrastructure-requirements.adoc[leveloffset=+1]
-
 * Diagnosing the Solver
 ** xref:running-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
 ** xref:running-timefold-solver/solver-diagnostics.adoc[leveloffset=+1]
+
+* Deployment
+** xref:deployment/cloud-architecture.adoc[leveloffset=+1]
+** xref:deployment/infrastructure-requirements.adoc[leveloffset=+1]
 
 * xref:optimization-algorithms/overview.adoc[Optimization algorithms]
 ** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
@@ -51,9 +48,17 @@
 ** Custom moves
 *** xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API]
 *** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
+
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
+
+* Example use cases
+** xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing (Guide)]
+** https://github.com/TimefoldAI/timefold-quickstarts[More examples on GitHub^]
+
+
 * xref:frequently-asked-questions.adoc[leveloffset=+1]
 * https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy][leveloffset=+1]
+
 * Upgrading Timefold Solver
 ** xref:upgrading-timefold-solver/overview.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/upgrade-from-v1.adoc[leveloffset=+1]
