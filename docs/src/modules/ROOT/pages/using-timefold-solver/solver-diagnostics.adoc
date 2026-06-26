@@ -1,0 +1,551 @@
+[#solverDiagnostics]
+= Solver diagnostics
+:doctype: book
+:sectnums:
+:icons: font
+
+
+[#environmentMode]
+== Environment mode: are there bugs in my code?
+
+The environment mode allows you to detect common bugs in your implementation.
+It does not affect the <<logging,logging level>>.
+
+You can set the environment mode:
+
+[tabs]
+====
+Service / Quarkus::
++
+Add the following to your `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+quarkus.timefold.solver.environment-mode=STEP_ASSERT
+----
+
+Spring Boot::
++
+Add the following to your `application.properties`:
++
+[source,properties,options="nowrap"]
+----
+timefold.solver.environment-mode=STEP_ASSERT
+----
+
+Java::
++
+[source,java,options="nowrap"]
+----
+SolverConfig solverConfig = new SolverConfig()
+    ...
+    .withEnvironmentMode(EnvironmentMode.STEP_ASSERT);
+----
+
+XML::
++
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <environmentMode>STEP_ASSERT</environmentMode>
+  ...
+</solver>
+----
+====
+
+A solver has a single `Random` instance.
+Some solver configurations use the `Random` instance a lot more than others.
+For example, Simulated Annealing depends highly on random numbers, while Tabu Search only depends on it to deal with score ties.
+The environment mode influences the seed of that `Random` instance.
+
+
+[#environmentModeReproducibility]
+=== Reproducibility
+
+For the environment mode to be reproducible,
+any two runs of the same dataset with the same solver configuration must have the same result at every step.
+Choosing a reproducible environment mode enables you to reproduce bugs consistently.
+It also allows you to benchmark certain refactorings (such as a score constraint performance optimization) fairly across runs.
+
+Regardless of whether the chosen environment mode itself is reproducible,
+your application might still not be fully reproducible because of:
+
+* Use of `HashSet` (or another `Collection` which has an undefined iteration order between JVM runs)
+for collections of planning entities or planning values (but not normal problem facts),
+especially in the solution implementation.
+Replace it with a `SequencedSet` or `SequencedCollection` implementation respectively,
+such as `LinkedHashSet` or `ArrayList`.
+** This also applies to `HashMap`,
+which can be replaced by a `SequencedMap` implementation such as `LinkedHashMap`.
+* Combining a time gradient-dependent algorithm (most notably xref:optimization-algorithms/local-search.adoc#simulatedAnnealing[Simulated Annealing]) together with
+xref:optimization-algorithms/overview.adoc#timeMillisSpentTermination[time spent termination].
+A large enough difference in allocated CPU time will influence the time gradient values.
+Replace Simulated Annealing with Late Acceptance,
+or replace time spent termination with step count termination.
+
+
+[#environmentModeAvailableModes]
+=== Available environment modes
+
+The following environment modes are available,
+in the order from least strict to most strict:
+
+- `<<environmentModeNonReproducible,NON_REPRODUCIBLE>>`
+- `<<environmentModeNoAssert,NO_ASSERT>>`
+- `<<environmentModePhaseAssert,PHASE_ASSERT>>` (default)
+- `<<environmentModeStepAssert,STEP_ASSERT>>`
+- `<<environmentModeNonIntrusiveFullAssert,NON_INTRUSIVE_FULL_ASSERT>>`
+- `<<environmentModeFullAssert,FULL_ASSERT>>`
+- `<<environmentModeTrackedFullAssert,TRACKED_FULL_ASSERT>>`
+
+As the environment mode becomes stricter,
+the solver becomes slower, but gains more error-detection capabilities.
+`STEP_ASSERT` is already slow enough to prevent its use in production.
+
+All modes other than `NON_REPRODUCIBLE` are <<environmentModeReproducibility,reproducible>>.
+
+
+[#environmentModeTrackedFullAssert]
+==== `TRACKED_FULL_ASSERT`
+
+The `TRACKED_FULL_ASSERT` mode turns on all the <<environmentModeFullAssert, `FULL_ASSERT`>> assertions
+and additionally tracks changes to the working solution.
+This allows the solver to report exactly what variables were corrupted.
+
+In particular, the solver will recalculate all shadow variables from scratch on the solution after the undo and then report:
+
+- Genuine and shadow variables that are different between "before" and "undo".
+After an undo move is evaluated, it is expected to exactly match the original working solution.
+
+- Variables that are different between "from scratch" and "before".
+This is to detect if the solution was corrupted before the move was evaluated due to shadow variable corruption.
+
+- Variables that are different between "from scratch" and "undo".
+This is to detect if recalculating the shadow variables from scratch is different from the incremental shadow variable calculation.
+
+- Missing variable events for the actual move.
+Any variable that changed between the "before move" solution and the "after move" solution
+without the solver being notified of the change.
+
+- Missing events for undo move.
+Any variable that changed between the "after move" solution and "after undo move" solution
+without the solver being notified of the change.
+
+This mode is <<environmentModeReproducibility,reproducible>> (see the reproducible mode).
+It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
+
+The `TRACKED_FULL_ASSERT` mode is by far the slowest mode,
+because it clones solutions before and after each move.
+
+
+[#environmentModeFullAssert]
+==== `FULL_ASSERT`
+
+The `FULL_ASSERT` mode turns on all assertions and will fail-fast on a bug in a Move implementation,
+a constraint, the engine itself, ...
+It is also intrusive
+because it calls the method `calculateScore()` more frequently than a `<<environmentModeNoAssert,NO_ASSERT>>` mode,
+making the `FULL_ASSERT` mode very slow.
+
+This mode is <<environmentModeReproducibility,reproducible>>.
+
+NOTE: This mode is neither better nor worse than `<<environmentModeNonIntrusiveFullAssert,NON_INTRUSIVE_FULL_ASSERT>>` - each can catch different types of errors, on account of performing score calculations at different times.
+
+
+[#environmentModeNonIntrusiveFullAssert]
+==== `NON_INTRUSIVE_FULL_ASSERT`
+
+The `NON_INTRUSIVE_FULL_ASSERT` mode turns on most assertions and will fail-fast on a bug in a Move implementation,
+a constraint, the engine itself, ...
+It is not intrusive,
+as it does not call the method `calculateScore()` more frequently than a `<<environmentModeNoAssert,NO_ASSERT>>` mode.
+
+This mode is <<environmentModeReproducibility,reproducible>>.
+This mode is also very slow, on account of all the additional checks performed.
+
+NOTE: This mode is neither better nor worse than `<<environmentModeFullAssert,FULL_ASSERT>>` - each can catch different types of errors, on account of performing score calculations at different times.
+
+
+[#environmentModeStepAssert]
+==== `STEP_ASSERT`
+
+The `STEP_ASSERT` mode turns on most assertions (such as assert that an undoMove's score is the same as before the Move)
+to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
+This makes it slow.
+
+This mode is <<environmentModeReproducibility,reproducible>>.
+It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
+
+TIP: We recommend that you write a test case that does a short run of your planning problem with the `STEP_ASSERT` mode on.
+
+
+[#environmentModePhaseAssert]
+==== `PHASE_ASSERT` (default)
+
+The `PHASE_ASSERT` is the default mode because it is recommended during development.
+This mode is <<environmentModeReproducibility,reproducible>>
+and it gives you the benefit of quickly checking for score corruptions.
+If you can guarantee that your code is and will remain bug-free,
+you can switch to the `NO_ASSERT` mode for a marginal performance gain.
+
+In practice, this mode disables certain concurrency optimizations, such as work stealing.
+
+
+[#environmentModeNoAssert]
+==== `NO_ASSERT`
+
+The `NO_ASSERT` environment mode behaves in all aspects like the default `<<environmentModePhaseAssert,PHASE_ASSERT>>` mode,
+except that it does not give you any protection against score corruption bugs.
+As such, it can be negligibly faster.
+
+
+[#environmentModeNonReproducible]
+==== `NON_REPRODUCIBLE`
+
+This mode can be slightly faster than any of the other modes,
+but it is not <<environmentModeReproducibility,reproducible>>.
+Avoid using it during development as it makes debugging and bug fixing painful.
+If your production environment doesn't care about reproducibility, use this mode in production.
+
+Unlike all the other modes,
+this mode doesn't use any fixed <<randomNumberGenerator,random seed>> unless one is provided.
+
+
+[#environmentModeBestPractices]
+=== Best practices
+
+There are several best practices to follow throughout the lifecycle of your application:
+
+**In production**:: Use the `PHASE_ASSERT` mode if you need <<environmentModeReproducibility,reproducibility>>, otherwise use `NON_REPRODUCIBLE`.
+**In development**::
+ - Use the `PHASE_ASSERT` mode to catch bugs early.
+ - Write a test case that does a short run of your planning problem in `STEP_ASSERT` mode.
+ - Have nightly builds that run for several minutes in `FULL_ASSERT` and `NON_INTRUSIVE_FULL_ASSERT` modes.
+
+
+[#randomNumberGenerator]
+== Random number generator
+
+Many heuristics and metaheuristics depend on a pseudorandom number generator for move selection, to resolve score ties, probability based move acceptance, ... During solving, the same `RandomGenerator` instance is reused to improve reproducibility, performance and uniform distribution of random values.
+
+To change the random seed of that `RandomGenerator` instance, specify a ``randomSeed``:
+
+[tabs]
+====
+Service / Quarkus::
++
+[source,properties,options="nowrap"]
+----
+quarkus.timefold.solver.random-seed=0
+----
+
+Spring Boot::
++
+[source,properties,options="nowrap"]
+----
+timefold.solver.random-seed=0
+----
+
+XML::
++
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <randomSeed>0</randomSeed>
+  ...
+</solver>
+----
+====
+
+
+[#logging]
+== Logging level: what is the `Solver` doing?
+
+The best way to illuminate the black box that is a ``Solver``, is to play with the logging level:
+
+* **error**: Log errors, except those that are thrown to the calling code as a ``RuntimeException``.
++
+[NOTE]
+====
+**If an error happens, Timefold Solver normally fails fast**: it throws a subclass of `RuntimeException` with a detailed message to the calling code.
+It does not log it as an error itself to avoid duplicate log messages.
+Except if the calling code explicitly catches and eats that ``RuntimeException``, a ``Thread``'s default `ExceptionHandler` will log it as an error anyway.
+Meanwhile, the code is disrupted from doing further harm or obfuscating the error.
+====
+* **warn**: Log suspicious circumstances.
+* **info**: Log every phase and the solver itself. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
+* **debug**: Log every step of every phase. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
+* **trace**: Log every move of every step of every phase. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
+
+[NOTE]
+====
+Turning on `trace` logging, will slow down performance considerably: it is often four times slower.
+However, it is invaluable during development to discover a bottleneck.
+
+Even `debug` logging can slow down performance considerably for fast stepping algorithms
+(such as Late Acceptance and Simulated Annealing),
+but not for slow stepping algorithms (such as Tabu Search).
+
+Both trace logging and debug logging cause congestion in xref:using-timefold-solver/running-the-solver.adoc#multithreadedSolving[multi-threaded solving] with most appenders,
+see below.
+
+In Eclipse, `debug` logging to the console tends to cause congestion with move evaluation speeds above 10 000 per second.
+Nor IntelliJ, nor the Maven command line suffer from this problem.
+====
+
+For example, set it to `debug` logging, to see when the phases end and how fast steps are taken:
+
+[source,options="nowrap"]
+----
+INFO  Solving started: time spent (31), best score (0hard/0soft), environment mode (PHASE_ASSERT), move thread count (NONE), random (JDK with seed 0).
+INFO  Problem scale: entity count (4), variable count (8), approximate value count (4), approximate problem scale (256).
+DEBUG     CH step (0), time spent (47), score (0hard/0soft), selected move count (4), picked move ([Math(0) {null -> Room A}, Math(0) {null -> MONDAY 08:30}]).
+DEBUG     CH step (1), time spent (50), score (0hard/0soft), selected move count (4), picked move ([Physics(1) {null -> Room A}, Physics(1) {null -> MONDAY 09:30}]).
+DEBUG     CH step (2), time spent (51), score (-1hard/-1soft), selected move count (4), picked move ([Chemistry(2) {null -> Room B}, Chemistry(2) {null -> MONDAY 08:30}]).
+DEBUG     CH step (3), time spent (52), score (-2hard/-1soft), selected move count (4), picked move ([Biology(3) {null -> Room A}, Biology(3) {null -> MONDAY 08:30}]).
+INFO  Construction Heuristic phase (0) ended: time spent (53), best score (-2hard/-1soft), move evaluation speed (1066/sec), step total (4).
+DEBUG     LS step (0), time spent (56), score (-2hard/0soft), new best score (-2hard/0soft), accepted/selected move count (1/1), picked move (Chemistry(2) {Room B, MONDAY 08:30} <-> Physics(1) {Room A, MONDAY 09:30}).
+DEBUG     LS step (1), time spent (60), score (-2hard/1soft), new best score (-2hard/1soft), accepted/selected move count (1/2), picked move (Math(0) {Room A, MONDAY 08:30} <-> Physics(1) {Room B, MONDAY 08:30}).
+DEBUG     LS step (2), time spent (60), score (-2hard/0soft),     best score (-2hard/1soft), accepted/selected move count (1/1), picked move (Math(0) {Room B, MONDAY 08:30} <-> Physics(1) {Room A, MONDAY 08:30}).
+...
+INFO  Local Search phase (1) ended: time spent (100), best score (0hard/1soft), move evaluation speed (2021/sec), step total (59).
+INFO  Solving ended: time spent (100), best score (0hard/1soft), move evaluation speed (1100/sec), phase total (2), environment mode (PHASE_ASSERT), move thread count (NONE).
+----
+All time spent values are in milliseconds.
+
+[tabs]
+====
+Java::
++
+Everything is logged to http://www.slf4j.org/[SLF4J], which is a simple logging facade
+which delegates every log message to Logback, Apache Commons Logging, Log4j or java.util.logging.
+Add a dependency to the logging adaptor for your logging framework of choice.
++
+If you are not using any logging framework yet, use Logback by adding this Maven dependency (there is no need to add an extra bridge dependency):
++
+[source,xml,options="nowrap"]
+----
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.x</version>
+    </dependency>
+----
++
+Configure the logging level on the `ai.timefold.solver` package in your `logback.xml` file:
++
+[source,xml,options="nowrap"]
+----
+<configuration>
+
+  <logger name="ai.timefold.solver" level="debug"/>
+
+  ...
+
+</configuration>
+----
++
+If it isn't picked up, temporarily add the system property `-Dlogback.debug=true` to figure out why.
+====
+
+[NOTE]
+====
+When running multiple solvers or a xref:using-timefold-solver/running-the-solver.adoc#multithreadedSolving[multi-threaded solver],
+most appenders (including the console) cause congestion with `debug` and `trace` logging.
+Switch to an async appender to avoid this problem or turn off `debug` logging.
+====
+
+[NOTE]
+====
+In a multitenant application, multiple `Solver` instances might be running at the same time.
+To separate their logging into distinct files, surround the `solve()` call with an http://logback.qos.ch/manual/mdc.html[MDC]:
+
+[source,java,options="nowrap"]
+----
+        MDC.put("tenant.name", tenantName);
+        MySolution bestSolution = solver.solve(problem);
+        MDC.remove("tenant.name");
+----
+
+Then configure your logger to use different files for each ``${tenant.name}``.
+In Logback, use a `SiftingAppender` in ``logback.xml``:
+
+[source,xml,options="nowrap"]
+----
+  <appender name="fileAppender" class="ch.qos.logback.classic.sift.SiftingAppender">
+    <discriminator>
+      <key>tenant.name</key>
+      <defaultValue>unknown</defaultValue>
+    </discriminator>
+    <sift>
+      <appender name="fileAppender.${tenant.name}" class="...FileAppender">
+        <file>local/log/timefold-solver-${tenant.name}.log</file>
+        ...
+      </appender>
+    </sift>
+  </appender>
+----
+====
+
+[#monitoring]
+== Monitoring the solver
+
+Timefold Solver exposes metrics through https://micrometer.io/[Micrometer] which you can use to monitor the solver.
+
+[tabs]
+====
+Service::
++
+Micrometer is automatically configured in the service module.
+See xref:service/exposing-metrics.adoc[Exposing Metrics] for setup instructions and the list of available metrics.
+
+Quarkus / Spring Boot::
++
+Timefold automatically connects to configured Micrometer registries in Quarkus and Spring Boot.
+Add the appropriate Micrometer registry dependency for your monitoring system.
+
+Java::
++
+When using plain Java, you must add the metrics registry to the global registry manually.
+
+.Prerequisites
+* You have configured a Micrometer registry. For information about configuring Micrometer registries, see the https://micrometer.io[Micrometer] web site.
+
+.Procedure
+. Add configuration information for the Micrometer registry for your desired monitoring system to the global registry.
+. Add the following line below the configuration information, where `<REGISTRY>` is the name of the registry that you configured:
++
+[source,java,options="nowrap"]
+----
+Metrics.addRegistry(<REGISTRY>);
+----
+The following example shows how to add the Prometheus registry:
++
+[source,java,options="nowrap"]
+----
+PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+
+try {
+    HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+    server.createContext("/prometheus", httpExchange -> {
+        String response = prometheusRegistry.scrape(); (1)
+        httpExchange.sendResponseHeaders(200, response.getBytes().length);
+        try (OutputStream os = httpExchange.getResponseBody()) {
+            os.write(response.getBytes());
+        }
+    });
+
+    new Thread(server::start).start();
+} catch (IOException e) {
+    throw new RuntimeException(e);
+}
+
+Metrics.addRegistry(prometheusRegistry);
+----
+====
+
+The following metrics are exposed:
++
+[NOTE]
+====
+The names and format of the metrics vary depending on the registry.
+====
++
+* `timefold.solver.errors.total`: the total number of errors that occurred while solving since the start
+of the measuring.
+* `timefold.solver.solve.duration.active-count`: the number of solvers currently solving.
+* `timefold.solver.solve.duration.seconds-max`: run time of the
+longest-running currently active solver.
+* `timefold.solver.solve.duration.seconds-duration-sum`: the sum of each active solver's solve duration. For example, if there are two active solvers, one running for three minutes and the other for one minute, the total solve time is four minutes.
+
+=== Additional metrics
+
+For more detailed monitoring, Timefold Solver can be configured to monitor additional metrics at a performance cost.
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  <monitoring>
+    <metric>BEST_SCORE</metric>
+    <metric>SCORE_CALCULATION_COUNT</metric>
+    ...
+  </monitoring>
+  ...
+</solver>
+----
+
+The following metrics are available:
+
+- `SOLVE_DURATION` (default, Micrometer meter id: "timefold.solver.solve.duration"):
+Measurse the duration of solving for the longest active solver, the number of active solvers and the cumulative duration of all active solvers.
+
+- `ERROR_COUNT` (default, Micrometer meter id: "timefold.solver.errors"):
+Measures the number of errors that occur while solving.
+
+- `SCORE_CALCULATION_COUNT` (default, Micrometer meter id: "timefold.solver.score.calculation.count"):
+Measures the number of score calculations Timefold Solver performed.
+
+- `MOVE_EVALUATION_COUNT` (default, Micrometer meter id: "timefold.solver.move.evaluation.count"):
+Measures the number of move evaluations Timefold Solver performed.
+
+- `PROBLEM_ENTITY_COUNT` (default, Micrometer meter id: "timefold.solver.problem.entities"):
+Measures the number of entities in the problem submitted to Timefold Solver.
+
+- `PROBLEM_VARIABLE_COUNT` (default, Micrometer meter id: "timefold.solver.problem.variables"):
+Measures the number of genuine variables in the problem submitted to Timefold Solver.
+
+- `PROBLEM_VALUE_COUNT` (default, Micrometer meter id: "timefold.solver.problem.values"):
+Measures the approximate number of planning values in the problem submitted to Timefold Solver.
+
+- `PROBLEM_SIZE_LOG` (default, Micrometer meter id: "timefold.solver.problem.size.log"):
+Measures the approximate log 10 of the search space size for the problem submitted to Timefold Solver.
+
+- `BEST_SCORE` (Micrometer meter id: "timefold.solver.best.score.*"):
+Measures the score of the best solution Timefold Solver found so far.
+There are separate meters for each level of the score.
+For instance, for a `HardSoftScore`, there are `timefold.solver.best.score.hard.score` and `timefold.solver.best.score.soft.score` meters.
+
+- `STEP_SCORE` (Micrometer meter id: "timefold.solver.step.score.*"):
+Measures the score of each step Timefold Solver takes.
+There are separate meters for each level of the score.
+For instance, for a `HardSoftScore`, there are `timefold.solver.step.score.hard.score` and `timefold.solver.step.score.soft.score` meters.
+
+- `BEST_SOLUTION_MUTATION` (Micrometer meter id: "timefold.solver.best.solution.mutation"):
+Measures the number of changed planning variables between consecutive best solutions.
+
+- `MOVE_COUNT_PER_STEP` (Micrometer meter id: "timefold.solver.step.move.count"):
+Measures the number of moves evaluated in a step.
+
+- `MOVE_COUNT_PER_TYPE` (Micrometer meter id: "timefold.solver.move.type.count"):
+Measures the number of moves evaluated per move type.
+
+- `MEMORY_USE` (Micrometer meter id: "jvm.memory.used"):
+Measures the amount of memory used across the JVM.
+This does not measure the amount of memory used by a solver; two solvers on the same JVM will report the same value for this metric.
+
+- `CONSTRAINT_MATCH_TOTAL_BEST_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.best.score.*"):
+Measures the score impact of each constraint on the best solution Timefold Solver found so far.
+There are separate meters for each level of the score, with tags for each constraint.
+For instance, for a `HardSoftScore` for a constraint "Minimize Cost",
+there are `timefold.solver.constraint.match.best.score.hard.score` and `timefold.solver.constraint.match.best.score.soft.score` meters with a tag "constraint.id=Minimize Cost".
+
+- `CONSTRAINT_MATCH_TOTAL_STEP_SCORE` (Micrometer meter id: "timefold.solver.constraint.match.step.score.*"):
+Measures the score impact of each constraint on the current step.
+There are separate meters for each level of the score, with tags for each constraint.
+For instance, for a `HardSoftScore` for a constraint "Minimize Cost",
+there are `timefold.solver.constraint.match.step.score.hard.score` and `timefold.solver.constraint.match.step.score.soft.score` meters with a tag "constraint.id=Minimize Cost".
+
+- `PICKED_MOVE_TYPE_BEST_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.best.score.diff.*"):
+Measures how much a particular move type improves the best solution.
+There are separate meters for each level of the score, with a tag for the move type.
+For instance, for a `HardSoftScore` and a `ChangeMove` for the room of a lesson,
+there are `timefold.solver.move.type.best.score.diff.hard.score` and `timefold.solver.move.type.best.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Lesson.room)`.
+
+- `PICKED_MOVE_TYPE_STEP_SCORE_DIFF` (Micrometer meter id: "timefold.solver.move.type.step.score.diff.*"):
+Measures how much a particular move type improves the best solution.
+There are separate meters for each level of the score, with a tag for the move type.
+For instance, for a `HardSoftScore` and a `ChangeMove` for the room of a lesson,
+there are `timefold.solver.move.type.step.score.diff.hard.score` and `timefold.solver.move.type.step.score.diff.soft.score` meters with the tag `move.type=ChangeMove(Lesson.room)`.

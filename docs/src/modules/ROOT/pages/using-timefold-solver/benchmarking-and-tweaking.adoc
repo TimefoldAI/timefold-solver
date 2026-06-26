@@ -1,5 +1,5 @@
 [#benchmarker]
-= Benchmarking and tweaking
+= Benchmarking
 :page-aliases: benchmarking-and-tweaking/benchmarking-and-tweaking.adoc
 :doctype: book
 :sectnums:
