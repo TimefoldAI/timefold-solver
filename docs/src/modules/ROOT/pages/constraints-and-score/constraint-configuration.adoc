@@ -4,9 +4,6 @@
 :sectnums:
 :icons: font
 
-:relevance: library-and-service
-:notes: service module has some different patterns to deal with this.
-
 
 
 Deciding the correct xref:constraints-and-score/overview.adoc#scoreConstraintWeight[weight] and
@@ -21,9 +18,10 @@ so the business managers can tweak the constraint weights themselves:
 
 image::constraints-and-score/constraint-configuration/parameterizeTheScoreWeights.png[align="center"]
 
+[#definingConstraintWeights]
 [#createAConstraintConfiguration]
 [#definingAndOverridingConstraintWeights]
-== Defining and overriding constraint weights
+== Defining constraint weights
 
 Let's define three constraints:
 
@@ -42,6 +40,10 @@ Java::
 ----
 public class VehicleRoutingConstraintProvider implements ConstraintProvider {
 
+    public static final String VEHICLE_CAPACITY = "Vehicle capacity";
+    public static final String SERVICE_FINISHED_AFTER_MAX_END_TIME = "Service finished after max end time";
+    public static final String MINIMIZE_TRAVEL_TIME = "Minimize travel time";
+
     ...
 
     @Override
@@ -57,29 +59,36 @@ public class VehicleRoutingConstraintProvider implements ConstraintProvider {
         return factory.forEach(Vehicle.class)
                 ...
                 .penalize(HardSoftScore.ONE_HARD, ...)
-                .asConstraint("Vehicle capacity");
+                .asConstraint(VEHICLE_CAPACITY);
     }
 
     Constraint serviceFinishedAfterMaxEndTime(ConstraintFactory factory) {
         return factory.forEach(Visit.class)
                 ...
                 .penalize(HardSoftScore.ONE_HARD, ...)
-                .asConstraint("Service finished after max end time");
+                .asConstraint(SERVICE_FINISHED_AFTER_MAX_END_TIME);
     }
 
     Constraint minimizeTravelTime(ConstraintFactory factory) {
         return factory.forEach(Vehicle.class)
                 ...
                 .penalize(HardSoftScore.ONE_SOFT, ...)
-                .asConstraint("Minimize travel time");
+                .asConstraint(MINIMIZE_TRAVEL_TIME);
     }
 }
 ----
 ====
 
-Without anything else, the constraint weights are fixed to the values we've given them in our `ConstraintProvider`.
-To be able to override these weights at runtime, we need to introduce the `ConstraintWeightOverrides` class
-to our planning solution class:
+NOTE: Using static string constants for constraint names is recommended.
+It prevents typos and ensures the constraint name is consistent across the `ConstraintProvider`
+and any code that references constraints by name, such as when applying overrides.
+
+[#enablingWeightOverrides]
+== Enabling weight overrides
+
+Without anything else, the constraint weights are fixed to the values specified in the `ConstraintProvider`.
+To be able to override these weights at runtime, add a `ConstraintWeightOverrides` field
+to the planning solution class:
 
 [tabs]
 ====
@@ -107,11 +116,18 @@ public class VehicleRoutePlan {
 ----
 ====
 
-We've just introduced a new field of type `ConstraintWeightOverrides`,
-and we provided a getter and a setter for it.
 The field will be automatically exposed as a xref:running-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact],
 there is no need to add a `@ProblemFactProperty` annotation.
-But we need to fill it with the desired constraint weights:
+
+[#applyingOverrides]
+== Applying overrides
+
+How overrides are applied depends on whether Timefold Solver is used as a library or as a service.
+
+[#libraryWeightOverrides]
+=== Using the library
+
+Populate `ConstraintWeightOverrides` with the desired weights and set it on the solution before solving:
 
 [tabs]
 ====
@@ -123,8 +139,8 @@ Java::
 
 var constraintWeightOverrides = ConstraintWeightOverrides.of(
     Map.of(
-        "Vehicle capacity", HardSoftScore.ofHard(2),
-        "Service finished after max end time", HardSoftScore.ZERO
+        VehicleRoutingConstraintProvider.VEHICLE_CAPACITY, HardSoftScore.ofHard(2),
+        VehicleRoutingConstraintProvider.SERVICE_FINISHED_AFTER_MAX_END_TIME, HardSoftScore.ZERO
     )
 );
 
@@ -142,6 +158,7 @@ and therefore will be disabled entirely.
 
 NOTE: The string keys passed to `ConstraintWeightOverrides.of(...)` must match the constraint ID,
 which is the value given to `asConstraint(...)` when building your constraints.
+Using the static string constants defined in the `ConstraintProvider` eliminates this risk.
 
 In this way, you can solve the same problem
 by applying different constraint weights to each instance.
@@ -149,7 +166,7 @@ Once solved, you can compare the results
 and decide which set of weights is the most suitable for your use case.
 
 [#constraintWeightOverridesSerialization]
-=== Sending overrides over the wire
+==== Sending overrides over the wire
 
 Overrides are part of the planning solution,
 and as such they are automatically serialized into JSON using Jackson,
@@ -164,6 +181,200 @@ This is because we have no way of knowing which `Score` implementation you may b
 However, deserialization is easy to implement yourself by extending `AbstractConstraintWeightOverridesDeserializer`
 and registering it with Jackson's `ObjectMapper`.
 
+[#serviceWeightOverrides]
+=== Using the service
+
+include::../service/_preview-note.adoc[]
+
+Constraint weights are always an interpretation by the modeler.
+It might be that the consumer of the model would like to see the constraints weighed differently.
+`ModelConfigOverrides` allows consumers of a model to tailor constraint weights to their use case.
+
+[NOTE]
+Be careful not to make your model overly configurable as that impacts usability.
+Usually, it doesn't make sense to allow weight overrides for _hard_ constraints.
+
+Implement the `ModelConfigOverrides` interface. This is a marker interface, meaning it has no methods but can be discovered by the SDK.
+The implementation should have fields that refer to specific constraints using the `@ConstraintReference` annotation,
+referencing the static string constants defined in the `ConstraintProvider`:
+
+.The ConstraintProvider class.
+[tabs]
+====
+Java::
++
+--
+[source,java,options="nowrap"]
+----
+public class TimetableConstraintProvider implements ConstraintProvider {
+
+    public static final String TEACHER_CONFLICT = "Teacher conflict";
+    public static final String ROOM_CONFLICT = "Room conflict";
+
+    Constraint roomConflict(ConstraintFactory constraintFactory) {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(ROOM_CONFLICT);
+    }
+
+    Constraint teacherConflict(ConstraintFactory constraintFactory) {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(TEACHER_CONFLICT);
+    }
+
+    // other constraints excluded
+}
+----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+class TimetableConstraintProvider : ConstraintProvider {
+
+    companion object {
+        const val TEACHER_CONFLICT = "Teacher conflict"
+        const val ROOM_CONFLICT = "Room conflict"
+    }
+
+    fun roomConflict(constraintFactory: ConstraintFactory): Constraint {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(ROOM_CONFLICT)
+    }
+
+    fun teacherConflict(constraintFactory: ConstraintFactory): Constraint {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(TEACHER_CONFLICT)
+    }
+
+    // other constraints excluded
+}
+----
+--
+====
+
+.The ModelConfigOverrides class.
+[tabs]
+====
+Java::
++
+--
+[source,java,options="nowrap"]
+----
+public final class TimetableConfigOverrides implements ModelConfigOverrides {
+
+    public static final long DEFAULT_WEIGHT_ZERO = 0L;
+    public static final long DEFAULT_WEIGHT_ONE = 1L;
+
+    @ConstraintReference(TimetableConstraintProvider.TEACHER_CONFLICT)
+    private long teacherConflictWeight = DEFAULT_WEIGHT_ONE;
+
+    @ConstraintReference(TimetableConstraintProvider.ROOM_CONFLICT)
+    private long roomConflictWeight = DEFAULT_WEIGHT_ONE;
+
+    // getter/setter excluded
+
+}
+----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+data class TimetableConfigOverrides(
+    @ConstraintReference(TimetableConstraintProvider.TEACHER_CONFLICT)
+    val teacherConflictWeight: Long = DEFAULT_WEIGHT_ONE,
+    @ConstraintReference(TimetableConstraintProvider.ROOM_CONFLICT)
+    val roomConflictWeight: Long = DEFAULT_WEIGHT_ONE
+) : ModelConfigOverrides {
+
+    companion object {
+        const val DEFAULT_WEIGHT_ZERO = 0L
+        const val DEFAULT_WEIGHT_ONE = 1L
+    }
+
+}
+----
+--
+====
+
+The default constraint weight for these constraints is `1`.
+This can now be overridden by the consumer by passing the overrides object in a request.
+For example, to make the Teacher conflict 10 times more impactful, override the weight to 10:
+
+.Example request to change the weight.
+[source,json]
+----
+{
+    "config": {
+      "run": {
+        "name": "run name",
+        <some fields excluded>
+      },
+      "model": {
+        "overrides": {
+          "teacherConflictWeight": 10
+        }
+      }
+    },
+    "modelInput" : "<ModelInput class as JSON>"
+}
+----
+
+Next, in the xref:service/rest-api.adoc#modelConverter[model converter], map the overrides
+to a `ConstraintWeightOverrides` object and set it on the `@PlanningSolution` class
+xref:#enablingWeightOverrides[as described above]:
+
+.As part of the ModelConverter.
+[tabs]
+====
+Java::
++
+--
+[source,java,options="nowrap"]
+----
+TimetableConfigOverrides modelConfigOverrides = modelConfig.overrides();
+
+ConstraintWeightOverrides<HardMediumSoftLongScore> constraintWeightOverrides = ConstraintWeightOverrides.of(
+        Map.ofEntries(
+                Map.entry(TimetableConstraintProvider.TEACHER_CONFLICT,
+                        HardMediumSoftLongScore.ofHard(modelConfigOverrides.getTeacherConflictWeight())),
+                Map.entry(TimetableConstraintProvider.ROOM_CONFLICT,
+                        HardMediumSoftLongScore.ofSoft(modelConfigOverrides.getRoomConflictWeight()))
+        )
+);
+
+solverModel.setConstraintWeightOverrides(constraintWeightOverrides);
+----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+val modelConfigOverrides = modelConfig.overrides()
+
+val constraintWeightOverrides = ConstraintWeightOverrides.of(
+        mapOf(
+                TimetableConstraintProvider.TEACHER_CONFLICT to
+                        HardMediumSoftLongScore.ofHard(modelConfigOverrides.teacherConflictWeight),
+                TimetableConstraintProvider.ROOM_CONFLICT to
+                        HardMediumSoftLongScore.ofSoft(modelConfigOverrides.roomConflictWeight)
+        )
+)
+
+solverModel.constraintWeightOverrides = constraintWeightOverrides
+----
+--
+====
 
 [#passingParametersToConstraints]
 == Passing parameters to constraints
@@ -174,7 +385,7 @@ For example, a constraint may have to switch the minimum required pause length b
 based on the laws of the country that the data set is dealing with.
 
 To achieve this, you could have many variants of the same constraint in `ConstraintProvider`
-and disable some of them using <<definingAndOverridingConstraintWeights,overrides>>.
+and disable some of them using <<applyingOverrides,overrides>>.
 To avoid the code duplication that this would have caused,
 it is arguably better to have a single constraint that can be parameterized.
 This section shows how to achieve this
