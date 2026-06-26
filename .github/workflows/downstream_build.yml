@@ -106,13 +106,32 @@ jobs:
           TIMEFOLD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
         run: ./mvnw -B -Dquickly clean install
 
+      - name: Switch ${{ inputs.name }} to Solver 999-SNAPSHOT
+        working-directory: ./${{ inputs.repository }}
+        shell: bash
+        run: |
+          POM="pom.xml"
+          TARGET_VERSION="999-SNAPSHOT"
+          
+          # Replace the first <version> element (parent version) in pom.xml.
+          sed -i '0,/^\s*<version>/s|<version>[^<]*</version>|<version>'"$TARGET_VERSION"'</version>|' "$POM"
+          
+          # Verify the parent version is now TARGET_VERSION
+          ACTUAL_VERSION=$(grep -m1 '^\s*<version>' "$POM" | sed 's|.*<version>\(.*\)</version>.*|\1|')
+          
+          if [ "$ACTUAL_VERSION" = "$TARGET_VERSION" ]; then
+            exit 0
+          else
+            echo "Expected parent version $TARGET_VERSION but found $ACTUAL_VERSION" >&2
+            exit 1
+          fi
+
       - name: Build and test ${{ inputs.name }}
         working-directory: ./${{ inputs.repository }}
         shell: bash
         env:
           TIMEFOLD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
         run: |
-          mvn versions:update-parent -DskipResolution=true -DallowSnapshots=true -DparentVersion=999-SNAPSHOT
           mvn -B clean verify
 
       - name: Test Summary
