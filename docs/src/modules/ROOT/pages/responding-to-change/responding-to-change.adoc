@@ -4,8 +4,7 @@
 :doctype: book
 :sectnums:
 :icons: font
-:relevance: library-and-service
-:notes: Wildly different in service module, so potentially split.
+:todo: https://github.com/TimefoldAI/timefold-solver/issues/2257
 
 
 The problem facts used to create a solution may change before or during the execution of that solution.

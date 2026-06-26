@@ -7,9 +7,6 @@
 :doctype: book
 :sectnums:
 :icons: font
-:relevance: library-and-service
-:notes: Relevant, but some of this can move to a "shared" section instead.
-
 
 == The basics
 

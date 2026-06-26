@@ -1,11 +1,10 @@
 [#quickStartOverview]
-= Overview
+= Getting started
 :page-aliases: quickstart/quickstart.adoc, \
     development/development.adoc, \
     use-cases-and-examples/use-cases-and-examples.adoc, \
     overview-quickstarts.adoc
 :imagesdir: ../..
-:relevance: library-and-service
 :icons: font
 
 [TIP]

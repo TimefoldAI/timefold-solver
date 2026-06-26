@@ -1,8 +1,7 @@
 * xref:introduction.adoc[leveloffset=+1]
 * xref:planning-ai-concepts.adoc[leveloffset=+1]
-* Getting started
-** xref:quickstart/overview.adoc[leveloffset=+1]
-** xref:quickstart/service/getting-started.adoc[Building as a service]
+* xref:quickstart/overview.adoc[Getting started]
+** xref:quickstart/service/getting-started.adoc[Build as a service]
 ** Embed as a library
 *** xref:quickstart/hello-world/hello-world-quickstart.adoc[Hello World Guide]
 *** xref:quickstart/quarkus/quarkus-quickstart.adoc[Quarkus Guide]

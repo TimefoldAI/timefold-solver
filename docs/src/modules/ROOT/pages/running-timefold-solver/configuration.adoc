@@ -3,9 +3,6 @@
 :doctype: book
 :sectnums:
 :icons: font
-:relevance: core-only
-:notes: Mostly irrelevant in service module. Also, "configuring" is too broad
-
 
 [#solverConfigurationByXML]
 == Solver configuration by XML
