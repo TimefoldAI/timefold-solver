@@ -2353,9 +2353,9 @@ It's an uninitialized solution.
 [#solutionClass]
 === Solution class
 
-A solution class holds all problem facts, planning entities and a score.
-It is annotated with a `@PlanningSolution` annotation.
-For example, an `Timetable` instance holds a list of all timeslots, all rooms and all `Lesson` instances:
+A solution class is annotated with `@PlanningSolution` and implements the `SolverModel` interface.
+It holds all problem facts, planning entities and a score.
+For example, a `Timetable` class holds a list of all timeslots, all rooms and all `Lesson` instances:
 
 [tabs]
 ====
@@ -2364,24 +2364,113 @@ Java::
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public class Timetable {
+public class Timetable implements SolverModel<HardSoftScore> {
 
-    private String name;
-
-    // Problem facts
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
     private List<Timeslot> timeslots;
+
+    @ProblemFactCollectionProperty
     private List<Room> rooms;
 
-    // Planning entities
+    @PlanningEntityCollectionProperty
     private List<Lesson> lessons;
 
+    @PlanningScore
     private HardSoftScore score;
 
-    ...
+    @Override
+    public HardSoftScore getScore() {
+        return score;
+    }
+
+    // other Getters/Setters/Constructors
 }
 ----
 
+Kotlin::
++
+[source,kotlin,options="nowrap"]
+----
+@PlanningSolution
+class Timetable : SolverModel<HardSoftScore> {
 
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    val timeslots: List<Timeslot> = emptyList()
+
+    @ProblemFactCollectionProperty
+    val rooms: List<Room> = emptyList()
+
+    @PlanningEntityCollectionProperty
+    val lessons: List<Lesson> = emptyList()
+
+    private var _score: HardSoftScore? = null
+
+    @PlanningScore
+    override fun getScore(): HardSoftScore? = _score
+
+    // other Getters/Setters/Constructors
+}
+----
+====
+
+[TIP]
+====
+If you don't need to control the score type, extend `AbstractSimpleModel` instead.
+It implements `SolverModel<HardMediumSoftScore>` and includes the `@PlanningScore` field,
+so you only need to define your problem facts and planning entities:
+
+[tabs]
+=====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class Timetable extends AbstractSimpleModel {
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    private List<Timeslot> timeslots;
+
+    @ProblemFactCollectionProperty
+    private List<Room> rooms;
+
+    @PlanningEntityCollectionProperty
+    private List<Lesson> lessons;
+
+    // Getters, Setters, Constructors
+}
+----
+
+Kotlin::
++
+[source,kotlin,options="nowrap"]
+----
+@PlanningSolution
+class Timetable : AbstractSimpleModel() {
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    val timeslots: List<Timeslot> = emptyList()
+
+    @ProblemFactCollectionProperty
+    val rooms: List<Room> = emptyList()
+
+    @PlanningEntityCollectionProperty
+    val lessons: List<Lesson> = emptyList()
+
+    // other Getters/Setters/Constructors
+}
+----
+=====
+====
+
+[NOTE]
+====
+When xref:using-timefold-solver/library-integration.adoc[using Timefold Solver as a library], the `SolverModel` interface is not available.
+Your `@PlanningSolution` class is a plain Java class with no framework interface to implement.
 ====
 
 The solver configuration needs to declare the planning solution class:
@@ -2401,37 +2490,6 @@ The solver configuration needs to declare the planning solution class:
 Solution class must not be of Java's `enum` or `record` types.
 Those are immutable by design and therefore cannot change during planning,
 whereas a planning solution will.
-====
-
-
-[#noSolverModelInterface]
-=== No `SolverModel` interface
-
-Your `@PlanningSolution` class is a plain Java class with Timefold annotations.
-You do not implement any framework interface on the solution class itself.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-public class Timetable {
-
-    @ProblemFactCollectionProperty
-    @ValueRangeProvider
-    private List<Timeslot> timeslots;
-
-    @PlanningEntityCollectionProperty
-    private List<Lesson> lessons;
-
-    @PlanningScore
-    private HardSoftScore score;
-
-    // Getters, Setters, Constructors
-}
-----
 ====
 
 [#planningEntitiesOfASolution]
