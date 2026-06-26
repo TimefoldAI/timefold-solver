@@ -37,9 +37,9 @@
           Therefore we need to bring them in sync here.
           This needs to be imported before the Spring Boot dependency management to be effective.
         -->
-        <groupId>tools.jackson</groupId>
+        <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
-        <version>${version.tools.jackson}</version>
+        <version>${version.com.fasterxml.jackson.core}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -53,6 +53,22 @@
         <version>${version.org.springframework.boot}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <!-- JAXB: required by core module for SolverConfig XML serialization in tests -->
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>4.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>4.0.5</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.activation</groupId>
+        <artifactId>jakarta.activation-api</artifactId>
+        <version>2.1.3</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

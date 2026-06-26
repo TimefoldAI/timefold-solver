@@ -4,8 +4,8 @@ import ai.timefold.solver.core.api.score.SimpleScore;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.annotation.JsonDeserialize;
-import tools.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 class SimpleScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTripTest {
 

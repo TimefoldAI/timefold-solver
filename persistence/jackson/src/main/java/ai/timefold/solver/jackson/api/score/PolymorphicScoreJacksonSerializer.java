@@ -3,10 +3,10 @@ package ai.timefold.solver.jackson.api.score;
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.ValueSerializer;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.JsonSerializer;
 
 /**
  * Jackson binding support for a {@link Score} type (but not a subtype).
@@ -20,12 +20,12 @@ import tools.jackson.databind.ValueSerializer;
  * @see Score
  * @see PolymorphicScoreJacksonDeserializer
  */
-public class PolymorphicScoreJacksonSerializer extends ValueSerializer<Score> {
+public class PolymorphicScoreJacksonSerializer extends JsonSerializer<Score> {
 
     @Override
-    public void serialize(Score score, JsonGenerator generator, SerializationContext serializers) throws JacksonException {
+    public void serialize(Score score, JsonGenerator generator, SerializerProvider serializers) throws java.io.IOException {
         generator.writeStartObject();
-        generator.writeStringProperty(score.getClass().getSimpleName(), score.toString());
+        generator.writeStringField(score.getClass().getSimpleName(), score.toString());
         generator.writeEndObject();
     }
 

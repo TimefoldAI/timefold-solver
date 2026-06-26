@@ -14,9 +14,8 @@ module ai.timefold.solver.spring.boot.autoconfigure {
     requires spring.beans;
     requires spring.boot;
     requires spring.boot.autoconfigure;
-    requires spring.boot.persistence;
     requires spring.context;
     requires spring.core;
-    requires tools.jackson.databind;
+    requires com.fasterxml.jackson.databind;
 
 }

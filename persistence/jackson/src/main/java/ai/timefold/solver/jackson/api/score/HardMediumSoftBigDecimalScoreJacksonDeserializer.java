@@ -2,16 +2,16 @@ package ai.timefold.solver.jackson.api.score;
 
 import ai.timefold.solver.core.api.score.HardMediumSoftBigDecimalScore;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonParser;
-import tools.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
 
 public class HardMediumSoftBigDecimalScoreJacksonDeserializer
         extends AbstractScoreJacksonDeserializer<HardMediumSoftBigDecimalScore> {
 
     @Override
     public HardMediumSoftBigDecimalScore deserialize(JsonParser parser, DeserializationContext context)
-            throws JacksonException {
+            throws java.io.IOException {
         return HardMediumSoftBigDecimalScore.parseScore(parser.getValueAsString());
     }
 

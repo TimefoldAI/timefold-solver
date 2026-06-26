@@ -25,7 +25,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -40,8 +39,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 
-import tools.jackson.databind.JacksonModule;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 /**
  * Must be seperated from {@link TimefoldSolverAutoConfiguration} since
@@ -200,7 +199,7 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
     static class TimefoldJacksonConfiguration {
 
         @Bean
-        JacksonModule jacksonModule() {
+        Module jacksonModule() {
             return TimefoldJacksonModule.createModule();
         }
 

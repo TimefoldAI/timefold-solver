@@ -47,8 +47,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
-import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
@@ -59,7 +57,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.bind.BindResult;
 import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.boot.persistence.autoconfigure.EntityScan;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -73,7 +71,7 @@ import org.springframework.core.env.Environment;
         SolverManager.class })
 @EnableConfigurationProperties({ TimefoldProperties.class })
 public class TimefoldSolverAutoConfiguration
-        implements BeanClassLoaderAware, ApplicationContextAware, EnvironmentAware, BeanFactoryInitializationAotProcessor,
+        implements BeanClassLoaderAware, ApplicationContextAware, EnvironmentAware,
         BeanDefinitionRegistryPostProcessor {
 
     private static final Log LOG = LogFactory.getLog(TimefoldSolverAutoConfiguration.class);
@@ -161,20 +159,20 @@ public class TimefoldSolverAutoConfiguration
     }
 
     @Override
-    public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
-        var solverConfigMap = getSolverConfigMap();
-        return new TimefoldSolverAotContribution(solverConfigMap);
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        // No-op: all processing is done in postProcessBeanDefinitionRegistry
     }
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         var solverConfigMap = getSolverConfigMap();
         var solverConfigIO = new SolverConfigIO();
-        registry.registerBeanDefinition(TimefoldSolverAotFactory.class.getName(),
-                new RootBeanDefinition(TimefoldSolverAotFactory.class));
+        var factoryBeanDefinition = new RootBeanDefinition(SolverConfigFactory.class);
+        factoryBeanDefinition.getConstructorArgumentValues().addGenericArgumentValue(timefoldProperties);
+        registry.registerBeanDefinition(SolverConfigFactory.class.getName(), factoryBeanDefinition);
         if (solverConfigMap.isEmpty()) {
             var rootBeanDefinition = new RootBeanDefinition(SolverConfig.class);
-            rootBeanDefinition.setFactoryBeanName(TimefoldSolverAotFactory.class.getName());
+            rootBeanDefinition.setFactoryBeanName(SolverConfigFactory.class.getName());
             rootBeanDefinition.setFactoryMethodName("solverConfigSupplier");
             var solverXmlOutput = new StringWriter();
             solverConfigIO.write(new SolverConfig(), solverXmlOutput);
@@ -186,7 +184,7 @@ public class TimefoldSolverAutoConfiguration
 
         if (timefoldProperties.getSolver() == null || timefoldProperties.getSolver().size() == 1) {
             var rootBeanDefinition = new RootBeanDefinition(SolverConfig.class);
-            rootBeanDefinition.setFactoryBeanName(TimefoldSolverAotFactory.class.getName());
+            rootBeanDefinition.setFactoryBeanName(SolverConfigFactory.class.getName());
             rootBeanDefinition.setFactoryMethodName("solverConfigSupplier");
             var solverXmlOutput = new StringWriter();
             solverConfigIO.write(solverConfigMap.values().iterator().next(), solverXmlOutput);
@@ -197,7 +195,7 @@ public class TimefoldSolverAutoConfiguration
             // Only SolverManager can be injected for multiple solver configurations
             solverConfigMap.forEach((solverName, solverConfig) -> {
                 var rootBeanDefinition = new RootBeanDefinition(SolverManager.class);
-                rootBeanDefinition.setFactoryBeanName(TimefoldSolverAotFactory.class.getName());
+                rootBeanDefinition.setFactoryBeanName(SolverConfigFactory.class.getName());
                 rootBeanDefinition.setFactoryMethodName("solverManagerSupplier");
                 var solverXmlOutput = new StringWriter();
                 solverConfigIO.write(solverConfig, solverXmlOutput);

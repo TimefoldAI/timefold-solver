@@ -2,7 +2,7 @@ package ai.timefold.solver.jackson.api.score;
 
 import ai.timefold.solver.core.api.score.Score;
 
-import tools.jackson.databind.ValueDeserializer;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 
 /**
  * Jackson binding support for a {@link Score} type.
@@ -15,6 +15,6 @@ import tools.jackson.databind.ValueDeserializer;
  * @param <Score_> the actual score type
  */
 public abstract class AbstractScoreJacksonDeserializer<Score_ extends Score<Score_>>
-        extends ValueDeserializer<Score_> {
+        extends JsonDeserializer<Score_> {
 
 }

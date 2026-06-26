@@ -5,11 +5,11 @@ import java.util.LinkedHashMap;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonParser;
-import tools.jackson.databind.DeserializationContext;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ValueDeserializer;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 
 /**
  * Extend this to implement {@link ConstraintWeightOverrides} deserialization specific for your domain.
@@ -17,16 +17,16 @@ import tools.jackson.databind.ValueDeserializer;
  * @param <Score_>
  */
 public abstract class AbstractConstraintWeightOverridesDeserializer<Score_ extends Score<Score_>>
-        extends ValueDeserializer<ConstraintWeightOverrides<Score_>> {
+        extends JsonDeserializer<ConstraintWeightOverrides<Score_>> {
 
     @Override
     public final ConstraintWeightOverrides<Score_> deserialize(JsonParser p, DeserializationContext ctxt)
-            throws JacksonException {
+            throws java.io.IOException {
         var resultMap = new LinkedHashMap<String, Score_>();
         JsonNode node = p.readValueAsTree();
-        node.properties().iterator().forEachRemaining(entry -> {
+        node.fields().forEachRemaining(entry -> {
             var constraintId = entry.getKey();
-            var weight = parseScore(entry.getValue().asString());
+            var weight = parseScore(entry.getValue().asText());
             resultMap.put(constraintId, weight);
         });
         return ConstraintWeightOverrides.of(resultMap);

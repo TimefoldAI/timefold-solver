@@ -31,6 +31,11 @@
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+        <!-- spring-jcl conflicts with jcl-over-slf4j; SB 2.7 uses jcl-over-slf4j -->
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jcl</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -50,10 +55,7 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-persistence</artifactId>
-    </dependency>
+    <!-- spring-boot-persistence not available in SB 2.7; EntityScan is in spring-boot-autoconfigure -->
   </dependencies>
 
   <build>

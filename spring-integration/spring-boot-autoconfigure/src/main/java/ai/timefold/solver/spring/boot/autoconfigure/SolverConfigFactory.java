@@ -10,19 +10,16 @@ import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverManagerProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
 
-import org.springframework.boot.context.properties.bind.BindResult;
-import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.core.env.Environment;
+/**
+ * Factory for creating SolverConfig and SolverManager from XML strings.
+ * Used by TimefoldSolverAutoConfiguration to lazily create beans.
+ */
+public class SolverConfigFactory {
 
-public class TimefoldSolverAotFactory implements EnvironmentAware {
-    private TimefoldProperties timefoldProperties;
+    private final TimefoldProperties timefoldProperties;
 
-    @Override
-    public void setEnvironment(Environment environment) {
-        // We need the environment to set run time properties of SolverFactory and SolverManager
-        BindResult<TimefoldProperties> result = Binder.get(environment).bind("timefold", TimefoldProperties.class);
-        this.timefoldProperties = result.orElseGet(TimefoldProperties::new);
+    public SolverConfigFactory(TimefoldProperties timefoldProperties) {
+        this.timefoldProperties = timefoldProperties;
     }
 
     @SuppressWarnings("unused") // Referenced by TimefoldSolverAutoConfiguration as a String.

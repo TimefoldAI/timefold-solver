@@ -18,9 +18,9 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 class LoadBalanceRoundTripTest {
 
@@ -46,8 +46,7 @@ class LoadBalanceRoundTripTest {
         var loadBalance = (LoadBalance<Item>) collector.finisher().apply(context);
 
         ObjectMapper objectMapper = JsonMapper.builder()
-                .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_NULL)
-                        .withValueInclusion(JsonInclude.Include.NON_NULL))
+                .serializationInclusion(JsonInclude.Include.NON_NULL)
                 .addModule(TimefoldJacksonModule.createModule())
                 .build();
 

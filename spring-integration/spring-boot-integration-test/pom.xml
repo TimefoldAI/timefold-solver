@@ -24,7 +24,7 @@
     <!-- Spring boot -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-webmvc</artifactId>
+      <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
@@ -53,6 +53,7 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${version.org.springframework.boot}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -87,15 +88,7 @@
                 </env>
               </image>
             </configuration>
-            <executions>
-              <execution>
-                <id>process-aot</id>
-                <goals>
-                  <goal>process-aot</goal>
-                  <goal>process-test-aot</goal>
-                </goals>
-              </execution>
-            </executions>
+            <!-- AOT processing removed: SB 2.7 does not support process-aot goal -->
           </plugin>
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>

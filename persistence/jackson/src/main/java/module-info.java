@@ -2,13 +2,13 @@ module ai.timefold.solver.jackson {
 
     exports ai.timefold.solver.jackson.api;
 
-    provides tools.jackson.databind.JacksonModule with
+    provides com.fasterxml.jackson.databind.Module with
             ai.timefold.solver.jackson.api.TimefoldJacksonModule;
 
     requires transitive ai.timefold.solver.core;
     requires org.jspecify;
-    requires tools.jackson.databind;
+    requires com.fasterxml.jackson.databind;
 
-    uses tools.jackson.databind.JacksonModule;
+    uses com.fasterxml.jackson.databind.Module;
 
 }

@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.fail;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.jackson.api.AbstractJacksonRoundTripTest;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class AbstractScoreJacksonRoundTripTest extends AbstractJacksonRoundTripTest {
 

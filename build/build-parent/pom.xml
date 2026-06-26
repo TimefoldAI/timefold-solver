@@ -31,7 +31,7 @@
       The 'revision' property value is conserved by the flatten-maven-plugin, so the model project does not override it.
     -->
     <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
-    <version.ch.qos.logback>1.5.34</version.ch.qos.logback>
+    <version.ch.qos.logback>1.2.12</version.ch.qos.logback>
     <version.com.networknt.json-schem-validator>1.5.9</version.com.networknt.json-schem-validator>
     <version.jakarta.enterprise.cdi-api>4.1.0</version.jakarta.enterprise.cdi-api>
     <version.io.quarkus>3.36.2</version.io.quarkus>
@@ -46,12 +46,11 @@
     <version.org.mapstruct>1.6.3</version.org.mapstruct>
     <version.org.openrewrite.recipe>3.33.0</version.org.openrewrite.recipe>
     <version.org.testcontainers>2.0.5</version.org.testcontainers>
-    <version.org.springframework.boot>4.1.0</version.org.springframework.boot>
+    <version.org.springframework.boot>2.7.18</version.org.springframework.boot>
     <version.org.wiremock>3.13.2</version.org.wiremock>
     <version.ow2.asm>9.10.1</version.ow2.asm>
-    <!-- Upgrade Jackson and its annotations together; otherwise there may be runtime errors. -->
-    <version.tools.jackson>3.2.0</version.tools.jackson>
-    <version.com.fasterxml.jackson.core>2.22</version.com.fasterxml.jackson.core>
+    <!-- Jackson version managed by Spring Boot 2.7 BOM (2.13.5); override for Quarkus compatibility -->
+    <version.com.fasterxml.jackson.core>2.13.5</version.com.fasterxml.jackson.core>
 
     <!-- ************************************************************************ -->
     <!-- Plugins -->
@@ -347,6 +346,14 @@
                           <ignoreClass>*</ignoreClass>
                         </ignoreClasses>
                       </dependency>
+                      <dependency>
+                        <!-- spring-jcl and jcl-over-slf4j both provide commons-logging API; SB 2.7 uses jcl-over-slf4j -->
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-jcl</artifactId>
+                        <ignoreClasses>
+                          <ignoreClass>*</ignoreClass>
+                        </ignoreClasses>
+                      </dependency>
                     </dependencies>
                     <scopes>
                       <scope>compile</scope>
@@ -637,7 +644,7 @@
           <useModulePath>false</useModulePath>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <skipTests>${skipUTs}</skipTests>
-          <!-- Avoid defining the argLine; it's configured in a profile for code coverage -->
+          <argLine>--add-opens ai.timefold.solver.spring.boot.autoconfigure/ai.timefold.solver.spring.boot.autoconfigure.invalid.type=spring.core</argLine>
         </configuration>
       </plugin>
       <plugin>

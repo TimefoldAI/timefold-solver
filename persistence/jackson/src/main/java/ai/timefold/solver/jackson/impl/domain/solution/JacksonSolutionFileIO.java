@@ -6,9 +6,9 @@ import java.io.InputStream;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.SolutionFileIO;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 /**
  *
@@ -43,7 +43,7 @@ public class JacksonSolutionFileIO<Solution_> implements SolutionFileIO<Solution
     public Solution_ read(File inputSolutionFile) {
         try {
             return mapper.readValue(inputSolutionFile, clazz);
-        } catch (JacksonException e) {
+        } catch (java.io.IOException e) {
             throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputSolutionFile + ").", e);
         }
     }
@@ -51,7 +51,7 @@ public class JacksonSolutionFileIO<Solution_> implements SolutionFileIO<Solution
     public Solution_ read(InputStream inputSolutionStream) {
         try {
             return mapper.readValue(inputSolutionStream, clazz);
-        } catch (JacksonException e) {
+        } catch (java.io.IOException e) {
             throw new IllegalArgumentException("Failed reading inputSolutionStream.", e);
         }
     }
@@ -60,7 +60,7 @@ public class JacksonSolutionFileIO<Solution_> implements SolutionFileIO<Solution
     public void write(Solution_ solution, File file) {
         try {
             mapper.writerWithDefaultPrettyPrinter().writeValue(file, solution);
-        } catch (JacksonException e) {
+        } catch (java.io.IOException e) {
             throw new IllegalArgumentException("Failed write", e);
         }
     }

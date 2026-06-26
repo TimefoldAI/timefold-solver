@@ -5,17 +5,17 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.ValueSerializer;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.JsonSerializer;
 
 public final class SequenceChainJacksonSerializer<Value_, Difference_ extends Comparable<Difference_>>
-        extends ValueSerializer<SequenceChain<Value_, Difference_>> {
+        extends JsonSerializer<SequenceChain<Value_, Difference_>> {
 
     @Override
     public void serialize(SequenceChain<Value_, Difference_> sequenceChain, JsonGenerator jsonGenerator,
-            SerializationContext serializerProvider) throws JacksonException {
+            SerializerProvider serializerProvider) throws java.io.IOException {
         var serializedSequenceList =
                 new ArrayList<SerializableSequence<Value_>>(sequenceChain.getConsecutiveSequences().size());
         for (var sequence : sequenceChain.getConsecutiveSequences()) {

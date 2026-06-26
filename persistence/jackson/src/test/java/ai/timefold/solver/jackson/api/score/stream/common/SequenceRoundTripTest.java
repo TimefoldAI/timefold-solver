@@ -19,10 +19,10 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.MapperFeature;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 class SequenceRoundTripTest {
 
@@ -55,8 +55,7 @@ class SequenceRoundTripTest {
         var breaks = sequenceChain.getBreaks().toArray(new Break[0]);
 
         ObjectMapper objectMapper = JsonMapper.builder()
-                .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_NULL)
-                        .withValueInclusion(JsonInclude.Include.NON_NULL))
+                .serializationInclusion(JsonInclude.Include.NON_NULL)
                 .addModule(TimefoldJacksonModule.createModule())
                 .disable(MapperFeature.SORT_CREATOR_PROPERTIES_FIRST)
                 .build();

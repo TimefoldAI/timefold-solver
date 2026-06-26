@@ -47,9 +47,9 @@ import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonDeseria
 import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonSerializer;
 import ai.timefold.solver.jackson.impl.domain.solution.JacksonSolutionFileIO;
 
-import tools.jackson.databind.JacksonModule;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /**
  * This class adds all Jackson serializers and deserializers.
@@ -59,11 +59,11 @@ public class TimefoldJacksonModule extends SimpleModule {
     /**
      * Jackson modules can be loaded automatically via {@link java.util.ServiceLoader}.
      * This will happen if you use {@link JacksonSolutionFileIO}.
-     * Otherwise, register the module with {@link JsonMapper.Builder#addModule(JacksonModule)}.
+     * Otherwise, register the module with {@link JsonMapper.Builder#addModule(Module)}.
      *
      * @return never null
      */
-    public static JacksonModule createModule() {
+    public static Module createModule() {
         return new TimefoldJacksonModule();
 
     }

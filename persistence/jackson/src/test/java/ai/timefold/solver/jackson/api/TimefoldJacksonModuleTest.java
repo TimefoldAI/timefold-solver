@@ -15,12 +15,12 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.DeserializationFeature;
-import tools.jackson.databind.JacksonModule;
-import tools.jackson.databind.MapperFeature;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
@@ -58,7 +58,7 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
         var objectMapper = JsonMapper.builder()
                 .addModule(TimefoldJacksonModule.createModule())
                 .addModule(new CustomJacksonModule())
-                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_DEFAULT))
+                .serializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT)
                 .build();
 
         var constraintWeightOverrides = ConstraintWeightOverrides.of(
@@ -80,7 +80,7 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
     @Test
     void testServiceProvider() {
-        ServiceLoader<JacksonModule> loader = ServiceLoader.load(JacksonModule.class);
+        ServiceLoader<Module> loader = ServiceLoader.load(Module.class);
         assertThat(loader).hasSizeGreaterThan(0);
     }
 
