@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.score.director;
 
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -35,7 +36,6 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
 
     // Solution related fields
     private @Nullable ValueRangeItem<Solution_, Entity_, ValueRange<Value_>, Value_> fromSolutionItem;
-    private @Nullable Map<Value_, Integer> fromSolutionValueIndexMap;
 
     // Entity related fields
     private @Nullable Map<Entity_, ValueRangeItem<Solution_, Entity_, ValueRange<Value_>, Value_>> fromEntityMap;
@@ -54,7 +54,6 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
         if (fromSolutionItem == null) {
             var valueRange = fetchValueRangeFromSolution(solution, sorter);
             fromSolutionItem = ValueRangeItem.ofLeft(null, valueRange, sorter);
-            fromSolutionValueIndexMap = buildIndexMap(valueRange.createOriginalIterator(), (int) valueRange.getSize());
             return valueRange;
         }
         var valueRange = pickValueBySorter(fromSolutionItem, sorter, null);
@@ -66,9 +65,6 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
             var sortedValueRange = sortValueRange(Objects.requireNonNull(fromSolutionItem.leftItem()), sorter);
             fromSolutionItem = ValueRangeItem.of(null, sortedValueRange, sorter, fromSolutionItem.rightItem(),
                     fromSolutionItem.rightSorter());
-            // We need to update the index map or the positions may become inconsistent
-            fromSolutionValueIndexMap =
-                    buildIndexMap(sortedValueRange.createOriginalIterator(), (int) sortedValueRange.getSize());
             return sortedValueRange;
         } else if (fromSolutionItem.rightItem() == null) {
             var sortedValueRange = sortValueRange(Objects.requireNonNull(fromSolutionItem.leftItem()), sorter);
@@ -101,14 +97,6 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
             return item.rightItem();
         }
         return null;
-    }
-
-    private Map<Value_, Integer> getIndexMapFromSolution() {
-        if (fromSolutionValueIndexMap == null) {
-            // We call getFromSolution to ensure the solution-range is loaded and the related index map is created
-            getFromSolution(cachedWorkingSolution, null);
-        }
-        return fromSolutionValueIndexMap;
     }
 
     private ValueRange<Value_> fetchValueRangeFromSolution(Solution_ solution,
@@ -153,7 +141,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
             }
             return Objects.requireNonNull(newItem.leftItem());
         }
-        var valueRange = pickValueBySorter(item, sorter, (p, s) -> getFromEntity(p, s));
+        var valueRange = pickValueBySorter(item, sorter, this::getFromEntity);
         if (valueRange != null) {
             return valueRange;
         }
@@ -282,10 +270,14 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
         var expectedTypeOfValue = valueRangeDescriptor.getVariableDescriptor().getVariableMetaModel().type();
         var reachableValueList = initReachableValueList(valueList, entityList.size());
         var valueIndexItem = new ReachableValuesIndex<>(valueIndexMap, reachableValueList);
+        var entityIndicesByRange = new IdentityHashMap<ValueRange<Value_>, List<Integer>>();
         for (var i = 0; i < entityList.size(); i++) {
             var entity = entityList.get(i);
             var valueRange = getFromEntity(entity, null);
-            loadEntityValueRange(i, valueIndexMap, valueRange, reachableValueList);
+            entityIndicesByRange.computeIfAbsent(valueRange, k -> new ArrayList<>()).add(i);
+        }
+        for (var entry : entityIndicesByRange.entrySet()) {
+            loadEntityValueRange(entry.getValue(), valueIndexMap, entry.getKey(), reachableValueList);
         }
         var sorterAdapter = sorter != null ? SelectionSorterAdapter.of(cachedWorkingSolution, sorter) : null;
         return new ReachableValues<>(entityIndexItem, valueIndexItem, expectedTypeOfValue, sorterAdapter,
@@ -308,31 +300,34 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
     private List<ReachableItemValue<Entity_, Value_>> initReachableValueList(ValueRange<Value_> valueRange,
             int entityListSize) {
         var valuesSize = (int) valueRange.getSize();
-        Iterator<@Nullable Value_> iterator = valueRange.createOriginalIterator();
+        var iterator = valueRange.createOriginalIterator();
         var spliterator = Spliterators.spliterator(iterator, valuesSize, Spliterator.ORDERED | Spliterator.IMMUTABLE);
         var idx = new MutableInt(-1);
         return StreamSupport.stream(spliterator, false).filter(Objects::nonNull)
                 .map(v -> new ReachableItemValue<Entity_, Value_>(idx.increment(), v, entityListSize, valuesSize)).toList();
     }
 
-    private static <Entity_, Value_> void loadEntityValueRange(int entityIndex, Map<Value_, Integer> valueIndexMap,
+    private static <Entity_, Value_> void loadEntityValueRange(List<Integer> entityIndices, Map<Value_, Integer> valueIndexMap,
             ValueRange<Value_> valueRange, List<ReachableItemValue<Entity_, Value_>> reachableValueList) {
-        // We create a bitset containing all possible values from the range to optimize operations
+        // Build bitset once per distinct range to avoid redundant work for entities sharing a range.
         var allValuesBitSet = buildBitSetForValueRange(valueRange, valueIndexMap);
-        // The second pass need only to iterate over the bits we already set.
+        // The second pass only iterates over the bits we already set.
         var valueIndex = allValuesBitSet.nextSetBit(0);
         while (valueIndex >= 0) {
             var item = reachableValueList.get(valueIndex);
-            item.addEntity(entityIndex);
-            // We unset the current value index to import only the values that are reachable
+            // Co-values populated once per distinct range; addValuesExcept is idempotent across shared ranges.
             item.addValuesExcept(allValuesBitSet, valueIndex);
+            // Entity membership registered per entity.
+            for (var entityIndex : entityIndices) {
+                item.addEntity(entityIndex);
+            }
             valueIndex = allValuesBitSet.nextSetBit(valueIndex + 1);
         }
     }
 
     private static <Value_> BitSet buildBitSetForValueRange(ValueRange<Value_> valueRange, Map<Value_, Integer> valueIndexMap) {
         var valueBitSet = new BitSet((int) valueRange.getSize());
-        Iterator<@Nullable Value_> iterator = valueRange.createOriginalIterator();
+        var iterator = valueRange.createOriginalIterator();
         while (iterator.hasNext()) {
             var value = iterator.next();
             if (value == null) {
@@ -370,7 +365,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
      * The record holds a reference to {@link ValueRange},
      * a precomputed hash to avoid recalculating it every time.
      */
-    record HashedValueRange<T>(ValueRange<T> item, int hash) {
+    private record HashedValueRange<T>(ValueRange<T> item, int hash) {
 
         public static <Value_> HashedValueRange<Value_> of(ValueRange<Value_> valueRange) {
             return new HashedValueRange<>(valueRange, valueRange.hashCode());
@@ -383,10 +378,9 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof HashedValueRange<?> that)) {
-                return false;
-            }
-            return hash == that.hash && Objects.equals(item, that.item);
+            return o instanceof HashedValueRange<?>(var otherItem, var otherHash)
+                    && hash == otherHash
+                    && Objects.equals(item, otherItem);
         }
     }
 
