@@ -13,7 +13,7 @@ Defaults to `AUTO`.
 endif::[]
 
 {property_prefix}timefold.solver.{solver_name_prefix}solver-config-xml::
-A classpath resource to read the xref:using-timefold-solver/configuration.adoc#solverConfiguration[solver configuration XML].
+A classpath resource to read the xref:running-timefold-solver/configuration.adoc#solverConfiguration[solver configuration XML].
 Defaults to `solverConfig.xml`.
 If a resource is specified, it must be located in the classpath, or the configuration will fail.
 If the property is not specified, the file `solverConfig.xml` is used when found on the classpath. Otherwise, the
@@ -25,7 +25,7 @@ located in the classpath.
 The random seed to be used in the solving process.
 
 {property_prefix}timefold.solver.{solver_name_prefix}environment-mode::
-Enable xref:using-timefold-solver/running-the-solver.adoc#environmentMode[runtime assertions] to detect common bugs in your
+Enable xref:running-timefold-solver/multithreaded-solving.adoc#environmentMode[runtime assertions] to detect common bugs in your
 implementation during development.
 
 {property_prefix}timefold.solver.{solver_name_prefix}constraint-stream-profiling-enabled::
@@ -38,7 +38,7 @@ This is often useful for xref:responding-to-change/responding-to-change.adoc#rea
 Defaults to `false`.
 
 {property_prefix}timefold.solver.{solver_name_prefix}move-thread-count::
-Enable xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[multithreaded incremental solving] for a single problem, which increases CPU consumption.
+Enable xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[multithreaded incremental solving] for a single problem, which increases CPU consumption.
 Defaults to `NONE`.
 
 {property_prefix}timefold.solver.{solver_name_prefix}nearby-distance-meter-class::

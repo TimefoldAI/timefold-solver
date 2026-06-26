@@ -5,7 +5,7 @@
 :icons: font
 
 _Timefold Solver Plus_ and _Timefold Solver Enterprise_ are commercial products which offer additional features,
-such as xref:constraints-and-score/understanding-the-score.adoc[score analysis], xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection] and xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[multithreaded solving].
+such as xref:constraints-and-score/understanding-the-score.adoc[score analysis], xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection] and xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[multithreaded solving].
 These features are essential to scale out to large datasets and build trust with your users.
 
 Unlike _Timefold Solver Community Edition_, these commercial editions are not open-source.
@@ -37,10 +37,10 @@ See our https://licenses.timefold.ai/[license portal] to get your license, then 
 | xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection]
 | | ✓
 
-| xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[Multithreaded solving]
+| xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[Multithreaded solving]
 | | ✓
 
-| xref:using-timefold-solver/running-the-solver.adoc#partitionedSearch[Partitioned search]
+| xref:running-timefold-solver/multithreaded-solving.adoc#partitionedSearch[Partitioned search]
 | | ✓
 
 | xref:constraints-and-score/performance.adoc#constraintProfiling[Constraint profiling]
@@ -49,7 +49,7 @@ See our https://licenses.timefold.ai/[license portal] to get your license, then 
 | xref:commercial-editions/multistage-moves.adoc[Multistage moves]
 | | ✓
 
-| xref:using-timefold-solver/library-integration.adoc#throttlingBestSolutionEvents[Throttling best solution events]
+| xref:running-timefold-solver/library-integration.adoc#throttlingBestSolutionEvents[Throttling best solution events]
 | | ✓
 
 |===

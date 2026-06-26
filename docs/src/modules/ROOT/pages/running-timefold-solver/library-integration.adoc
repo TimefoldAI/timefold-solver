@@ -33,7 +33,7 @@ xref:optimization-algorithms/overview.adoc#doesTimefoldFindTheOptimalSolution[th
 [NOTE]
 ====
 The instance passed to `solve(solution)` is modified by the Solver — do not treat it as the best solution.
-The returned instance is most likely xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[a planning clone] of the input.
+The returned instance is most likely xref:running-timefold-solver/modeling-planning-problems.adoc#cloningASolution[a planning clone] of the input.
 ====
 
 NOTE: The input may be partially or fully initialized, which is common in xref:responding-to-change/responding-to-change.adoc[repeated planning].
@@ -82,7 +82,7 @@ For example, if set to `4`, submitting five problems
 has four problems solving immediately, and the fifth one starts when another one ends.
 If those problems solve for 5 minutes each, the fifth problem takes 10 minutes to finish.
 By default, `parallelSolverCount` is set to `AUTO`, which resolves to half the CPU cores,
-regardless of the xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[`moveThreadCount`] of the solvers.
+regardless of the xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[`moveThreadCount`] of the solvers.
 
 To retrieve the best solution, after solving terminates normally, use `SolverJob.getFinalBestSolution()`:
 
@@ -256,7 +256,7 @@ To handle errors that may arise during the solving process,
 set up the handling logic by defining `withExceptionHandler(...)`.
 
 Finally, to build an instance of the solver,
-xref:using-timefold-solver/configuration.adoc[a configuration step] is necessary.
+xref:running-timefold-solver/configuration.adoc[a configuration step] is necessary.
 These settings are static and applied to any related solving execution.
 If you want to override certain settings for a particular job,
 such as the termination configuration, you can use the `withConfigOverride(...)` method.

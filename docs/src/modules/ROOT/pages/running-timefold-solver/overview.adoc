@@ -29,7 +29,7 @@ xref:service/overview.adoc[→ Run as a Service]
 Embed Timefold Solver directly in your application for full control over the solving lifecycle.
 Use this approach when you need deep integration with existing infrastructure or have a use case or architecture where the recommended approach above doesn't apply to you.
 
-xref:using-timefold-solver/configuration.adoc[→ Use as a Library]
+xref:running-timefold-solver/configuration.adoc[→ Use as a Library]
 
 [#commonFoundation]
 == Common foundation

@@ -419,7 +419,7 @@ To write those solutions in the ``benchmarkDirectory``, enable ``writeOutputSolu
 [#benchmarkLogging]
 === Benchmark logging
 
-Benchmark logging is configured like xref:using-timefold-solver/running-the-solver.adoc#logging[solver logging].
+Benchmark logging is configured like xref:running-timefold-solver/multithreaded-solving.adoc#logging[solver logging].
 
 To separate the log messages of each single benchmark run into a separate file, use the http://logback.qos.ch/manual/mdc.html[MDC] with key `subSingleBenchmark.name` in a sifting appender.
 For example with Logback in ``logback.xml``:
@@ -1069,7 +1069,7 @@ for example when running benchmarks on an application server or a cloud platform
 </plannerBenchmark>
 ----
 
-NOTE: This feature is independent of xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
+NOTE: This feature is independent of xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
 and can be used in the open source version of Timefold Solver.
 
 
@@ -1104,8 +1104,8 @@ The `subSingleCount` defaults to `1` (so no statistical benchmarking).
 [NOTE]
 ====
 If `subSingleCount` is higher than ``1``,
-the benchmarker will automatically use a _different_ xref:using-timefold-solver/running-the-solver.adoc#randomNumberGenerator[`Random` seed] for every sub single run,
-without losing reproducibility (for each sub single index) in xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] ``NO_ASSERT`` and lower.
+the benchmarker will automatically use a _different_ xref:running-timefold-solver/multithreaded-solving.adoc#randomNumberGenerator[`Random` seed] for every sub single run,
+without losing reproducibility (for each sub single index) in xref:running-timefold-solver/multithreaded-solving.adoc#environmentMode[EnvironmentMode] ``NO_ASSERT`` and lower.
 ====
 
 

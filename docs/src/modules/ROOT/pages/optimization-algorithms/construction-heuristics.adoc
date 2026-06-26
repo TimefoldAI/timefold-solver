@@ -77,7 +77,7 @@ meaning that "more difficult" planning entities are added earlier in the list wh
 image::optimization-algorithms/construction-heuristics/firstFitDecreasingNQueens04.png[align="center"]
 
 Requires the model
-to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
+to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
 
 [NOTE]
 ====
@@ -127,7 +127,7 @@ It sorts the planning values in ascending order by any given metric,
 meaning that "weaker" planning values are added earlier in the list while "stronger" values are included later.
 
 Requires the model
-to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -175,8 +175,8 @@ Combines <<firstFitDecreasing,First Fit Decreasing>> and <<weakestFit,Weakest Fi
 It sorts the planning entities in descending order and the planning values in ascending order based on defined metrics.
 
 Requires the model
-to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
-and xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
+and xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -227,7 +227,7 @@ So it sorts the planning values in descending order by any given metric,
 meaning that "stronger" planning values are added earlier in the list.
 
 Requires the model
-to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -275,8 +275,8 @@ Combines <<firstFitDecreasing, First Fit Decreasing>> and <<strongestFit, Strong
 It sorts the planning entities and the planning values in descending order based on defined metrics.
 
 Requires the model
-to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
-and xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
+and xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -361,19 +361,19 @@ The `entitySorterManner` options are:
 * ``DESCENDING``: Evaluate the planning entities in descending order based on a given metric.
 This usually increases pruning (and therefore improves scalability).
 Requires the model
-to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
-* `DESCENDING_IF_AVAILABLE` (default): If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting], behave like ``DESCENDING``, else like ``NONE``.
+to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
+* `DESCENDING_IF_AVAILABLE` (default): If the model supports xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting], behave like ``DESCENDING``, else like ``NONE``.
 * ``NONE``: Initialize the planning entities in original order.
 
 The `valueSorterManner` options are:
 
 * ``ASCENDING``: Evaluate the planning values in ascending order based on a given metric.
 Requires the model
-to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
-* `ASCENDING_IF_AVAILABLE` (default): If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``ASCENDING``, else like ``NONE``.
+to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+* `ASCENDING_IF_AVAILABLE` (default): If the model supports xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``ASCENDING``, else like ``NONE``.
 * ``DESCENDING``: Evaluate the planning values in descending order based on a given metric.
-Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
-* ``DESCENDING_IF_AVAILABLE``: If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``DESCENDING``, else like ``NONE``.
+Requires the model to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+* ``DESCENDING_IF_AVAILABLE``: If the model supports xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``DESCENDING``, else like ``NONE``.
 * ``NONE``: Try the planning values in original order.
 
 Advanced configuration with <<weakestFitDecreasing,Weakest Fit Decreasing>> for a single entity class with one variable:
@@ -481,7 +481,7 @@ This is the default if the xref:constraints-and-score/overview.adoc#initializing
 If there are only negative constraints,
 but the xref:constraints-and-score/overview.adoc#initializingScoreTrend[InitializingScoreTrend] is strictly not ``ONLY_DOWN``,
 it can sometimes make sense to apply FIRST_NON_DETERIORATING_SCORE.
-Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
+Use the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
 to decide if the score quality loss is worth the time gain.
 ====
 * ``FIRST_FEASIBLE_SCORE``: Initialize the variable(s) with the first move that has a feasible score.
@@ -724,7 +724,7 @@ For scaling out, see <<scalingConstructionHeuristics,scaling construction heuris
 [#mixedModelConstructionHeuristics]
 == Mixed modeling and construction heuristics
 
-The default behavior of the construction heuristic for xref:using-timefold-solver/modeling-planning-problems.adoc#mixedModels[mixed models] is
+The default behavior of the construction heuristic for xref:running-timefold-solver/modeling-planning-problems.adoc#mixedModels[mixed models] is
 to use strategies based on the allocation of xref:optimization-algorithms/construction-heuristics.adoc#allocateEntityFromQueue[entities] and xref:optimization-algorithms/construction-heuristics.adoc#allocateToValueFromQueue[values]
 for solving all related variables.
 
@@ -804,7 +804,7 @@ to reach a near optimal solution.
 Ideally, a Construction Heuristic should take less than 20 seconds from scratch
 and less than 50 milliseconds in xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning],
 so there is plenty of time left for xref:optimization-algorithms/local-search.adoc#localSearch[Local Search].
-If the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] proves that this is not the case, there's a number of improvements that can be done:
+If the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] proves that this is not the case, there's a number of improvements that can be done:
 
 
 [#initializingScoreTrendShortcuts]
@@ -872,7 +872,7 @@ The order of the variables is important, especially in the sequential technique.
 In the sequential example above, it's better to select the `period` first and the `room` second (instead of the other way around),
 because there are more hard constraints that do not involve the room, such as _no teacher should teach two lectures at the same time_.
 
-Let the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] guide you.
+Let the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] guide you.
 ====
 
 With three or more variables, it's possible to combine the cartesian product and sequential techniques:
@@ -899,7 +899,7 @@ With three or more variables, it's possible to combine the cartesian product and
 [#otherScalingTechniquesInConstructionHeuristics]
 === Other scaling techniques in construction heuristics
 
-xref:using-timefold-solver/running-the-solver.adoc#partitionedSearch[Partitioned Search] reduces the number of moves per step.
+xref:running-timefold-solver/multithreaded-solving.adoc#partitionedSearch[Partitioned Search] reduces the number of moves per step.
 On top of that, it runs the Construction Heuristic on the partitions in parallel.
 It is supported to only partition the Construction Heuristic phase.
 

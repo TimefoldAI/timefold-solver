@@ -96,9 +96,9 @@ that the user can optionally override to gain access to additional solver featur
 
 `Move rebase(Lookup lookup)`::
 This method creates a copy of the move that is applicable to a different working solution.
-This is only necessary when the solver is configured to use xref:using-timefold-solver/running-the-solver.adoc#multithreadedSolving[multi-threaded solving].
+This is only necessary when the solver is configured to use xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedSolving[multi-threaded solving].
 `String describe()`::
-This method returns an identifier for the move type, which is used by parts of xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[the benchmarker]
+This method returns an identifier for the move type, which is used by parts of xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[the benchmarker]
 to separate results by move type.
 For example, if your move changes the value of variable called "employee" on an entity called "Task",
 you might return "TaskChange(employee)" from this method.
@@ -159,9 +159,9 @@ Represents a planning entity class.
 It gives access to its planning variable metamodels, both genuine and shadow.
 `VariableMetaModel`::
 Represents a planning variable on a planning entity class.
-It further specializes into `PlanningVariableMetaModel` for a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable],
-`PlanningListVariableMetaModel` for a xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable],
-and `ShadowVariableMetaModel` for a xref:using-timefold-solver/modeling-planning-problems.adoc#shadowPlanningVariables[shadow variable].
+It further specializes into `PlanningVariableMetaModel` for a xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable],
+`PlanningListVariableMetaModel` for a xref:running-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable],
+and `ShadowVariableMetaModel` for a xref:running-timefold-solver/modeling-planning-problems.adoc#shadowPlanningVariables[shadow variable].
 
 These implementations are type-safe and provide methods
 to access the relevant parts of the planning solution structure.
@@ -203,7 +203,7 @@ and therefore not covered by backward compatibility guarantees.
 [#neighborhoodsExampleMove]
 === Example move implementation
 
-The following example shows a simple move implementation which changes the value of a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable],
+The following example shows a simple move implementation which changes the value of a xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable],
 assigning a timeslot to a lesson in the school timetabling problem.
 It brings together all the concepts discussed above.
 
@@ -284,10 +284,10 @@ var move = Moves.change(timeslotVariable, lesson, newTimeslot);
 
 The built-in moves include, among others:
 
-`ChangeMove`:: Changes the value of a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable] on a planning entity.
-`SwapMove`:: Swaps the values of a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable] between two planning entities.
-`ListChangeMove`:: Changes the position of a value in the xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] of a planning entity.
-`ListSwapMove`:: Swaps xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] elements between planning entities.
+`ChangeMove`:: Changes the value of a xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable] on a planning entity.
+`SwapMove`:: Swaps the values of a xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable] between two planning entities.
+`ListChangeMove`:: Changes the position of a value in the xref:running-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] of a planning entity.
+`ListSwapMove`:: Swaps xref:running-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] elements between planning entities.
 
 We encourage you to explore the `ai.timefold.solver.core.preview.api.move.builtin.Moves` API
 to discover all the available built-in move implementations.

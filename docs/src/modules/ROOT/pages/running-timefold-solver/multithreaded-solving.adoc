@@ -19,9 +19,9 @@ Split 1 dataset in multiple parts and solve them independently.
 
 * *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
 ** Not recommended: This is a marginal gain for a high cost of hardware resources.
-** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
+** Use the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
 * *Multitenancy*: solve different datasets in parallel.
-** The xref:using-timefold-solver/library-integration.adoc[`SolverManager`] can help with this.
+** The xref:running-timefold-solver/library-integration.adoc[`SolverManager`] can help with this.
 
 image::using-timefold-solver/running-the-solver/multiThreadingStrategies.png[align="center"]
 
@@ -62,7 +62,7 @@ to determine the optimal number of move threads for your problem.
 ==== Enabling multi-threaded incremental solving
 
 Enable multi-threaded incremental solving
-by xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[adding a `@PlanningId` annotation]
+by xref:running-timefold-solver/modeling-planning-problems.adoc#planningId[adding a `@PlanningId` annotation]
 on every planning entity class and planning value class.
 Then configure a `moveThreadCount`:
 
@@ -212,7 +212,7 @@ Simplest configuration:
   </partitionedSearch>
 ----
 
-Also xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[add a `@PlanningId` annotation]
+Also xref:running-timefold-solver/modeling-planning-problems.adoc#planningId[add a `@PlanningId` annotation]
 on every planning entity class and planning value class.
 There are several ways to <<partitioningASolution,partition a solution>>.
 
@@ -237,7 +237,7 @@ plug in a <<customThreadFactory,custom thread factory>>.
 
 [IMPORTANT]
 ====
-A xref:using-timefold-solver/solver-diagnostics.adoc#logging[logging level] of `debug` or `trace` causes congestion in multi-threaded Partitioned Search
+A xref:running-timefold-solver/solver-diagnostics.adoc#logging[logging level] of `debug` or `trace` causes congestion in multi-threaded Partitioned Search
 and slows down the xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed].
 ====
 
@@ -297,8 +297,8 @@ This can be decided dynamically, for example, based on the size of the non-parti
 The `partCount` is unrelated to the `runnablePartThreadLimit`.
 
 To configure values of a `SolutionPartitioner` dynamically in the solver configuration
-(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `solutionPartitionerCustomProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
+(so the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `solutionPartitionerCustomProperties` element and use xref:running-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----

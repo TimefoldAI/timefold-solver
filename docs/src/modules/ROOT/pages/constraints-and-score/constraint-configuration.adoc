@@ -109,7 +109,7 @@ public class VehicleRoutePlan {
 
 We've just introduced a new field of type `ConstraintWeightOverrides`,
 and we provided a getter and a setter for it.
-The field will be automatically exposed as a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact],
+The field will be automatically exposed as a xref:running-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact],
 there is no need to add a `@ProblemFactProperty` annotation.
 But we need to fill it with the desired constraint weights:
 
@@ -218,7 +218,7 @@ public class MyPlanningSolution {
 ----
 ====
 
-This will expose the `ConstraintParameters` as a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact],
+This will expose the `ConstraintParameters` as a xref:running-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact],
 making it available to the constraints.
 Finally, use the xref:constraints-and-score/score-calculation.adoc#constraintStreamsJoin[join building block]
 to adjust the constraint implementation to use the parameters:

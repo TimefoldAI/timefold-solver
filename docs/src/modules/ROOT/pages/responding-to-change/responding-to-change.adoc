@@ -79,7 +79,7 @@ This is called overconstrained planning.
 By default, Timefold Solver assigns all planning entities, overloads the planning values, and therefore breaks hard constraints.
 There are two ways to avoid this:
 
-* Use xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[planning variables with unassigned values],
+* Use xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[planning variables with unassigned values],
 so that some entities are unassigned.
 * Add virtual values to catch the unassigned entities.
 
@@ -94,9 +94,9 @@ image::responding-to-change/overconstrainedPlanning.png[align="center"]
 To implement this:
 
 . Add a score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/overview.adoc#scoreType[`Score` type].
-. Make the planning variable xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[allow unassigned values].
+. Make the planning variable xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[allow unassigned values].
 . Add a score constraint on the new level (usually a medium constraint) to penalize the number of unassigned entities (or a weighted sum of them).
-Use xref:constraints-and-score/score-calculation.adoc#constraintStreamsForEach[`forEachIncludingUnassigned`] and check if the xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[planning variable] or xref:using-timefold-solver/modeling-planning-problems.adoc#bidirectionalVariable[inverse relation shadow variable] is `null`:
+Use xref:constraints-and-score/score-calculation.adoc#constraintStreamsForEach[`forEachIncludingUnassigned`] and check if the xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[planning variable] or xref:running-timefold-solver/modeling-planning-problems.adoc#bidirectionalVariable[inverse relation shadow variable] is `null`:
 
 [tabs]
 ====
@@ -256,7 +256,7 @@ use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemCha
 [#partiallyPinnedPlanningListVariable]
 ==== Pinning a planning list variable
 
-There are cases where pinning only a part of xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable] is necessary.
+There are cases where pinning only a part of xref:running-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable] is necessary.
 For example, if some customer visits have already happened but are still in the list,
 it makes sense to pin them down.
 
@@ -487,7 +487,7 @@ The `ProblemChangeDirector` must be updated with any change on the problem facts
 ====
 
 To write a `ProblemChange` correctly,
-it is important to understand the behavior of xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[a planning clone].
+it is important to understand the behavior of xref:running-timefold-solver/modeling-planning-problems.adoc#cloningASolution[a planning clone].
 
 A planning clone of a solution must fulfill these requirements:
 
@@ -501,14 +501,14 @@ When implementing problem changes, consider the following:
 
 . Any change in a `ProblemChange` must be done on the `@PlanningSolution` instance provided to the `ProblemChange` implementation.
 
-. The `workingSolution` is xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[a planning clone] of the ``BestSolutionChangedEvent``'s ``bestSolution``.
+. The `workingSolution` is xref:running-timefold-solver/modeling-planning-problems.adoc#cloningASolution[a planning clone] of the ``BestSolutionChangedEvent``'s ``bestSolution``.
 * The `workingSolution` in the `Solver` is never the same solution instance as in the rest of your application: it is a planning clone.
 * A planning clone also clones the planning entities and planning entity collections.
 +
 Thus, any change on the planning entities must happen on the `workingSolution` instance passed to the `ProblemChange.doChange(Solution_ workingSolution, ProblemChangeDirector problemChangeDirector)` method.
 
 . Use the method `ProblemChangeDirector.lookUpWorkingObject()` to translate and retrieve the working solution's instance of an object.
-This requires xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[annotating a property of that class as the @PlanningId].
+This requires xref:running-timefold-solver/modeling-planning-problems.adoc#planningId[annotating a property of that class as the @PlanningId].
 
 . A planning clone does not clone the problem facts, nor the problem fact collections.
 _Therefore the ``__workingSolution__`` and the ``__bestSolution__`` share the same problem fact instances and the same problem fact list instances._
@@ -540,7 +540,7 @@ This is a _warm start_ because its initial solution is the adjusted best solutio
 +
 This implies the construction heuristic runs again,
 but because little or no planning variables are uninitialized
-(unless you have a xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[planning variable with unassigned values]),
+(unless you have a xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[planning variable with unassigned values]),
 it finishes much quicker than in a cold start.
 
 . Each configured `Termination` resets (both in solver and phase configuration), but a previous call to `terminateEarly()` is not undone.
@@ -687,7 +687,7 @@ If required, <<continuousPlanning,continuous planning>> can be used to optimize 
 Assignment Recommendation API requires the `SolutionManager` to be configured
 with a xref:optimization-algorithms/construction-heuristics.adoc[construction heuristic] as the first phase,
 as it uses that construction heuristic to find the best fit.
-If there are multiple construction heuristics phases in the xref:using-timefold-solver/configuration.adoc#solverConfiguration[solver configuration],
+If there are multiple construction heuristics phases in the xref:running-timefold-solver/configuration.adoc#solverConfiguration[solver configuration],
 or if the first phase is not a construction heuristic
 (perhaps a xref:optimization-algorithms/optimization-algorithms.adoc#customSolverPhase[custom initializer]),
 the API will fail fast.
@@ -753,7 +753,7 @@ But problems with the same publication deadline, solved by different organizatio
 are also initially better off with multi-stage planning, because of Conway's law
 and the high risk associated with unifying such groups.
 
-Similarly to xref:using-timefold-solver/running-the-solver.adoc#partitionedSearch[Partitioned Search], multi-stage planning leads to suboptimal results.
+Similarly to xref:running-timefold-solver/multithreaded-solving.adoc#partitionedSearch[Partitioned Search], multi-stage planning leads to suboptimal results.
 Nevertheless, it might be beneficial in order to simplify the maintenance, ownership, and help to start a project.
 
 Do not confuse multi-stage planning with xref:optimization-algorithms/optimization-algorithms.adoc#solverPhase[multi-phase solving].

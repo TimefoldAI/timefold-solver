@@ -224,7 +224,7 @@ Alternatively, you can sometimes also introduce <<cachedProblemFact,_a cached pr
 === `@PlanningId`
 
 For some functionality
-(such as xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
+(such as xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
 and xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning]),
 Timefold Solver needs to map problem facts and planning entities to a unique ID.
 Timefold Solver uses that ID to _rebase_ a move from one thread's solution state to another's.
@@ -504,7 +504,7 @@ A @PlanningVariable annotation needs to be on a member in a class with a @Planni
 It is ignored on parent classes or subclasses without that annotation.
 ====
 
-xref:using-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
+xref:running-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
 
 [tabs]
 ====
@@ -1168,7 +1168,7 @@ public class Timetable {
 ----
 ====
 
-xref:using-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
+xref:running-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
 
 [tabs]
 ====
@@ -1261,7 +1261,7 @@ Java::
 A `ValueRangeProvider` that uses the solution as a parameter for the planning entity consumes less memory
 compared to the previous approach,
 as it does not require storing information at the entity level.
-This also helps reduce the overhead of the xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[solution cloning],
+This also helps reduce the overhead of the xref:running-timefold-solver/modeling-planning-problems.adoc#cloningASolution[solution cloning],
 which can become significant for huge data sets.
 ====
 
@@ -1503,7 +1503,7 @@ the `comparatorClass` needs to implement a `Comparator` of a common superclass (
 and be able to handle comparing instances of those different classes.
 ====
 
-If the model uses a xref:using-timefold-solver/modeling-planning-problems#planningListVariable[list variable],
+If the model uses a xref:running-timefold-solver/modeling-planning-problems#planningListVariable[list variable],
 the setting process is similar,
 and the property `comparatorClass` must be specified in the `@PlanningListVariable` annotation:
 
@@ -1546,7 +1546,7 @@ For example, none of the `timeslot` variables of any `Lesson` may be used to det
 [#mixedModels]
 == Mixed models
 
-If both xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic] and xref:using-timefold-solver/modeling-planning-problems#planningListVariable[list] variables are included in the model,
+If both xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic] and xref:running-timefold-solver/modeling-planning-problems#planningListVariable[list] variables are included in the model,
 it is referred to as a *mixed model*.
 
 The following planning entity defines two genuine variables:
@@ -2469,7 +2469,7 @@ class Timetable : AbstractSimpleModel() {
 
 [NOTE]
 ====
-When xref:using-timefold-solver/library-integration.adoc[using Timefold Solver as a library], the `SolverModel` interface is not available.
+When xref:running-timefold-solver/library-integration.adoc[using Timefold Solver as a library], the `SolverModel` interface is not available.
 Your `@PlanningSolution` class is a plain Java class with no framework interface to implement.
 ====
 

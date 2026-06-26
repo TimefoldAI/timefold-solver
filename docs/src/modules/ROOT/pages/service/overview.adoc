@@ -41,7 +41,7 @@ Your modeling and constraint knowledge is the same, only the plumbing changes.
 
 The following areas of the documentation apply equally to both service and library mode:
 
-xref:../using-timefold-solver/modeling-planning-problems.adoc[*Modeling planning problems*]::
+xref:../running-timefold-solver/modeling-planning-problems.adoc[*Modeling planning problems*]::
 How to annotate your domain with `@PlanningSolution`, `@PlanningEntity`, `@PlanningVariable`, and related annotations.
 This is identical whether you run as a service or embed as a library.
 
@@ -49,7 +49,7 @@ xref:../constraints-and-score/overview.adoc#constraintsAndScoreOverview[*Constra
 How to define hard and soft constraints, choose a score type, and analyze solution quality.
 Constraint streams and score calculation work identically in both modes.
 
-xref:../using-timefold-solver/running-the-solver.adoc[*Tuning and diagnostics*]::
+xref:../running-timefold-solver/multithreaded-solving.adoc[*Tuning and diagnostics*]::
 Environment modes, logging, monitoring, multi-threaded solving, and random seed configuration.
 These concepts and most configuration options apply regardless of how you run the solver.
 

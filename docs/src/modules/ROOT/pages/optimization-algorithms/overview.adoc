@@ -129,7 +129,7 @@ However, this basic procedure provides a good starting configuration that will p
 See xref:optimization-algorithms/construction-heuristics.adoc#firstFit[First Fit].
 
 . Next,
-implement xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
+implement xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
 and turn it into xref:optimization-algorithms/construction-heuristics.adoc#firstFitDecreasing[First Fit Decreasing].
 
 . Next, add Late Acceptance behind it:
@@ -139,14 +139,14 @@ and turn it into xref:optimization-algorithms/construction-heuristics.adoc#first
 At this point, the return on invested time lowers and the result is likely to be sufficient.
 
 However, this can be improved at a lower return on invested time.
-Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
+Use the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
 and try a couple of different Tabu Search, Simulated Annealing and Late Acceptance configurations,
 for example:
 
 . First Fit Decreasing
 . xref:optimization-algorithms/local-search.adoc#tabuSearch[Tabu Search].
 
-Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
+Use the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
 to improve the values for the size parameters.
 
 Other experiments can also be run.
@@ -181,7 +181,7 @@ Many optimization algorithms have parameters that affect results and scalability
 Timefold Solver applies __configuration by exception__, so all optimization algorithms have default parameter values.
 This is very similar to the Garbage Collection parameters in a JVM: most users have no need to tweak them, but power users often do.
 
-The default parameter values are sufficient for many cases (and especially for prototypes), but if development time allows, it may be beneficial to power tweak them with the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[benchmarker] for better results and scalability on a specific use case.
+The default parameter values are sufficient for many cases (and especially for prototypes), but if development time allows, it may be beneficial to power tweak them with the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[benchmarker] for better results and scalability on a specific use case.
 The documentation for each optimization algorithm also declares the advanced configuration for power tweaking.
 
 [WARNING]
@@ -273,7 +273,7 @@ These form four nested scopes:
 
 image::optimization-algorithms/overview/scopeOverview.png[align="center"]
 
-Configure xref:using-timefold-solver/running-the-solver.adoc#logging[logging] to display the log messages of each scope.
+Configure xref:running-timefold-solver/multithreaded-solving.adoc#logging[logging] to display the log messages of each scope.
 
 
 [#termination]
@@ -716,7 +716,7 @@ This is useful for benchmarking.
   </termination>
 ----
 
-Switching xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
+Switching xref:running-timefold-solver/multithreaded-solving.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
 
 [#moveCountTermination]
 ===== `MoveCountTermination`
@@ -731,7 +731,7 @@ This is useful for benchmarking.
   </termination>
 ----
 
-Switching xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
+Switching xref:running-timefold-solver/multithreaded-solving.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
 
 [#diminishedReturnsTermination]
 ===== `DiminishedReturnsTermination`
@@ -851,7 +851,7 @@ For example, to implement a custom Construction Heuristic without implementing a
 ====
 Most of the time, a custom solver phase is not worth the investment of development time.
 xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction Heuristics] are configurable and support partially initialized solutions too.
-You can use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak them.
+You can use the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak them.
 ====
 
 The `PhaseCommand` interface appears as follows:
@@ -888,7 +888,7 @@ Returns `true` if the `PhaseCommand` should terminate.
 Returns the working object that corresponds to the given external object.
 This is useful when the `PhaseCommand` remembers an object from some previous working solution,
 and needs to find the corresponding object in the current working solution,
-which may have been xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning-cloned] since.
+which may have been xref:running-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning-cloned] since.
 
 Any change on the planning entities in a `PhaseCommand` must be done through the `execute` or `executeTemporarily` methods,
 to avoid corrupting the `Solver`.
@@ -926,8 +926,8 @@ the best solution will not be changed.
 Effectively nothing will have changed for the next `Phase` or `PhaseCommand`.
 
 To configure values of a `PhaseCommand` dynamically in the solver configuration
-(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `customProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
+(so the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `customProperties` element and use xref:running-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----
@@ -988,8 +988,8 @@ Therefore, all the optimization algorithms are confronted with `Move` selection:
 ==== Which move types might be missing in my implementation?
 
 To determine which move types might be missing in your implementation,
-run a xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] __for a short amount of time__
-and xref:using-timefold-solver/benchmarking-and-tweaking.adoc#writeTheOutputSolutionOfBenchmarkRuns[configure it to write the best solutions to disk].
+run a xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] __for a short amount of time__
+and xref:running-timefold-solver/benchmarking-and-tweaking.adoc#writeTheOutputSolutionOfBenchmarkRuns[configure it to write the best solutions to disk].
 Take a look at such a best solution: it will likely be a local optima.
 Try to figure out if there's a move that could get out of that local optima faster.
 
