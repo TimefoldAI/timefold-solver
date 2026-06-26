@@ -22,7 +22,7 @@ Explore our documentation and available models https://docs.timefold.ai/[here].
 Timefold Solver gives you access to a range of building blocks to model the domain of your planning problem.
 This page describes those building blocks in more detail.
 
-If instead you are looking for guidance on how to create a good domain model, read the xref:design-patterns/design-patterns.adoc#domainModelingGuide[domain modeling guide].
+If instead you are looking for guidance on how to create a good domain model, read the xref:design-patterns/domain-modeling.adoc[domain modeling guide].
 
 
 [NOTE]

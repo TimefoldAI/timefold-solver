@@ -11,7 +11,10 @@
 ** xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing (Guide)]
 ** https://github.com/TimefoldAI/timefold-quickstarts[More examples on GitHub^]
 
-* xref:running-timefold-solver/modeling-planning-problems.adoc[leveloffset=+1]
+* Building your model
+** xref:running-timefold-solver/modeling-planning-problems.adoc[leveloffset=+1]
+** xref:design-patterns/domain-modeling.adoc[leveloffset=+1]
+** xref:design-patterns/time-patterns.adoc[leveloffset=+1]
 
 * xref:constraints-and-score/overview.adoc[Constraints and score]
 ** xref:constraints-and-score/score-calculation.adoc[leveloffset=+1]
@@ -21,6 +24,7 @@
 ** xref:constraints-and-score/performance.adoc[leveloffset=+1]
 
 * xref:running-timefold-solver/overview.adoc[Running the Solver]
+** xref:design-patterns/cloud-architecture.adoc[leveloffset=+1]
 ** xref:service/overview.adoc[Service Reference (Preview)]
 *** xref:service/rest-api.adoc[leveloffset=+1]
 *** xref:service/modeling-changes.adoc[leveloffset=+1]
@@ -44,7 +48,6 @@
 *** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
 * xref:integration/integration.adoc[leveloffset=+1]
-* xref:design-patterns/design-patterns.adoc[leveloffset=+1]
 * xref:frequently-asked-questions.adoc[leveloffset=+1]
 * https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy][leveloffset=+1]
 * Upgrading Timefold Solver

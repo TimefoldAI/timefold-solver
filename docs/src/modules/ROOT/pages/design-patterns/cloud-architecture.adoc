@@ -1,0 +1,22 @@
+[#cloudArchitecturePatterns]
+= Cloud architecture patterns
+:doctype: book
+:sectnums:
+:icons: font
+
+There are two common usage patterns of Timefold Solver in the cloud:
+
+* *Batch planning*:
+Typically runs at night for hours to solve each tenant's dataset
+and deliver each schedule for the upcoming day(s) or week(s).
+Only the final best solution is sent back to the client.
+This is a good fit for a serverless cloud architecture.
+
+* *Real-time planning*:
+Typically runs during the day,
+to handle unexpected problem changes as they occur in real-time
+and sends each best solution as they are discovered to the client.
+
+image::design-patterns/serverlessCloudArchitecture.png[align="center"]
+
+image::design-patterns/realTimePlanningCloudArchitecture.png[align="center"]
