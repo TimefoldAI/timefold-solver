@@ -154,9 +154,9 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
             return;
         }
         // Item is outside the bag
-        var firstAfterItem = startItemToSequence.higherKey(addingItem);
-        if (firstAfterItem != null) {
-            addBetweenItems(addingItem, prevBag, endOfBeforeSequenceItem, firstAfterItem);
+        var firstAfterEntry = startItemToSequence.higherEntry(addingItem);
+        if (firstAfterEntry != null) {
+            addBetweenItems(addingItem, prevBag, endOfBeforeSequenceItem, firstAfterEntry);
         } else {
             if (isFirstSuccessorOfSecond(addingItem, endOfBeforeSequenceItem)) {
                 // We need to extend the first bag
@@ -198,14 +198,16 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     private void addBetweenItems(ComparableValue<Value_, Point_> comparableItem,
             SequenceImpl<Value_, Point_, Difference_> prevBag,
             ComparableValue<Value_, Point_> endOfBeforeSequenceItem,
-            ComparableValue<Value_, Point_> firstAfterItem) {
+            Map.Entry<ComparableValue<Value_, Point_>, SequenceImpl<Value_, Point_, Difference_>> firstAfterEntry) {
+        var firstAfterItem = firstAfterEntry.getKey();
+        var afterBag = firstAfterEntry.getValue();
         if (isFirstSuccessorOfSecond(comparableItem, endOfBeforeSequenceItem)) {
             // We need to extend the first bag
             if (isFirstSuccessorOfSecond(firstAfterItem, comparableItem)) {
                 // We need to merge the two bags; afterBag.previousBreak (break between prevBag and
                 // afterBag) is discarded with afterBag. higherEntry is strict-greater, so it skips
                 // firstAfterItem (just removed) and finds the sequence after afterBag.
-                var afterBag = startItemToSequence.remove(firstAfterItem);
+                startItemToSequence.remove(firstAfterItem); // delete the afterBag mapping
                 prevBag.merge(afterBag);
                 var nextSeqEntry = startItemToSequence.higherEntry(firstAfterItem);
                 if (nextSeqEntry != null) {
@@ -213,14 +215,14 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
                 }
             } else {
                 prevBag.setEnd(comparableItem);
-                startItemToSequence.get(firstAfterItem).previousBreak.updateLength();
+                afterBag.previousBreak.updateLength();
             }
         } else {
             // Don't need to extend the first bag
             if (isFirstSuccessorOfSecond(firstAfterItem, comparableItem)) {
                 // We need to move the after bag to use item as key; previousBreak is a field on the
                 // bag, so it follows the bag without re-keying — just update the length.
-                var afterBag = startItemToSequence.remove(firstAfterItem);
+                startItemToSequence.remove(firstAfterItem); // delete the afterBag mapping; re-keyed below
                 afterBag.setStart(comparableItem);
                 startItemToSequence.put(comparableItem, afterBag);
                 afterBag.previousBreak.updateLength();
@@ -228,7 +230,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
                 // Start a new bag of consecutive items; split the existing break into two
                 var newBag = new SequenceImpl<>(this, comparableItem);
                 startItemToSequence.put(comparableItem, newBag);
-                startItemToSequence.get(firstAfterItem).previousBreak.setPreviousSequence(newBag);
+                afterBag.previousBreak.setPreviousSequence(newBag);
                 newBag.previousBreak = new BreakImpl<>(newBag, prevBag);
             }
         }
