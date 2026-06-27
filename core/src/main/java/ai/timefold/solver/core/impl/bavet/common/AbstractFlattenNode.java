@@ -7,17 +7,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
+
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, FlattenedItem_>
         extends AbstractSingleInputNode<InTuple_> {
 
     private final int flattenStoreIndex;
     private final StaticPropagationQueue<OutTuple_> propagationQueue;
+    private final Consumer<OutTuple_> removeTupleConsumer = this::removeTuple;
+    private final Predicate<FlattenItemBag<FlattenedItem_, OutTuple_>> removeExtrasPredicate =
+            bag -> bag.removeExtras(removeTupleConsumer);
 
     protected AbstractFlattenNode(int flattenStoreIndex, TupleLifecycle<OutTuple_> nextNodesTupleLifecycle) {
         super(nextNodesTupleLifecycle);
@@ -64,10 +69,15 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
 
     private void addTuple(InTuple_ originalTuple, FlattenedItem_ item,
             FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem) {
-        var outTupleBag = bagByItem.getBag(item);
-        outTupleBag.add(() -> createTuple(originalTuple, outTupleBag.value),
-                propagationQueue::insert,
-                propagationQueue::update);
+        var bag = bagByItem.getBag(item);
+        var reuse = bag.reuseOrAdvance();
+        if (reuse == null) {
+            var created = createTuple(originalTuple, bag.value);
+            bag.append(created);
+            propagationQueue.insert(created);
+        } else {
+            propagationQueue.update(reuse);
+        }
     }
 
     protected abstract OutTuple_ createTuple(InTuple_ originalTuple, FlattenedItem_ item);
@@ -86,7 +96,7 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
             addTuple(tuple, item, bagByItem);
         }
         bagByItem.getAllBags()
-                .removeIf(bag -> bag.removeExtras(this::removeTuple));
+                .removeIf(removeExtrasPredicate);
     }
 
     protected abstract Iterable<FlattenedItem_> extractIterable(InTuple_ tuple);
@@ -98,7 +108,7 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        bagByItem.applyToAll(this::removeTuple);
+        bagByItem.applyToAll(removeTupleConsumer);
     }
 
     private void removeTuple(OutTuple_ outTuple) {
@@ -165,21 +175,19 @@ public abstract class AbstractFlattenNode<InTuple_ extends Tuple, OutTuple_ exte
 
         /**
          * Increments {@link #newCount}.
-         * If the updated {@link #newCount} is less than or equal to the size of {@link #outTupleList},
-         * the {@code updateConsumer} is called with the corresponding element from
-         * {@link #outTupleList}.
-         * Otherwise, the {@code insertConsumer} is called with a new tuple created
-         * with {@code outTupleSupplier}, and that tuple is added to {@link #outTupleList}.
+         *
+         * @return the existing tuple to reuse if {@link #newCount} is within the current size of
+         *         {@link #outTupleList}, or {@code null} if a new tuple must be created and passed
+         *         to {@link #append}.
          */
-        void add(Supplier<OutTuple_> outTupleSupplier, Consumer<OutTuple_> insertConsumer, Consumer<OutTuple_> updateConsumer) {
+        @Nullable
+        OutTuple_ reuseOrAdvance() {
             var listIndex = newCount++;
-            if (newCount > outTupleList.size()) {
-                var inserted = outTupleSupplier.get();
-                outTupleList.add(inserted);
-                insertConsumer.accept(inserted);
-            } else {
-                updateConsumer.accept(outTupleList.get(listIndex));
-            }
+            return newCount > outTupleList.size() ? null : outTupleList.get(listIndex);
+        }
+
+        void append(OutTuple_ created) {
+            outTupleList.add(created);
         }
 
         /**
