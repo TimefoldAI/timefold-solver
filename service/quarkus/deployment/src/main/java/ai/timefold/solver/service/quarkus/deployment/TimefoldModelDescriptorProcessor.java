@@ -509,6 +509,14 @@ class TimefoldModelDescriptorProcessor {
         }
     }
 
+    protected static void validateApplicationVersion(String version) {
+        if (version == null || version.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "The application version is missing. Set the '" + APPLICATION_VERSION_PROPERTY
+                            + "' property (e.g. in application.properties) so the build can proceed.");
+        }
+    }
+
     private void generateModelDescriptor(String modelId, String model, OpenAPI openAPI,
             Path outputDirectory,
             Optional<ClassInfo> restResource,
@@ -527,8 +535,10 @@ class TimefoldModelDescriptorProcessor {
         descriptor.setModel(model);
         descriptor.setName(
                 config.getOptionalValue(APPLICATION_NAME_PROPERTY, String.class).orElse(openAPI.getInfo().getTitle()));
-        descriptor.setVersion(
-                config.getOptionalValue(APPLICATION_VERSION_PROPERTY, String.class).orElse(openAPI.getInfo().getVersion()));
+        String applicationVersion =
+                config.getOptionalValue(APPLICATION_VERSION_PROPERTY, String.class).orElse(openAPI.getInfo().getVersion());
+        validateApplicationVersion(applicationVersion);
+        descriptor.setVersion(applicationVersion);
         descriptor.setResourceType(getResourceTypeFromRestResource(restResource));
         descriptor.setDescription(config.getOptionalValue(APPLICATION_DESCRIPTION_PROPERTY, String.class)
                 .orElse(openAPI.getInfo().getDescription()));
