@@ -1,8 +1,10 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NoSuchElementException;
@@ -195,13 +197,10 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
                 }
             }
             default -> {
-                if (filter == null) {
-                    yield new RandomIterator(queryCompositeKey,
-                            indexer -> indexer.randomIterator(queryCompositeKey, workingRandom));
-                } else {
-                    yield new RandomIterator(queryCompositeKey,
-                            indexer -> indexer.randomIterator(queryCompositeKey, workingRandom, filter));
-                }
+                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction = filter == null
+                        ? indexer -> indexer.randomIterator(queryCompositeKey, workingRandom)
+                        : indexer -> indexer.randomIterator(queryCompositeKey, workingRandom, filter);
+                yield new RandomIterator(queryCompositeKey, workingRandom, downstreamIteratorFunction);
             }
         };
     }
@@ -274,18 +273,112 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         }
     }
 
-    private final class RandomIterator extends DefaultIterator {
+    /**
+     * Iterates the in-range leaf indexers so that the selection is fair across all elements:
+     * each leaf indexer is drawn with a probability proportional to the number of elements it
+     * contributes to the query range, so every element has the same chance of being visited next.
+     * Without this weighting, an element in a small leaf indexer would be over-represented
+     * relative to an element in a large one.
+     */
+    private final class RandomIterator implements Iterator<T> {
 
-        public RandomIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
-            super(queryCompositeKey, downstreamIteratorFunction);
+        private final RandomGenerator workingRandom;
+        private final List<Bucket> buckets = new ArrayList<>();
+        private int remainingTotal = 0;
+
+        private boolean hasNextComputed = false;
+        private @Nullable T next = null;
+        private @Nullable Bucket nextBucket = null;
+        private @Nullable Bucket lastReturnedBucket = null;
+
+        private RandomIterator(Object queryCompositeKey, RandomGenerator workingRandom,
+                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+            this.workingRandom = workingRandom;
+            var indexKey = keyUnpacker.apply(queryCompositeKey);
+            for (var entry : comparisonMap.entrySet()) {
+                if (boundaryReached(entry.getKey(), indexKey)) {
+                    // Boundary reached; the remaining leaf indexers are out of range.
+                    break;
+                }
+                var downstreamIndexer = entry.getValue();
+                var size = downstreamIndexer.size(queryCompositeKey);
+                if (size <= 0) {
+                    continue;
+                }
+                buckets.add(new Bucket(downstreamIteratorFunction.apply(downstreamIndexer), size));
+                remainingTotal += size;
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (hasNextComputed) {
+                return true;
+            }
+            while (remainingTotal > 0) {
+                var bucket = pickBucket();
+                if (bucket.iterator.hasNext()) {
+                    next = bucket.iterator.next();
+                    nextBucket = bucket;
+                    hasNextComputed = true;
+                    return true;
+                }
+                // The leaf indexer has no more matching elements (e.g. all filtered out); drop it from the draw.
+                remainingTotal -= bucket.remaining;
+                bucket.remaining = 0;
+            }
+            next = null;
+            nextBucket = null;
+            return false;
+        }
+
+        private Bucket pickBucket() {
+            var threshold = workingRandom.nextInt(remainingTotal);
+            var cumulative = 0;
+            for (var bucket : buckets) {
+                cumulative += bucket.remaining;
+                if (threshold < cumulative) {
+                    return bucket;
+                }
+            }
+            throw new IllegalStateException(
+                    "Impossible state: no leaf indexer selected for threshold (%d).".formatted(threshold));
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            var result = next;
+            lastReturnedBucket = nextBucket;
+            hasNextComputed = false;
+            next = null;
+            nextBucket = null;
+            return result;
         }
 
         @Override
         public void remove() {
-            if (downstreamIterator == null) {
+            if (lastReturnedBucket == null) {
                 throw new IllegalStateException("next() must be called before remove().");
             }
-            downstreamIterator.remove();
+            lastReturnedBucket.iterator.remove();
+            lastReturnedBucket.remaining--;
+            remainingTotal--;
+            lastReturnedBucket = null;
+        }
+
+    }
+
+    private final class Bucket {
+
+        private final Iterator<T> iterator;
+        private int remaining;
+
+        private Bucket(Iterator<T> iterator, int remaining) {
+            this.iterator = iterator;
+            this.remaining = remaining;
         }
 
     }
