@@ -211,8 +211,38 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
         assertThat(resultList).containsExactlyInAnyOrder(age10, age10d, age20b, age20e);
     }
 
+    @Test
+    void randomIteratorWithFilterIsFairOverSurvivingElements() {
+        var indexer = newRandomAccessLessThanIndexer();
+        // Big bucket: 100 tuples, but only one survives the filter.
+        var survivor10 = newTuple("survivor10");
+        indexer.put(10, survivor10);
+        for (var i = 0; i < 99; i++) {
+            indexer.put(10, newTuple("reject10-" + i));
+        }
+        // Tiny bucket: a single surviving tuple.
+        var survivor20 = newTuple("survivor20");
+        indexer.put(20, survivor20);
+
+        var allowedSet = Set.of(survivor10, survivor20);
+        var random = new Random(0);
+        var iterations = 100_000;
+        var survivor10Count = 0;
+        for (var i = 0; i < iterations; i++) {
+            var iterator = indexer.randomIterator(100, random, allowedSet::contains);
+            assertThat(iterator).hasNext();
+            if (iterator.next().equals(survivor10)) {
+                survivor10Count++;
+            }
+        }
+        // Despite the big bucket holding 100x more (unfiltered) tuples, both survivors are about equally likely.
+        // Under the old per-bucket weighting survivor10 would be picked roughly 100/101 of the time.
+        var survivor10Share = survivor10Count / (double) iterations;
+        assertThat(survivor10Share).isBetween(0.45, 0.55);
+    }
+
     private static ComparisonIndexer<UniTuple<String>, Integer> newRandomAccessLessThanIndexer() {
-        return new ComparisonIndexer<>(JoinerType.LESS_THAN, KeyUnpacker.<Integer>single(),
+        return new ComparisonIndexer<>(JoinerType.LESS_THAN, KeyUnpacker.<Integer> single(),
                 RandomAccessLeafIndexer::new);
     }
 

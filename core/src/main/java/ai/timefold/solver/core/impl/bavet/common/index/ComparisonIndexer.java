@@ -196,12 +196,13 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
                     }
                 }
             }
-            default -> {
-                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction = filter == null
-                        ? indexer -> indexer.randomIterator(queryCompositeKey, workingRandom)
-                        : indexer -> indexer.randomIterator(queryCompositeKey, workingRandom, filter);
-                yield new RandomIterator(queryCompositeKey, workingRandom, downstreamIteratorFunction);
-            }
+            default ->
+                // Always draw from the unfiltered leaf iterators, weighting each bucket by its full size,
+                // and apply the filter (if any) during selection. This keeps the bucket weights exact even
+                // for the filtered path: rejected tuples are removed as they are drawn, so every surviving
+                // element stays equally likely to be visited next.
+                new RandomIterator(queryCompositeKey, workingRandom,
+                        indexer -> indexer.randomIterator(queryCompositeKey, workingRandom), filter);
         };
     }
 
@@ -283,6 +284,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     private final class RandomIterator implements Iterator<T> {
 
         private final RandomGenerator workingRandom;
+        private final @Nullable Predicate<T> filter;
         private final List<Bucket> buckets = new ArrayList<>();
         private int remainingTotal = 0;
 
@@ -292,8 +294,9 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         private @Nullable Bucket lastReturnedBucket = null;
 
         private RandomIterator(Object queryCompositeKey, RandomGenerator workingRandom,
-                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
+                Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction, @Nullable Predicate<T> filter) {
             this.workingRandom = workingRandom;
+            this.filter = filter;
             var indexKey = keyUnpacker.apply(queryCompositeKey);
             for (var entry : comparisonMap.entrySet()) {
                 if (boundaryReached(entry.getKey(), indexKey)) {
@@ -317,15 +320,23 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
             }
             while (remainingTotal > 0) {
                 var bucket = pickBucket();
-                if (bucket.iterator.hasNext()) {
-                    next = bucket.iterator.next();
+                if (!bucket.iterator.hasNext()) {
+                    // The leaf indexer has no more elements; drop it from the draw.
+                    remainingTotal -= bucket.remaining;
+                    bucket.remaining = 0;
+                    continue;
+                }
+                var candidate = bucket.iterator.next();
+                if (filter == null || filter.test(candidate)) {
+                    next = candidate;
                     nextBucket = bucket;
                     hasNextComputed = true;
                     return true;
                 }
-                // The leaf indexer has no more matching elements (e.g. all filtered out); drop it from the draw.
-                remainingTotal -= bucket.remaining;
-                bucket.remaining = 0;
+                // Rejected by the filter; remove it so it is never drawn again and the weights stay exact.
+                bucket.iterator.remove();
+                bucket.remaining--;
+                remainingTotal--;
             }
             next = null;
             nextBucket = null;
