@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
@@ -87,14 +88,12 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
             if (solutionUpdatePolicy.isScoreUpdateEnabled()) {
                 var score = scoreDirector.calculateScore();
                 if (score.isInvalid()) {
-                    throw new IllegalArgumentException("""
-                            The solution (%s) is inconsistent. %s requires a consistent solution to be passed.
-                            """.formatted(solution, feature));
+                    var inconsistentEntities = scoreDirector.getInconsistentEntities();
+                    throw new InconsistentSolutionException(feature, nonNullSolution, inconsistentEntities);
                 }
             } else if (!scoreDirector.isLastVariableUpdateWasSuccessful()) {
-                throw new IllegalArgumentException("""
-                        The solution (%s) is inconsistent. %s requires a consistent solution to be passed.
-                        """.formatted(solution, feature));
+                var inconsistentEntities = scoreDirector.getInconsistentEntities();
+                throw new InconsistentSolutionException(feature, nonNullSolution, inconsistentEntities);
             }
             return function.apply(scoreDirector);
         }
