@@ -7,6 +7,13 @@
 
 Before writing any code, it helps to think through your domain model on paper.
 This guide walks you through the process of translating a real-world planning problem into a model that Timefold Solver can work with: identifying which parts of your domain change during planning, which relationships become planning variables, and how to structure entities to keep the search space manageable.
+The structure of your model directly affects the size of the search space. Poor choices can make even small problems slow to solve.
+
+[NOTE]
+====
+This guide builds on concepts introduced in the xref:quickstart/overview.adoc[Getting Started guides].
+If you haven't completed one yet, start there before continuing.
+====
 
 . *Draw a class diagram of your domain model.*
 .. Make sure there are no duplications in your data model and that relationships between objects are clearly defined.
@@ -18,9 +25,15 @@ One side of these relationships will become a planning variable later on.
 For example, in employee rostering, the `Shift` to `Employee` relationship changes during planning, so it is orange.
 However, other relationships, such as from `Employee` to `Skill`, are immutable during planning
 because Timefold Solver cannot assign an extra skill to an employee.
++
+[NOTE]
+====
+If any of those relationships involve time or date, see xref:domain-modeling/common-patterns.adoc#assigningTimeToPlanningEntities[Assigning time to planning entities] before continuing.
+====
 
 . *If there are multiple relationships (or fields), check for xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables]*.
-A shadow variable changes during planning, but its value can be calculated based on one or more genuine planning variables, without dispute. Color shadow relationships (or fields) purple.
+A shadow variable is a field that changes during solving, but whose value can always be derived from genuine planning variables without ambiguity. For example, the arrival time at a delivery stop can be calculated from the sequence of stops assigned to a vehicle and the known travel times between them.
+Color shadow relationships (or fields) purple.
 +
 [NOTE]
 ====

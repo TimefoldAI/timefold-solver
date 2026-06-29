@@ -113,6 +113,27 @@ For more detailed guidance on when to use which variant, read the xref:domain-mo
 - xref:planningVariable[@PlanningVariable]: contains a single *planning value*. *Planning values* can be assigned to multiple *planning entities*.
 - xref:planningListVariable[@PlanningListVariable]: contains multiple *planning values* in a specific order. *Planning values* can only be assigned to a single *planning entity*.
 
+[cols="1,2,2", options="header"]
+|===
+| | xref:planningVariable[@PlanningVariable] | xref:planningListVariable[@PlanningListVariable]
+
+| *Assignment model*
+| One value per entity
+| Ordered list of values per entity
+
+| *Values shared across entities*
+| Yes, the same value can be assigned to multiple entities
+| No, each value belongs to exactly one entity
+
+| *Order of values matters*
+| No
+| Yes
+
+| *Typical use case*
+| Assign a room to a lesson, assign an employee to a shift
+| Route customers for a vehicle, sequence tasks for a worker
+|===
+
 A planning entity can contain xref:mixedModels[a mix] of these genuine variables, with some limitations.
 
 [#shadowPlanningVariables]

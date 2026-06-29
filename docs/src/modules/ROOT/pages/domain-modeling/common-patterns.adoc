@@ -4,6 +4,11 @@
 :sectnums:
 :icons: font
 
+[NOTE]
+====
+This page covers patterns you will encounter while designing your domain model.
+It is best read alongside the xref:domain-modeling/domain-modeling.adoc[domain modeling guide], not after, especially the time assignment section if your problem involves scheduling tasks in time.
+====
 
 [#timeRepresentations]
 == Choosing a time representation
