@@ -5,9 +5,9 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This class has two direct children: {@link AbstractIndexedIfExistsNode} and {@link AbstractUnindexedIfExistsNode}.
@@ -23,6 +23,9 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
 
     protected final boolean shouldExist;
 
+    // When isFiltering, these slots hold the head FilteringTracker of a hidden intrusive doubly-linked list
+    // (null = empty list). Links are stored in FilteringTracker's own prev/next fields — there is no list object.
+    // See FilteringTracker for the field layout.
     protected final int inputStoreIndexLeftTrackerList; // -1 if !isFiltering
     protected final int inputStoreIndexRightTrackerList; // -1 if !isFiltering
 
@@ -63,7 +66,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     }
 
     protected void updateCounterLeft(ExistsCounter<LeftTuple_> counter) {
-        TupleState state = counter.state;
+        var state = counter.state;
         if (shouldExist ? counter.countRight > 0 : counter.countRight == 0) {
             // Insert or update
             switch (state) {
@@ -123,26 +126,104 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         } // Else do not even propagate an update
     }
 
-    protected ElementAwareLinkedList<FilteringTracker<LeftTuple_>> clearRightTrackerList(UniTuple<Right_> rightTuple) {
-        ElementAwareLinkedList<FilteringTracker<LeftTuple_>> rightTrackerList =
-                rightTuple.getStore(inputStoreIndexRightTrackerList);
-        rightTrackerList.clear(tracker -> {
-            decrementCounterRight(tracker.counter);
-            tracker.removeByRight();
-        });
-        return rightTrackerList;
+    // Prepends tracker into the left tuple's hidden intrusive tracker list.
+    // The left tuple's store at inputStoreIndexLeftTrackerList holds the list head (null = empty).
+    private void linkLeft(FilteringTracker<LeftTuple_> tracker) {
+        var leftTuple = tracker.counter.leftTuple;
+        FilteringTracker<LeftTuple_> head = leftTuple.getStore(inputStoreIndexLeftTrackerList);
+        tracker.leftNext = head;
+        if (head != null) {
+            head.leftPrev = tracker;
+        }
+        leftTuple.setStore(inputStoreIndexLeftTrackerList, tracker);
     }
 
-    protected void updateCounterFromLeft(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple,
-            ElementAwareLinkedList<FilteringTracker<LeftTuple_>> leftTrackerList) {
-        if (testFiltering(counter.leftTuple, rightTuple)) {
-            counter.countRight++;
-            new FilteringTracker<>(counter, leftTrackerList, rightTuple.getStore(inputStoreIndexRightTrackerList));
+    // Prepends tracker into the right tuple's hidden intrusive tracker list.
+    // The right tuple's store at inputStoreIndexRightTrackerList holds the list head (null = empty).
+    private void linkRight(FilteringTracker<LeftTuple_> tracker) {
+        var rightTuple = tracker.rightTuple;
+        FilteringTracker<LeftTuple_> head = rightTuple.getStore(inputStoreIndexRightTrackerList);
+        tracker.rightNext = head;
+        if (head != null) {
+            head.rightPrev = tracker;
+        }
+        rightTuple.setStore(inputStoreIndexRightTrackerList, tracker);
+    }
+
+    // Splices tracker out of its right tuple's hidden list (used when clearing from the left side).
+    // Nulls the tracker's right links; if tracker is the head, updates the right tuple's slot.
+    private void removeFromRight(FilteringTracker<LeftTuple_> tracker) {
+        var prev = tracker.rightPrev;
+        var next = tracker.rightNext;
+        if (prev != null) {
+            prev.rightNext = next;
+        } else {
+            // tracker is the head of the right list; update the slot
+            tracker.rightTuple.setStore(inputStoreIndexRightTrackerList, next);
+        }
+        if (next != null) {
+            next.rightPrev = prev;
+        }
+        tracker.rightPrev = null;
+        tracker.rightNext = null;
+    }
+
+    // Splices tracker out of its left tuple's hidden list (used when clearing from the right side).
+    // Nulls the tracker's left links; if tracker is the head, updates the left tuple's slot.
+    private void removeFromLeft(FilteringTracker<LeftTuple_> tracker) {
+        var prev = tracker.leftPrev;
+        var next = tracker.leftNext;
+        if (prev != null) {
+            prev.leftNext = next;
+        } else {
+            // tracker is the head of the left list; update the slot
+            tracker.counter.leftTuple.setStore(inputStoreIndexLeftTrackerList, next);
+        }
+        if (next != null) {
+            next.leftPrev = prev;
+        }
+        tracker.leftPrev = null;
+        tracker.leftNext = null;
+    }
+
+    // Clears the left tracker list rooted at leftTuple's inputStoreIndexLeftTrackerList slot,
+    // cross-removing each tracker from its right tuple's hidden list. No-op when !isFiltering.
+    // Walk safety: removeFromRight only touches right-side links, so leftNext is stable across the call.
+    protected void clearLeftTrackerList(LeftTuple_ leftTuple) {
+        if (!isFiltering) {
+            return;
+        }
+        FilteringTracker<LeftTuple_> tracker = leftTuple.removeStore(inputStoreIndexLeftTrackerList);
+        while (tracker != null) {
+            var next = tracker.leftNext;
+            removeFromRight(tracker);
+            tracker = next;
         }
     }
 
-    protected void updateCounterFromRight(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple,
-            ElementAwareLinkedList<FilteringTracker<LeftTuple_>> rightTrackerList) {
+    // Clears the right tracker list rooted at rightTuple's inputStoreIndexRightTrackerList slot,
+    // decrementing each counter and cross-removing each tracker from its left tuple's hidden list.
+    // Walk safety: removeFromLeft only touches left-side links, so rightNext is stable across the call.
+    protected void clearRightTrackerList(UniTuple<Right_> rightTuple) {
+        FilteringTracker<LeftTuple_> tracker = rightTuple.removeStore(inputStoreIndexRightTrackerList);
+        while (tracker != null) {
+            var next = tracker.rightNext;
+            decrementCounterRight(tracker.counter);
+            removeFromLeft(tracker);
+            tracker = next;
+        }
+    }
+
+    protected void updateCounterFromLeft(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
+        if (testFiltering(counter.leftTuple, rightTuple)) {
+            counter.countRight++;
+            var tracker = new FilteringTracker<>(counter, rightTuple);
+            linkLeft(tracker);
+            linkRight(tracker);
+        }
+    }
+
+    protected void updateCounterFromRight(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
         var leftTuple = counter.leftTuple;
         if (!leftTuple.getState().isActive()) {
             // Assume the following scenario:
@@ -163,7 +244,9 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         }
         if (testFiltering(leftTuple, rightTuple)) {
             incrementCounterRight(counter);
-            new FilteringTracker<>(counter, leftTuple.getStore(inputStoreIndexLeftTrackerList), rightTrackerList);
+            var tracker = new FilteringTracker<>(counter, rightTuple);
+            linkLeft(tracker);
+            linkRight(tracker);
         }
     }
 
@@ -214,24 +297,21 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
     @NullMarked
     protected static final class FilteringTracker<LeftTuple_ extends Tuple> {
 
-        final ExistsCounter<LeftTuple_> counter;
-        private final ElementAwareLinkedList.Entry<FilteringTracker<LeftTuple_>> leftTrackerEntry;
-        private final ElementAwareLinkedList.Entry<FilteringTracker<LeftTuple_>> rightTrackerEntry;
+        // A tracker is a node in TWO hidden intrusive doubly-linked lists at once:
+        // one keyed on its left tuple (counter.leftTuple) and one on its right tuple.
+        // The list heads live in the tuples' inputStoreIndexLeftTrackerList /
+        // inputStoreIndexRightTrackerList store slots (null = empty list).
+        // These fields ARE the links — no ElementAwareLinkedList or Entry is allocated.
+        final ExistsCounter<LeftTuple_> counter; // -> leftTuple, for the left-keyed list and counter decrement
+        final Tuple rightTuple; // for the right-keyed list; typed as Tuple (not UniTuple<Right_>) — only getStore/setStore needed
+        @Nullable
+        FilteringTracker<LeftTuple_> leftPrev, leftNext; // links in the left tuple's hidden list
+        @Nullable
+        FilteringTracker<LeftTuple_> rightPrev, rightNext; // links in the right tuple's hidden list
 
-        FilteringTracker(ExistsCounter<LeftTuple_> counter,
-                ElementAwareLinkedList<FilteringTracker<LeftTuple_>> leftTrackerList,
-                ElementAwareLinkedList<FilteringTracker<LeftTuple_>> rightTrackerList) {
+        FilteringTracker(ExistsCounter<LeftTuple_> counter, Tuple rightTuple) {
             this.counter = counter;
-            leftTrackerEntry = leftTrackerList.add(this);
-            rightTrackerEntry = rightTrackerList.add(this);
-        }
-
-        public void removeByLeft() {
-            rightTrackerEntry.remove();
-        }
-
-        public void removeByRight() {
-            leftTrackerEntry.remove();
+            this.rightTuple = rightTuple;
         }
 
     }

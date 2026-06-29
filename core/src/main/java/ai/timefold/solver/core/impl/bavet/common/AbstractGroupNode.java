@@ -182,9 +182,12 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
             updateGroup(tuple, oldGroup);
             return;
         }
-        var oldUserSuppliedGroupKey = extractUserSuppliedKey(oldGroup.getGroupKey());
         var newUserSuppliedGroupKey = groupKeyFunction.apply(tuple);
-        if (Objects.equals(oldUserSuppliedGroupKey, newUserSuppliedGroupKey)) {
+        var storedKey = oldGroup.getGroupKey();
+        var sameKey = useAssertingGroupKey
+                ? Objects.equals(extractUserSuppliedKey(storedKey), newUserSuppliedGroupKey)
+                : Objects.equals(storedKey, newUserSuppliedGroupKey);
+        if (sameKey) {
             updateGroup(tuple, oldGroup);
         } else {
             if (hasCollector) {
