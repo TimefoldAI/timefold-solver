@@ -4,11 +4,9 @@
 :sectnums:
 :icons: font
 
-This guide provides reusable solutions to common challenges when modeling a planning problem.
-Follow these guidelines to create a well thought-out model that can contribute significantly to the success of your planning.
 
-[#domainModelingGuidelines]
-== Domain modeling guidelines
+Before writing any code, it helps to think through your domain model on paper.
+This guide walks you through the process of translating a real-world planning problem into a model that Timefold Solver can work with: identifying which parts of your domain change during planning, which relationships become planning variables, and how to structure entities to keep the search space manageable.
 
 . *Draw a class diagram of your domain model.*
 .. Make sure there are no duplications in your data model and that relationships between objects are clearly defined.
@@ -21,17 +19,17 @@ For example, in employee rostering, the `Shift` to `Employee` relationship chang
 However, other relationships, such as from `Employee` to `Skill`, are immutable during planning
 because Timefold Solver cannot assign an extra skill to an employee.
 
-. *If there are multiple relationships (or fields), check for xref:design-patterns/modeling-planning-problems.adoc#shadowVariable[shadow variables]*.
+. *If there are multiple relationships (or fields), check for xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables]*.
 A shadow variable changes during planning, but its value can be calculated based on one or more genuine planning variables, without dispute. Color shadow relationships (or fields) purple.
 +
 [NOTE]
 ====
 Only one side of a bi-directional relationship can be a genuine planning variable.
-The other side will become an xref:design-patterns/modeling-planning-problems.adoc#bidirectionalVariable[inverse relation shadow variable] later on.
+The other side will become an xref:domain-modeling/modeling-planning-problems.adoc#bidirectionalVariable[inverse relation shadow variable] later on.
 Keep bi-directional relationships orange.
 ====
 
-. *If the goal is to find an optimal order of elements*, use the xref:design-patterns/time-patterns.adoc#chainedThroughTimePattern[Chained Through Time pattern].
+. *If the goal is to find an optimal order of elements*, use the xref:domain-modeling/time-patterns.adoc#chainedThroughTimePattern[Chained Through Time pattern].
 
 . *If there is an orange many-to-many relationship, replace it
 with a one-to-many and a many-to-one relationship to a new intermediate class.*
@@ -47,7 +45,7 @@ image::design-patterns/employeeShiftRosteringModelingGuideA.png[align="center"]
 [NOTE]
 ====
 Timefold Solver does not currently support a `@PlanningVariable` annotation on a collection.
-xref:design-patterns/modeling-planning-problems.adoc#planningListVariable[Planning list variable] is not a means of achieving a many-to-one relationship;
+xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[Planning list variable] is not a means of achieving a many-to-one relationship;
 it serves to indicate that these values happen in a sequence one after another.
 ====
 

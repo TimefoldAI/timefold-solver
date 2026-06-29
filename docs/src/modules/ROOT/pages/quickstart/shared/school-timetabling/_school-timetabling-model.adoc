@@ -296,7 +296,7 @@ because it contains one or more planning variables.
 The `timeslot` field has an `@PlanningVariable` annotation,
 so Timefold Solver knows that it can change its value.
 In order to find potential `Timeslot` instances to assign to this field,
-Timefold Solver uses the variable type to connect to a xref:design-patterns/modeling-planning-problems.adoc#planningValueRangeProvider[value range provider]
+Timefold Solver uses the variable type to connect to a xref:domain-modeling/modeling-planning-problems.adoc#planningValueRangeProvider[value range provider]
 that provides a `List<Timeslot>` to pick from.
 
 The `room` field also has an `@PlanningVariable` annotation, for the same reasons.
@@ -305,5 +305,5 @@ The `room` field also has an `@PlanningVariable` annotation, for the same reason
 ====
 Determining the `@PlanningVariable` fields for an arbitrary constraint solving use case
 is often challenging the first time.
-Read xref:design-patterns/domain-modeling.adoc#domainModelingGuide[the domain modeling guidelines] to avoid common pitfalls.
+Read xref:domain-modeling/domain-modeling.adoc#domainModelingGuide[the domain modeling guidelines] to avoid common pitfalls.
 ====

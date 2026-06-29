@@ -8,10 +8,9 @@
 *** xref:quickstart/spring-boot/spring-boot-quickstart.adoc[Spring Boot guide]
 
 * Domain modeling
-** xref:design-patterns/modeling-planning-problems.adoc[leveloffset=+1]
-** xref:design-patterns/domain-modeling.adoc[leveloffset=+1]
-** xref:design-patterns/time-patterns.adoc[leveloffset=+1]
-** xref:design-patterns/responding-to-change.adoc[leveloffset=+1]
+** xref:domain-modeling/domain-modeling.adoc[Guide]
+** xref:domain-modeling/time-patterns.adoc[leveloffset=+1]
+** xref:domain-modeling/modeling-planning-problems.adoc[Building blocks]
 
 * xref:constraints-and-score/overview.adoc[Constraints and score]
 ** xref:constraints-and-score/score-calculation.adoc[leveloffset=+1]
@@ -47,6 +46,9 @@
 *** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
 
 * How-to guides
+** xref:how-to/overconstrained-planning.adoc[leveloffset=+1]
+** xref:how-to/continuous-planning.adoc[leveloffset=+1]
+** xref:how-to/real-time-planning.adoc[leveloffset=+1]
 ** xref:how-to/nonvolatile-replanning.adoc[leveloffset=+1]
 ** xref:how-to/recommendation-api.adoc[leveloffset=+1]
 

@@ -3,7 +3,7 @@
 :doctype: book
 :icons: font
 
-This section explains how to update your planning model to use the new declarative xref:design-patterns/modeling-planning-problems.adoc#customShadowVariable[custom shadow variable]
+This section explains how to update your planning model to use the new declarative xref:domain-modeling/modeling-planning-problems.adoc#customShadowVariable[custom shadow variable]
 approach instead of the custom `VariableListener` pattern,
 which has been deprecated in Timefold Solver 1.x and removed entirely in Timefold Solver 2.0.
 
@@ -240,7 +240,7 @@ public class Visit {
 
 Timefold Solver triggers the supplier whenever either `vehicle` or `previous` changes.
 
-Read the xref:design-patterns/modeling-planning-problems.adoc#shadowSourcesPaths[full @ShadowSources reference here].
+Read the xref:domain-modeling/modeling-planning-problems.adoc#shadowSourcesPaths[full @ShadowSources reference here].
 
 === Variable listeners that updated multiple fields
 
@@ -391,5 +391,5 @@ In many cases, storing derived data directly on the planning entity leads to sim
 [#migrateVariableListenersNext]
 == Next
 
-* xref:design-patterns/modeling-planning-problems.adoc#customShadowVariable[Custom shadow variables]
-* xref:design-patterns/modeling-planning-problems.adoc#shadowSourcesPaths[@ShadowSources paths]
+* xref:domain-modeling/modeling-planning-problems.adoc#customShadowVariable[Custom shadow variables]
+* xref:domain-modeling/modeling-planning-problems.adoc#shadowSourcesPaths[@ShadowSources paths]

@@ -116,7 +116,7 @@ public class VehicleRoutePlan {
 ----
 ====
 
-The field will be automatically exposed as a xref:design-patterns/modeling-planning-problems.adoc#problemFacts[problem fact],
+The field will be automatically exposed as a xref:domain-modeling/modeling-planning-problems.adoc#problemFacts[problem fact],
 there is no need to add a `@ProblemFactProperty` annotation.
 
 [#applyingOverrides]
@@ -429,7 +429,7 @@ public class MyPlanningSolution {
 ----
 ====
 
-This will expose the `ConstraintParameters` as a xref:design-patterns/modeling-planning-problems.adoc#problemFacts[problem fact],
+This will expose the `ConstraintParameters` as a xref:domain-modeling/modeling-planning-problems.adoc#problemFacts[problem fact],
 making it available to the constraints.
 Finally, use the xref:constraints-and-score/score-calculation.adoc#constraintStreamsJoin[join building block]
 to adjust the constraint implementation to use the parameters:

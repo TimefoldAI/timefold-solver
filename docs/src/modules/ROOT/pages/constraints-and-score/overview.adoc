@@ -125,7 +125,7 @@ then a score is _feasible_ if no hard constraints are broken.
 ====
 By default, Timefold Solver will always assign all planning variables a planning value.
 If there is no feasible solution, this means the best solution will be infeasible.
-To instead leave some of the planning entities unassigned, apply xref:design-patterns/responding-to-change.adoc#overconstrainedPlanning[overconstrained planning].
+To instead leave some of the planning entities unassigned, apply xref:how-to/overconstrained-planning.adoc[overconstrained planning].
 ====
 
 For each constraint, you need to pick a score level, a score weight and a score signum.
@@ -437,7 +437,7 @@ Timefold Solver does not recalculate the score of a solution if it can predict i
 For example, after a winning step is done, there is no need to calculate the score because that move was done and undone earlier.
 As a result, there is no guarantee that changes applied during score calculation actually happen.
 
-To update planning entities when the planning variable change, use xref:design-patterns/modeling-planning-problems.adoc#shadowVariable[shadow variables] instead.
+To update planning entities when the planning variable change, use xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables] instead.
 ====
 
 [#initializingScoreTrend]

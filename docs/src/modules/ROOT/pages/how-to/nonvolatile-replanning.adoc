@@ -10,8 +10,8 @@ If the plan affects humans (such as employees, drivers, ...), very disruptive ch
 There are two ways to limit disruption:
 
 * **Pinning** — completely prevent specific assignments from changing.
-Use xref:design-patterns/modeling-planning-problems.adoc#pinnedPlanningEntities[`@PlanningPin`] to lock individual entities to their current values,
-or xref:design-patterns/modeling-planning-problems.adoc#partiallyPinnedPlanningListVariable[`@PlanningPinToIndex`] to lock only the first portion of a planning list variable.
+Use xref:domain-modeling/modeling-planning-problems.adoc#pinnedPlanningEntities[`@PlanningPin`] to lock individual entities to their current values,
+or xref:domain-modeling/modeling-planning-problems.adoc#partiallyPinnedPlanningListVariable[`@PlanningPinToIndex`] to lock only the first portion of a planning list variable.
 This is appropriate when certain assignments are already confirmed or published and must not move under any circumstances.
 
 * **Nonvolatile replanning** — allow changes, but make the solver justify them.

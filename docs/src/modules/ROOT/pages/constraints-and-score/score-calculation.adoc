@@ -56,9 +56,9 @@ Java::
 
 ====
 
-This constraint stream iterates over all instances of class `Shift` in the xref:design-patterns/modeling-planning-problems.adoc#problemFacts[problem facts] and
-xref:design-patterns/modeling-planning-problems.adoc#planningEntity[planning entities]
-in the xref:design-patterns/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[planning problem].
+This constraint stream iterates over all instances of class `Shift` in the xref:domain-modeling/modeling-planning-problems.adoc#problemFacts[problem facts] and
+xref:domain-modeling/modeling-planning-problems.adoc#planningEntity[planning entities]
+in the xref:domain-modeling/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[planning problem].
 It finds every `Shift` which is assigned to employee `Ann` and for every such instance (also called a match), it adds a
 soft penalty of `1` to the overall xref:constraints-and-score/overview.adoc#calculateTheScore[score].
 The following figure illustrates this process on a problem with 4 different shifts:
@@ -261,14 +261,14 @@ This constraint stream penalizes each known and initialized instance of `Shift`.
 === ForEach
 
 The `.forEach(T)` building block selects every `T` instance that
-is in a xref:design-patterns/modeling-planning-problems.adoc#problemFacts[problem fact collection]
-or a xref:design-patterns/modeling-planning-problems.adoc#planningEntitiesOfASolution[planning entity collection]
-that is xref:design-patterns/modeling-planning-problems.adoc#detectingInconsistencies[consistent]
+is in a xref:domain-modeling/modeling-planning-problems.adoc#problemFacts[problem fact collection]
+or a xref:domain-modeling/modeling-planning-problems.adoc#planningEntitiesOfASolution[planning entity collection]
+that is xref:domain-modeling/modeling-planning-problems.adoc#detectingInconsistencies[consistent]
 and has no `null` genuine planning variables.
 
-To include instances with a `null` xref:design-patterns/modeling-planning-problems.adoc#planningVariable[genuine planning variable],
+To include instances with a `null` xref:domain-modeling/modeling-planning-problems.adoc#planningVariable[genuine planning variable],
 or planning values
-not assigned to any xref:design-patterns/modeling-planning-problems.adoc#planningListVariable[planning list variable],
+not assigned to any xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[planning list variable],
 replace the `forEach()` building block by `forEachIncludingUnassigned()`:
 
 [tabs]
@@ -301,16 +301,16 @@ Java::
 ----
 ====
 
-In cases utilizing the xref:design-patterns/modeling-planning-problems.adoc#planningListVariable[planning list variable],
+In cases utilizing the xref:domain-modeling/modeling-planning-problems.adoc#planningListVariable[planning list variable],
 you may want
-to include an xref:design-patterns/modeling-planning-problems.adoc#listVariableShadowVariablesInverseRelation[inverse relation shadow variable]
+to include an xref:domain-modeling/modeling-planning-problems.adoc#listVariableShadowVariablesInverseRelation[inverse relation shadow variable]
 to maximize performance of your constraints.
 
 
 [#constraintStreamsPenaltiesRewards]
 === Penalties and rewards
 
-The purpose of constraint streams is to build up a xref:constraints-and-score/overview.adoc#whatIsAScore[score] for a xref:design-patterns/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[solution].
+The purpose of constraint streams is to build up a xref:constraints-and-score/overview.adoc#whatIsAScore[score] for a xref:domain-modeling/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[solution].
 To do this, every constraint stream must contain a call to either a `penalize()` or a `reward()`
 building block.
 The `penalize()` building block makes the score worse and the `reward()` building block improves the score.
@@ -2004,7 +2004,7 @@ In this case, the `given(...)` call takes the `vehicleA`, `visit1` and `visit2` 
 Alternatively, you can use a `givenSolution(...)` method here and provide a planning solution instead.
 
 It's important to understand
-that calling `givenSolution(...)` does not update any xref:design-patterns/modeling-planning-problems.adoc#shadowVariable[shadow variables].
+that calling `givenSolution(...)` does not update any xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables].
 This is the default behavior and can be modified by invoking `settingAllShadowVariables()`.
 
 [tabs]
@@ -2110,7 +2110,7 @@ remains consistent as your code base evolves.
 It is therefore necessary for the `given(...)` method to list all planning entities and problem facts,
 or provide the entire planning solution instead.
 
-To test all constraints while updating all xref:design-patterns/modeling-planning-problems.adoc#shadowVariable[shadow variables],
+To test all constraints while updating all xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables],
 call `giveSolution(...)` and `settingAllShadowVariables()`.
 This approach ensures that constraints which depend on the related variables are evaluated accordingly.
 

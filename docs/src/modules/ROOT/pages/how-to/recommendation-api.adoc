@@ -7,7 +7,7 @@
 
 include::../commercial-editions/_only-plus-and-enterprise.adoc[]
 
-With xref:design-patterns/responding-to-change.adoc#realTimePlanning[real-time planning], we can respond to a continuous stream of external changes.
+With xref:how-to/real-time-planning.adoc[real-time planning], we can respond to a continuous stream of external changes.
 However, it is often necessary to respond to adhoc changes too,
 for example when a call center operator needs to arrange an appointment with a customer.
 In such cases, it is not necessary to use the full power of real-time planning.
@@ -27,7 +27,7 @@ Once the customer has accepted one of the available options
 and the change has been reflected in the solution,
 the full xref:optimization-algorithms/local-search.adoc[local search algorithm]
 can be used to optimize the entire solution around this change.
-This would be an example of xref:design-patterns/responding-to-change.adoc#continuousPlanning[continuous planning].
+This would be an example of xref:how-to/continuous-planning.adoc[continuous planning].
 
 [#usingRecommendedFitAPI]
 [#usingAssignmentRecommendationAPI]
@@ -75,7 +75,7 @@ Employee bestEmployee = bestRecommendation.proposition();
 unassignedShift.setEmployee(bestEmployee);
 ----
 
-If required, xref:design-patterns/responding-to-change.adoc#continuousPlanning[continuous planning] can be used to optimize the entire solution afterwards.
+If required, xref:how-to/continuous-planning.adoc[continuous planning] can be used to optimize the entire solution afterwards.
 
 [NOTE]
 ====
