@@ -527,7 +527,7 @@ Configure the `filterClass` on every targeted `entitySelector` (potentially both
     </changeMoveSelector>
 ----
 
-If that filter should apply on all entities, configure it as a xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[global pinningFilter] instead.
+If that filter should apply on all entities, configure it as a xref:design-patterns/modeling-planning-problems.adoc#pinnedPlanningEntities[global pinningFilter] instead.
 
 [#filteredValueSelection]
 ===== Filtered value selection
@@ -579,7 +579,7 @@ If you do explicitly configure the ``Selector``, it overwrites the default setti
 Some `Selector` types implement a `SorterManner` out of the box:
 
 * `EntitySelector` supports:
-** ``DESCENDING``: Sorts the planning entities in descending order based on a give metric (xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]). Requires that planning entity is annotated on the domain model.
+** ``DESCENDING``: Sorts the planning entities in descending order based on a give metric (xref:design-patterns/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]). Requires that planning entity is annotated on the domain model.
 +
 [source,xml,options="nowrap"]
 ----
@@ -590,7 +590,7 @@ Some `Selector` types implement a `SorterManner` out of the box:
     </entitySelector>
 ----
 * `ValueSelector` supports:
-** ``ASCENDING``: Sorts the planning values in ascending order based on a given metric (xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting]). Requires that planning value is annotated on the domain model.
+** ``ASCENDING``: Sorts the planning values in ascending order based on a given metric (xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting]). Requires that planning value is annotated on the domain model.
 +
 [source,xml,options="nowrap"]
 ----
@@ -1080,7 +1080,7 @@ only set the distribution type (so without a `distributionSizeMaximum` parameter
 == Move selectors for basic variables
 
 These moves are applicable to planning variables that aren’t part of a list,
-also called xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic variables].
+also called xref:design-patterns/modeling-planning-problems.adoc#planningVariable[basic variables].
 
 [#changeMoveSelector]
 === `ChangeMoveSelector`
@@ -1346,7 +1346,7 @@ Also, the size of the sub-pillars is limited in length of up to 1000 entities.
 The `RuinRecreateMove` selects a subset of entities and sets their values to null,
 effectively unassigning them.
 Then it runs a construction heuristic to assign them again.
-If xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[unassigned values] are allowed,
+If xref:design-patterns/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[unassigned values] are allowed,
 it may leave them unassigned.
 
 This coarse-grained move is useful to help the solver to escape from a local optimum.
@@ -1489,7 +1489,7 @@ public class MyStageProvider implements BasicVariableStageProvider<Schedule, Shi
 [#listMoveSelectors]
 == Move selectors for list variables
 
-These moves are applicable to xref:running-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list planning variables].
+These moves are applicable to xref:design-patterns/modeling-planning-problems.adoc#planningListVariable[list planning variables].
 
 [#listChangeMoveSelector]
 === `ListChangeMoveSelector`
@@ -1633,7 +1633,7 @@ Advanced configuration:
 
 The `ListRuinRecreateMove` selects a subset of values, and removes them from their list variables.
 Then it runs a construction heuristic to assign them again.
-If xref:running-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values] are allowed,
+If xref:design-patterns/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values] are allowed,
 it may leave them unassigned.
 
 This coarse-grained move is useful to help the solver to escape from a local optimum.
@@ -1830,7 +1830,7 @@ add the `moveListFactoryCustomProperties` element and use xref:running-timefold-
 
 [WARNING]
 ====
-A custom `MoveListFactory` implementation must ensure that it does not move xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[pinned entities].
+A custom `MoveListFactory` implementation must ensure that it does not move xref:design-patterns/modeling-planning-problems.adoc#pinnedPlanningEntities[pinned entities].
 ====
 
 
@@ -1995,5 +1995,5 @@ add the `moveIteratorFactoryCustomProperties` element and use xref:running-timef
 
 [WARNING]
 ====
-A custom `MoveIteratorFactory` implementation must ensure that it does not move xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[pinned entities].
+A custom `MoveIteratorFactory` implementation must ensure that it does not move xref:design-patterns/modeling-planning-problems.adoc#pinnedPlanningEntities[pinned entities].
 ====

@@ -159,9 +159,9 @@ Represents a planning entity class.
 It gives access to its planning variable metamodels, both genuine and shadow.
 `VariableMetaModel`::
 Represents a planning variable on a planning entity class.
-It further specializes into `PlanningVariableMetaModel` for a xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable],
-`PlanningListVariableMetaModel` for a xref:running-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable],
-and `ShadowVariableMetaModel` for a xref:running-timefold-solver/modeling-planning-problems.adoc#shadowPlanningVariables[shadow variable].
+It further specializes into `PlanningVariableMetaModel` for a xref:design-patterns/modeling-planning-problems.adoc#planningVariable[basic planning variable],
+`PlanningListVariableMetaModel` for a xref:design-patterns/modeling-planning-problems.adoc#planningListVariable[list variable],
+and `ShadowVariableMetaModel` for a xref:design-patterns/modeling-planning-problems.adoc#shadowPlanningVariables[shadow variable].
 
 These implementations are type-safe and provide methods
 to access the relevant parts of the planning solution structure.
@@ -203,7 +203,7 @@ and therefore not covered by backward compatibility guarantees.
 [#neighborhoodsExampleMove]
 === Example move implementation
 
-The following example shows a simple move implementation which changes the value of a xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable],
+The following example shows a simple move implementation which changes the value of a xref:design-patterns/modeling-planning-problems.adoc#planningVariable[basic planning variable],
 assigning a timeslot to a lesson in the school timetabling problem.
 It brings together all the concepts discussed above.
 
@@ -284,10 +284,10 @@ var move = Moves.change(timeslotVariable, lesson, newTimeslot);
 
 The built-in moves include, among others:
 
-`ChangeMove`:: Changes the value of a xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable] on a planning entity.
-`SwapMove`:: Swaps the values of a xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic planning variable] between two planning entities.
-`ListChangeMove`:: Changes the position of a value in the xref:running-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] of a planning entity.
-`ListSwapMove`:: Swaps xref:running-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list variable] elements between planning entities.
+`ChangeMove`:: Changes the value of a xref:design-patterns/modeling-planning-problems.adoc#planningVariable[basic planning variable] on a planning entity.
+`SwapMove`:: Swaps the values of a xref:design-patterns/modeling-planning-problems.adoc#planningVariable[basic planning variable] between two planning entities.
+`ListChangeMove`:: Changes the position of a value in the xref:design-patterns/modeling-planning-problems.adoc#planningListVariable[list variable] of a planning entity.
+`ListSwapMove`:: Swaps xref:design-patterns/modeling-planning-problems.adoc#planningListVariable[list variable] elements between planning entities.
 
 We encourage you to explore the `ai.timefold.solver.core.preview.api.move.builtin.Moves` API
 to discover all the available built-in move implementations.

@@ -1,6 +1,6 @@
 [#respondingToChange]
 = Responding to change
-:page-aliases: repeated-planning/repeated-planning.adoc
+:page-aliases: repeated-planning/repeated-planning.adoc,responding-to-change/responding-to-change.adoc
 :doctype: book
 :sectnums:
 :icons: font
@@ -12,14 +12,6 @@ Delaying planning in order to lower the risk of problem facts changing is not id
 as an incomplete plan is preferable to no plan.
 
 The following examples demonstrate situations where planning solutions need to be altered due to unpredictable changes:
-
-* _Unforeseen fact changes_
-
-** An employee assigned to a shift calls in sick.
-** An airplane scheduled to take off has a technical delay.
-** One of the machines or vehicles break down.
-+
-Unforeseen fact changes benefit from using <<backupPlanning,_backup planning_>>.
 
 * _Cannot assign all entities immediately_
 +
@@ -48,27 +40,6 @@ as the optimization algorithms support planning a solution that has already been
 This is known as repeated planning.
 
 
-[#backupPlanning]
-== Backup planning
-
-Backup planning adds extra score constraints to create space in the planning for when things go wrong. That creates a backup plan within the plan itself.
-
-An example of backup planning is as follows:
-
-. Create an extra score constraint. For example:
-+
-* Assign an employee as the spare employee (one for every 10 shifts at the same time).
-* Keep one hospital bed open in each department.
-. Change the planning problem when an unforeseen event occurs.
-+
-For example, if an employee calls in sick:
-+
-* Delete the sick employee and leave their shifts unassigned.
-* Restart the planning, starting from that solution, which now has a different score.
-
-The construction heuristics fills in the newly created gaps (probably with the spare employee) and the metaheuristics will improve it even further.
-
-
 [#overconstrainedPlanning]
 == Overconstrained planning
 
@@ -78,9 +49,9 @@ This is called overconstrained planning.
 By default, Timefold Solver assigns all planning entities, overloads the planning values, and therefore breaks hard constraints.
 There are two ways to avoid this:
 
-* Use xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[planning variables with unassigned values],
+* Use xref:design-patterns/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[planning variables with unassigned values],
 so that some entities are unassigned.
-* Add virtual values to catch the unassigned entities.
+* Add virtual values to catch the unassigned entities. (Not recommended)
 
 
 [#overconstrainedPlanningWithNullValues]
@@ -93,9 +64,9 @@ image::responding-to-change/overconstrainedPlanning.png[align="center"]
 To implement this:
 
 . Add a score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/overview.adoc#scoreType[`Score` type].
-. Make the planning variable xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[allow unassigned values].
+. Make the planning variable xref:design-patterns/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[allow unassigned values].
 . Add a score constraint on the new level (usually a medium constraint) to penalize the number of unassigned entities (or a weighted sum of them).
-Use xref:constraints-and-score/score-calculation.adoc#constraintStreamsForEach[`forEachIncludingUnassigned`] and check if the xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[planning variable] or xref:running-timefold-solver/modeling-planning-problems.adoc#bidirectionalVariable[inverse relation shadow variable] is `null`:
+Use xref:constraints-and-score/score-calculation.adoc#constraintStreamsForEach[`forEachIncludingUnassigned`] and check if the xref:design-patterns/modeling-planning-problems.adoc#planningVariable[planning variable] or xref:design-patterns/modeling-planning-problems.adoc#bidirectionalVariable[inverse relation shadow variable] is `null`:
 
 [tabs]
 ====
@@ -111,29 +82,6 @@ Java::
     }
 ----
 ====
-
-[#overconstrainedPlanningWithVirtualValues]
-=== Overconstrained planning with virtual values
-
-If we handle overconstrained planning with virtual values,
-the overload entities will be assigned to one or more dummy values provided by the user.
-
-[NOTE]
-====
-This method is inferior to xref:overconstrainedPlanningWithNullValues[overconstrained planning with `null` variable values].
-It is likely to result in significantly worse solver performance and is also more challenging to implement.
-Null variable values should be preferred over virtual values if at all possible.
-====
-
-To implement this:
-
-. Add a score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/overview.adoc#scoreType[`Score` type].
-. Add a number of virtual values. It can be challenging to determine a good formula to calculate that number:
-** Do not add too many, as that will decrease solver efficiency.
-** Importantly, do not add too few as that will lead to an infeasible solution.
-. Add a score constraint on the new level (usually a medium constraint) to penalize the number of virtual assigned entities (or a weighted sum of them).
-. Optionally, change all soft constraints to ignore virtual assigned entities.
-
 
 [#continuousPlanning]
 == Continuous planning (windowed planning)
@@ -170,19 +118,19 @@ Only load those that might still affect the current constraints with a good safe
 * _Published_
 +
 Upcoming time periods that have been published.
-They contain only <<pinnedPlanningEntities,pinned>> and/or <<nonvolatileReplanning,semi-movable>> planning entities.
+They contain only xref:design-patterns/modeling-planning-problems.adoc#pinnedPlanningEntities[pinned] and/or xref:how-to/nonvolatile-replanning.adoc#nonvolatileReplanning[semi-movable] planning entities.
 +
 ** The published schedule has been shared with the business.
 For example, in employee rostering, the employees will use this schedule to plan their personal lives,
 so they require a publish notice of for example 3 weeks in advance.
 Normal planning will not change that part of schedule.
 +
-Changing that schedule later is disruptive, but were exceptions force us to do them anyway (for example someone calls in sick), do change this part of the planning while minimizing disruption with <<nonvolatileReplanning,non-disruptive replanning>>.
+Changing that schedule later is disruptive, but were exceptions force us to do them anyway (for example someone calls in sick), do change this part of the planning while minimizing disruption with xref:how-to/nonvolatile-replanning.adoc#nonvolatileReplanning[non-disruptive replanning].
 
 * _Draft_
 +
 Upcoming time periods after the published time periods that can change freely.
-They contain movable planning entities, except for any that are pinned for other reasons (such as being <<pinDownPlanningEntities,pinned by a user>>).
+They contain movable planning entities, except for any that are pinned for other reasons (such as being xref:design-patterns/modeling-planning-problems.adoc#pinDownPlanningEntities[pinned by a user]).
 +
 ** The first part of the draft, called _the final draft_, will be published, so these planning entities can change one last time.
 The publishing frequency, for example once per week, determines the number of time periods that change from _draft_ to _published_.
@@ -206,171 +154,12 @@ in which case the _unplanned_ stage is not applicable.
 
 image::responding-to-change/continuousPublishingWithRotation.png[align="center"]
 
-[#pinnedPlanningEntities]
-=== Pinned planning entities
-
-A pinned planning entity doesn't change during solving.
-This is commonly used by users to pin down one or more specific assignments and force Timefold Solver to schedule around those fixed assignments.
-
-[#pinDownPlanningEntities]
-==== Pin down planning entities with `@PlanningPin`
-
-To pin some planning entities down, add an `@PlanningPin` annotation on a boolean getter or field of the planning entity class.
-That boolean is `true` if the entity is pinned down to its current planning values and `false` otherwise.
-
-. Add the `@PlanningPin` annotation on a `boolean`:
-+
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Lecture {
-
-    private boolean pinned;
-    ...
-
-    @PlanningPin
-    public boolean isPinned() {
-        return pinned;
-    }
-
-    ...
-}
-----
-
-
-====
-
-In the example above, if `pinned` is `true`,
-the lecture will not be assigned to another period or room (even if the current period and rooms fields are `null`).
-
-NOTE: Planning pin value must never change during planning.
-To change whether an entity is pinned or not,
-use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange]
-
-
-[#partiallyPinnedPlanningListVariable]
-==== Pinning a planning list variable
-
-There are cases where pinning only a part of xref:running-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable] is necessary.
-For example, if some customer visits have already happened but are still in the list,
-it makes sense to pin them down.
-
-To achieve that, use a `@PlanningPinToIndex` annotation instead:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Vehicle {
-
-    ...
-
-    @PlanningListVariable
-    protected List<Customer> customers = ...; // Includes some customers.
-    @PlanningPinToIndex
-    protected int firstUnpinnedIndex = 1;
-
-    ...
-
-}
-----
-====
-
-When `@PlanningPinToIndex` is used, the list is split in two parts.
-
-- The first part, with indexes less than `firstUnpinnedIndex`, is pinned.
-In the example above, it means that the first element of the list can not be moved from its position.
-Nothing will be added before it, and it will not be removed from the list.
-It will forever stay as the first element of the list.
-- The second part, starting with `firstUnpinnedIndex` and ending where the list ends, is movable.
-Items can be freely added, removed and reordered in this part of the list.
-
-This means that, if the `@PlanningPinToIndex` is zero (`0`), the list is fully modifiable.
-Consequently, if the `@PlanningPinToIndex` is equal to the size of the list,
-all the contents of the list are pinned,
-but the list can still be extended by adding to the end of the list.
-
-To pin the entire list, preventing any modifications to the list whatsoever,
-<<pinDownPlanningEntities, `@PlanningPin`>> needs to be used on the entity itself.
-In that case, the value of `@PlanningPinToIndex` must be zero (`0`).
-
-NOTE: Value of the index must never change during planning.
-To change how far the list is pinned,
-use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange].
-
-
-[#nonvolatileReplanning]
-=== Nonvolatile replanning to minimize disruption (semi-movable planning entities)
-
-Replanning an existing plan can be very disruptive.
-If the plan affects humans (such as employees, drivers, ...), very disruptive changes are often undesirable.
-In such cases, nonvolatile replanning helps by restricting planning freedom:
-the gain of changing a plan must be higher than the disruption it causes.
-This is usually implemented by taxing all planning entities that change.
-
-image::responding-to-change/nonDisruptiveReplanning.png[align="center"]
-
-In conference scheduling, the entity has both a planning variable `timeslot` and its original value ``publishedTimeslot``:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Talk {
-
-    ...
-
-    @PlanningVariable
-    private Timeslot timeslot;
-
-    private Timeslot publishedTimeslot;
-
-    ...
-}
-----
-
-
-====
-
-During planning, the planning variable `timeslot` changes.
-By writing a constraint comparing it with the `publishedTimeslot`, a change in plan can be penalized:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    Constraint publishedTimeslot(ConstraintFactory factory) {
-        return factory.forEach(Talk.class)
-                .filter(talk -> talk.getPublishedTimeslot() != null
-                        && talk.getTimeslot() != talk.getPublishedTimeslot())
-                .penalize(HardSoftScore.ofSoft(1000))
-                .asConstraint("Published timeslot");
-    }
-----
-====
-
-By configuring a penalty weight of `-1000` we can express that a solution will only be accepted
-if it improves the soft score for at least `1000` points per variable changed (or if it improves the hard score).
-
 
 [#realTimePlanning]
 == Real-time planning
 
 To do real-time planning, combine the following planning techniques:
 
-* <<backupPlanning,Backup planning>> - adding extra score constraints to allow for unforeseen changes.
 * <<continuousPlanning,Continuous planning>> - planning for one or more future planning periods.
 * Short planning windows.
 +
@@ -383,7 +172,7 @@ image::responding-to-change/realTimePlanningVehicleRouting.png[align="center"]
 
 In the example above, three customers are added at different times (``07:56``, `08:02` and ``08:45``), after the original customer set finished solving at `07:55`, and in some cases, after the vehicles have already left.
 
-Timefold Solver can handle such scenarios with `ProblemChange` (in combination with <<pinnedPlanningEntities,pinned planning entities>>).
+Timefold Solver can handle such scenarios with `ProblemChange` (in combination with xref:design-patterns/modeling-planning-problems.adoc#pinnedPlanningEntities[pinned planning entities]).
 
 [#problemChange]
 === `ProblemChange`
@@ -486,7 +275,7 @@ The `ProblemChangeDirector` must be updated with any change on the problem facts
 ====
 
 To write a `ProblemChange` correctly,
-it is important to understand the behavior of xref:running-timefold-solver/modeling-planning-problems.adoc#cloningASolution[a planning clone].
+it is important to understand the behavior of xref:design-patterns/modeling-planning-problems.adoc#cloningASolution[a planning clone].
 
 A planning clone of a solution must fulfill these requirements:
 
@@ -500,14 +289,14 @@ When implementing problem changes, consider the following:
 
 . Any change in a `ProblemChange` must be done on the `@PlanningSolution` instance provided to the `ProblemChange` implementation.
 
-. The `workingSolution` is xref:running-timefold-solver/modeling-planning-problems.adoc#cloningASolution[a planning clone] of the ``BestSolutionChangedEvent``'s ``bestSolution``.
+. The `workingSolution` is xref:design-patterns/modeling-planning-problems.adoc#cloningASolution[a planning clone] of the ``BestSolutionChangedEvent``'s ``bestSolution``.
 * The `workingSolution` in the `Solver` is never the same solution instance as in the rest of your application: it is a planning clone.
 * A planning clone also clones the planning entities and planning entity collections.
 +
 Thus, any change on the planning entities must happen on the `workingSolution` instance passed to the `ProblemChange.doChange(Solution_ workingSolution, ProblemChangeDirector problemChangeDirector)` method.
 
 . Use the method `ProblemChangeDirector.lookUpWorkingObject()` to translate and retrieve the working solution's instance of an object.
-This requires xref:running-timefold-solver/modeling-planning-problems.adoc#planningId[annotating a property of that class as the @PlanningId].
+This requires xref:design-patterns/modeling-planning-problems.adoc#planningId[annotating a property of that class as the @PlanningId].
 
 . A planning clone does not clone the problem facts, nor the problem fact collections.
 _Therefore the ``__workingSolution__`` and the ``__bestSolution__`` share the same problem fact instances and the same problem fact list instances._
@@ -539,7 +328,7 @@ This is a _warm start_ because its initial solution is the adjusted best solutio
 +
 This implies the construction heuristic runs again,
 but because little or no planning variables are uninitialized
-(unless you have a xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[planning variable with unassigned values]),
+(unless you have a xref:design-patterns/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[planning variable with unassigned values]),
 it finishes much quicker than in a cold start.
 
 . Each configured `Termination` resets (both in solver and phase configuration), but a previous call to `terminateEarly()` is not undone.
@@ -603,137 +392,6 @@ Java::
 
 . Use the event's `isNewBestSolutionInitialized()` method instead of `Score.isFeasible()` to only ignore uninitialized solutions,
 but do accept infeasible solutions too.
-
-
-[#recommendedFitAPI]
-[#assignmentRecommendationAPI]
-== Responding to adhoc changes
-
-include::../commercial-editions/_only-plus-and-enterprise.adoc[]
-
-With <<realTimePlanning,real-time planning>>, we can respond to a continuous stream of external changes.
-However, it is often necessary to respond to adhoc changes too,
-for example when a call center operator needs to arrange an appointment with a customer.
-In such cases, it is not necessary to use the full power of real-time planning.
-Instead, immediate response to the customer and a selection of available time windows are more important.
-This is where _Assignment Recommendation API_ comes in.
-
-The Assignment Recommendation API allows you to quickly respond to adhoc changes,
-while providing a selection of the best available options for fitting the change in the existing schedule.
-It doesn't use the full xref:optimization-algorithms/local-search.adoc[local search algorithm].
-Instead,
-it uses a simple xref:optimization-algorithms/construction-heuristics.adoc[greedy algorithm]
-together with xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental calculation].
-This combination allows the API to find the best possible fit within the existing solution in a matter of milliseconds,
-even for large planning problems.
-
-Once the customer has accepted one of the available options
-and the change has been reflected in the solution,
-the full xref:optimization-algorithms/local-search.adoc[local search algorithm]
-can be used to optimize the entire solution around this change.
-This would be an example of <<continuousPlanning,continuous planning>>.
-
-[#usingRecommendedFitAPI]
-[#usingAssignmentRecommendationAPI]
-=== Using the Assignment Recommendation API
-
-The Assignment Recommendation API requires an entity to be evaluated for assignment:
-
-[source,java,options="nowrap"]
-----
-EmployeeSchedule employeeSchedule = ...; // Our planning solution.
-Shift unassignedShift = new Shift(...); // A new shift needs to be assigned.
-employeeSchedule.getShifts().add(unassignedShift);
-----
-
-If the entity is unassigned, then it must be the only unassigned entity in the planning solution.
-The `SolutionManager` is then used to retrieve the recommended assignments for this entity:
-
-[source,java,options="nowrap"]
-----
-SolutionManager<EmployeeSchedule, HardSoftScore> solutionManager = ...;
-List<RecommendedAssignment<Employee, HardSoftScore>> recommendations =
-    solutionManager.recommendAssignment(employeeSchedule, unassignedShift, Shift::getEmployee);
-----
-
-Breaking this down, we have:
-
-- `employeeSchedule`, the planning solution.
-- `unassignedShift`, the uninitialized entity, which is part of the planning solution.
-- `Shift::getEmployee`, a function extracting the planning variable from the entity,
-also called a "proposition function".
-- `List<RecommendedAssignment<Employee, HardSoftScore>>`, the list of recommended employees to assign to the shift,
-in the order of decreasing preference.
-Each recommendation contains the employee and the difference in score caused by assigning the employee to the shift.
-This difference has the full explanatory power of xref:constraints-and-score/understanding-the-score.adoc#scoreAnalysis[score analysis].
-
-This list of recommendations can be used to present the operator with a selection of available options,
-as it is fully serializable to JSON and can be sent to a web browser or mobile app.
-The operator can then select the best available recommendation and assign the employee to the shift,
-represented here by the necessary backend code:
-
-[source,java,options="nowrap"]
-----
-RecommendedAssignment<Employee, HardSoftScore> bestRecommendation = recommendations.get(0);
-Employee bestEmployee = bestRecommendation.proposition();
-unassignedShift.setEmployee(bestEmployee);
-----
-
-If required, <<continuousPlanning,continuous planning>> can be used to optimize the entire solution afterwards.
-
-[NOTE]
-====
-Assignment Recommendation API requires the `SolutionManager` to be configured
-with a xref:optimization-algorithms/construction-heuristics.adoc[construction heuristic] as the first phase,
-as it uses that construction heuristic to find the best fit.
-If there are multiple construction heuristics phases in the xref:running-timefold-solver/configuration.adoc#solverConfiguration[solver configuration],
-or if the first phase is not a construction heuristic
-(perhaps a xref:optimization-algorithms/optimization-algorithms.adoc#customSolverPhase[custom initializer]),
-the API will fail fast.
-====
-
-
-[#usingMutableTypesInPropositionFunction]
-=== Using mutable types in the proposition function
-
-In the previous example,
-we used a simple proposition function that extracts the planning variable from the entity.
-However,
-it is also possible to use a more complex proposition function that extracts the entire planning entity,
-or any values that will mutate as the solver tries to find the best fit.
-In that case, there are some caveats to consider.
-
-The solver will try to find the best fit for the uninitialized entity,
-and it will start from the solution it received on input.
-Before trying the next value to assign, it will first return to that original solution.
-The consequence of this is that if our proposition function returns any values that change during this process,
-those changes will also affect the previously processed propositions.
-In other words, if we decide to return the entire entity from the proposition function,
-we will find that each of the final recommendations is the same.
-And because the solver will return to the original solution after trying the last value,
-the final recommendation will be unassigned,
-defeating the purpose of the API.
-Consider the following example:
-
-[source,java,options="nowrap"]
-----
-SolutionManager<EmployeeSchedule, HardSoftScore> solutionManager = ...;
-List<RecommendedAssignment<Shift, HardSoftScore>> recommendations =
-    solutionManager.recommendAssignment(employeeSchedule, unassignedShift, shift -> shift);
-----
-
-The proposition function (`shift -> shift`) returns the entire `Shift` entity.
-Because of the behavior described above,
-every `RecommendedAssignment` in the `recommendations` list will point to the same `unassignedShift`,
-and its `employee` variable will be `null`.
-This is not what we want,
-because none of the `RecommendedAssignment` instances give us the `Employee` we need to assign to the shift.
-
-To avoid this,
-the proposition function should preferably return a value that does not change during the process,
-such as the planning variable instead of the entire entity.
-If it's necessary to return a value that could be mutated by the solver,
-we should make a defensive copy.
 
 
 [#multiStagePlanning]

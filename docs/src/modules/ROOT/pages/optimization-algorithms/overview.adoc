@@ -126,7 +126,7 @@ However, this basic procedure provides a good starting configuration that will p
 See xref:optimization-algorithms/construction-heuristics.adoc#firstFit[First Fit].
 
 . Next,
-implement xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
+implement xref:design-patterns/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
 and turn it into xref:optimization-algorithms/construction-heuristics.adoc#firstFitDecreasing[First Fit Decreasing].
 
 . Next, add Late Acceptance behind it:
@@ -290,7 +290,7 @@ Finding the best solution in the available time is the most important outcome.
 ====
 If no termination is configured (and a metaheuristic algorithm is used),
 the `Solver` will run forever unless <<asynchronousTermination,terminateEarly()>> is called from another thread.
-This is especially common during xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning].
+This is especially common during xref:design-patterns/responding-to-change.adoc#realTimePlanning[real-time planning].
 ====
 
 For synchronous termination, configure a `Termination` on a `Solver` or a `Phase` when it needs to stop.
@@ -885,7 +885,7 @@ Returns `true` if the `PhaseCommand` should terminate.
 Returns the working object that corresponds to the given external object.
 This is useful when the `PhaseCommand` remembers an object from some previous working solution,
 and needs to find the corresponding object in the current working solution,
-which may have been xref:running-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning-cloned] since.
+which may have been xref:design-patterns/modeling-planning-problems.adoc#cloningASolution[planning-cloned] since.
 
 Any change on the planning entities in a `PhaseCommand` must be done through the `execute` or `executeTemporarily` methods,
 to avoid corrupting the `Solver`.
@@ -899,8 +899,8 @@ The solver will only terminate after the command returns.
 IMPORTANT: Do not change any of the problem facts in a `PhaseCommand` or add or remove entities,
 it will corrupt the `Solver` because any previous score or solution was for a different problem.
 To change problem facts or to add or remove entities,
-read about xref:responding-to-change/responding-to-change.adoc[repeated planning]
-and use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange] instead.
+read about xref:design-patterns/responding-to-change.adoc[repeated planning]
+and use xref:design-patterns/responding-to-change.adoc#problemChange[ProblemChange] instead.
 
 Configure the `PhaseCommand` in the solver configuration:
 

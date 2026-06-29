@@ -77,7 +77,7 @@ meaning that "more difficult" planning entities are added earlier in the list wh
 image::optimization-algorithms/construction-heuristics/firstFitDecreasingNQueens04.png[align="center"]
 
 Requires the model
-to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
+to support xref:design-patterns/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
 
 [NOTE]
 ====
@@ -127,7 +127,7 @@ It sorts the planning values in ascending order by any given metric,
 meaning that "weaker" planning values are added earlier in the list while "stronger" values are included later.
 
 Requires the model
-to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+to support xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -175,8 +175,8 @@ Combines <<firstFitDecreasing,First Fit Decreasing>> and <<weakestFit,Weakest Fi
 It sorts the planning entities in descending order and the planning values in ascending order based on defined metrics.
 
 Requires the model
-to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
-and xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+to support xref:design-patterns/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
+and xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -227,7 +227,7 @@ So it sorts the planning values in descending order by any given metric,
 meaning that "stronger" planning values are added earlier in the list.
 
 Requires the model
-to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+to support xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -275,8 +275,8 @@ Combines <<firstFitDecreasing, First Fit Decreasing>> and <<strongestFit, Strong
 It sorts the planning entities and the planning values in descending order based on defined metrics.
 
 Requires the model
-to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
-and xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+to support xref:design-patterns/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
+and xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -361,19 +361,19 @@ The `entitySorterManner` options are:
 * ``DESCENDING``: Evaluate the planning entities in descending order based on a given metric.
 This usually increases pruning (and therefore improves scalability).
 Requires the model
-to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
-* `DESCENDING_IF_AVAILABLE` (default): If the model supports xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting], behave like ``DESCENDING``, else like ``NONE``.
+to support xref:design-patterns/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
+* `DESCENDING_IF_AVAILABLE` (default): If the model supports xref:design-patterns/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting], behave like ``DESCENDING``, else like ``NONE``.
 * ``NONE``: Initialize the planning entities in original order.
 
 The `valueSorterManner` options are:
 
 * ``ASCENDING``: Evaluate the planning values in ascending order based on a given metric.
 Requires the model
-to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
-* `ASCENDING_IF_AVAILABLE` (default): If the model supports xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``ASCENDING``, else like ``NONE``.
+to support xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+* `ASCENDING_IF_AVAILABLE` (default): If the model supports xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``ASCENDING``, else like ``NONE``.
 * ``DESCENDING``: Evaluate the planning values in descending order based on a given metric.
-Requires the model to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
-* ``DESCENDING_IF_AVAILABLE``: If the model supports xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``DESCENDING``, else like ``NONE``.
+Requires the model to support xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+* ``DESCENDING_IF_AVAILABLE``: If the model supports xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``DESCENDING``, else like ``NONE``.
 * ``NONE``: Try the planning values in original order.
 
 Advanced configuration with <<weakestFitDecreasing,Weakest Fit Decreasing>> for a single entity class with one variable:
@@ -724,7 +724,7 @@ For scaling out, see <<scalingConstructionHeuristics,scaling construction heuris
 [#mixedModelConstructionHeuristics]
 == Mixed modeling and construction heuristics
 
-The default behavior of the construction heuristic for xref:running-timefold-solver/modeling-planning-problems.adoc#mixedModels[mixed models] is
+The default behavior of the construction heuristic for xref:design-patterns/modeling-planning-problems.adoc#mixedModels[mixed models] is
 to use strategies based on the allocation of xref:optimization-algorithms/construction-heuristics.adoc#allocateEntityFromQueue[entities] and xref:optimization-algorithms/construction-heuristics.adoc#allocateToValueFromQueue[values]
 for solving all related variables.
 
@@ -802,7 +802,7 @@ there is too little time left for xref:optimization-algorithms/local-search.adoc
 to reach a near optimal solution.
 
 Ideally, a Construction Heuristic should take less than 20 seconds from scratch
-and less than 50 milliseconds in xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning],
+and less than 50 milliseconds in xref:design-patterns/responding-to-change.adoc#realTimePlanning[real-time planning],
 so there is plenty of time left for xref:optimization-algorithms/local-search.adoc#localSearch[Local Search].
 If the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] proves that this is not the case, there's a number of improvements that can be done:
 

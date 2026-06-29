@@ -27,7 +27,7 @@ Alternatively, a `SolverFactory` can be created from a ``File`` with ``SolverFac
 However, for portability reasons, a classpath resource is recommended.
 
 Both a `Solver` and a `SolverFactory` have a generic type called ``Solution_``, which is the class
-representing a xref:running-timefold-solver/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[planning problem and solution].
+representing a xref:design-patterns/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[planning problem and solution].
 
 A solver configuration XML file looks like this:
 

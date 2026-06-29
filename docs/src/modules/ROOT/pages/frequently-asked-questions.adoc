@@ -59,7 +59,7 @@ as the business priorities change over time.
 The human planner can notify the developers to add, change or remove score constraints.
 * *The human planner is always in control of Timefold Solver.*
 ** The human planner can pin down one or more planning variables to a specific planning value.
-Because they are xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[pinned],
+Because they are xref:design-patterns/modeling-planning-problems.adoc#pinnedPlanningEntities[pinned],
 Timefold Solver does not change them: it optimizes the planning around the enforcements made by the human.
 If the human planner pins down all planning variables, he/she sidelines Timefold Solver completely.
 ** In a prototype implementation, the human planner occasionally uses pinning to intervene,
@@ -83,7 +83,7 @@ Understand these guidelines to decide the hardware for a Timefold Solver service
 * **RAM memory**: Provision plenty, but no need to provide more.
 ** The problem dataset, loaded before Timefold Solver is called, often consumes the most memory. It depends on the problem scale.
 *** If this is a problem, review the domain class structure: remove classes or fields that Timefold Solver doesn't need during solving.
-*** Timefold Solver usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:running-timefold-solver/modeling-planning-problems.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
+*** Timefold Solver usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:design-patterns/modeling-planning-problems.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
 ** During solving, the memory is very volatile, because solving creates many short-lived objects. The Garbage Collector deletes these in bulk and therefore needs some heap space as a buffer.
 ** The maximum size of the JVM heap space can be in three states:
 *** **Insufficient**: An `OutOfMemoryException` is thrown (often because the Garbage Collector is using more than 98% of the CPU time).
@@ -100,7 +100,7 @@ neither of which are used by default.
 *** If the CPU power is twice as fast, it takes half the time to find the same result. However, this does not guarantee that it finds a better result in the same time, nor that it finds a similar result for a problem twice as big in the same time.
 *** Increasing CPU power usually does not resolve scaling issues, because planning problems scale exponentially. Power tweaking the solver configuration has far better results for scaling issues than throwing hardware at it.
 ** During the `solve()` method, the CPU power will max out until it returns
-(except in xref:responding-to-change/responding-to-change.adoc#daemon[daemon mode]
+(except in xref:design-patterns/responding-to-change.adoc#daemon[daemon mode]
 or if your xref:optimization-algorithms/overview.adoc#SolverEventListener[SolverEventListener] writes the best solution to disk or the network).
 * **Number of CPU cores**: one CPU core per active Solver, plus at least one for the operating system.
 ** So in a multitenant application, which has one Solver per tenant, this means one CPU core per tenant, unless the number of solver threads is limited, as that limits the number of tenants being solved in parallel.

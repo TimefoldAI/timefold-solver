@@ -8,9 +8,10 @@
 *** xref:quickstart/spring-boot/spring-boot-quickstart.adoc[Spring Boot guide]
 
 * Domain modeling
-** xref:running-timefold-solver/modeling-planning-problems.adoc[leveloffset=+1]
+** xref:design-patterns/modeling-planning-problems.adoc[leveloffset=+1]
 ** xref:design-patterns/domain-modeling.adoc[leveloffset=+1]
 ** xref:design-patterns/time-patterns.adoc[leveloffset=+1]
+** xref:design-patterns/responding-to-change.adoc[leveloffset=+1]
 
 * xref:constraints-and-score/overview.adoc[Constraints and score]
 ** xref:constraints-and-score/score-calculation.adoc[leveloffset=+1]
@@ -45,7 +46,9 @@
 *** xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API]
 *** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
 
-* xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
+* How-to guides
+** xref:how-to/nonvolatile-replanning.adoc[leveloffset=+1]
+** xref:how-to/recommendation-api.adoc[leveloffset=+1]
 
 * Example use cases
 ** xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle routing (guide)]
@@ -67,7 +70,7 @@
 ** xref:commercial-editions/installation.adoc[Installation]
 ** xref:commercial-editions/performance-improvements.adoc[leveloffset=+1]
 ** xref:constraints-and-score/understanding-the-score.adoc[Score analysis]
-** xref:responding-to-change/responding-to-change.adoc#assignmentRecommendationAPI[Recommendation API]
+** xref:how-to/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API]
 ** xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection]
 ** xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[Multithreaded solving]
 ** xref:running-timefold-solver/multithreaded-solving.adoc#partitionedSearch[Partitioned search]

@@ -39,7 +39,7 @@ Your modeling and constraint knowledge is the same, only the plumbing changes.
 
 The following areas of the documentation apply equally to both service and library mode:
 
-xref:../running-timefold-solver/modeling-planning-problems.adoc[*Modeling planning problems*]::
+xref:design-patterns/modeling-planning-problems.adoc[*Modeling planning problems*]::
 How to annotate your domain with `@PlanningSolution`, `@PlanningEntity`, `@PlanningVariable`, and related annotations.
 This is identical whether you run as a service or embed as a library.
 

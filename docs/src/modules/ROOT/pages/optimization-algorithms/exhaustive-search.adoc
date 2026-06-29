@@ -163,18 +163,18 @@ The `entitySorterManner` options are:
 * ``DESCENDING``: Evaluate the planning entities in descending order based on a given metric.
 This usually increases pruning (and therefore improves scalability).
 Requires the model
-to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
-* `DESCENDING_IF_AVAILABLE` (default): If the model supports xref:running-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting], behave like ``DESCENDING``, else like ``NONE``.
+to support xref:design-patterns/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
+* `DESCENDING_IF_AVAILABLE` (default): If the model supports xref:design-patterns/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting], behave like ``DESCENDING``, else like ``NONE``.
 * ``NONE``: Initialize the planning entities in original order.
 
 The `valueSorterManner` options are:
 
 * ``ASCENDING``: Evaluate the planning values in ascending order based on a given metric.
 Requires the model
-to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
-* `ASCENDING_IF_AVAILABLE` (default): If the model supports xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``ASCENDING``, else like ``NONE``.
-* ``DESCENDING``: Evaluate the planning values in descending order based on a given metric. Requires the model to support xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
-* ``DESCENDING_IF_AVAILABLE``: If the model supports xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``DESCENDING``, else like ``NONE``.
+to support xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+* `ASCENDING_IF_AVAILABLE` (default): If the model supports xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``ASCENDING``, else like ``NONE``.
+* ``DESCENDING``: Evaluate the planning values in descending order based on a given metric. Requires the model to support xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+* ``DESCENDING_IF_AVAILABLE``: If the model supports xref:design-patterns/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``DESCENDING``, else like ``NONE``.
 * ``NONE``: Try the planning values in original order.
 
 

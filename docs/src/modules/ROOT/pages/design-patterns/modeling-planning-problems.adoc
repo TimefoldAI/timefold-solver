@@ -223,7 +223,7 @@ Alternatively, you can sometimes also introduce <<cachedProblemFact,_a cached pr
 
 For some functionality
 (such as xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
-and xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning]),
+and xref:design-patterns/responding-to-change.adoc#realTimePlanning[real-time planning]),
 Timefold Solver needs to map problem facts and planning entities to a unique ID.
 Timefold Solver uses that ID to _rebase_ a move from one thread's solution state to another's.
 
@@ -569,12 +569,12 @@ Using a planning variable with unassigned values implies
 that your score calculation is responsible for punishing (or even rewarding) variables with a `null` value.
 
 Failure to penalize unassigned variables can cause a solution with *all* variables unassigned to be the best solution.
-See the xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanningWithNullValues[overconstrained planning with `null` variable values] section in the docs for more infomation.
+See the xref:design-patterns/responding-to-change.adoc#overconstrainedPlanningWithNullValues[overconstrained planning with `null` variable values] section in the docs for more infomation.
 ====
 
 
-xref:responding-to-change/responding-to-change.adoc[Repeated planning]
-(especially xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning])
+xref:design-patterns/responding-to-change.adoc[Repeated planning]
+(especially xref:design-patterns/responding-to-change.adoc#realTimePlanning[real-time planning])
 does not mix well with a planning variable that allows unassigned values.
 Every time the Solver starts or a problem fact change is made,
 the xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction Heuristics]
@@ -674,6 +674,48 @@ Furthermore, it must be a mutable `Collection` because once Timefold Solver star
 it will add and remove elements to the ``Collection``s of those shadow variables accordingly.
 ====
 
+[#pinnedPlanningEntities]
+[#pinDownPlanningEntities]
+=== Pinning a planning variable (`@PlanningPin`)
+
+A pinned planning entity doesn't change during solving.
+This is commonly used by users to pin down one or more specific assignments and force Timefold Solver to schedule around those fixed assignments.
+
+To pin some planning entities down, add an `@PlanningPin` annotation on a boolean getter or field of the planning entity class.
+That boolean is `true` if the entity is pinned down to its current planning values and `false` otherwise.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Lecture {
+
+    private boolean pinned;
+    ...
+
+    @PlanningPin
+    public boolean isPinned() {
+        return pinned;
+    }
+
+    ...
+}
+----
+
+
+====
+
+In the example above, if `pinned` is `true`,
+the lecture will not be assigned to another period or room (even if the current period and rooms fields are `null`).
+
+NOTE: Planning pin value must never change during planning.
+To change whether an entity is pinned or not,
+use xref:design-patterns/responding-to-change.adoc#problemChange[ProblemChange].
+
+
 [#planningListVariable]
 == Planning list variable (VRP, Task assigning, ...)
 
@@ -720,7 +762,7 @@ No planning value may appear in multiple entities.
 === Allowing unassigned values
 
 By default, all planning values have to be assigned to exactly one list variable across the entire planning model.
-In an xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanning[over-constrained use case],
+In an xref:design-patterns/responding-to-change.adoc#overconstrainedPlanning[over-constrained use case],
 this can be counterproductive.
 For example: in task assignment with too many tasks for the workforce,
 we would rather leave low priority tasks unassigned instead of assigning them to an overloaded worker.
@@ -748,11 +790,11 @@ Using a planning list variable with unassigned values implies
 that your score calculation is responsible for punishing (or even rewarding) these unassigned values.
 
 Failure to penalize unassigned values can cause a solution with *all* values unassigned to be the best solution.
-See the xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanningWithNullValues[overconstrained planning with `null` variable values] section in the docs for more infomation.
+See the xref:design-patterns/responding-to-change.adoc#overconstrainedPlanningWithNullValues[overconstrained planning with `null` variable values] section in the docs for more infomation.
 ====
 
-xref:responding-to-change/responding-to-change.adoc[Repeated planning]
-(especially xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning])
+xref:design-patterns/responding-to-change.adoc[Repeated planning]
+(especially xref:design-patterns/responding-to-change.adoc#realTimePlanning[real-time planning])
 does not mix well with a planning list variable that allows unassigned values.
 Every time the Solver starts or a problem fact change is made,
 the xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction Heuristics]
@@ -965,6 +1007,60 @@ public class Customer {
     public void setNextCustomer(Customer nextCustomer) {...}
 ----
 ====
+
+[#partiallyPinnedPlanningListVariable]
+=== Pinning a list variable (`@PlanningPinToIndex`)
+
+There are cases where pinning only a part of a planning list variable is necessary.
+For example, if some customer visits have already happened but are still in the list,
+it makes sense to pin them down.
+
+To achieve that, use a `@PlanningPinToIndex` annotation instead:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Vehicle {
+
+    ...
+
+    @PlanningListVariable
+    protected List<Customer> customers = ...; // Includes some customers.
+    @PlanningPinToIndex
+    protected int firstUnpinnedIndex = 1;
+
+    ...
+
+}
+----
+====
+
+When `@PlanningPinToIndex` is used, the list is split in two parts.
+
+- The first part, with indexes less than `firstUnpinnedIndex`, is pinned.
+In the example above, it means that the first element of the list can not be moved from its position.
+Nothing will be added before it, and it will not be removed from the list.
+It will forever stay as the first element of the list.
+- The second part, starting with `firstUnpinnedIndex` and ending where the list ends, is movable.
+Items can be freely added, removed and reordered in this part of the list.
+
+This means that, if the `@PlanningPinToIndex` is zero (`0`), the list is fully modifiable.
+Consequently, if the `@PlanningPinToIndex` is equal to the size of the list,
+all the contents of the list are pinned,
+but the list can still be extended by adding to the end of the list.
+
+To pin the entire list, preventing any modifications to the list whatsoever,
+<<pinDownPlanningEntities,`@PlanningPin`>> needs to be used on the entity itself.
+In that case, the value of `@PlanningPinToIndex` must be zero (`0`).
+
+NOTE: Value of the index must never change during planning.
+To change how far the list is pinned,
+use xref:design-patterns/responding-to-change.adoc#problemChange[ProblemChange].
+
 
 [#tailChainVariable]
 === Updating tail chains
@@ -1259,7 +1355,7 @@ Java::
 A `ValueRangeProvider` that uses the solution as a parameter for the planning entity consumes less memory
 compared to the previous approach,
 as it does not require storing information at the entity level.
-This also helps reduce the overhead of the xref:running-timefold-solver/modeling-planning-problems.adoc#cloningASolution[solution cloning],
+This also helps reduce the overhead of the xref:design-patterns/modeling-planning-problems.adoc#cloningASolution[solution cloning],
 which can become significant for huge data sets.
 ====
 
@@ -1501,7 +1597,7 @@ the `comparatorClass` needs to implement a `Comparator` of a common superclass (
 and be able to handle comparing instances of those different classes.
 ====
 
-If the model uses a xref:running-timefold-solver/modeling-planning-problems#planningListVariable[list variable],
+If the model uses a xref:design-patterns/modeling-planning-problems#planningListVariable[list variable],
 the setting process is similar,
 and the property `comparatorClass` must be specified in the `@PlanningListVariable` annotation:
 
@@ -1544,7 +1640,7 @@ For example, none of the `timeslot` variables of any `Lesson` may be used to det
 [#mixedModels]
 == Mixed models
 
-If both xref:running-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic] and xref:running-timefold-solver/modeling-planning-problems#planningListVariable[list] variables are included in the model,
+If both xref:design-patterns/modeling-planning-problems.adoc#planningVariable[basic] and xref:design-patterns/modeling-planning-problems#planningListVariable[list] variables are included in the model,
 it is referred to as a *mixed model*.
 
 The following planning entity defines two genuine variables:

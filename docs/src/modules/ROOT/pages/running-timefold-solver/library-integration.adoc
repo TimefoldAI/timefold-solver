@@ -33,10 +33,10 @@ xref:optimization-algorithms/overview.adoc#doesTimefoldFindTheOptimalSolution[th
 [NOTE]
 ====
 The instance passed to `solve(solution)` is modified by the Solver — do not treat it as the best solution.
-The returned instance is most likely xref:running-timefold-solver/modeling-planning-problems.adoc#cloningASolution[a planning clone] of the input.
+The returned instance is most likely xref:design-patterns/modeling-planning-problems.adoc#cloningASolution[a planning clone] of the input.
 ====
 
-NOTE: The input may be partially or fully initialized, which is common in xref:responding-to-change/responding-to-change.adoc[repeated planning].
+NOTE: The input may be partially or fully initialized, which is common in xref:design-patterns/responding-to-change.adoc[repeated planning].
 
 However, `Solver.solve()` *blocks the calling thread* for the entire duration of solving.
 This makes it unsuitable for use in REST endpoints or anywhere you need to handle multiple problems concurrently.

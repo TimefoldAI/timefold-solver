@@ -1,0 +1,68 @@
+[#nonvolatileReplanning]
+= Minimizing disruption when replanning
+:doctype: book
+:sectnums:
+:icons: font
+
+Replanning an existing plan can be very disruptive.
+If the plan affects humans (such as employees, drivers, ...), very disruptive changes are often undesirable.
+
+There are two ways to limit disruption:
+
+* **Pinning** — completely prevent specific assignments from changing.
+Use xref:design-patterns/modeling-planning-problems.adoc#pinnedPlanningEntities[`@PlanningPin`] to lock individual entities to their current values,
+or xref:design-patterns/modeling-planning-problems.adoc#partiallyPinnedPlanningListVariable[`@PlanningPinToIndex`] to lock only the first portion of a planning list variable.
+This is appropriate when certain assignments are already confirmed or published and must not move under any circumstances.
+
+* **Nonvolatile replanning** — allow changes, but make the solver justify them.
+The gain of changing an assignment must outweigh the disruption cost.
+This is usually implemented by taxing all planning entities that change, and is the approach described on this page.
+
+image::responding-to-change/nonDisruptiveReplanning.png[align="center"]
+
+In conference scheduling, the entity has both a planning variable `timeslot` and its original value ``publishedTimeslot``:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Talk {
+
+    ...
+
+    @PlanningVariable
+    private Timeslot timeslot;
+
+    private Timeslot publishedTimeslot;
+
+    ...
+}
+----
+
+
+====
+
+During planning, the planning variable `timeslot` changes.
+By writing a constraint comparing it with the `publishedTimeslot`, a change in plan can be penalized:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    Constraint publishedTimeslot(ConstraintFactory factory) {
+        return factory.forEach(Talk.class)
+                .filter(talk -> talk.getPublishedTimeslot() != null
+                        && talk.getTimeslot() != talk.getPublishedTimeslot())
+                .penalize(HardSoftScore.ofSoft(1000))
+                .asConstraint("Published timeslot");
+    }
+----
+====
+
+By configuring a penalty weight of `-1000` we can express that a solution will only be accepted
+if it improves the soft score for at least `1000` points per variable changed (or if it improves the hard score).

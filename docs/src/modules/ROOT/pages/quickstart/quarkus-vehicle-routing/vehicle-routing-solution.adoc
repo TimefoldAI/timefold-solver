@@ -171,7 +171,7 @@ However, this class is also the output of the solution:
 The `visits` field is a value range provider.
 It holds the `Visit` instances which Timefold Solver can pick from to assign to the `visits` field of `Vehicle` instances.
 The `visits` field has an `@ValueRangeProvider` annotation to connect the `@PlanningListVariable` with the `@ValueRangeProvider`,
-by matching the type of the planning list variable with the type returned by the xref:running-timefold-solver/modeling-planning-problems.adoc#planningValueRangeProvider[value range provider].
+by matching the type of the planning list variable with the type returned by the xref:design-patterns/modeling-planning-problems.adoc#planningValueRangeProvider[value range provider].
 
 == Distance calculation
 

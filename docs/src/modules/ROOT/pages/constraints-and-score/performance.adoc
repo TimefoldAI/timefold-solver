@@ -76,7 +76,7 @@ The network latency will kill your move evaluation performance.
 Cache the results of those remote services if possible.
 
 If some parts of a constraint can be calculated once, when the `Solver` starts, and never change during solving,
-then turn them into xref:running-timefold-solver/modeling-planning-problems.adoc#cachedProblemFact[cached problem facts].
+then turn them into xref:design-patterns/modeling-planning-problems.adoc#cachedProblemFact[cached problem facts].
 
 
 [#pointlessConstraints]
@@ -107,7 +107,7 @@ and you can set the weights accordingly.
 Instead of implementing a hard constraint, it can sometimes be built in.
 For example, if `Lecture` A should never be assigned to `Room` X, but it uses `ValueRangeProvider` on Solution,
 so the `Solver` will often try to assign it to `Room` X too (only to find out that it breaks a hard constraint).
-Use xref:running-timefold-solver/modeling-planning-problems.adoc#valueRangeProviderOnPlanningEntity[a ValueRangeProvider on the planning entity]
+Use xref:design-patterns/modeling-planning-problems.adoc#valueRangeProviderOnPlanningEntity[a ValueRangeProvider on the planning entity]
 or xref:optimization-algorithms/move-selector-reference.adoc#filteredSelection[filtered selection]
 to define that Course A should only be assigned a `Room` different than X.
 
@@ -316,7 +316,7 @@ For that reason, it is generally recommended putting Joiners based on enum field
 == Indexing, Hashing, Looping
 The code on the hot path of your application needs to be as fast as possible.
 
-* When you use xref:running-timefold-solver/modeling-planning-problems.adoc#shadowVariable[Shadow Variables], you will provide a `supplier` method that computes the value of the shadow variable.
+* When you use xref:design-patterns/modeling-planning-problems.adoc#shadowVariable[Shadow Variables], you will provide a `supplier` method that computes the value of the shadow variable.
 * This method will be called very often during score calculation, so it needs to be fast.
 * If you need to do a lookup in a collection to find an element, ideally you are indexing into an array.
 * The second best option is to use a `HashMap` or `HashSet`.
