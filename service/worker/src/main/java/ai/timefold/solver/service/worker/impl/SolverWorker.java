@@ -53,7 +53,6 @@ import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
-import ai.timefold.solver.service.definition.internal.events.AbstractDatasetEvent;
 import ai.timefold.solver.service.definition.internal.events.AbstractEvent;
 import ai.timefold.solver.service.definition.internal.events.BestSolutionEvent;
 import ai.timefold.solver.service.definition.internal.events.DatasetComputedEvent;
@@ -161,8 +160,6 @@ public class SolverWorker {
 
     private AtomicBoolean shuttingDown = new AtomicBoolean(false);
 
-    private final AtomicBoolean resolvedMapLocationLogged = new AtomicBoolean(false);
-
     private BroadcastProcessor<Metadata<?>> processor = BroadcastProcessor.create();
 
     @Inject
@@ -249,7 +246,6 @@ public class SolverWorker {
 
     private void sendEvent(Emitter emitter, AbstractEvent event) {
         try {
-            enrichResolvedMapLocation(event);
             emitter.send(event).toCompletableFuture().get(EMITTER_TIMEOUT, TimeUnit.SECONDS);
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
             if (e instanceof InterruptedException) {
@@ -367,7 +363,8 @@ public class SolverWorker {
             postProcessOutput(id, modelOutput, solverModel);
 
             sendEvent(datasetOutputsComputedEmitter,
-                    new DatasetComputedEvent(metadata, solverModel, planName, tenantName, solveRequested));
+                    new DatasetComputedEvent(metadata, solverModel, planName, tenantName, solveRequested,
+                            mapEnrichmentContext.getResolvedMapLocation()));
         } catch (Throwable e) {
             notifyOnFailure(id, e);
         }
@@ -783,19 +780,6 @@ public class SolverWorker {
                 // shutdown has to be executed last to ensure everything executed before pod shuts down
                 shutdownOnTerminate.processFailed(problemId, throwable);
             }
-        }
-    }
-
-    private void enrichResolvedMapLocation(AbstractEvent event) {
-        String resolved = mapEnrichmentContext.getResolvedMapLocation();
-        if (resolved == null || !(event instanceof AbstractDatasetEvent datasetEvent)) {
-            return;
-        }
-        datasetEvent.setResolvedMapLocation(resolved);
-        String configuredLocation = System.getenv(EnvironmentVars.ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION);
-        if (EnvironmentVars.MAP_SERVICE_LOCATION_AUTO_SELECT.equalsIgnoreCase(configuredLocation)
-                && resolvedMapLocationLogged.compareAndSet(false, true)) {
-            LOGGER.info("Auto-select map resolved to '{}' for dataset {}.", resolved, datasetEvent.getId());
         }
     }
 
