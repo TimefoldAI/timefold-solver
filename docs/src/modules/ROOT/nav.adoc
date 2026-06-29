@@ -31,7 +31,7 @@
 *** xref:running-timefold-solver/constraint-overrides.adoc[Constraint weights]
 *** xref:integration/quarkus.adoc[leveloffset=+1]
 *** xref:integration/spring-boot.adoc[leveloffset=+1]
-*** xref:integration/persistent-storage.adoc[leveloffset=+1]
+*** xref:integration/jpa-jaxb-json-integration.adoc[leveloffset=+1]
 
 * Diagnosing the Solver
 ** xref:running-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]

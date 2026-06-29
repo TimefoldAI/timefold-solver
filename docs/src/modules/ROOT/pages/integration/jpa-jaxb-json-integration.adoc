@@ -1,5 +1,5 @@
 [#integrationWithPersistentStorage]
-= Persistent storage
+= JPA/JAXB/JSON integration
 :doctype: book
 :sectnums:
 :icons: font
