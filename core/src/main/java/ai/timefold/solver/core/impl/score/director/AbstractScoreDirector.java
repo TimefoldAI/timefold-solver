@@ -344,8 +344,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Do nothing
     }
 
+    public List<Object> getInconsistentEntities() {
+        return variableListenerSupport.getInconsistentEntities();
+    }
+
     public void unassignInconsistentEntities() {
-        var inconsistentEntities = variableListenerSupport.getInconsistentEntities();
+        var inconsistentEntities = getInconsistentEntities();
         if (listVariableStateSupply != null) {
             var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
             var listElementClass = listVariableStateSupply.getSourceVariableDescriptor().getElementType();
