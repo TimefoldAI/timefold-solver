@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.api.domain.variable.InconsistentSolutionException;
 import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
@@ -137,9 +138,11 @@ public class SolutionManagerTest {
         assertThat(solutionManager).isNotNull();
 
         assertThatCode(() -> solutionManager.update(inconsistentSolution))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InconsistentSolutionException.class)
                 .hasMessageContainingAll("The solution (",
-                        "is inconsistent", "Solution update", "requires a consistent solution");
+                        "is inconsistent", "Solution update", "requires a consistent solution")
+                .hasFieldOrPropertyWithValue("solution", inconsistentSolution)
+                .hasFieldOrPropertyWithValue("involvedEntityList", List.of(valueA1, valueA2));
     }
 
     private void assertShadowedListValueAllNull(SoftAssertions softly, TestdataListValueWithShadowHistory current) {
@@ -196,10 +199,12 @@ public class SolutionManagerTest {
         var solutionManager = solutionManagerSource.createSolutionManager(solverFactory);
         assertThat(solutionManager).isNotNull();
 
-        assertThatCode(() -> solutionManager.update(inconsistentSolution, SolutionUpdatePolicy.UPDATE_SHADOW_VARIABLES_ONLY))
-                .isInstanceOf(IllegalArgumentException.class)
+        assertThatCode(() -> solutionManager.update(inconsistentSolution))
+                .isInstanceOf(InconsistentSolutionException.class)
                 .hasMessageContainingAll("The solution (",
-                        "is inconsistent", "Solution update", "requires a consistent solution");
+                        "is inconsistent", "Solution update", "requires a consistent solution")
+                .hasFieldOrPropertyWithValue("solution", inconsistentSolution)
+                .hasFieldOrPropertyWithValue("involvedEntityList", List.of(valueA1, valueA2));
     }
 
     @ParameterizedTest
