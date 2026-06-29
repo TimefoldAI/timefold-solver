@@ -136,7 +136,7 @@ public class BeanProducer {
 
     @Produces
     @Default
-    public SolverManager<Timetable, String> overrideSolverManager(SolverFactory<Timetable> solverFactory) {
+    public SolverManager<EmployeeSchedule, String> overrideSolverManager(SolverFactory<EmployeeSchedule> solverFactory) {
         SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
         return SolverManager.create(solverFactory, solverManagerConfig);
     }
@@ -156,14 +156,14 @@ import ai.timefold.solver.core.config.solver.SolverManagerConfig
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Default
 import jakarta.ws.rs.Produces
-import org.acme.kotlin.schooltimetabling.domain.Timetable
+import org.acme.employeescheduling.domain.EmployeeSchedule
 
 @ApplicationScoped
 class BeanProducer {
 
     @Produces
     @Default
-    fun overrideSolverManager(solverFactory: SolverFactory<Timetable>?): SolverManager<Timetable, String> {
+    fun overrideSolverManager(solverFactory: SolverFactory<EmployeeSchedule>?): SolverManager<EmployeeSchedule, String> {
         val solverManagerConfig = SolverManagerConfig()
         return SolverManager.create(solverFactory, solverManagerConfig)
     }
@@ -238,8 +238,8 @@ Kotlin::
 @Path("path")
 class Resource {
 
-    private lateinit var fastSolver: SolverManager<...>?
-    private lateinit var regularSolver: SolverManager<...>?
+    private lateinit var fastSolver: SolverManager<Timetable, String>
+    private lateinit var regularSolver: SolverManager<Timetable, String>
 
     @Inject
     constructor(
@@ -350,8 +350,8 @@ class Teacher {
 @Path("path")
 class Resource {
 
-    private lateinit var teacherToLessonScheduleSolverManager: SolverManager<TeacherToLessonSchedule, String>?
-    private lateinit var lessonToRoomTimeslotSolverManager: SolverManager<Timetable, String>?
+    private lateinit var teacherToLessonScheduleSolverManager: SolverManager<TeacherToLessonSchedule, String>
+    private lateinit var lessonToRoomTimeslotSolverManager: SolverManager<Timetable, String>
 
     @Inject
     constructor(
