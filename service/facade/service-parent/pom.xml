@@ -302,6 +302,10 @@
             <updatePomFile>true</updatePomFile>
             <flattenMode>resolveCiFriendliesOnly</flattenMode>
             <keepCommentsInPom>true</keepCommentsInPom>
+            <!-- Write the flattened pom under target/ instead of the module basedir, so the generated
+                 .flattened-pom.xml does not litter the source tree of models and quickstarts (issue #2410). -->
+            <outputDirectory>${project.build.directory}</outputDirectory>
+            <flattenedPomFilename>.flattened-pom.xml</flattenedPomFilename>
           </configuration>
           <executions>
             <execution>
@@ -364,6 +368,9 @@
                   <version>${version.ai.timefold.solver}</version>
                   <type>jar</type>
                   <overWrite>true</overWrite>
+                  <!-- Quarkus container-image-jib only copies files from the fixed src/main/jib directory
+                       into the image, so this generated jar has to stay here. It is kept out of Git via
+                       .gitignore instead (issue #2410). -->
                   <outputDirectory>src/main/jib/timefold</outputDirectory>
                   <destFileName>diagnostic-tools.jar</destFileName>
                 </artifactItem>
