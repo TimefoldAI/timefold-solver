@@ -9,9 +9,8 @@
 
 * Domain modeling
 ** xref:domain-modeling/domain-modeling.adoc[Guide]
-** xref:domain-modeling/time-patterns.adoc[leveloffset=+1]
-** xref:domain-modeling/overconstrained-planning.adoc[leveloffset=+1]
 ** xref:domain-modeling/modeling-planning-problems.adoc[Building blocks]
+** xref:domain-modeling/common-patterns.adoc[leveloffset=+1]
 
 * xref:constraints-and-score/overview.adoc[Constraints and score]
 ** xref:constraints-and-score/score-calculation.adoc[leveloffset=+1]

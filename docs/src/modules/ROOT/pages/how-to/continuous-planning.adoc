@@ -57,7 +57,7 @@ It is stored in the database and used as the starting point for the next solver 
 +
 Planning entities outside the current planning window.
 +
-** If the window is too small to cover all entities, you are dealing with xref:domain-modeling/overconstrained-planning.adoc[overconstrained planning].
-** If xref:domain-modeling/time-patterns.adoc#assigningTimeToPlanningEntities[time is a planning variable], the window size is determined dynamically, and this stage does not apply.
+** If the window is too small to cover all entities, you are dealing with xref:domain-modeling/common-patterns.adoc#overconstrainedPlanning[overconstrained planning].
+** If xref:domain-modeling/common-patterns.adoc#assigningTimeToPlanningEntities[time is a planning variable], the window size is determined dynamically, and this stage does not apply.
 
 image::responding-to-change/continuousPublishingWithRotation.png[align="center"]

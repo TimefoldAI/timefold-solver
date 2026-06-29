@@ -29,7 +29,7 @@ The other side will become an xref:domain-modeling/modeling-planning-problems.ad
 Keep bi-directional relationships orange.
 ====
 
-. *If the goal is to find an optimal order of elements*, use the xref:domain-modeling/time-patterns.adoc#chainedThroughTimePattern[Chained Through Time pattern].
+. *If the goal is to find an optimal order of elements*, use the xref:domain-modeling/common-patterns.adoc#chainedThroughTimePattern[Chained Through Time pattern].
 
 . *If there is an orange many-to-many relationship, replace it
 with a one-to-many and a many-to-one relationship to a new intermediate class.*
