@@ -1,5 +1,5 @@
-[#nonvolatileReplanning]
-= Minimizing disruption when replanning
+[#nonDisruptiveReplanning]
+= Non-disruptive replanning
 :doctype: book
 :sectnums:
 :icons: font
@@ -14,7 +14,7 @@ Use xref:domain-modeling/modeling-planning-problems.adoc#pinnedPlanningEntities[
 or xref:domain-modeling/modeling-planning-problems.adoc#partiallyPinnedPlanningListVariable[`@PlanningPinToIndex`] to lock only the first portion of a planning list variable.
 This is appropriate when certain assignments are already confirmed or published and must not move under any circumstances.
 
-* **Nonvolatile replanning** — allow changes, but make the solver justify them.
+* **Non-disruptive replanning** — allow changes, but make the solver justify them.
 The gain of changing an assignment must outweigh the disruption cost.
 This is usually implemented by taxing all planning entities that change, and is the approach described on this page.
 

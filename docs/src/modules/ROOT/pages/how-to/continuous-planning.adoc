@@ -32,11 +32,11 @@ Only load those that might still affect current constraints, with a reasonable s
 * _Published_
 +
 Upcoming time periods that have been shared with the business.
-They contain only xref:domain-modeling/modeling-planning-problems.adoc#pinnedPlanningEntities[pinned] and/or xref:how-to/nonvolatile-replanning.adoc#nonvolatileReplanning[semi-movable] planning entities.
+They contain only xref:domain-modeling/modeling-planning-problems.adoc#pinnedPlanningEntities[pinned] and/or xref:how-to/non-disruptive-replanning.adoc#nonDisruptiveReplanning[semi-movable] planning entities.
 +
 ** Normal planning will not change the published schedule.
 +
-If exceptions force a change anyway (for example, someone calls in sick), minimize disruption using xref:how-to/nonvolatile-replanning.adoc#nonvolatileReplanning[non-disruptive replanning].
+If exceptions force a change anyway (for example, someone calls in sick), minimize disruption using xref:how-to/non-disruptive-replanning.adoc#nonDisruptiveReplanning[non-disruptive replanning].
 
 * _Draft_
 +

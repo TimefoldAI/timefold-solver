@@ -47,7 +47,7 @@
 * Dealing with change
 ** xref:how-to/continuous-planning.adoc[leveloffset=+1]
 ** xref:how-to/real-time-planning.adoc[leveloffset=+1]
-** xref:how-to/nonvolatile-replanning.adoc[leveloffset=+1]
+** xref:how-to/non-disruptive-replanning.adoc[leveloffset=+1]
 ** xref:how-to/recommendation-api.adoc[leveloffset=+1]
 
 * Example use cases
