@@ -345,7 +345,6 @@ Configure the logging level on the `ai.timefold.solver` package in your `logback
 
 </configuration>
 ----
-+
 If it isn't picked up, temporarily add the system property `-Dlogback.debug=true` to figure out why.
 ====
 
@@ -408,10 +407,10 @@ Add the appropriate Micrometer registry dependency for your monitoring system.
 Java::
 +
 When using plain Java, you must add the metrics registry to the global registry manually.
-
++
 .Prerequisites
 * You have configured a Micrometer registry. For information about configuring Micrometer registries, see the https://micrometer.io[Micrometer] web site.
-
++
 .Procedure
 . Add configuration information for the Micrometer registry for your desired monitoring system to the global registry.
 . Add the following line below the configuration information, where `<REGISTRY>` is the name of the registry that you configured:
@@ -420,6 +419,7 @@ When using plain Java, you must add the metrics registry to the global registry 
 ----
 Metrics.addRegistry(<REGISTRY>);
 ----
++
 The following example shows how to add the Prometheus registry:
 +
 [source,java,options="nowrap"]
@@ -446,12 +446,12 @@ Metrics.addRegistry(prometheusRegistry);
 ====
 
 The following metrics are exposed:
-+
+
 [NOTE]
 ====
 The names and format of the metrics vary depending on the registry.
 ====
-+
+
 * `timefold.solver.errors.total`: the total number of errors that occurred while solving since the start
 of the measuring.
 * `timefold.solver.solve.duration.active-count`: the number of solvers currently solving.

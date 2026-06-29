@@ -125,7 +125,7 @@ then a score is _feasible_ if no hard constraints are broken.
 ====
 By default, Timefold Solver will always assign all planning variables a planning value.
 If there is no feasible solution, this means the best solution will be infeasible.
-To instead leave some of the planning entities unassigned, apply xref:how-to/overconstrained-planning.adoc[overconstrained planning].
+To instead leave some of the planning entities unassigned, apply xref:domain-modeling/overconstrained-planning.adoc[overconstrained planning].
 ====
 
 For each constraint, you need to pick a score level, a score weight and a score signum.

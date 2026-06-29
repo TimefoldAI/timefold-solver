@@ -569,7 +569,7 @@ Using a planning variable with unassigned values implies
 that your score calculation is responsible for punishing (or even rewarding) variables with a `null` value.
 
 Failure to penalize unassigned variables can cause a solution with *all* variables unassigned to be the best solution.
-See the xref:how-to/overconstrained-planning.adoc[overconstrained planning] guide for more information.
+See the xref:domain-modeling/overconstrained-planning.adoc[overconstrained planning] guide for more information.
 ====
 
 
@@ -762,7 +762,7 @@ No planning value may appear in multiple entities.
 === Allowing unassigned values
 
 By default, all planning values have to be assigned to exactly one list variable across the entire planning model.
-In an xref:how-to/overconstrained-planning.adoc[over-constrained use case],
+In an xref:domain-modeling/overconstrained-planning.adoc[over-constrained use case],
 this can be counterproductive.
 For example: in task assignment with too many tasks for the workforce,
 we would rather leave low priority tasks unassigned instead of assigning them to an overloaded worker.
@@ -790,7 +790,7 @@ Using a planning list variable with unassigned values implies
 that your score calculation is responsible for punishing (or even rewarding) these unassigned values.
 
 Failure to penalize unassigned values can cause a solution with *all* values unassigned to be the best solution.
-See the xref:how-to/overconstrained-planning.adoc[overconstrained planning] guide for more information.
+See the xref:domain-modeling/overconstrained-planning.adoc[overconstrained planning] guide for more information.
 ====
 
 Repeated planning
