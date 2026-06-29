@@ -1550,6 +1550,55 @@ class DefaultSolverTest {
     }
 
     @Test
+    void solveCustomPhaseReturnsInconsistent() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataDependencyNoInconsistentFieldSolution.class, TestdataDependencyNoInconsistentFieldEntity.class,
+                TestdataDependencyNoInconsistentFieldValue.class)
+                .withEasyScoreCalculatorClass(null)
+                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class)
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommands(command -> {
+                            var solution = (TestdataDependencyNoInconsistentFieldSolution) command.getWorkingSolution();
+                            var sE1 = solution.getEntities().getFirst();
+                            var sB1 = solution.getValues().get(2);
+                            var sB2 = solution.getValues().get(3);
+                            var metaModel = command.getSolutionMetaModel()
+                                    .genuineEntity(TestdataDependencyNoInconsistentFieldEntity.class)
+                                    .listVariable("values", TestdataDependencyNoInconsistentFieldValue.class);
+                            command.execute(Moves.compose(
+                                    Moves.assign(metaModel, sB2, sE1, 0),
+                                    Moves.assign(metaModel, sB1, sE1, 1)));
+                        }));
+
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var e2 = new TestdataDependencyNoInconsistentFieldEntity("b");
+
+        var a1 = new TestdataDependencyNoInconsistentFieldValue("a1");
+        var a2 = new TestdataDependencyNoInconsistentFieldValue("a2");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+
+        a2.setDependencies(List.of(a1));
+        b2.setDependencies(List.of(b1));
+
+        e1.setValues(List.of(b2, b1));
+        e2.setValues(List.of(a1, a2));
+
+        var entities = List.of(e1, e2);
+        var values = List.of(a1, a2, b1, b2);
+
+        var problem = new TestdataDependencyNoInconsistentFieldSolution();
+
+        problem.setEntities(entities);
+        problem.setValues(values);
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem, false))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContainingAll("The custom phase command", "resulted in an inconsistent solution.");
+    }
+
+    @Test
     void solveIgnoreInconsistent() {
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(

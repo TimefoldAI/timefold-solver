@@ -88,6 +88,10 @@ public final class DefaultCustomPhase<Solution_>
                 () -> phaseTermination.isPhaseTerminated(stepScope.getPhaseScope()));
         customPhaseCommand.changeWorkingSolution(commandContext);
         calculateWorkingStepScore(stepScope, customPhaseCommand);
+        if (stepScope.getScore().isInvalid()) {
+            throw new IllegalStateException("The custom phase command (%s) resulted in an inconsistent solution."
+                    .formatted(customPhaseCommand));
+        }
         var solver = stepScope.getPhaseScope().getSolverScope().getSolver();
         solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope);
     }
