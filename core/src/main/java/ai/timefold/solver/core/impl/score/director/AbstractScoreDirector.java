@@ -353,6 +353,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 if (listElementClass.isInstance(inconsistentEntity)) {
                     var inverse = Objects.requireNonNull(listVariableStateSupply.getInverseSingleton(inconsistentEntity));
                     int index = Objects.requireNonNull(listVariableStateSupply.getIndex(inconsistentEntity));
+
+                    if (listVariableDescriptor.isElementPinned(Objects.requireNonNull(workingSolution), inverse, index)) {
+                        throw new IllegalStateException(
+                                "Entity (%s) is pinned but is involved in a dependency loop".formatted(inconsistentEntity));
+                    }
+
                     beforeListVariableElementUnassigned(listVariableDescriptor, inconsistentEntity);
                     beforeListVariableChanged(listVariableDescriptor, inverse, index, index + 1);
                     listVariableDescriptor.removeElement(inverse, index);
@@ -374,6 +380,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(inconsistentEntity.getClass());
         if (entityDescriptor == null) {
             throw new IllegalStateException("Object (%s) is not an entity but is inconsistent".formatted(inconsistentEntity));
+        }
+        if (entityDescriptor.isGenuine()
+                && !entityDescriptor.isMovable(Objects.requireNonNull(workingSolution), inconsistentEntity)) {
+            throw new IllegalStateException(
+                    "Entity (%s) is pinned but is involved in a dependency loop".formatted(inconsistentEntity));
         }
         for (var genuineVariableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
             beforeVariableChanged(genuineVariableDescriptor, inconsistentEntity);

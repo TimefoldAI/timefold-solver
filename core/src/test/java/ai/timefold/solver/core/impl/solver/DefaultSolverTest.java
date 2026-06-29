@@ -1454,7 +1454,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveWhenIgnoringInconsistentSolutionsThrowsIfInitialSolutionInconsistent() {
+    void solveWhenIgnoringInconsistentSolutionsUnassignsIfInitialSolutionInconsistent() {
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataDependencyNoInconsistentFieldSolution.class, TestdataDependencyNoInconsistentFieldEntity.class,
@@ -1462,7 +1462,63 @@ class DefaultSolverTest {
                 .withEasyScoreCalculatorClass(null)
                 .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class)
                 .withPhases(new CustomPhaseConfig()
-                        .withCustomPhaseCommands(command -> {}));
+                        .withCustomPhaseCommands(command -> {
+                        }));
+
+        var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
+        var e2 = new TestdataDependencyNoInconsistentFieldEntity("b");
+
+        var a1 = new TestdataDependencyNoInconsistentFieldValue("a1");
+        var a2 = new TestdataDependencyNoInconsistentFieldValue("a2");
+        var b1 = new TestdataDependencyNoInconsistentFieldValue("b1");
+        var b2 = new TestdataDependencyNoInconsistentFieldValue("b2");
+
+        a2.setDependencies(List.of(a1));
+        b2.setDependencies(List.of(b1));
+
+        e1.setValues(List.of(b2, b1));
+        e2.setValues(List.of(a1, a2));
+
+        var entities = List.of(e1, e2);
+        var values = List.of(a1, a2, b1, b2);
+
+        var problem = new TestdataDependencyNoInconsistentFieldSolution();
+
+        problem.setEntities(entities);
+        problem.setValues(values);
+
+        var solution = PlannerTestUtils.solve(solverConfig, problem, false);
+        assertThat(solution.getEntities().getFirst().getValues()).isEmpty();
+        assertThat(solution.getEntities().getLast().getValues()).hasSize(2);
+
+        var sE2 = solution.getEntities().getLast();
+
+        var sA1 = solution.getValues().get(0);
+        var sA2 = solution.getValues().get(1);
+        var sB1 = solution.getValues().get(2);
+        var sB2 = solution.getValues().get(3);
+
+        assertThat(sA1.getEntity()).isEqualTo(sE2);
+        assertThat(sA1.getPreviousValue()).isNull();
+
+        assertThat(sA2.getEntity()).isEqualTo(sE2);
+        assertThat(sA2.getPreviousValue()).isEqualTo(sA1);
+
+        assertThat(sB1.getEntity()).isNull();
+        assertThat(sB1.getPreviousValue()).isNull();
+
+        assertThat(sB2.getEntity()).isNull();
+        assertThat(sB2.getPreviousValue()).isNull();
+    }
+
+    @Test
+    void solveWhenIgnoringInconsistentSolutionsThrowsIfInconsistentEntityPinned() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataDependencyNoInconsistentFieldSolution.class, TestdataDependencyNoInconsistentFieldEntity.class,
+                TestdataDependencyNoInconsistentFieldValue.class)
+                .withEasyScoreCalculatorClass(null)
+                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class);
 
         var e1 = new TestdataDependencyNoInconsistentFieldEntity("a");
         var e2 = new TestdataDependencyNoInconsistentFieldEntity("b");
@@ -1481,31 +1537,16 @@ class DefaultSolverTest {
         var entities = List.of(e1, e2);
         var values = List.of(a1, a2, b1, b2);
 
+        e1.setPinnedToIndex(1);
+
         var problem = new TestdataDependencyNoInconsistentFieldSolution();
 
         problem.setEntities(entities);
         problem.setValues(values);
 
-        var solution = PlannerTestUtils.solve(solverConfig, problem, false);
-        assertThat(solution.getEntities().getFirst().getValues().isEmpty());
-        assertThat(solution.getEntities().getLast().getValues().isEmpty());
-
-        var sA1 = solution.getValues().get(0);
-        var sA2 = solution.getValues().get(1);
-        var sB1 = solution.getValues().get(2);
-        var sB2 = solution.getValues().get(3);
-
-        assertThat(sA1.getEntity()).isNull();
-        assertThat(sA1.getPreviousValue()).isNull();
-
-        assertThat(sA2.getEntity()).isNull();
-        assertThat(sA2.getPreviousValue()).isNull();
-
-        assertThat(sB1.getEntity()).isNull();
-        assertThat(sB1.getPreviousValue()).isNull();
-
-        assertThat(sB2.getEntity()).isNull();
-        assertThat(sB2.getPreviousValue()).isNull();
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem, false))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContainingAll("Entity", "b2", "is pinned but is involved in a dependency loop");
     }
 
     @Test

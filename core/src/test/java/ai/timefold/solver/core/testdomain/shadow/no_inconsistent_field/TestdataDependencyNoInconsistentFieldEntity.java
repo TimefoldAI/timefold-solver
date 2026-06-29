@@ -7,6 +7,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.common.PlanningId;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 
 @PlanningEntity
@@ -16,6 +17,9 @@ public class TestdataDependencyNoInconsistentFieldEntity {
 
     @PlanningListVariable
     List<TestdataDependencyNoInconsistentFieldValue> values;
+
+    @PlanningPinToIndex
+    int pinnedToIndex;
 
     LocalDateTime startTime;
 
@@ -55,6 +59,14 @@ public class TestdataDependencyNoInconsistentFieldEntity {
 
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
+    }
+
+    public int getPinnedToIndex() {
+        return pinnedToIndex;
+    }
+
+    public void setPinnedToIndex(int pinnedToIndex) {
+        this.pinnedToIndex = pinnedToIndex;
     }
 
     @Override

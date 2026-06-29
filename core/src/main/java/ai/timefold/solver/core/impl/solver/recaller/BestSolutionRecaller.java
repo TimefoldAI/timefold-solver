@@ -60,7 +60,8 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
             scoreDirector.unassignInconsistentEntities();
             innerScore = scoreDirector.calculateScore();
             if (innerScore.isInvalid()) {
-                throw new IllegalStateException("The initial solution passed to the solver is inconsistent even after unassigning involved entities.");
+                throw new IllegalStateException(
+                        "The initial solution passed to the solver is inconsistent even after unassigning involved entities.");
             }
         }
         var score = innerScore.raw();
