@@ -899,7 +899,7 @@ The solver will only terminate after the command returns.
 IMPORTANT: Do not change any of the problem facts in a `PhaseCommand` or add or remove entities,
 it will corrupt the `Solver` because any previous score or solution was for a different problem.
 To change problem facts or to add or remove entities,
-read about xref:domain-modeling/responding-to-change.adoc[repeated planning]
+read about xref:how-to/real-time-planning.adoc[repeated planning]
 and use xref:how-to/real-time-planning.adoc#problemChange[ProblemChange] instead.
 
 Configure the `PhaseCommand` in the solver configuration:

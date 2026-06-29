@@ -573,7 +573,7 @@ See the xref:how-to/overconstrained-planning.adoc[overconstrained planning] guid
 ====
 
 
-xref:domain-modeling/responding-to-change.adoc[Repeated planning]
+Repeated planning
 (especially xref:how-to/real-time-planning.adoc[real-time planning])
 does not mix well with a planning variable that allows unassigned values.
 Every time the Solver starts or a problem fact change is made,
@@ -793,7 +793,7 @@ Failure to penalize unassigned values can cause a solution with *all* values una
 See the xref:how-to/overconstrained-planning.adoc[overconstrained planning] guide for more information.
 ====
 
-xref:domain-modeling/responding-to-change.adoc[Repeated planning]
+Repeated planning
 (especially xref:how-to/real-time-planning.adoc[real-time planning])
 does not mix well with a planning list variable that allows unassigned values.
 Every time the Solver starts or a problem fact change is made,

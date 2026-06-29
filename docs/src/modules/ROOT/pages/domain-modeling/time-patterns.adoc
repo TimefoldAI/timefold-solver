@@ -20,7 +20,7 @@ There are also several designs for assigning a planning entity to a starting tim
 
 * If the starting time is fixed beforehand, it is not a planning variable (in that solver).
 ** For example: in Bed Allocation Scheduling, the arrival day of each patient is fixed beforehand.
-** This is common in xref:domain-modeling/responding-to-change.adoc#multiStagePlanning[multi-stage planning],
+** This is common in multi-stage planning,
 when the starting time has been decided already in an earlier planning stage.
 
 * If the starting time is not fixed, it is a planning variable (genuine or shadow).
