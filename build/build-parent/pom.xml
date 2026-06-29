@@ -20,7 +20,7 @@
     <!-- ************************************************************************ -->
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
-    <version.ch.qos.logback>1.5.33</version.ch.qos.logback>
+    <version.ch.qos.logback>1.5.37</version.ch.qos.logback>
     <version.io.quarkus>3.33.2</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.25.4</version.org.apache.logging.log4j>
@@ -30,7 +30,7 @@
     <version.org.jspecify>1.0.0</version.org.jspecify>
     <version.org.junit.jupiter>6.0.3</version.org.junit.jupiter>
     <version.org.openrewrite.recipe>3.26.1</version.org.openrewrite.recipe>
-    <version.org.springframework.boot>3.5.14</version.org.springframework.boot>
+    <version.org.springframework.boot>3.5.16</version.org.springframework.boot>
     <version.ow2.asm>9.9.1</version.ow2.asm>
 
     <!-- ************************************************************************ -->
@@ -44,7 +44,7 @@
     <version.dependency.plugin>3.10.0</version.dependency.plugin>
     <version.exec.plugin>3.6.3</version.exec.plugin>
     <version.enforcer.plugin>3.6.3</version.enforcer.plugin>
-    <version.jacoco.plugin>0.8.14</version.jacoco.plugin>
+    <version.jacoco.plugin>0.8.15</version.jacoco.plugin>
     <version.jar.plugin>3.5.0</version.jar.plugin>
     <version.jaxb2.plugin>4.1.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
