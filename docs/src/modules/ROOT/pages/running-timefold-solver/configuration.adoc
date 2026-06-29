@@ -1,5 +1,6 @@
 [#solverConfiguration]
 = Configuring Timefold Solver
+:page-aliases: using-timefold-solver/configuration.adoc
 :doctype: book
 :sectnums:
 :icons: font

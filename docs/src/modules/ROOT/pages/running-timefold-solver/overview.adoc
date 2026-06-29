@@ -1,6 +1,6 @@
 [#usingTimefoldSolverOverview]
 = Using Timefold Solver: Overview
-:page-aliases: configuration/configuration.adoc
+:page-aliases: configuration/configuration.adoc, using-timefold-solver/overview.adoc
 :doctype: book
 :sectnums:
 :icons: font

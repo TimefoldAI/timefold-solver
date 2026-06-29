@@ -802,7 +802,7 @@ there is too little time left for xref:optimization-algorithms/local-search.adoc
 to reach a near optimal solution.
 
 Ideally, a Construction Heuristic should take less than 20 seconds from scratch
-and less than 50 milliseconds in xref:how-to/real-time-planning.adoc[real-time planning],
+and less than 50 milliseconds in xref:responding-to-change/real-time-planning.adoc[real-time planning],
 so there is plenty of time left for xref:optimization-algorithms/local-search.adoc#localSearch[Local Search].
 If the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] proves that this is not the case, there's a number of improvements that can be done:
 

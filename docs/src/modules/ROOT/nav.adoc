@@ -44,11 +44,11 @@
 *** xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API]
 *** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
 
-* Dealing with change
-** xref:how-to/continuous-planning.adoc[leveloffset=+1]
-** xref:how-to/real-time-planning.adoc[leveloffset=+1]
-** xref:how-to/non-disruptive-replanning.adoc[leveloffset=+1]
-** xref:how-to/recommendation-api.adoc[leveloffset=+1]
+* Responding to change
+** xref:responding-to-change/continuous-planning.adoc[leveloffset=+1]
+** xref:responding-to-change/real-time-planning.adoc[leveloffset=+1]
+** xref:responding-to-change/non-disruptive-replanning.adoc[leveloffset=+1]
+** xref:responding-to-change/recommendation-api.adoc[leveloffset=+1]
 
 * Example use cases
 ** xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle routing (guide)]
@@ -70,7 +70,7 @@
 ** xref:commercial-editions/installation.adoc[Installation]
 ** xref:commercial-editions/performance-improvements.adoc[leveloffset=+1]
 ** xref:constraints-and-score/understanding-the-score.adoc[Score analysis]
-** xref:how-to/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API]
+** xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API]
 ** xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection]
 ** xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[Multithreaded solving]
 ** xref:running-timefold-solver/multithreaded-solving.adoc#partitionedSearch[Partitioned search]

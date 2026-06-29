@@ -1,5 +1,6 @@
 [#libraryIntegration]
 = Using Timefold Solver as a Library
+:page-aliases: using-timefold-solver/running-the-solver.adoc
 :doctype: book
 :sectnums:
 :icons: font
@@ -36,7 +37,7 @@ The instance passed to `solve(solution)` is modified by the Solver — do not tr
 The returned instance is most likely xref:domain-modeling/modeling-planning-problems.adoc#cloningASolution[a planning clone] of the input.
 ====
 
-NOTE: The input may be partially or fully initialized, which is common in xref:how-to/real-time-planning.adoc[repeated planning].
+NOTE: The input may be partially or fully initialized, which is common in xref:responding-to-change/real-time-planning.adoc[repeated planning].
 
 However, `Solver.solve()` *blocks the calling thread* for the entire duration of solving.
 This makes it unsuitable for use in REST endpoints or anywhere you need to handle multiple problems concurrently.

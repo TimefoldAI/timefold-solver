@@ -1,6 +1,6 @@
 [#benchmarker]
 = Benchmarking
-:page-aliases: benchmarking-and-tweaking/benchmarking-and-tweaking.adoc
+:page-aliases: benchmarking-and-tweaking/benchmarking-and-tweaking.adoc, using-timefold-solver/benchmarking-and-tweaking.adoc
 :doctype: book
 :sectnums:
 :icons: font

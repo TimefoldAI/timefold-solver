@@ -1,5 +1,6 @@
 [#constraintConfiguration]
 = Adjusting constraints at runtime
+:page-aliases: constraints-and-score/constraint-configuration.adoc
 :doctype: book
 :sectnums:
 :icons: font

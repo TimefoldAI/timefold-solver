@@ -28,7 +28,7 @@ See our https://licenses.timefold.ai/[license portal] to get your license, then 
 | xref:constraints-and-score/understanding-the-score.adoc[Score Analysis]
 | ✓ | ✓
 
-| xref:how-to/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API]
+| xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API]
 | ✓ | ✓
 
 | xref:commercial-editions/performance-improvements.adoc[Performance improvements]

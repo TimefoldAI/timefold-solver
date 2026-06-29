@@ -1,6 +1,6 @@
 [#modelAPlanningProblem]
 = Modeling building blocks
-:page-aliases: shadow-variable/shadow-variable.adoc
+:page-aliases: shadow-variable/shadow-variable.adoc, using-timefold-solver/modeling-planning-problems.adoc
 :doctype: book
 :sectnums:
 :icons: font
@@ -244,7 +244,7 @@ Alternatively, you can sometimes also introduce <<cachedProblemFact,_a cached pr
 
 For some functionality
 (such as xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
-and xref:how-to/real-time-planning.adoc[real-time planning]),
+and xref:responding-to-change/real-time-planning.adoc[real-time planning]),
 Timefold Solver needs to map problem facts and planning entities to a unique ID.
 Timefold Solver uses that ID to _rebase_ a move from one thread's solution state to another's.
 
@@ -595,7 +595,7 @@ See the xref:domain-modeling/common-patterns.adoc#overconstrainedPlanning[overco
 
 
 Repeated planning
-(especially xref:how-to/real-time-planning.adoc[real-time planning])
+(especially xref:responding-to-change/real-time-planning.adoc[real-time planning])
 does not mix well with a planning variable that allows unassigned values.
 Every time the Solver starts or a problem fact change is made,
 the xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction Heuristics]
@@ -734,7 +734,7 @@ the lecture will not be assigned to another period or room (even if the current 
 
 NOTE: Planning pin value must never change during planning.
 To change whether an entity is pinned or not,
-use xref:how-to/real-time-planning.adoc#problemChange[ProblemChange].
+use xref:responding-to-change/real-time-planning.adoc#problemChange[ProblemChange].
 
 
 [#planningListVariable]
@@ -815,7 +815,7 @@ See the xref:domain-modeling/common-patterns.adoc#overconstrainedPlanning[overco
 ====
 
 Repeated planning
-(especially xref:how-to/real-time-planning.adoc[real-time planning])
+(especially xref:responding-to-change/real-time-planning.adoc[real-time planning])
 does not mix well with a planning list variable that allows unassigned values.
 Every time the Solver starts or a problem fact change is made,
 the xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction Heuristics]
@@ -1080,7 +1080,7 @@ In that case, the value of `@PlanningPinToIndex` must be zero (`0`).
 
 NOTE: Value of the index must never change during planning.
 To change how far the list is pinned,
-use xref:how-to/real-time-planning.adoc#problemChange[ProblemChange].
+use xref:responding-to-change/real-time-planning.adoc#problemChange[ProblemChange].
 
 
 [#tailChainVariable]

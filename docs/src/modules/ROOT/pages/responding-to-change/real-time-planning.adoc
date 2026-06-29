@@ -1,11 +1,12 @@
 [#realTimePlanning]
 = Real-time planning
+:page-aliases: responding-to-change/responding-to-change.adoc, repeated-planning/repeated-planning.adoc
 :doctype: book
 :sectnums:
 :icons: font
 
 Real-time planning handles a planning problem where the problem facts keep changing while the solver is running.
-It combines xref:how-to/continuous-planning.adoc[continuous planning] with short planning windows to keep the solution current as the world changes around it.
+It combines xref:responding-to-change/continuous-planning.adoc[continuous planning] with short planning windows to keep the solution current as the world changes around it.
 
 Consider the vehicle routing use case:
 

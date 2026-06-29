@@ -1,5 +1,6 @@
 [#commonPatterns]
 = Common patterns
+:page-aliases: design-patterns/design-patterns.adoc
 :doctype: book
 :sectnums:
 :icons: font

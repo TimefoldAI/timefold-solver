@@ -290,7 +290,7 @@ Finding the best solution in the available time is the most important outcome.
 ====
 If no termination is configured (and a metaheuristic algorithm is used),
 the `Solver` will run forever unless <<asynchronousTermination,terminateEarly()>> is called from another thread.
-This is especially common during xref:how-to/real-time-planning.adoc[real-time planning].
+This is especially common during xref:responding-to-change/real-time-planning.adoc[real-time planning].
 ====
 
 For synchronous termination, configure a `Termination` on a `Solver` or a `Phase` when it needs to stop.
@@ -899,8 +899,8 @@ The solver will only terminate after the command returns.
 IMPORTANT: Do not change any of the problem facts in a `PhaseCommand` or add or remove entities,
 it will corrupt the `Solver` because any previous score or solution was for a different problem.
 To change problem facts or to add or remove entities,
-read about xref:how-to/real-time-planning.adoc[repeated planning]
-and use xref:how-to/real-time-planning.adoc#problemChange[ProblemChange] instead.
+read about xref:responding-to-change/real-time-planning.adoc[repeated planning]
+and use xref:responding-to-change/real-time-planning.adoc#problemChange[ProblemChange] instead.
 
 Configure the `PhaseCommand` in the solver configuration:
 

@@ -1,5 +1,6 @@
 [#serviceConstraintWeightOverrides]
 = Adjusting constraint weights
+:page-aliases: service/constraint-weights.adoc
 :doctype: book
 :sectnums:
 :icons: font
