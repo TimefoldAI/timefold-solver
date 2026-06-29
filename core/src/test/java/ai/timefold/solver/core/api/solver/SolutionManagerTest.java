@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -23,6 +24,10 @@ import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentCo
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldEntity;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldSolution;
+import ai.timefold.solver.core.testdomain.shadow.no_inconsistent_field.TestdataDependencyNoInconsistentFieldValue;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -113,6 +118,30 @@ public class SolutionManagerTest {
         });
     }
 
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateInconsistent(SolutionManagerSource solutionManagerSource) {
+        var entity1 = new TestdataDependencyNoInconsistentFieldEntity("e1");
+        var valueA1 = new TestdataDependencyNoInconsistentFieldValue("a1");
+        var valueA2 = new TestdataDependencyNoInconsistentFieldValue("a2", Duration.ofHours(1L), List.of(valueA1));
+        entity1.setValues(List.of(valueA2, valueA1));
+        var inconsistentSolution =
+                new TestdataDependencyNoInconsistentFieldSolution(List.of(entity1), List.of(valueA1, valueA2));
+
+        var solverFactory = SolverFactory.create(new SolverConfig()
+                .withSolutionClass(TestdataDependencyNoInconsistentFieldSolution.class)
+                .withEntityClasses(TestdataDependencyNoInconsistentFieldEntity.class,
+                        TestdataDependencyNoInconsistentFieldValue.class)
+                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class));
+        var solutionManager = solutionManagerSource.createSolutionManager(solverFactory);
+        assertThat(solutionManager).isNotNull();
+
+        assertThatCode(() -> solutionManager.update(inconsistentSolution))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll("The solution (",
+                        "is inconsistent", "Solution update", "requires a consistent solution");
+    }
+
     private void assertShadowedListValueAllNull(SoftAssertions softly, TestdataListValueWithShadowHistory current) {
         softly.assertThat(current.getIndex()).isNull();
         softly.assertThat(current.getEntity()).isNull();
@@ -147,6 +176,30 @@ public class SolutionManagerTest {
             softly.assertThat(solution.getScore()).isNull();
             softly.assertThat(solution.getEntityList().getFirst().getFirstShadow()).isNotNull();
         });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateOnlyShadowVariablesInconsistent(SolutionManagerSource solutionManagerSource) {
+        var entity1 = new TestdataDependencyNoInconsistentFieldEntity("e1");
+        var valueA1 = new TestdataDependencyNoInconsistentFieldValue("a1");
+        var valueA2 = new TestdataDependencyNoInconsistentFieldValue("a2", Duration.ofHours(1L), List.of(valueA1));
+        entity1.setValues(List.of(valueA2, valueA1));
+        var inconsistentSolution =
+                new TestdataDependencyNoInconsistentFieldSolution(List.of(entity1), List.of(valueA1, valueA2));
+
+        var solverFactory = SolverFactory.create(new SolverConfig()
+                .withSolutionClass(TestdataDependencyNoInconsistentFieldSolution.class)
+                .withEntityClasses(TestdataDependencyNoInconsistentFieldEntity.class,
+                        TestdataDependencyNoInconsistentFieldValue.class)
+                .withConstraintProviderClass(TestdataDependencyNoInconsistentFieldConstraintProvider.class));
+        var solutionManager = solutionManagerSource.createSolutionManager(solverFactory);
+        assertThat(solutionManager).isNotNull();
+
+        assertThatCode(() -> solutionManager.update(inconsistentSolution, SolutionUpdatePolicy.UPDATE_SHADOW_VARIABLES_ONLY))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll("The solution (",
+                        "is inconsistent", "Solution update", "requires a consistent solution");
     }
 
     @ParameterizedTest
