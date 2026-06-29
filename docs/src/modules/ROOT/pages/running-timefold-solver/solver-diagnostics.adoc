@@ -479,7 +479,7 @@ For more detailed monitoring, Timefold Solver can be configured to monitor addit
 The following metrics are available:
 
 - `SOLVE_DURATION` (default, Micrometer meter id: "timefold.solver.solve.duration"):
-Measurse the duration of solving for the longest active solver, the number of active solvers and the cumulative duration of all active solvers.
+Measures the duration of solving for the longest active solver, the number of active solvers and the cumulative duration of all active solvers.
 
 - `ERROR_COUNT` (default, Micrometer meter id: "timefold.solver.errors"):
 Measures the number of errors that occur while solving.
