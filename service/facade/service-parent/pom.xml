@@ -385,6 +385,24 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
       </plugin>
+      <plugin>
+        <!-- The diagnostic-tools jar is copied into src/main/jib (above) because Quarkus
+             container-image-jib only includes files from that fixed directory and it cannot be
+             relocated to target/. Remove it on clean so a stale jar from a previous enterprise build
+             is never shipped by a later non-enterprise build that skips the copy (issue #2410). -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>src/main/jib/timefold</directory>
+              <includes>
+                <include>diagnostic-tools.jar</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
