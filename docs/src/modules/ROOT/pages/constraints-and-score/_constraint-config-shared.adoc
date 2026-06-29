@@ -17,7 +17,7 @@ image::constraints-and-score/constraint-configuration/parameterizeTheScoreWeight
 
 Let's define three constraints:
 
-- Constraint with a name of `Vehicle capacity` and a weight of `1hard'.
+- Constraint with a name of `Vehicle capacity` and a weight of `1hard`.
 - Constraint with a name of `Service finished after max end time`, also with a weight of `1hard`.
 - Constraint with a name of `Minimize travel time` and a weight of `1soft`.
 
