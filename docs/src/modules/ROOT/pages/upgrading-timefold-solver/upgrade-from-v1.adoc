@@ -415,7 +415,7 @@ If your constraint IDs do not comply, an exception will be thrown at solver init
 [%collapsible%open]
 ====
 The `@ConstraintConfiguration`, `@ConstraintConfigurationProvider`, and `@ConstraintWeight` annotations have been removed.
-Please use xref:constraints-and-score/constraint-configuration.adoc#definingAndOverridingConstraintWeights[constraint weight overrides] instead.
+Please use xref:running-timefold-solver/constraint-overrides.adoc#definingAndOverridingConstraintWeights[constraint weight overrides] instead.
 
 Before in `*ConstraintProvider.java`:
 

@@ -1,0 +1,112 @@
+Deciding the correct xref:constraints-and-score/overview.adoc#scoreConstraintWeight[weight] and
+xref:constraints-and-score/overview.adoc#scoreLevel[level] for each constraint is not easy.
+It often involves negotiating with different stakeholders and their priorities.
+Furthermore, quantifying the impact of soft constraints is often a new experience for business managers,
+so they'll need a number of iterations to get it right.
+
+Don't get stuck between a rock and a hard place.
+Provide a UI to adjust the constraint weights and visualize the resulting solution,
+so the business managers can tweak the constraint weights themselves:
+
+image::constraints-and-score/constraint-configuration/parameterizeTheScoreWeights.png[align="center"]
+
+[#definingConstraintWeights]
+[#createAConstraintConfiguration]
+[#definingAndOverridingConstraintWeights]
+== Defining constraint weights
+
+Let's define three constraints:
+
+- Constraint with a name of `Vehicle capacity` and a weight of `1hard'.
+- Constraint with a name of `Service finished after max end time`, also with a weight of `1hard`.
+- Constraint with a name of `Minimize travel time` and a weight of `1soft`.
+
+Using xref:constraints-and-score/score-calculation.adoc#constraintStreams[the Constraint Streams API],
+this is done as follows:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class VehicleRoutingConstraintProvider implements ConstraintProvider {
+
+    public static final String VEHICLE_CAPACITY = "Vehicle capacity";
+    public static final String SERVICE_FINISHED_AFTER_MAX_END_TIME = "Service finished after max end time";
+    public static final String MINIMIZE_TRAVEL_TIME = "Minimize travel time";
+
+    ...
+
+    @Override
+    public Constraint[] defineConstraints(ConstraintFactory factory) {
+        return new Constraint[] {
+                vehicleCapacity(factory),
+                serviceFinishedAfterMaxEndTime(factory),
+                minimizeTravelTime(factory)
+        };
+    }
+
+    Constraint vehicleCapacity(ConstraintFactory factory) {
+        return factory.forEach(Vehicle.class)
+                ...
+                .penalize(HardSoftScore.ONE_HARD, ...)
+                .asConstraint(VEHICLE_CAPACITY);
+    }
+
+    Constraint serviceFinishedAfterMaxEndTime(ConstraintFactory factory) {
+        return factory.forEach(Visit.class)
+                ...
+                .penalize(HardSoftScore.ONE_HARD, ...)
+                .asConstraint(SERVICE_FINISHED_AFTER_MAX_END_TIME);
+    }
+
+    Constraint minimizeTravelTime(ConstraintFactory factory) {
+        return factory.forEach(Vehicle.class)
+                ...
+                .penalize(HardSoftScore.ONE_SOFT, ...)
+                .asConstraint(MINIMIZE_TRAVEL_TIME);
+    }
+}
+----
+====
+
+NOTE: Using static string constants for constraint names is recommended.
+It prevents typos and ensures the constraint name is consistent across the `ConstraintProvider`
+and any code that references constraints by name, such as when applying overrides.
+
+[#enablingWeightOverrides]
+== Enabling weight overrides
+
+Without anything else, the constraint weights are fixed to the values specified in the `ConstraintProvider`.
+To be able to override these weights at runtime, add a `ConstraintWeightOverrides` field
+to the planning solution class:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class VehicleRoutePlan {
+
+    ...
+
+    ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides;
+
+    void setConstraintWeightOverrides(ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides) {
+        this.constraintWeightOverrides = constraintWeightOverrides;
+    }
+
+    ConstraintWeightOverrides<HardSoftScore> getConstraintWeightOverrides() {
+        return constraintWeightOverrides;
+    }
+
+    ...
+}
+----
+====
+
+The field will be automatically exposed as a xref:domain-modeling/modeling-planning-problems.adoc#problemFacts[problem fact],
+there is no need to add a `@ProblemFactProperty` annotation.

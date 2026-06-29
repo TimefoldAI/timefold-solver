@@ -150,7 +150,7 @@ This termination is desirable since it terminates based on the relative rate of 
 `unimprovedSpentLimit` should be set only when necessary.
 
 The `model` configuration is a model-specific field that contains additional global model configuration attributes.
-See xref:constraints-and-score/constraint-configuration.adoc#serviceWeightOverrides[constraint weights] for more information.
+See xref:service/constraint-overrides.adoc#serviceWeightOverrides[constraint weights] for more information.
 
 [#solvingResponse]
 === Structured solving response

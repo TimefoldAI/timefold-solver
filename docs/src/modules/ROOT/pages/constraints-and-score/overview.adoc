@@ -92,7 +92,7 @@ Putting a good weight on a constraint is often a difficult analytical decision,
 because it is about making choices and trade-offs against other constraints.
 Different stakeholders have different priorities.
 *Don't waste time with constraint weight discussions at the start of an implementation,
-instead add a xref:constraints-and-score/constraint-configuration.adoc[constraint configuration]
+instead add a xref:running-timefold-solver/constraint-overrides.adoc[constraint configuration]
 and allow users to change them through a UI.*
 A non-accurate weight is less damaging than mediocre algorithms:
 
