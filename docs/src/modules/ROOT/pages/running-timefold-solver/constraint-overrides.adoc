@@ -62,7 +62,7 @@ assuming either of the following conditions are met:
 * you use Timefold Solver's xref:integration/spring-boot.adoc#integrationWithSpringBoot[Spring Boot integration],
 * or you directly included the `timefold-solver-jackson` module in your project.
 
-Overrides doesn't natively deserialize from JSON back to Java objects.
+Overrides don't natively deserialize from JSON back to Java objects.
 This is because we have no way of knowing which `Score` implementation you may be using.
 However, deserialization is easy to implement yourself by extending `AbstractConstraintWeightOverridesDeserializer`
 and registering it with Jackson's `ObjectMapper`.

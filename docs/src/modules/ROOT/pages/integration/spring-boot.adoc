@@ -76,16 +76,16 @@ Kotlin::
 class Resource {
 
     @Autowired
-    var solverConfig:SolverConfig?
+    var solverConfig: SolverConfig? = null
 
     @Autowired
-    var solverFactory:SolverFactory<Timetable>?
+    var solverFactory: SolverFactory<Timetable>? = null
 
     @Autowired
-    var solverManager:SolverManager<Timetable, String>?
+    var solverManager: SolverManager<Timetable, String>? = null
 
     @Autowired
-    var simpleSolutionManager:SolutionManager<Timetable, SimpleScore>? // <1>
+    var simpleSolutionManager: SolutionManager<Timetable, SimpleScore>? = null // <1>
 
     @Autowired
     var constraintMetaModel:ConstraintMetaModel? = null

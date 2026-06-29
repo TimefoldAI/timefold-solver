@@ -86,22 +86,22 @@ Kotlin::
 class Resource {
 
     @Inject
-    var solverConfig:SolverConfig?
+    var solverConfig: SolverConfig? = null
 
     @Inject
-    var solverFactory:SolverFactory<Timetable>?
+    var solverFactory: SolverFactory<Timetable>? = null
 
     @Inject
-    var solverManager:SolverManager<Timetable, String>?
+    var solverManager: SolverManager<Timetable, String>? = null
 
     @Inject
-    var simpleSolutionManager:SolutionManager<Timetable, SimpleScore>? // <1>
+    var simpleSolutionManager: SolutionManager<Timetable, SimpleScore>? = null // <1>
 
     @Inject
-    var constraintMetaModel: ConstraintMetaModel?
+    var constraintMetaModel: ConstraintMetaModel? = null
 
     @Inject
-    var constraintVerifier:ConstraintVerifier<TimetableConstraintProvider, Timetable>? = null
+    var constraintVerifier: ConstraintVerifier<TimetableConstraintProvider, Timetable>? = null
 
     ...
 }

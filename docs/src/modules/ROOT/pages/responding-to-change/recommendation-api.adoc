@@ -8,13 +8,13 @@
 include::../commercial-editions/_only-plus-and-enterprise.adoc[]
 
 With xref:responding-to-change/real-time-planning.adoc[real-time planning], we can respond to a continuous stream of external changes.
-However, it is often necessary to respond to adhoc changes too,
+However, it is often necessary to respond to ad hoc changes too,
 for example when a call center operator needs to arrange an appointment with a customer.
 In such cases, it is not necessary to use the full power of real-time planning.
 Instead, immediate response to the customer and a selection of available time windows are more important.
 This is where _Assignment Recommendation API_ comes in.
 
-The Assignment Recommendation API allows you to quickly respond to adhoc changes,
+The Assignment Recommendation API allows you to quickly respond to ad hoc changes,
 while providing a selection of the best available options for fitting the change in the existing schedule.
 It doesn't use the full xref:optimization-algorithms/local-search.adoc[local search algorithm].
 Instead,
