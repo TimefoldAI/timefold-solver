@@ -4,8 +4,7 @@
 :sectnums:
 :icons: font
 
-This page has been split into three separate guides:
+This page has been split into two separate guides:
 
 * xref:design-patterns/domain-modeling.adoc[Domain modeling guide]
 * xref:design-patterns/time-patterns.adoc[Time patterns]
-* xref:deployment/cloud-architecture.adoc[Cloud architecture patterns]

@@ -45,10 +45,6 @@
 *** xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API]
 *** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
 
-* Deployment
-** xref:deployment/cloud-architecture.adoc[leveloffset=+1]
-** xref:deployment/infrastructure-requirements.adoc[leveloffset=+1]
-
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
 
 * Example use cases
