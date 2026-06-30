@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -134,6 +135,11 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         if (!isUpdating && monitoredSourceVariableSet.contains(variableReference) && monitoredEntityClass.isInstance(entity)) {
             changedEntities.add(entity);
         }
+    }
+
+    @Override
+    public List<Object> getInconsistentEntities() {
+        return Collections.emptyList();
     }
 
 }

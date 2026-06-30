@@ -70,4 +70,5 @@ public sealed interface VariableReferenceGraph
         // Most graphs do not have edges that depend on a list variable's contents.
     }
 
+    List<Object> getInconsistentEntities();
 }
