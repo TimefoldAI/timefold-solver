@@ -80,7 +80,7 @@ as well as the problem property `indexInShift` to tell apart multiple assignment
 [NOTE]
 ====
 There is no need to add a hard constraint to ensure that two planning entities are different.
-They are already different due to their problem properties.
+Two entities which .equals(...) each other are strictly forbidden and fail fast.
 ====
 
 +
