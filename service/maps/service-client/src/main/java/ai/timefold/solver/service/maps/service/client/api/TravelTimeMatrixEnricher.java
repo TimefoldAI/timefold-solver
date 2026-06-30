@@ -23,7 +23,6 @@ import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByAva
 import ai.timefold.solver.service.maps.service.client.impl.MapServiceOptionsSupplier;
 import ai.timefold.solver.service.maps.service.client.impl.error.MapServiceIllegalArgumentException;
 import ai.timefold.solver.service.maps.service.integration.api.LocationsAwareSolverModel;
-import ai.timefold.solver.service.maps.service.integration.api.TimeAwareLocationsSolverModel;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceConverterException;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceWithMetadata;
 
@@ -62,17 +61,6 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
     })
     @Override
     public LocationsAwareSolverModel<?> enrich(LocationsAwareSolverModel<?> solverModel) {
-        // Three enricher paths:
-        //   - TimeAwareLocationsSolverModel          -> per-timeframe matrices from the model's own availability.
-        //   - LocationsAwareSolverModel + traffic on -> per-timeframe matrices, fetched by handing the map service a
-        //     synthesized availability map that makes every location available across every timeframe.
-        //   - LocationsAwareSolverModel + traffic off -> single matrix, scalar setters (keeps the
-        //     IndexableDistanceMatrix index-cache optimization and location-set caching).
-        // Timestamp-less lookups (getTravelTimeTo(other)) keep working on the traffic-on path because Location falls
-        // back to a per-timeframe matrix when no single matrix is set.
-        if (solverModel instanceof TimeAwareLocationsSolverModel<?> timeAwareSolverModel) {
-            return enrichFromAvailability(timeAwareSolverModel, timeAwareSolverModel.getLocationsWithTimeAvailability());
-        }
         if (useTraffic) {
             return enrichAllTimeframes(solverModel);
         }
@@ -102,19 +90,13 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
     }
 
     private LocationsAwareSolverModel<?> enrichAllTimeframes(LocationsAwareSolverModel<?> solverModel) {
-        // No per-location availability on the plain path: make every location available across every timeframe by
-        // mapping each to a full-day interval that overlaps all of them, then reuse the availability-based fetch.
+        List<Location> locations = solverModel.getLocations();
         List<TimeInterval> fullCoverage = List.of(FULL_DAY);
         Map<Location, List<TimeInterval>> availability = new LinkedHashMap<>();
-        for (Location location : solverModel.getLocations()) {
+        for (Location location : locations) {
             availability.put(location, fullCoverage);
         }
-        return enrichFromAvailability(solverModel, availability);
-    }
 
-    private LocationsAwareSolverModel<?> enrichFromAvailability(LocationsAwareSolverModel<?> solverModel,
-            Map<Location, List<TimeInterval>> availability) {
-        List<Location> locations = solverModel.getLocations();
         TravelTimesByAvailabilityWithMetadata result;
         try {
             result = mapService.getTravelTimeAndDistance(locations, optionsSupplier.getOptions(), availability);
@@ -128,10 +110,9 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
         DistanceMatrix[] travelTimes = result.travelTimesByTimeframe();
         DistanceMatrix[] distances = result.distancesByTimeframe();
         if (travelTimes.length == 1) {
-            // Single timeframe (e.g. traffic disabled, where the map service wraps one plain matrix as a one-bucket
-            // array): stamp the scalar matrices so lookups use the IndexableDistanceMatrix index-cache fast path. The
-            // time-aware overloads keep working because Location falls back to the single matrix when no per-timeframe
-            // matrices are set.
+            // Single timeframe (e.g. a single-timeframe bucketing): stamp the scalar matrices so lookups use the
+            // IndexableDistanceMatrix index-cache fast path. The time-aware overloads keep working because Location
+            // falls back to the single matrix when no per-timeframe matrices are set.
             for (Location location : locations) {
                 location.setTravelTimeMatrix(travelTimes[0]);
                 location.setDistanceMatrix(distances[0]);
