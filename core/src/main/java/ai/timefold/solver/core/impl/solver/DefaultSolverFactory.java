@@ -150,7 +150,6 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
         var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder(globalEnvironmentMode)
                 .withLookUpEnabled(true) // Custom phases and problem changes may rely on lookups.
-                .withIgnoreInconsistentSolutions(!solutionDescriptor.hasAnyShadowVariablesInconsistentMember())
                 .withConstraintMatchPolicy(decideConstraintMatchPolicy(solverScope, globalEnvironmentMode))
                 .build();
         solverScope.setScoreDirector(scoreDirector);
