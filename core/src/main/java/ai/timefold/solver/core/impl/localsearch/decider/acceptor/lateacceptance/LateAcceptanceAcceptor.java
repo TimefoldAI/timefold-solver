@@ -49,6 +49,9 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = (InnerScore) moveScope.getScore();
+        if (moveScore.isInvalid()) {
+            return false;
+        }
         var lateScore = scoreBuffer.getCurrent();
         if (moveScore.compareTo(lateScore) >= 0) {
             return true;
