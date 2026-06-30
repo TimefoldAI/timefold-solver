@@ -11,11 +11,13 @@ import org.jspecify.annotations.NonNull;
 final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableReferenceGraph<Solution_, BitSet> {
     // These structures are mutable.
     private final AffectedEntitiesUpdater<Solution_> affectedEntitiesUpdater;
+    private final boolean ignoreInconsistentSolutions;
 
     public DefaultVariableReferenceGraph(VariableReferenceGraphBuilder<Solution_> outerGraph,
-            IntFunction<TopologicalOrderGraph> graphCreator) {
+            IntFunction<TopologicalOrderGraph> graphCreator,
+            boolean ignoreInconsistentSolutions) {
         super(outerGraph, graphCreator);
-
+        this.ignoreInconsistentSolutions = ignoreInconsistentSolutions;
         var entityToVariableReferenceMap = new IdentityHashMap<Object, List<GraphNode<Solution_>>>();
         for (var instance : nodeList) {
             if (instance.groupEntityIds() == null) {
@@ -35,7 +37,8 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
         affectedEntitiesUpdater =
                 new AffectedEntitiesUpdater<>(graph, nodeList, nodeTopologicalOrders,
                         entityToVariableReferenceMap::get,
-                        outerGraph.entityToEntityId.size(), outerGraph.changedVariableNotifier);
+                        outerGraph.entityToEntityId.size(), outerGraph.changedVariableNotifier,
+                        ignoreInconsistentSolutions);
     }
 
     @Override
@@ -49,12 +52,16 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
     }
 
     @Override
-    void innerUpdateChanged() {
+    boolean innerUpdateChanged() {
         if (changeTracker.isEmpty()) {
-            return;
+            return true;
         }
-        graph.commitChanges(changeTracker);
-        affectedEntitiesUpdater.accept(changeTracker);
+        if (graph.commitChanges(changeTracker) && ignoreInconsistentSolutions) {
+            return false;
+        } else {
+            affectedEntitiesUpdater.accept(changeTracker);
+            return true;
+        }
     }
 
     /**

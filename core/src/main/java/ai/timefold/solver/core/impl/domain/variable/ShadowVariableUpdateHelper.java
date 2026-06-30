@@ -73,7 +73,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                 SolutionDescriptor.buildSolutionDescriptor(Objects.requireNonNull(solutionClass),
                         entityClassList.toArray(new Class<?>[0]));
         // No solution, we trigger all supported events manually
-        var session = InternalShadowVariableSession.build(solutionDescriptor, entities);
+        var session = InternalShadowVariableSession.build(solutionDescriptor, false, entities);
         // Update all built-in shadow variables
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
@@ -90,12 +90,14 @@ public final class ShadowVariableUpdateHelper<Solution_> {
 
         public static <Solution_> InternalShadowVariableSession<Solution_> build(
                 SolutionDescriptor<Solution_> solutionDescriptor,
+                boolean ignoreInconsistentSolutions,
                 Object... entities) {
             return new InternalShadowVariableSession<>(solutionDescriptor,
                     DefaultShadowVariableSessionFactory.buildGraph(
                             new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
                                     ChangedVariableNotifier.empty(), entities)
-                                    .assertingNoReferencedMissingEntities()));
+                                    .assertingNoReferencedMissingEntities(),
+                            ignoreInconsistentSolutions));
         }
 
         /**
@@ -298,7 +300,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         }
 
         @Override
-        public InnerScore<Score_> calculateScore() {
+        public InnerScore<Score_> innerCalculateScore() {
             throw new UnsupportedOperationException();
         }
 
