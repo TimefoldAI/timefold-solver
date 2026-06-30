@@ -168,6 +168,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     boolean expectShadowVariablesInCorrectState();
 
+    boolean ignoreInconsistentSolutions();
+
     /**
      * @return never null
      */

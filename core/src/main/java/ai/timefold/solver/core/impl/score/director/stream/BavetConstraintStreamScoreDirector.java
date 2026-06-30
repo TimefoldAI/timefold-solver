@@ -71,6 +71,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         solutionDescriptor.visitAllEntities(solution, entityList::add);
         variableListenerSupport.setConsistencyTracker(ConsistencyTracker.frozen(
                 getSolutionDescriptor(),
+                ignoreInconsistentSolutions(),
                 entityList.toArray()));
     }
 
@@ -89,7 +90,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     }
 
     @Override
-    public InnerScore<Score_> calculateScore() {
+    public InnerScore<Score_> innerCalculateScore() {
         variableListenerSupport.assertNotificationQueuesAreEmpty();
         var score = session.calculateScore();
         setCalculatedScore(score);

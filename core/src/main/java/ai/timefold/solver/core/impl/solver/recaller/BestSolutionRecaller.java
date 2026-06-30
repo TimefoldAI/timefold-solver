@@ -50,6 +50,11 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         // Starting bestSolution is already set by Solver.solve(Solution)
         var scoreDirector = solverScope.getScoreDirector();
         InnerScore innerScore = scoreDirector.calculateScore();
+        if (innerScore.isInvalid()) {
+            throw new IllegalStateException(
+                    "The initial solution passed to the solver (%s) is invalid because it has dependency loops."
+                            .formatted(solverScope.getWorkingSolution()));
+        }
         var score = innerScore.raw();
         solverScope.setBestScore(innerScore);
         solverScope.setBestSolutionTimeMillis(solverScope.getClock().millis());

@@ -45,6 +45,9 @@ public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAccepto
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         InnerScore lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
         InnerScore moveScore = moveScope.getScore();
+        if (moveScore.isInvalid()) {
+            return false;
+        }
         if (moveScore.compareTo(lastStepScore) >= 0) {
             return true;
         }

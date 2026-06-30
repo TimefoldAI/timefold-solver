@@ -57,7 +57,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     public static <Solution_> VariableListenerSupport<Solution_> create(InnerScoreDirector<Solution_, ?> scoreDirector) {
         return new VariableListenerSupport<>(scoreDirector, new NotifiableRegistry<>(scoreDirector.getSolutionDescriptor()),
-                TimefoldSolverEnterpriseService.loadOrDefault(service -> service::buildTopologyGraph,
+                TimefoldSolverEnterpriseService.loadOrDefault(
+                        service -> size -> service.buildTopologyGraph(size, scoreDirector.ignoreInconsistentSolutions()),
                         () -> DefaultTopologicalOrderGraph::new));
     }
 
@@ -74,6 +75,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private final IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator;
 
     private boolean notificationQueuesAreEmpty = true;
+    private boolean updateSuccessful = true;
     private int nextGlobalOrder = 0;
     @Nullable
     private DefaultShadowVariableSession<Solution_> shadowVariableSession = null;
@@ -253,7 +255,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                     scoreDirector,
                     shadowVariableGraphCreator);
             shadowVariableSession =
-                    shadowVariableSessionFactory.forSolution(consistencyTracker, scoreDirector.getWorkingSolution());
+                    shadowVariableSessionFactory.forSolution(consistencyTracker,
+                            scoreDirector.ignoreInconsistentSolutions(),
+                            scoreDirector.getWorkingSolution());
         }
     }
 
@@ -332,12 +336,12 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         return scoreDirector;
     }
 
-    public void triggerVariableListenersInNotificationQueues() {
+    public boolean triggerVariableListenersInNotificationQueues() {
         if (notificationQueuesAreEmpty) {
             // Shortcut in case the trigger is called multiple times in a row,
             // without any notifications inbetween.
             // This is better than trying to ensure that the situation never ever occurs.
-            return;
+            return updateSuccessful;
         }
         for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.triggerAllNotifications();
@@ -352,15 +356,22 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             listVariableChangedNotificationList.clear();
         }
         if (shadowVariableSession != null) {
-            shadowVariableSession.updateVariables();
-            // Some internal variable listeners (such as those used
-            // to check for solution corruption) might have a declarative
-            // shadow variable as a source and need to be triggered here.
-            for (var notifiable : notifiableRegistry.getAll()) {
-                notifiable.triggerAllNotifications();
+            if (shadowVariableSession.updateVariables()) {
+                // Some internal variable listeners (such as those used
+                // to check for solution corruption) might have a declarative
+                // shadow variable as a source and need to be triggered here.
+                for (var notifiable : notifiableRegistry.getAll()) {
+                    notifiable.triggerAllNotifications();
+                }
+            } else {
+                updateSuccessful = false;
+                notificationQueuesAreEmpty = true;
+                return false;
             }
         }
+        updateSuccessful = true;
         notificationQueuesAreEmpty = true;
+        return true;
     }
 
     /**
@@ -439,9 +450,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
      *
      * @param workingSolution working solution
      */
-    public void forceTriggerAllVariableListeners(Solution_ workingSolution) {
+    public boolean forceTriggerAllVariableListeners(Solution_ workingSolution) {
         scoreDirector.getSolutionDescriptor().visitAllEntities(workingSolution, this::simulateGenuineVariableChange);
-        triggerVariableListenersInNotificationQueues();
+        return triggerVariableListenersInNotificationQueues();
     }
 
     /**

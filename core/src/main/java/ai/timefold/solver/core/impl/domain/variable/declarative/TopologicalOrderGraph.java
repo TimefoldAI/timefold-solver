@@ -9,8 +9,10 @@ public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
      * Called when all edge modifications are queued.
      * After this method returns, {@link #getTopologicalOrder(int)}
      * must be accurate for every node in the graph.
+     *
+     * @return true if the graph has loops, false otherwise
      */
-    void commitChanges(BitSet changed);
+    boolean commitChanges(BitSet changed);
 
     /**
      * Called on graph creation to supply metadata about the graph nodes.

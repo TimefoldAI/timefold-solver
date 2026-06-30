@@ -44,7 +44,7 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public InnerScore<Score_> calculateScore() {
+    public InnerScore<Score_> innerCalculateScore() {
         variableListenerSupport.assertNotificationQueuesAreEmpty();
         var score = easyScoreCalculator.calculateScore(workingSolution);
         setCalculatedScore(score);

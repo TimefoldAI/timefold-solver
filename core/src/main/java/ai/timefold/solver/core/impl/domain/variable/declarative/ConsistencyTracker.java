@@ -23,9 +23,11 @@ public record ConsistencyTracker<Solution_>(
     }
 
     public static <Solution_> ConsistencyTracker<Solution_> frozen(SolutionDescriptor<Solution_> solutionDescriptor,
+            boolean ignoreInconsistentSolutions,
             Object[] entityOrFacts) {
         var out = new ConsistencyTracker<Solution_>(true);
-        out.setUnknownConsistencyFromEntityShadowVariablesInconsistent(solutionDescriptor, entityOrFacts);
+        out.setUnknownConsistencyFromEntityShadowVariablesInconsistent(solutionDescriptor, ignoreInconsistentSolutions,
+                entityOrFacts);
         return out;
     }
 
@@ -46,6 +48,7 @@ public record ConsistencyTracker<Solution_>(
      * (regardless of its actual consistency in the graph).
      */
     void setUnknownConsistencyFromEntityShadowVariablesInconsistent(SolutionDescriptor<Solution_> solutionDescriptor,
+            boolean ignoreInconsistentSolutions,
             Object[] entityOrFacts) { // Not private so DefaultVariableReferenceGraph javadoc can reference it.
         var entities = Arrays.stream(entityOrFacts)
                 .filter(maybeEntity -> solutionDescriptor.hasEntityDescriptor(maybeEntity.getClass()))
@@ -60,7 +63,8 @@ public record ConsistencyTracker<Solution_>(
                         new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
                                 ChangedVariableNotifier.empty(), entities)
                                 .withConsistencyTracker(this)
-                                .assertingNoReferencedMissingEntities());
+                                .assertingNoReferencedMissingEntities(),
+                        ignoreInconsistentSolutions);
 
         // Graph will either be DefaultVariableReferenceGraph or EmptyVariableReferenceGraph
         // If it is empty, we don't need to do anything.
@@ -71,7 +75,7 @@ public record ConsistencyTracker<Solution_>(
 
     /**
      * If true, consistency and shadow variables are frozen and should not be updated.
-     * ConstraintVerifier creates a frozen instance via {@link #frozen(SolutionDescriptor, Object[])}.
+     * ConstraintVerifier creates a frozen instance via {@link #frozen(SolutionDescriptor, boolean, Object[])}.
      * 
      * @return true if consistency and shadow variables are frozen and should not be updated
      */
