@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.Collections;
+import java.util.List;
+
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 final class EmptyVariableReferenceGraph implements VariableReferenceGraph {
@@ -20,6 +23,11 @@ final class EmptyVariableReferenceGraph implements VariableReferenceGraph {
     @Override
     public void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
         // No need to do anything.
+    }
+
+    @Override
+    public List<Object> getInconsistentEntities() {
+        return Collections.emptyList();
     }
 
     @Override
