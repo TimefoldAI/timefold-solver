@@ -124,6 +124,10 @@ public abstract sealed class AbstractTabuAcceptor<Solution_>
 
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+        var thisStepInvalid = moveScope.getScore().isInvalid();
+        if (thisStepInvalid) {
+            return false;
+        }
         var maximumTabuStepIndex = locateMaximumTabuStepIndex(moveScope);
         if (maximumTabuStepIndex < 0) {
             // The move isn't tabu at all

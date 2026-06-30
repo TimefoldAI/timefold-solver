@@ -21,12 +21,15 @@ final class AffectedEntitiesUpdater<Solution_>
     // Internal state; expensive to create, therefore we reuse.
     private final LoopedTracker loopedTracker;
     private final BitSet visited;
+    private final boolean ignoreInconsistentSolutions;
     private final PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder> changeQueue;
+    private boolean consistencyProcessed;
 
     AffectedEntitiesUpdater(BaseTopologicalOrderGraph graph, List<GraphNode<Solution_>> nodeList,
             BaseTopologicalOrderGraph.NodeTopologicalOrder[] nodeTopologicalOrders,
             Function<Object, List<GraphNode<Solution_>>> entityToContainingNode,
-            int entityCount, ChangedVariableNotifier<Solution_> changedVariableNotifier) {
+            int entityCount, ChangedVariableNotifier<Solution_> changedVariableNotifier,
+            boolean ignoreInconsistentSolutions) {
         this.graph = graph;
         this.nodeList = nodeList;
         this.nodeTopologicalOrders = nodeTopologicalOrders;
@@ -36,6 +39,8 @@ final class AffectedEntitiesUpdater<Solution_>
                 createNodeToEntityNodes(entityCount, nodeList, entityToContainingNode));
         this.visited = new BitSet(instanceCount);
         this.changeQueue = new PriorityQueue<>(instanceCount);
+        this.ignoreInconsistentSolutions = ignoreInconsistentSolutions;
+        this.consistencyProcessed = false;
     }
 
     static <Solution_> int[][] createNodeToEntityNodes(int entityCount,
@@ -98,6 +103,7 @@ final class AffectedEntitiesUpdater<Solution_>
 
         // Prepare for the next time updateChanged() is called.
         // No need to clear changeQueue, as that already finishes empty.
+        consistencyProcessed = true;
         loopedTracker.clear();
         visited.clear();
     }
@@ -129,19 +135,22 @@ final class AffectedEntitiesUpdater<Solution_>
 
         // Do not need to update anyChanged here; the graph already marked
         // all nodes whose looped status changed for us
-        var groupEntities = shadowVariableReferences.get(0).groupEntities();
-        var groupEntityIds = entityVariable.groupEntityIds();
 
-        if (groupEntities != null) {
-            for (var i = 0; i < groupEntityIds.length; i++) {
-                var groupEntity = groupEntities[i];
-                var groupEntityId = groupEntityIds[i];
+        if (!ignoreInconsistentSolutions || !consistencyProcessed) {
+            var groupEntities = shadowVariableReferences.get(0).groupEntities();
+            var groupEntityIds = entityVariable.groupEntityIds();
+
+            if (groupEntities != null) {
+                for (var i = 0; i < groupEntityIds.length; i++) {
+                    var groupEntity = groupEntities[i];
+                    var groupEntityId = groupEntityIds[i];
+                    anyChanged |=
+                            updateLoopedStatusOfEntity(groupEntity, groupEntityId, entityConsistencyState);
+                }
+            } else {
                 anyChanged |=
-                        updateLoopedStatusOfEntity(groupEntity, groupEntityId, entityConsistencyState);
+                        updateLoopedStatusOfEntity(entity, entityVariable.entityId(), entityConsistencyState);
             }
-        } else {
-            anyChanged |=
-                    updateLoopedStatusOfEntity(entity, entityVariable.entityId(), entityConsistencyState);
         }
 
         for (var shadowVariableReference : shadowVariableReferences) {

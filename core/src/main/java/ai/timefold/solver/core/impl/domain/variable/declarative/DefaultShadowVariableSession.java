@@ -47,7 +47,7 @@ public final class DefaultShadowVariableSession<Solution_> implements Supply {
                 variableDescriptor.getValue(entity), fromIndex, toIndex);
     }
 
-    public void updateVariables() {
-        graph.updateChanged();
+    public boolean updateVariables() {
+        return graph.updateChanged();
     }
 }

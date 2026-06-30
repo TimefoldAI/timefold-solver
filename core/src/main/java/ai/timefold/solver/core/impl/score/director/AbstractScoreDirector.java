@@ -74,6 +74,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final @Nullable LookupManager lookUpManager;
     protected final ConstraintMatchPolicy constraintMatchPolicy;
     private boolean expectShadowVariablesInCorrectState;
+    private boolean ignoreInconsistentSolutions;
     private final VariableDescriptorCache<Solution_> variableDescriptorCache;
     protected final ShadowVariableSupport<Solution_> shadowVariableSupport;
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
@@ -94,6 +95,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private long calculationCount = 0L;
     protected @Nullable Solution_ workingSolution;
     private int workingInitScore = 0;
+    private boolean lastVariableUpdateWasSuccessful = true;
 
     private final boolean isStepAssertOrMore;
 
@@ -108,6 +110,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.lookUpManager = lookUpEnabled ? new LookupManager(solutionDescriptor.getLookUpStrategyResolver()) : null;
         this.constraintMatchPolicy = builder.constraintMatchPolicy;
         this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
+        this.ignoreInconsistentSolutions = builder.ignoreInconsistentSolutions;
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
         this.shadowVariableSupport = ShadowVariableSupport.create(this);
         this.shadowVariableSupport.linkShadowVariables();
@@ -167,6 +170,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public boolean expectShadowVariablesInCorrectState() {
         return expectShadowVariablesInCorrectState;
+    }
+
+    @Override
+    public boolean ignoreInconsistentSolutions() {
+        return ignoreInconsistentSolutions;
     }
 
     @Override
@@ -233,6 +241,19 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // ************************************************************************
     // Complex methods
     // ************************************************************************
+
+    public abstract InnerScore<Score_> innerCalculateScore();
+
+    @Override
+    public final InnerScore<Score_> calculateScore() {
+        if (lastVariableUpdateWasSuccessful) {
+            return innerCalculateScore();
+        } else {
+            var invalidScore = InnerScore.invalid(getScoreDefinition().getZeroScore());
+            getSolutionDescriptor().setScore(workingSolution, invalidScore.raw());
+            return invalidScore;
+        }
+    }
 
     /**
      * Note: resetting the working solution does NOT substitute the calls to before/after methods of
@@ -412,7 +433,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void updateShadowVariables() {
-        shadowVariableSupport.updateShadowVariables();
+        lastVariableUpdateWasSuccessful = shadowVariableSupport.updateShadowVariables();
     }
 
     /**
@@ -427,7 +448,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void forceUpdateShadowVariables() {
-        shadowVariableSupport.forceUpdateAllShadowVariables(getWorkingSolution());
+        lastVariableUpdateWasSuccessful = shadowVariableSupport.forceUpdateAllShadowVariables(getWorkingSolution());
     }
 
     protected void setCalculatedScore(Score_ score) {
@@ -439,15 +460,21 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType) {
         // Most score directors don't need derived status; CS will override this.
         if (childThreadType == ChildThreadType.PART_THREAD) {
-            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(lookUpEnabled)
-                    .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
+            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                    .withLookUpEnabled(lookUpEnabled)
+                    .withConstraintMatchPolicy(constraintMatchPolicy)
+                    .withIgnoreInconsistentSolutions(ignoreInconsistentSolutions)
+                    .buildDerived();
             // ScoreCalculationCountTermination takes into account previous phases
             // but the calculationCount of partitions is maxed, not summed.
             childThreadScoreDirector.calculationCount = calculationCount;
             return childThreadScoreDirector;
         } else if (childThreadType == ChildThreadType.MOVE_THREAD) {
-            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder().withLookUpEnabled(true)
-                    .withConstraintMatchPolicy(constraintMatchPolicy).buildDerived();
+            var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                    .withLookUpEnabled(true)
+                    .withConstraintMatchPolicy(constraintMatchPolicy)
+                    .withIgnoreInconsistentSolutions(ignoreInconsistentSolutions)
+                    .buildDerived();
             childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
             return childThreadScoreDirector;
         } else {
@@ -718,7 +745,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
-                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED).buildDerived()) {
+                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                .withIgnoreInconsistentSolutions(ignoreInconsistentSolutions)
+                .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
             if (!innerScore.equals(uncorruptedInnerScore)) {
@@ -916,6 +945,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
+        protected boolean ignoreInconsistentSolutions = false;
 
         protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory) {
             this.scoreDirectorFactory = Objects.requireNonNull(scoreDirectorFactory);
@@ -936,6 +966,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         @SuppressWarnings("unchecked")
         public Builder_ withExpectShadowVariablesInCorrectState(boolean expectShadowVariablesInCorrectState) {
             this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
+            return (Builder_) this;
+        }
+
+        @SuppressWarnings("unchecked")
+        public Builder_ withIgnoreInconsistentSolutions(boolean ignoreInconsistentSolutions) {
+            this.ignoreInconsistentSolutions = ignoreInconsistentSolutions;
             return (Builder_) this;
         }
 
