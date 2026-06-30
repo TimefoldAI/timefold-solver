@@ -3,11 +3,9 @@ package ai.timefold.solver.service.maps.service.client.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -16,7 +14,6 @@ import ai.timefold.solver.core.api.score.HardSoftScore;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
 import ai.timefold.solver.service.maps.api.DistanceMatrix;
 import ai.timefold.solver.service.maps.api.model.Location;
-import ai.timefold.solver.service.maps.api.model.TimeInterval;
 import ai.timefold.solver.service.maps.api.model.travel.TravelDistance;
 import ai.timefold.solver.service.maps.api.model.travel.TravelTime;
 import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByAvailabilityWithMetadata;
@@ -52,7 +49,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         enricher.enrich(new StubLocationsModel(List.of(l1, l2)));
 
         assertThat(stub.singleInvocationCount.get()).isEqualTo(1);
-        assertThat(stub.trafficInvocationCount.get()).isZero();
+        assertThat(stub.byTimeframeInvocationCount.get()).isZero();
         assertThat(l1.getTravelTimeTo(l2)).isEqualTo(TravelTime.of(75L));
         assertThat(l1.getDistanceTo(l2)).isEqualTo(TravelDistance.of(750L));
     }
@@ -78,24 +75,17 @@ class TravelTimeMatrixEnricherTrafficTest {
         travelTimesByTimeframe[afternoonIdx] = afternoonTravel;
         distancesByTimeframe[afternoonIdx] = afternoonDistance;
 
-        // Traffic on + plain model: the enricher fetches per-timeframe matrices by passing the map service an
-        // availability map covering every location across all timeframes, via the regular 3-arg method.
+        // Traffic on + plain model: the enricher fetches per-timeframe matrices for every location, no pruning.
         StubMapService stub = new StubMapService(new TravelTimesByAvailabilityWithMetadata(
                 travelTimesByTimeframe, distancesByTimeframe, List.of(), bucketing::indexOf), null);
-        TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(stub, optionsSupplier,
-                true);
+        TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(stub, optionsSupplier, true);
 
         enricher.enrich(new StubLocationsModel(List.of(l1, l2)));
 
-        assertThat(stub.trafficInvocationCount.get()).isEqualTo(1);
+        assertThat(stub.byTimeframeInvocationCount.get()).isEqualTo(1);
         assertThat(stub.singleInvocationCount.get()).isZero();
-        // Every location was made available across a full 24h window (a single interval that overlaps every timeframe).
-        assertThat(stub.lastAvailability)
-                .containsOnlyKeys(l1, l2)
-                .allSatisfy((location, intervals) -> {
-                    assertThat(intervals).hasSize(1);
-                    assertThat(Duration.between(intervals.get(0).from(), intervals.get(0).to())).isEqualTo(Duration.ofDays(1));
-                });
+        // Every location is sent for the by-timeframe fetch (all locations in all buckets, no pruning).
+        assertThat(stub.lastLocations).containsExactly(l1, l2);
 
         // Time-aware lookups resolve the per-timeframe matrices.
         assertThat(l1.getTravelTimeTo(l2, MORNING_AT)).isEqualTo(TravelTime.of(100L));
@@ -162,15 +152,15 @@ class TravelTimeMatrixEnricherTrafficTest {
 
     private static final class StubMapService implements MapService {
 
-        private final TravelTimesByAvailabilityWithMetadata trafficResult;
+        private final TravelTimesByAvailabilityWithMetadata byTimeframeResult;
         private final TravelTimeAndDistanceWithMetadata singleResult;
-        private final AtomicInteger trafficInvocationCount = new AtomicInteger(0);
+        private final AtomicInteger byTimeframeInvocationCount = new AtomicInteger(0);
         private final AtomicInteger singleInvocationCount = new AtomicInteger(0);
-        private Map<Location, List<TimeInterval>> lastAvailability;
+        private List<Location> lastLocations;
 
-        StubMapService(TravelTimesByAvailabilityWithMetadata trafficResult,
+        StubMapService(TravelTimesByAvailabilityWithMetadata byTimeframeResult,
                 TravelTimeAndDistanceWithMetadata singleResult) {
-            this.trafficResult = trafficResult;
+            this.byTimeframeResult = byTimeframeResult;
             this.singleResult = singleResult;
         }
 
@@ -184,14 +174,14 @@ class TravelTimeMatrixEnricherTrafficTest {
         }
 
         @Override
-        public TravelTimesByAvailabilityWithMetadata getTravelTimeAndDistance(List<Location> locations, String options,
-                Map<Location, List<TimeInterval>> timeAvailability) {
-            trafficInvocationCount.incrementAndGet();
-            lastAvailability = timeAvailability;
-            if (trafficResult == null) {
-                throw new UnsupportedOperationException("traffic matrix result not configured");
+        public TravelTimesByAvailabilityWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
+                String options) {
+            byTimeframeInvocationCount.incrementAndGet();
+            lastLocations = locations;
+            if (byTimeframeResult == null) {
+                throw new UnsupportedOperationException("by-timeframe matrix result not configured");
             }
-            return trafficResult;
+            return byTimeframeResult;
         }
 
         @Override
@@ -213,8 +203,8 @@ class TravelTimeMatrixEnricherTrafficTest {
         }
 
         @Override
-        public TravelTimesByAvailabilityWithMetadata getTravelTimeAndDistance(List<Location> locations, String options,
-                Map<Location, List<TimeInterval>> timeAvailability) {
+        public TravelTimesByAvailabilityWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
+                String options) {
             throw new RuntimeException("boom");
         }
 

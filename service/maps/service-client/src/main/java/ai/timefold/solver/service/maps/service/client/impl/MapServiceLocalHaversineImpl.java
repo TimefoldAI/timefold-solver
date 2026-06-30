@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.service.maps.api.DistanceMatrix;
 import ai.timefold.solver.service.maps.api.model.Location;
-import ai.timefold.solver.service.maps.api.model.TimeInterval;
 import ai.timefold.solver.service.maps.haversine.impl.HaversineTravelTimeAndDistanceMatrixProvider;
 import ai.timefold.solver.service.maps.haversine.impl.HaversineWaypointsProvider;
 import ai.timefold.solver.service.maps.service.client.api.MapService;
@@ -41,8 +39,8 @@ public class MapServiceLocalHaversineImpl implements MapService {
     }
 
     @Override
-    public TravelTimesByAvailabilityWithMetadata getTravelTimeAndDistance(List<Location> locations, String options,
-            Map<Location, List<TimeInterval>> timeAvailability) {
+    public TravelTimesByAvailabilityWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
+            String options) {
         // Haversine is timeframe-independent by definition, so we use a single-bucket bucketing: a single entry in the
         // arrays covers every lookup, and the index resolver always returns 0.
         TimeframeBucketing bucketing = new SingleTimeframeBucketing();

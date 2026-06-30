@@ -1,14 +1,8 @@
 package ai.timefold.solver.service.maps.service.client.api;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -18,7 +12,6 @@ import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
 import ai.timefold.solver.service.maps.api.DistanceMatrix;
 import ai.timefold.solver.service.maps.api.model.Location;
-import ai.timefold.solver.service.maps.api.model.TimeInterval;
 import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByAvailabilityWithMetadata;
 import ai.timefold.solver.service.maps.service.client.impl.MapServiceOptionsSupplier;
 import ai.timefold.solver.service.maps.service.client.impl.error.MapServiceIllegalArgumentException;
@@ -35,10 +28,6 @@ import org.slf4j.LoggerFactory;
 public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAwareSolverModel<?>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TravelTimeMatrixEnricher.class);
-
-    private static final TimeInterval FULL_DAY = new TimeInterval(
-            OffsetDateTime.of(LocalDate.EPOCH, LocalTime.MIDNIGHT, ZoneOffset.UTC),
-            OffsetDateTime.of(LocalDate.EPOCH.plusDays(1), LocalTime.MIDNIGHT, ZoneOffset.UTC));
 
     private final MapService mapService;
 
@@ -91,15 +80,9 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
 
     private LocationsAwareSolverModel<?> enrichAllTimeframes(LocationsAwareSolverModel<?> solverModel) {
         List<Location> locations = solverModel.getLocations();
-        List<TimeInterval> fullCoverage = List.of(FULL_DAY);
-        Map<Location, List<TimeInterval>> availability = new LinkedHashMap<>();
-        for (Location location : locations) {
-            availability.put(location, fullCoverage);
-        }
-
         TravelTimesByAvailabilityWithMetadata result;
         try {
-            result = mapService.getTravelTimeAndDistance(locations, optionsSupplier.getOptions(), availability);
+            result = mapService.getTravelTimeAndDistanceByTimeframe(locations, optionsSupplier.getOptions());
         } catch (TimefoldRuntimeException e) {
             throw e;
         } catch (Exception e) {
