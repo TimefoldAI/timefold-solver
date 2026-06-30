@@ -154,4 +154,37 @@ class ListRuinRecreateMoveSelectorTest extends AbstractMeterTest {
         assertDoesNotThrow(() -> solver.solve(problem));
     }
 
+    @Test
+    void testRuiningOnlyOneAssignedValues() {
+        var solverConfig = new SolverConfig()
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withSolutionClass(TestdataAllowsUnassignedValuesListSolution.class)
+                .withEntityClasses(TestdataAllowsUnassignedValuesListEntity.class,
+                        TestdataAllowsUnassignedValuesListValue.class)
+                .withConstraintProviderClass(TestdataOnlyOneAssignedValuesListMixedConstraintProvider.class)
+                .withPhaseList(List.of(
+                        new LocalSearchPhaseConfig()
+                                .withMoveSelectorConfig(new ListRuinRecreateMoveSelectorConfig().withMinimumRuinedCount(3))
+                                .withTerminationConfig(new TerminationConfig()
+                                        .withStepCountLimit(1))));
+        var problem = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(3, 1);
+        problem.getEntityList().getFirst().getValueList().addAll(problem.getValueList());
+        var solver = SolverFactory.create(solverConfig).buildSolver();
+        assertDoesNotThrow(() -> solver.solve(problem));
+    }
+
+    public static final class TestdataOnlyOneAssignedValuesListMixedConstraintProvider
+            implements ConstraintProvider {
+
+        @Override
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
+            return new Constraint[] {
+                    constraintFactory.forEach(TestdataAllowsUnassignedValuesListEntity.class)
+                            .filter(entity -> entity.getValueList().size() != 1)
+                            .penalize(SimpleScore.ONE)
+                            .asConstraint("Only One Assigned")
+            };
+        }
+    }
+
 }

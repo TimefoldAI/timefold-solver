@@ -129,8 +129,11 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
             }
 
             for (var ruinedValue : ruinedValueList) {
-                var position = listVariableStateSupply.getElementPosition(ruinedValue)
-                        .ensureAssigned();
+                // Some ruined values may be left unassigned
+                if (!listVariableStateSupply.isAssigned(ruinedValue)) {
+                    continue;
+                }
+                var position = listVariableStateSupply.getElementPosition(ruinedValue).ensureAssigned();
                 entityToNewPositionMap.computeIfAbsent(position.entity(), ignored -> new TreeSet<>())
                         .add(new RuinedPosition(ruinedValue, position.index()));
                 entityToInsertedValuesMap.computeIfAbsent(position.entity(), ignored -> new ArrayList<>()).add(ruinedValue);

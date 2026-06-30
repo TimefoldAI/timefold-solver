@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.util.List;
 
+import ai.timefold.solver.core.api.score.SimpleScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
@@ -21,6 +25,7 @@ import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassigned
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import io.micrometer.core.instrument.Metrics;
@@ -92,6 +97,39 @@ class RuinRecreateMoveSelectorTest extends AbstractMeterTest {
         var problem = TestdataAllowsUnassignedSolution.generateSolution(5, 30);
         var solver = SolverFactory.create(solverConfig).buildSolver();
         assertDoesNotThrow(() -> solver.solve(problem));
+    }
+
+    @Test
+    void testRuiningNoAssignedValues() {
+        var solverConfig = new SolverConfig()
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withSolutionClass(TestdataAllowsUnassignedSolution.class)
+                .withEntityClasses(TestdataAllowsUnassignedEntity.class)
+                .withConstraintProviderClass(TestdataNoAssignedValuesListMixedConstraintProvider.class)
+                .withPhaseList(List.of(
+                        new LocalSearchPhaseConfig()
+                                .withMoveSelectorConfig(new RuinRecreateMoveSelectorConfig().withMinimumRuinedCount(3))
+                                .withTerminationConfig(new TerminationConfig()
+                                        .withStepCountLimit(1))));
+        var problem = TestdataAllowsUnassignedSolution.generateSolution(3, 3);
+        for (var i = 0; i < 3; i++) {
+            problem.getEntityList().get(i).setValue(problem.getValueList().get(i));
+        }
+        var solver = SolverFactory.create(solverConfig).buildSolver();
+        assertDoesNotThrow(() -> solver.solve(problem));
+    }
+
+    public static final class TestdataNoAssignedValuesListMixedConstraintProvider
+            implements ConstraintProvider {
+
+        @Override
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
+            return new Constraint[] {
+                    constraintFactory.forEach(TestdataAllowsUnassignedEntity.class)
+                            .penalize(SimpleScore.ONE)
+                            .asConstraint("No Assigned")
+            };
+        }
     }
 
 }

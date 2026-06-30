@@ -51,13 +51,18 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
         if (!elementsToRuinSet.isEmpty()) {
             var listVariableDescriptor = stepScope.getPhaseScope().getSolverScope().getSolutionDescriptor()
                     .getListVariableDescriptor();
-            var entity = stepScope.getStep().getPlanningEntities().iterator().next();
-            if (!elementsToRuinSet.contains(entity)) {
-                // Sometimes, the list of elements to be ruined does not include new destinations selected by the CH.
-                // In these cases, we need to record the element list before making any move changes
-                // so that it can be referenced to restore the solution to its original state when undoing changes.
-                missingUpdatedElementsMap.computeIfAbsent(entity,
-                        e -> List.copyOf(listVariableDescriptor.getValue(e)));
+            // The generated step may include a no-change move
+            // when it's better to keep a planning value unassigned
+            // or when there are no unpinned entities
+            if (!stepScope.getStep().getPlanningEntities().isEmpty()) {
+                var entity = stepScope.getStep().getPlanningEntities().getFirst();
+                if (!elementsToRuinSet.contains(entity)) {
+                    // Sometimes, the list of elements to be ruined does not include new destinations selected by the CH.
+                    // In these cases, we need to record the element list before making any move changes
+                    // so that it can be referenced to restore the solution to its original state when undoing changes.
+                    missingUpdatedElementsMap.computeIfAbsent(entity,
+                            e -> List.copyOf(listVariableDescriptor.getValue(e)));
+                }
             }
         }
         super.doStep(stepScope);
