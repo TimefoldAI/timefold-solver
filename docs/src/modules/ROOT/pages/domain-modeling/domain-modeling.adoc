@@ -12,7 +12,7 @@ The structure of your model directly affects the size of the search space. Poor 
 [NOTE]
 ====
 This guide builds on concepts introduced in the xref:quickstart/overview.adoc[Getting Started guides].
-If you haven't completed one yet, start there before continuing.
+If you haven't completed one yet,
 ====
 
 . *Draw a class diagram of your domain model.*

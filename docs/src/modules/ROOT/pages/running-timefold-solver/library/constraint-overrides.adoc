@@ -7,7 +7,7 @@
 
 
 
-include::../constraints-and-score/_constraint-config-shared.adoc[]
+include::../../constraints-and-score/_constraint-config-shared.adoc[]
 
 [#applyingOverrides]
 [#libraryWeightOverrides]

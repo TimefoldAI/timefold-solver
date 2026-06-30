@@ -493,4 +493,4 @@ You have just developed a Spring application with https://timefold.ai[Timefold]!
 Next Steps:
 
 - For a full implementation with a web UI, check out {spring-boot-quickstart-url}[the Spring-boot quickstart source code].
-- Check out more information about Timefold's integration with Spring in our xref:../integration/spring-boot.adoc#integrationWithSpringBoot[Integration documentation].
+- Check out more information about Timefold's integration with Spring in our xref:running-timefold-solver/library/spring-boot.adoc#integrationWithSpringBoot[Integration documentation].

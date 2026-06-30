@@ -40,7 +40,7 @@ A planning domain model typically consist of the following elements:
 ====
 In a school timetabling scenario, where _lessons_ need to be assigned _rooms_ and _timeslots_, we get this class diagram.
 
-image:using-timefold-solver/modeling-planning-problems/classDiagramSchoolTimetabling.svg[align="center"]
+image:domain-modeling/modeling-planning-problems/classDiagramSchoolTimetabling.svg[align="center"]
 ////
 original plantuml, as we currently can't render plantuml in antora
 [plantuml, format=svg, theme=sketchy-outline]
