@@ -82,7 +82,7 @@ If required, xref:responding-to-change/continuous-planning.adoc[continuous plann
 Assignment Recommendation API requires the `SolutionManager` to be configured
 with a xref:optimization-algorithms/construction-heuristics.adoc[construction heuristic] as the first phase,
 as it uses that construction heuristic to find the best fit.
-If there are multiple construction heuristics phases in the xref:running-timefold-solver/configuration.adoc#solverConfiguration[solver configuration],
+If there are multiple construction heuristics phases in the xref:running-timefold-solver/library/configuration.adoc#solverConfiguration[solver configuration],
 or if the first phase is not a construction heuristic
 (perhaps a xref:optimization-algorithms/optimization-algorithms.adoc#customSolverPhase[custom initializer]),
 the API will fail fast.

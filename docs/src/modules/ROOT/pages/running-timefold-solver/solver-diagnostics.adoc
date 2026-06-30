@@ -397,7 +397,7 @@ Timefold Solver exposes metrics through https://micrometer.io/[Micrometer] which
 Service::
 +
 Micrometer is automatically configured in the service module.
-See xref:service/exposing-metrics.adoc[Exposing Metrics] for setup instructions and the list of available metrics.
+See xref:running-timefold-solver/service/exposing-metrics.adoc[Exposing Metrics] for setup instructions and the list of available metrics.
 
 Quarkus / Spring Boot::
 +

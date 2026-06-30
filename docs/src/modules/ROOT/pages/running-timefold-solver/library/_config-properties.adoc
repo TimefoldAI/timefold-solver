@@ -13,7 +13,7 @@ Defaults to `AUTO`.
 endif::[]
 
 {property_prefix}timefold.solver.{solver_name_prefix}solver-config-xml::
-A classpath resource to read the xref:running-timefold-solver/configuration.adoc#solverConfiguration[solver configuration XML].
+A classpath resource to read the xref:running-timefold-solver/library/configuration.adoc#solverConfiguration[solver configuration XML].
 Defaults to `solverConfig.xml`.
 If a resource is specified, it must be located in the classpath, or the configuration will fail.
 If the property is not specified, the file `solverConfig.xml` is used when found on the classpath. Otherwise, the

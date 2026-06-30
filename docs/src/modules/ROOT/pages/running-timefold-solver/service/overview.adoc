@@ -1,5 +1,6 @@
 [#serviceOverview]
 = Building a service
+:page-aliases: service/overview.adoc
 :description: Overview of running Timefold Solver as a fully isolated optimization service.
 :doctype: book
 :sectnums:
@@ -22,7 +23,7 @@ Call this repeatedly to show progress to the end-user, or once after a known tim
 . *Terminate early* — `DELETE /<root>/\{id\}` stops solving and returns the best solution reached.
 . *Inspect score analysis* — `GET /<root>/\{id\}/score-analysis` breaks down which constraints are violated and by how much.
 
-See xref:service/rest-api.adoc[REST API] for the full endpoint reference and request/response formats.
+See xref:running-timefold-solver/service/rest-api.adoc[REST API] for the full endpoint reference and request/response formats.
 
 [#foundationsStillApply]
 == Built on Timefold Solver (the library)

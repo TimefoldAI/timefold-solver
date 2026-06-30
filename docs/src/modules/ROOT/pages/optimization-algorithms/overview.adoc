@@ -924,7 +924,7 @@ Effectively nothing will have changed for the next `Phase` or `PhaseCommand`.
 
 To configure values of a `PhaseCommand` dynamically in the solver configuration
 (so the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `customProperties` element and use xref:running-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
+add the `customProperties` element and use xref:running-timefold-solver/library/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----

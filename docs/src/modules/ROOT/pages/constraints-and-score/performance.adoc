@@ -84,7 +84,7 @@ then turn them into xref:domain-modeling/modeling-planning-problems.adoc#cachedP
 
 If a constraint is only relevant when certain data is present on the input
 (for example, if you want a capacity constraint to only be evaluated when capacity information is present),
-set the xref:running-timefold-solver/constraint-overrides.adoc#definingAndOverridingConstraintWeights[constraint weight] to zero.
+set the xref:running-timefold-solver/library/constraint-overrides.adoc#definingAndOverridingConstraintWeights[constraint weight] to zero.
 In xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams],
 this will result in the constraint not being added to the node network and therefore have no performance impact at all.
 

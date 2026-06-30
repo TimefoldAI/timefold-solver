@@ -1,6 +1,6 @@
 [#constraintConfiguration]
 = Adjusting constraints at runtime
-:page-aliases: constraints-and-score/constraint-configuration.adoc
+:page-aliases: constraints-and-score/constraint-configuration.adoc, running-timefold-solver/constraint-overrides.adoc
 :doctype: book
 :sectnums:
 :icons: font
@@ -58,8 +58,8 @@ Overrides are part of the planning solution,
 and as such they are automatically serialized into JSON using Jackson,
 assuming either of the following conditions are met:
 
-* You use Timefold Solver's xref:integration/quarkus.adoc#integrationWithQuarkus[Quarkus integration],
-* you use Timefold Solver's xref:integration/spring-boot.adoc#integrationWithSpringBoot[Spring Boot integration],
+* You use Timefold Solver's xref:running-timefold-solver/library/quarkus.adoc#integrationWithQuarkus[Quarkus integration],
+* you use Timefold Solver's xref:running-timefold-solver/library/spring-boot.adoc#integrationWithSpringBoot[Spring Boot integration],
 * or you directly included the `timefold-solver-jackson` module in your project.
 
 Overrides don't natively deserialize from JSON back to Java objects.

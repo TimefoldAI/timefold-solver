@@ -11,8 +11,8 @@
 
 Timefold Solver's input and output data (the planning problem and the best solution) are plain old JavaBeans (POJOs), so integration with other Java technologies is straightforward.
 The most common way to use Timefold Solver is through its first-class framework integrations:
-xref:integration/quarkus.adoc[Quarkus]
-and xref:integration/spring-boot.adoc[Spring Boot].
+xref:running-timefold-solver/library/quarkus.adoc[Quarkus]
+and xref:running-timefold-solver/library/spring-boot.adoc[Spring Boot].
 
 Beyond that, Timefold Solver also integrates with many other Java technologies. For example:
 
@@ -29,5 +29,5 @@ so that changes to one do not force changes to the other.
 ====
 
 
-image::integration/integrationOverview.png[align="center"]
+image::running-timefold-solver/library/integrationOverview.png[align="center"]
 

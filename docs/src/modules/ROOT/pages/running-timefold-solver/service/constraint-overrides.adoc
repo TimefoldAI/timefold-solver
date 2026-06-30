@@ -1,13 +1,13 @@
 [#serviceConstraintWeightOverrides]
 = Adjusting constraint weights
-:page-aliases: service/constraint-weights.adoc
+:page-aliases: service/constraint-weights.adoc, service/constraint-overrides.adoc
 :doctype: book
 :sectnums:
 :icons: font
 
 
 
-include::../constraints-and-score/_constraint-config-shared.adoc[]
+include::../../constraints-and-score/_constraint-config-shared.adoc[]
 
 [#applyingOverrides]
 [#serviceWeightOverrides]
@@ -157,7 +157,7 @@ For example, to make the Teacher conflict 10 times more impactful, override the 
 }
 ----
 
-Next, in the xref:service/rest-api.adoc#modelConverter[model converter], map the overrides
+Next, in the xref:running-timefold-solver/service/rest-api.adoc#modelConverter[model converter], map the overrides
 to a `ConstraintWeightOverrides` object and set it on the `@PlanningSolution` class
 xref:#enablingWeightOverrides[as described above]:
 

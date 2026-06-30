@@ -415,7 +415,7 @@ If your constraint IDs do not comply, an exception will be thrown at solver init
 [%collapsible%open]
 ====
 The `@ConstraintConfiguration`, `@ConstraintConfigurationProvider`, and `@ConstraintWeight` annotations have been removed.
-Please use xref:running-timefold-solver/constraint-overrides.adoc#definingAndOverridingConstraintWeights[constraint weight overrides] instead.
+Please use xref:running-timefold-solver/library/constraint-overrides.adoc#definingAndOverridingConstraintWeights[constraint weight overrides] instead.
 
 Before in `*ConstraintProvider.java`:
 
@@ -830,7 +830,7 @@ void onFinalBestSolution(FinalBestSolutionEvent<Timetable> event) {
 }
 ----
 
-Users of xref:running-timefold-solver/library-integration.adoc#throttlingBestSolutionEvents[solution throttling]
+Users of xref:running-timefold-solver/library/library-integration.adoc#throttlingBestSolutionEvents[solution throttling]
 should also update their code to use `ThrottlingBestSolutionEventConsumer`
 instead of the now removed `ThrottlingBestSolutionConsumer`.
 ====

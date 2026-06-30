@@ -1826,7 +1826,7 @@ Therefore, `moveListFactory` uses `cacheType` ``STEP`` by default and it scales 
 
 To configure values of a `MoveListFactory` dynamically in the solver configuration
 (so the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `moveListFactoryCustomProperties` element and use xref:running-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties].
+add the `moveListFactoryCustomProperties` element and use xref:running-timefold-solver/library/configuration.adoc#customPropertiesConfiguration[custom properties].
 
 [WARNING]
 ====
@@ -1991,7 +1991,7 @@ Advanced configuration:
 
 To configure values of a `MoveIteratorFactory` dynamically in the solver configuration
 (so the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `moveIteratorFactoryCustomProperties` element and use xref:running-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties].
+add the `moveIteratorFactoryCustomProperties` element and use xref:running-timefold-solver/library/configuration.adoc#customPropertiesConfiguration[custom properties].
 
 [WARNING]
 ====

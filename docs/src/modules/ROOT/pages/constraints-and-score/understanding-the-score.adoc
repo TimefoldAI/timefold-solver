@@ -208,8 +208,8 @@ To succeed at this, `ScoreAnalysis` is JSON-friendly and can be easily sent over
 
 `ScoreAnalysis` instances will serialize into JSON automatically (using Jackson):
 
-* If you use Timefold Solver's xref:integration/quarkus.adoc#integrationWithQuarkus[Quarkus integration],
-* or if you use Timefold Solver's xref:integration/spring-boot.adoc#integrationWithSpringBoot[Spring Boot integration],
+* If you use Timefold Solver's xref:running-timefold-solver/library/quarkus.adoc#integrationWithQuarkus[Quarkus integration],
+* or if you use Timefold Solver's xref:running-timefold-solver/library/spring-boot.adoc#integrationWithSpringBoot[Spring Boot integration],
 * or if you directly included the `timefold-solver-jackson` module in your project.
 
 If you implemented `ConstraintJustication` to provide custom justification objects, you are responsible for making them JSON-friendly yourself.

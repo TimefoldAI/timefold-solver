@@ -95,7 +95,7 @@ For this planning problem:
 - `Timetable` is the *planning solution*. It contains all the `Lesson` *planning entity* instances, and all possible *planning values*, which are instances of `Room` and `Timeslot` which can be assigned to the *planning variables* in `Lesson`.
 ====
 
-*In Timefold Solver, all elements of the planning domain model are plain objects.* Load them from a database, an XML file, a data repository, a REST service, a noSQL cloud, ... (see xref:integration/integration.adoc#integration[integration]): it doesn't matter.
+*In Timefold Solver, all elements of the planning domain model are plain objects.* Load them from a database, an XML file, a data repository, a REST service, a noSQL cloud, ... (see xref:running-timefold-solver/library/integration.adoc#integration[integration]): it doesn't matter.
 
 [#planningVariableTypes]
 === Types of planning variables
@@ -361,7 +361,7 @@ xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solve
 </solver>
 ----
 
-NOTE: When Timefold Solver is xref:integration/integration.adoc#integration[integrated in Quarkus or Spring], the XML file is optional.
+NOTE: When Timefold Solver is xref:running-timefold-solver/library/integration.adoc#integration[integrated in Quarkus or Spring], the XML file is optional.
 
 Some uses cases have multiple planning entity classes.
 For example: route freight and trains into railway network arcs, where each freight can use multiple trains over its journey and each train can carry multiple freights per arc.
@@ -523,7 +523,7 @@ A @PlanningVariable annotation needs to be on a member in a class with a @Planni
 It is ignored on parent classes or subclasses without that annotation.
 ====
 
-xref:running-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
+xref:running-timefold-solver/library/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
 
 [tabs]
 ====
@@ -1283,7 +1283,7 @@ public class Timetable {
 ----
 ====
 
-xref:running-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
+xref:running-timefold-solver/library/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
 
 [tabs]
 ====
@@ -2584,7 +2584,7 @@ class Timetable : AbstractSimpleModel() {
 
 [NOTE]
 ====
-When xref:running-timefold-solver/library-integration.adoc[using Timefold Solver as a library], the `SolverModel` interface is not available.
+When xref:running-timefold-solver/library/library-integration.adoc[using Timefold Solver as a library], the `SolverModel` interface is not available.
 Your `@PlanningSolution` class is a plain Java class with no framework interface to implement.
 ====
 

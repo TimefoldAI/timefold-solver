@@ -1,11 +1,11 @@
 [#libraryIntegration]
 = Using Timefold Solver as a Library
-:page-aliases: using-timefold-solver/running-the-solver.adoc
+:page-aliases: using-timefold-solver/running-the-solver.adoc, running-timefold-solver/library-integration.adoc
 :doctype: book
 :sectnums:
 :icons: font
 
-When xref:service/overview.adoc[running as a service], the framework manages the `Solver` and `SolverManager` on your behalf,
+When xref:running-timefold-solver/service/overview.adoc[running as a service], the framework manages the `Solver` and `SolverManager` on your behalf,
 you interact only through the REST API.
 When embedding Timefold Solver as a library, your code drives the entire solving lifecycle.
 This page covers what that means in practice.
@@ -57,7 +57,7 @@ This avoids timeout issues of HTTP and other technologies.
 Internally a `SolverManager` manages a thread pool of solver threads, which call `Solver.solve(...)`,
 and a thread pool of consumer threads, which handle best solution changed events.
 
-In xref:integration/quarkus.adoc#integrationWithQuarkus[Quarkus] and xref:integration/spring-boot.adoc#integrationWithSpringBoot[Spring Boot],
+In xref:running-timefold-solver/library/quarkus.adoc#integrationWithQuarkus[Quarkus] and xref:running-timefold-solver/library/spring-boot.adoc#integrationWithSpringBoot[Spring Boot],
 the `SolverManager` instance is automatically injected in your code.
 Otherwise, build a `SolverManager` instance with the `create(...)` method:
 
@@ -257,14 +257,14 @@ To handle errors that may arise during the solving process,
 set up the handling logic by defining `withExceptionHandler(...)`.
 
 Finally, to build an instance of the solver,
-xref:running-timefold-solver/configuration.adoc[a configuration step] is necessary.
+xref:running-timefold-solver/library/configuration.adoc[a configuration step] is necessary.
 These settings are static and applied to any related solving execution.
 If you want to override certain settings for a particular job,
 such as the termination configuration, you can use the `withConfigOverride(...)` method.
 
 [NOTE]
 ====
-The solver also permits the configuration of multiple solver managers with distinct settings in xref:integration/quarkus.adoc#integrationWithQuarkusMultipleResources[Quarkus] or xref:integration/spring-boot.adoc#integrationWithSpringBootMultipleResources[Spring Boot].
+The solver also permits the configuration of multiple solver managers with distinct settings in xref:running-timefold-solver/library/quarkus.adoc#integrationWithQuarkusMultipleResources[Quarkus] or xref:running-timefold-solver/library/spring-boot.adoc#integrationWithSpringBootMultipleResources[Spring Boot].
 ====
 
 [#solverManagerSolveBatch]

@@ -49,7 +49,7 @@ See our https://licenses.timefold.ai/[license portal] to get your license, then 
 | xref:commercial-editions/multistage-moves.adoc[Multistage moves]
 | | ✓
 
-| xref:running-timefold-solver/library-integration.adoc#throttlingBestSolutionEvents[Throttling best solution events]
+| xref:running-timefold-solver/library/library-integration.adoc#throttlingBestSolutionEvents[Throttling best solution events]
 | | ✓
 
 |===

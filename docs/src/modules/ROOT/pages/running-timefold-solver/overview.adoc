@@ -21,7 +21,7 @@ This is the recommended approach for most teams:
 it lets you focus on modeling the problem and writing constraints
 rather than on plumbing. This is the approach we use ourselves at Timefold for https://app.timefold.ai[models on our platform].
 
-xref:service/overview.adoc[→ Run as a Service]
+xref:running-timefold-solver/service/overview.adoc[→ Run as a Service]
 
 [#embedAsALibrary]
 == Use as a Library (advanced)
@@ -29,7 +29,7 @@ xref:service/overview.adoc[→ Run as a Service]
 Embed Timefold Solver directly in your application for full control over the solving lifecycle.
 Use this approach when you need deep integration with existing infrastructure or have a use case or architecture where the recommended approach above doesn't apply to you.
 
-xref:running-timefold-solver/configuration.adoc[→ Use as a Library]
+xref:running-timefold-solver/library/configuration.adoc[→ Use as a Library]
 
 [#commonFoundation]
 == Common foundation

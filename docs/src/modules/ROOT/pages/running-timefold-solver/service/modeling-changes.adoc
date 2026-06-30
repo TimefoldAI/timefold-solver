@@ -1,4 +1,5 @@
 = Model Enrichment
+:page-aliases: service/modeling-changes.adoc
 :description: Enrich your SolverModel with additional information before solving starts.
 :doctype: book
 :sectnums:

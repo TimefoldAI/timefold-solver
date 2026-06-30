@@ -2208,7 +2208,7 @@ Configure it in the solver configuration:
 
 To configure values of an `EasyScoreCalculator` dynamically in the solver configuration
 (so the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `easyScoreCalculatorCustomProperties` element and use xref:running-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
+add the `easyScoreCalculatorCustomProperties` element and use xref:running-timefold-solver/library/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----
@@ -2288,7 +2288,7 @@ the assertions triggered by the ``environmentMode``.
 
 To configure values of an `IncrementalScoreCalculator` dynamically in the solver configuration
 (so the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `incrementalScoreCalculatorCustomProperties` element and use xref:running-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
+add the `incrementalScoreCalculatorCustomProperties` element and use xref:running-timefold-solver/library/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----

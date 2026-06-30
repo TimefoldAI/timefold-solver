@@ -1,4 +1,5 @@
 = Demo data
+:page-aliases: service/demo-data.adoc
 :description: How to configure the model to generate Demo Data
 :doctype: book
 :sectnums:

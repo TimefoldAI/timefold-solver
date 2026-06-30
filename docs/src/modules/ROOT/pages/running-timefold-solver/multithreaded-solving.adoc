@@ -21,7 +21,7 @@ Split 1 dataset in multiple parts and solve them independently.
 ** Not recommended: This is a marginal gain for a high cost of hardware resources.
 ** Use the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
 * *Multitenancy*: solve different datasets in parallel.
-** The xref:running-timefold-solver/library-integration.adoc[`SolverManager`] can help with this.
+** The xref:running-timefold-solver/library/library-integration.adoc[`SolverManager`] can help with this.
 
 image::running-timefold-solver/multithreaded-solving/multiThreadingStrategies.png[align="center"]
 
@@ -298,7 +298,7 @@ The `partCount` is unrelated to the `runnablePartThreadLimit`.
 
 To configure values of a `SolutionPartitioner` dynamically in the solver configuration
 (so the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
-add the `solutionPartitionerCustomProperties` element and use xref:running-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
+add the `solutionPartitionerCustomProperties` element and use xref:running-timefold-solver/library/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
 [source,xml,options="nowrap"]
 ----

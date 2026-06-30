@@ -24,7 +24,7 @@ See all available models on https://app.timefold.ai/[our platform].
 == Which versions of Java, Quarkus, and Spring Boot are supported?
 
 [#compatibilityMatrix]
-Timefold Solver integrates with xref:integration/quarkus.adoc[Quarkus] and xref:integration/spring-boot.adoc[Spring Boot] out of the box.
+Timefold Solver integrates with xref:running-timefold-solver/library/quarkus.adoc[Quarkus] and xref:running-timefold-solver/library/spring-boot.adoc[Spring Boot] out of the box.
 Get started quickly with the xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusQuickStart[Quarkus quick start]
 or the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQuickStart[Spring Boot quick start].
 
@@ -53,7 +53,7 @@ Many human planners fail to accept this, often because they feel threatened by a
 But despite that, both can benefit if the human planner becomes the supervisor of Timefold Solver:
 
 * *The human planner defines, validates, and tweaks the score function.*
-** The human planner tweaks the constraint weights of the xref:running-timefold-solver/constraint-overrides.adoc[constraint configuration] in a UI,
+** The human planner tweaks the constraint weights of the xref:running-timefold-solver/library/constraint-overrides.adoc[constraint configuration] in a UI,
 as the business priorities change over time.
 ** When the business changes, the score function often needs to change too.
 The human planner can notify the developers to add, change or remove score constraints.
@@ -69,14 +69,14 @@ and in the event that the business changes dramatically before the score constra
 
 For this reason, it is recommended that the human planner is actively involved in your project.
 
-image::integration/keepTheUserInControl.png[align="center"]
+image::running-timefold-solver/library/keepTheUserInControl.png[align="center"]
 
 [#sizingHardwareAndSoftware]
 == Infrastructure requirements
 
 Before sizing a Timefold Solver service, first understand the typical behaviour of a `Solver.solve()` call:
 
-image::integration/sizingHardware.png[align="center"]
+image::running-timefold-solver/library/sizingHardware.png[align="center"]
 
 Understand these guidelines to decide the hardware for a Timefold Solver service:
 
