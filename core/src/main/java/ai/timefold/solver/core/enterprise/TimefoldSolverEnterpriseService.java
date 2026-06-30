@@ -49,6 +49,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
+import ai.timefold.solver.core.impl.util.SolverVersionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
@@ -64,26 +65,56 @@ public interface TimefoldSolverEnterpriseService {
 
     }
 
-    String COMMUNITY_NAME = "Timefold Solver Community Edition";
-    String ENTERPRISE_NAME = "Timefold Solver Enterprise Edition";
+    String COMMUNITY_NAME = SolverVersionUtils.COMMUNITY_NAME;
+    String ENTERPRISE_NAME = SolverVersionUtils.ENTERPRISE_NAME;
     String ENTERPRISE_COORDINATES = "ai.timefold.solver.enterprise:timefold-solver-enterprise-core";
-    String DEVELOPMENT_SNAPSHOT = "Development Snapshot";
 
     /**
+     * Returns the solver edition and version string without a git ref, for backward compatibility.
+     * Any {@code -rc-N} suffix is stripped from the version number.
      *
-     * @return A string in the format of
-     *         "Timefold Solver (Community|Enterprise) Edition v(999-SNAPSHOT|Development Snapshot|x.y.z)".
+     * @return e.g. {@code "Timefold Solver Community Edition v1.2.3"} or
+     *         {@code "Timefold Solver Community Edition Development Snapshot"}
      */
     static String identifySolverVersion() {
-        var packaging = COMMUNITY_NAME;
+        TimefoldSolverEnterpriseService service = null;
         try {
-            load();
-            packaging = ENTERPRISE_NAME;
+            service = load();
         } catch (Exception e) {
-            // No need to do anything, just checking if Enterprise exists.
+            // No enterprise edition on the classpath.
         }
-        var version = getVersionString(SolverFactory.class);
-        return packaging + " " + version;
+        var editionName = service == null ? COMMUNITY_NAME : ENTERPRISE_NAME;
+        return SolverVersionUtils.banner(editionName, SolverFactory.class);
+    }
+
+    /**
+     * Returns the solver edition, version, and short Git commit SHA(s).
+     * Any {@code -rc-N} suffix is stripped from the version number.
+     *
+     * @return e.g. {@code "Timefold Solver Community Edition v1.2.3 (a1b2c3d)"} or
+     *         {@code "Timefold Solver Enterprise Edition v1.2.3 (core a1b2c3d, enterprise e4f5g6h)"}
+     */
+    static String identifySolverVersionWithGitRef() {
+        var coreRef = SolverVersionUtils.gitRefOf(SolverVersionUtils.CORE_GIT_PROPERTIES);
+        TimefoldSolverEnterpriseService service = null;
+        try {
+            service = load();
+        } catch (Exception e) {
+            // No enterprise edition on the classpath.
+        }
+        if (service == null) {
+            return SolverVersionUtils.communityBannerWithGitRef(SolverFactory.class, coreRef);
+        } else {
+            return SolverVersionUtils.enterpriseBannerWithGitRef(SolverFactory.class, coreRef, service.getGitRef());
+        }
+    }
+
+    /**
+     * Returns the short Git commit SHA of the enterprise JAR, or {@code null} if unavailable.
+     * Overridden by the enterprise implementation.
+     */
+    default @Nullable String getGitRef() {
+        throw new UnsupportedOperationException();
     }
 
     @SuppressWarnings("unchecked")
@@ -95,18 +126,12 @@ public interface TimefoldSolverEnterpriseService {
                     // Avoids ServiceLoader by using reflection directly.
                     var clz = (Class<? extends TimefoldSolverEnterpriseService>) Class
                             .forName("ai.timefold.solver.enterprise.core.DefaultTimefoldSolverEnterpriseService");
-                    var ctor = clz.getDeclaredConstructor(Function.class);
-                    InstanceCarrier.INSTANCE =
-                            ctor.newInstance((Function<Class<?>, String>) TimefoldSolverEnterpriseService::getVersionString);
+                    var ctor = clz.getDeclaredConstructor();
+                    InstanceCarrier.INSTANCE = ctor.newInstance();
                 }
             }
         }
         return InstanceCarrier.INSTANCE;
-    }
-
-    static String getVersionString(Class<?> clz) {
-        var version = clz.getPackage().getImplementationVersion();
-        return (version == null ? DEVELOPMENT_SNAPSHOT : "v" + version);
     }
 
     static TimefoldSolverEnterpriseService loadOrFail(Feature feature) {

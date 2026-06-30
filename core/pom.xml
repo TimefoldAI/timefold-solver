@@ -120,6 +120,27 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>io.github.git-commit-id</groupId>
+        <artifactId>git-commit-id-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>capture-git-ref</id>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <generateGitPropertiesFile>true</generateGitPropertiesFile>
+          <generateGitPropertiesFilename>${project.build.outputDirectory}/timefold-solver-core-git.properties</generateGitPropertiesFilename>
+          <includeOnlyProperties>
+            <includeOnlyProperty>^git\.commit\.id\.abbrev$</includeOnlyProperty>
+          </includeOnlyProperties>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.revapi</groupId>
         <artifactId>revapi-maven-plugin</artifactId>
       </plugin>
