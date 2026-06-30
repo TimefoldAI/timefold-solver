@@ -50,7 +50,7 @@ to represent the many-to-many relationship between `Shift` and `Employee`.
 `Shift` contains every shift time that needs to be filled with an employee.
 
 +
-image::design-patterns/employeeShiftRosteringModelingGuideA.png[align="center"]
+image::domain-modeling/design-patterns/employeeShiftRosteringModelingGuideA.png[align="center"]
 
 +
 [NOTE]
@@ -97,6 +97,6 @@ so it is better to make the `Shift` relationship a problem property
 and the `Employee` relationship a planning variable as shown in the following examples.
 
 +
-image::design-patterns/employeeShiftRosteringModelingGuideB.png[align="center"]
+image::domain-modeling/design-patterns/employeeShiftRosteringModelingGuideB.png[align="center"]
 
 Once you have completed these steps, implement your model using the xref:domain-modeling/modeling-planning-problems.adoc[building blocks reference].

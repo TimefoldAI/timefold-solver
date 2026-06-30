@@ -41,4 +41,4 @@ Regardless of mode, the following steps and concepts apply:
 . *Submit your problem* — via REST API (service) or `Solver.solve()` / `SolverManager` (library).
 . *Receive the best solution* found within the configured time limit.
 
-image::using-timefold-solver/overview/inputOutputOverview.png[align="center"]
+image::running-timefold-solver/overview/inputOutputOverview.png[align="center"]
