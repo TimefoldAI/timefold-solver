@@ -1,6 +1,7 @@
 * xref:introduction.adoc[leveloffset=+1]
 * xref:planning-ai-concepts.adoc[leveloffset=+1]
-* xref:quickstart/overview.adoc[Getting started]
+* Getting started
+** xref:quickstart/overview.adoc[Overview]
 ** xref:quickstart/service/getting-started.adoc[Build as a service]
 ** Embed as a library
 *** xref:quickstart/hello-world/hello-world-quickstart.adoc[Hello World guide]
@@ -12,13 +13,15 @@
 ** xref:domain-modeling/modeling-planning-problems.adoc[Building blocks]
 ** xref:domain-modeling/common-patterns.adoc[leveloffset=+1]
 
-* xref:constraints-and-score/overview.adoc[Constraints and score]
+* Constraints and score
+** xref:constraints-and-score/overview.adoc[Overview]
 ** xref:constraints-and-score/score-calculation.adoc[leveloffset=+1]
 ** xref:constraints-and-score/understanding-the-score.adoc[Understanding the score]
 ** xref:constraints-and-score/load-balancing-and-fairness.adoc[leveloffset=+1]
 ** xref:constraints-and-score/performance.adoc[leveloffset=+1]
 
-* xref:running-timefold-solver/overview.adoc[Running the Solver]
+* Running the Solver
+** xref:running-timefold-solver/overview.adoc[Overview]
 ** xref:running-timefold-solver/service/overview.adoc[As a service]
 *** xref:running-timefold-solver/service/rest-api.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/service/modeling-changes.adoc[leveloffset=+1]
@@ -36,7 +39,8 @@
 ** xref:running-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
 ** xref:running-timefold-solver/solver-diagnostics.adoc[leveloffset=+1]
 
-* xref:optimization-algorithms/overview.adoc[Optimization algorithms]
+* Optimization algorithms
+** xref:optimization-algorithms/overview.adoc[Overview]
 ** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
 ** xref:optimization-algorithms/local-search.adoc[leveloffset=+1]
 ** xref:optimization-algorithms/exhaustive-search.adoc[leveloffset=+1]
@@ -66,7 +70,8 @@
 ** Migration guides
 *** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
 *** xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
-* xref:commercial-editions/commercial-editions.adoc[leveloffset=+1]
+* Commercial editions
+** xref:commercial-editions/commercial-editions.adoc[Overview]
 ** xref:commercial-editions/installation.adoc[Installation]
 ** xref:commercial-editions/performance-improvements.adoc[leveloffset=+1]
 ** xref:constraints-and-score/understanding-the-score.adoc[Score analysis]
