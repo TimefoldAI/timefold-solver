@@ -1,4 +1,5 @@
-= Exposing metrics (optional)
+= Exposing metrics
+:page-aliases: service/exposing-metrics.adoc
 :description: How to expose input and output metrics.
 :doctype: book
 :sectnums:

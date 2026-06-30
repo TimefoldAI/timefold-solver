@@ -1,75 +1,84 @@
 * xref:introduction.adoc[leveloffset=+1]
 * xref:planning-ai-concepts.adoc[leveloffset=+1]
 * Getting started
-** xref:quickstart/overview.adoc[leveloffset=+1]
+** xref:quickstart/overview.adoc[Overview]
+** xref:quickstart/service/getting-started.adoc[Build as a service]
 ** Embed as a library
-*** xref:quickstart/hello-world/hello-world-quickstart.adoc[Hello World Guide]
-*** xref:quickstart/quarkus/quarkus-quickstart.adoc[Quarkus Guide]
-*** xref:quickstart/spring-boot/spring-boot-quickstart.adoc[Spring Boot Guide]
-** xref:quickstart/service/getting-started.adoc[Run as a service (Preview)]
-* Example use cases
-** xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle Routing (Guide)]
-** https://github.com/TimefoldAI/timefold-quickstarts#-employee-scheduling[Employee Scheduling^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-maintenance-scheduling[Maintenance Scheduling^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-food-packaging[Food Packaging^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-order-picking[Order Picking^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-school-timetabling[School Timetabling^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-facility-location-problem[Facility Location^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-conference-scheduling[Conference Scheduling^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-bed-allocation-scheduling[Bed Allocation^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-flight-crew-scheduling[Flight Crew Scheduling^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-meeting-scheduling[Meeting Scheduling^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-task-assigning[Task Assigning^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-project-job-scheduling[Project Job Scheduling^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-sports-league-scheduling[Sports League Scheduling^]
-** https://github.com/TimefoldAI/timefold-quickstarts#-tournament-scheduling[Tournament Scheduling^]
-* Using Timefold Solver
-** xref:using-timefold-solver/overview.adoc[leveloffset=+1]
-** xref:using-timefold-solver/configuration.adoc[leveloffset=+1]
-** xref:using-timefold-solver/modeling-planning-problems.adoc[leveloffset=+1]
-** xref:using-timefold-solver/running-the-solver.adoc[leveloffset=+1]
-** xref:using-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
-** xref:service/overview.adoc[Building a service (Preview)]
-*** xref:service/rest-api.adoc[leveloffset=+1]
-*** xref:service/modeling-changes.adoc[leveloffset=+1]
-*** xref:service/constraint-weights.adoc[leveloffset=+1]
-*** xref:service/demo-data.adoc[leveloffset=+1]
-*** xref:service/exposing-metrics.adoc[leveloffset=+1]
+*** xref:quickstart/hello-world/hello-world-quickstart.adoc[Hello World guide]
+*** xref:quickstart/quarkus/quarkus-quickstart.adoc[Quarkus guide]
+*** xref:quickstart/spring-boot/spring-boot-quickstart.adoc[Spring Boot guide]
+
+* Domain modeling
+** xref:domain-modeling/domain-modeling.adoc[Guide]
+** xref:domain-modeling/modeling-planning-problems.adoc[Building blocks]
+** xref:domain-modeling/common-patterns.adoc[leveloffset=+1]
+
 * Constraints and score
-** xref:constraints-and-score/overview.adoc[leveloffset=+1]
+** xref:constraints-and-score/overview.adoc[Overview]
 ** xref:constraints-and-score/score-calculation.adoc[leveloffset=+1]
 ** xref:constraints-and-score/understanding-the-score.adoc[Understanding the score]
-** xref:constraints-and-score/constraint-configuration.adoc[leveloffset=+1]
 ** xref:constraints-and-score/load-balancing-and-fairness.adoc[leveloffset=+1]
 ** xref:constraints-and-score/performance.adoc[leveloffset=+1]
+
+* Running the Solver
+** xref:running-timefold-solver/overview.adoc[Overview]
+** xref:running-timefold-solver/service/overview.adoc[As a service]
+*** xref:running-timefold-solver/service/rest-api.adoc[leveloffset=+1]
+*** xref:running-timefold-solver/service/modeling-changes.adoc[leveloffset=+1]
+*** xref:running-timefold-solver/service/constraint-overrides.adoc[Constraint weights]
+*** xref:running-timefold-solver/service/demo-data.adoc[leveloffset=+1]
+*** xref:running-timefold-solver/service/exposing-metrics.adoc[leveloffset=+1]
+** xref:running-timefold-solver/library/library-integration.adoc[As a library]
+*** xref:running-timefold-solver/library/configuration.adoc[leveloffset=+1]
+*** xref:running-timefold-solver/library/constraint-overrides.adoc[Constraint weights]
+*** xref:running-timefold-solver/library/quarkus.adoc[leveloffset=+1]
+*** xref:running-timefold-solver/library/spring-boot.adoc[leveloffset=+1]
+*** xref:running-timefold-solver/library/jpa-jaxb-json-integration.adoc[leveloffset=+1]
+
+* Diagnosing the Solver
+** xref:running-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
+** xref:running-timefold-solver/solver-diagnostics.adoc[leveloffset=+1]
+
 * Optimization algorithms
-** xref:optimization-algorithms/overview.adoc[leveloffset=+1]
+** xref:optimization-algorithms/overview.adoc[Overview]
 ** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
 ** xref:optimization-algorithms/local-search.adoc[leveloffset=+1]
 ** xref:optimization-algorithms/exhaustive-search.adoc[leveloffset=+1]
-** xref:optimization-algorithms/neighborhoods.adoc[leveloffset=+1]
-** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
-* xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
-* xref:integration/integration.adoc[leveloffset=+1]
-* xref:design-patterns/design-patterns.adoc[leveloffset=+1]
+** Custom moves
+*** xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API]
+*** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
+
+* Responding to change
+** xref:responding-to-change/continuous-planning.adoc[leveloffset=+1]
+** xref:responding-to-change/real-time-planning.adoc[leveloffset=+1]
+** xref:responding-to-change/non-disruptive-replanning.adoc[leveloffset=+1]
+** xref:responding-to-change/recommendation-api.adoc[leveloffset=+1]
+
+* Example use cases
+** xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[Vehicle routing (guide)]
+** https://github.com/TimefoldAI/timefold-quickstarts[More examples on GitHub^]
+
+
 * xref:frequently-asked-questions.adoc[leveloffset=+1]
 * https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy][leveloffset=+1]
+
 * Upgrading Timefold Solver
 ** xref:upgrading-timefold-solver/overview.adoc[leveloffset=+1]
 ** xref:upgrading-timefold-solver/upgrade-from-v1.adoc[leveloffset=+1]
 ** https://docs.timefold.ai/timefold-solver/1.x/upgrading-timefold-solver/upgrade-from-optaplanner[Upgrading from OptaPlanner][leveloffset=+1]
 ** xref:upgrading-timefold-solver/backwards-compatibility.adoc[leveloffset=+1]
-** Migration Guides
+** Migration guides
 *** xref:upgrading-timefold-solver/migration-guides/variable-listeners-to-custom-shadow-variables.adoc[leveloffset=+1]
 *** xref:upgrading-timefold-solver/migration-guides/chained-variables-to-planning-list-variable.adoc[leveloffset=+1]
-* xref:commercial-editions/commercial-editions.adoc[leveloffset=+1]
+* Commercial editions
+** xref:commercial-editions/commercial-editions.adoc[Overview]
 ** xref:commercial-editions/installation.adoc[Installation]
 ** xref:commercial-editions/performance-improvements.adoc[leveloffset=+1]
 ** xref:constraints-and-score/understanding-the-score.adoc[Score analysis]
-** xref:responding-to-change/responding-to-change.adoc#assignmentRecommendationAPI[Recommendation API]
+** xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API]
 ** xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection]
-** xref:using-timefold-solver/running-the-solver.adoc#multithreadedIncrementalSolving[Multithreaded solving]
-** xref:using-timefold-solver/running-the-solver.adoc#partitionedSearch[Partitioned search]
+** xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[Multithreaded solving]
+** xref:running-timefold-solver/multithreaded-solving.adoc#partitionedSearch[Partitioned search]
 ** xref:constraints-and-score/performance.adoc#constraintProfiling[Constraint profiling]
 ** xref:commercial-editions/multistage-moves.adoc[leveloffset=+1]
-** xref:using-timefold-solver/running-the-solver.adoc#throttlingBestSolutionEvents[Throttling best solution events]
+** xref:running-timefold-solver/library/library-integration.adoc#throttlingBestSolutionEvents[Throttling best solution events]

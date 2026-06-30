@@ -445,4 +445,4 @@ You have just developed a Quarkus application with https://timefold.ai[Timefold]
 Next Steps:
 
 - For a full implementation with a web UI and in-memory storage, check out {quarkus-quickstart-url}[the Quarkus quickstart source code].
-- Check out more information about Timefold's integration with Quarkus in our xref:../integration/integration.adoc#integrationWithQuarkus[Integration documentation].
+- Check out more information about Timefold's integration with Quarkus in our xref:running-timefold-solver/library/quarkus.adoc#integrationWithQuarkus[Integration documentation].

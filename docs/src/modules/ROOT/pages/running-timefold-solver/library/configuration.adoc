@@ -1,11 +1,9 @@
 [#solverConfiguration]
 = Configuring Timefold Solver
+:page-aliases: using-timefold-solver/configuration.adoc, running-timefold-solver/configuration.adoc
 :doctype: book
 :sectnums:
 :icons: font
-:relevance: core-only
-:notes: Mostly irrelevant in service module. Also, "configuring" is too broad
-
 
 [#solverConfigurationByXML]
 == Solver configuration by XML
@@ -30,7 +28,7 @@ Alternatively, a `SolverFactory` can be created from a ``File`` with ``SolverFac
 However, for portability reasons, a classpath resource is recommended.
 
 Both a `Solver` and a `SolverFactory` have a generic type called ``Solution_``, which is the class
-representing a xref:using-timefold-solver/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[planning problem and solution].
+representing a xref:domain-modeling/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[planning problem and solution].
 
 A solver configuration XML file looks like this:
 
@@ -69,7 +67,7 @@ Notice the three parts in it:
 
 These various parts of a configuration are explained further in this manual.
 
-*Timefold Solver makes it relatively easy to switch optimization algorithm(s) just by changing the configuration.* There is even a xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] which allows you to play out different configurations against each other and report the most appropriate configuration for your use case.
+*Timefold Solver makes it relatively easy to switch optimization algorithm(s) just by changing the configuration.* There is even a xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] which allows you to play out different configurations against each other and report the most appropriate configuration for your use case.
 
 [#solverConfigurationAsCode]
 == Solver configuration as code
@@ -155,7 +153,7 @@ This manual focuses on the first manner, but every feature supports both, even i
 == Custom properties configuration
 
 Solver configuration elements, that instantiate classes and explicitly mention it, support custom properties.
-Custom properties are useful to tweak dynamic values through the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker].
+Custom properties are useful to tweak dynamic values through the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker].
 For example, presume your `EasyScoreCalculator` has heavy calculations (which are cached)
 and you want to increase the cache size in one benchmark:
 
