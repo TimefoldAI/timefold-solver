@@ -41,7 +41,7 @@ The following areas of the documentation apply equally to both service and libra
 
 xref:domain-modeling/modeling-planning-problems.adoc[*Modeling planning problems*]::
 How to annotate your domain with `@PlanningSolution`, `@PlanningEntity`, `@PlanningVariable`, and related annotations.
-This is identical whether you run as a service or embed as a library.
+This is largely the same in both modes; service-specific interfaces are covered in the service section.
 
 xref:../constraints-and-score/overview.adoc#constraintsAndScoreOverview[*Constraints and Score*]::
 How to define hard and soft constraints, choose a score type, and analyze solution quality.
