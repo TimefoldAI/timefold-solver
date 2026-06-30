@@ -13,8 +13,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleList;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.Nullable;
@@ -85,7 +85,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
                             .formatted(leftTuple));
         }
         var compositeKey = keysExtractorLeft.apply(leftTuple);
-        leftTuple.setStore(inputStoreIndexLeftOutTupleList, new ElementAwareLinkedList<OutTuple_>());
+        leftTuple.setStore(inputStoreIndexLeftOutTupleList, leftOutTupleListBuilder.get());
         indexAndPropagateLeft(leftTuple, compositeKey, false);
     }
 
@@ -103,7 +103,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             // Prefer an update over retract-insert if possible
             innerUpdateLeft(leftTuple, consumer -> forEachRightMatch(leftTuple, oldCompositeKey, consumer));
         } else {
-            ElementAwareLinkedList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
+            TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
             var reuseBucket = reuseBucketEligible && fusedEqualIndex.isSameBucket(oldCompositeKey, newCompositeKey);
             if (reuseBucket) {
                 // Equal prefix unchanged ⇒ same bucket: move within the cached bucket, no top lookup or drop/recreate.
@@ -168,7 +168,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        ElementAwareLinkedList<OutTuple_> outTupleListLeft = leftTuple.removeStore(inputStoreIndexLeftOutTupleList);
+        TupleList<OutTuple_> outTupleListLeft = leftTuple.removeStore(inputStoreIndexLeftOutTupleList);
         ListEntry<LeftTuple_> entry = leftTuple.removeStore(inputStoreIndexLeftEntry);
         if (useFusedEqualIndex) {
             Bucket<LeftTuple_, UniTuple<Right_>> bucket = leftTuple.removeStore(inputStoreIndexLeftBucket);
@@ -188,7 +188,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
                             .formatted(rightTuple));
         }
         var compositeKey = keysExtractorRight.apply(rightTuple);
-        rightTuple.setStore(inputStoreIndexRightOutTupleList, new ElementAwareLinkedList<OutTuple_>());
+        rightTuple.setStore(inputStoreIndexRightOutTupleList, rightOutTupleListBuilder.get());
         indexAndPropagateRight(rightTuple, compositeKey, false);
     }
 
@@ -206,7 +206,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             // Prefer an update over retract-insert if possible
             innerUpdateRight(rightTuple, consumer -> forEachLeftMatch(rightTuple, oldCompositeKey, consumer));
         } else {
-            ElementAwareLinkedList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
+            TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
             var reuseBucket = reuseBucketEligible && fusedEqualIndex.isSameBucket(oldCompositeKey, newCompositeKey);
             if (reuseBucket) {
                 // Equal prefix unchanged ⇒ same bucket: move within the cached bucket, no top lookup or drop/recreate.
@@ -255,7 +255,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends Tuple, Right_, 
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        ElementAwareLinkedList<OutTuple_> outTupleListRight = rightTuple.removeStore(inputStoreIndexRightOutTupleList);
+        TupleList<OutTuple_> outTupleListRight = rightTuple.removeStore(inputStoreIndexRightOutTupleList);
         ListEntry<UniTuple<Right_>> entry = rightTuple.removeStore(inputStoreIndexRightEntry);
         if (useFusedEqualIndex) {
             Bucket<LeftTuple_, UniTuple<Right_>> bucket = rightTuple.removeStore(inputStoreIndexRightBucket);

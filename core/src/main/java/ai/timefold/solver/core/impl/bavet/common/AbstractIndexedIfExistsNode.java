@@ -14,7 +14,6 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.Nullable;
@@ -101,10 +100,10 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         if (!isFiltering) {
             counter.countRight = rightSize(leftTuple, compositeKey);
         } else {
-            var leftTrackerList = new ElementAwareLinkedList<FilteringTracker<LeftTuple_>>();
+            // Trackers link themselves into the left tuple's inputStoreIndexLeftTrackerList slot.
+            // No list object is needed; the slot starts null and the first tracker becomes the head.
             forEachRightFromLeft(leftTuple, compositeKey,
-                    rightTuple -> updateCounterFromLeft(counter, rightTuple, leftTrackerList));
-            leftTuple.setStore(inputStoreIndexLeftTrackerList, leftTrackerList);
+                    rightTuple -> updateCounterFromLeft(counter, rightTuple));
         }
     }
 
@@ -136,12 +135,10 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
                 updateUnchangedCounterLeft(counter);
             } else {
                 // Call filtering for the leftTuple and rightTuple combinations again
-                ElementAwareLinkedList<FilteringTracker<LeftTuple_>> leftTrackerList =
-                        leftTuple.getStore(inputStoreIndexLeftTrackerList);
-                leftTrackerList.clear(FilteringTracker::removeByLeft);
+                clearLeftTrackerList(leftTuple);
                 counter.countRight = 0;
                 forEachRightFromLeft(leftTuple, oldCompositeKey,
-                        rightTuple -> updateCounterFromLeft(counter, rightTuple, leftTrackerList));
+                        rightTuple -> updateCounterFromLeft(counter, rightTuple));
                 updateCounterLeft(counter);
             }
         } else {
@@ -185,14 +182,6 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         }
     }
 
-    private void clearLeftTrackerList(LeftTuple_ leftTuple) {
-        if (isFiltering) {
-            ElementAwareLinkedList<FilteringTracker<LeftTuple_>> leftTrackerList =
-                    leftTuple.getStore(inputStoreIndexLeftTrackerList);
-            leftTrackerList.clear(FilteringTracker::removeByLeft);
-        }
-    }
-
     private void updateIndexerLeft(Object compositeKey, ListEntry<ExistsCounter<LeftTuple_>> counterEntry, LeftTuple_ leftTuple,
             boolean keepBucket) {
         removeFromIndexerLeft(compositeKey, leftTuple, counterEntry, keepBucket);
@@ -216,10 +205,10 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         if (!isFiltering) {
             forEachLeftCounter(rightTuple, compositeKey, this::incrementCounterRight);
         } else {
-            var rightTrackerList = new ElementAwareLinkedList<FilteringTracker<LeftTuple_>>();
+            // Trackers link themselves into the right tuple's inputStoreIndexRightTrackerList slot.
+            // No list object is needed; the slot starts null and the first tracker becomes the head.
             forEachLeftCounter(rightTuple, compositeKey,
-                    counter -> updateCounterFromRight(counter, rightTuple, rightTrackerList));
-            rightTuple.setStore(inputStoreIndexRightTrackerList, rightTrackerList);
+                    counter -> updateCounterFromRight(counter, rightTuple));
         }
     }
 
@@ -235,9 +224,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
         if (oldCompositeKey.equals(newCompositeKey)) {
             // No need for re-indexing because the index keys didn't change
             if (isFiltering) {
-                var rightTrackerList = clearRightTrackerList(rightTuple);
+                clearRightTrackerList(rightTuple);
                 forEachLeftCounter(rightTuple, oldCompositeKey,
-                        counter -> updateCounterFromRight(counter, rightTuple, rightTrackerList));
+                        counter -> updateCounterFromRight(counter, rightTuple));
             }
         } else {
             // sameBucket: equal prefix unchanged ⇒ keep & reuse the cached bucket (no top lookup, no drop/recreate).

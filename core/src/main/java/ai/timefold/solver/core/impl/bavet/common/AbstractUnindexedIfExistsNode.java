@@ -47,11 +47,11 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         if (!isFiltering) {
             counter.countRight = rightTupleList.size();
         } else {
-            var leftTrackerList = new ElementAwareLinkedList<FilteringTracker<LeftTuple_>>();
+            // Trackers link themselves into the left tuple's inputStoreIndexLeftTrackerList slot.
+            // No list object is needed; the slot starts null and the first tracker becomes the head.
             for (var rightTuple : rightTupleList) {
-                updateCounterFromLeft(counter, rightTuple, leftTrackerList);
+                updateCounterFromLeft(counter, rightTuple);
             }
-            leftTuple.setStore(inputStoreIndexLeftTrackerList, leftTrackerList);
         }
         initCounterLeft(counter);
     }
@@ -71,12 +71,10 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             updateUnchangedCounterLeft(counter);
         } else {
             // Call filtering for the leftTuple and rightTuple combinations again
-            ElementAwareLinkedList<FilteringTracker<LeftTuple_>> leftTrackerList =
-                    leftTuple.getStore(inputStoreIndexLeftTrackerList);
-            leftTrackerList.clear(FilteringTracker::removeByLeft);
+            clearLeftTrackerList(leftTuple);
             counter.countRight = 0;
             for (var rightTuple : rightTupleList) {
-                updateCounterFromLeft(counter, rightTuple, leftTrackerList);
+                updateCounterFromLeft(counter, rightTuple);
             }
             updateCounterLeft(counter);
         }
@@ -92,11 +90,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         }
         var counter = counterEntry.element();
         counterEntry.remove();
-        if (isFiltering) {
-            ElementAwareLinkedList<FilteringTracker<LeftTuple_>> leftTrackerList =
-                    leftTuple.getStore(inputStoreIndexLeftTrackerList);
-            leftTrackerList.clear(FilteringTracker::removeByLeft);
-        }
+        clearLeftTrackerList(leftTuple);
         killCounterLeft(counter);
     }
 
@@ -111,11 +105,11 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
         if (!isFiltering) {
             counterList.forEach(this::incrementCounterRight);
         } else {
-            var rightTrackerList = new ElementAwareLinkedList<FilteringTracker<LeftTuple_>>();
+            // Trackers link themselves into the right tuple's inputStoreIndexRightTrackerList slot.
+            // No list object is needed; the slot starts null and the first tracker becomes the head.
             for (var counter : counterList) {
-                updateCounterFromRight(counter, rightTuple, rightTrackerList);
+                updateCounterFromRight(counter, rightTuple);
             }
-            rightTuple.setStore(inputStoreIndexRightTrackerList, rightTrackerList);
         }
     }
 
@@ -128,9 +122,9 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends Tuple, Ri
             return;
         }
         if (isFiltering) {
-            var rightTrackerList = clearRightTrackerList(rightTuple);
+            clearRightTrackerList(rightTuple);
             for (var counter : counterList) {
-                updateCounterFromRight(counter, rightTuple, rightTrackerList);
+                updateCounterFromRight(counter, rightTuple);
             }
         }
     }
