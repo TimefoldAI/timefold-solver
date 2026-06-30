@@ -20,6 +20,15 @@ Pick the approach that best fits your architecture:
 |===
 a|
 [.text-center]
+icon:server[4x]
+
+[.text-center]
+*xref:#runAsAService[Run as a service]*
+
+Deploy a fully isolated optimization service. This opinionated approach reduces the amount of boilerplate code needed to get to a running application.
+
+a|
+[.text-center]
 icon:cubes[4x]
 
 [.text-center]
@@ -28,42 +37,57 @@ icon:cubes[4x]
 Add the solver as a dependency and wire it into your application however you like.
 Use Spring Boot, Quarkus... or no framework at all.
 
-a|
-[.text-center]
-icon:server[4x]
-
-[.text-center]
-*xref:#runAsAService[Run as a service]* (Preview)
-
-Deploy a fully isolated optimization service. This opinionated approach reduces the amount of boilerplate code needed to get to a running application.
-
 |===
 
 .Comparison
 [cols="2,5,5", options="header"]
 |===
-| | Embed as a library | Run as a service
+| | Run as a service | Embed as a library
 
 | *Best for*
-| Embedding the solver into an existing application
 | Running optimization as a standalone, isolated service that is easier to integrate, orchestrate & scale
+| Embedding the solver into an existing application
 
 | *Ease of use*
-| Requires manual wiring: you manage configuration, lifecycle, and integration
 | Minimal setup: the framework handles REST endpoints and lifecycle for you
+| Requires manual wiring: you manage configuration, lifecycle, and integration
 
 | *Integration*
-| You control how the solver is wired into your application. Integrations for Spring Boot and Quarkus available.
 | Opinionated, ready-to-run service built on Quarkus
+| You control how the solver is wired into your application. Integrations for Spring Boot and Quarkus available.
 
 | *Flexibility*
-| Use any framework or no framework at all
 | Constrained by design, the service only runs optimization
+| Use any framework or no framework at all
 
 | *Status*
 | Stable
-| Preview
+| Stable
 |===
+
+[#runAsAService]
+== Run as a service
+
+This is the approach we recommend for integrating Timefold Solver into a larger system,
+and it is the approach we use ourselves when building optimization models at Timefold.
+
+The service has a single responsibility: *running optimization*.
+It receives a dataset, solves it, and returns the result over a well-defined REST API.
+That is all it does.
+
+*Why no database?*
+Deliberately.
+The service does not store datasets, manage user state, or own any persistence layer.
+Your application already has a database; the service does not need one.
+This makes the service stateless, trivially scalable, and completely free of operational concerns like schema migrations or data ownership.
+When optimization is one step in a larger workflow, a stateless service with a clean API slots into any architecture without friction.
+
+*Why opinionated?*
+An opinionated framework means less boilerplate, fewer ways to get it wrong, and a consistent shape that we all can reason about together.
+The library approach gives you full control; this approach gives you a proven path.
+
+To get started, see
+xref:quickstart/service/getting-started.adoc[*Getting started: building a service*].
 
 [#embedAsALibrary]
 == Embed as a library
@@ -88,33 +112,3 @@ IMPORTANT: The https://github.com/TimefoldAI/timefold-quickstarts[timefold-quick
 
 For additional use cases using the library approach,
 take a look at https://github.com/TimefoldAI/timefold-quickstarts[the `timefold-quickstarts` GitHub repository].
-
-[#runAsAService]
-== Run as a service (Preview)
-
-[IMPORTANT]
-====
-The service approach is currently in *preview*.
-It is the recommended path going forward, but the API may still change before it reaches general availability.
-====
-
-This is the approach we recommend for integrating Timefold Solver into a larger system,
-and it is the approach we use ourselves when building optimization models at Timefold.
-
-The service has a single responsibility: *running optimization*.
-It receives a dataset, solves it, and returns the result over a well-defined REST API.
-That is all it does.
-
-*Why no database?*
-Deliberately.
-The service does not store datasets, manage user state, or own any persistence layer.
-Your application already has a database; the service does not need one.
-This makes the service stateless, trivially scalable, and completely free of operational concerns like schema migrations or data ownership.
-When optimization is one step in a larger workflow, a stateless service with a clean API slots into any architecture without friction.
-
-*Why opinionated?*
-An opinionated framework means less boilerplate, fewer ways to get it wrong, and a consistent shape that we all can reason about together.
-The library approach gives you full control; this approach gives you a proven path.
-
-To get started, see
-xref:quickstart/service/getting-started.adoc[*Getting started: building a service*].
