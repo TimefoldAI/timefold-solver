@@ -170,6 +170,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     boolean ignoreInconsistentSolutions();
 
+    void unassignInconsistentEntities();
+
     /**
      * @return never null
      */
@@ -363,5 +365,4 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void beforeProblemFactRemoved(Object problemFact);
 
     void afterProblemFactRemoved(Object problemFact);
-
 }

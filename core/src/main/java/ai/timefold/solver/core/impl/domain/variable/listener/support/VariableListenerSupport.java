@@ -374,6 +374,14 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         return true;
     }
 
+    public List<Object> getInconsistentEntities() {
+        if (shadowVariableSession == null) {
+            throw new IllegalStateException(
+                    "Impossible state: The shadowVariableSession is null. A solution without shadow variables cannot be inconsistent.");
+        }
+        return shadowVariableSession.getInconsistentEntities();
+    }
+
     /**
      * Triggers all cascading update shadow variable user-logic.
      */

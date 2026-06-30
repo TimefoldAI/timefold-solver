@@ -344,6 +344,59 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Do nothing
     }
 
+    public void unassignInconsistentEntities() {
+        var inconsistentEntities = variableListenerSupport.getInconsistentEntities();
+        if (listVariableStateSupply != null) {
+            var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
+            var listElementClass = listVariableStateSupply.getSourceVariableDescriptor().getElementType();
+            for (var inconsistentEntity : inconsistentEntities) {
+                if (listElementClass.isInstance(inconsistentEntity)) {
+                    var inverse = Objects.requireNonNull(listVariableStateSupply.getInverseSingleton(inconsistentEntity));
+                    int index = Objects.requireNonNull(listVariableStateSupply.getIndex(inconsistentEntity));
+
+                    if (listVariableDescriptor.isElementPinned(Objects.requireNonNull(workingSolution), inverse, index)) {
+                        throw new IllegalStateException("""
+                                Entity (%s) is pinned while involved in a dependency loop.
+                                This creates an unresolvable inconsistency.""".formatted(inconsistentEntity));
+                    }
+
+                    beforeListVariableElementUnassigned(listVariableDescriptor, inconsistentEntity);
+                    beforeListVariableChanged(listVariableDescriptor, inverse, index, index + 1);
+                    listVariableDescriptor.removeElement(inverse, index);
+                    afterListVariableChanged(listVariableDescriptor, inverse, index, index);
+                    afterListVariableElementUnassigned(listVariableDescriptor, inconsistentEntity);
+                    triggerVariableListeners();
+                }
+                // Unassign any normal @PlanningVariable on the entity too
+                unassignPlainEntity(inconsistentEntity);
+            }
+        } else {
+            for (var inconsistentEntity : inconsistentEntities) {
+                unassignPlainEntity(inconsistentEntity);
+            }
+        }
+    }
+
+    private void unassignPlainEntity(Object inconsistentEntity) {
+        var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(inconsistentEntity.getClass());
+        if (entityDescriptor == null) {
+            throw new IllegalStateException(
+                    "Impossible state: Object (%s) is not an entity but is inconsistent".formatted(inconsistentEntity));
+        }
+        if (entityDescriptor.isGenuine()
+                && !entityDescriptor.isMovable(Objects.requireNonNull(workingSolution), inconsistentEntity)) {
+            throw new IllegalStateException("""
+                    Entity (%s) is pinned while involved in a dependency loop.
+                    This creates an unresolvable inconsistency.""".formatted(inconsistentEntity));
+        }
+        for (var genuineVariableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
+            beforeVariableChanged(genuineVariableDescriptor, inconsistentEntity);
+            genuineVariableDescriptor.setValue(inconsistentEntity, null);
+            afterVariableChanged(genuineVariableDescriptor, inconsistentEntity);
+        }
+        triggerVariableListeners();
+    }
+
     @Override
     public void setMoveRepository(@Nullable MoveRepository<Solution_> moveRepository) {
         if (this.moveRepository == moveRepository) { // Prevent double initialization
