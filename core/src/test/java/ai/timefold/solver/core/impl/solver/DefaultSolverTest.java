@@ -1546,7 +1546,7 @@ class DefaultSolverTest {
 
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem, false))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContainingAll("Entity", "b2", "is pinned but is involved in a dependency loop");
+                .hasMessageContainingAll("Entity", "b2", "while involved in a dependency loop");
     }
 
     @Test
