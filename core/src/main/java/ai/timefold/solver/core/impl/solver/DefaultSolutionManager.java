@@ -65,10 +65,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
             boolean cloneSolution) {
         var isShadowVariableUpdateEnabled = solutionUpdatePolicy.isShadowVariableUpdateEnabled();
         var nonNullSolution = Objects.requireNonNull(solution);
-        var allowsInconsistent = getScoreDirectorFactory().getSolutionDescriptor().hasAnyShadowVariablesInconsistentMember();
         try (var scoreDirector = getScoreDirectorFactory().createScoreDirectorBuilder().withLookUpEnabled(cloneSolution)
                 .withConstraintMatchPolicy(constraintMatchPolicy)
-                .withIgnoreInconsistentSolutions(!allowsInconsistent)
                 .withExpectShadowVariablesInCorrectState(!isShadowVariableUpdateEnabled).build()) {
             nonNullSolution = cloneSolution ? scoreDirector.cloneSolution(nonNullSolution) : nonNullSolution;
             if (isShadowVariableUpdateEnabled) {

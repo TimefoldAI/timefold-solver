@@ -75,7 +75,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final @Nullable LookupManager lookUpManager;
     protected final ConstraintMatchPolicy constraintMatchPolicy;
     private boolean expectShadowVariablesInCorrectState;
-    private boolean ignoreInconsistentSolutions;
+    private final boolean ignoreInconsistentSolutions;
     private final VariableDescriptorCache<Solution_> variableDescriptorCache;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
@@ -111,7 +111,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.lookUpManager = lookUpEnabled ? new LookupManager(solutionDescriptor.getLookUpStrategyResolver()) : null;
         this.constraintMatchPolicy = builder.constraintMatchPolicy;
         this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
-        this.ignoreInconsistentSolutions = builder.ignoreInconsistentSolutions;
+        this.ignoreInconsistentSolutions = !solutionDescriptor.hasAnyShadowVariablesInconsistentMember();
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
@@ -525,7 +525,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
                     .withLookUpEnabled(lookUpEnabled)
                     .withConstraintMatchPolicy(constraintMatchPolicy)
-                    .withIgnoreInconsistentSolutions(ignoreInconsistentSolutions)
                     .buildDerived();
             // ScoreCalculationCountTermination takes into account previous phases
             // but the calculationCount of partitions is maxed, not summed.
@@ -535,7 +534,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             var childThreadScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
                     .withLookUpEnabled(true)
                     .withConstraintMatchPolicy(constraintMatchPolicy)
-                    .withIgnoreInconsistentSolutions(ignoreInconsistentSolutions)
                     .buildDerived();
             childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
             return childThreadScoreDirector;
@@ -808,7 +806,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                .withIgnoreInconsistentSolutions(ignoreInconsistentSolutions)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
@@ -1007,7 +1004,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
-        protected boolean ignoreInconsistentSolutions = false;
 
         protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory) {
             this.scoreDirectorFactory = Objects.requireNonNull(scoreDirectorFactory);
@@ -1028,12 +1024,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         @SuppressWarnings("unchecked")
         public Builder_ withExpectShadowVariablesInCorrectState(boolean expectShadowVariablesInCorrectState) {
             this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
-            return (Builder_) this;
-        }
-
-        @SuppressWarnings("unchecked")
-        public Builder_ withIgnoreInconsistentSolutions(boolean ignoreInconsistentSolutions) {
-            this.ignoreInconsistentSolutions = ignoreInconsistentSolutions;
             return (Builder_) this;
         }
 
