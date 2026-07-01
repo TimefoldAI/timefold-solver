@@ -49,6 +49,7 @@ import ai.timefold.solver.service.definition.api.validation.LegacyValidationResu
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
 import ai.timefold.solver.service.definition.api.validation.dto.ValidationResult;
+import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
@@ -117,6 +118,8 @@ public class SolverWorker {
 
     private final SolverModelEnrichmentDirectorService enrichmentDirectorService;
 
+    private final MapEnrichmentContext mapEnrichmentContext;
+
     private final TerminationService terminationService;
 
     private final Emitter<DatasetValidatedEvent> datasetValidatedEventEmitter;
@@ -171,6 +174,7 @@ public class SolverWorker {
             ModelConvertorBase modelConvertor,
             SolverModelEnricherService enricherService,
             SolverModelEnrichmentDirectorService enrichmentDirectorService,
+            MapEnrichmentContext mapEnrichmentContext,
             TerminationService terminationService,
             ShutdownExecutor shutdownExecutor,
             ShutdownOnTerminate shutdownOnTerminate,
@@ -197,6 +201,7 @@ public class SolverWorker {
         this.modelConvertor = (ModelConvertor) modelConvertor;
         this.enricherService = enricherService;
         this.enrichmentDirectorService = enrichmentDirectorService;
+        this.mapEnrichmentContext = mapEnrichmentContext;
         this.terminationService = terminationService;
         this.shutdownExecutor = shutdownExecutor;
         this.shutdownOnTerminate = shutdownOnTerminate;
@@ -358,7 +363,8 @@ public class SolverWorker {
             postProcessOutput(id, modelOutput, solverModel);
 
             sendEvent(datasetOutputsComputedEmitter,
-                    new DatasetComputedEvent(metadata, solverModel, planName, tenantName, solveRequested));
+                    new DatasetComputedEvent(metadata, solverModel, planName, tenantName, solveRequested,
+                            mapEnrichmentContext.getResolvedMapLocation()));
         } catch (Throwable e) {
             notifyOnFailure(id, e);
         }

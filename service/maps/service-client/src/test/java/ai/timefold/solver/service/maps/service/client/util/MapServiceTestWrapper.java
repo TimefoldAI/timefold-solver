@@ -4,6 +4,7 @@ import java.util.List;
 
 import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.service.client.api.MapService;
+import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByTimeframeWithMetadata;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceWithMetadata;
 
 public class MapServiceTestWrapper implements MapService {
@@ -19,6 +20,12 @@ public class MapServiceTestWrapper implements MapService {
     @Override
     public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
         return delegate.getTravelTimeAndDistance(locations, options);
+    }
+
+    @Override
+    public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
+            String options) {
+        return delegate.getTravelTimeAndDistanceByTimeframe(locations, options);
     }
 
     @Override
