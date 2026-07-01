@@ -81,6 +81,7 @@
     <version.spotless.plugin>3.7.0</version.spotless.plugin>
     <version.surefire.plugin>3.5.6</version.surefire.plugin>
     <version.versions.plugin>2.21.0</version.versions.plugin>
+    <version.git-commit-id.plugin>10.0.0</version.git-commit-id.plugin>
 
     <!-- Plugin configuration properties -->
     <maven.min.version>3.9.11</maven.min.version> <!-- The same as the version in .mvn/maven-wrapper.properties -->
@@ -267,6 +268,11 @@
         <plugin>
           <artifactId>maven-antrun-plugin</artifactId>
           <version>${version.antrun.plugin}</version>
+        </plugin>
+        <plugin>
+          <groupId>io.github.git-commit-id</groupId>
+          <artifactId>git-commit-id-maven-plugin</artifactId>
+          <version>${version.git-commit-id.plugin}</version>
         </plugin>
         <plugin>
           <groupId>io.quarkus</groupId>
