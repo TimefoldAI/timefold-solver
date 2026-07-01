@@ -13,7 +13,7 @@ import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.haversine.impl.HaversineTravelTimeAndDistanceMatrixProvider;
 import ai.timefold.solver.service.maps.haversine.impl.HaversineWaypointsProvider;
 import ai.timefold.solver.service.maps.service.client.api.MapService;
-import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByAvailabilityWithMetadata;
+import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByTimeframeWithMetadata;
 import ai.timefold.solver.service.maps.service.client.impl.bucketing.SingleTimeframeBucketing;
 import ai.timefold.solver.service.maps.service.client.impl.bucketing.TimeframeBucketing;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistance;
@@ -39,7 +39,7 @@ public class MapServiceLocalHaversineImpl implements MapService {
     }
 
     @Override
-    public TravelTimesByAvailabilityWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
+    public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
             String options) {
         // Haversine is timeframe-independent by definition, so we use a single-bucket bucketing: a single entry in the
         // arrays covers every lookup, and the index resolver always returns 0.
@@ -55,7 +55,7 @@ public class MapServiceLocalHaversineImpl implements MapService {
             }
         }
         List<Location> locationsNotInMap = locations.stream().filter(notInMapSet::contains).toList();
-        return new TravelTimesByAvailabilityWithMetadata(travelTimesByTimeframe, distancesByTimeframe,
+        return new TravelTimesByTimeframeWithMetadata(travelTimesByTimeframe, distancesByTimeframe,
                 locationsNotInMap, bucketing::indexOf);
     }
 

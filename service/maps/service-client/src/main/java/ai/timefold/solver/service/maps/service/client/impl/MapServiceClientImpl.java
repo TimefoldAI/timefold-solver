@@ -32,7 +32,7 @@ import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.haversine.impl.HaversineTravelTimeAndDistanceMatrixProvider;
 import ai.timefold.solver.service.maps.haversine.impl.HaversineWaypointsProvider;
 import ai.timefold.solver.service.maps.service.client.api.MapService;
-import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByAvailabilityWithMetadata;
+import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByTimeframeWithMetadata;
 import ai.timefold.solver.service.maps.service.client.impl.bucketing.Timeframe;
 import ai.timefold.solver.service.maps.service.client.impl.bucketing.TimeframeBucketing;
 import ai.timefold.solver.service.maps.service.client.impl.error.GoneRuntimeException;
@@ -64,7 +64,7 @@ public class MapServiceClientImpl implements MapService {
     private final Timeframe defaultTimeframe;
     private final MapServiceLocalHaversineImpl fallbackService;
     private final SingleItemCache<CacheItem> travelTimeAndDistanceSingleItemCache;
-    private final SingleItemCache<TravelTimesByAvailabilityWithMetadata> timeframedMatricesCache;
+    private final SingleItemCache<TravelTimesByTimeframeWithMetadata> timeframedMatricesCache;
     private final TimeframeBucketing timeframeBucketing;
     private final ManagedExecutor managedExecutor;
     private final ObjectMapper mapper;
@@ -198,7 +198,7 @@ public class MapServiceClientImpl implements MapService {
     }
 
     @Override
-    public TravelTimesByAvailabilityWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
+    public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
             String options) {
         String cacheId = String.valueOf(Objects.hash(new HashSet<>(locations), options, "BY_TIMEFRAME"));
         if (timeframedMatricesCache.isInCache(cacheId)) {
@@ -216,7 +216,7 @@ public class MapServiceClientImpl implements MapService {
                 }
             }
             List<Location> locationsNotInMap = locations.stream().filter(notInMapSet::contains).toList();
-            TravelTimesByAvailabilityWithMetadata result = new TravelTimesByAvailabilityWithMetadata(
+            TravelTimesByTimeframeWithMetadata result = new TravelTimesByTimeframeWithMetadata(
                     new DistanceMatrix[] { plain.travelTimeAndDistance().travelTime() },
                     new DistanceMatrix[] { plain.travelTimeAndDistance().distance() },
                     locationsNotInMap,
@@ -240,7 +240,7 @@ public class MapServiceClientImpl implements MapService {
             throw new IllegalStateException(cause);
         }
 
-        TravelTimesByAvailabilityWithMetadata result = new TravelTimesByAvailabilityWithMetadata(
+        TravelTimesByTimeframeWithMetadata result = new TravelTimesByTimeframeWithMetadata(
                 assembled.travelTimesByTimeframe,
                 assembled.distancesByTimeframe,
                 assembled.locationsNotInMap,
@@ -526,7 +526,7 @@ public class MapServiceClientImpl implements MapService {
         return new TravelTimeAndDistanceWithMetadata(new TravelTimeAndDistance(matrix, matrix), new ArrayList<>());
     }
 
-    private TravelTimesByAvailabilityWithMetadata fallbackTimeframedMatrices(List<Location> locations, String options) {
+    private TravelTimesByTimeframeWithMetadata fallbackTimeframedMatrices(List<Location> locations, String options) {
         TravelTimeAndDistanceWithMetadata fallback = fallbackService.getTravelTimeAndDistance(locations, options);
         int allTimeframesSize = timeframeBucketing.allTimeframes().size();
         DistanceMatrix[] travelTimesByTimeframe = new DistanceMatrix[allTimeframesSize];
@@ -541,7 +541,7 @@ public class MapServiceClientImpl implements MapService {
             }
         }
         List<Location> locationsNotInMap = locations.stream().filter(notInMapSet::contains).toList();
-        return new TravelTimesByAvailabilityWithMetadata(travelTimesByTimeframe, distancesByTimeframe,
+        return new TravelTimesByTimeframeWithMetadata(travelTimesByTimeframe, distancesByTimeframe,
                 locationsNotInMap, timeframeBucketing::indexOf);
     }
 

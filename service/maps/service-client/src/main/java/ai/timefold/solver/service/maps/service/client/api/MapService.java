@@ -3,7 +3,7 @@ package ai.timefold.solver.service.maps.service.client.api;
 import java.util.List;
 
 import ai.timefold.solver.service.maps.api.model.Location;
-import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByAvailabilityWithMetadata;
+import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByTimeframeWithMetadata;
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceWithMetadata;
 
 public interface MapService {
@@ -18,7 +18,7 @@ public interface MapService {
      * With traffic disabled, returns a single non-traffic matrix wrapped as a one-bucket array (resolver always
      * returns 0).
      */
-    TravelTimesByAvailabilityWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations, String options);
+    TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations, String options);
 
     List<Location> getWaypoints(List<Location> locations, String options);
 

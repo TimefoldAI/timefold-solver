@@ -16,7 +16,7 @@ import ai.timefold.solver.service.maps.api.DistanceMatrix;
 import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.api.model.travel.TravelDistance;
 import ai.timefold.solver.service.maps.api.model.travel.TravelTime;
-import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByAvailabilityWithMetadata;
+import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByTimeframeWithMetadata;
 import ai.timefold.solver.service.maps.service.client.impl.MapServiceOptionsSupplier;
 import ai.timefold.solver.service.maps.service.client.impl.bucketing.StaticDaypartBucketing;
 import ai.timefold.solver.service.maps.service.integration.api.LocationsAwareSolverModel;
@@ -76,7 +76,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         distancesByTimeframe[afternoonIdx] = afternoonDistance;
 
         // Traffic on + plain model: the enricher fetches per-timeframe matrices for every location, no pruning.
-        StubMapService stub = new StubMapService(new TravelTimesByAvailabilityWithMetadata(
+        StubMapService stub = new StubMapService(new TravelTimesByTimeframeWithMetadata(
                 travelTimesByTimeframe, distancesByTimeframe, List.of(), bucketing::indexOf), null);
         TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(stub, optionsSupplier, true);
 
@@ -105,7 +105,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         // the scalar matrices so lookups use the index-cache fast path.
         DistanceMatrix travel = matrixOf(l1, l2, 75L);
         DistanceMatrix distance = matrixOf(l1, l2, 750L);
-        StubMapService stub = new StubMapService(new TravelTimesByAvailabilityWithMetadata(
+        StubMapService stub = new StubMapService(new TravelTimesByTimeframeWithMetadata(
                 new DistanceMatrix[] { travel }, new DistanceMatrix[] { distance }, List.of(), t -> 0), null);
         TravelTimeMatrixEnricher enricher =
                 new TravelTimeMatrixEnricher(stub, optionsSupplier, true);
@@ -152,13 +152,13 @@ class TravelTimeMatrixEnricherTrafficTest {
 
     private static final class StubMapService implements MapService {
 
-        private final TravelTimesByAvailabilityWithMetadata byTimeframeResult;
+        private final TravelTimesByTimeframeWithMetadata byTimeframeResult;
         private final TravelTimeAndDistanceWithMetadata singleResult;
         private final AtomicInteger byTimeframeInvocationCount = new AtomicInteger(0);
         private final AtomicInteger singleInvocationCount = new AtomicInteger(0);
         private List<Location> lastLocations;
 
-        StubMapService(TravelTimesByAvailabilityWithMetadata byTimeframeResult,
+        StubMapService(TravelTimesByTimeframeWithMetadata byTimeframeResult,
                 TravelTimeAndDistanceWithMetadata singleResult) {
             this.byTimeframeResult = byTimeframeResult;
             this.singleResult = singleResult;
@@ -174,7 +174,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         }
 
         @Override
-        public TravelTimesByAvailabilityWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
+        public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
                 String options) {
             byTimeframeInvocationCount.incrementAndGet();
             lastLocations = locations;
@@ -203,7 +203,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         }
 
         @Override
-        public TravelTimesByAvailabilityWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
+        public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
                 String options) {
             throw new RuntimeException("boom");
         }

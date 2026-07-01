@@ -12,7 +12,7 @@ import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
 import ai.timefold.solver.service.maps.api.DistanceMatrix;
 import ai.timefold.solver.service.maps.api.model.Location;
-import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByAvailabilityWithMetadata;
+import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByTimeframeWithMetadata;
 import ai.timefold.solver.service.maps.service.client.impl.MapServiceOptionsSupplier;
 import ai.timefold.solver.service.maps.service.client.impl.error.MapServiceIllegalArgumentException;
 import ai.timefold.solver.service.maps.service.integration.api.LocationsAwareSolverModel;
@@ -80,7 +80,7 @@ public class TravelTimeMatrixEnricher implements SolverModelEnricher<LocationsAw
 
     private LocationsAwareSolverModel<?> enrichAllTimeframes(LocationsAwareSolverModel<?> solverModel) {
         List<Location> locations = solverModel.getLocations();
-        TravelTimesByAvailabilityWithMetadata result;
+        TravelTimesByTimeframeWithMetadata result;
         try {
             result = mapService.getTravelTimeAndDistanceByTimeframe(locations, optionsSupplier.getOptions());
         } catch (TimefoldRuntimeException e) {

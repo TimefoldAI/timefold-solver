@@ -100,12 +100,24 @@ public class Location {
             ToIntFunction<OffsetDateTime> indexResolver) {
         this.travelTimesByTimeframe = travelTimesByTimeframe;
         this.timeframeIndexResolver = indexResolver;
+        // When no explicit scalar matrix is set, point it at the first available timeframe matrix
+        // so the non-time-aware lookups use the IndexableDistanceMatrix index-cache fast path. An
+        // explicitly configured single matrix takes precedence and is left untouched.
+        if (travelTimeMatrix == null) {
+            setTravelTimeMatrix(firstAvailableMatrix(travelTimesByTimeframe));
+        }
     }
 
     public void setDistanceMatrices(DistanceMatrix[] distancesByTimeframe,
             ToIntFunction<OffsetDateTime> indexResolver) {
         this.distancesByTimeframe = distancesByTimeframe;
         this.timeframeIndexResolver = indexResolver;
+        // When no explicit scalar matrix is set, point it at the first available timeframe matrix (reference only,
+        // not a copy) so the non-time-aware lookups use the IndexableDistanceMatrix index-cache fast path. An
+        // explicitly configured single matrix takes precedence and is left untouched.
+        if (distanceMatrix == null) {
+            setDistanceMatrix(firstAvailableMatrix(distancesByTimeframe));
+        }
     }
 
     /**
@@ -120,11 +132,10 @@ public class Location {
      *         this location.
      */
     public TravelTime getTravelTimeTo(Location location) {
-        DistanceMatrix matrix = travelTimeMatrix != null ? travelTimeMatrix : firstAvailableMatrix(travelTimesByTimeframe);
-        if (matrix == null) {
+        if (travelTimeMatrix == null) {
             throw new IllegalStateException("No travel time matrix configured for a location (%s).".formatted(this));
         }
-        long travelTimeFromMatrix = matrix.get(this, location);
+        long travelTimeFromMatrix = travelTimeMatrix.get(this, location);
         if (travelTimeFromMatrix == -1) {
             throw new IllegalArgumentException(("No travel time information found for a route from (%s) to (%s). " +
                     "Are both locations in the configured map and in the location set (if used)?").formatted(this, location));
@@ -177,11 +188,10 @@ public class Location {
      *         location.
      */
     public TravelDistance getDistanceTo(Location location) {
-        DistanceMatrix matrix = distanceMatrix != null ? distanceMatrix : firstAvailableMatrix(distancesByTimeframe);
-        if (matrix == null) {
+        if (distanceMatrix == null) {
             throw new IllegalStateException("No distance matrix configured for a location (%s).".formatted(this));
         }
-        long travelDistanceFromMatrix = matrix.get(this, location);
+        long travelDistanceFromMatrix = distanceMatrix.get(this, location);
         if (travelDistanceFromMatrix == -1) {
             throw new IllegalArgumentException(("No travel distance information found for a route from (%s) to (%s). " +
                     "Are both locations in the configured map and in the location set (if used)?").formatted(this, location));
