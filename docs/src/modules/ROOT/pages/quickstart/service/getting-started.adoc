@@ -310,12 +310,7 @@ Start the model in `development mode` by executing:
 mvn quarkus:dev
 ----
 
-[NOTE]
-====
-The solver runs considerably slower in dev mode since the https://www.baeldung.com/jvm-tiered-compilation#2c2---server-complier[JVM C2 compiler] is disabled to decrease live reload times.
-Do not use dev mode to benchmark the solver or assess solution quality.
-See xref:frequently-asked-questions.adoc#quarkus-dev-mode-performance[FAQ: Why is Timefold Solver so much slower in Quarkus Dev mode?] for details.
-====
+include::../shared/_quarkus-dev-mode-note.adoc[]
 
 You should see the following line in the log on successful start
 

@@ -209,12 +209,7 @@ $ gradle --console=plain quarkusDev
 
 include::../shared/_try-the-application.adoc[]
 
-[NOTE]
-====
-The solver runs considerably slower in dev mode since the https://www.baeldung.com/jvm-tiered-compilation#2c2---server-complier[JVM C2 compiler] is disabled to decrease live reload times.
-Do not use dev mode to benchmark the solver or assess solution quality.
-See xref:frequently-asked-questions.adoc#quarkus-dev-mode-performance[FAQ: Why is Timefold Solver so much slower in Quarkus Dev mode?] for details.
-====
+include::../shared/_quarkus-dev-mode-note.adoc[]
 
 === Test the application
 
