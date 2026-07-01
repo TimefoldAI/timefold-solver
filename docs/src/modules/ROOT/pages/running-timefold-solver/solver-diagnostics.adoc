@@ -264,7 +264,7 @@ XML::
 
 The best way to illuminate the black box that is a ``Solver``, is to play with the logging level:
 
-* **error**: Log errors, except those that are thrown to the calling code as a ``RuntimeException``.
+`error`:: Log errors, except those that are thrown to the calling code as a ``RuntimeException``.
 +
 [NOTE]
 ====
@@ -273,10 +273,10 @@ It does not log it as an error itself to avoid duplicate log messages.
 Except if the calling code explicitly catches and eats that ``RuntimeException``, a ``Thread``'s default `ExceptionHandler` will log it as an error anyway.
 Meanwhile, the code is disrupted from doing further harm or obfuscating the error.
 ====
-* **warn**: Log suspicious circumstances.
-* **info**: Log every phase and the solver itself. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
-* **debug**: Log every step of every phase. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
-* **trace**: Log every move of every step of every phase. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
+`warn`:: Log suspicious circumstances.
+`info`:: Log every phase and the solver itself. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
+`debug`:: Log every step of every phase. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
+`trace`:: Log every move of every step of every phase. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
 
 [NOTE]
 ====
@@ -452,12 +452,10 @@ The following metrics are exposed:
 The names and format of the metrics vary depending on the registry.
 ====
 
-* `timefold.solver.errors.total`: the total number of errors that occurred while solving since the start
-of the measuring.
-* `timefold.solver.solve.duration.active-count`: the number of solvers currently solving.
-* `timefold.solver.solve.duration.seconds-max`: run time of the
-longest-running currently active solver.
-* `timefold.solver.solve.duration.seconds-duration-sum`: the sum of each active solver's solve duration. For example, if there are two active solvers, one running for three minutes and the other for one minute, the total solve time is four minutes.
+`timefold.solver.errors.total`:: The total number of errors that occurred while solving since the start of the measuring.
+`timefold.solver.solve.duration.active-count`:: The number of solvers currently solving.
+`timefold.solver.solve.duration.seconds-max`:: Run time of the longest-running currently active solver.
+`timefold.solver.solve.duration.seconds-duration-sum`:: The sum of each active solver's solve duration. For example, if there are two active solvers, one running for three minutes and the other for one minute, the total solve time is four minutes.
 
 === Additional metrics
 
