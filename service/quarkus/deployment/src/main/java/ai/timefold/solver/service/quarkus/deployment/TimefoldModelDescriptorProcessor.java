@@ -1439,6 +1439,7 @@ class TimefoldModelDescriptorProcessor {
         String description = null;
         SchemaType type = null;
         DataFormat format = null;
+        boolean nullable = false;
         Optional<AnnotationInstance> schemaAnnotationOptional = getSchemaAnnotation(fieldInfo);
         if (schemaAnnotationOptional.isPresent()) {
             AnnotationInstance schemaAnnotation = schemaAnnotationOptional.get();
@@ -1450,6 +1451,8 @@ class TimefoldModelDescriptorProcessor {
                     schemaTypeAnnotationValue != null ? SchemaType.valueOf(schemaTypeAnnotationValue.asString()) : null;
             AnnotationValue formatAnnotationValue = schemaAnnotation.value("format");
             format = formatAnnotationValue != null ? DataFormat.fromString(formatAnnotationValue.asString()) : null;
+            AnnotationValue nullableAnnotationValue = schemaAnnotation.value("nullable");
+            nullable = nullableAnnotationValue != null && nullableAnnotationValue.asBoolean();
         }
 
         name = name != null ? name : fieldInfo.name();
@@ -1474,7 +1477,7 @@ class TimefoldModelDescriptorProcessor {
         }
 
         return new ModelConfigParameter(name, title, description, kind, type, arrayItemType, format, schemaTypeRef,
-                constraintRef);
+                nullable, constraintRef);
     }
 
     private DocumentationDescriptor processModelDocumentation() {
