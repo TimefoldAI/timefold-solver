@@ -140,3 +140,17 @@ Native executables typically have a fast startup time and reduced memory consump
 However, given the nature of the workloads running with the solver, these benefits are often overshadowed by slower solving speeds due to lack of JIT optimizations.
 
 Read more about this in https://timefold.ai/blog/how-to-speed-up-timefold-solver-startup-time-by-20x-with-native-images[our blog post].
+
+[[quarkus-dev-mode-performance]]
+== Why is Timefold Solver so much slower in Quarkus Dev mode?
+
+Quarkus Dev mode disables the https://www.baeldung.com/jvm-tiered-compilation#2c2---server-complier[JVM C2 (server) compiler] to enable fast live reload of code changes.
+The C2 compiler is responsible for just-in-time (JIT) compilation of hot code paths into highly optimized native machine code.
+
+Timefold Solver is extremely CPU-intensive: it evaluates thousands of moves per second during solving, making each individual move evaluation a hot code path.
+Without C2, these paths run in the interpreter or with only basic JIT optimizations (C1/tier 1-3), which is typically 10x–50x slower than fully JIT-compiled code.
+
+This slowdown affects solution quality too: because fewer moves are evaluated per second within the same time limit, the solver explores less of the search space and may return a worse solution than it would in production.
+
+To work around this, run the solver in production mode (e.g. `mvn package` + `java -jar`) when you need representative performance or solution quality.
+Dev mode is fine for verifying correctness of constraints and basic wiring, but results should not be used to benchmark or tune the solver.
