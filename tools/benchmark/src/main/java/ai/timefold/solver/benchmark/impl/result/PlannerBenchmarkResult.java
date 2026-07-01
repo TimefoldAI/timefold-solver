@@ -271,7 +271,7 @@ public class PlannerBenchmarkResult {
         availableProcessors = Runtime.getRuntime().availableProcessors();
         loggingLevelTimefoldSolverCore = resolveLoggingLevel("ai.timefold.solver.core");
         maxMemory = Runtime.getRuntime().maxMemory();
-        timefoldSolverVersion = TimefoldSolverEnterpriseService.identifySolverVersion();
+        timefoldSolverVersion = TimefoldSolverEnterpriseService.identifySolverVersionWithGitRef();
         javaVersion = "Java " + System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")";
         javaVM = "Java " + System.getProperty("java.vm.name") + " " + System.getProperty("java.vm.version")
                 + " (" + System.getProperty("java.vm.vendor") + ")";

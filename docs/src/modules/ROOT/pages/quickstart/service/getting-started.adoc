@@ -310,6 +310,8 @@ Start the model in `development mode` by executing:
 mvn quarkus:dev
 ----
 
+include::../shared/_quarkus-dev-mode-note.adoc[]
+
 You should see the following line in the log on successful start
 
 [source,bash,options="nowrap"]

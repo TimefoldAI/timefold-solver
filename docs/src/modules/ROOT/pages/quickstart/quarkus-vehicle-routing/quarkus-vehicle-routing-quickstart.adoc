@@ -481,6 +481,8 @@ First start the application:
 $ mvn compile quarkus:dev
 ----
 
+include::../shared/_quarkus-dev-mode-note.adoc[]
+
 === Try the application
 
 Now that the application is running, you can test the REST service.
