@@ -25,7 +25,7 @@ public class TestdataModelConfigOverrides implements ModelConfigOverrides {
 
     // Getters added due to serialization in tests when the extension is created (@RegisterExtension)
 
-    @Schema(description = "String parameter", nullable = true)
+    @Schema(description = "String parameter")
     private String string;
 
     public long getConstraintWeight() {
