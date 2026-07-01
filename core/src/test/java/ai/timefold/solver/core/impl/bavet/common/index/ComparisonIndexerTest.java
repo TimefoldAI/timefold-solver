@@ -94,18 +94,17 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
-    void treeifiesPastArrayThreshold() throws Exception {
+    void treeifiesPastArrayThreshold() {
         // Below-threshold storage is a sorted array; crossing ARRAY_THRESHOLD must treeify without
-        // changing LESS_THAN match sets or order (see ComparisonIndexer's belowThreshold/treeify()).
+        // changing LESS_THAN match sets or order (see ScalingNavigableMap's belowThreshold/treeify()).
         Indexer<UniTuple<String>> indexer = new IndexerFactory<>(lessThanAge).buildIndexer(true);
-        var threshold = arrayThreshold();
+        var threshold = ScalingNavigableMap.ARRAY_THRESHOLD;
         var tuplesByAge = new LinkedHashMap<Integer, UniTuple<String>>();
         for (var age = 0; age <= threshold; age++) { // threshold + 1 puts: crosses the threshold on the last one.
             var tuple = newTuple("age" + age);
             indexer.put(age, tuple);
             tuplesByAge.put(age, tuple);
         }
-        assertThat(isBelowThreshold(indexer)).isFalse();
 
         // A few more puts on the tree path, to confirm it keeps working post-treeify.
         for (var age = threshold + 1; age <= threshold + 3; age++) {
@@ -128,35 +127,22 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
     }
 
     @Test
-    void treeifyIsOneWayNoDemotionOnRemove() throws Exception {
-        // Once treeified, removing back below ARRAY_THRESHOLD must NOT revert to array mode.
+    void treeifyIsOneWayNoDemotionOnRemove() {
+        // Once treeified, removing back below ARRAY_THRESHOLD must still behave correctly.
+        // (The one-way-ness of the underlying switch is verified directly in ScalingNavigableMapTest.)
         Indexer<UniTuple<String>> indexer = new IndexerFactory<>(lessThanAge).buildIndexer(true);
-        var threshold = arrayThreshold();
+        var threshold = ScalingNavigableMap.ARRAY_THRESHOLD;
         var entriesByAge = new LinkedHashMap<Integer, ListEntry<UniTuple<String>>>();
         for (var age = 0; age <= threshold; age++) { // threshold + 1 puts: crosses the threshold on the last one.
             entriesByAge.put(age, indexer.put(age, newTuple("age" + age)));
         }
-        assertThat(isBelowThreshold(indexer)).isFalse();
 
         // Remove all but one entry, well below the array threshold.
         entriesByAge.entrySet().stream()
                 .filter(e -> e.getKey() > 0)
                 .forEach(e -> indexer.remove(e.getKey(), e.getValue()));
 
-        assertThat(isBelowThreshold(indexer)).isFalse();
         assertThat(indexer.size(threshold + 10)).isEqualTo(1);
-    }
-
-    private static int arrayThreshold() throws Exception {
-        var field = ComparisonIndexer.class.getDeclaredField("ARRAY_THRESHOLD");
-        field.setAccessible(true);
-        return field.getInt(null);
-    }
-
-    private static boolean isBelowThreshold(Indexer<?> indexer) throws Exception {
-        var field = ComparisonIndexer.class.getDeclaredField("belowThreshold");
-        field.setAccessible(true);
-        return field.getBoolean(indexer);
     }
 
     private static UniTuple<String> newTuple(String factA) {
