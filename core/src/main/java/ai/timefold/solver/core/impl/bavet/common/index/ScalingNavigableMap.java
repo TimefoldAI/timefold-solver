@@ -28,21 +28,28 @@ import org.jspecify.annotations.Nullable;
  * going back to an array on removal only reintroduces the cost of resizing/copying
  * for a bucket that has already demonstrated it churns near or above the threshold.
  * <p>
+ * Keys and values are kept in two parallel arrays, not one interleaved array. Point lookups
+ * ({@link #get}/{@link #getOrCreate}/{@link #remove}) binary-search over keys only and never touch values until a
+ * match is found; a separate {@code keys} array keeps every key a search might probe packed together, instead of
+ * spread across double the memory by unneeded interleaved value slots. Point lookups happen once per tuple
+ * insertion/removal, more often than the full range scans that would actually benefit from key+value being
+ * co-located, so this is the better default for this access pattern.
+ * <p>
  * Keys are always compared/stored/built by their natural {@link Comparable} order, in both the array and the
  * {@link TreeMap}, regardless of {@code reversed} - never by an explicit {@link java.util.Comparator}. A
  * {@link TreeMap} without a comparator uses a faster lookup path internally ({@code getEntry()}, direct
  * {@code compareTo()}) than one with a comparator ({@code getEntryUsingComparator()}, extra dispatch through
- * {@code Comparator.compare()}) - since point lookups ({@link #get}/{@link #getOrCreate}/{@link #remove}) don't
- * care about direction at all, giving them an explicit comparator just to support reversed iteration would be
- * paying that tax on every single lookup for no reason. {@code reversed} only changes how {@link #cursorFromStart()}
- * walks the entries: forward for the array (natural start/step) or the tree ({@code entrySet()}), backward
- * otherwise (reversed start/step, or {@link NavigableMap#descendingMap()} - an O(1) view, not a rebuild).
+ * {@code Comparator.compare()}) - since point lookups don't care about direction at all, giving them an explicit
+ * comparator just to support reversed iteration would be paying that tax on every single lookup for no reason.
+ * {@code reversed} only changes how {@link #cursorFromStart()} walks the entries: forward for the array (natural
+ * start/step) or the tree ({@code entrySet()}), backward otherwise (reversed start/step, or
+ * {@link NavigableMap#descendingMap()} - an O(1) view, not a rebuild).
  *
  * @param <K> the key type; must be mutually comparable via {@link Comparable}
  * @param <V> the value type
  */
 @NullMarked
-final class ScalingNavigableMap<K, V> {
+final class ScalingNavigableMap<K extends Comparable<K>, V> {
 
     // Package-private (not private) so tests in this package can read these directly
     // instead of via reflection or a dedicated getter.
@@ -52,9 +59,9 @@ final class ScalingNavigableMap<K, V> {
     private final boolean reversed;
 
     boolean belowThreshold = true;
-    // Interleaved: entries[2i] = key i, entries[2i + 1] = value i; always sorted ascending by natural order,
-    // regardless of `reversed` - only the cursor's scan direction flips, never the storage order.
-    private Object[] entries;
+    // keys[0..size) sorted ascending by natural order (regardless of `reversed`), values[0..size) parallel to it.
+    private Object[] keys;
+    private Object[] values;
     private int size = 0;
     // Allocated lazily by treeify(); non-null exactly when !belowThreshold. Never built with an explicit
     // comparator - see the class javadoc for why.
@@ -62,7 +69,8 @@ final class ScalingNavigableMap<K, V> {
 
     ScalingNavigableMap(boolean reversed) {
         this.reversed = reversed;
-        this.entries = new Object[INITIAL_ARRAY_CAPACITY * 2];
+        this.keys = new Object[INITIAL_ARRAY_CAPACITY];
+        this.values = new Object[INITIAL_ARRAY_CAPACITY];
     }
 
     @SuppressWarnings("unchecked")
@@ -70,7 +78,7 @@ final class ScalingNavigableMap<K, V> {
     V get(K key) {
         if (belowThreshold) {
             var index = indexOfKey(key);
-            return index >= 0 ? (V) entries[index * 2 + 1] : null;
+            return index >= 0 ? (V) values[index] : null;
         } else {
             return treeMap.get(key);
         }
@@ -94,7 +102,7 @@ final class ScalingNavigableMap<K, V> {
     private V getOrCreateArray(K key, Supplier<V> valueSupplier) {
         var index = indexOfKey(key);
         if (index >= 0) {
-            return (V) entries[index * 2 + 1];
+            return (V) values[index];
         }
         var value = valueSupplier.get();
         insertIntoArray(-(index + 1), key, value);
@@ -105,16 +113,17 @@ final class ScalingNavigableMap<K, V> {
     }
 
     private void insertIntoArray(int insertionPoint, K key, V value) {
-        if (size * 2 == entries.length) {
-            entries = Arrays.copyOf(entries, entries.length * 2);
+        if (size == keys.length) {
+            keys = Arrays.copyOf(keys, keys.length * 2);
+            values = Arrays.copyOf(values, values.length * 2);
         }
-        var shiftCount = (size - insertionPoint) * 2;
+        var shiftCount = size - insertionPoint;
         if (shiftCount > 0) {
-            System.arraycopy(entries, insertionPoint * 2, entries, (insertionPoint + 1) * 2, shiftCount);
+            System.arraycopy(keys, insertionPoint, keys, insertionPoint + 1, shiftCount);
+            System.arraycopy(values, insertionPoint, values, insertionPoint + 1, shiftCount);
         }
-        var pos = insertionPoint * 2;
-        entries[pos] = key;
-        entries[pos + 1] = value;
+        keys[insertionPoint] = key;
+        values[insertionPoint] = value;
         size++;
     }
 
@@ -122,12 +131,12 @@ final class ScalingNavigableMap<K, V> {
     private void treeify() {
         var newTreeMap = new TreeMap<K, V>();
         for (var i = 0; i < size; i++) {
-            var pos = i * 2;
-            newTreeMap.put((K) entries[pos], (V) entries[pos + 1]);
+            newTreeMap.put((K) keys[i], (V) values[i]);
         }
         treeMap = newTreeMap;
         belowThreshold = false;
-        Arrays.fill(entries, null);
+        Arrays.fill(keys, null);
+        Arrays.fill(values, null);
     }
 
     void remove(K key) {
@@ -140,9 +149,10 @@ final class ScalingNavigableMap<K, V> {
 
     private void removeFromArray(K key) {
         var index = indexOfKey(key);
-        var shiftCount = (size - index - 1) * 2;
+        var shiftCount = size - index - 1;
         if (shiftCount > 0) {
-            System.arraycopy(entries, (index + 1) * 2, entries, index * 2, shiftCount);
+            System.arraycopy(keys, index + 1, keys, index, shiftCount);
+            System.arraycopy(values, index + 1, values, index, shiftCount);
         }
         size--;
     }
@@ -163,22 +173,8 @@ final class ScalingNavigableMap<K, V> {
         return new TreeCursor<>(entryIterator);
     }
 
-    @SuppressWarnings("unchecked")
     private int indexOfKey(K key) {
-        var low = 0;
-        var high = size - 1;
-        while (low <= high) {
-            var mid = (low + high) >>> 1;
-            var comparison = ((Comparable<? super K>) entries[mid * 2]).compareTo(key);
-            if (comparison < 0) {
-                low = mid + 1;
-            } else if (comparison > 0) {
-                high = mid - 1;
-            } else {
-                return mid;
-            }
-        }
-        return -(low + 1);
+        return Arrays.binarySearch(keys, 0, size, key);
     }
 
     /**
@@ -217,12 +213,12 @@ final class ScalingNavigableMap<K, V> {
 
         @Override
         public K key() {
-            return (K) entries[index * 2];
+            return (K) keys[index];
         }
 
         @Override
         public V value() {
-            return (V) entries[index * 2 + 1];
+            return (V) values[index];
         }
 
     }
