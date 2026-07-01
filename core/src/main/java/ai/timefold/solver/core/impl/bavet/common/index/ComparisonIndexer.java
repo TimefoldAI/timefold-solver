@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -44,8 +43,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
                 comparisonJoinerType == JoinerType.GREATER_THAN || comparisonJoinerType == JoinerType.GREATER_THAN_OR_EQUAL;
         this.hasOrEquals = comparisonJoinerType == JoinerType.GREATER_THAN_OR_EQUAL
                 || comparisonJoinerType == JoinerType.LESS_THAN_OR_EQUAL;
-        var comparator = reverseOrder ? Comparator.<Key_> reverseOrder() : null;
-        this.comparisonMap = new ScalingNavigableMap<>(comparator);
+        this.comparisonMap = new ScalingNavigableMap<>(reverseOrder);
     }
 
     @Override

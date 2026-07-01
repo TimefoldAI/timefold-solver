@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -29,10 +28,17 @@ import org.jspecify.annotations.Nullable;
  * going back to an array on removal only reintroduces the cost of resizing/copying
  * for a bucket that has already demonstrated it churns near or above the threshold.
  * <p>
- * Iteration always follows the {@link Comparator} given at construction,
- * regardless of whether the backing storage is currently the array or the tree.
+ * Keys are always compared/stored/built by their natural {@link Comparable} order, in both the array and the
+ * {@link TreeMap}, regardless of {@code reversed} - never by an explicit {@link java.util.Comparator}. A
+ * {@link TreeMap} without a comparator uses a faster lookup path internally ({@code getEntry()}, direct
+ * {@code compareTo()}) than one with a comparator ({@code getEntryUsingComparator()}, extra dispatch through
+ * {@code Comparator.compare()}) - since point lookups ({@link #get}/{@link #getOrCreate}/{@link #remove}) don't
+ * care about direction at all, giving them an explicit comparator just to support reversed iteration would be
+ * paying that tax on every single lookup for no reason. {@code reversed} only changes how {@link #cursorFromStart()}
+ * walks the entries: forward for the array (natural start/step) or the tree ({@code entrySet()}), backward
+ * otherwise (reversed start/step, or {@link NavigableMap#descendingMap()} - an O(1) view, not a rebuild).
  *
- * @param <K> the key type; ordered by the {@link Comparator} given at construction
+ * @param <K> the key type; must be mutually comparable via {@link Comparable}
  * @param <V> the value type
  */
 @NullMarked
@@ -43,24 +49,19 @@ final class ScalingNavigableMap<K, V> {
     static final int ARRAY_THRESHOLD = 32;
     private static final int INITIAL_ARRAY_CAPACITY = 4;
 
-    // Null means natural (Comparable) order.
-    // Passed straight through to TreeMap's own constructor,
-    // which has a dedicated fast path for a null comparator
-    // (direct compareTo(), no indirection through Comparator.compare());
-    // supplying Comparator.naturalOrder() here instead would silently force
-    // every natural-order TreeMap onto its slower comparator-based lookup path.
-    private final @Nullable Comparator<? super K> comparator;
+    private final boolean reversed;
 
     boolean belowThreshold = true;
-    // Interleaved: entries[2i] = key i, entries[2i + 1] = value i;
-    // sorted by comparator, ascending in iteration order.
+    // Interleaved: entries[2i] = key i, entries[2i + 1] = value i; always sorted ascending by natural order,
+    // regardless of `reversed` - only the cursor's scan direction flips, never the storage order.
     private Object[] entries;
     private int size = 0;
-    // Allocated lazily by treeify(); non-null exactly when !belowThreshold.
+    // Allocated lazily by treeify(); non-null exactly when !belowThreshold. Never built with an explicit
+    // comparator - see the class javadoc for why.
     private @Nullable TreeMap<K, V> treeMap;
 
-    ScalingNavigableMap(@Nullable Comparator<? super K> comparator) {
-        this.comparator = comparator;
+    ScalingNavigableMap(boolean reversed) {
+        this.reversed = reversed;
         this.entries = new Object[INITIAL_ARRAY_CAPACITY * 2];
     }
 
@@ -119,7 +120,7 @@ final class ScalingNavigableMap<K, V> {
 
     @SuppressWarnings("unchecked")
     private void treeify() {
-        var newTreeMap = new TreeMap<K, V>(comparator);
+        var newTreeMap = new TreeMap<K, V>();
         for (var i = 0; i < size; i++) {
             var pos = i * 2;
             newTreeMap.put((K) entries[pos], (V) entries[pos + 1]);
@@ -155,7 +156,11 @@ final class ScalingNavigableMap<K, V> {
     }
 
     Cursor<K, V> cursorFromStart() {
-        return belowThreshold ? new ArrayCursor() : new TreeCursor<>(treeMap.entrySet().iterator());
+        if (belowThreshold) {
+            return new ArrayCursor();
+        }
+        var entryIterator = reversed ? treeMap.descendingMap().entrySet().iterator() : treeMap.entrySet().iterator();
+        return new TreeCursor<>(entryIterator);
     }
 
     @SuppressWarnings("unchecked")
@@ -164,7 +169,7 @@ final class ScalingNavigableMap<K, V> {
         var high = size - 1;
         while (low <= high) {
             var mid = (low + high) >>> 1;
-            var comparison = compare((K) entries[mid * 2], key);
+            var comparison = ((Comparable<? super K>) entries[mid * 2]).compareTo(key);
             if (comparison < 0) {
                 low = mid + 1;
             } else if (comparison > 0) {
@@ -174,11 +179,6 @@ final class ScalingNavigableMap<K, V> {
             }
         }
         return -(low + 1);
-    }
-
-    @SuppressWarnings("unchecked")
-    private int compare(K a, K b) {
-        return comparator != null ? comparator.compare(a, b) : ((Comparable<? super K>) a).compareTo(b);
     }
 
     /**
@@ -206,12 +206,13 @@ final class ScalingNavigableMap<K, V> {
     @SuppressWarnings("unchecked")
     private final class ArrayCursor implements Cursor<K, V> {
 
-        private int index = -1;
+        private final int step = reversed ? -1 : 1;
+        private int index = reversed ? size : -1;
 
         @Override
         public boolean advance() {
-            index++;
-            return index < size;
+            index += step;
+            return index >= 0 && index < size;
         }
 
         @Override
