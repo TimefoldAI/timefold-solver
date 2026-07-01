@@ -43,7 +43,7 @@ jobs:
         with:
           path: ./timefold-solver
           ref: ${{ inputs.head_sha }}
-          # "approval_required" + PR-level maintainer approval ensures that the PR is from a trusted source.
+          # Safety note: allow-unsafe-pr-checkout is only safe when the calling workflow gates untrusted PRs via "approval_required" (environment approval) and keeps job permissions minimal.
           allow-unsafe-pr-checkout: true
 
       # Clone timefold-solver-enterprise
