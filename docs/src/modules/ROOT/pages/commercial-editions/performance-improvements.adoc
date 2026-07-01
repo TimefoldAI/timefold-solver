@@ -8,7 +8,7 @@ Timefold Solver Enterprise brings many performance improvements. These are short
 include::./_only-enterprise.adoc[]
 
 Updates to shadow variables happen incrementally with Timefold Solver Enterprise.
-For models making intensive use of xref:using-timefold-solver/modeling-planning-problems.adoc#customShadowVariable[shadow variables], this should be visible as a serious performance improvement out-of-the-box.
+For models making intensive use of xref:domain-modeling/modeling-planning-problems.adoc#customShadowVariable[shadow variables], this should be visible as a serious performance improvement out-of-the-box.
 
 This is enabled by default and doesn't require any special considerations.
 

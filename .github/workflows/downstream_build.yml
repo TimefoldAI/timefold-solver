@@ -39,16 +39,18 @@ jobs:
       # Clone timefold-solver
       # No need to check for stale repo, as GitHub merges the main repo into the fork automatically.
       - name: Checkout timefold-solver
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: ./timefold-solver
           ref: ${{ inputs.head_sha }}
+          # Safety note: allow-unsafe-pr-checkout is only safe when the calling workflow gates untrusted PRs via "approval_required" (environment approval) and keeps job permissions minimal.
+          allow-unsafe-pr-checkout: true
 
       # Clone timefold-solver-enterprise
       # Need to check for stale repo, since GitHub is not aware of the build chain and therefore doesn't automate it.
       - name: Checkout timefold-solver-enterprise (PR)
         id: checkout-solver-enterprise
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         continue-on-error: true
         with:
           repository: TimefoldAI/timefold-solver-enterprise
@@ -58,7 +60,7 @@ jobs:
           fetch-depth: 0
       - name: Checkout timefold-solver-enterprise (main)
         if: steps.checkout-solver-enterprise.outcome != 'success'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: TimefoldAI/timefold-solver-enterprise
           ref: main
@@ -69,7 +71,7 @@ jobs:
       # Clone the downstream repository
       - name: Checkout ${{ inputs.name }} (PR)
         id: checkout-downstream
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         continue-on-error: true
         with:
           repository: "TimefoldAI/${{ inputs.repository }}"
@@ -79,7 +81,7 @@ jobs:
           fetch-depth: 0
       - name: Checkout ${{ inputs.name }} (main)
         if: steps.checkout-downstream.outcome != 'success'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: "TimefoldAI/${{ inputs.repository }}"
           ref: main
@@ -87,10 +89,10 @@ jobs:
           path: ./${{ inputs.repository }}
           fetch-depth: 0
 
-      - name: Setup Temurin 21 and Maven
+      - name: Setup Temurin 25 and Maven
         uses: actions/setup-java@v5
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
 
@@ -106,13 +108,32 @@ jobs:
           TIMEFOLD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
         run: ./mvnw -B -Dquickly clean install
 
+      - name: Switch ${{ inputs.name }} to Solver 999-SNAPSHOT
+        working-directory: ./${{ inputs.repository }}
+        shell: bash
+        run: |
+          POM="pom.xml"
+          TARGET_VERSION="999-SNAPSHOT"
+          
+          # Replace the first <version> element (parent version) in pom.xml.
+          sed -i '0,/^\s*<version>/s|<version>[^<]*</version>|<version>'"$TARGET_VERSION"'</version>|' "$POM"
+          
+          # Verify the parent version is now TARGET_VERSION
+          ACTUAL_VERSION=$(grep -m1 '^\s*<version>' "$POM" | sed 's|.*<version>\(.*\)</version>.*|\1|')
+          
+          if [ "$ACTUAL_VERSION" = "$TARGET_VERSION" ]; then
+            exit 0
+          else
+            echo "Expected parent version $TARGET_VERSION but found $ACTUAL_VERSION" >&2
+            exit 1
+          fi
+
       - name: Build and test ${{ inputs.name }}
         working-directory: ./${{ inputs.repository }}
         shell: bash
         env:
           TIMEFOLD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
         run: |
-          mvn versions:update-parent -DskipResolution=true -DallowSnapshots=true -DparentVersion=999-SNAPSHOT
           mvn -B clean verify
 
       - name: Test Summary

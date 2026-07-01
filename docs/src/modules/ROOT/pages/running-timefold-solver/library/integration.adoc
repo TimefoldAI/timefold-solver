@@ -1,0 +1,33 @@
+[#integration]
+= Framework integrations
+:doctype: book
+:sectnums:
+:icons: font
+
+
+
+[#integrationOverview]
+== Overview
+
+Timefold Solver's input and output data (the planning problem and the best solution) are plain old JavaBeans (POJOs), so integration with other Java technologies is straightforward.
+The most common way to use Timefold Solver is through its first-class framework integrations:
+xref:running-timefold-solver/library/quarkus.adoc[Quarkus]
+and xref:running-timefold-solver/library/spring-boot.adoc[Spring Boot].
+
+Beyond that, Timefold Solver also integrates with many other Java technologies. For example:
+
+* To read a planning problem from the database (and store the best solution in it), annotate the domain POJOs with JPA annotations.
+* To read a planning problem from an XML file (and store the best solution in it), annotate the domain POJOs with JAXB annotations.
+* To expose the Solver as a REST Service that reads the planning problem and responds with the best solution, annotate the domain POJOs with JAXB or Jackson annotations and hook the `Solver` in RESTEasy or a similar framework.
+
+[NOTE]
+====
+While it is possible to annotate the same domain classes with both Timefold Solver and persistence or serialization annotations,
+this tightly couples your planning domain to your data model.
+In many applications it is preferable to keep them separate, for example, by mapping between a persistence entity and a dedicated planning model
+so that changes to one do not force changes to the other.
+====
+
+
+image::running-timefold-solver/library/integrationOverview.png[align="center"]
+

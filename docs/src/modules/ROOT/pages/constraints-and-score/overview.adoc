@@ -5,7 +5,6 @@
 :doctype: book
 :sectnums:
 :icons: font
-:relevance: library-and-service
 
 [#scoreTerminology]
 == Score terminology
@@ -93,7 +92,7 @@ Putting a good weight on a constraint is often a difficult analytical decision,
 because it is about making choices and trade-offs against other constraints.
 Different stakeholders have different priorities.
 *Don't waste time with constraint weight discussions at the start of an implementation,
-instead add a xref:constraints-and-score/constraint-configuration.adoc[constraint configuration]
+instead add a xref:running-timefold-solver/library/constraint-overrides.adoc[constraint configuration]
 and allow users to change them through a UI.*
 A non-accurate weight is less damaging than mediocre algorithms:
 
@@ -126,7 +125,7 @@ then a score is _feasible_ if no hard constraints are broken.
 ====
 By default, Timefold Solver will always assign all planning variables a planning value.
 If there is no feasible solution, this means the best solution will be infeasible.
-To instead leave some of the planning entities unassigned, apply xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanning[overconstrained planning].
+To instead leave some of the planning entities unassigned, apply xref:domain-modeling/common-patterns.adoc#overconstrainedPlanning[overconstrained planning].
 ====
 
 For each constraint, you need to pick a score level, a score weight and a score signum.
@@ -297,7 +296,7 @@ Most use cases use a ``HardSoftScore``.
 [NOTE]
 ====
 To properly write a `Score` to a database (with JPA/Hibernate) or to XML/JSON (with JAXB/Jackson),
-see xref:integration/integration.adoc#integration[the integration chapter].
+see xref:running-timefold-solver/library/integration.adoc#integration[the integration chapter].
 ====
 
 
@@ -434,11 +433,11 @@ The score calculation must be deterministic and free of side-effects.
 It must not change the planning entities or the problem facts in any way.
 For example, it must not call a setter method on a planning entity in the score calculation.
 
-Timefold Solver does not recalculate the score of a solution if it can predict it (unless an xref:using-timefold-solver/running-the-solver.adoc#environmentMode[environmentMode assertion] is enabled).
+Timefold Solver does not recalculate the score of a solution if it can predict it (unless an xref:running-timefold-solver/solver-diagnostics.adoc#environmentMode[environmentMode assertion] is enabled).
 For example, after a winning step is done, there is no need to calculate the score because that move was done and undone earlier.
 As a result, there is no guarantee that changes applied during score calculation actually happen.
 
-To update planning entities when the planning variable change, use xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables] instead.
+To update planning entities when the planning variable change, use xref:domain-modeling/modeling-planning-problems.adoc#shadowVariable[shadow variables] instead.
 ====
 
 [#initializingScoreTrend]
@@ -481,7 +480,7 @@ Alternatively, you can also specify the trend for each score level separately:
 [#invalidScoreDetection]
 === Invalid score detection
 
-When you put the xref:using-timefold-solver/running-the-solver.adoc#environmentMode[`environmentMode`] in `FULL_ASSERT` (or ``STEP_ASSERT``),
+When you put the xref:running-timefold-solver/solver-diagnostics.adoc#environmentMode[`environmentMode`] in `FULL_ASSERT` (or ``STEP_ASSERT``),
 it will detect score corruption in the xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
 However, that will not verify that your score calculator actually implements your score constraints as your business desires.
 For example, one constraint might consistently match the wrong pattern.

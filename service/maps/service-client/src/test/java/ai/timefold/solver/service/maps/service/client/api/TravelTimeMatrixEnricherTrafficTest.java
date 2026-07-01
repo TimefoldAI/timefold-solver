@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.TimefoldRuntimeException;
 import ai.timefold.solver.service.maps.api.DistanceMatrix;
 import ai.timefold.solver.service.maps.api.model.Location;
@@ -44,7 +45,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         StubMapService stub = new StubMapService(null,
                 new TravelTimeAndDistanceWithMetadata(new TravelTimeAndDistance(travel, distance), List.of()));
         TravelTimeMatrixEnricher enricher =
-                new TravelTimeMatrixEnricher(stub, optionsSupplier, false);
+                new TravelTimeMatrixEnricher(stub, optionsSupplier, new MapEnrichmentContext(), false);
 
         enricher.enrich(new StubLocationsModel(List.of(l1, l2)));
 
@@ -78,7 +79,8 @@ class TravelTimeMatrixEnricherTrafficTest {
         // Traffic on + plain model: the enricher fetches per-timeframe matrices for every location, no pruning.
         StubMapService stub = new StubMapService(new TravelTimesByTimeframeWithMetadata(
                 travelTimesByTimeframe, distancesByTimeframe, List.of(), bucketing::indexOf), null);
-        TravelTimeMatrixEnricher enricher = new TravelTimeMatrixEnricher(stub, optionsSupplier, true);
+        TravelTimeMatrixEnricher enricher =
+                new TravelTimeMatrixEnricher(stub, optionsSupplier, new MapEnrichmentContext(), true);
 
         enricher.enrich(new StubLocationsModel(List.of(l1, l2)));
 
@@ -108,7 +110,7 @@ class TravelTimeMatrixEnricherTrafficTest {
         StubMapService stub = new StubMapService(new TravelTimesByTimeframeWithMetadata(
                 new DistanceMatrix[] { travel }, new DistanceMatrix[] { distance }, List.of(), t -> 0), null);
         TravelTimeMatrixEnricher enricher =
-                new TravelTimeMatrixEnricher(stub, optionsSupplier, true);
+                new TravelTimeMatrixEnricher(stub, optionsSupplier, new MapEnrichmentContext(), true);
 
         enricher.enrich(new StubLocationsModel(List.of(l1, l2)));
 
@@ -123,7 +125,7 @@ class TravelTimeMatrixEnricherTrafficTest {
     void acceptsLocationsAwareSolverModel() {
         TravelTimeMatrixEnricher enricher =
                 new TravelTimeMatrixEnricher(new StubMapService(null, null), optionsSupplier,
-                        false);
+                        new MapEnrichmentContext(), false);
 
         assertThat(enricher.accept(new StubLocationsModel(List.of()))).isTrue();
         assertThat(enricher.accept(new Object())).isFalse();
@@ -133,7 +135,7 @@ class TravelTimeMatrixEnricherTrafficTest {
     void wrapsNonTimefoldExceptionFromMapService() {
         MapService failing = new FailingMapService();
         TravelTimeMatrixEnricher enricher =
-                new TravelTimeMatrixEnricher(failing, optionsSupplier, true);
+                new TravelTimeMatrixEnricher(failing, optionsSupplier, new MapEnrichmentContext(), true);
 
         Location l1 = new Location(0, 0);
         Location l2 = new Location(1, 1);

@@ -1,0 +1,2 @@
+IMPORTANT: This page describes features which are only relevant when running xref:running-timefold-solver/overview.adoc#overviewRunAsAService[Timefold Solver as a service]. +
+The information on these pages may describe functionality which may be changed or even removed in a future release.

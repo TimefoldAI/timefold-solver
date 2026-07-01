@@ -1,0 +1,44 @@
+[#usingTimefoldSolverOverview]
+= Using Timefold Solver: Overview
+:page-aliases: configuration/configuration.adoc, using-timefold-solver/overview.adoc
+:doctype: book
+:sectnums:
+:icons: font
+
+Timefold Solver can be used in two modes.
+Both build on the same modeling and constraint concepts, but differ in how you deploy and interact with the solver.
+
+[#overviewRunAsAService]
+== Run as a Service (recommended)
+
+Deploy Timefold Solver as a standalone optimization service.
+This mode handles the REST API, solver lifecycle, and more.
+
+Submit a planning problem via REST and receive optimized results asynchronously.
+Configuration is done via `application.properties`.
+
+This is the recommended approach for most teams:
+it lets you focus on modeling the problem and writing constraints
+rather than on plumbing. This is the approach we use ourselves at Timefold for https://app.timefold.ai[models on our platform].
+
+xref:running-timefold-solver/service/overview.adoc[→ Run as a Service]
+
+[#overviewEmbedAsALibrary]
+== Use as a Library (advanced)
+
+Embed Timefold Solver directly in your application for full control over the solving lifecycle.
+Use this approach when you need deep integration with existing infrastructure or have a use case or architecture where the recommended approach above doesn't apply to you.
+
+xref:running-timefold-solver/library/configuration.adoc[→ Use as a Library]
+
+[#commonFoundation]
+== Common foundation
+
+Regardless of mode, the following steps and concepts apply:
+
+. *Model your planning problem* as a class annotated with `@PlanningSolution`, for example `Timetable`.
+. *Define constraints* using a `ConstraintProvider` that expresses hard and soft rules.
+. *Submit your problem* — via REST API (service) or `Solver.solve()` / `SolverManager` (library).
+. *Receive the best solution* found within the configured time limit.
+
+image::running-timefold-solver/overview/inputOutputOverview.png[align="center"]
