@@ -43,6 +43,8 @@ jobs:
         with:
           path: ./timefold-solver
           ref: ${{ inputs.head_sha }}
+          # Safety note: allow-unsafe-pr-checkout is only safe when the calling workflow gates untrusted PRs via "approval_required" (environment approval) and keeps job permissions minimal.
+          allow-unsafe-pr-checkout: true
 
       # Clone timefold-solver-enterprise
       # Need to check for stale repo, since GitHub is not aware of the build chain and therefore doesn't automate it.
