@@ -175,7 +175,7 @@ class ListRuinRecreateMoveSelectorTest extends AbstractMeterTest {
         var solver = SolverFactory.create(solverConfig).buildSolver();
         var solution = (TestdataAllowsUnassignedValuesListSolution) assertDoesNotThrow(() -> solver.solve(problem));
         // Two values must remain unassigned
-        assertThat(solution.getEntityList().size()).isOne();
+        assertThat(solution.getEntityList().getFirst().getValueList()).hasSize(1);
     }
 
     public static final class TestdataOnlyOneAssignedValuesListMixedConstraintProvider
