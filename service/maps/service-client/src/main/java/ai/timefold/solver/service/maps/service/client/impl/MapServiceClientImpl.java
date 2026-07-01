@@ -225,9 +225,9 @@ public class MapServiceClientImpl implements MapService {
             return result;
         }
 
-        AssembledTimeframedMatrices assembled;
+        FetchedTimeframeMatrices fetched;
         try {
-            assembled = fetchBundledTimeframedMatrices(options, locations);
+            fetched = fetchBundledTimeframedMatrices(options, locations);
         } catch (CompletionException e) {
             Throwable cause = e.getCause() != null ? e.getCause() : e;
             if (fallbackEnabled) {
@@ -241,9 +241,9 @@ public class MapServiceClientImpl implements MapService {
         }
 
         TravelTimesByTimeframeWithMetadata result = new TravelTimesByTimeframeWithMetadata(
-                assembled.travelTimesByTimeframe,
-                assembled.distancesByTimeframe,
-                assembled.locationsNotInMap,
+                fetched.travelTimesByTimeframe,
+                fetched.distancesByTimeframe,
+                fetched.locationsNotInMap,
                 timeframeBucketing::indexOf);
         timeframedMatricesCache.put(cacheId, result);
         LOGGER.info("Distance/time matrix calculation completed");
@@ -261,7 +261,7 @@ public class MapServiceClientImpl implements MapService {
      * "Locations not in map" indices returned by each call are relative to the location list; they are resolved to
      * {@link Location} instances and unioned across timeframes, then returned in input-list order with no duplicates.
      */
-    private AssembledTimeframedMatrices fetchBundledTimeframedMatrices(String options, List<Location> locations) {
+    private FetchedTimeframeMatrices fetchBundledTimeframedMatrices(String options, List<Location> locations) {
         List<Timeframe> allTimeframes = timeframeBucketing.allTimeframes();
         int allTimeframesSize = allTimeframes.size();
         LOGGER.info("Requesting {} bundled travel-time + distance matrix(es) concurrently... ", allTimeframesSize);
@@ -274,7 +274,7 @@ public class MapServiceClientImpl implements MapService {
             DistanceMatrix zero = zeroMatrixFor(locations);
             Arrays.fill(travelTimesByTimeframe, zero);
             Arrays.fill(distancesByTimeframe, zero);
-            return new AssembledTimeframedMatrices(travelTimesByTimeframe, distancesByTimeframe, List.of());
+            return new FetchedTimeframeMatrices(travelTimesByTimeframe, distancesByTimeframe, List.of());
         }
 
         CompletableFuture<TravelTimeAndDistanceWithMetadata>[] futures = new CompletableFuture[allTimeframesSize];
@@ -300,7 +300,7 @@ public class MapServiceClientImpl implements MapService {
         List<Location> locationsNotInMap = locations.stream()
                 .filter(notInMapSet::contains)
                 .toList();
-        return new AssembledTimeframedMatrices(travelTimesByTimeframe, distancesByTimeframe, locationsNotInMap);
+        return new FetchedTimeframeMatrices(travelTimesByTimeframe, distancesByTimeframe, locationsNotInMap);
     }
 
     private static DistanceMatrix zeroMatrixFor(List<Location> locations) {
@@ -584,33 +584,9 @@ public class MapServiceClientImpl implements MapService {
                                 .formatted(requested, bucketing.allTimeframes())));
     }
 
-    private record AssembledTimeframedMatrices(DistanceMatrix[] travelTimesByTimeframe,
+    private record FetchedTimeframeMatrices(DistanceMatrix[] travelTimesByTimeframe,
             DistanceMatrix[] distancesByTimeframe,
             List<Location> locationsNotInMap) {
 
-        @Override
-        public boolean equals(Object o) {
-            if (o == null || getClass() != o.getClass())
-                return false;
-            AssembledTimeframedMatrices that = (AssembledTimeframedMatrices) o;
-            return Objects.equals(locationsNotInMap(), that.locationsNotInMap())
-                    && Objects.deepEquals(distancesByTimeframe(), that.distancesByTimeframe())
-                    && Objects.deepEquals(travelTimesByTimeframe(), that.travelTimesByTimeframe());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(Arrays.hashCode(travelTimesByTimeframe()), Arrays.hashCode(distancesByTimeframe()),
-                    locationsNotInMap());
-        }
-
-        @Override
-        public String toString() {
-            return "AssembledTimeframedMatrices{" +
-                    "travelTimesByTimeframe=" + Arrays.toString(travelTimesByTimeframe) +
-                    ", distancesByTimeframe=" + Arrays.toString(distancesByTimeframe) +
-                    ", locationsNotInMap=" + locationsNotInMap +
-                    '}';
-        }
     }
 }
