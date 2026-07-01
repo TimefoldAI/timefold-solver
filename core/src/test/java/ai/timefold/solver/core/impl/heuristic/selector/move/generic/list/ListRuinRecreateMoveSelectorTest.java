@@ -164,13 +164,18 @@ class ListRuinRecreateMoveSelectorTest extends AbstractMeterTest {
                 .withConstraintProviderClass(TestdataOnlyOneAssignedValuesListMixedConstraintProvider.class)
                 .withPhaseList(List.of(
                         new LocalSearchPhaseConfig()
+                                // Since the problem has 3 planning values, the R&R will select all of them
                                 .withMoveSelectorConfig(new ListRuinRecreateMoveSelectorConfig().withMinimumRuinedCount(3))
                                 .withTerminationConfig(new TerminationConfig()
                                         .withStepCountLimit(1))));
         var problem = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(3, 1);
+        // The problem involves one entity and three planning values,
+        // with the initial solution assigning all values to that single entity
         problem.getEntityList().getFirst().getValueList().addAll(problem.getValueList());
         var solver = SolverFactory.create(solverConfig).buildSolver();
-        assertDoesNotThrow(() -> solver.solve(problem));
+        var solution = (TestdataAllowsUnassignedValuesListSolution) assertDoesNotThrow(() -> solver.solve(problem));
+        // Two values must remain unassigned
+        assertThat(solution.getEntityList().size()).isOne();
     }
 
     public static final class TestdataOnlyOneAssignedValuesListMixedConstraintProvider
