@@ -43,6 +43,8 @@ jobs:
         with:
           path: ./timefold-solver
           ref: ${{ inputs.head_sha }}
+          # "approval_required" + PR-level maintainer approval ensures that the PR is from a trusted source.
+          allow-unsafe-pr-checkout: true
 
       # Clone timefold-solver-enterprise
       # Need to check for stale repo, since GitHub is not aware of the build chain and therefore doesn't automate it.
