@@ -8,7 +8,7 @@
 Timefold Solver can be used in two modes.
 Both build on the same modeling and constraint concepts, but differ in how you deploy and interact with the solver.
 
-[#runAsAService]
+[#overviewRunAsAService]
 == Run as a Service (recommended)
 
 Deploy Timefold Solver as a standalone optimization service.
@@ -23,7 +23,7 @@ rather than on plumbing. This is the approach we use ourselves at Timefold for h
 
 xref:running-timefold-solver/service/overview.adoc[→ Run as a Service]
 
-[#embedAsALibrary]
+[#overviewEmbedAsALibrary]
 == Use as a Library (advanced)
 
 Embed Timefold Solver directly in your application for full control over the solving lifecycle.

@@ -46,6 +46,7 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSour
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.core.impl.score.stream.test.DefaultConstraintVerifier;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
+import ai.timefold.solver.core.impl.util.SolverVersionUtils;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.BeanUtil;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
@@ -90,6 +91,7 @@ import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeBuild;
@@ -121,6 +123,11 @@ class TimefoldProcessor {
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem("timefold-solver");
+    }
+
+    @BuildStep
+    NativeImageResourceBuildItem registerGitProperties() {
+        return new NativeImageResourceBuildItem(SolverVersionUtils.CORE_GIT_PROPERTIES);
     }
 
     @BuildStep
