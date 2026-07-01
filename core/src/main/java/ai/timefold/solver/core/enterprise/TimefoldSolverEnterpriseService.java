@@ -84,7 +84,7 @@ public interface TimefoldSolverEnterpriseService {
             // No enterprise edition on the classpath.
         }
         var editionName = service == null ? COMMUNITY_NAME : ENTERPRISE_NAME;
-        return SolverVersionUtils.banner(editionName, SolverFactory.class);
+        return SolverVersionUtils.banner(editionName, SolverVersionUtils.CORE_GIT_PROPERTIES, SolverFactory.class);
     }
 
     /**
@@ -103,9 +103,11 @@ public interface TimefoldSolverEnterpriseService {
             // No enterprise edition on the classpath.
         }
         if (service == null) {
-            return SolverVersionUtils.communityBannerWithGitRef(SolverFactory.class, coreRef);
+            return SolverVersionUtils.communityBannerWithGitRef(SolverVersionUtils.CORE_GIT_PROPERTIES, SolverFactory.class,
+                    coreRef);
         } else {
-            return SolverVersionUtils.enterpriseBannerWithGitRef(SolverFactory.class, coreRef, service.getGitRef());
+            return SolverVersionUtils.enterpriseBannerWithGitRef(SolverVersionUtils.CORE_GIT_PROPERTIES, SolverFactory.class,
+                    coreRef, service.getGitRef());
         }
     }
 

@@ -135,6 +135,7 @@
           <generateGitPropertiesFilename>${project.build.outputDirectory}/timefold-solver-core-git.properties</generateGitPropertiesFilename>
           <includeOnlyProperties>
             <includeOnlyProperty>^git\.commit\.id\.abbrev$</includeOnlyProperty>
+            <includeOnlyProperty>^git\.build\.version$</includeOnlyProperty>
           </includeOnlyProperties>
           <failOnNoGitDirectory>false</failOnNoGitDirectory>
           <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>

@@ -178,7 +178,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.util
             to ai.timefold.solver.jackson, ai.timefold.solver.benchmark,
             ai.timefold.solver.quarkus.deployment, ai.timefold.solver.quarkus.jackson,
-            ai.timefold.solver.enterprise.core;
+            ai.timefold.solver.enterprise.core, ai.timefold.solver.enterprise.quarkus.deployment;
 
     // enterprise-specific exports
     exports ai.timefold.solver.core.impl.bavet.common to ai.timefold.solver.enterprise.core;

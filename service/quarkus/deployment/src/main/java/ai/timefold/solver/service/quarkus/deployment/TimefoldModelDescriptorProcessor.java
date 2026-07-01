@@ -316,7 +316,6 @@ class TimefoldModelDescriptorProcessor {
         }
 
         generateDemoData(out, modelInfo.getModelId(), combinedIndex);
-        nativeImageResourcesProducer.produce(new NativeImageResourceBuildItem(SolverVersionUtils.CORE_GIT_PROPERTIES));
 
         // create descriptor itself
         generateModelDescriptor(modelInfo.getModelId(), modelInfo.getModelName(), openAPI, out.getOutputDirectory(),
@@ -342,7 +341,8 @@ class TimefoldModelDescriptorProcessor {
         InfoBuildTimeValuesBuildItem buildInfo = infoItemsByName.get("build");
         InfoBuildTimeValuesBuildItem gitInfo = infoItemsByName.get("git");
 
-        String solverVersion = SolverVersionUtils.bareVersion(SolverFactory.class);
+        String solverVersion =
+                SolverVersionUtils.bareVersion(SolverVersionUtils.CORE_GIT_PROPERTIES, SolverFactory.class);
         String sdkVersion = SolverVersionUtils.bareVersion(ModelDescriptor.class);
         String version = buildInfo != null ? (String) buildInfo.getValue().get("version") : null;
         String buildTime = buildInfo != null ? (String) buildInfo.getValue().get("time") : null;

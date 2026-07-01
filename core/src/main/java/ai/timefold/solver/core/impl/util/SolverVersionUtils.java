@@ -13,8 +13,11 @@ public final class SolverVersionUtils {
     public static final String ENTERPRISE_NAME = "Timefold Solver Enterprise Edition";
     public static final String DEVELOPMENT_SNAPSHOT = "Development Snapshot";
     public static final String CORE_GIT_PROPERTIES = "timefold-solver-core-git.properties";
+    public static final String ENTERPRISE_GIT_PROPERTIES = "timefold-solver-enterprise-core-git.properties";
 
     private static final String SNAPSHOT = "SNAPSHOT";
+    private static final String GIT_COMMIT_ID_ABBREV = "git.commit.id.abbrev";
+    private static final String GIT_BUILD_VERSION = "git.build.version";
 
     private SolverVersionUtils() {
         // No instances.
@@ -35,9 +38,28 @@ public final class SolverVersionUtils {
     /**
      * Returns the rc-stripped implementation version of the JAR that loaded the given class,
      * or {@code null} when running without a manifest (IDE, source tarball).
+     * <p>
+     * Unreliable in a GraalVM native image, where a class's package can report the native
+     * application's own build version instead of the originating JAR's version. Prefer
+     * {@link #gitRefOf(String)}-adjacent {@link #reliableVersionOf(String, Class)} wherever a
+     * git.properties resource is available; this method exists only as its last-resort fallback.
      */
     public static @Nullable String versionOf(Class<?> clz) {
         return stripReleaseCandidate(clz.getPackage().getImplementationVersion());
+    }
+
+    private static @Nullable Properties loadGitProperties(String resourceName) {
+        var cl = Thread.currentThread().getContextClassLoader();
+        try (var stream = cl == null ? null : cl.getResourceAsStream(resourceName)) {
+            if (stream == null) {
+                return null;
+            }
+            var props = new Properties();
+            props.load(stream);
+            return props;
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     /**
@@ -47,18 +69,30 @@ public final class SolverVersionUtils {
      * IDE / no-git builds produce no resource and gracefully show no ref.
      */
     public static @Nullable String gitRefOf(String resourceName) {
-        var cl = Thread.currentThread().getContextClassLoader();
-        try (var stream = cl == null ? null : cl.getResourceAsStream(resourceName)) {
-            if (stream == null) {
-                return null;
-            }
-            var props = new Properties();
-            props.load(stream);
-            var ref = props.getProperty("git.commit.id.abbrev");
-            return (ref == null || ref.isBlank()) ? null : ref;
-        } catch (IOException e) {
-            return null;
-        }
+        var props = loadGitProperties(resourceName);
+        var ref = props == null ? null : props.getProperty(GIT_COMMIT_ID_ABBREV);
+        return (ref == null || ref.isBlank()) ? null : ref;
+    }
+
+    /**
+     * Reads the {@code git.build.version} key (= {@code ${project.version}} at build time) from
+     * the named classpath resource, rc-stripped. This is a plain literal baked into the resource
+     * at build time, so unlike {@link #versionOf(Class)} it is reliable in a native image.
+     */
+    private static @Nullable String buildVersionOf(String resourceName) {
+        var props = loadGitProperties(resourceName);
+        var version = props == null ? null : props.getProperty(GIT_BUILD_VERSION);
+        return stripReleaseCandidate((version == null || version.isBlank()) ? null : version);
+    }
+
+    /**
+     * Prefers the version baked into the given git.properties resource; falls back to the JAR
+     * manifest of {@code fallbackVersionClass} only when that resource is entirely unavailable
+     * (IDE without a Maven build, or no {@code .git} directory).
+     */
+    private static @Nullable String reliableVersionOf(String gitPropertiesResource, Class<?> fallbackVersionClass) {
+        var fromProperties = buildVersionOf(gitPropertiesResource);
+        return fromProperties != null ? fromProperties : versionOf(fallbackVersionClass);
     }
 
     /**
@@ -71,11 +105,22 @@ public final class SolverVersionUtils {
     }
 
     /**
-     * Returns the backward-compatible banner string (no git ref).
+     * Same as {@link #bareVersion(Class)}, but prefers {@code gitPropertiesResource}'s baked-in
+     * version over {@code fallbackVersionClass}'s JAR manifest.
+     */
+    public static String bareVersion(String gitPropertiesResource, Class<?> fallbackVersionClass) {
+        var version = reliableVersionOf(gitPropertiesResource, fallbackVersionClass);
+        return version == null ? SNAPSHOT : version;
+    }
+
+    /**
+     * Returns the backward-compatible banner string (no git ref), preferring
+     * {@code gitPropertiesResource}'s baked-in version over {@code fallbackVersionClass}'s JAR
+     * manifest.
      * Format: {@code "<editionName> v<version>"} or {@code "<editionName> Development Snapshot"}.
      */
-    public static String banner(String editionName, Class<?> versionClass) {
-        var version = versionOf(versionClass);
+    public static String banner(String editionName, String gitPropertiesResource, Class<?> fallbackVersionClass) {
+        var version = reliableVersionOf(gitPropertiesResource, fallbackVersionClass);
         return version == null ? editionName + " " + DEVELOPMENT_SNAPSHOT : editionName + " v" + version;
     }
 
@@ -84,8 +129,9 @@ public final class SolverVersionUtils {
      * e.g. {@code "Timefold Solver Community Edition v1.2.3 (a1b2c3d)"}.
      * Omits the parenthesised section when {@code coreRef} is {@code null}.
      */
-    public static String communityBannerWithGitRef(Class<?> versionClass, @Nullable String coreRef) {
-        var base = banner(COMMUNITY_NAME, versionClass);
+    public static String communityBannerWithGitRef(String gitPropertiesResource, Class<?> fallbackVersionClass,
+            @Nullable String coreRef) {
+        var base = banner(COMMUNITY_NAME, gitPropertiesResource, fallbackVersionClass);
         return coreRef != null ? "%s (%s)".formatted(base, coreRef) : base;
     }
 
@@ -94,9 +140,9 @@ public final class SolverVersionUtils {
      * e.g. {@code "Timefold Solver Enterprise Edition v1.2.3 (core a1b2c3d, enterprise e4f5g6h)"}.
      * Omits the parenthesised section when both refs are {@code null}.
      */
-    public static String enterpriseBannerWithGitRef(Class<?> versionClass, @Nullable String coreRef,
-            @Nullable String enterpriseRef) {
-        var base = banner(ENTERPRISE_NAME, versionClass);
+    public static String enterpriseBannerWithGitRef(String gitPropertiesResource, Class<?> fallbackVersionClass,
+            @Nullable String coreRef, @Nullable String enterpriseRef) {
+        var base = banner(ENTERPRISE_NAME, gitPropertiesResource, fallbackVersionClass);
         if (coreRef == null && enterpriseRef == null) {
             return base;
         }
