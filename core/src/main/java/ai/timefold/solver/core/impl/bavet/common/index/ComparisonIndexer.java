@@ -157,11 +157,12 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
      * without needing a reversed comparator or sub-map view.
      */
     private boolean boundaryReached(Key_ entryKey, Key_ indexKey) {
-        var comparison = entryKey.compareTo(indexKey);
-        if (reverseOrder) {
-            // Comparator matches the order of iteration of the map, so the boundary is always found from the bottom up.
-            comparison = -comparison;
-        }
+        // Comparator matches the order of iteration of the map,
+        // so the boundary is always found from the bottom up.
+        // Swapping the compareTo() operands (rather than negating the result) sign-flips the comparison
+        // without risking overflow: -Integer.MIN_VALUE == Integer.MIN_VALUE,
+        // so negation is not safe here for a Comparable whose compareTo() can return exactly Integer.MIN_VALUE.
+        var comparison = reverseOrder ? indexKey.compareTo(entryKey) : entryKey.compareTo(indexKey);
         if (comparison >= 0) {
             // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
             return comparison > 0 || !hasOrEquals;

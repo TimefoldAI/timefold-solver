@@ -38,7 +38,7 @@ import org.jspecify.annotations.Nullable;
  * Keys are always compared/stored/built by their natural {@link Comparable} order,
  * never by an explicit {@link Comparator}.
  * A {@link TreeMap} without a comparator uses a faster lookup path internally ({@code getEntry()},
- * direct {@code compareTo()}) than one with a comparator ({@code getEntryUsingComparator()}.
+ * direct {@code compareTo()}) than one with a comparator ({@code getEntryUsingComparator()}).
  * <p>
  * {@link ComparisonIndexer} branches on {@link #arrayBased} and calls {@link #keyAt}/{@link #valueAt} for range scans
  * (plain, final-class, trivially inlined methods; benchmarked to be optimal);
@@ -139,20 +139,25 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
     }
 
     /**
+     * No-op if {@code key} isn't present.
      * If in array-mode, consider using {@link #removeAt(int)} instead,
      * if the position is already known.
      */
     public void remove(K key) {
         if (arrayBased) {
-            removeAt(indexOf(key));
+            var index = indexOf(key);
+            if (index >= 0) {
+                removeAt(index);
+            }
         } else {
             treeMap.remove(key);
         }
     }
 
     /**
-     * Array-mode only.
-     * Exposed (alongside {@link #indexOf}) so a caller that already located an entry via {@link #indexOf} -
+     * Array-mode only. {@code index} must be a valid, currently-occupied position, as returned by
+     * a non-negative {@link #indexOf(Comparable)}.
+     * Exposed (alongside {@link #indexOf(Comparable)}) so a caller that already located an entry via {@link #indexOf} -
      * typically to inspect its value first, like {@link ComparisonIndexer#remove} does -
      * can remove it without a second, redundant binary search for the same key.
      */
@@ -160,10 +165,11 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
         var shiftCount = size - index - 1;
         if (shiftCount > 0) {
             System.arraycopy(keys, index + 1, keys, index, shiftCount);
-            keys[size - 1] = null;
             System.arraycopy(values, index + 1, values, index, shiftCount);
-            values[size - 1] = null;
         }
+        // Whether shifted or not, the last occupied slot is now stale; null it so it doesn't outlive size.
+        keys[size - 1] = null;
+        values[size - 1] = null;
         size--;
     }
 

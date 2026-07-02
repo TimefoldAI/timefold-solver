@@ -27,6 +27,19 @@ class ScalingNavigableMapTest {
     }
 
     @Test
+    void removeIsNoOpForMissingKey() {
+        var map = new ScalingNavigableMap<Integer, String>();
+        map.getOrCreate(1, () -> "one");
+        map.getOrCreate(2, () -> "two");
+
+        map.remove(99); // Not present; must not throw.
+
+        assertThat(map.size()).isEqualTo(2);
+        assertThat(map.get(1)).isEqualTo("one");
+        assertThat(map.get(2)).isEqualTo("two");
+    }
+
+    @Test
     void arrayModeIsAlwaysAscendingRegardlessOfReversed() {
         var map = new ScalingNavigableMap<Integer, String>();
         map.getOrCreate(3, () -> "three");

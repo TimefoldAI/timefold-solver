@@ -7,6 +7,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
+import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.Test;
  */
 class ComparisonIndexerTest extends AbstractIndexerTest {
 
-    @SuppressWarnings("unchecked")
     private final DefaultBiJoiner<TestPerson, TestPerson> lessThanAge =
             (DefaultBiJoiner<TestPerson, TestPerson>) Joiners.lessThan(TestPerson::age);
 
@@ -145,22 +145,48 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
         assertThat(indexer.size(threshold + 10)).isEqualTo(1);
     }
 
+    @Test
+    void boundaryComparisonHandlesExtremeCompareToWithoutOverflow() {
+        Indexer<UniTuple<String>> indexer =
+                new ComparisonIndexer<>(JoinerType.GREATER_THAN, KeyUnpacker.<ExtremeKey> single(),
+                        RandomAccessLeafIndexer::new);
+        var low = new ExtremeKey(1);
+        var high = new ExtremeKey(2); // low.compareTo(high) == Integer.MIN_VALUE.
+        indexer.put(low, newTuple("low"));
+
+        // low is not greater than high, nor than itself: neither query should match.
+        assertThat(forEachToTuples(indexer, high)).isEmpty();
+        assertThat(indexer.size(high)).isZero();
+        assertThat(forEachToTuples(indexer, low)).isEmpty();
+        assertThat(indexer.size(low)).isZero();
+    }
+
     private static UniTuple<String> newTuple(String factA) {
         return UniTuple.of(factA, 0);
     }
 
-    @SuppressWarnings("unchecked")
+    private record ExtremeKey(int value) implements Comparable<ExtremeKey> {
+
+        @Override
+        public int compareTo(ExtremeKey other) {
+            if (value == other.value) {
+                return 0;
+            }
+            // Deliberately extreme instead of a bounded difference,
+            // to exercise the sign-flip for GT/GTE without relying on subtraction-based compareTo() tricks elsewhere.
+            return value < other.value ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        }
+    }
+
     private static DefaultBiJoiner<TestPerson, TestPerson> twoComparisons() {
         return (DefaultBiJoiner<TestPerson, TestPerson>) Joiners.lessThan(TestPerson::age)
                 .and(Joiners.greaterThan(TestPerson::age));
     }
 
-    @SuppressWarnings("unchecked")
     private static DefaultBiJoiner<TestPerson, TestPerson> equalGender() {
         return (DefaultBiJoiner<TestPerson, TestPerson>) Joiners.equal(TestPerson::gender);
     }
 
-    @SuppressWarnings("unchecked")
     private static DefaultBiJoiner<TestPerson, TestPerson> equalThenLessThan() {
         return (DefaultBiJoiner<TestPerson, TestPerson>) Joiners.equal(TestPerson::gender)
                 .and(Joiners.lessThan(TestPerson::age));
