@@ -1,5 +1,4 @@
 * xref:introduction.adoc[leveloffset=+1]
-* xref:planning-ai-concepts.adoc[leveloffset=+1]
 * Getting started
 ** xref:quickstart/overview.adoc[Overview]
 ** xref:quickstart/service/getting-started.adoc[Build as a service]
