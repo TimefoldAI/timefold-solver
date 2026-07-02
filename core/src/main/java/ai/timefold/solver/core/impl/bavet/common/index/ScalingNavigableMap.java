@@ -102,11 +102,12 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
         if (index >= 0) {
             return valueAt(index);
         }
+        if (size + 1 > ARRAY_THRESHOLD) {
+            treeify();
+            return getOrCreateTree(key, valueSupplier);
+        }
         var value = valueSupplier.get();
         insertIntoArray(-(index + 1), key, value);
-        if (size() > ARRAY_THRESHOLD) {
-            treeify();
-        }
         return value;
     }
 
