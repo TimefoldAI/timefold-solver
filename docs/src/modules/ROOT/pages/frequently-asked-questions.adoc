@@ -16,7 +16,7 @@ To find out more, see xref:commercial-editions/commercial-editions.adoc[Plus / E
 
 == Does Timefold offer pre-built models?
 
-Timefold offers a suite of pre-built PlanningAI models designed to expedite development by addressing complex scheduling and routing challenges across various industries.
+Timefold offers a suite of pre-built planning models designed to expedite development by addressing complex scheduling and routing challenges across various industries.
 These models are built upon _Timefold Solver Enterprise Edition_ technology and are accessible through a REST API, facilitating seamless integration into your applications.
 
 See all available models on https://app.timefold.ai/[our platform].

@@ -23,7 +23,6 @@ endif::[]
 
 include::introduction.adoc[leveloffset=+1]
 include::quickstart/.quickstart.adoc[leveloffset=+1]
-include::planning-ai-concepts.adoc[leveloffset=+1]
 include::running-timefold-solver/overview.adoc[leveloffset=+1]
 include::running-timefold-solver/library/configuration.adoc[leveloffset=+1]
 include::running-timefold-solver/library/library-integration.adoc[leveloffset=+1]
