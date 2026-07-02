@@ -302,6 +302,10 @@
             <updatePomFile>true</updatePomFile>
             <flattenMode>resolveCiFriendliesOnly</flattenMode>
             <keepCommentsInPom>true</keepCommentsInPom>
+            <!-- Write the flattened pom under target/ instead of the module basedir, so the generated
+                 .flattened-pom.xml does not litter the source tree of models and quickstarts (issue #2410). -->
+            <outputDirectory>${project.build.directory}</outputDirectory>
+            <flattenedPomFilename>.flattened-pom.xml</flattenedPomFilename>
           </configuration>
           <executions>
             <execution>
@@ -364,6 +368,9 @@
                   <version>${version.ai.timefold.solver}</version>
                   <type>jar</type>
                   <overWrite>true</overWrite>
+                  <!-- Quarkus container-image-jib only copies files from the fixed src/main/jib directory
+                       into the image, so this generated jar has to stay here. It is kept out of Git via
+                       .gitignore instead (issue #2410). -->
                   <outputDirectory>src/main/jib/timefold</outputDirectory>
                   <destFileName>diagnostic-tools.jar</destFileName>
                 </artifactItem>
@@ -377,6 +384,46 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <!-- The diagnostic-tools jar is copied into src/main/jib (above) because Quarkus
+             container-image-jib only includes files from that fixed directory and it cannot be
+             relocated to target/. To make sure a stale jar from a previous enterprise build is never
+             shipped by a later build that skips the copy, delete it both on clean and at the start of
+             every build (before the copy execution in generate-resources runs) (issue #2410). -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>src/main/jib/timefold</directory>
+              <includes>
+                <include>diagnostic-tools.jar</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
+        <executions>
+          <execution>
+            <id>delete-stale-diagnostic-tools</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+            <configuration>
+              <!-- Do not wipe target/ during initialize; only remove the generated jib jar. -->
+              <excludeDefaultDirectories>true</excludeDefaultDirectories>
+              <filesets>
+                <fileset>
+                  <directory>src/main/jib/timefold</directory>
+                  <includes>
+                    <include>diagnostic-tools.jar</include>
+                  </includes>
+                </fileset>
+              </filesets>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

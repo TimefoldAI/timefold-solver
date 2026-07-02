@@ -15,3 +15,8 @@ local
 
 # Repository wide ignore mac DS_Store files
 .DS_Store
+
+# Generated service build artifacts that must never be committed (issue #2410)
+**/src/main/jib/timefold/diagnostic-tools.jar
+**/.flattened-pom.xml
+**/timefold-model-enhanced-openapi.json
