@@ -179,7 +179,6 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
      * Array-mode range scans only.
      */
     @SuppressWarnings("unchecked")
-    @Nullable
     K keyAt(int index) {
         return (K) keys[index];
     }
@@ -188,7 +187,6 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
      * Array-mode only.
      */
     @SuppressWarnings("unchecked")
-    @Nullable
     V valueAt(int index) {
         return (V) values[index];
     }
