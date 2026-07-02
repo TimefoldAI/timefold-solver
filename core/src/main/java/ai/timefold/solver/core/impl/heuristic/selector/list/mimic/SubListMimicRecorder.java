@@ -17,4 +17,8 @@ public interface SubListMimicRecorder<Solution_> {
     Iterator<Object> endingValueIterator();
 
     long getValueCount();
+
+    int getMinimumSubListSize();
+
+    int getMaximumSubListSize();
 }

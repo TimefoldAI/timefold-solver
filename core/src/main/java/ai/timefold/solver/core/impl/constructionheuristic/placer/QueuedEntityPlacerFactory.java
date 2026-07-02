@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.constructionheuristic.placer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -12,8 +13,8 @@ import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
@@ -27,8 +28,8 @@ public class QueuedEntityPlacerFactory<Solution_>
     public static <Solution_> QueuedEntityPlacerConfig unfoldNew(HeuristicConfigPolicy<Solution_> configPolicy,
             List<MoveSelectorConfig> templateMoveSelectorConfigList) {
         var config = new QueuedEntityPlacerConfig();
-        var entitySelectorConfig = new QueuedEntityPlacerFactory<Solution_>(config)
-                .buildEntitySelectorConfig(configPolicy);
+        var entitySelectorConfig =
+                new QueuedEntityPlacerFactory<Solution_>(config).buildEntitySelectorConfig(configPolicy, config);
         config.setEntitySelectorConfig(entitySelectorConfig);
         var moveSelectorConfigList = new ArrayList<MoveSelectorConfig>(templateMoveSelectorConfigList.size());
         config.setMoveSelectorConfigList(moveSelectorConfigList);
@@ -65,11 +66,14 @@ public class QueuedEntityPlacerFactory<Solution_>
 
     @Override
     public QueuedEntityPlacer<Solution_> buildEntityPlacer(HeuristicConfigPolicy<Solution_> configPolicy) {
-        var entitySelectorConfig_ = buildEntitySelectorConfig(configPolicy);
+        var entitySelectorConfig_ = Objects.requireNonNullElseGet(config.getEntitySelectorConfig(),
+                () -> buildEntitySelectorConfig(configPolicy, config));
         var entitySelector = EntitySelectorFactory.<Solution_> create(entitySelectorConfig_).buildEntitySelector(configPolicy,
                 SelectionCacheType.PHASE, SelectionOrder.ORIGINAL);
 
-        var moveSelectorConfigList_ = getMoveSelectorConfigs(configPolicy, entitySelector, entitySelectorConfig_);
+        var moveSelectorConfigList_ =
+                Objects.requireNonNullElseGet(config.getMoveSelectorConfigList(), () -> buildMoveSelectorConfig(configPolicy,
+                        config, entitySelector.getEntityDescriptor(), entitySelectorConfig_));
         var moveSelectorList = new ArrayList<MoveSelector<Solution_>>(moveSelectorConfigList_.size());
         for (var moveSelectorConfig : moveSelectorConfigList_) {
             var moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig)
@@ -80,13 +84,13 @@ public class QueuedEntityPlacerFactory<Solution_>
     }
 
     @SuppressWarnings("rawtypes")
-    private @NonNull List<MoveSelectorConfig> getMoveSelectorConfigs(HeuristicConfigPolicy<Solution_> configPolicy,
-            EntitySelector<Solution_> entitySelector, EntitySelectorConfig entitySelectorConfig_) {
+    public static <Solution_> @NonNull List<MoveSelectorConfig> buildMoveSelectorConfig(
+            HeuristicConfigPolicy<Solution_> configPolicy, QueuedEntityPlacerConfig config,
+            EntityDescriptor<Solution_> entityDescriptor, EntitySelectorConfig entitySelectorConfig_) {
         var moveSelectorConfigList = config.getMoveSelectorConfigList();
         if (!ConfigUtils.isEmptyCollection(moveSelectorConfigList)) {
             return moveSelectorConfigList;
         }
-        var entityDescriptor = entitySelector.getEntityDescriptor();
         var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList().stream()
                 .filter(variableDescriptor -> !variableDescriptor.isListVariable())
                 .toList();
@@ -103,15 +107,16 @@ public class QueuedEntityPlacerFactory<Solution_>
         }
     }
 
-    public EntitySelectorConfig buildEntitySelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
+    public static <Solution_> EntitySelectorConfig buildEntitySelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy,
+            QueuedEntityPlacerConfig config) {
         var entitySelectorConfig = config.getEntitySelectorConfig();
         if (entitySelectorConfig == null) {
-            var entityDescriptor = getTheOnlyEntityDescriptorWithBasicVariables(configPolicy.getSolutionDescriptor());
+            var entityDescriptor = getTheOnlyEntityDescriptorWithBasicVariables(configPolicy.getSolutionDescriptor(), config);
             entitySelectorConfig = getDefaultEntitySelectorConfigForEntity(configPolicy, entityDescriptor);
         } else {
             // The default phase configuration generates the entity selector config without an updated version of the configuration policy.
             // We need to ensure that there are no missing sorting settings.
-            var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
+            var entityDescriptor = deduceEntityDescriptor(configPolicy, config, entitySelectorConfig.getEntityClass());
             entitySelectorConfig = deduceEntitySortManner(configPolicy, entityDescriptor, entitySelectorConfig);
         }
         var cacheType = entitySelectorConfig.getCacheType();

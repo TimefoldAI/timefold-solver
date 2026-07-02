@@ -17,8 +17,6 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwap
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.testdomain.list.TestDistanceMeter;
@@ -323,8 +321,6 @@ class MoveSelectorConfigTest {
                 new CartesianProductMoveSelectorConfig(),
                 new MoveIteratorFactoryConfig(),
                 new MoveListFactoryConfig(),
-                new SubListChangeMoveSelectorConfig(),
-                new SubListSwapMoveSelectorConfig(),
                 new PillarChangeMoveSelectorConfig(),
                 new PillarSwapMoveSelectorConfig());
 

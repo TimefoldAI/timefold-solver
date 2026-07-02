@@ -12,4 +12,8 @@ public interface SubListSelector<Solution_> extends IterableSelector<Solution_, 
     Iterator<Object> endingValueIterator();
 
     long getValueCount();
+
+    int getMinimumSubListSize();
+
+    int getMaximumSubListSize();
 }

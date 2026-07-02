@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.config.heuristic.selector.move.generic.list;
 
 import java.util.function.Consumer;
+import java.util.random.RandomGenerator;
 
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
@@ -8,7 +9,10 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
+import ai.timefold.solver.core.config.heuristic.selector.move.NearbyUtil;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -18,7 +22,8 @@ import org.jspecify.annotations.Nullable;
         "subListSelectorConfig",
         "destinationSelectorConfig"
 })
-public final class SubListChangeMoveSelectorConfig extends MoveSelectorConfig<SubListChangeMoveSelectorConfig> {
+public final class SubListChangeMoveSelectorConfig extends MoveSelectorConfig<SubListChangeMoveSelectorConfig>
+        implements NearbyAutoConfigurationEnabled<SubListChangeMoveSelectorConfig> {
 
     public static final String XML_ELEMENT_NAME = "subListChangeMoveSelector";
 
@@ -84,9 +89,9 @@ public final class SubListChangeMoveSelectorConfig extends MoveSelectorConfig<Su
         this.selectReversingMoveToo =
                 ConfigUtils.inheritOverwritableProperty(selectReversingMoveToo, inheritedConfig.selectReversingMoveToo);
         this.subListSelectorConfig =
-                ConfigUtils.inheritOverwritableProperty(subListSelectorConfig, inheritedConfig.subListSelectorConfig);
+                ConfigUtils.inheritConfig(subListSelectorConfig, inheritedConfig.subListSelectorConfig);
         this.destinationSelectorConfig =
-                ConfigUtils.inheritOverwritableProperty(destinationSelectorConfig, inheritedConfig.destinationSelectorConfig);
+                ConfigUtils.inheritConfig(destinationSelectorConfig, inheritedConfig.destinationSelectorConfig);
         return this;
     }
 
@@ -104,6 +109,17 @@ public final class SubListChangeMoveSelectorConfig extends MoveSelectorConfig<Su
         if (destinationSelectorConfig != null) {
             destinationSelectorConfig.visitReferencedClasses(classVisitor);
         }
+    }
+
+    @Override
+    public boolean canEnableNearbyInMixedModels() {
+        return true;
+    }
+
+    @Override
+    public @NonNull SubListChangeMoveSelectorConfig enableNearbySelection(
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, @NonNull RandomGenerator random) {
+        return NearbyUtil.enable(this, distanceMeter, random);
     }
 
     @Override

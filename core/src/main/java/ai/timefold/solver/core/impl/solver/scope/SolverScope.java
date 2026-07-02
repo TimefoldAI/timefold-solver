@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.scope;
 
+import static ai.timefold.solver.core.impl.solver.thread.ChildThreadType.EVOLUTIONARY_AGENT_THREAD;
 import static ai.timefold.solver.core.impl.util.MathUtils.getSpeed;
 
 import java.time.Clock;
@@ -76,6 +77,8 @@ public class SolverScope<Solution_> {
      * Used for tracking move count per move type
      */
     private final Map<String, Long> moveEvaluationCountPerTypeMap = new ConcurrentHashMap<>();
+
+    private boolean triggerBestSolutionEvent = true;
 
     private static AtomicLong resetAtomicLongTimeMillis(AtomicLong atomicLong) {
         atomicLong.set(-1);
@@ -264,6 +267,14 @@ public class SolverScope<Solution_> {
         return moveEvaluationCountPerTypeMap;
     }
 
+    public boolean isTriggerBestSolutionEvent() {
+        return triggerBestSolutionEvent;
+    }
+
+    public void setTriggerBestSolutionEvent(boolean triggerBestSolutionEvent) {
+        this.triggerBestSolutionEvent = triggerBestSolutionEvent;
+    }
+
     // ************************************************************************
     // Calculated methods
     // ************************************************************************
@@ -361,6 +372,10 @@ public class SolverScope<Solution_> {
         resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);
         childThreadSolverScope.startingInitializedScore = null;
         childThreadSolverScope.bestSolutionTimeMillis = null;
+        if (childThreadType == EVOLUTIONARY_AGENT_THREAD) {
+            childThreadSolverScope.solver = solver;
+            childThreadSolverScope.problemSizeStatistics.set(problemSizeStatistics.get());
+        }
         return childThreadSolverScope;
     }
 

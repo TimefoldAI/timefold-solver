@@ -34,6 +34,16 @@ public interface SupplyManager {
     <Supply_ extends Supply> Supply_ demand(Demand<Supply_> demand);
 
     /**
+     * Enable demand cancellation/removal when the demand counter reaches zero.
+     */
+    void enableDemandCancellation();
+
+    /**
+     * Disable demand cancellation/removal when the demand counter reaches zero.
+     */
+    void disableDemandCancellation();
+
+    /**
      * Cancel an active {@link #demand(Demand)}.
      * Once the number of active demands reaches zero, the {@link Supply} in question is removed.
      * <p>
@@ -46,6 +56,11 @@ public interface SupplyManager {
      * @return true if the counter was decremented, false if there is no such supply
      */
     <Supply_ extends Supply> boolean cancel(Demand<Supply_> demand);
+
+    /**
+     * Cancel all existing active {@link #demand(Demand) demands}.
+     */
+    void cancelAll();
 
     /**
      * @param demand

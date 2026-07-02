@@ -44,14 +44,19 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
 
     protected EntityDescriptor<Solution_> deduceEntityDescriptor(HeuristicConfigPolicy<Solution_> configPolicy,
             Class<?> entityClass) {
-        var solutionDescriptor = configPolicy.getSolutionDescriptor();
-        return entityClass == null
-                ? getTheOnlyEntityDescriptor(solutionDescriptor)
-                : getEntityDescriptorForClass(solutionDescriptor, entityClass);
+        return deduceEntityDescriptor(configPolicy, config, entityClass);
     }
 
-    private EntityDescriptor<Solution_> getEntityDescriptorForClass(SolutionDescriptor<Solution_> solutionDescriptor,
-            Class<?> entityClass) {
+    public static <Solution_, Config_ extends AbstractConfig<Config_>> EntityDescriptor<Solution_> deduceEntityDescriptor(
+            HeuristicConfigPolicy<Solution_> configPolicy, AbstractConfig<Config_> config, Class<?> entityClass) {
+        var solutionDescriptor = configPolicy.getSolutionDescriptor();
+        return entityClass == null
+                ? getTheOnlyEntityDescriptor(solutionDescriptor, config)
+                : getEntityDescriptorForClass(solutionDescriptor, config, entityClass);
+    }
+
+    private static <Solution_, Config_ extends AbstractConfig<Config_>> EntityDescriptor<Solution_> getEntityDescriptorForClass(
+            SolutionDescriptor<Solution_> solutionDescriptor, AbstractConfig<Config_> config, Class<?> entityClass) {
         var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(entityClass);
         if (entityDescriptor == null) {
             throw new IllegalArgumentException(
@@ -65,6 +70,11 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
     }
 
     protected EntityDescriptor<Solution_> getTheOnlyEntityDescriptor(SolutionDescriptor<Solution_> solutionDescriptor) {
+        return getTheOnlyEntityDescriptor(solutionDescriptor, config);
+    }
+
+    protected static <Solution_, Config_ extends AbstractConfig<Config_>> EntityDescriptor<Solution_>
+            getTheOnlyEntityDescriptor(SolutionDescriptor<Solution_> solutionDescriptor, AbstractConfig<Config_> config) {
         var entityDescriptors = solutionDescriptor.getGenuineEntityDescriptors();
         if (entityDescriptors.size() != 1) {
             throw new IllegalArgumentException(
@@ -74,8 +84,9 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
         return entityDescriptors.iterator().next();
     }
 
-    protected EntityDescriptor<Solution_>
-            getTheOnlyEntityDescriptorWithBasicVariables(SolutionDescriptor<Solution_> solutionDescriptor) {
+    protected static <Solution_, Config_ extends AbstractConfig<Config_>> EntityDescriptor<Solution_>
+            getTheOnlyEntityDescriptorWithBasicVariables(SolutionDescriptor<Solution_> solutionDescriptor,
+                    AbstractConfig<Config_> config) {
         var entityDescriptors = solutionDescriptor.getGenuineEntityDescriptors()
                 .stream()
                 .filter(EntityDescriptor::hasAnyBasicVariables)

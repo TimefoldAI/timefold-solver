@@ -371,6 +371,9 @@
             <xs:element name="localSearch" type="tns:localSearchPhaseConfig"/>
                                     
             
+            <xs:element name="evolutionaryAlgorithm" type="tns:evolutionaryAlgorithmPhaseConfig"/>
+                                    
+            
             <xs:element name="partitionedSearch" type="tns:partitionedSearchPhaseConfig"/>
                                   
           
@@ -2354,6 +2357,165 @@
   </xs:complexType>
       
   
+  <xs:complexType name="evolutionaryAlgorithmPhaseConfig">
+            
+    
+    <xs:complexContent>
+                  
+      
+      <xs:extension base="tns:phaseConfig">
+                        
+        
+        <xs:sequence>
+                              
+          
+          <xs:element minOccurs="0" name="populationConfig" type="tns:evolutionaryPopulationConfig"/>
+                              
+          
+          <xs:element minOccurs="0" name="workerConfig" type="tns:evolutionaryWorkerConfig"/>
+                            
+        
+        </xs:sequence>
+                      
+      
+      </xs:extension>
+                
+    
+    </xs:complexContent>
+          
+  
+  </xs:complexType>
+      
+  
+  <xs:complexType name="evolutionaryPopulationConfig">
+            
+    
+    <xs:complexContent>
+                  
+      
+      <xs:extension base="tns:phaseConfig">
+                        
+        
+        <xs:sequence>
+                              
+          
+          <xs:element minOccurs="0" name="populationSize" type="xs:int"/>
+                              
+          
+          <xs:element minOccurs="0" name="generationSize" type="xs:int"/>
+                              
+          
+          <xs:element minOccurs="0" name="eliteSolutionSize" type="xs:int"/>
+                              
+          
+          <xs:element minOccurs="0" name="populationRestartCount" type="xs:int"/>
+                            
+        
+        </xs:sequence>
+                      
+      
+      </xs:extension>
+                
+    
+    </xs:complexContent>
+          
+  
+  </xs:complexType>
+      
+  
+  <xs:complexType name="evolutionaryWorkerConfig">
+            
+    
+    <xs:complexContent>
+                  
+      
+      <xs:extension base="tns:phaseConfig">
+                        
+        
+        <xs:sequence>
+                              
+          
+          <xs:element minOccurs="0" name="exploratoryRate" type="xs:double"/>
+                              
+          
+          <xs:element minOccurs="0" name="individualGeneratorConfig" type="tns:evolutionaryIndividualGeneratorConfig"/>
+                              
+          
+          <xs:element minOccurs="0" name="localSearchConfig" type="tns:evolutionaryLocalSearchConfig"/>
+                            
+        
+        </xs:sequence>
+                      
+      
+      </xs:extension>
+                
+    
+    </xs:complexContent>
+          
+  
+  </xs:complexType>
+      
+  
+  <xs:complexType name="evolutionaryIndividualGeneratorConfig">
+            
+    
+    <xs:complexContent>
+                  
+      
+      <xs:extension base="tns:phaseConfig">
+                        
+        
+        <xs:sequence>
+                              
+          
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="customPhaseCommandClass" type="xs:string"/>
+                              
+          
+          <xs:element minOccurs="0" name="customProperties" type="tns:jaxbAdaptedMap"/>
+                              
+          
+          <xs:element minOccurs="0" name="constructionHeuristic" type="tns:constructionHeuristicPhaseConfig"/>
+                            
+        
+        </xs:sequence>
+                      
+      
+      </xs:extension>
+                
+    
+    </xs:complexContent>
+          
+  
+  </xs:complexType>
+      
+  
+  <xs:complexType name="evolutionaryLocalSearchConfig">
+            
+    
+    <xs:complexContent>
+                  
+      
+      <xs:extension base="tns:phaseConfig">
+                        
+        
+        <xs:sequence>
+                              
+          
+          <xs:element minOccurs="0" name="localSearch" type="tns:localSearchPhaseConfig"/>
+                            
+        
+        </xs:sequence>
+                      
+      
+      </xs:extension>
+                
+    
+    </xs:complexContent>
+          
+  
+  </xs:complexType>
+      
+  
   <xs:complexType final="extension restriction" name="partitionedSearchPhaseConfig">
             
     
@@ -2421,6 +2583,9 @@
                   
       
       <xs:enumeration value="NEIGHBORHOODS"/>
+                  
+      
+      <xs:enumeration value="EVOLUTIONARY_ALGORITHM"/>
                 
     
     </xs:restriction>

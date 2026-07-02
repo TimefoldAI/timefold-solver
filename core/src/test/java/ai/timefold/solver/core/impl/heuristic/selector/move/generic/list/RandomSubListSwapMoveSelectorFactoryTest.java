@@ -13,7 +13,7 @@ import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEn
 
 import org.junit.jupiter.api.Test;
 
-class SubListSwapMoveSelectorFactoryTest {
+class RandomSubListSwapMoveSelectorFactoryTest {
 
     @Test
     void buildBaseMoveSelector() {

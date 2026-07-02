@@ -43,7 +43,7 @@ public class QueuedValuePlacerFactory<Solution_>
                         ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNASSIGNED);
 
         MoveSelectorConfig<?> moveSelectorConfig_ = config.getMoveSelectorConfig() == null
-                ? buildChangeMoveSelectorConfig(configPolicy, valueSelectorConfig_.getId(),
+                ? buildMoveSelectorConfig(configPolicy, valueSelectorConfig_.getId(),
                         valueSelector.getVariableDescriptor())
                 : config.getMoveSelectorConfig();
 
@@ -84,10 +84,8 @@ public class QueuedValuePlacerFactory<Solution_>
         return result;
     }
 
-    @Override
-    protected ChangeMoveSelectorConfig buildChangeMoveSelectorConfig(
-            HeuristicConfigPolicy<Solution_> configPolicy, String valueSelectorConfigId,
-            GenuineVariableDescriptor<Solution_> variableDescriptor) {
+    private ChangeMoveSelectorConfig buildMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy,
+            String valueSelectorConfigId, GenuineVariableDescriptor<Solution_> variableDescriptor) {
         ChangeMoveSelectorConfig changeMoveSelectorConfig = new ChangeMoveSelectorConfig();
         EntityDescriptor<Solution_> entityDescriptor = variableDescriptor.getEntityDescriptor();
         EntitySelectorConfig changeEntitySelectorConfig = new EntitySelectorConfig()

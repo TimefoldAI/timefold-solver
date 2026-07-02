@@ -59,7 +59,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                 .withValueSorterManner(valueSorterManner)
                 .build();
         var entityPlacerConfig_ = getValidEntityPlacerConfig()
-                .orElseGet(() -> buildDefaultEntityPlacerConfig(phaseConfigPolicy, constructionHeuristicType_));
+                .orElseGet(() -> buildDefaultEntityPlacerConfig(phaseConfigPolicy, phaseConfig, constructionHeuristicType_));
         var entityPlacer = EntityPlacerFactory.<Solution_> create(entityPlacerConfig_)
                 .buildEntityPlacer(phaseConfigPolicy);
         return createBuilder(phaseConfigPolicy, solverTermination, phaseIndex, lastInitializingPhase, entityPlacer);
@@ -102,14 +102,15 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         return Optional.of(entityPlacerConfig);
     }
 
-    private EntityPlacerConfig<?> buildDefaultEntityPlacerConfig(HeuristicConfigPolicy<Solution_> configPolicy,
+    public static <Solution_> EntityPlacerConfig<?> buildDefaultEntityPlacerConfig(
+            HeuristicConfigPolicy<Solution_> configPolicy, ConstructionHeuristicPhaseConfig phaseConfig,
             ConstructionHeuristicType constructionHeuristicType) {
         return findValidListVariableDescriptor(configPolicy.getSolutionDescriptor())
                 .map(listVariableDescriptor -> buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor))
-                .orElseGet(() -> buildUnfoldedEntityPlacerConfig(configPolicy, constructionHeuristicType));
+                .orElseGet(() -> buildUnfoldedEntityPlacerConfig(configPolicy, phaseConfig, constructionHeuristicType));
     }
 
-    private Optional<ListVariableDescriptor<?>>
+    private static <Solution_> Optional<ListVariableDescriptor<?>>
             findValidListVariableDescriptor(SolutionDescriptor<Solution_> solutionDescriptor) {
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
@@ -175,7 +176,8 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         return ConstructionHeuristicForagerFactory.<Solution_> create(foragerConfig_).buildForager(configPolicy);
     }
 
-    private EntityPlacerConfig<?> buildUnfoldedEntityPlacerConfig(HeuristicConfigPolicy<Solution_> phaseConfigPolicy,
+    private static <Solution_> EntityPlacerConfig<?> buildUnfoldedEntityPlacerConfig(
+            HeuristicConfigPolicy<Solution_> phaseConfigPolicy, ConstructionHeuristicPhaseConfig phaseConfig,
             ConstructionHeuristicType constructionHeuristicType) {
         return switch (constructionHeuristicType) {
             case FIRST_FIT, FIRST_FIT_DECREASING, WEAKEST_FIT, WEAKEST_FIT_DECREASING, STRONGEST_FIT, STRONGEST_FIT_DECREASING,
@@ -187,20 +189,20 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             }
             case ALLOCATE_TO_VALUE_FROM_QUEUE -> {
                 if (!ConfigUtils.isEmptyCollection(phaseConfig.getMoveSelectorConfigList())) {
-                    yield QueuedValuePlacerFactory.unfoldNew(checkSingleMoveSelectorConfig());
+                    yield QueuedValuePlacerFactory.unfoldNew(checkSingleMoveSelectorConfig(phaseConfig));
                 }
                 yield new QueuedValuePlacerConfig();
             }
             case CHEAPEST_INSERTION, ALLOCATE_FROM_POOL -> {
                 if (!ConfigUtils.isEmptyCollection(phaseConfig.getMoveSelectorConfigList())) {
-                    yield PooledEntityPlacerFactory.unfoldNew(phaseConfigPolicy, checkSingleMoveSelectorConfig());
+                    yield PooledEntityPlacerFactory.unfoldNew(phaseConfigPolicy, checkSingleMoveSelectorConfig(phaseConfig));
                 }
                 yield new PooledEntityPlacerConfig();
             }
         };
     }
 
-    private MoveSelectorConfig<?> checkSingleMoveSelectorConfig() { // Non-null guaranteed by the caller.
+    private static MoveSelectorConfig<?> checkSingleMoveSelectorConfig(ConstructionHeuristicPhaseConfig phaseConfig) { // Non-null guaranteed by the caller.
         var moveSelectorConfigList = Objects.requireNonNull(phaseConfig.getMoveSelectorConfigList());
         if (moveSelectorConfigList.size() != 1) {
             throw new IllegalArgumentException("""

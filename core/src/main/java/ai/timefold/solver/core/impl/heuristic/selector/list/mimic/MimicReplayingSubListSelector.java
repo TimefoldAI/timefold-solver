@@ -77,6 +77,16 @@ public class MimicReplayingSubListSelector<Solution_> extends AbstractSelector<S
     }
 
     @Override
+    public int getMinimumSubListSize() {
+        return subListMimicRecorder.getMinimumSubListSize();
+    }
+
+    @Override
+    public int getMaximumSubListSize() {
+        return subListMimicRecorder.getMaximumSubListSize();
+    }
+
+    @Override
     public Iterator<SubList> iterator() {
         return new ReplayingSubListIterator();
     }

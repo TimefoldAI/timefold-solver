@@ -868,7 +868,7 @@ class SolverMetricsIT extends AbstractMeterTest {
                             .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + swapMoveKey, "VALUE");
                     moveCountPerSwap.set(counter.longValue());
                 }
-                var twoOptMoveKey = "2-Opt(TestdataListEntity.valueList)";
+                var twoOptMoveKey = "2-Opt(TestdataListEntity.valueList, reverseTail=false)";
                 if (solverScope.getMoveCountTypes().contains(twoOptMoveKey)) {
                     var counter = meterRegistry
                             .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + twoOptMoveKey, "VALUE");

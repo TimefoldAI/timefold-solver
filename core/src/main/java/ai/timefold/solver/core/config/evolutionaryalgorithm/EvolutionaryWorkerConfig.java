@@ -1,0 +1,102 @@
+package ai.timefold.solver.core.config.evolutionaryalgorithm;
+
+import java.util.function.Consumer;
+
+import jakarta.xml.bind.annotation.XmlType;
+
+import ai.timefold.solver.core.config.phase.PhaseConfig;
+import ai.timefold.solver.core.config.util.ConfigUtils;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@XmlType(propOrder = {
+        "exploratoryRate",
+        "individualGeneratorConfig",
+        "localSearchConfig",
+})
+@NullMarked
+public class EvolutionaryWorkerConfig extends PhaseConfig<EvolutionaryWorkerConfig> {
+
+    @Nullable
+    private Double exploratoryRate;
+
+    @Nullable
+    private EvolutionaryIndividualGeneratorConfig individualGeneratorConfig = null;
+
+    @Nullable
+    private EvolutionaryLocalSearchConfig localSearchConfig = null;
+
+    // ************************************************************************
+    // Constructors and simple getters/setters
+    // ************************************************************************
+
+    public @Nullable Double getExploratoryRate() {
+        return exploratoryRate;
+    }
+
+    public void setExploratoryRate(@Nullable Double exploratoryRate) {
+        this.exploratoryRate = exploratoryRate;
+    }
+
+    public @Nullable EvolutionaryIndividualGeneratorConfig getIndividualGeneratorConfig() {
+        return individualGeneratorConfig;
+    }
+
+    public void setIndividualGeneratorConfig(@Nullable EvolutionaryIndividualGeneratorConfig individualGeneratorConfig) {
+        this.individualGeneratorConfig = individualGeneratorConfig;
+    }
+
+    public @Nullable EvolutionaryLocalSearchConfig getLocalSearchConfig() {
+        return localSearchConfig;
+    }
+
+    public void setLocalSearchConfig(@Nullable EvolutionaryLocalSearchConfig localSearchConfig) {
+        this.localSearchConfig = localSearchConfig;
+    }
+
+    // ************************************************************************
+    // With methods
+    // ************************************************************************
+
+    public EvolutionaryWorkerConfig withExploratoryRate(Double exploratoryRate) {
+        setExploratoryRate(exploratoryRate);
+        return this;
+    }
+
+    public EvolutionaryWorkerConfig
+            withIndividualGeneratorConfig(EvolutionaryIndividualGeneratorConfig individualGeneratorConfig) {
+        setIndividualGeneratorConfig(individualGeneratorConfig);
+        return this;
+    }
+
+    public EvolutionaryWorkerConfig withLocalSearchConfig(EvolutionaryLocalSearchConfig localSearchConfig) {
+        setLocalSearchConfig(localSearchConfig);
+        return this;
+    }
+
+    @Override
+    public EvolutionaryWorkerConfig inherit(EvolutionaryWorkerConfig inheritedConfig) {
+        super.inherit(inheritedConfig);
+        exploratoryRate = ConfigUtils.inheritOverwritableProperty(exploratoryRate, inheritedConfig.getExploratoryRate());
+        individualGeneratorConfig =
+                ConfigUtils.inheritConfig(individualGeneratorConfig, inheritedConfig.getIndividualGeneratorConfig());
+        localSearchConfig = ConfigUtils.inheritConfig(localSearchConfig, inheritedConfig.getLocalSearchConfig());
+        return this;
+    }
+
+    @Override
+    public EvolutionaryWorkerConfig copyConfig() {
+        return new EvolutionaryWorkerConfig().inherit(this);
+    }
+
+    @Override
+    public void visitReferencedClasses(Consumer<@Nullable Class<?>> classVisitor) {
+        if (individualGeneratorConfig != null) {
+            individualGeneratorConfig.visitReferencedClasses(classVisitor);
+        }
+        if (localSearchConfig != null) {
+            localSearchConfig.visitReferencedClasses(classVisitor);
+        }
+    }
+}

@@ -175,6 +175,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        isGracePeriodStarted = false;
         scoresByTime.clear();
     }
 

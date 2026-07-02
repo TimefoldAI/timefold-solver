@@ -69,6 +69,10 @@ public interface EventProducerId {
         return new PhaseEventProducerId(PhaseType.PARTITIONED_SEARCH, phaseIndex);
     }
 
+    static EventProducerId evolutionaryAlgorithm(int phaseIndex) {
+        return new PhaseEventProducerId(PhaseType.EVOLUTIONARY_ALGORITHM, phaseIndex);
+    }
+
     static EventProducerId customPhase(int phaseIndex) {
         return new PhaseEventProducerId(PhaseType.CUSTOM_PHASE, phaseIndex);
     }

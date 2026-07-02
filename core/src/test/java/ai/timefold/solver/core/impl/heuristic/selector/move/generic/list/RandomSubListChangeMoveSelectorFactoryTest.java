@@ -18,7 +18,7 @@ import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEn
 
 import org.junit.jupiter.api.Test;
 
-class SubListChangeMoveSelectorFactoryTest {
+class RandomSubListChangeMoveSelectorFactoryTest {
 
     @Test
     void buildMoveSelector() {

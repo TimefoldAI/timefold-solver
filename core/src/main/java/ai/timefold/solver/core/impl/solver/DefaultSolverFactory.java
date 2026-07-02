@@ -36,6 +36,7 @@ import ai.timefold.solver.core.impl.phase.PhaseFactory;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.random.DefaultRandomSource;
 import ai.timefold.solver.core.impl.solver.random.RandomSource;
@@ -133,6 +134,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(castScoreDirector));
 
         var moveThreadCount = resolveMoveThreadCount(true);
+        var constraintCount = calculateConstraintCount();
         var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);
         var randomFactory = buildRandomSupplier(environmentMode);
         var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
@@ -152,6 +154,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withEnvironmentMode(environmentMode)
                 .withMoveThreadCount(moveThreadCount)
                 .withMoveThreadBufferSize(solverConfig.getMoveThreadBufferSize())
+                .withConstraintCount(constraintCount)
                 .withThreadFactoryClass(solverConfig.getThreadFactoryClass())
                 .withNearbyDistanceMeterClass(solverConfig.getNearbyDistanceMeterClass())
                 .withRandom(randomFactory.get())
@@ -166,6 +169,14 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
                 (UniversalTermination<Solution_>) termination, phaseList, solverScope,
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
+    }
+
+    private int calculateConstraintCount() {
+        // Only constraint stream includes the concept of multiple separate constraints
+        if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory streamScoreDirectorFactory) {
+            return streamScoreDirectorFactory.getConstraintMetaModel().getConstraints().size();
+        }
+        return 0;
     }
 
     public @Nullable Integer resolveMoveThreadCount(boolean enforceMaximum) {

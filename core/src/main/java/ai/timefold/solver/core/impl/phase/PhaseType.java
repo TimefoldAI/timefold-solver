@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.phase;
 
 import ai.timefold.solver.core.impl.constructionheuristic.ConstructionHeuristicPhase;
+import ai.timefold.solver.core.impl.evolutionaryalgorithm.EvolutionaryAlgorithmPhase;
 import ai.timefold.solver.core.impl.exhaustivesearch.ExhaustiveSearchPhase;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.localsearch.LocalSearchPhase;
@@ -32,6 +33,10 @@ public enum PhaseType {
      * The type of phase associated with {@link PartitionedSearchPhase}.
      */
     PARTITIONED_SEARCH("Partitioned Search"),
+    /**
+     * The type of phase associated with {@link EvolutionaryAlgorithmPhase}.
+     */
+    EVOLUTIONARY_ALGORITHM("Evolutionary Algorithm"),
     /**
      * The type of phase associated with {@link CustomPhase}.
      */

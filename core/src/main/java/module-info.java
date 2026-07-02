@@ -49,6 +49,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing;
     exports ai.timefold.solver.core.config.localsearch.decider.forager;
     exports ai.timefold.solver.core.config.partitionedsearch;
+    exports ai.timefold.solver.core.config.evolutionaryalgorithm;
     exports ai.timefold.solver.core.config.phase;
     exports ai.timefold.solver.core.config.phase.custom;
     exports ai.timefold.solver.core.config.score.director;
@@ -84,6 +85,14 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
     exports ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
     exports ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
+    exports ai.timefold.solver.core.impl.evolutionaryalgorithm.common.bestsolution;
+    exports ai.timefold.solver.core.impl.evolutionaryalgorithm.common.phase;
+    exports ai.timefold.solver.core.impl.evolutionaryalgorithm.common.state;
+    exports ai.timefold.solver.core.impl.evolutionaryalgorithm.decider;
+    exports ai.timefold.solver.core.impl.evolutionaryalgorithm.population;
+    exports ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual;
+    exports ai.timefold.solver.core.impl.evolutionaryalgorithm.population.individual.generator;
+    exports ai.timefold.solver.core.impl.evolutionaryalgorithm.crossover;
 
     // explicit exports to other modules
     exports ai.timefold.solver.core.impl.constructionheuristic.event to
@@ -134,6 +143,8 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.localsearch.event to ai.timefold.solver.jackson, ai.timefold.solver.benchmark,
             ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.localsearch.scope
+            to ai.timefold.solver.enterprise.core, ai.timefold.solver.benchmark;
+    exports ai.timefold.solver.core.impl.evolutionaryalgorithm.common.scope
             to ai.timefold.solver.enterprise.core, ai.timefold.solver.benchmark;
     exports ai.timefold.solver.core.impl.partitionedsearch.partitioner to ai.timefold.solver.quarkus.deployment,
             ai.timefold.solver.enterprise.core;
@@ -202,6 +213,7 @@ module ai.timefold.solver.core {
     exports ai.timefold.solver.core.impl.move to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.neighborhood to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.partitionedsearch to ai.timefold.solver.enterprise.core;
+    exports ai.timefold.solver.core.impl.evolutionaryalgorithm to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.phase to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.stream.bavet to ai.timefold.solver.enterprise.core;
     exports ai.timefold.solver.core.impl.score.stream.bavet.uni to ai.timefold.solver.enterprise.core;
@@ -242,6 +254,7 @@ module ai.timefold.solver.core {
             to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.localsearch.decider.forager to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.partitionedsearch to jakarta.xml.bind, org.glassfish.jaxb.runtime;
+    opens ai.timefold.solver.core.config.evolutionaryalgorithm to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.phase to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.phase.custom to jakarta.xml.bind, org.glassfish.jaxb.runtime;
     opens ai.timefold.solver.core.config.score.director to jakarta.xml.bind, org.glassfish.jaxb.runtime;
