@@ -14,8 +14,7 @@ final class UniversalTuple<A, B, C, D>
     private static final Object[] EMPTY_STORE = new Object[0];
 
     private final int cardinality;
-    private @Nullable Object store0;
-    private final @Nullable Object[] storeOverflow;
+    private final @Nullable Object[] store;
 
     private @Nullable A a;
     private @Nullable B b;
@@ -25,7 +24,7 @@ final class UniversalTuple<A, B, C, D>
 
     UniversalTuple(int storeSize, int cardinality) {
         this.cardinality = cardinality;
-        this.storeOverflow = storeSize > 1 ? new Object[storeSize - 1] : EMPTY_STORE;
+        this.store = storeSize > 0 ? new Object[storeSize] : EMPTY_STORE;
     }
 
     @Override
@@ -81,30 +80,19 @@ final class UniversalTuple<A, B, C, D>
     @SuppressWarnings("unchecked")
     @Override
     public <Value_> @Nullable Value_ getStore(int index) {
-        return (Value_) (index == 0 ? store0 : storeOverflow[index - 1]);
+        return (Value_) store[index];
     }
 
     @Override
     public void setStore(int index, @Nullable Object value) {
-        if (index == 0) {
-            store0 = value;
-        } else {
-            storeOverflow[index - 1] = value;
-        }
+        store[index] = value;
     }
 
     @Override
     public <Value_> @Nullable Value_ removeStore(int index) {
-        if (index == 0) {
-            var result = (Value_) store0;
-            store0 = null;
-            return result;
-        } else {
-            var pos = index - 1;
-            var result = (Value_) storeOverflow[pos];
-            storeOverflow[pos] = null;
-            return result;
-        }
+        Value_ value = getStore(index);
+        setStore(index, null);
+        return value;
     }
 
     @Override
