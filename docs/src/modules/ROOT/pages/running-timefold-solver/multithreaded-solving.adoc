@@ -11,17 +11,16 @@
 
 There are several ways of running the solver in parallel:
 
-* *xref:#multithreadedIncrementalSolving[Multi-threaded incremental solving]*:
-Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
+xref:#multithreadedIncrementalSolving[Multi-threaded incremental solving]:: Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
 
-* *xref:#partitionedSearch[Partitioned search]*:
-Split 1 dataset in multiple parts and solve them independently.
+xref:#partitionedSearch[Partitioned search]:: Split 1 dataset in multiple parts and solve them independently.
 
-* *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
-** Not recommended: This is a marginal gain for a high cost of hardware resources.
-** Use the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
-* *Multitenancy*: solve different datasets in parallel.
-** The xref:running-timefold-solver/library/library-integration.adoc[`SolverManager`] can help with this.
+Multi bet solving:: Solve 1 dataset with multiple, isolated solvers and take the best result.
++
+* Not recommended: This is a marginal gain for a high cost of hardware resources.
+* Use the xref:running-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
+
+Multitenancy:: Solve different datasets in parallel. The xref:running-timefold-solver/library/library-integration.adoc[`SolverManager`] can help with this.
 
 image::running-timefold-solver/multithreaded-solving/multiThreadingStrategies.png[align="center"]
 
@@ -127,10 +126,9 @@ and the solver thread uses most of another CPU core.
 
 The following ``moveThreadCount``s are supported:
 
-* `NONE` (default): Don't run any move threads. Use the single threaded code.
-* ``AUTO``: Let Timefold Solver decide how many move threads to run in parallel.
-On machines or containers with little or no CPUs, this falls back to the single threaded code.
-* Static number: The number of move threads to run in parallel.
+`NONE` (default):: Don't run any move threads. Use the single threaded code.
+`AUTO`:: Let Timefold Solver decide how many move threads to run in parallel. On machines or containers with little or no CPUs, this falls back to the single threaded code.
+Static number:: The number of move threads to run in parallel.
 
 It is counter-effective to set a `moveThreadCount`
 that is higher than the number of available CPU cores,
@@ -340,11 +338,9 @@ image::running-timefold-solver/multithreaded-solving/partitionedSearchThreading.
 
 The following `runnablePartThreadLimit` options are supported:
 
-* `UNLIMITED`: Allow Timefold Solver to occupy all CPU cores, do not avoid hogging.
-Useful if a no hogging CPU policy is configured on the OS level.
-* `AUTO` (default): Let Timefold Solver decide how many CPU cores to occupy. This formula is based on experience.
-It does not hog all CPU cores on a multi-core machine.
-* Static number: The number of CPU cores to consume. For example:
+`UNLIMITED`:: Allow Timefold Solver to occupy all CPU cores, do not avoid hogging. Useful if a no hogging CPU policy is configured on the OS level.
+`AUTO` (default):: Let Timefold Solver decide how many CPU cores to occupy. This formula is based on experience. It does not hog all CPU cores on a multi-core machine.
+Static number:: The number of CPU cores to consume. For example:
 +
 [source,xml,options="nowrap"]
 ----
