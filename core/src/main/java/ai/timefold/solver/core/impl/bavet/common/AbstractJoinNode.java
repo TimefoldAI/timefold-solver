@@ -11,6 +11,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleList;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * This class has two direct children: {@link AbstractIndexedJoinNode} and {@link AbstractUnindexedJoinNode}.
  * The logic in either is identical, except that the latter removes all indexing work.
@@ -30,6 +32,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
     private final int outputStoreIndexRightOutTupleList;
     protected final OutTupleStorePositionTracker outputStoreSizeTracker;
     private final StaticPropagationQueue<OutTuple_> propagationQueue;
+    private long markVersion = 0;
 
     protected final Supplier<TupleList<OutTuple_>> leftOutTupleListBuilder;
     protected final Supplier<TupleList<OutTuple_>> rightOutTupleListBuilder;
@@ -129,9 +132,18 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 // However, no such issue could have been reproduced; when in doubt, leave it out.
                 return;
             }
-            rightTupleConsumer.accept(rightTuple -> processOutTupleUpdate(leftTuple, rightTuple,
-                    rightTuple.getStore(inputStoreIndexRightOutTupleList), outTupleListLeft,
-                    outputStoreIndexRightOutTupleList));
+            // Every out-tuple's partner is guaranteed to be swept below,
+            // because retracts and key-moves unlink out-tuples synchronously;
+            // a stale mark can therefore only ever be version-mismatched.
+            var version = ++markVersion;
+            for (var outTuple = outTupleListLeft.first(); outTuple != null; outTuple = outTupleListLeft.next(outTuple)) {
+                TupleList<OutTuple_> outTupleListRight = outTuple.getStore(outputStoreIndexRightOutTupleList);
+                outTupleListRight.mark(outTuple, version);
+            }
+            rightTupleConsumer.accept(rightTuple -> {
+                TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
+                processOutTupleUpdate(leftTuple, rightTuple, outTupleListRight.getMark(version));
+            });
         }
     }
 
@@ -161,14 +173,16 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 doUpdateOutTuple(outTuple);
             }
         } else {
-            leftTupleConsumer.accept(leftTuple -> processOutTupleUpdateFromLeft(leftTuple, rightTuple,
-                    leftTuple.getStore(inputStoreIndexLeftOutTupleList), outTupleListRight, outputStoreIndexLeftOutTupleList));
+            var version = ++markVersion;
+            for (var outTuple = outTupleListRight.first(); outTuple != null; outTuple = outTupleListRight.next(outTuple)) {
+                TupleList<OutTuple_> outTupleListLeft = outTuple.getStore(outputStoreIndexLeftOutTupleList);
+                outTupleListLeft.mark(outTuple, version);
+            }
+            leftTupleConsumer.accept(leftTuple -> processOutTupleUpdateFromLeft(leftTuple, rightTuple, version));
         }
     }
 
-    private void processOutTupleUpdateFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple,
-            TupleList<OutTuple_> outList, TupleList<OutTuple_> outTupleList,
-            int outputStoreIndexOutEntry) {
+    private void processOutTupleUpdateFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
         if (!leftTuple.getState().isActive()) {
             // Assume the following scenario:
             // - The join is of two entities of the same type, both filtering out unassigned.
@@ -186,13 +200,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
             // However, no such issue could have been reproduced; when in doubt, leave it out.
             return;
         }
-        processOutTupleUpdate(leftTuple, rightTuple, outList, outTupleList, outputStoreIndexOutEntry);
+        TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
+        processOutTupleUpdate(leftTuple, rightTuple, outTupleListLeft.getMark(version));
     }
 
-    private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple,
-            TupleList<OutTuple_> referenceList, TupleList<OutTuple_> sourceList,
-            int outputStoreIndexOutEntry) {
-        var outTuple = findOutTuple(sourceList, referenceList, outputStoreIndexOutEntry);
+    private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, @Nullable OutTuple_ outTuple) {
         if (testFiltering(leftTuple, rightTuple)) {
             if (outTuple == null) {
                 insertOutTuple(leftTuple, rightTuple);
@@ -204,22 +216,6 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 retractOutTuple(outTuple);
             }
         }
-    }
-
-    private static <Tuple_ extends Tuple> Tuple_ findOutTuple(TupleList<Tuple_> sourceList,
-            TupleList<Tuple_> referenceList, int outputStoreIndexOutEntry) {
-        // Hack: the outTuple has no left/right input tuple reference, use the left/right outList reference instead.
-        var item = sourceList.first();
-        // Safe: findOutTuple returns immediately on a match; the caller retracts after this call returns, not during the walk.
-        while (item != null) {
-            // Creating list iterators here caused major GC pressure; therefore, we iterate over the entries directly.
-            TupleList<Tuple_> outEntryList = item.getStore(outputStoreIndexOutEntry);
-            if (referenceList == outEntryList) {
-                return item;
-            }
-            item = sourceList.next(item);
-        }
-        return null;
     }
 
     private void retractOutTuple(OutTuple_ outTuple) {
