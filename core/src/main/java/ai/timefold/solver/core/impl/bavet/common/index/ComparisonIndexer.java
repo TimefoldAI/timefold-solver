@@ -17,6 +17,29 @@ import ai.timefold.solver.core.impl.util.ListEntry;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * An {@link Indexer} for LT/LTE/GT/GTE joins, keyed by a single {@link Comparable} value
+ * and backed by a {@link ScalingNavigableMap} of key to downstream {@link Indexer}.
+ * <p>
+ * GT/GTE are handled by iterating the map in reverse ({@link #reverseOrder})
+ * rather than by using a reversed comparator or sub-map views,
+ * so both directions can share the same ascending, comparator-free {@link ScalingNavigableMap}
+ * and its fast, non-comparator {@code TreeMap} lookup path.
+ * {@link #boundaryReached} folds that direction, plus LTE/GTE inclusivity ({@link #hasOrEquals}),
+ * into a single check used to stop a range scan.
+ * <p>
+ * Every query operation ({@link #size}, {@link #forEach}, {@link #iterator}, {@link #randomIterator})
+ * has separate array-mode and tree-mode implementations,
+ * dispatched on {@link ScalingNavigableMap#arrayBased}.
+ * <p>
+ * This class was heavily benchmarked;
+ * it is recommended to assume that most decisions made here
+ * are performance-driven and not necessarily obvious or intuitive.
+ * Any changes should also be based on benchmarks.
+ *
+ * @param <T> the element type, see {@link Indexer}
+ * @param <Key_> the type of the comparison key, unpacked from the composite key by {@link #keyUnpacker}
+ */
 @NullMarked
 final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Indexer<T> {
 
@@ -124,13 +147,22 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         return boundaryReached(entry.getKey(), indexKey) ? 0 : entry.getValue().size(compositeKey);
     }
 
+    /**
+     * Whether {@code entryKey}, and every key past it in iteration order, fails to match {@code indexKey}
+     * and the range scan (in {@code size}/{@code forEach}/{@code iterator}/{@code randomIterator}) should stop.
+     * <p>
+     * {@code comparisonMap} is always iterated ascending by natural order (see {@link ScalingNavigableMap});
+     * {@link #reverseOrder} instead flips the sign of the comparison here,
+     * so GT/GTE effectively scan the same ascending storage from the other end,
+     * without needing a reversed comparator or sub-map view.
+     */
     private boolean boundaryReached(Key_ entryKey, Key_ indexKey) {
         var comparison = entryKey.compareTo(indexKey);
         if (reverseOrder) {
             // Comparator matches the order of iteration of the map, so the boundary is always found from the bottom up.
             comparison = -comparison;
         }
-        if (comparison >= 0) { // Possibility of reaching the boundary condition.
+        if (comparison >= 0) {
             // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
             return comparison > 0 || !hasOrEquals;
         }
@@ -177,7 +209,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
     public void forEach(Object compositeKey, Consumer<T> tupleConsumer) {
         switch (comparisonMap.size()) {
             case 0 -> {
-                /* Nothing to do. */
+                // Nothing to do.
             }
             case 1 -> forEachSingleIndexer(compositeKey, tupleConsumer);
             default -> forEachManyIndexers(compositeKey, tupleConsumer);
@@ -345,6 +377,11 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Index
         return "size = " + comparisonMap.size();
     }
 
+    /**
+     * Handles both array-mode and tree-mode iteration in a single class,
+     * branching internally ({@link #advanceFromArray}/{@link #advanceFromTree})
+     * rather than splitting into two {@code Iterator} implementations behind a shared type.
+     */
     private class DefaultIterator implements Iterator<T> {
 
         private final Key_ indexKey;

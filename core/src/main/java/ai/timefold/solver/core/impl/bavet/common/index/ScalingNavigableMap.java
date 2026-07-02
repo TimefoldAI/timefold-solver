@@ -53,8 +53,9 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     // Package-private: tests in this package read arrayBased/ARRAY_THRESHOLD
-    // The threshold was established experimentally;
-    // it was an improvement over 48, 96 only marginally better.
+    // Established experimentally;
+    // get/scan/churn all favor 64 over 32;
+    // pushing further to 96 or 128 only improved scan marginally, while get and churn got worse.
     static final int ARRAY_THRESHOLD = 64;
     private static final int MINIMUM_ARRAY_CAPACITY = 4;
 
@@ -210,8 +211,8 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
      * Array-mode only.
      * Same contract as {@link Arrays#binarySearch(Object[], int, int, Object)}:
      * the index of {@code key} if present, else {@code -(insertionPoint) - 1}.
-     * Exposed (see {@link #removeAt}) so a caller that needs both the value
-     * and, conditionally, to remove it - like {@link ComparisonIndexer#remove} -
+     * Exposed (see {@link #removeAt}) so a caller that needs both the value and, conditionally, to remove it -
+     * like {@link ComparisonIndexer#remove} -
      * can reuse the result instead of searching for {@code key} a second time.
      */
     int indexOf(K key) {

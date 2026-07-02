@@ -96,7 +96,7 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
     @Test
     void treeifiesPastArrayThreshold() {
         // Below-threshold storage is a sorted array; crossing ARRAY_THRESHOLD must treeify without
-        // changing LESS_THAN match sets or order (see ScalingNavigableMap's belowThreshold/treeify()).
+        // changing LESS_THAN match sets or order (see ScalingNavigableMap's arrayBased/treeify()).
         Indexer<UniTuple<String>> indexer = new IndexerFactory<>(lessThanAge).buildIndexer(true);
         var threshold = ScalingNavigableMap.ARRAY_THRESHOLD;
         var tuplesByAge = new LinkedHashMap<Integer, UniTuple<String>>();
