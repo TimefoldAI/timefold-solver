@@ -53,8 +53,9 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     // Package-private: tests in this package read arrayBased/ARRAY_THRESHOLD
-    // The threshold was established experimentally.
-    static final int ARRAY_THRESHOLD = 32;
+    // The threshold was established experimentally;
+    // it was an improvement over 48, 96 only marginally better.
+    static final int ARRAY_THRESHOLD = 64;
     private static final int MINIMUM_ARRAY_CAPACITY = 4;
 
     boolean arrayBased = true;
