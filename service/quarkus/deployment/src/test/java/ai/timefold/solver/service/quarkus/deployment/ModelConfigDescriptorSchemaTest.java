@@ -71,6 +71,7 @@ public class ModelConfigDescriptorSchemaTest {
             softly.assertThat(primitive.format()).isEqualTo(DataFormat.Percentage);
             softly.assertThat(primitive.kind()).isEqualTo(ParameterKind.PARAMETER);
             softly.assertThat(primitive.type()).isEqualTo(Schema.SchemaType.INTEGER);
+            softly.assertThat(primitive.nullable()).isFalse();
 
             ModelConfigParameter primitiveArray = modelConfigDescriptor.configParameters().get(2);
             softly.assertThat(primitiveArray.id()).isEqualTo("primitiveArrayParam");
@@ -97,6 +98,7 @@ public class ModelConfigDescriptorSchemaTest {
             softly.assertThat(string.kind()).isEqualTo(ParameterKind.PARAMETER);
             softly.assertThat(string.type()).isEqualTo(Schema.SchemaType.STRING);
             softly.assertThat(string.schemaTypeRef()).isNull();
+            softly.assertThat(string.nullable()).isTrue();
         });
     }
 }
