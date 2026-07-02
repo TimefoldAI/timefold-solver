@@ -152,6 +152,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         doUpdateOutTuple(outTuple);
     }
 
+    private void updateOutTupleRight(OutTuple_ outTuple, UniTuple<Right_> rightTuple) {
+        setOutTupleRightFact(outTuple, rightTuple);
+        doUpdateOutTuple(outTuple);
+    }
+
     private void doUpdateOutTuple(OutTuple_ outTuple) {
         var state = outTuple.getState();
         if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
@@ -201,7 +206,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
             return;
         }
         TupleList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
-        processOutTupleUpdate(leftTuple, rightTuple, outTupleListLeft.getMark(version));
+        processOutTupleUpdateRight(leftTuple, rightTuple, outTupleListLeft.getMark(version));
     }
 
     private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, @Nullable OutTuple_ outTuple) {
@@ -210,6 +215,20 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 insertOutTuple(leftTuple, rightTuple);
             } else {
                 updateOutTupleLeft(outTuple, leftTuple);
+            }
+        } else {
+            if (outTuple != null) {
+                retractOutTuple(outTuple);
+            }
+        }
+    }
+
+    private void processOutTupleUpdateRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, @Nullable OutTuple_ outTuple) {
+        if (testFiltering(leftTuple, rightTuple)) {
+            if (outTuple == null) {
+                insertOutTuple(leftTuple, rightTuple);
+            } else {
+                updateOutTupleRight(outTuple, rightTuple);
             }
         } else {
             if (outTuple != null) {
