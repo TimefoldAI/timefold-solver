@@ -4,6 +4,8 @@
 :sectnums:
 :icons: font
 
+:framework-quickstart-url: {service-quickstart-url}
+
 This guide walks you through the process of creating an AI Optimization service.
 
 With this approach, you define your planning model: the domain objects, constraints, and planning solution.
@@ -17,11 +19,7 @@ IMPORTANT: This is a preview feature subject to change.
 include::../shared/_whatyoubuild.adoc[]
 
 [sectnums!]
-== Solution source code
-
-In case you get stuck during this Getting Started guide, it might be worth checking the solution project.
-
-This https://github.com/TimefoldAI/timefold-service-getting-started[solution can be found on GitHub].
+include::../shared/_solutionsourcecode.adoc[]
 
 [sectnums!]
 == Prerequisites
