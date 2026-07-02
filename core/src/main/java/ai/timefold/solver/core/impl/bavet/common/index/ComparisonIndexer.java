@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -17,8 +18,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
-        implements Indexer<T> {
+final class ComparisonIndexer<T, Key_ extends Comparable<Key_>> implements Indexer<T> {
 
     private final KeyUnpacker<Key_> keyUnpacker;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
@@ -43,7 +43,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
                 comparisonJoinerType == JoinerType.GREATER_THAN || comparisonJoinerType == JoinerType.GREATER_THAN_OR_EQUAL;
         this.hasOrEquals = comparisonJoinerType == JoinerType.GREATER_THAN_OR_EQUAL
                 || comparisonJoinerType == JoinerType.LESS_THAN_OR_EQUAL;
-        this.comparisonMap = new ScalingNavigableMap<>(reverseOrder);
+        this.comparisonMap = new ScalingNavigableMap<>();
     }
 
     @Override
@@ -56,21 +56,46 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     @Override
     public void remove(Object compositeKey, ListEntry<T> entry) {
         var indexKey = keyUnpacker.apply(compositeKey);
-        var downstreamIndexer = getDownstreamIndexer(compositeKey, indexKey, entry);
+        if (comparisonMap.arrayBased) {
+            removeArray(compositeKey, indexKey, entry);
+        } else {
+            removeTree(compositeKey, indexKey, entry);
+        }
+    }
+
+    /**
+     * Looks up the entry once (comparisonMap.indexOf(), one binary search)
+     * and reuses the same index to remove it if needed,
+     * instead of a second indexOf()-equivalent lookup for the same key
+     * (as comparisonMap.remove(key) alone would do).
+     */
+    private void removeArray(Object compositeKey, Key_ indexKey, ListEntry<T> entry) {
+        var index = comparisonMap.indexOf(indexKey);
+        if (index < 0) {
+            throw notFoundError(compositeKey, entry);
+        }
+        var downstreamIndexer = comparisonMap.valueAt(index);
+        downstreamIndexer.remove(compositeKey, entry);
+        if (downstreamIndexer.isRemovable()) {
+            comparisonMap.removeAt(index);
+        }
+    }
+
+    private void removeTree(Object compositeKey, Key_ indexKey, ListEntry<T> entry) {
+        var downstreamIndexer = comparisonMap.get(indexKey);
+        if (downstreamIndexer == null) {
+            throw notFoundError(compositeKey, entry);
+        }
         downstreamIndexer.remove(compositeKey, entry);
         if (downstreamIndexer.isRemovable()) {
             comparisonMap.remove(indexKey);
         }
     }
 
-    private Indexer<T> getDownstreamIndexer(Object compositeKey, Key_ indexerKey, ListEntry<T> entry) {
-        var downstreamIndexer = comparisonMap.get(indexerKey);
-        if (downstreamIndexer == null) {
-            throw new IllegalStateException(
-                    "Impossible state: the tuple (%s) with composite key (%s) doesn't exist in the indexer %s."
-                            .formatted(entry, compositeKey, this));
-        }
-        return downstreamIndexer;
+    private IllegalStateException notFoundError(Object compositeKey, ListEntry<T> entry) {
+        return new IllegalStateException(
+                "Impossible state: the tuple (%s) with composite key (%s) doesn't exist in the indexer %s.".formatted(entry,
+                        compositeKey, this));
     }
 
     @Override
@@ -83,10 +108,20 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     private int sizeSingleIndexer(Object compositeKey) {
+        return comparisonMap.arrayBased ? sizeSingleIndexerArray(compositeKey) : sizeSingleIndexerTree(compositeKey);
+    }
+
+    private int sizeSingleIndexerArray(Object compositeKey) {
         var indexKey = keyUnpacker.apply(compositeKey);
-        var cursor = comparisonMap.cursorFromStart();
-        cursor.advance();
-        return boundaryReached(cursor.key(), indexKey) ? 0 : cursor.value().size(compositeKey);
+        var entryKey = comparisonMap.keyAt(0);
+        var entryValue = comparisonMap.valueAt(0);
+        return boundaryReached(entryKey, indexKey) ? 0 : entryValue.size(compositeKey);
+    }
+
+    private int sizeSingleIndexerTree(Object compositeKey) {
+        var indexKey = keyUnpacker.apply(compositeKey);
+        var entry = comparisonMap.firstEntry();
+        return boundaryReached(entry.getKey(), indexKey) ? 0 : entry.getValue().size(compositeKey);
     }
 
     private boolean boundaryReached(Key_ entryKey, Key_ indexKey) {
@@ -103,15 +138,37 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     private int sizeManyIndexers(Object compositeKey) {
+        return comparisonMap.arrayBased ? sizeManyIndexersArray(compositeKey) : sizeManyIndexersTree(compositeKey);
+    }
+
+    private int sizeManyIndexersArray(Object compositeKey) {
         var indexKey = keyUnpacker.apply(compositeKey);
         var size = 0;
-        var cursor = comparisonMap.cursorFromStart();
-        while (cursor.advance()) {
-            if (boundaryReached(cursor.key(), indexKey)) {
+        var arraySize = comparisonMap.size();
+        var i = reverseOrder ? arraySize - 1 : 0;
+        var step = reverseOrder ? -1 : 1;
+        while (i >= 0 && i < arraySize) {
+            if (boundaryReached(comparisonMap.keyAt(i), indexKey)) {
                 return size;
             }
             // Boundary condition not yet reached; include the indexer in the range.
-            size += cursor.value().size(compositeKey);
+            size += comparisonMap.valueAt(i).size(compositeKey);
+            i += step;
+        }
+        return size;
+    }
+
+    private int sizeManyIndexersTree(Object compositeKey) {
+        var indexKey = keyUnpacker.apply(compositeKey);
+        var size = 0;
+        var entryIterator = comparisonMap.iterator(reverseOrder);
+        while (entryIterator.hasNext()) {
+            var entry = entryIterator.next();
+            if (boundaryReached(entry.getKey(), indexKey)) {
+                return size;
+            }
+            // Boundary condition not yet reached; include the indexer in the range.
+            size += entry.getValue().size(compositeKey);
         }
         return size;
     }
@@ -128,24 +185,65 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     private void forEachSingleIndexer(Object compositeKey, Consumer<T> tupleConsumer) {
+        if (comparisonMap.arrayBased) {
+            forEachSingleIndexerArray(compositeKey, tupleConsumer);
+        } else {
+            forEachSingleIndexerTree(compositeKey, tupleConsumer);
+        }
+    }
+
+    private void forEachSingleIndexerArray(Object compositeKey, Consumer<T> tupleConsumer) {
         var indexKey = keyUnpacker.apply(compositeKey);
-        var cursor = comparisonMap.cursorFromStart();
-        cursor.advance();
-        if (!boundaryReached(cursor.key(), indexKey)) {
+        var entryKey = comparisonMap.keyAt(0);
+        var entryValue = comparisonMap.valueAt(0);
+        if (!boundaryReached(entryKey, indexKey)) {
             // Boundary condition not yet reached; include the indexer in the range.
-            cursor.value().forEach(compositeKey, tupleConsumer);
+            entryValue.forEach(compositeKey, tupleConsumer);
+        }
+    }
+
+    private void forEachSingleIndexerTree(Object compositeKey, Consumer<T> tupleConsumer) {
+        var indexKey = keyUnpacker.apply(compositeKey);
+        var entry = comparisonMap.firstEntry();
+        if (!boundaryReached(entry.getKey(), indexKey)) {
+            // Boundary condition not yet reached; include the indexer in the range.
+            entry.getValue().forEach(compositeKey, tupleConsumer);
         }
     }
 
     private void forEachManyIndexers(Object compositeKey, Consumer<T> tupleConsumer) {
+        if (comparisonMap.arrayBased) {
+            forEachManyIndexersArray(compositeKey, tupleConsumer);
+        } else {
+            forEachManyIndexersTree(compositeKey, tupleConsumer);
+        }
+    }
+
+    private void forEachManyIndexersArray(Object compositeKey, Consumer<T> tupleConsumer) {
         var indexKey = keyUnpacker.apply(compositeKey);
-        var cursor = comparisonMap.cursorFromStart();
-        while (cursor.advance()) {
-            if (boundaryReached(cursor.key(), indexKey)) {
+        var arraySize = comparisonMap.size();
+        var i = reverseOrder ? arraySize - 1 : 0;
+        var step = reverseOrder ? -1 : 1;
+        while (i >= 0 && i < arraySize) {
+            if (boundaryReached(comparisonMap.keyAt(i), indexKey)) {
                 return;
             }
             // Boundary condition not yet reached; include the indexer in the range.
-            cursor.value().forEach(compositeKey, tupleConsumer);
+            comparisonMap.valueAt(i).forEach(compositeKey, tupleConsumer);
+            i += step;
+        }
+    }
+
+    private void forEachManyIndexersTree(Object compositeKey, Consumer<T> tupleConsumer) {
+        var indexKey = keyUnpacker.apply(compositeKey);
+        var entryIterator = comparisonMap.iterator(reverseOrder);
+        while (entryIterator.hasNext()) {
+            var entry = entryIterator.next();
+            if (boundaryReached(entry.getKey(), indexKey)) {
+                return;
+            }
+            // Boundary condition not yet reached; include the indexer in the range.
+            entry.getValue().forEach(compositeKey, tupleConsumer);
         }
     }
 
@@ -159,14 +257,28 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     private Iterator<T> iteratorSingleIndexer(Object compositeKey) {
+        return comparisonMap.arrayBased ? iteratorSingleIndexerArray(compositeKey) : iteratorSingleIndexerTree(compositeKey);
+    }
+
+    private Iterator<T> iteratorSingleIndexerArray(Object compositeKey) {
         var indexKey = keyUnpacker.apply(compositeKey);
-        var cursor = comparisonMap.cursorFromStart();
-        cursor.advance();
-        if (boundaryReached(cursor.key(), indexKey)) {
+        var entryKey = comparisonMap.keyAt(0);
+        var entryValue = comparisonMap.valueAt(0);
+        if (boundaryReached(entryKey, indexKey)) {
             return Collections.emptyIterator();
         }
         // Boundary condition not yet reached; include the indexer in the range.
-        return cursor.value().iterator(compositeKey);
+        return entryValue.iterator(compositeKey);
+    }
+
+    private Iterator<T> iteratorSingleIndexerTree(Object compositeKey) {
+        var indexKey = keyUnpacker.apply(compositeKey);
+        var entry = comparisonMap.firstEntry();
+        if (boundaryReached(entry.getKey(), indexKey)) {
+            return Collections.emptyIterator();
+        }
+        // Boundary condition not yet reached; include the indexer in the range.
+        return entry.getValue().iterator(compositeKey);
     }
 
     @Override
@@ -178,20 +290,9 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
             @Nullable Predicate<T> filter) {
         return switch (comparisonMap.size()) {
             case 0 -> Collections.emptyIterator();
-            case 1 -> {
-                var indexKey = keyUnpacker.apply(queryCompositeKey);
-                var cursor = comparisonMap.cursorFromStart();
-                cursor.advance();
-                if (boundaryReached(cursor.key(), indexKey)) {
-                    yield Collections.emptyIterator();
-                } else { // Boundary condition not yet reached; include the indexer in the range.
-                    if (filter == null) {
-                        yield cursor.value().randomIterator(queryCompositeKey, workingRandom);
-                    } else {
-                        yield cursor.value().randomIterator(queryCompositeKey, workingRandom, filter);
-                    }
-                }
-            }
+            case 1 ->
+                comparisonMap.arrayBased ? randomIteratorSingleIndexerArray(queryCompositeKey, workingRandom, filter)
+                        : randomIteratorSingleIndexerTree(queryCompositeKey, workingRandom, filter);
             default -> {
                 if (filter == null) {
                     yield new RandomIterator(queryCompositeKey,
@@ -202,6 +303,31 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
                 }
             }
         };
+    }
+
+    private Iterator<T> randomIteratorSingleIndexerArray(Object queryCompositeKey, RandomGenerator workingRandom,
+            @Nullable Predicate<T> filter) {
+        var indexKey = keyUnpacker.apply(queryCompositeKey);
+        var entryKey = comparisonMap.keyAt(0);
+        var entryValue = comparisonMap.valueAt(0);
+        if (boundaryReached(entryKey, indexKey)) {
+            return Collections.emptyIterator();
+        }
+        // Boundary condition not yet reached; include the indexer in the range.
+        return filter == null ? entryValue.randomIterator(queryCompositeKey, workingRandom)
+                : entryValue.randomIterator(queryCompositeKey, workingRandom, filter);
+    }
+
+    private Iterator<T> randomIteratorSingleIndexerTree(Object queryCompositeKey, RandomGenerator workingRandom,
+            @Nullable Predicate<T> filter) {
+        var indexKey = keyUnpacker.apply(queryCompositeKey);
+        var entry = comparisonMap.firstEntry();
+        if (boundaryReached(entry.getKey(), indexKey)) {
+            return Collections.emptyIterator();
+        }
+        // Boundary condition not yet reached; include the indexer in the range.
+        return filter == null ? entry.getValue().randomIterator(queryCompositeKey, workingRandom)
+                : entry.getValue().randomIterator(queryCompositeKey, workingRandom, filter);
     }
 
     @Override
@@ -223,18 +349,29 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
         private final Key_ indexKey;
         private final Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction;
-        private final ScalingNavigableMap.Cursor<Key_, Indexer<T>> cursor = comparisonMap.cursorFromStart();
+        // Tree mode: entries pulled from here. Array mode: this is null and the array cursor fields are used instead.
+        private final @Nullable Iterator<Map.Entry<Key_, Indexer<T>>> indexerIterator;
+        private int arrayCursor;
+        private final int arrayStep;
         protected @Nullable Iterator<T> downstreamIterator = null;
         private @Nullable T next = null;
 
         public DefaultIterator(Object queryCompositeKey) {
-            this(queryCompositeKey,
-                    downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
+            this(queryCompositeKey, downstreamIndexer -> downstreamIndexer.iterator(queryCompositeKey));
         }
 
         protected DefaultIterator(Object queryCompositeKey, Function<Indexer<T>, Iterator<T>> downstreamIteratorFunction) {
             this.indexKey = keyUnpacker.apply(queryCompositeKey);
             this.downstreamIteratorFunction = downstreamIteratorFunction;
+            if (comparisonMap.arrayBased) {
+                this.indexerIterator = null;
+                this.arrayCursor = reverseOrder ? comparisonMap.size() - 1 : 0;
+                this.arrayStep = reverseOrder ? -1 : 1;
+            } else {
+                this.indexerIterator = comparisonMap.iterator(reverseOrder);
+                this.arrayCursor = 0;
+                this.arrayStep = 0;
+            }
         }
 
         @Override
@@ -246,12 +383,36 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
                 next = downstreamIterator.next();
                 return true;
             }
-            while (cursor.advance()) {
-                if (boundaryReached(cursor.key(), indexKey)) {
+            return indexerIterator != null ? advanceFromTree() : advanceFromArray();
+        }
+
+        private boolean advanceFromTree() {
+            while (indexerIterator.hasNext()) {
+                var entry = indexerIterator.next();
+                if (boundaryReached(entry.getKey(), indexKey)) {
                     return false;
                 }
                 // Boundary condition not yet reached; include the indexer in the range.
-                downstreamIterator = downstreamIteratorFunction.apply(cursor.value());
+                downstreamIterator = downstreamIteratorFunction.apply(entry.getValue());
+                if (downstreamIterator.hasNext()) {
+                    next = downstreamIterator.next();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean advanceFromArray() {
+            var size = comparisonMap.size();
+            while (arrayCursor >= 0 && arrayCursor < size) {
+                var key = comparisonMap.keyAt(arrayCursor);
+                var indexer = comparisonMap.valueAt(arrayCursor);
+                arrayCursor += arrayStep;
+                if (boundaryReached(key, indexKey)) {
+                    return false;
+                }
+                // Boundary condition not yet reached; include the indexer in the range.
+                downstreamIterator = downstreamIteratorFunction.apply(indexer);
                 if (downstreamIterator.hasNext()) {
                     next = downstreamIterator.next();
                     return true;

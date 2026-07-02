@@ -11,7 +11,7 @@ class ScalingNavigableMapTest {
 
     @Test
     void getOrCreateGetRemove() {
-        var map = new ScalingNavigableMap<Integer, String>(false);
+        var map = new ScalingNavigableMap<Integer, String>();
         assertThat(map.isEmpty()).isTrue();
         assertThat(map.get(1)).isNull();
 
@@ -27,62 +27,69 @@ class ScalingNavigableMapTest {
     }
 
     @Test
-    void iteratesForwardOrReversed() {
-        var ascending = new ScalingNavigableMap<Integer, String>(false);
-        ascending.getOrCreate(3, () -> "three");
-        ascending.getOrCreate(1, () -> "one");
-        ascending.getOrCreate(2, () -> "two");
-        assertThat(keysInCursorOrder(ascending)).containsExactly(1, 2, 3);
-
-        var descending = new ScalingNavigableMap<Integer, String>(true);
-        descending.getOrCreate(3, () -> "three");
-        descending.getOrCreate(1, () -> "one");
-        descending.getOrCreate(2, () -> "two");
-        assertThat(keysInCursorOrder(descending)).containsExactly(3, 2, 1);
+    void arrayModeIsAlwaysAscendingRegardlessOfReversed() {
+        var map = new ScalingNavigableMap<Integer, String>();
+        map.getOrCreate(3, () -> "three");
+        map.getOrCreate(1, () -> "one");
+        map.getOrCreate(2, () -> "two");
+        assertThat(map.arrayBased).isTrue();
+        assertThat(ascendingKeys(map)).containsExactly(1, 2, 3);
+        assertThat(descendingKeys(map)).containsExactly(1, 2, 3);
     }
 
     @Test
-    void iteratesForwardOrReversedPastArrayThreshold() {
-        var ascending = new ScalingNavigableMap<Integer, String>(false);
-        var descending = new ScalingNavigableMap<Integer, String>(true);
-        for (var key = 0; key <= ScalingNavigableMap.ARRAY_THRESHOLD; key++) { // crosses the threshold on the last put
-            var value = "value" + key;
-            ascending.getOrCreate(key, () -> value);
-            descending.getOrCreate(key, () -> value);
-        }
-        assertThat(ascending.belowThreshold).isFalse();
-        assertThat(descending.belowThreshold).isFalse();
-        assertThat(keysInCursorOrder(ascending)).isSorted();
-        assertThat(keysInCursorOrder(descending)).isSortedAccordingTo((a, b) -> b - a);
-    }
-
-    @Test
-    void treeifiesPastArrayThresholdAndStaysTreeified() {
-        var map = new ScalingNavigableMap<Integer, String>(false);
+    void iteratorHonorsReversedPastArrayThreshold() {
+        var map = new ScalingNavigableMap<Integer, String>();
         for (var key = 0; key <= ScalingNavigableMap.ARRAY_THRESHOLD; key++) { // crosses the threshold on the last put
             var value = "value" + key;
             map.getOrCreate(key, () -> value);
         }
-        assertThat(map.belowThreshold).isFalse();
+        assertThat(map.arrayBased).isFalse();
+        assertThat(ascendingKeys(map)).isSorted();
+        assertThat(descendingKeys(map)).isSortedAccordingTo((a, b) -> b - a);
+    }
+
+    @Test
+    void treeifiesPastArrayThresholdAndStaysTreeified() {
+        var map = new ScalingNavigableMap<Integer, String>();
+        for (var key = 0; key <= ScalingNavigableMap.ARRAY_THRESHOLD; key++) { // crosses the threshold on the last put
+            var value = "value" + key;
+            map.getOrCreate(key, () -> value);
+        }
+        assertThat(map.arrayBased).isFalse();
         assertThat(map.size()).isEqualTo(ScalingNavigableMap.ARRAY_THRESHOLD + 1);
-        assertThat(keysInCursorOrder(map)).hasSize(ScalingNavigableMap.ARRAY_THRESHOLD + 1).isSorted();
+        assertThat(ascendingKeys(map)).hasSize(ScalingNavigableMap.ARRAY_THRESHOLD + 1).isSorted();
 
         // Remove all but one key, well below the threshold: must not revert to array mode.
         for (var key = 1; key <= ScalingNavigableMap.ARRAY_THRESHOLD; key++) {
             map.remove(key);
         }
-        assertThat(map.belowThreshold).isFalse();
+        assertThat(map.arrayBased).isFalse();
         assertThat(map.size()).isEqualTo(1);
         assertThat(map.get(0)).isEqualTo("value0");
     }
 
-    private static List<Integer> keysInCursorOrder(ScalingNavigableMap<Integer, String> map) {
+    private static List<Integer> ascendingKeys(ScalingNavigableMap<Integer, String> map) {
+        return keys(map, false);
+    }
+
+    private static List<Integer> keys(ScalingNavigableMap<Integer, String> map, boolean reversed) {
         var keys = new ArrayList<Integer>();
-        var cursor = map.cursorFromStart();
-        while (cursor.advance()) {
-            keys.add(cursor.key());
+        if (map.arrayBased) {
+            for (var i = 0; i < map.size(); i++) {
+                keys.add(map.keyAt(i));
+            }
+        } else {
+            var entryIterator = map.iterator(reversed);
+            while (entryIterator.hasNext()) {
+                keys.add(entryIterator.next().getKey());
+            }
         }
         return keys;
+    }
+
+    private static List<Integer> descendingKeys(ScalingNavigableMap<Integer, String> map) {
+        return keys(map, true);
     }
 
 }

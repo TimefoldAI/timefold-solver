@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -28,64 +29,60 @@ import org.jspecify.annotations.Nullable;
  * going back to an array on removal only reintroduces the cost of resizing/copying
  * for a bucket that has already demonstrated it churns near or above the threshold.
  * <p>
- * Keys and values are kept in two parallel arrays, not one interleaved array. Point lookups
- * ({@link #get}/{@link #getOrCreate}/{@link #remove}) binary-search over keys only and never touch values until a
- * match is found; a separate {@code keys} array keeps every key a search might probe packed together, instead of
- * spread across double the memory by unneeded interleaved value slots. Point lookups happen once per tuple
- * insertion/removal, more often than the full range scans that would actually benefit from key+value being
- * co-located, so this is the better default for this access pattern.
+ * Keys and values are kept in two parallel {@code Object[]} arrays.
+ * Point lookups ({@link #get}/{@link #getOrCreate}/{@link #remove}) binary-search over keys only
+ * and never touch values until a match is found;
+ * a separate {@code keys} array keeps every key a search might probe packed together,
+ * instead of spread across double the memory by unneeded interleaved value slots.
  * <p>
- * Keys are always compared/stored/built by their natural {@link Comparable} order, in both the array and the
- * {@link TreeMap}, regardless of {@code reversed} - never by an explicit {@link java.util.Comparator}. A
- * {@link TreeMap} without a comparator uses a faster lookup path internally ({@code getEntry()}, direct
- * {@code compareTo()}) than one with a comparator ({@code getEntryUsingComparator()}, extra dispatch through
- * {@code Comparator.compare()}) - since point lookups don't care about direction at all, giving them an explicit
- * comparator just to support reversed iteration would be paying that tax on every single lookup for no reason.
- * {@code reversed} only changes how {@link #cursorFromStart()} walks the entries: forward for the array (natural
- * start/step) or the tree ({@code entrySet()}), backward otherwise (reversed start/step, or
- * {@link NavigableMap#descendingMap()} - an O(1) view, not a rebuild).
+ * Keys are always compared/stored/built by their natural {@link Comparable} order,
+ * never by an explicit {@link Comparator}.
+ * A {@link TreeMap} without a comparator uses a faster lookup path internally ({@code getEntry()},
+ * direct {@code compareTo()}) than one with a comparator ({@code getEntryUsingComparator()}.
+ * <p>
+ * {@link ComparisonIndexer} branches on {@link #arrayBased} and calls {@link #keyAt}/{@link #valueAt} for range scans
+ * (plain, final-class, trivially inlined methods; benchmarked to be optimal);
+ * only the get/put/remove/treeify machinery is actually encapsulated here.
  *
- * @param <K> the key type; must be mutually comparable via {@link Comparable}
+ * @param <K> the key type
  * @param <V> the value type
  */
 @NullMarked
 final class ScalingNavigableMap<K extends Comparable<K>, V> {
 
-    // Package-private (not private) so tests in this package can read these directly
-    // instead of via reflection or a dedicated getter.
+    private static final Object[] EMPTY_ARRAY = new Object[0];
+
+    // Package-private: tests in this package read arrayBased/ARRAY_THRESHOLD
+    // The threshold was established experimentally.
     static final int ARRAY_THRESHOLD = 32;
-    private static final int INITIAL_ARRAY_CAPACITY = 4;
+    private static final int MINIMUM_ARRAY_CAPACITY = 4;
 
-    private final boolean reversed;
-
-    boolean belowThreshold = true;
-    // keys[0..size) sorted ascending by natural order (regardless of `reversed`), values[0..size) parallel to it.
-    private Object[] keys;
-    private Object[] values;
+    boolean arrayBased = true;
+    // keys[0, size) sorted ascending by natural order
+    private @Nullable Object[] keys = EMPTY_ARRAY;
+    // values[0, size) parallel to keys[]
+    private @Nullable Object[] values = EMPTY_ARRAY;
     private int size = 0;
-    // Allocated lazily by treeify(); non-null exactly when !belowThreshold. Never built with an explicit
-    // comparator - see the class javadoc for why.
-    private @Nullable TreeMap<K, V> treeMap;
+    // Allocated lazily by treeify(); non-null exactly when !arrayBased.
+    @Nullable
+    private TreeMap<K, V> treeMap;
 
-    ScalingNavigableMap(boolean reversed) {
-        this.reversed = reversed;
-        this.keys = new Object[INITIAL_ARRAY_CAPACITY];
-        this.values = new Object[INITIAL_ARRAY_CAPACITY];
+    ScalingNavigableMap() {
+        // No out-of-package instances.
     }
 
-    @SuppressWarnings("unchecked")
     @Nullable
-    V get(K key) {
-        if (belowThreshold) {
-            var index = indexOfKey(key);
-            return index >= 0 ? (V) values[index] : null;
+    public V get(K key) {
+        if (arrayBased) {
+            var index = indexOf(key);
+            return index >= 0 ? valueAt(index) : null;
         } else {
             return treeMap.get(key);
         }
     }
 
-    V getOrCreate(K key, Supplier<V> valueSupplier) {
-        return belowThreshold ? getOrCreateArray(key, valueSupplier) : getOrCreateTree(key, valueSupplier);
+    public V getOrCreate(K key, Supplier<V> valueSupplier) {
+        return arrayBased ? getOrCreateArray(key, valueSupplier) : getOrCreateTree(key, valueSupplier);
     }
 
     private V getOrCreateTree(K key, Supplier<V> valueSupplier) {
@@ -98,15 +95,14 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
         return value;
     }
 
-    @SuppressWarnings("unchecked")
     private V getOrCreateArray(K key, Supplier<V> valueSupplier) {
-        var index = indexOfKey(key);
+        var index = indexOf(key);
         if (index >= 0) {
-            return (V) values[index];
+            return valueAt(index);
         }
         var value = valueSupplier.get();
         insertIntoArray(-(index + 1), key, value);
-        if (size > ARRAY_THRESHOLD) {
+        if (size() > ARRAY_THRESHOLD) {
             treeify();
         }
         return value;
@@ -114,8 +110,9 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
 
     private void insertIntoArray(int insertionPoint, K key, V value) {
         if (size == keys.length) {
-            keys = Arrays.copyOf(keys, keys.length * 2);
-            values = Arrays.copyOf(values, values.length * 2);
+            var minSize = Math.max(keys.length * 2, MINIMUM_ARRAY_CAPACITY);
+            keys = Arrays.copyOf(keys, minSize);
+            values = Arrays.copyOf(values, minSize);
         }
         var shiftCount = size - insertionPoint;
         if (shiftCount > 0) {
@@ -127,130 +124,97 @@ final class ScalingNavigableMap<K extends Comparable<K>, V> {
         size++;
     }
 
-    @SuppressWarnings("unchecked")
     private void treeify() {
         var newTreeMap = new TreeMap<K, V>();
         for (var i = 0; i < size; i++) {
-            newTreeMap.put((K) keys[i], (V) values[i]);
+            newTreeMap.put(keyAt(i), valueAt(i));
         }
         treeMap = newTreeMap;
-        belowThreshold = false;
-        Arrays.fill(keys, null);
-        Arrays.fill(values, null);
+        arrayBased = false;
+        Arrays.fill(keys, 0, size, null);
+        Arrays.fill(values, 0, size, null);
+        size = -1;
     }
 
-    void remove(K key) {
-        if (belowThreshold) {
-            removeFromArray(key);
+    /**
+     * If in array-mode, consider using {@link #removeAt(int)} instead,
+     * if the position is already known.
+     */
+    public void remove(K key) {
+        if (arrayBased) {
+            removeAt(indexOf(key));
         } else {
             treeMap.remove(key);
         }
     }
 
-    private void removeFromArray(K key) {
-        var index = indexOfKey(key);
+    /**
+     * Array-mode only.
+     * Exposed (alongside {@link #indexOf}) so a caller that already located an entry via {@link #indexOf} -
+     * typically to inspect its value first, like {@link ComparisonIndexer#remove} does -
+     * can remove it without a second, redundant binary search for the same key.
+     */
+    void removeAt(int index) {
         var shiftCount = size - index - 1;
         if (shiftCount > 0) {
             System.arraycopy(keys, index + 1, keys, index, shiftCount);
+            keys[size - 1] = null;
             System.arraycopy(values, index + 1, values, index, shiftCount);
+            values[size - 1] = null;
         }
         size--;
     }
 
-    int size() {
-        return belowThreshold ? size : treeMap.size();
+    public int size() {
+        return arrayBased ? size : treeMap.size();
     }
 
-    boolean isEmpty() {
-        return belowThreshold ? size == 0 : treeMap.isEmpty();
-    }
-
-    Cursor<K, V> cursorFromStart() {
-        if (belowThreshold) {
-            return new ArrayCursor();
-        }
-        var entryIterator = reversed ? treeMap.descendingMap().entrySet().iterator() : treeMap.entrySet().iterator();
-        return new TreeCursor<>(entryIterator);
-    }
-
-    private int indexOfKey(K key) {
-        return Arrays.binarySearch(keys, 0, size, key);
+    public boolean isEmpty() {
+        return arrayBased ? size == 0 : treeMap.isEmpty();
     }
 
     /**
-     * Variant of the iterator that allows to return two things at once,
-     * without allocating any carrier type.
-     *
-     * @param <K>
-     * @param <V>
+     * Array-mode range scans only.
      */
-    sealed interface Cursor<K, V> {
-
-        /**
-         * Moves to the next entry. Must be called before the first {@link #key()}/{@link #value()} call.
-         *
-         * @return false if there is no next entry; {@link #key()}/{@link #value()} must not be called in that case
-         */
-        boolean advance();
-
-        K key();
-
-        V value();
-
-    }
-
     @SuppressWarnings("unchecked")
-    private final class ArrayCursor implements Cursor<K, V> {
-
-        private final int step = reversed ? -1 : 1;
-        private int index = reversed ? size : -1;
-
-        @Override
-        public boolean advance() {
-            index += step;
-            return index >= 0 && index < size;
-        }
-
-        @Override
-        public K key() {
-            return (K) keys[index];
-        }
-
-        @Override
-        public V value() {
-            return (V) values[index];
-        }
-
+    @Nullable
+    K keyAt(int index) {
+        return (K) keys[index];
     }
 
-    private static final class TreeCursor<K, V> implements Cursor<K, V> {
+    /**
+     * Array-mode only.
+     */
+    @SuppressWarnings("unchecked")
+    @Nullable
+    V valueAt(int index) {
+        return (V) values[index];
+    }
 
-        private final Iterator<Map.Entry<K, V>> iterator;
-        private Map.@Nullable Entry<K, V> current;
+    /**
+     * Tree-mode only.
+     */
+    Map.Entry<K, V> firstEntry() {
+        return treeMap.firstEntry();
+    }
 
-        private TreeCursor(Iterator<Map.Entry<K, V>> iterator) {
-            this.iterator = iterator;
-        }
+    /**
+     * Tree-mode only.
+     */
+    Iterator<Map.Entry<K, V>> iterator(boolean reversed) {
+        return reversed ? treeMap.descendingMap().entrySet().iterator() : treeMap.entrySet().iterator();
+    }
 
-        @Override
-        public boolean advance() {
-            if (!iterator.hasNext()) {
-                return false;
-            }
-            current = iterator.next();
-            return true;
-        }
-
-        @Override
-        public K key() {
-            return current.getKey();
-        }
-
-        @Override
-        public V value() {
-            return current.getValue();
-        }
-
+    /**
+     * Array-mode only.
+     * Same contract as {@link Arrays#binarySearch(Object[], int, int, Object)}:
+     * the index of {@code key} if present, else {@code -(insertionPoint) - 1}.
+     * Exposed (see {@link #removeAt}) so a caller that needs both the value
+     * and, conditionally, to remove it - like {@link ComparisonIndexer#remove} -
+     * can reuse the result instead of searching for {@code key} a second time.
+     */
+    int indexOf(K key) {
+        return Arrays.binarySearch(keys, 0, size, key);
     }
 
 }
