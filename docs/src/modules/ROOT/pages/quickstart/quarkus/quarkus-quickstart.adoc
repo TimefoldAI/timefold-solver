@@ -209,10 +209,7 @@ $ gradle --console=plain quarkusDev
 
 include::../shared/_try-the-application.adoc[]
 
-[NOTE]
-====
-The solver runs considerably slower in dev mode since the https://www.baeldung.com/jvm-tiered-compilation#2c2---server-complier[JVM C2 compiler] is disabled to decrease live reload times.
-====
+include::../shared/_quarkus-dev-mode-note.adoc[]
 
 === Test the application
 

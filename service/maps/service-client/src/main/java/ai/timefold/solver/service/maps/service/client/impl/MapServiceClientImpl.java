@@ -4,6 +4,7 @@ import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_CACH
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_INVALIDATE_MATRIX_HEADER;
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_LOCATIONS_CHUNK_BYTES;
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_LOCATIONS_NOT_IN_MAP;
+import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_LOCATION_HEADER;
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_MATRIX_HASH_HEADER;
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_PROVIDER_HEADER;
 import static ai.timefold.solver.service.definition.internal.Headers.X_MAPS_RESPONSE_CHUNK_BYTES;
@@ -20,6 +21,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 
 import jakarta.inject.Inject;
@@ -30,6 +33,9 @@ import ai.timefold.solver.service.maps.api.model.Location;
 import ai.timefold.solver.service.maps.haversine.impl.HaversineTravelTimeAndDistanceMatrixProvider;
 import ai.timefold.solver.service.maps.haversine.impl.HaversineWaypointsProvider;
 import ai.timefold.solver.service.maps.service.client.api.MapService;
+import ai.timefold.solver.service.maps.service.client.api.model.TravelTimesByTimeframeWithMetadata;
+import ai.timefold.solver.service.maps.service.client.impl.bucketing.Timeframe;
+import ai.timefold.solver.service.maps.service.client.impl.bucketing.TimeframeBucketing;
 import ai.timefold.solver.service.maps.service.client.impl.error.GoneRuntimeException;
 import ai.timefold.solver.service.maps.service.integration.internal.MapServiceOptions;
 import ai.timefold.solver.service.maps.service.integration.internal.model.IllegalDistanceResponseException;
@@ -38,6 +44,7 @@ import ai.timefold.solver.service.maps.service.integration.internal.model.Travel
 import ai.timefold.solver.service.maps.service.integration.internal.model.TravelTimeAndDistanceWithMetadata;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,24 +60,40 @@ public class MapServiceClientImpl implements MapService {
 
     private final MapServiceClient mapService;
     private final List<TravelTimeAndDistanceConverter> converters;
-    private final Optional<Boolean> fallbackEnabled;
+    private final Boolean fallbackEnabled;
+    private final boolean useTraffic;
+    private final Timeframe defaultTimeframe;
     private final MapServiceLocalHaversineImpl fallbackService;
     private final SingleItemCache<CacheItem> travelTimeAndDistanceSingleItemCache;
+    private final SingleItemCache<TravelTimesByTimeframeWithMetadata> timeframedMatricesCache;
+    private final TimeframeBucketing timeframeBucketing;
+    private final ManagedExecutor managedExecutor;
     private final ObjectMapper mapper;
 
     @Inject
     public MapServiceClientImpl(@RestClient MapServiceClient mapService,
             @All List<TravelTimeAndDistanceConverter> converters,
-            @ConfigProperty(name = "ai.timefold.platform.map-service.enable-fallback") Optional<Boolean> fallbackEnabled,
+            @ConfigProperty(name = "ai.timefold.platform.map-service.enable-fallback",
+                    defaultValue = "false") Boolean fallbackEnabled,
+            @ConfigProperty(name = "ai.timefold.platform.map-service.use-traffic", defaultValue = "false") Boolean useTraffic,
+            @ConfigProperty(
+                    name = "ai.timefold.platform.map-service.default-timeframe") Optional<String> defaultTimeframeOverride,
             HaversineTravelTimeAndDistanceMatrixProvider travelTimeAndDistanceMatrixProvider,
             HaversineWaypointsProvider haversineWaypointsProvider,
+            TimeframeBucketing timeframeBucketing,
+            ManagedExecutor managedExecutor,
             ObjectMapper mapper) {
         this.mapService = mapService;
         this.converters = converters;
         this.fallbackEnabled = fallbackEnabled;
+        this.useTraffic = useTraffic;
+        this.timeframeBucketing = timeframeBucketing;
+        this.defaultTimeframe = resolveDefaultTimeframe(timeframeBucketing, defaultTimeframeOverride);
+        this.managedExecutor = managedExecutor;
         this.mapper = mapper;
         fallbackService = new MapServiceLocalHaversineImpl(travelTimeAndDistanceMatrixProvider, haversineWaypointsProvider);
         travelTimeAndDistanceSingleItemCache = new SingleItemCache<>();
+        timeframedMatricesCache = new SingleItemCache<>();
     }
 
     /**
@@ -97,6 +120,13 @@ public class MapServiceClientImpl implements MapService {
     public TravelTimeAndDistanceWithMetadata getTravelTimeAndDistance(List<Location> locations, String options) {
         Map<String, String> optionsMap = MapServiceOptions.parse(options);
         String locationSetName = optionsMap.getOrDefault(MapServiceOptions.LOCATION_SET_NAME, null);
+
+        // Traffic-without-pruning path: when traffic is enabled platform-wide but the caller didn't pick a timeframe,
+        // append the bucketing's default so the maps service returns a single traffic-aware matrix instead of plain
+        // (timeframe-independent) data. The model keeps using location.getTravelTimeTo(other).
+        if (useTraffic && !optionsMap.containsKey(MapServiceOptions.TIMEFRAME)) {
+            options = MapServiceOptions.withOption(options, MapServiceOptions.TIMEFRAME, defaultTimeframe.name());
+        }
 
         if (locations.size() < 2) {
             LOGGER.info("The number of locations is {}, generating empty distance matrix", locations.size());
@@ -135,8 +165,9 @@ public class MapServiceClientImpl implements MapService {
                 // If there are no updates, return from cache
                 LOGGER.info("Distance matrix in cache is up-to-date, returning from cache");
                 assertLocationsAreInCache(locations);
-                return new TravelTimeAndDistanceWithMetadata(travelTimeAndDistanceSingleItemCache.get().travelTimeAndDistance(),
-                        travelTimeAndDistanceSingleItemCache.get().locationsOutOfMap());
+                CacheItem cached = travelTimeAndDistanceSingleItemCache.get();
+                return new TravelTimeAndDistanceWithMetadata(cached.travelTimeAndDistance(),
+                        cached.locationsOutOfMap(), cached.resolvedMapLocation());
             } else {
                 // If there are updates, process them and update cache
                 LOGGER.info("Distance matrix in cache is not up-to-date, processing updates");
@@ -169,6 +200,122 @@ public class MapServiceClientImpl implements MapService {
     }
 
     @Override
+    public TravelTimesByTimeframeWithMetadata getTravelTimeAndDistanceByTimeframe(List<Location> locations,
+            String options) {
+        String cacheId = String.valueOf(Objects.hash(new HashSet<>(locations), options, "BY_TIMEFRAME"));
+        if (timeframedMatricesCache.isInCache(cacheId)) {
+            LOGGER.info("Timeframed matrices in cache, returning from cache");
+            return timeframedMatricesCache.get();
+        }
+
+        if (!useTraffic) {
+            LOGGER.info("Traffic disabled by platform configuration; using a single non-traffic matrix");
+            TravelTimeAndDistanceWithMetadata plain = getTravelTimeAndDistance(locations, options);
+            Set<Location> notInMapSet = new HashSet<>();
+            for (Integer idx : plain.locationsNotInMapIdx()) {
+                if (idx != null && idx >= 0 && idx < locations.size()) {
+                    notInMapSet.add(locations.get(idx));
+                }
+            }
+            List<Location> locationsNotInMap = locations.stream().filter(notInMapSet::contains).toList();
+            TravelTimesByTimeframeWithMetadata result = new TravelTimesByTimeframeWithMetadata(
+                    new DistanceMatrix[] { plain.travelTimeAndDistance().travelTime() },
+                    new DistanceMatrix[] { plain.travelTimeAndDistance().distance() },
+                    locationsNotInMap,
+                    t -> 0);
+            timeframedMatricesCache.put(cacheId, result);
+            return result;
+        }
+
+        FetchedTimeframeMatrices fetched;
+        try {
+            fetched = fetchBundledTimeframedMatrices(options, locations);
+        } catch (CompletionException e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            if (fallbackEnabled) {
+                LOGGER.warn("Could not get travel time and distance using maps service, will fallback using Haversine.", cause);
+                return fallbackTimeframedMatrices(locations, options);
+            }
+            if (cause instanceof RuntimeException re) {
+                throw re;
+            }
+            throw new IllegalStateException(cause);
+        }
+
+        TravelTimesByTimeframeWithMetadata result = new TravelTimesByTimeframeWithMetadata(
+                fetched.travelTimesByTimeframe,
+                fetched.distancesByTimeframe,
+                fetched.locationsNotInMap,
+                timeframeBucketing::indexOf);
+        timeframedMatricesCache.put(cacheId, result);
+        LOGGER.info("Distance/time matrix calculation completed");
+        return result;
+    }
+
+    /**
+     * Fans out one bundled-response request per timeframe (no {@code annotation} option, so the server returns both
+     * travel-time and distance matrices), each sending the full location list. A list with fewer than two locations is
+     * short-circuited to a locally-generated zero matrix for every timeframe without any server round-trip.
+     * <p>
+     * The produced {@code travelTimesByTimeframe} and {@code distancesByTimeframe} arrays are sized to the full
+     * {@code TimeframeBucketing.allTimeframes().size()}, one (non-null) matrix per timeframe.
+     * <p>
+     * "Locations not in map" indices returned by each call are relative to the location list; they are resolved to
+     * {@link Location} instances and unioned across timeframes, then returned in input-list order with no duplicates.
+     */
+    private FetchedTimeframeMatrices fetchBundledTimeframedMatrices(String options, List<Location> locations) {
+        List<Timeframe> allTimeframes = timeframeBucketing.allTimeframes();
+        int allTimeframesSize = allTimeframes.size();
+        LOGGER.info("Requesting {} bundled travel-time + distance matrix(es) concurrently... ", allTimeframesSize);
+
+        DistanceMatrix[] travelTimesByTimeframe = new DistanceMatrix[allTimeframesSize];
+        DistanceMatrix[] distancesByTimeframe = new DistanceMatrix[allTimeframesSize];
+
+        if (locations.size() < 2) {
+            // Not enough locations to need a matrix — every timeframe is a locally-generated zero matrix, no server call.
+            DistanceMatrix zero = zeroMatrixFor(locations);
+            Arrays.fill(travelTimesByTimeframe, zero);
+            Arrays.fill(distancesByTimeframe, zero);
+            return new FetchedTimeframeMatrices(travelTimesByTimeframe, distancesByTimeframe, List.of());
+        }
+
+        CompletableFuture<TravelTimeAndDistanceWithMetadata>[] futures = new CompletableFuture[allTimeframesSize];
+        for (int idx = 0; idx < allTimeframesSize; idx++) {
+            String opts = MapServiceOptions.withOption(options, MapServiceOptions.TIMEFRAME, allTimeframes.get(idx).name());
+            futures[idx] = CompletableFuture.supplyAsync(() -> requestAndConvert(locations, opts), managedExecutor);
+        }
+        CompletableFuture.allOf(futures).join();
+
+        Set<Location> notInMapSet = new HashSet<>();
+        for (int idx = 0; idx < allTimeframesSize; idx++) {
+            TravelTimeAndDistanceWithMetadata response = futures[idx].resultNow();
+            travelTimesByTimeframe[idx] = response.travelTimeAndDistance().travelTime();
+            distancesByTimeframe[idx] = response.travelTimeAndDistance().distance();
+            for (int locationIdx : response.locationsNotInMapIdx()) {
+                if (locationIdx >= 0 && locationIdx < locations.size()) {
+                    notInMapSet.add(locations.get(locationIdx));
+                }
+            }
+        }
+
+        // One pass over the input list gives input-list order and dedup at the same time.
+        List<Location> locationsNotInMap = locations.stream()
+                .filter(notInMapSet::contains)
+                .toList();
+        return new FetchedTimeframeMatrices(travelTimesByTimeframe, distancesByTimeframe, locationsNotInMap);
+    }
+
+    private static DistanceMatrix zeroMatrixFor(List<Location> locations) {
+        DistanceMatrix matrix = DistanceMatrix.getInstance(locations.size());
+        for (Location from : locations) {
+            for (Location to : locations) {
+                matrix.put(from, to, 0);
+            }
+        }
+        return matrix;
+    }
+
+    @Override
     public List<Location> getWaypoints(List<Location> locations, String options) {
         if (locations.size() < 2) {
             return locations;
@@ -176,7 +323,7 @@ public class MapServiceClientImpl implements MapService {
         try {
             return mapService.getWaypoints(locations, options);
         } catch (Exception e) {
-            if (fallbackEnabled.orElse(false)) {
+            if (fallbackEnabled) {
                 LOGGER.warn("Could not get waypoints using maps service, will fallback using Haversine.", e);
                 return fallbackService.getWaypoints(locations, options);
             } else {
@@ -190,7 +337,7 @@ public class MapServiceClientImpl implements MapService {
         try {
             return mapService.getLocationsOutOfMap(locations, options);
         } catch (Exception e) {
-            if (fallbackEnabled.orElse(false)) {
+            if (fallbackEnabled) {
                 LOGGER.warn("Could not get locations out of map using maps service, will fallback using Haversine.", e);
                 return fallbackService.getLocationsOutOfMap(locations, options);
             } else {
@@ -205,7 +352,8 @@ public class MapServiceClientImpl implements MapService {
         if (travelTimeAndDistanceSingleItemCache.isInCache(id)) {
             LOGGER.info("Distance matrix without location set name in cache, returning from cache");
             CacheItem cacheItem = travelTimeAndDistanceSingleItemCache.get();
-            return new TravelTimeAndDistanceWithMetadata(cacheItem.travelTimeAndDistance(), cacheItem.locationsOutOfMap());
+            return new TravelTimeAndDistanceWithMetadata(cacheItem.travelTimeAndDistance(), cacheItem.locationsOutOfMap(),
+                    cacheItem.resolvedMapLocation());
         }
 
         // If it does not exist, request from maps-service and store by hash of locations
@@ -221,7 +369,7 @@ public class MapServiceClientImpl implements MapService {
         try {
             response = mapService.getTravelTimeAndDistance(locations, options);
         } catch (Exception e) {
-            if (fallbackEnabled.orElse(false)) {
+            if (fallbackEnabled) {
                 LOGGER.warn("Could not get travel time and distance using maps service, will fallback using Haversine", e);
                 return fallbackService.getTravelTimeAndDistance(locations, options);
             } else {
@@ -237,6 +385,7 @@ public class MapServiceClientImpl implements MapService {
     private TravelTimeAndDistanceWithMetadata processResponseAndStoreInCache(Response response, String localCacheId) {
         String matrixHash = response.getHeaderString(X_MAPS_MATRIX_HASH_HEADER);
         String provider = response.getHeaderString(X_MAPS_PROVIDER_HEADER);
+        String resolvedMapLocation = response.getHeaderString(X_MAPS_LOCATION_HEADER);
         String tenant = response.getHeaderString(X_TENANT_ID_HEADER);
         String cacheId = response.getHeaderString(X_MAPS_CACHE_ID);
         String locationsNotInMapString = response.getHeaderString(X_MAPS_LOCATIONS_NOT_IN_MAP);
@@ -256,11 +405,13 @@ public class MapServiceClientImpl implements MapService {
                 throw new IllegalArgumentException("No provider found to convert travel time and distance response.");
             }
 
-            TravelTimeAndDistanceWithMetadata travelTimeAndDistance =
+            TravelTimeAndDistanceWithMetadata raw =
                     convertResponse(provider, chunkBytes, responseLocations, data, locationsNotInMap);
+            TravelTimeAndDistanceWithMetadata travelTimeAndDistance = new TravelTimeAndDistanceWithMetadata(
+                    raw.travelTimeAndDistance(), raw.locationsNotInMapIdx(), resolvedMapLocation);
             travelTimeAndDistanceSingleItemCache.put(localCacheId,
                     new CacheItem(travelTimeAndDistance.travelTimeAndDistance(), responseLocations, matrixHash,
-                            locationsNotInMap));
+                            locationsNotInMap, resolvedMapLocation));
             return travelTimeAndDistance;
 
         } catch (IllegalDistanceResponseException e) {
@@ -275,6 +426,7 @@ public class MapServiceClientImpl implements MapService {
     private TravelTimeAndDistanceWithMetadata processUpdateAndStoreInCache(Response response, String locationSetName) {
         String matrixHash = response.getHeaderString(X_MAPS_MATRIX_HASH_HEADER);
         String provider = response.getHeaderString(X_MAPS_PROVIDER_HEADER);
+        String resolvedMapLocation = response.getHeaderString(X_MAPS_LOCATION_HEADER);
         String tenant = response.getHeaderString(X_TENANT_ID_HEADER);
         String cacheId = response.getHeaderString(X_MAPS_CACHE_ID);
         String locationsNotInMapString = response.getHeaderString(X_MAPS_LOCATIONS_NOT_IN_MAP);
@@ -294,15 +446,18 @@ public class MapServiceClientImpl implements MapService {
                 throw new IllegalArgumentException("No provider found to convert travel time and distance update.");
             }
 
-            TravelTimeAndDistanceWithMetadata travelTimeAndDistance =
+            TravelTimeAndDistanceWithMetadata raw =
                     convertUpdate(provider, chunkBytes, responseLocations, data, cacheItem.locationsOutOfMap(),
                             locationsNotInMap);
+            String effectiveMapLocation = resolvedMapLocation != null ? resolvedMapLocation : cacheItem.resolvedMapLocation();
+            TravelTimeAndDistanceWithMetadata travelTimeAndDistance = new TravelTimeAndDistanceWithMetadata(
+                    raw.travelTimeAndDistance(), raw.locationsNotInMapIdx(), effectiveMapLocation);
 
             List<Location> newLocations = Stream.concat(cacheItem.locations().stream(), responseLocations.stream()).toList();
             if (locationSetName != null && matrixHash != null) {
                 travelTimeAndDistanceSingleItemCache.put(locationSetName,
                         new CacheItem(travelTimeAndDistance.travelTimeAndDistance(), newLocations, matrixHash,
-                                locationsNotInMap));
+                                locationsNotInMap, effectiveMapLocation));
             }
             return travelTimeAndDistance;
 
@@ -313,6 +468,28 @@ public class MapServiceClientImpl implements MapService {
             }
             throw e;
         }
+    }
+
+    private TravelTimeAndDistanceWithMetadata requestAndConvert(List<Location> locations, String options) {
+        Response response = mapService.getTravelTimeAndDistance(locations, options);
+        String provider = response.getHeaderString(X_MAPS_PROVIDER_HEADER);
+        String locationsNotInMapString = response.getHeaderString(X_MAPS_LOCATIONS_NOT_IN_MAP);
+        List<Integer> chunkBytes = parseChunkBytesString(response.getHeaderString(X_MAPS_RESPONSE_CHUNK_BYTES));
+        List<Integer> metadataBytes = parseChunkBytesString(response.getHeaderString(X_MAPS_LOCATIONS_CHUNK_BYTES));
+
+        List<Integer> locationsNotInMap = new ArrayList<>();
+        if (locationsNotInMapString != null && !locationsNotInMapString.isEmpty()) {
+            locationsNotInMap = Arrays.stream(locationsNotInMapString.split(",")).map(Integer::valueOf).toList();
+        }
+
+        InputStream data = response.readEntity(InputStream.class);
+        List<Location> responseLocations = readLocationsFromInputStream(data, metadataBytes);
+
+        if (provider == null) {
+            throw new IllegalArgumentException("No provider found to convert travel time and distance response.");
+        }
+
+        return convertResponse(provider, chunkBytes, responseLocations, data, locationsNotInMap);
     }
 
     private TravelTimeAndDistanceWithMetadata convertResponse(String provider, List<Integer> chunkBytes,
@@ -359,6 +536,25 @@ public class MapServiceClientImpl implements MapService {
         return new TravelTimeAndDistanceWithMetadata(new TravelTimeAndDistance(matrix, matrix), new ArrayList<>());
     }
 
+    private TravelTimesByTimeframeWithMetadata fallbackTimeframedMatrices(List<Location> locations, String options) {
+        TravelTimeAndDistanceWithMetadata fallback = fallbackService.getTravelTimeAndDistance(locations, options);
+        int allTimeframesSize = timeframeBucketing.allTimeframes().size();
+        DistanceMatrix[] travelTimesByTimeframe = new DistanceMatrix[allTimeframesSize];
+        DistanceMatrix[] distancesByTimeframe = new DistanceMatrix[allTimeframesSize];
+        // Haversine is timeframe-independent: reuse the same matrix for every timeframe.
+        Arrays.fill(travelTimesByTimeframe, fallback.travelTimeAndDistance().travelTime());
+        Arrays.fill(distancesByTimeframe, fallback.travelTimeAndDistance().distance());
+        Set<Location> notInMapSet = new HashSet<>();
+        for (int idx : fallback.locationsNotInMapIdx()) {
+            if (idx >= 0 && idx < locations.size()) {
+                notInMapSet.add(locations.get(idx));
+            }
+        }
+        List<Location> locationsNotInMap = locations.stream().filter(notInMapSet::contains).toList();
+        return new TravelTimesByTimeframeWithMetadata(travelTimesByTimeframe, distancesByTimeframe,
+                locationsNotInMap, timeframeBucketing::indexOf);
+    }
+
     private List<Location> readLocationsFromInputStream(InputStream stream, List<Integer> chunkBytes) {
         List<Location> locations = new ArrayList<>();
         try {
@@ -382,5 +578,25 @@ public class MapServiceClientImpl implements MapService {
         if (!locationsSet.equals(locationsInCacheSet)) {
             throw new IllegalArgumentException("Locations received do not correspond to location set");
         }
+    }
+
+    private static Timeframe resolveDefaultTimeframe(TimeframeBucketing bucketing, Optional<String> override) {
+        if (override.isEmpty() || override.get().isBlank()) {
+            return bucketing.defaultTimeframe();
+        }
+        String requested = override.get();
+        return bucketing.allTimeframes().stream()
+                .filter(t -> t.name().equalsIgnoreCase(requested))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        ("Configured default timeframe '%s' is not one of the supported timeframes %s. " +
+                                "Check the ai.timefold.platform.map-service.default-timeframe property.")
+                                .formatted(requested, bucketing.allTimeframes())));
+    }
+
+    private record FetchedTimeframeMatrices(DistanceMatrix[] travelTimesByTimeframe,
+            DistanceMatrix[] distancesByTimeframe,
+            List<Location> locationsNotInMap) {
+
     }
 }
