@@ -6,7 +6,7 @@
   <groupId>ai.timefold.solver</groupId>
   <artifactId>timefold-solver-parent</artifactId>
   <packaging>pom</packaging>
-  <version>2.3.0-rc-1</version>
+  <version>999-SNAPSHOT</version>
 
   <name>Timefold Solver multiproject parent</name>
   <description>
@@ -27,7 +27,7 @@
   </licenses>
 
   <properties>
-    <revision>2.3.0-rc-1</revision>
+    <revision>999-SNAPSHOT</revision>
     <version.flatten.plugin>1.7.3</version.flatten.plugin>
     <version.javadoc.plugin>3.12.0</version.javadoc.plugin>
     <version.rewrite.plugin>6.28.1</version.rewrite.plugin>
