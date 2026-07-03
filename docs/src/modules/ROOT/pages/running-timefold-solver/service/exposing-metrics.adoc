@@ -8,8 +8,6 @@
 Timefold Solver provides a mechanism to collect metrics about both the input submitted to the solver and the output it produces.
 These metrics are automatically exposed through the xref:./rest-api.adoc[REST API] alongside the optimization result, making it straightforward to build dashboards, monitoring screens, and insights views on top of them, without any additional endpoints or custom logic.
 
-include::_preview-note.adoc[]
-
 [#modelInputMetrics]
 == Input metrics
 

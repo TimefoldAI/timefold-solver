@@ -1,4 +1,4 @@
-= Getting started: building a service (Preview)
+= Getting started: building a service
 :description: Getting started with the service module
 :doctype: book
 :sectnums:
@@ -13,8 +13,6 @@ With this approach, you define your planning model: the domain objects, constrai
 Timefold Solver takes care of the rest.
 There is no need to wire up a solver manually, manage thread pools, or implement REST endpoints by hand.
 The service exposes a ready-to-use REST API automatically and supports our recommended optimization architecture.
-
-IMPORTANT: This is a preview feature subject to change.
 
 [sectnums!]
 include::../shared/_whatyoubuild.adoc[]

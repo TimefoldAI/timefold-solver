@@ -8,8 +8,6 @@
 Providing example datasets is a good way to help consumers understand the expected input of your model.
 This page describes how to provide dedicated support for exposing demo data.
 
-include::_preview-note.adoc[]
-
 // TODO To be simplified with: https://github.com/TimefoldAI/timefold-solver-enterprise/issues/630
 == Generating demo data
 

@@ -13,8 +13,6 @@ include::../../constraints-and-score/_constraint-config-shared.adoc[]
 [#serviceWeightOverrides]
 == Applying overrides
 
-include::_preview-note.adoc[]
-
 Constraint weights are always an interpretation by the modeler.
 It might be that the consumer of the model would like to see the constraints weighed differently.
 `ModelConfigOverrides` allows consumers of a model to tailor constraint weights to their use case.
