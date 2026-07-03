@@ -4,6 +4,9 @@
 :sectnums:
 :icons: font
 
+include::../../_attributes.adoc[]
+:framework-quickstart-url: {service-quickstart-url}
+
 This guide walks you through the process of creating an AI Optimization service.
 
 With this approach, you define your planning model: the domain objects, constraints, and planning solution.
@@ -17,11 +20,7 @@ IMPORTANT: This is a preview feature subject to change.
 include::../shared/_whatyoubuild.adoc[]
 
 [sectnums!]
-== Solution source code
-
-In case you get stuck during this Getting Started guide, it might be worth checking the solution project.
-
-This https://github.com/TimefoldAI/timefold-service-getting-started[solution can be found on GitHub].
+include::../shared/_solutionsourcecode.adoc[]
 
 [sectnums!]
 == Prerequisites
@@ -454,6 +453,22 @@ Important elements to observe in the JSON above:
 - The `Lesson` object now has an assigned `Room` and `Timeslot`.
 - The `solverStatus` is `SOLVING_COMPLETED`, indicating the solver has finished optimizing.
 - The `score` is `0hard/0medium/0soft`, signaling that no constraints were broken.
+
+== Generating the initial OpenAPI specification
+
+Before running a full build with `mvn install`, you need to generate the initial OpenAPI specification file.
+The build compares the generated spec against `src/build/openapi.json` to catch accidental API changes,
+so the build will fail if that file does not exist yet.
+
+Run the following command once to create it:
+
+[source,bash,options="nowrap"]
+----
+mvn clean package -Dupdate-api
+----
+
+We recommend committing `src/build/openapi.json` to version control.
+See xref:running-timefold-solver/service/rest-api.adoc#deliberateAPIChanges[Deliberate API changes] for more details on how this mechanism works.
 
 [sectnums!]
 == Next
