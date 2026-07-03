@@ -34,7 +34,7 @@
   </developers>
 
   <properties>
-    <revision>999-SNAPSHOT</revision>
+    <revision>2.3.0-rc-1</revision>
     <ai.timefold.solver.enterprise>false</ai.timefold.solver.enterprise>
 
     <!-- ************************************************************************ -->
