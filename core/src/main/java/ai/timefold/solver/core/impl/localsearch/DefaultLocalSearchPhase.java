@@ -135,6 +135,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         super.phaseStarted(phaseScope);
         decider.phaseStarted(phaseScope);
         assertWorkingSolutionInitialized(phaseScope);
+        logger.debug("Local Search phase ({}) started.", phaseIndex);
     }
 
     @Override

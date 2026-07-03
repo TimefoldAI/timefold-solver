@@ -81,6 +81,7 @@ public final class DefaultCustomPhase<Solution_>
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         terminationStatus = TerminationStatus.NOT_TERMINATED;
+        logger.debug("Custom phase ({}) started.", phaseIndex);
     }
 
     private void doStep(CustomStepScope<Solution_> stepScope, PhaseCommand<Solution_> customPhaseCommand) {

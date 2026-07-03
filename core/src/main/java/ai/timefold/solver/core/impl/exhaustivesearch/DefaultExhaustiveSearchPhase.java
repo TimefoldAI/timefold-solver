@@ -94,6 +94,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
     private void phaseStarted(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         decider.phaseStarted(phaseScope);
+        logger.debug("Exhaustive Search phase ({}) started.", phaseIndex);
     }
 
     private void phaseEnded(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {

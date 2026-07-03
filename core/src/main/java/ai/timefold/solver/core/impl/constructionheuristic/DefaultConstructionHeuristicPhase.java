@@ -158,6 +158,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         terminationStatus = TerminationStatus.NOT_TERMINATED;
         moveRepository.phaseStarted(phaseScope);
         decider.phaseStarted(phaseScope);
+        logger.debug("Construction Heuristic phase ({}) started.", phaseIndex);
     }
 
     public void stepStarted(ConstructionHeuristicStepScope<Solution_> stepScope) {
