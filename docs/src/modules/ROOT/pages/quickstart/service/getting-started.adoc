@@ -4,6 +4,7 @@
 :sectnums:
 :icons: font
 
+include::../../_attributes.adoc[]
 :framework-quickstart-url: {service-quickstart-url}
 
 This guide walks you through the process of creating an AI Optimization service.
