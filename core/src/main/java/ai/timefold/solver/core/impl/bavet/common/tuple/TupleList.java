@@ -116,7 +116,12 @@ public final class TupleList<T extends Tuple> {
      * callers must never read a mark with an old version.
      */
     public @Nullable T getMark(long version) {
-        return markVersion == version ? mark : null;
+        if (markVersion != version) { // Don't keep stale data around.
+            mark = null;
+            markVersion = 0;
+            return null;
+        }
+        return mark;
     }
 
 }
