@@ -140,20 +140,12 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
                 TupleList<OutTuple_> outTupleListRight = outTuple.getStore(outputStoreIndexRightOutTupleList);
                 outTupleListRight.mark(outTuple, version);
             }
-            rightTupleConsumer.accept(rightTuple -> {
-                TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
-                processOutTupleUpdate(leftTuple, rightTuple, outTupleListRight.getMark(version));
-            });
+            rightTupleConsumer.accept(rightTuple -> processOutTupleUpdateFromRight(leftTuple, rightTuple, version));
         }
     }
 
     private void updateOutTupleLeft(OutTuple_ outTuple, LeftTuple_ leftTuple) {
         setOutTupleLeftFacts(outTuple, leftTuple);
-        doUpdateOutTuple(outTuple);
-    }
-
-    private void updateOutTupleRight(OutTuple_ outTuple, UniTuple<Right_> rightTuple) {
-        setOutTupleRightFact(outTuple, rightTuple);
         doUpdateOutTuple(outTuple);
     }
 
@@ -166,6 +158,45 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
             return;
         }
         propagationQueue.update(outTuple);
+    }
+
+    private void processOutTupleUpdateFromRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, long version) {
+        TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
+        processOutTupleUpdate(leftTuple, rightTuple, outTupleListRight.getMark(version));
+    }
+
+    private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, @Nullable OutTuple_ outTuple) {
+        if (testFiltering(leftTuple, rightTuple)) {
+            if (outTuple == null) {
+                insertOutTuple(leftTuple, rightTuple);
+            } else {
+                updateOutTupleLeft(outTuple, leftTuple);
+            }
+        } else {
+            if (outTuple != null) {
+                retractOutTuple(outTuple);
+            }
+        }
+    }
+
+    private void retractOutTuple(OutTuple_ outTuple) {
+        removeLeftEntry(outTuple);
+        removeRightEntry(outTuple);
+        propagateRetract(outTuple);
+    }
+
+    private void removeLeftEntry(OutTuple_ outTuple) {
+        removeEntry(outTuple, outputStoreIndexLeftOutTupleList);
+    }
+
+    private void removeEntry(OutTuple_ outTuple, int outputStoreIndex) {
+        TupleList<OutTuple_> list = outTuple.getStore(outputStoreIndex);
+        list.remove(outTuple);
+        outTuple.setStore(outputStoreIndex, null);
+    }
+
+    private void removeRightEntry(OutTuple_ outTuple) {
+        removeEntry(outTuple, outputStoreIndexRightOutTupleList);
     }
 
     protected final void innerUpdateRight(UniTuple<Right_> rightTuple, Consumer<Consumer<LeftTuple_>> leftTupleConsumer) {
@@ -209,20 +240,6 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         processOutTupleUpdateRight(leftTuple, rightTuple, outTupleListLeft.getMark(version));
     }
 
-    private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, @Nullable OutTuple_ outTuple) {
-        if (testFiltering(leftTuple, rightTuple)) {
-            if (outTuple == null) {
-                insertOutTuple(leftTuple, rightTuple);
-            } else {
-                updateOutTupleLeft(outTuple, leftTuple);
-            }
-        } else {
-            if (outTuple != null) {
-                retractOutTuple(outTuple);
-            }
-        }
-    }
-
     private void processOutTupleUpdateRight(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, @Nullable OutTuple_ outTuple) {
         if (testFiltering(leftTuple, rightTuple)) {
             if (outTuple == null) {
@@ -237,24 +254,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         }
     }
 
-    private void retractOutTuple(OutTuple_ outTuple) {
-        removeLeftEntry(outTuple);
-        removeRightEntry(outTuple);
-        propagateRetract(outTuple);
-    }
-
-    private void removeLeftEntry(OutTuple_ outTuple) {
-        removeEntry(outTuple, outputStoreIndexLeftOutTupleList);
-    }
-
-    private void removeRightEntry(OutTuple_ outTuple) {
-        removeEntry(outTuple, outputStoreIndexRightOutTupleList);
-    }
-
-    private void removeEntry(OutTuple_ outTuple, int outputStoreIndex) {
-        TupleList<OutTuple_> list = outTuple.getStore(outputStoreIndex);
-        list.remove(outTuple);
-        outTuple.setStore(outputStoreIndex, null);
+    private void updateOutTupleRight(OutTuple_ outTuple, UniTuple<Right_> rightTuple) {
+        setOutTupleRightFact(outTuple, rightTuple);
+        doUpdateOutTuple(outTuple);
     }
 
     private void propagateRetract(OutTuple_ outTuple) {
@@ -266,13 +268,13 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
 
-    void retractOutTupleByLeft(OutTuple_ outTuple) {
+    protected void retractOutTupleByLeft(OutTuple_ outTuple) {
         outTuple.setStore(outputStoreIndexLeftOutTupleList, null); // The caller will clear the entire list in one go.
         removeRightEntry(outTuple);
         propagateRetract(outTuple);
     }
 
-    void retractOutTupleByRight(OutTuple_ outTuple) {
+    protected void retractOutTupleByRight(OutTuple_ outTuple) {
         removeLeftEntry(outTuple);
         outTuple.setStore(outputStoreIndexRightOutTupleList, null); // The caller will clear the entire list in one go.
         propagateRetract(outTuple);
