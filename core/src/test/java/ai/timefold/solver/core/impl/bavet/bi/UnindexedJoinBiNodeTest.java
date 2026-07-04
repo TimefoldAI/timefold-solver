@@ -85,7 +85,7 @@ class UnindexedJoinBiNodeTest {
         right.setA("R2");
         node.updateRight(right);
         node.getPropagator().propagateEverything();
-        verify(downstream).update(argThat(t -> t.getB().equals("R2") && t.getA().equals("L1")));
+        verify(downstream).update(argThat(t -> t.getA().equals("L1") && t.getB().equals("R2")));
     }
 
 }
