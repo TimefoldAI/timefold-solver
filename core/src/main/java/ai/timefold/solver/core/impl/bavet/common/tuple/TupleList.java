@@ -20,6 +20,8 @@ public final class TupleList<T extends Tuple> {
     private @Nullable T first;
     private @Nullable T last;
     private int size;
+    private @Nullable T mark;
+    private long markVersion;
 
     public TupleList(int prevStoreIndex, int nextStoreIndex) {
         this.prevStoreIndex = prevStoreIndex;
@@ -96,6 +98,28 @@ public final class TupleList<T extends Tuple> {
 
     public int size() {
         return size;
+    }
+
+    /**
+     * Marks {@code tuple} as significant for the single node-update operation identified by {@code version}.
+     * The mark is only meaningful within that operation; see {@link #getMark(long)}.
+     */
+    public void mark(T tuple, long version) {
+        this.mark = tuple;
+        this.markVersion = version;
+    }
+
+    /**
+     * Returns the tuple stamped by {@link #mark(Tuple, long)} with exactly this {@code version},
+     * or {@code null} on a version mismatch, which means no mark.
+     * A stale mark may reference a tuple no longer in this list —
+     * callers must never read a mark with an old version.
+     */
+    public @Nullable T getMark(long version) {
+        var result = markVersion == version ? mark : null;
+        mark = null;
+        markVersion = 0;
+        return result;
     }
 
 }

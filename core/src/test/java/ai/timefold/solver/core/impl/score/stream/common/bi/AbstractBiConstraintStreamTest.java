@@ -530,6 +530,158 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         assertScore(scoreDirector);
     }
 
+    @TestTemplate
+    public void join_filtering_updateLeftUnchangedKey() {
+        var solution = TestdataLavishSolution.generateSolution(1, 0, 2, 0);
+        var value1 = new TestdataLavishValue("MyValue 1", solution.getFirstValueGroup());
+        solution.getValueList().add(value1);
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
+        var entityA = new TestdataLavishEntity("MyEntity A", group1, value1);
+        solution.getEntityList().add(entityA);
+        var entityB1 = new TestdataLavishEntity("MyEntity B1", group1, value2);
+        solution.getEntityList().add(entityB1);
+        var entityB2 = new TestdataLavishEntity("MyEntity B2", group1, value2);
+        solution.getEntityList().add(entityB2);
+        var entityC = new TestdataLavishEntity("MyEntity C", group2, value1);
+        solution.getEntityList().add(entityC);
+        var entityD = new TestdataLavishEntity("MyEntity D", group2, value2);
+        solution.getEntityList().add(entityD);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .join(TestdataLavishEntity.class,
+                                equal(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getEntityGroup),
+                                filtering((a, b) -> !Objects.equals(a, b) && Objects.equals(a.getValue(), value1)))
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_ID));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entityA, entityB1),
+                assertMatch(entityA, entityB2),
+                assertMatch(entityC, entityD));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entityA, "value");
+        entityA.setValue(value2);
+        scoreDirector.afterVariableChanged(entityA, "value");
+        assertScore(scoreDirector,
+                assertMatch(entityC, entityD));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entityA, "value");
+        entityA.setValue(value1);
+        scoreDirector.afterVariableChanged(entityA, "value");
+        assertScore(scoreDirector,
+                assertMatch(entityA, entityB1),
+                assertMatch(entityA, entityB2),
+                assertMatch(entityC, entityD));
+    }
+
+    @TestTemplate
+    public void join_filtering_updateRightUnchangedKey() {
+        var solution = TestdataLavishSolution.generateSolution(1, 0, 2, 0);
+        var value1 = new TestdataLavishValue("MyValue 1", solution.getFirstValueGroup());
+        solution.getValueList().add(value1);
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        var group1 = solution.getFirstEntityGroup();
+        var group2 = solution.getEntityGroupList().get(1);
+        var entityL1 = new TestdataLavishEntity("MyEntity L1", group1, value2);
+        solution.getEntityList().add(entityL1);
+        var entityL2 = new TestdataLavishEntity("MyEntity L2", group1, value2);
+        solution.getEntityList().add(entityL2);
+        var entityR = new TestdataLavishEntity("MyEntity R", group1, value1);
+        solution.getEntityList().add(entityR);
+        var entityC = new TestdataLavishEntity("MyEntity C", group2, value2);
+        solution.getEntityList().add(entityC);
+        var entityD = new TestdataLavishEntity("MyEntity D", group2, value1);
+        solution.getEntityList().add(entityD);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .join(TestdataLavishEntity.class,
+                                equal(TestdataLavishEntity::getEntityGroup, TestdataLavishEntity::getEntityGroup),
+                                filtering((a, b) -> !Objects.equals(a, b) && Objects.equals(b.getValue(), value1)))
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_ID));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entityL1, entityR),
+                assertMatch(entityL2, entityR),
+                assertMatch(entityC, entityD));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entityR, "value");
+        entityR.setValue(value2);
+        scoreDirector.afterVariableChanged(entityR, "value");
+        assertScore(scoreDirector,
+                assertMatch(entityC, entityD));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entityR, "value");
+        entityR.setValue(value1);
+        scoreDirector.afterVariableChanged(entityR, "value");
+        assertScore(scoreDirector,
+                assertMatch(entityL1, entityR),
+                assertMatch(entityL2, entityR),
+                assertMatch(entityC, entityD));
+    }
+
+    @TestTemplate
+    public void join_1Filtering_updateUnchangedKey() {
+        var solution = TestdataLavishSolution.generateSolution(1, 0, 1, 0);
+        var value1 = new TestdataLavishValue("MyValue 1", solution.getFirstValueGroup());
+        solution.getValueList().add(value1);
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        solution.getValueList().add(value2);
+        var entityA = new TestdataLavishEntity("MyEntity A", solution.getFirstEntityGroup(), value1);
+        solution.getEntityList().add(entityA);
+        var entityB = new TestdataLavishEntity("MyEntity B", solution.getFirstEntityGroup(), value2);
+        solution.getEntityList().add(entityB);
+        var entityP = new TestdataLavishEntity("MyEntity P", solution.getFirstEntityGroup(), value1);
+        solution.getEntityList().add(entityP);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .join(TestdataLavishEntity.class,
+                                filtering((a, b) -> !Objects.equals(a, b) && Objects.equals(a.getValue(), value1)))
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_ID));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entityA, entityB),
+                assertMatch(entityA, entityP),
+                assertMatch(entityP, entityA),
+                assertMatch(entityP, entityB));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entityA, "value");
+        entityA.setValue(value2);
+        scoreDirector.afterVariableChanged(entityA, "value");
+        assertScore(scoreDirector,
+                assertMatch(entityP, entityA),
+                assertMatch(entityP, entityB));
+
+        // Incremental
+        scoreDirector.beforeVariableChanged(entityA, "value");
+        entityA.setValue(value1);
+        scoreDirector.afterVariableChanged(entityA, "value");
+        assertScore(scoreDirector,
+                assertMatch(entityA, entityB),
+                assertMatch(entityA, entityP),
+                assertMatch(entityP, entityA),
+                assertMatch(entityP, entityB));
+    }
+
     @Override
     @TestTemplate
     public void joinAfterGroupBy() {
