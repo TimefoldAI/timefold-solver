@@ -26,8 +26,10 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     final List<GraphNode<Solution_>> nodeList;
     final Map<Object, Integer> entityToEntityId;
     final Map<GraphNode<Solution_>, List<GraphNode<Solution_>>> fixedEdges;
+    final Map<GraphNode<Solution_>, List<GraphNode<Solution_>>> initialDynamicEdges;
     final Map<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>> variableReferenceToContainingNodeMap;
     final Map<Integer, Map<Object, GraphNode<Solution_>>> variableGroupIdToContainingNodeMap;
+    final Map<VariableMetaModel<?, ?, ?>, List<ListElementEdgeMaintainer>> listVariableToEdgeMaintainers;
     boolean isGraphFixed;
 
     public VariableReferenceGraphBuilder(ChangedVariableNotifier<Solution_> changedVariableNotifier) {
@@ -38,8 +40,31 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         variableReferenceToBeforeProcessor = new HashMap<>();
         variableReferenceToAfterProcessor = new HashMap<>();
         fixedEdges = new HashMap<>();
+        initialDynamicEdges = new HashMap<>();
         entityToEntityId = new IdentityHashMap<>();
+        listVariableToEdgeMaintainers = new HashMap<>();
         isGraphFixed = true;
+    }
+
+    /**
+     * Adds an edge that reflects the state of a planning list variable when the graph is built.
+     * Unlike a {@link #addFixedEdge(GraphNode, GraphNode) fixed edge}, it may be removed during solving
+     * when the list variable changes, so a dependency loop through it can be broken by the solver
+     * and must not fail fast.
+     */
+    public void addInitialDynamicEdge(@NonNull GraphNode<Solution_> from, @NonNull GraphNode<Solution_> to) {
+        if (from.graphNodeId() == to.graphNodeId()) {
+            return;
+        }
+        initialDynamicEdges.computeIfAbsent(from, k -> new ArrayList<>()).add(to);
+    }
+
+    public void addListElementEdgeMaintainer(VariableMetaModel<?, ?, ?> listVariableId,
+            ListElementEdgeMaintainer listElementEdgeMaintainer) {
+        // Edges depend on the list variable's contents, so the graph cannot be fixed.
+        isGraphFixed = false;
+        listVariableToEdgeMaintainers.computeIfAbsent(listVariableId, k -> new ArrayList<>())
+                .add(listElementEdgeMaintainer);
     }
 
     public <Entity_> void addVariableReferenceEntity(Entity_ entity, List<VariableUpdaterInfo<Solution_>> variableReferences) {

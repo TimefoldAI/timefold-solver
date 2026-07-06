@@ -25,6 +25,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
     protected final Map<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>> variableReferenceToContainingNodeMap;
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToBeforeProcessor;
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToAfterProcessor;
+    protected final Map<VariableMetaModel<?, ?, ?>, List<ListElementEdgeMaintainer>> listVariableToEdgeMaintainers;
 
     // These structures are mutable.
     protected final DynamicLinearProbeNonNegativeIntCounter[] edgeCount;
@@ -46,6 +47,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
         variableReferenceToContainingNodeMap = Map.copyOf(outerGraph.variableReferenceToContainingNodeMap);
         variableReferenceToBeforeProcessor = Map.copyOf(outerGraph.variableReferenceToBeforeProcessor);
         variableReferenceToAfterProcessor = Map.copyOf(outerGraph.variableReferenceToAfterProcessor);
+        listVariableToEdgeMaintainers = Map.copyOf(outerGraph.listVariableToEdgeMaintainers);
         edgeCount = new DynamicLinearProbeNonNegativeIntCounter[instanceCount];
         for (var i = 0; i < instanceCount; i++) {
             edgeCount[i] = new DynamicLinearProbeNonNegativeIntCounter();
@@ -67,6 +69,11 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
         for (var fixedEdgeEntry : outerGraph.fixedEdges.entrySet()) {
             for (var toEdge : fixedEdgeEntry.getValue()) {
                 addEdge(fixedEdgeEntry.getKey(), toEdge);
+            }
+        }
+        for (var initialDynamicEdgeEntry : outerGraph.initialDynamicEdges.entrySet()) {
+            for (var toEdge : initialDynamicEdgeEntry.getValue()) {
+                addEdge(initialDynamicEdgeEntry.getKey(), toEdge);
             }
         }
     }
@@ -189,6 +196,75 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeTra
                 markChanged(node);
             }
             processEntity(variableReferenceToAfterProcessor.getOrDefault(variableReference, Collections.emptyList()), entity);
+        }
+    }
+
+    @Override
+    public final boolean requiresListVariableChangeEvents(VariableMetaModel<?, ?, ?> variableReference) {
+        return listVariableToEdgeMaintainers.containsKey(variableReference);
+    }
+
+    @Override
+    public final void beforeListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
+            List<Object> elements, int fromIndex, int toIndex) {
+        if (isUpdating) {
+            // Declarative shadow variable updates never change a list variable, so this cannot happen,
+            // but stay consistent with beforeVariableChanged(VariableMetaModel, Object).
+            return;
+        }
+        updateListElementEdges(variableReference, entity, elements, fromIndex, toIndex, false);
+    }
+
+    @Override
+    public final void afterListVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity,
+            List<Object> elements, int fromIndex, int toIndex) {
+        if (isUpdating) {
+            return;
+        }
+        updateListElementEdges(variableReference, entity, elements, fromIndex, toIndex, true);
+    }
+
+    @SuppressWarnings("ForLoopReplaceableByForEach")
+    private void updateListElementEdges(VariableMetaModel<?, ?, ?> variableReference, Object entity,
+            List<Object> elements, int fromIndex, int toIndex, boolean isAdd) {
+        var maintainerList = listVariableToEdgeMaintainers.get(variableReference);
+        if (maintainerList == null) {
+            return;
+        }
+        var maintainerCount = maintainerList.size();
+        for (var i = 0; i < maintainerCount; i++) {
+            var maintainer = maintainerList.get(i);
+            var to = lookupOrNull(maintainer.targetVariableId(), entity);
+            if (to == null) {
+                continue;
+            }
+            var sourceNodeMap = variableReferenceToContainingNodeMap.get(maintainer.sourceVariableId());
+            if (sourceNodeMap != null) {
+                // Do not clamp the range; an out-of-bounds range is a caller bug
+                // that must fail fast instead of silently corrupting the edge counts.
+                for (var elementIndex = fromIndex; elementIndex < toIndex; elementIndex++) {
+                    var sourceEntity = maintainer.findSourceEntity(elements.get(elementIndex));
+                    if (sourceEntity == null) {
+                        continue;
+                    }
+                    var from = sourceNodeMap.get(sourceEntity);
+                    if (from == null) {
+                        continue;
+                    }
+                    if (isAdd) {
+                        addEdge(from, to);
+                    } else {
+                        removeEdge(from, to);
+                    }
+                }
+            }
+            if (isAdd) {
+                // The dependency set changed even if the range is empty (e.g. an element was removed),
+                // so the target variable must always be recomputed.
+                // At graph construction, the same is guaranteed by the after processor registered in
+                // DefaultShadowVariableSessionFactory.createListElementSourceProcessors().
+                markChanged(to);
+            }
         }
     }
 

@@ -311,6 +311,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             }
             notificationQueuesAreEmpty = false;
         }
+        if (shadowVariableSession != null
+                && shadowVariableSession.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex)) {
+            notificationQueuesAreEmpty = false;
+        }
     }
 
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
@@ -325,6 +329,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
         if (!cascadingUpdateShadowVarDescriptorList.isEmpty()) { // Only necessary if there is a cascade.
             listVariableChangedNotificationList.add(notification);
+        }
+        if (shadowVariableSession != null) {
+            shadowVariableSession.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         }
     }
 
