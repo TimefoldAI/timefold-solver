@@ -38,6 +38,12 @@
 ** xref:running-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
 ** xref:running-timefold-solver/solver-diagnostics.adoc[leveloffset=+1]
 
+* Deploying to the Timefold Platform
+** xref:deploying-to-platform/introduction.adoc[Overview]
+** xref:deploying-to-platform/getting-started.adoc[Getting started]
+** xref:deploying-to-platform/model-metadata.adoc[leveloffset=+1]
+** xref:deploying-to-platform/metrics.adoc[leveloffset=+1]
+
 * Optimization algorithms
 ** xref:optimization-algorithms/overview.adoc[Overview]
 ** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]

@@ -1,0 +1,110 @@
+= Getting started: deploying to the platform (Preview)
+:page-aliases: quickstart/service/deploy-to-platform.adoc
+:description: Deploy the service you built to Timefold Platform
+:doctype: book
+:sectnums:
+:icons: font
+
+include::../_attributes.adoc[]
+
+This guide continues from xref:quickstart/service/getting-started.adoc[Getting started: building a service], where you built the School Timetabling model as a service.
+It walks you through deploying that same model to Timefold Platform, so it can be reached through a managed, multi-tenant REST API instead of `mvn quarkus:dev` on your own machine.
+
+For the reasoning behind why you'd want to do this, see xref:deploying-to-platform/introduction.adoc[Deploying to the Timefold Platform].
+
+include::_preview-note.adoc[]
+
+[sectnums!]
+== Prerequisites
+
+To complete this guide, you need:
+
+* The School Timetabling service built in xref:quickstart/service/getting-started.adoc[Getting started: building a service].
+* A Timefold Platform account with tenant-admin access to the tenant you want to register the model in.
+* A Personal Access Token (PAT), scoped to the tenant you want to register the model in, with *Create*, *Read*, *Update*, and *Delete* permissions on the *Registered Model* resource.
+See xref:#_generate_a_personal_access_token[Generate a Personal Access Token] below.
+* Push access to Timefold's container registry, since the `configure` goal builds and pushes your model's container image there.
+This access needs to be requested; mailto:info@timefold.ai[get in touch with the Timefold team] before you try to deploy.
+
+[#_add_the_maven_plugin]
+== Add the Maven plugin
+
+The `timefold-maven-plugin` connects your build to the platform's container registry and handles registering your model.
+Add it to your `pom.xml`, and configure it with your `platformUrl`, a registration `key` for your model, and the tenant(s) to register it under.
+
+Your `platformUrl` will typically be `https://app.timefold.ai`.
+See https://docs.timefold.ai/timefold-platform/latest/api/integration-scenarios/integration-scenarios#_our_recommendation[Integration scenarios] if you're deploying to a different installation, for example a self-hosted platform or a different data residency region.
+
+Also set `handleSubscription` to `true`.
+Registering a model does not automatically subscribe your tenant to it; without this setting, your tenant won't see the model on the platform after you deploy it.
+
+Follow the setup instructions in the https://github.com/TimefoldAI/timefold-solver/blob/main/service/tools/maven-plugin/README.adoc[Maven plugin documentation] to add and configure it.
+
+[#_authenticate]
+== Authenticate
+
+[#_generate_a_personal_access_token]
+=== Generate a Personal Access Token
+
+Generate a PAT from your user menu on the platform (*User menu → Access tokens → Generate new token*).
+When selecting its permissions, scope the token to the tenant you want to register the model in, and grant *Create*, *Read*, *Update*, and *Delete* on the *Registered Model* resource, since the plugin needs all four to register, update, and later undeploy your model.
+
+See https://docs.timefold.ai/timefold-platform/latest/api/platform-api#_authentication_with_personal_access_tokens[Authentication with Personal Access Tokens] for the full walkthrough, including screenshots of the token generation dialog.
+
+=== Export the token
+
+The plugin reads your PAT from the `TIMEFOLD_PAT` environment variable.
+Export it before building:
+
+[source,bash,options="nowrap"]
+----
+export TIMEFOLD_PAT=<your-personal-access-token>
+----
+
+[#_build_and_deploy]
+== Build and deploy
+
+Build and deploy your model in a single command:
+
+[source,bash,options="nowrap"]
+----
+mvn clean package timefold:deploy
+----
+
+=== Preview without pushing container
+To preview what would happen without actually pushing the container image or registering the model, add `-Dtimefold.dryRun=true`.
+This logs the requests that would have been made instead of sending them.
+
+[#_what_happens_on_deploy]
+=== What happens on deploy
+
+During `package`, the build generates a model descriptor (`target/timefold/timefold-model-descriptor.json`) and packages it together with the OpenAPI specification, JSON schemas, and default configuration profile into `target/model-descriptor.zip`.
+
+The `timefold:deploy` goal uploads that archive and registers it against the platform's model registration endpoint (`POST /api/platform/v1/models`), using the `key` and `tenants` from the plugin configuration.
+
+If a model with the same `key` is already registered, the deploy fails with a conflict (HTTP 409) unless `overwrite` is enabled, in which case the existing registration is updated instead (`PATCH /api/platform/v1/models/<key>`).
+You can also set this from the command line with `-Dtimefold.model.overwrite=true`.
+
+[#_verify_on_the_platform]
+== Verify on the platform
+
+Log in to the platform UI at your `platformUrl` and find the model under your tenant.
+Before considering the model ready for review, confirm the following:
+
+* *The model shows up in your tenant*: go to *Manage tenant → Models* and confirm your model is listed, with the version details (major API version, and the current minor version's build time, commit, and solver version) matching what you just deployed.
+If it's missing, double check that `handleSubscription` is set to `true` in the Maven plugin configuration.
+* *It solves*: submit your xref:running-timefold-solver/service/demo-data.adoc[demo dataset] and confirm the solve completes with a reasonable score.
+* *The output looks right*: inspect the resulting schedule and check that lessons are assigned sensible timeslots and rooms.
+* *Constraints show up by name in score analysis*: the score analysis breakdown should show your constraints under human-readable names, not raw identifiers.
+This requires the richer constraint metadata described in xref:deploying-to-platform/model-metadata.adoc#_constraint_descriptions_and_groups[Constraint descriptions and groups].
+* *Input and output metrics show up*: the dataset view should display the metrics you exposed, as described in xref:deploying-to-platform/metrics.adoc[Using metrics].
+* *You can add a configuration profile*: add a new configuration profile in the UI and override one of your xref:running-timefold-solver/service/constraint-overrides.adoc[constraint weights], then confirm a re-solve picks up the new weight.
+See xref:deploying-to-platform/model-metadata.adoc#_configuration_profiles[Configuration profiles] for the properties that define the default profile shipped with your model.
+
+[sectnums!]
+== Next
+
+* Learn about the platform-specific metadata that shapes your model's UI experience: xref:deploying-to-platform/model-metadata.adoc[Platform model metadata].
+* Make solve graphs, comparison, and Insights more useful by adding xref:deploying-to-platform/metrics.adoc[input and output metrics].
+* Read more about xref:running-timefold-solver/service/overview.adoc[Building a service].
+* See the https://github.com/TimefoldAI/timefold-solver/blob/main/service/tools/maven-plugin/README.adoc[Maven plugin documentation] for the full set of goals and parameters, including how to undeploy a model.
