@@ -86,6 +86,8 @@ The bare model id comes from your Quarkus application name, which defaults to yo
 The version comes from `timefold.application.version`.
 Neither comes from `timefold.application.name` (which is only the human-readable display name shown in the UI) or from `timefold.application.description`.
 
+The bare id may only contain letters, numbers, and hyphens, and can't itself contain an underscore, since the version is appended with one.
+
 [#_registration_key]
 Registration key:: The `key` you set through the Maven plugin, as described in xref:deploying-to-platform/getting-started.adoc#_add_the_maven_plugin[Add the Maven plugin].
 This is an administrative identifier, used only for managing the deployment itself (updating, overwriting, or undeploying it) and isn't part of the consumer-facing API.
