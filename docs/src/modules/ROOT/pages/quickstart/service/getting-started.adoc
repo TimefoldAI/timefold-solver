@@ -86,9 +86,17 @@ Extending `AbstractSimpleModel`:
 
 - Configures this class to be (de-)serialized as part of the `ModelInput` and `ModelOutput` of the xref:running-timefold-solver/service/rest-api.adoc[REST API].
 - Implements the `SolverModel` interface using the default `HardMediumSoftScore`.
+- Already declares the `@PlanningScore` field for you.
 
 [NOTE]
 It's ok if you are not familiar with these terms yet. We'll get to them later.
+
+[IMPORTANT]
+====
+Don't declare your own `@PlanningScore` field when extending `AbstractSimpleModel`: it already has one.
+A `@PlanningSolution` class must have exactly one `@PlanningScore` field, so adding a second one fails when the solution descriptor is built, for example with an opaque `ExceptionInInitializerError` if you build a `ConstraintVerifier` in a static test field.
+If you need a different score type than `HardMediumSoftScore`, don't extend `AbstractSimpleModel`; implement `ModelInput`, `ModelOutput`, and `SolverModel` directly instead, as described in xref:running-timefold-solver/service/exposing-metrics.adoc[Exposing metrics].
+====
 
 [tabs]
 ====

@@ -24,6 +24,17 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
+import java.util.List;
+
+import ai.timefold.solver.service.definition.api.ModelInput;
+import ai.timefold.solver.service.definition.api.ModelOutput;
+import ai.timefold.solver.service.rest.api.ModelRest;
+
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+
+import jakarta.ws.rs.Path;
+
 // TimetableDto.java
 public class TimetableDto implements ModelInput, ModelOutput {
 
@@ -51,6 +62,15 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
+import ai.timefold.solver.service.definition.api.ModelInput
+import ai.timefold.solver.service.definition.api.ModelOutput
+import ai.timefold.solver.service.rest.api.ModelRest
+
+import org.eclipse.microprofile.openapi.annotations.media.Schema
+import org.eclipse.microprofile.openapi.annotations.tags.Tag
+
+import jakarta.ws.rs.Path
+
 // TimetableDto.kt
 class TimetableDto(
     @Schema(required = true, description = "The unique identifier of timetable")
@@ -87,9 +107,12 @@ The `<root>` is determined by the @Path annotation on the interface extending Mo
 - `DELETE /<root>/\{id\}`: Terminate a dataset optimization run
 
 If your model provides xref:./demo-data.adoc[demo data], the following endpoints are also created.
+These are *not* nested under `<root>`: they only share its version prefix (for example `/v1`), not the rest of the path.
+So for a `@Path("/v1/timetables")` resource, the demo data endpoints are at `/v1/demo-data`, not `/v1/timetables/demo-data`.
+If your resource path has no version prefix, the demo data endpoints are served at the root, without a version.
 
-- `GET /<root>/demo-data`: Retrieve all available demo dataset ids.
-- `GET /<root>/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier
+- `GET /v<version>/demo-data`: Retrieve all available demo dataset ids.
+- `GET /v<version>/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier
 
 // TODO See the xref:consumer-guide.adoc[service consumer guide] for information on how consumers of the service should interact with these API endpoints.
 // TODO https://github.com/TimefoldAI/timefold-solver/issues/2349
@@ -166,6 +189,13 @@ Additionally, more fields might be added for specific model implementations:
 - `inputMetrics`: metrics about the input of the planning problem. See: xref:./exposing-metrics.adoc#modelInputMetrics[Input Metrics]
 - `kpis`: metrics about the output of the planning problem. See: xref:./exposing-metrics.adoc#modelOutputMetrics[Output Metrics]
 
+[NOTE]
+====
+This envelope is represented in Java/Kotlin by the `ModelResponse` record (`ai.timefold.solver.service.definition.api.domain.ModelResponse`).
+Its accessor is named `outputMetrics()`, not `kpis()`; only the JSON serialization uses the `kpis` key (via `@JsonProperty("kpis")`).
+The score itself is not a top-level field: it's nested inside `metadata.score`, not `metadata.run.score` or a top-level `score`.
+====
+
 .Example Response
 [source,json]
 ----
@@ -235,8 +265,17 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
+import java.util.Optional;
+
+import ai.timefold.solver.core.api.score.HardSoftScore;
+import ai.timefold.solver.service.definition.api.ModelConvertor;
+import ai.timefold.solver.service.definition.api.domain.ModelConfig;
+import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelConfigOverrides;
+
+import jakarta.enterprise.context.ApplicationScoped;
+
 @ApplicationScoped
-public class TimetableConvertor implements ModelConvertor<HardSoftLongScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+public class TimetableConvertor implements ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     @Override
     public Timetable toSolverModel(TimetableDto modelInput, ModelConfig<EmptyModelConfigOverrides> modelConfig,
@@ -262,8 +301,17 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
+import java.util.Optional
+
+import ai.timefold.solver.core.api.score.HardSoftScore
+import ai.timefold.solver.service.definition.api.ModelConvertor
+import ai.timefold.solver.service.definition.api.domain.ModelConfig
+import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelConfigOverrides
+
+import jakarta.enterprise.context.ApplicationScoped
+
 @ApplicationScoped
-class TimetableConvertor : ModelConvertor<HardSoftLongScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+class TimetableConvertor : ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     override fun toSolverModel(modelInput: TimetableDto, modelConfig: ModelConfig<EmptyModelConfigOverrides>,
             lastModelOutput: Optional<TimetableDto>): Timetable {
@@ -293,6 +341,11 @@ For enhancing the SolverModel, use the xref:./modeling-changes.adoc#solverModelE
 
 By default, validation on the input is based on the xref:./rest-api.adoc#openAPISpecification[OpenAPI Specification annotations].
 Additional validations can be added by implementing the `ModelValidator` interface.
+
+// TODO: verify against the current ValidationBuilder/IssueType/Issue API. As of this writing, ValidationBuilder.addIssue()
+// takes a single `Issue` argument, not `addIssue(IssueType, IssueDetail)` as shown below, and `IssueDetail` does not exist
+// anywhere in the codebase. The example below reflects an older API shape and needs a rewrite against the current
+// ai.timefold.solver.service.definition.api.validation package before it can be trusted.
 
 [#timetableValidatorExample]
 [tabs]

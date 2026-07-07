@@ -31,6 +31,18 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import ai.timefold.solver.service.definition.api.data.DemoData;
+import ai.timefold.solver.service.definition.api.data.DemoDataGenerator;
+import ai.timefold.solver.service.definition.api.data.DemoMetaData;
+import ai.timefold.solver.service.definition.api.domain.Configuration;
+import ai.timefold.solver.service.definition.api.domain.ModelRequest;
+
+import jakarta.enterprise.context.ApplicationScoped;
+
 @ApplicationScoped
 public class TimetableDemoDataGenerator implements DemoDataGenerator {
 
@@ -64,11 +76,14 @@ public class TimetableDemoDataGenerator implements DemoDataGenerator {
         }
 
         public ModelRequest<TimetableInput, TimetableConfigOverrides> generateBasicDemoData() {
-            // Generate basic request.
+            TimetableInput input = // build a small, hardcoded dataset
+            return new ModelRequest<>(input);
         }
 
         public ModelRequest<TimetableInput, TimetableConfigOverrides> generateComplexSet() {
-            // Generate complex request.
+            TimetableInput input = // build a larger, hardcoded dataset
+            Configuration<TimetableConfigOverrides> configuration = // optionally, a non-default configuration
+            return new ModelRequest<>(configuration, input);
         }
     }
 
@@ -92,6 +107,14 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
+import ai.timefold.solver.service.definition.api.data.DemoData
+import ai.timefold.solver.service.definition.api.data.DemoDataGenerator
+import ai.timefold.solver.service.definition.api.data.DemoMetaData
+import ai.timefold.solver.service.definition.api.domain.Configuration
+import ai.timefold.solver.service.definition.api.domain.ModelRequest
+
+import jakarta.enterprise.context.ApplicationScoped
+
 @ApplicationScoped
 class TimetableDemoDataGenerator : DemoDataGenerator {
 
@@ -113,11 +136,14 @@ class TimetableDemoDataGenerator : DemoDataGenerator {
         fun getDemoData(): DemoData = DemoData(metaData, requestFunction(this))
 
         fun generateBasicDemoData(): ModelRequest<TimetableInput, TimetableConfigOverrides> {
-            return TODO("Generate basic request.")
+            val input: TimetableInput = TODO("build a small, hardcoded dataset")
+            return ModelRequest(input)
         }
 
         fun generateComplexSet(): ModelRequest<TimetableInput, TimetableConfigOverrides> {
-            return TODO("Generate complex request.")
+            val input: TimetableInput = TODO("build a larger, hardcoded dataset")
+            val configuration: Configuration<TimetableConfigOverrides> = TODO("optionally, a non-default configuration")
+            return ModelRequest(configuration, input)
         }
     }
 
@@ -133,7 +159,9 @@ class TimetableDemoDataGenerator : DemoDataGenerator {
 --
 ====
 
-With this interface implemented, Timefold Solver will automatically expose these methods as REST endpoints:
+`ModelRequest` has two constructors: `ModelRequest(ModelInput_ modelInput)`, which defaults the configuration to null, and `ModelRequest(Configuration<ModelConfigurationOverrides_> configuration, ModelInput_ modelInput)`, if you also want to set a non-default configuration.
+There is no constructor that takes the model config overrides directly; overrides are wrapped in a `Configuration` object first.
 
-- `GET /&lt;root&gt;/demo-data`: Retrieve all available demo dataset ids.
-- `GET /&lt;root&gt;/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier
+With this interface implemented, Timefold Solver will automatically expose these methods as REST endpoints.
+These endpoints are *not* nested under your `ModelRest` resource path: they only share its version prefix.
+See xref:./rest-api.adoc#generatedEndpoints[Generated endpoints] for the exact path.

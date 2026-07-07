@@ -27,6 +27,8 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
+import java.time.LocalDateTime;
+
 public class Timeslot {
 
     private LocalDateTime startTime;
@@ -48,6 +50,8 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
+import java.time.LocalDateTime
+
 data class Timeslot(
     val startTime: LocalDateTime? = null,
     val endTime: LocalDateTime? = null
@@ -68,6 +72,12 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
+import java.time.LocalDateTime;
+
+import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnricher;
+
+import jakarta.enterprise.context.ApplicationScoped;
+
 @ApplicationScoped
 public class TimeslotHolidayEnricher implements SolverModelEnricher<Timetable> {
 
@@ -94,6 +104,12 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
+import java.time.LocalDateTime
+
+import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnricher
+
+import jakarta.enterprise.context.ApplicationScoped
+
 @ApplicationScoped
 class TimeslotHolidayEnricher : SolverModelEnricher<Timetable> {
 
@@ -127,6 +143,11 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
+import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnrichmentDirector;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 @ApplicationScoped
 public class TimetableEnrichmentDirector implements SolverModelEnrichmentDirector<Timetable> {
 
@@ -152,6 +173,11 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
+import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnrichmentDirector
+
+import jakarta.enterprise.context.ApplicationScoped
+import jakarta.inject.Inject
+
 @ApplicationScoped
 class TimetableEnrichmentDirector @Inject constructor(
     private val timeslotEnricher: TimeslotHolidayEnricher
