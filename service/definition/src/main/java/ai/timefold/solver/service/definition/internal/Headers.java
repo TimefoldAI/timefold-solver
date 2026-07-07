@@ -6,6 +6,8 @@ public class Headers {
 
     public static final String X_MAPS_PROVIDER_HEADER = "X-TF-MAPS-PROVIDER";
 
+    public static final String X_MAPS_LOCATION_HEADER = "X-TF-MAPS-LOCATION";
+
     public static final String X_MAPS_CACHE_ID = "X-TF-MAPS-CACHE-ID";
 
     public static final String X_MAPS_RESPONSE_CHUNK_BYTES = "X-TF-MAPS-CHUNK-BYTES";

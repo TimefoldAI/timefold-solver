@@ -1198,10 +1198,10 @@ image::running-timefold-solver/benchmarking-and-tweaking/benchmarkAggregator.png
 
 This is useful to:
 
-* **Report on the impact of code changes**: Run the same benchmark configuration before and after the code changes, then aggregate a report.
-* **Report on the impact of dependency upgrades**: Run the same benchmark configuration before and after upgrading the dependency, then aggregate a report.
-* **Summarize a too verbose report**: Select only the interesting solver benchmarks from the existing report. This especially useful on template reports to make the graphs readable.
-* **Partially rerun a benchmark**: Rerun part of an existing report (for example only the failed or invalid solvers), then recreate the original intended report with the new values.
+Report on the impact of code changes:: Run the same benchmark configuration before and after the code changes, then aggregate a report.
+Report on the impact of dependency upgrades:: Run the same benchmark configuration before and after upgrading the dependency, then aggregate a report.
+Summarize a too verbose report:: Select only the interesting solver benchmarks from the existing report. This is especially useful on template reports to make the graphs readable.
+Partially rerun a benchmark:: Rerun part of an existing report (for example only the failed or invalid solvers), then recreate the original intended report with the new values.
 
 Compose the aggregated report in the Benchmark aggregator UI:
 
@@ -1308,10 +1308,10 @@ public File aggregateAndView() {
 
 The BenchmarkAggregator provides the following public methods:
 
-* `aggregateBenchmarks(PlannerBenchmarkConfig)` - Aggregates all benchmark results found in the configured directory
-* `aggregateSelectedBenchmarks(PlannerBenchmarkConfig, List<String>)` - Aggregates benchmark results from specific subdirectories by name
-* `getAvailableBenchmarkDirectories(PlannerBenchmarkConfig)` - Returns list of available benchmark subdirectories with valid results
-* `aggregateAndShowReportInBrowser(PlannerBenchmarkConfig)` - Aggregates all benchmarks and opens the HTML report in the default browser
+`aggregateBenchmarks(PlannerBenchmarkConfig)`:: Aggregates all benchmark results found in the configured directory.
+`aggregateSelectedBenchmarks(PlannerBenchmarkConfig, List<String>)`:: Aggregates benchmark results from specific subdirectories by name.
+`getAvailableBenchmarkDirectories(PlannerBenchmarkConfig)`:: Returns list of available benchmark subdirectories with valid results.
+`aggregateAndShowReportInBrowser(PlannerBenchmarkConfig)`:: Aggregates all benchmarks and opens the HTML report in the default browser.
 
 All aggregation methods return a `File` pointing to the generated HTML overview report that contains the aggregated benchmark results.
 

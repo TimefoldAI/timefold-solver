@@ -16,7 +16,7 @@ To find out more, see xref:commercial-editions/commercial-editions.adoc[Plus / E
 
 == Does Timefold offer pre-built models?
 
-Timefold offers a suite of pre-built PlanningAI models designed to expedite development by addressing complex scheduling and routing challenges across various industries.
+Timefold offers a suite of pre-built planning models designed to expedite development by addressing complex scheduling and routing challenges across various industries.
 These models are built upon _Timefold Solver Enterprise Edition_ technology and are accessible through a REST API, facilitating seamless integration into your applications.
 
 See all available models on https://app.timefold.ai/[our platform].
@@ -80,41 +80,56 @@ image::running-timefold-solver/library/sizingHardware.png[align="center"]
 
 Understand these guidelines to decide the hardware for a Timefold Solver service:
 
-* **RAM memory**: Provision plenty, but no need to provide more.
-** The problem dataset, loaded before Timefold Solver is called, often consumes the most memory. It depends on the problem scale.
-*** If this is a problem, review the domain class structure: remove classes or fields that Timefold Solver doesn't need during solving.
-*** Timefold Solver usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:domain-modeling/modeling-planning-problems.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
-** During solving, the memory is very volatile, because solving creates many short-lived objects. The Garbage Collector deletes these in bulk and therefore needs some heap space as a buffer.
-** The maximum size of the JVM heap space can be in three states:
-*** **Insufficient**: An `OutOfMemoryException` is thrown (often because the Garbage Collector is using more than 98% of the CPU time).
-*** **Narrow**: The heap buffer for those short-lived instances is too small, therefore the Garbage Collector needs to run more than it would like to, which causes a performance loss.
-**** Profiling shows that in the heap chart, the used heap space frequently touches the max heap space during solving. It also shows that the Garbage Collector has a significant CPU usage impact.
-**** Adding more heap space increases the xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed].
-*** **Plenty**: There is enough heap space. The Garbage Collector is active, but its CPU usage is low.
-**** Adding more heap space does _not_ increase performance.
-**** Usually, this is around 300 to 500MB above the dataset size, _regardless of the problem scale_,
+RAM memory:: Provision plenty, but no need to provide more.
++
+--
+* The problem dataset, loaded before Timefold Solver is called, often consumes the most memory. It depends on the problem scale.
+** If this is a problem, review the domain class structure: remove classes or fields that Timefold Solver doesn't need during solving.
+** Timefold Solver usually has up to three solution instances: the internal working solution, the best solution and the old best solution (when it's being replaced). However, these are all a xref:domain-modeling/modeling-planning-problems.adoc#cloningASolution[planning clone] of each other, so many problem fact instances are shared between those solution instances.
+* During solving, the memory is very volatile, because solving creates many short-lived objects. The Garbage Collector deletes these in bulk and therefore needs some heap space as a buffer.
+* The maximum size of the JVM heap space can be in three states:
+** **Insufficient**: An `OutOfMemoryException` is thrown (often because the Garbage Collector is using more than 98% of the CPU time).
+** **Narrow**: The heap buffer for those short-lived instances is too small, therefore the Garbage Collector needs to run more than it would like to, which causes a performance loss.
+*** Profiling shows that in the heap chart, the used heap space frequently touches the max heap space during solving. It also shows that the Garbage Collector has a significant CPU usage impact.
+*** Adding more heap space increases the xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed].
+** **Plenty**: There is enough heap space. The Garbage Collector is active, but its CPU usage is low.
+*** Adding more heap space does _not_ increase performance.
+*** Usually, this is around 300 to 500MB above the dataset size, _regardless of the problem scale_,
 except with xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection] and caching move selector,
 neither of which are used by default.
-* **CPU power**: More is better.
-** Improving CPU speed directly increases the xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed].
-*** If the CPU power is twice as fast, it takes half the time to find the same result. However, this does not guarantee that it finds a better result in the same time, nor that it finds a similar result for a problem twice as big in the same time.
-*** Increasing CPU power usually does not resolve scaling issues, because planning problems scale exponentially. Power tweaking the solver configuration has far better results for scaling issues than throwing hardware at it.
-** During the `solve()` method, the CPU power will max out until it returns
+--
+
+CPU power:: More is better.
++
+--
+* Improving CPU speed directly increases the xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed].
+** If the CPU power is twice as fast, it takes half the time to find the same result. However, this does not guarantee that it finds a better result in the same time, nor that it finds a similar result for a problem twice as big in the same time.
+** Increasing CPU power usually does not resolve scaling issues, because planning problems scale exponentially. Power tweaking the solver configuration has far better results for scaling issues than throwing hardware at it.
+* During the `solve()` method, the CPU power will max out until it returns
 (except in xref:responding-to-change/real-time-planning.adoc#daemon[daemon mode]
 or if your xref:optimization-algorithms/overview.adoc#SolverEventListener[SolverEventListener] writes the best solution to disk or the network).
-* **Number of CPU cores**: one CPU core per active Solver, plus at least one for the operating system.
-** So in a multitenant application, which has one Solver per tenant, this means one CPU core per tenant, unless the number of solver threads is limited, as that limits the number of tenants being solved in parallel.
-** With Partitioned Search, presume one CPU core per partition (per active tenant), unless the number of partition threads is limited.
-*** To reduce the number of used cores, it can be better to reduce the partition threads (so solve some partitions sequentially) than to reduce the number of partitions.
-** In use cases with many tenants (such as scheduling Software as a Service) or many partitions, it might not be affordable to provision that many CPUs.
-*** Reduce the number of active Solvers at a time. For example: give each tenant only one minute of machine time and use a `ExecutorService` with a fixed thread pool to queue requests.
-*** Distribute the Solver runs across the day (or night). This is especially an opportunity in SaaS that's used across the globe, due to timezones: UK and India can use the same CPU core when scheduling at night.
-** The SolverManager will take care of the orchestration, especially in those underfunded environments in which solvers (and partitions) are forced to share CPU cores or wait in line.
-* **I/O (network, disk, ...)**: Not used during solving.
-** Timefold Solver is not a web server: a solver thread does not block (unlike a servlet thread), each one fully drains a CPU.
-*** A web server can handle 24 active servlets threads with eight cores without performance loss, because most servlets threads are blocking on I/O.
-*** However, 24 active solver threads with eight cores will cause each solver's xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed] to be three times slower, causing a big performance loss.
-** Note that calling any I/O during solving, for example a remote service in your score calculation, causes a huge performance loss because it's called thousands of times per second, so it should complete in microseconds. So no good implementation does that.
+--
+
+Number of CPU cores:: One CPU core per active Solver, plus at least one for the operating system.
++
+--
+* So in a multitenant application, which has one Solver per tenant, this means one CPU core per tenant, unless the number of solver threads is limited, as that limits the number of tenants being solved in parallel.
+* With Partitioned Search, presume one CPU core per partition (per active tenant), unless the number of partition threads is limited.
+** To reduce the number of used cores, it can be better to reduce the partition threads (so solve some partitions sequentially) than to reduce the number of partitions.
+* In use cases with many tenants (such as scheduling Software as a Service) or many partitions, it might not be affordable to provision that many CPUs.
+** Reduce the number of active Solvers at a time. For example: give each tenant only one minute of machine time and use a `ExecutorService` with a fixed thread pool to queue requests.
+** Distribute the Solver runs across the day (or night). This is especially an opportunity in SaaS that's used across the globe, due to timezones: UK and India can use the same CPU core when scheduling at night.
+* The SolverManager will take care of the orchestration, especially in those underfunded environments in which solvers (and partitions) are forced to share CPU cores or wait in line.
+--
+
+I/O (network, disk, ...):: Not used during solving.
++
+--
+* Timefold Solver is not a web server: a solver thread does not block (unlike a servlet thread), each one fully drains a CPU.
+** A web server can handle 24 active servlets threads with eight cores without performance loss, because most servlets threads are blocking on I/O.
+** However, 24 active solver threads with eight cores will cause each solver's xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed] to be three times slower, causing a big performance loss.
+* Note that calling any I/O during solving, for example a remote service in your score calculation, causes a huge performance loss because it's called thousands of times per second, so it should complete in microseconds. So no good implementation does that.
+--
 
 Keep these guidelines in mind when selecting and configuring the software.
 See https://timefold.ai/blog/[our blog archive] for the details of our experiments, which use our diverse set of examples.
@@ -140,3 +155,17 @@ Native executables typically have a fast startup time and reduced memory consump
 However, given the nature of the workloads running with the solver, these benefits are often overshadowed by slower solving speeds due to lack of JIT optimizations.
 
 Read more about this in https://timefold.ai/blog/how-to-speed-up-timefold-solver-startup-time-by-20x-with-native-images[our blog post].
+
+[[quarkus-dev-mode-performance]]
+== Why is Timefold Solver so much slower in Quarkus Dev mode?
+
+Quarkus Dev mode disables the https://www.baeldung.com/jvm-tiered-compilation#2c2---server-complier[JVM C2 (server) compiler] to enable fast live reload of code changes.
+The C2 compiler is responsible for just-in-time (JIT) compilation of hot code paths into highly optimized native machine code.
+
+Timefold Solver is extremely CPU-intensive: it evaluates thousands of moves per second during solving, making each individual move evaluation a hot code path.
+Without C2, these paths run in the interpreter or with only basic JIT optimizations (C1/tier 1-3), which is typically 10x–50x slower than fully JIT-compiled code.
+
+This slowdown affects solution quality too: because fewer moves are evaluated per second within the same time limit, the solver explores less of the search space and may return a worse solution than it would in production.
+
+To work around this, run the solver in production mode (e.g. `mvn package` + `java -jar`) when you need representative performance or solution quality.
+Dev mode is fine for verifying correctness of constraints and basic wiring, but results should not be used to benchmark or tune the solver.

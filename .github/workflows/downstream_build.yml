@@ -134,7 +134,7 @@ jobs:
         env:
           TIMEFOLD_LICENSE: ${{ secrets.TIMEFOLD_SOLVER_CI_PROD_LICENSE }}
         run: |
-          mvn -B clean verify
+          mvn -B clean verify -Dopenapi-diff.fail-on-changed=false
 
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3

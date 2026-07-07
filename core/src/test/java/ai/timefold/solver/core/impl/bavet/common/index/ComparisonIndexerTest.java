@@ -2,9 +2,14 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
+import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +25,6 @@ import org.junit.jupiter.api.Test;
  */
 class ComparisonIndexerTest extends AbstractIndexerTest {
 
-    @SuppressWarnings("unchecked")
     private final DefaultBiJoiner<TestPerson, TestPerson> lessThanAge =
             (DefaultBiJoiner<TestPerson, TestPerson>) Joiners.lessThan(TestPerson::age);
 
@@ -89,22 +93,100 @@ class ComparisonIndexerTest extends AbstractIndexerTest {
         assertThat(forEachToTuples(indexer, 60)).isEmpty();
     }
 
+    @Test
+    void treeifiesPastArrayThreshold() {
+        // Below-threshold storage is a sorted array; crossing ARRAY_THRESHOLD must treeify without
+        // changing LESS_THAN match sets or order (see ScalingNavigableMap's arrayBased/treeify()).
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(lessThanAge).buildIndexer(true);
+        var threshold = ScalingNavigableMap.ARRAY_THRESHOLD;
+        var tuplesByAge = new LinkedHashMap<Integer, UniTuple<String>>();
+        for (var age = 0; age <= threshold; age++) { // threshold + 1 puts: crosses the threshold on the last one.
+            var tuple = newTuple("age" + age);
+            indexer.put(age, tuple);
+            tuplesByAge.put(age, tuple);
+        }
+
+        // A few more puts on the tree path, to confirm it keeps working post-treeify.
+        for (var age = threshold + 1; age <= threshold + 3; age++) {
+            var tuple = newTuple("age" + age);
+            indexer.put(age, tuple);
+            tuplesByAge.put(age, tuple);
+        }
+
+        var queryAge = threshold + 10;
+        assertThat(forEachToTuples(indexer, queryAge)).containsExactlyInAnyOrderElementsOf(tuplesByAge.values());
+        assertThat(indexer.size(queryAge)).isEqualTo(tuplesByAge.size());
+
+        var midAge = threshold / 2;
+        var expectedBelowMid = tuplesByAge.entrySet().stream()
+                .filter(e -> e.getKey() < midAge)
+                .map(Map.Entry::getValue)
+                .toList();
+        assertThat(forEachToTuples(indexer, midAge)).containsExactlyInAnyOrderElementsOf(expectedBelowMid);
+        assertThat(indexer.size(midAge)).isEqualTo(expectedBelowMid.size());
+    }
+
+    @Test
+    void treeifyIsOneWayNoDemotionOnRemove() {
+        // Once treeified, removing back below ARRAY_THRESHOLD must still behave correctly.
+        // (The one-way-ness of the underlying switch is verified directly in ScalingNavigableMapTest.)
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(lessThanAge).buildIndexer(true);
+        var threshold = ScalingNavigableMap.ARRAY_THRESHOLD;
+        var entriesByAge = new LinkedHashMap<Integer, ListEntry<UniTuple<String>>>();
+        for (var age = 0; age <= threshold; age++) { // threshold + 1 puts: crosses the threshold on the last one.
+            entriesByAge.put(age, indexer.put(age, newTuple("age" + age)));
+        }
+
+        // Remove all but one entry, well below the array threshold.
+        entriesByAge.entrySet().stream()
+                .filter(e -> e.getKey() > 0)
+                .forEach(e -> indexer.remove(e.getKey(), e.getValue()));
+
+        assertThat(indexer.size(threshold + 10)).isEqualTo(1);
+    }
+
+    @Test
+    void boundaryComparisonHandlesExtremeCompareToWithoutOverflow() {
+        Indexer<UniTuple<String>> indexer =
+                new ComparisonIndexer<>(JoinerType.GREATER_THAN, KeyUnpacker.<ExtremeKey> single(),
+                        RandomAccessLeafIndexer::new);
+        var low = new ExtremeKey(1);
+        var high = new ExtremeKey(2); // low.compareTo(high) == Integer.MIN_VALUE.
+        indexer.put(low, newTuple("low"));
+
+        // low is not greater than high, nor than itself: neither query should match.
+        assertThat(forEachToTuples(indexer, high)).isEmpty();
+        assertThat(indexer.size(high)).isZero();
+        assertThat(forEachToTuples(indexer, low)).isEmpty();
+        assertThat(indexer.size(low)).isZero();
+    }
+
     private static UniTuple<String> newTuple(String factA) {
         return UniTuple.of(factA, 0);
     }
 
-    @SuppressWarnings("unchecked")
+    private record ExtremeKey(int value) implements Comparable<ExtremeKey> {
+
+        @Override
+        public int compareTo(ExtremeKey other) {
+            if (value == other.value) {
+                return 0;
+            }
+            // Deliberately extreme instead of a bounded difference,
+            // to exercise the sign-flip for GT/GTE without relying on subtraction-based compareTo() tricks elsewhere.
+            return value < other.value ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        }
+    }
+
     private static DefaultBiJoiner<TestPerson, TestPerson> twoComparisons() {
         return (DefaultBiJoiner<TestPerson, TestPerson>) Joiners.lessThan(TestPerson::age)
                 .and(Joiners.greaterThan(TestPerson::age));
     }
 
-    @SuppressWarnings("unchecked")
     private static DefaultBiJoiner<TestPerson, TestPerson> equalGender() {
         return (DefaultBiJoiner<TestPerson, TestPerson>) Joiners.equal(TestPerson::gender);
     }
 
-    @SuppressWarnings("unchecked")
     private static DefaultBiJoiner<TestPerson, TestPerson> equalThenLessThan() {
         return (DefaultBiJoiner<TestPerson, TestPerson>) Joiners.equal(TestPerson::gender)
                 .and(Joiners.lessThan(TestPerson::age));

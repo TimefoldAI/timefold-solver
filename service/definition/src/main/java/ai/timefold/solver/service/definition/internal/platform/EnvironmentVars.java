@@ -33,6 +33,18 @@ public class EnvironmentVars {
     public static final String ENV_TIMEFOLD_TENANT_NAME = "AI_TIMEFOLD_TENANT_NAME";
 
     /**
+     * Configured map-service location: either a concrete region (e.g. {@code us-georgia}) or the
+     * sentinel {@link #MAP_SERVICE_LOCATION_AUTO_SELECT} for runtime region resolution.
+     */
+    public static final String ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION = "AI_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION";
+
+    /**
+     * Sentinel value for {@link #ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION}: tells the maps-service
+     * to auto-select the region at request time based on the locations being routed.
+     */
+    public static final String MAP_SERVICE_LOCATION_AUTO_SELECT = "auto-select";
+
+    /**
      * Kubernetes API specific environment variables that are set based on execution information like pod and node
      */
     public static final String K8S_INFO_NODE_NAME = "NODE_NAME";
