@@ -81,3 +81,4 @@
 ** xref:constraints-and-score/performance.adoc#constraintProfiling[Constraint profiling]
 ** xref:commercial-editions/multistage-moves.adoc[leveloffset=+1]
 ** xref:running-timefold-solver/library/library-integration.adoc#throttlingBestSolutionEvents[Throttling best solution events]
+** xref:commercial-editions/license-management.adoc[License management]
