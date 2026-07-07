@@ -41,17 +41,13 @@ final class BiasedRandomUnionMoveIterator<Solution_> extends SelectionIterator<M
 
     @Override
     public boolean hasNext() {
-        if (stale) {
-            refreshMoveIteratorMap();
-        }
+        refreshMoveIteratorMap();
         return !moveIteratorMap.isEmpty();
     }
 
     @Override
     public Move<Solution_> next() {
-        if (stale) {
-            refreshMoveIteratorMap();
-        }
+        refreshMoveIteratorMap();
         double randomOffset = RandomUtils.nextDouble(workingRandom, probabilityWeightTotal);
         Map.Entry<Double, Iterator<Move<Solution_>>> entry = moveIteratorMap.floorEntry(randomOffset);
         // The entry is never null because randomOffset < probabilityWeightTotal
@@ -64,6 +60,9 @@ final class BiasedRandomUnionMoveIterator<Solution_> extends SelectionIterator<M
     }
 
     private void refreshMoveIteratorMap() {
+        if (!stale) {
+            return;
+        }
         moveIteratorMap.clear();
         double probabilityWeightOffset = 0.0;
         for (ProbabilityItem<Solution_> probabilityItem : probabilityItemMap.values()) {
@@ -74,6 +73,7 @@ final class BiasedRandomUnionMoveIterator<Solution_> extends SelectionIterator<M
             }
         }
         probabilityWeightTotal = probabilityWeightOffset;
+        stale = false;
     }
 
     private static final class ProbabilityItem<Solution_> {
