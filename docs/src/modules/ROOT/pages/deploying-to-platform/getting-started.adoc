@@ -39,6 +39,27 @@ Registering a model does not automatically subscribe your tenant to it; without 
 
 Follow the setup instructions in the https://github.com/TimefoldAI/timefold-solver/blob/main/service/tools/maven-plugin/README.adoc[Maven plugin documentation] to add and configure it.
 
+[#_enterprise_edition]
+== Build with the Enterprise Edition
+
+By default, your build uses the Community Edition of Timefold Solver.
+The xref:deploying-to-platform/introduction.adoc#_enterprise_edition_features[Enterprise Edition features] surfaced by the platform, such as score analysis, are not included unless you opt in.
+
+Build with `-Denterprise=true` to activate the `enterprise` Maven profile defined in `timefold-solver-service-parent`, which pulls in the Enterprise Edition dependencies:
+
+[source,bash,options="nowrap"]
+----
+mvn clean package -Denterprise=true
+----
+
+Verify it worked by checking that `target/timefold/<model>_v<version>/jsonschema/calculateScoreAnalysis.json` exists.
+If it's missing, the build used the Community Edition, and registering the model will fail with an error such as `Model descriptor is missing entry ^.+/jsonschema/calculateScoreAnalysis.json$`.
+
+You'll need to pass `-Denterprise=true` on every build you intend to deploy, including the `timefold:deploy` command in the next step.
+
+NOTE: The Enterprise Edition also requires a license key to function at runtime, as described in xref:commercial-editions/installation.adoc[Installation].
+Check with the Timefold team on whether this is already configured for you in the sandbox environment.
+
 [#_authenticate]
 == Authenticate
 
@@ -63,17 +84,18 @@ export TIMEFOLD_PAT=<your-personal-access-token>
 [#_build_and_deploy]
 == Build and deploy
 
-Build and deploy your model in a single command:
+Build and deploy your model in a single command, including `-Denterprise=true` if you want the xref:deploying-to-platform/introduction.adoc#_enterprise_edition_features[Enterprise Edition features] to work on the platform:
 
 [source,bash,options="nowrap"]
 ----
-mvn clean package timefold:deploy
+mvn clean package -Denterprise=true timefold:deploy
 ----
 
 [NOTE]
 ====
 If this is the first time you're running a full build (`mvn clean package` or `mvn install`) rather than `mvn quarkus:dev`, and you haven't generated an OpenAPI baseline yet, the build fails by comparing against a `src/build/openapi.json` file that doesn't exist yet.
-Run `mvn clean package -Dupdate-api` once first to generate it, as described in xref:running-timefold-solver/service/rest-api.adoc#deliberateAPIChanges[Deliberate API changes], then retry the command above.
+Run `mvn clean package -Denterprise=true -Dupdate-api` once first to generate it, as described in xref:running-timefold-solver/service/rest-api.adoc#deliberateAPIChanges[Deliberate API changes], then retry the command above.
+Generate the baseline with the same `-Denterprise` value you intend to deploy with, since the generated API can differ between editions.
 ====
 
 === Preview without pushing container
