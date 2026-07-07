@@ -60,6 +60,8 @@ You'll need to pass `-Denterprise=true` on every build you intend to deploy, inc
 NOTE: The Enterprise Edition also requires a license key to function at runtime, as described in xref:commercial-editions/installation.adoc[Installation].
 Check with the Timefold team on whether this is already configured for you in the sandbox environment.
 
+If you need your own license, sign up at the xref:commercial-editions/license-management.adoc[Timefold License Manager]: every new account starts with a 30-day free Enterprise trial, so you can get a working license without contacting sales first.
+
 [#_authenticate]
 == Authenticate
 
