@@ -40,7 +40,7 @@ Do::
 Don't::
 * Do not perform heavy computation inside constraint streams. Move it to an enricher instead.
 * Do not modify planning entities' planning variables inside an enricher; only non-planning fields should be set.
-* Do not share mutable state between enricher instances; enrichers may be called from multiple threads.
+* Do not keep mutable state in enrichers; they may be invoked concurrently from multiple threads.
 * Do not use enrichment for validation that should happen at input time, reject bad input at the API boundary, not here.
 
 [#implementingAnEnricher]
