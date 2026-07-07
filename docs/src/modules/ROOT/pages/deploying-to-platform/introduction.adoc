@@ -23,7 +23,7 @@ From a model developer's perspective, each layer is plumbing you'd otherwise hav
 [#_enterprise_edition_features]
 === Enterprise Edition features
 
-Deploying to the platform gives your model access to Timefold Solver Enterprise Edition capabilities, without you having to license, wire up, or tune them yourself:
+Deploying to the platform will give your model access to Timefold Solver Enterprise Edition capabilities:
 
 * *Explainability*: xref:constraints-and-score/understanding-the-score.adoc[Score analysis] breaks a solution down constraint-by-constraint, so consumers can see why the solver made the decisions it did, and what the impact would be of overriding one.
 * *Recommendations*: the xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API] suggests the best fit for a new assignment without a full re-solve.
