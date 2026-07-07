@@ -190,6 +190,7 @@
                   <goal>makeAggregateBom</goal>
                 </goals>
                 <configuration>
+                  <outputFormat>json</outputFormat>
                   <excludeTestProject>true</excludeTestProject>
                 </configuration>
               </execution>
