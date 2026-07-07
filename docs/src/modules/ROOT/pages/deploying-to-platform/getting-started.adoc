@@ -1,5 +1,4 @@
 = Getting started: deploying to the platform (Preview)
-:page-aliases: quickstart/service/deploy-to-platform.adoc
 :description: Deploy the service you built to Timefold Platform
 :doctype: book
 :sectnums:

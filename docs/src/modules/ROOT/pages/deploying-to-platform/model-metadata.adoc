@@ -1,6 +1,5 @@
 [#_platform_model_metadata]
 = Platform model metadata
-:page-aliases: running-timefold-solver/service/platform-model-metadata.adoc
 :description: Platform-specific model metadata that shapes the score analysis, configuration profile, and model identity UI.
 :doctype: book
 :sectnums:
