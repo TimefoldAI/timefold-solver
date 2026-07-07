@@ -1,6 +1,6 @@
-= Installing Timefold Solver Plus & Enterprise
+= Installing Timefold Solver Enterprise Edition
 
-In order to work with the commercial editions of Timefold Solver, 2 actions need to be taken:
+In order to work with the commercial edition of Timefold Solver, 2 actions need to be taken:
 
 - <<solverLicenseKey,Configure a license key>>;
 - <<enterpriseArtifacts,Use the Enterprise artifacts>>;
@@ -13,7 +13,8 @@ A correctly configured and active license key is required in order for our comme
 [#solverObtainLicenseKey]
 === Obtaining a license key
 
-Generate your license key using https://licenses.timefold.ai/[Timefold License Manager].
+Generate your license key using the xref:commercial-editions/license-management.adoc[Timefold License Manager].
+Every new account starts with a 30-day free Enterprise trial, so you don't need to talk to sales to get started.
 
 Take care not to leak the license file, for example by committing it to a public repository,
 logging the license file content in logs, or sharing it with unauthorized parties.
@@ -38,7 +39,6 @@ These artifacts are available from Maven Central, so no additional repositories 
 
 [NOTE]
 ====
-To avoid operational complexity, both Plus and Enterprise editions of Timefold Solver use the `enterprise` artifacts.
 Features for your licensed version are enabled based on the provided license key.
 ====
 

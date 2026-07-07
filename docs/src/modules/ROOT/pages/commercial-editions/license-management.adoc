@@ -1,0 +1,100 @@
+[#licenseManagement]
+= License management
+:doctype: book
+:sectnums:
+:icons: font
+
+The https://licenses.timefold.ai/[Timefold License Manager] is where you sign up for a free trial, create and download license files, and manage your team's access to Timefold Solver Enterprise Edition.
+
+== Sign up and free trial
+
+. Go to https://licenses.timefold.ai/[licenses.timefold.ai] and click *Sign up*.
+. Sign in with your company email address.
+Public email domains (Gmail, Hotmail, Yahoo, and similar) are not accepted; you must use a work email.
+. Fill in the registration form: company name and website URL, the scheduling problem you're solving, the scale of your problem, and how you currently solve it.
+. Accept the terms of service and click *Register*.
+
+Your account and company are created immediately, and you're given a 30-day free Enterprise trial: you can create and download fully functional Enterprise Edition license files right away, without talking to sales first.
+
+The first user to register for a company automatically becomes that company's *admin*.
+
+When the trial ends, you need a paid subscription to keep creating new licenses.
+Contact mailto:sales@timefold.ai[sales@timefold.ai] to convert your trial to a paid plan.
+
+== Managing licenses
+
+Creating licenses requires the *admin* role within your company.
+Regular users can view and download their own licenses only.
+
+=== View your licenses
+
+Click *Licenses* in the sidebar to see your active licenses, or switch to the *Expired* tab to see past ones.
+Each license card shows its type, expiration date, and a download button.
+
+=== Create a license
+
+. Click *Licenses* → *Create license*.
+. Select an expiration date. It can't exceed your company's contract end date.
+. Optionally, assign the license to a specific user in your company.
+. Click *Create*.
+
+The license type is determined by your company's plan; you don't need to select it manually.
+
+=== Download a license file
+
+Click *Download* next to a license to get its `.pem` file.
+Introduce it to your project as described in xref:commercial-editions/installation.adoc#solverSetupLicenseKey[Set up your license key].
+
+[IMPORTANT]
+====
+Treat your license file as a secret.
+Don't commit it to source control; inject it at runtime using your secret manager instead (for example Kubernetes Secrets, AWS Secrets Manager, HashiCorp Vault, or a CI/CD secret store).
+====
+
+=== Expired licenses
+
+Expired licenses remain visible under the *Expired* tab, and you can still download them to review, but they're no longer accepted by the solver.
+
+IMPORTANT: Once a license expires, Timefold Solver refuses to start. There is no grace period. Renew your license before it expires to avoid downtime.
+
+== Notifications
+
+=== Email reminders
+
+The license manager emails the license owner before a license expires: 7 days before, and again 1 day before.
+If you're not receiving these emails, check your spam folder or ask your company admin to verify the license owner's address.
+
+=== Solver warnings
+
+Timefold Solver also logs warnings as a license approaches expiry, with increasing urgency at less than 30 days, less than 14 days, and less than 1 day remaining.
+Once expired, the solver refuses to start.
+Monitor your application logs for these warnings so you have time to renew.
+
+== Managing your team
+
+Inviting and managing team members requires the *admin* role within your company.
+
+=== Invite team members
+
+Open your company from the sidebar, go to the *Users* tab, and click *Invite user*.
+The invitee receives an email with an acceptance link valid for 14 days; once they accept, they join your company with the *user* role.
+
+If an invitation expires or wasn't received, find it in the *Users* tab and click *Resend* to send a fresh 14-day link.
+
+=== Change a user's role or remove a user
+
+From the *Users* tab, click *Edit* next to a user to change their role between *admin* and *user*, or click *Delete* to remove them.
+
+NOTE: At least one admin must remain in a company at all times; you can't demote or delete the last admin.
+
+== Account and company settings
+
+Update your name from your avatar menu → *Settings*.
+Your email address is managed by your identity provider and can't be changed there.
+
+Company-level settings, such as your plan and contract dates, can only be changed by Timefold.
+Contact mailto:support@timefold.ai[support@timefold.ai] if you need your plan updated.
+
+== Pricing
+
+Visit https://licenses.timefold.ai/pricing[the pricing page] for current Enterprise pricing, or mailto:sales@timefold.ai[contact sales].
