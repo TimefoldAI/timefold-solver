@@ -56,7 +56,7 @@ It supports multiple providers out of the box, and consumers can configure which
 [#_explainability_and_trust]
 === Explainability and trust
 
-* *A UI for your consumers*: the platform UI lets consumers submit datasets, inspect the resulting plan, and read a constraint-by-constraint score analysis, without you building any of that tooling yourself.
+* *A UI for your Model API consumers*: the platform UI lets consumers submit datasets, inspect the resulting plan, and read a constraint-by-constraint score analysis, without you building any of that tooling yourself.
 * *Dataset organization*: consumers can name, tag, search, and filter their datasets out of the box, as described in https://docs.timefold.ai/timefold-platform/latest/how-tos/categorizing-runs[categorizing datasets], instead of you building dataset management UI.
 * *Dataset comparison*: https://docs.timefold.ai/timefold-platform/latest/how-tos/comparing-runs[comparing datasets] lets consumers compare metrics, scores, and constraint breakdowns across multiple datasets side by side, including radar charts and saved comparisons, without you building any comparison tooling.
 
