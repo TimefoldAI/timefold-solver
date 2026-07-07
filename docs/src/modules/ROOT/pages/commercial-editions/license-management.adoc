@@ -1,7 +1,5 @@
-[#licenseManagement]
 = License management
 :doctype: book
-:sectnums:
 :icons: font
 
 The https://licenses.timefold.ai/[Timefold License Manager] is where you sign up for a free trial, create and download license files, and manage your team's access to Timefold Solver Enterprise Edition.
@@ -19,7 +17,6 @@ Your account and company are created immediately, and you're given a 30-day free
 The first user to register for a company automatically becomes that company's *admin*.
 
 When the trial ends, you need a paid subscription to keep creating new licenses.
-Contact mailto:sales@timefold.ai[sales@timefold.ai] to convert your trial to a paid plan.
 
 == Managing licenses
 
@@ -97,4 +94,4 @@ Contact mailto:support@timefold.ai[support@timefold.ai] if you need your plan up
 
 == Pricing
 
-Visit https://licenses.timefold.ai/pricing[the pricing page] for current Enterprise pricing, or mailto:sales@timefold.ai[contact sales].
+Visit https://licenses.timefold.ai/pricing[the pricing page] for current Enterprise pricing and contact details.
