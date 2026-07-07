@@ -13,7 +13,7 @@ Timefold Platform takes care of that other half, which is why deploying your mod
 
 include::_preview-note.adoc[]
 
-NOTE: Using Timefold Platform, including deploying and running your own custom model, is subject to usage fees under your plan.
+NOTE: Using Timefold Platform, including deploying and running your own custom model, is subject to usage fees.
 
 == Platform layers
 
