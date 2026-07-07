@@ -50,6 +50,8 @@ Within a version, you can stagger a release the same way https://docs.timefold.a
 See xref:#_registration_key[Registration key] for how registration keys make this possible.
 * *Incremental replanning*: the https://docs.timefold.ai/timefold-platform/latest/how-tos/from-patch-endpoint[`/from-patch` endpoint] lets consumers apply small, targeted changes to an existing dataset instead of resubmitting the full input, with built-in traceability and versioning between revisions, so you don't have to design your own patch protocol or dataset lineage tracking.
 * *Secrets management*: if your model calls out to external systems, for example through webhooks, https://docs.timefold.ai/timefold-platform/latest/how-tos/secrets-management[secrets management] lets consumers store credentials encrypted and write-only, instead of you building your own credential storage.
+* *Maps service*: for routing models, the https://docs.timefold.ai/timefold-platform/latest/how-tos/maps-service[maps service] calculates and caches distance and travel matrices for you, with incremental updates, throttling, and concurrency guarding against the map provider, instead of you integrating and managing a map provider yourself.
+It supports multiple providers out of the box, and consumers can configure which one to use through your model's xref:deploying-to-platform/model-metadata.adoc#_configuration_profiles[configuration profile].
 
 [#_explainability_and_trust]
 === Explainability and trust
