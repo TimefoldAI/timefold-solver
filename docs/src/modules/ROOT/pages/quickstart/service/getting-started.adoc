@@ -476,5 +476,5 @@ See xref:running-timefold-solver/service/rest-api.adoc#deliberateAPIChanges[Deli
 Since this is a "Getting Started" guide, not everything is covered yet.
 
 * Learn about improvements you can make to your model:
-** How to enrich your model with xref:running-timefold-solver/service/modeling-changes.adoc[Model Enrichment].
+** How to enrich your model with xref:running-timefold-solver/service/model-enrichment.adoc[model enrichment].
 ** How to configure your xref:running-timefold-solver/service/rest-api.adoc[REST API] with validations, custom endpoints, etc.
