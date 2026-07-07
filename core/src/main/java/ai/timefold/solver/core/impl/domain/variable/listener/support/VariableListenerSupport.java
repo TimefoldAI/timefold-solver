@@ -311,11 +311,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             }
             notificationQueuesAreEmpty = false;
         }
-        if (shadowVariableSession != null) {
-            // Declarative shadow variables may use the list variable itself as a source.
-            shadowVariableSession.beforeVariableChanged(variableDescriptor, entity);
-            notificationQueuesAreEmpty = false;
-        }
     }
 
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
@@ -330,10 +325,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
         if (!cascadingUpdateShadowVarDescriptorList.isEmpty()) { // Only necessary if there is a cascade.
             listVariableChangedNotificationList.add(notification);
-        }
-        if (shadowVariableSession != null) {
-            // Declarative shadow variables may use the list variable itself as a source.
-            shadowVariableSession.afterVariableChanged(variableDescriptor, entity);
         }
     }
 

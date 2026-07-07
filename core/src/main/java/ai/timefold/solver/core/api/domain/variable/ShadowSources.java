@@ -20,7 +20,8 @@ public @interface ShadowSources {
      *
      * <ul>
      * <li>
-     * "variableName", for referring any variable on the same planning entity.
+     * "variableName", for referring any variable on the same planning entity,
+     * except a {@link PlanningListVariable}, which cannot be used as a source.
      * </li>
      * <li>
      * A list of names seperated by ".", such as "variableOrFact.fact.entity.variable",

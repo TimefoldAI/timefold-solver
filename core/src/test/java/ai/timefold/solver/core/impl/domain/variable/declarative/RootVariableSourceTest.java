@@ -549,6 +549,22 @@ class RootVariableSourceTest {
     }
 
     @Test
+    void invalidPathUsingBareListVariable() {
+        assertThatCode(() -> RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeEntity.class,
+                "shadow",
+                "values",
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll(
+                        "The source path (values) starting from root class (TestdataInvalidDeclarativeEntity)"
+                                + " accesses a planning list variable (values), which is not supported.",
+                        "A planning list variable cannot be a source");
+    }
+
+    @Test
     void invalidPathUsingGroupAfterVariable() {
         assertThatCode(() -> RootVariableSource.from(
                 planningSolutionMetaModel,
