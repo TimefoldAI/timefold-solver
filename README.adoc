@@ -63,14 +63,13 @@ For more, see link:CONTRIBUTING.md[Contributing].
 
 == Editions
 
-There are three editions of Timefold Solver:
+There are two editions of Timefold Solver:
 
 - _Timefold Solver Community Edition_,
-- _Timefold Solver Plus_
 - _Timefold Solver Enterprise_.
 
 The Community Edition (this repo) is open-source and licensed under the Apache-2.0 license.
-The latter two are non-open-source commercial offerings and require a Timefold license to run.
+The Enterprise Edition is a non-open-source commercial offering and requires a Timefold license to run.
 
 https://licenses.timefold.ai/[See which edition is right for you.]
 
