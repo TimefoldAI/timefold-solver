@@ -8,7 +8,8 @@ The https://licenses.timefold.ai/[Timefold License Manager] is where you sign up
 
 . Go to https://licenses.timefold.ai/[licenses.timefold.ai] and click *Sign up*.
 . Sign in with your company email address.
-Public email domains (Gmail, Hotmail, Yahoo, and similar) are not accepted; you must use a work email.
+Public email domains (Gmail, Hotmail, Yahoo, and similar) aren't accepted.
+You must use a work email.
 . Fill in the registration form: company name and website URL, the scheduling problem you're solving, the scale of your problem, and how you currently solve it.
 . Accept the terms of service and click *Register*.
 
@@ -31,11 +32,12 @@ Each license card shows its type, expiration date, and a download button.
 === Create a license
 
 . Click *Licenses* → *Create license*.
-. Select an expiration date. It can't exceed your company's contract end date.
+. Select an expiration date.
+It can't exceed your company's contract end date.
 . Optionally, assign the license to a specific user in your company.
 . Click *Create*.
 
-The license type is determined by your company's plan; you don't need to select it manually.
+Your company's plan determines the license type; you don't need to select it manually.
 
 === Download a license file
 
@@ -52,18 +54,23 @@ Don't commit it to source control; inject it at runtime using your secret manage
 
 Expired licenses remain visible under the *Expired* tab, and you can still download them to review, but they're no longer accepted by the solver.
 
-IMPORTANT: Once a license expires, Timefold Solver refuses to start. There is no grace period. Renew your license before it expires to avoid downtime.
+[IMPORTANT]
+====
+Once a license expires, Timefold Solver refuses to start.
+There is no grace period.
+Renew your license before it expires to avoid downtime.
+====
 
 == Notifications
 
 === Email reminders
 
-The license manager emails the license owner before a license expires: 7 days before, and again 1 day before.
+The license manager emails the license owner before a license expires: seven days before, and again one day before.
 If you're not receiving these emails, check your spam folder or ask your company admin to verify the license owner's address.
 
 === Solver warnings
 
-Timefold Solver also logs warnings as a license approaches expiry, with increasing urgency at less than 30 days, less than 14 days, and less than 1 day remaining.
+Timefold Solver also logs warnings as a license approaches expiry, with increasing urgency at less than 30 days, less than 14 days, and less than one day remaining.
 Once expired, the solver refuses to start.
 Monitor your application logs for these warnings so you have time to renew.
 
@@ -74,7 +81,8 @@ Inviting and managing team members requires the *admin* role within your company
 === Invite team members
 
 Open your company from the sidebar, go to the *Users* tab, and click *Invite user*.
-The invitee receives an email with an acceptance link valid for 14 days; once they accept, they join your company with the *user* role.
+The invitee receives an email with an acceptance link valid for 14 days.
+Once they accept, they join your company with the *user* role.
 
 If an invitation expires or wasn't received, find it in the *Users* tab and click *Resend* to send a fresh 14-day link.
 
@@ -87,9 +95,9 @@ NOTE: At least one admin must remain in a company at all times; you can't demote
 == Account and company settings
 
 Update your name from your avatar menu → *Settings*.
-Your email address is managed by your identity provider and can't be changed there.
+Your identity provider manages your email address, so you can't change it there.
 
-Company-level settings, such as your plan and contract dates, can only be changed by Timefold.
+Only Timefold can change company-level settings, such as your plan and contract dates.
 Contact mailto:support@timefold.ai[support@timefold.ai] if you need your plan updated.
 
 == Pricing
