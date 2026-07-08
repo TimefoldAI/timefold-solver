@@ -17,7 +17,7 @@ Just plug into our API and start optimizing immediately.
 [#_free_trials_and_licenses]
 == Free trials and licenses
 
-Every new account on the https://licenses.timefold.ai/[Timefold License Manager] starts with a 30-day free Enterprise trial, so you can create and download fully functional Enterprise Edition license files without talking to sales first.
+Every new account on the https://licenses.timefold.ai/[Timefold License Manager] starts with a free, time-limited Enterprise trial, so you can create and download fully functional Enterprise Edition license files without talking to sales first.
 We also offer free licenses to non-profit organizations and for academic research.
 
 See https://licenses.timefold.ai/[license portal] for how to sign up, create and download license files, and manage your team's access, then follow the xref:commercial-editions/installation.adoc[installation guide] to get started.

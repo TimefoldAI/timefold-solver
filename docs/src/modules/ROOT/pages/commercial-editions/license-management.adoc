@@ -2,18 +2,18 @@
 :doctype: book
 :icons: font
 
-The https://licenses.timefold.ai/[Timefold License Manager] is where you sign up for a free trial, create and download license files, and manage your team's access to Timefold Solver Enterprise Edition.
+The https://licenses.timefold.ai/[Timefold License Manager] is where you register for a free trial, add and download license files, and manage your team's access to Timefold Solver Enterprise Edition.
 
-== Sign up and free trial
+== Register and free trial
 
-. Go to https://licenses.timefold.ai/[licenses.timefold.ai] and click *Sign up*.
-. Sign in with your company email address.
+. Go to https://licenses.timefold.ai/[licenses.timefold.ai] and click *Register*.
+. Log in with your company email address.
 Public email domains (Gmail, Hotmail, Yahoo, and similar) aren't accepted.
 You must use a work email.
 . Fill in the registration form: company name and website URL, the scheduling problem you're solving, the scale of your problem, and how you currently solve it.
 . Accept the terms of service and click *Register*.
 
-Your account and company are created immediately, and you're given a 30-day free Enterprise trial: you can create and download fully functional Enterprise Edition license files right away, without talking to sales first.
+Your account and company are created immediately, and you're given a free, time-limited Enterprise trial: you can create and download fully functional Enterprise Edition license files right away, without talking to sales first.
 
 The first user to register for a company automatically becomes that company's *admin*.
 
@@ -29,24 +29,27 @@ Regular users can view and download their own licenses only.
 Click *Licenses* in the sidebar to see your active licenses, or switch to the *Expired* tab to see past ones.
 Each license card shows its type, expiration date, and a download button.
 
-=== Create a license
+.The Licenses list in the Timefold License Manager
+image::commercial-editions/license-manager-view-licenses.png[The Licenses list in the Timefold License Manager, showing active license cards with type, expiration date, and a download button]
 
-. Click *Licenses* → *Create license*.
+=== Add a license
+
+. Click *Licenses* → *Add license key*.
 . Select an expiration date.
 It can't exceed your company's contract end date.
 . Optionally, assign the license to a specific user in your company.
-. Click *Create*.
+. Click *Add license key*.
 
 Your company's plan determines the license type; you don't need to select it manually.
 
-=== Download a license file
+=== Download a license key
 
-Click *Download* next to a license to get its `.pem` file.
+Click *Download license key* next to a license to get its `.pem` file.
 Introduce it to your project as described in xref:commercial-editions/installation.adoc#solverSetupLicenseKey[Set up your license key].
 
 [IMPORTANT]
 ====
-Treat your license file as a secret.
+Treat your license key as a secret.
 Don't commit it to source control; inject it at runtime using your secret manager instead (for example Kubernetes Secrets, AWS Secrets Manager, HashiCorp Vault, or a CI/CD secret store).
 ====
 
