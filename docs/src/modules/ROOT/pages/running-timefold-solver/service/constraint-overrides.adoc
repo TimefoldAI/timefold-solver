@@ -35,6 +35,10 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+
 public class TimetableConstraintProvider implements ConstraintProvider {
 
     public static final String TEACHER_CONFLICT = "Teacher conflict";
@@ -62,6 +66,10 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
+import ai.timefold.solver.core.api.score.stream.Constraint
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider
+
 class TimetableConstraintProvider : ConstraintProvider {
 
     companion object {
@@ -95,6 +103,9 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
+import ai.timefold.solver.service.definition.api.ModelConfigOverrides;
+import ai.timefold.solver.service.definition.api.domain.ConstraintReference;
+
 public final class TimetableConfigOverrides implements ModelConfigOverrides {
 
     public static final long DEFAULT_WEIGHT_ZERO = 0L;
@@ -117,6 +128,9 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
+import ai.timefold.solver.service.definition.api.ModelConfigOverrides
+import ai.timefold.solver.service.definition.api.domain.ConstraintReference
+
 data class TimetableConfigOverrides(
     @ConstraintReference(TimetableConstraintProvider.TEACHER_CONFLICT)
     val teacherConflictWeight: Long = DEFAULT_WEIGHT_ONE,
@@ -161,6 +175,14 @@ Next, in the xref:running-timefold-solver/service/rest-api.adoc#modelConverter[m
 to a `ConstraintWeightOverrides` object and set it on the `@PlanningSolution` class
 xref:#enablingWeightOverrides[as described above]:
 
+[IMPORTANT]
+====
+This requires a custom `ModelConvertor`.
+If your `SolverModel` also serves as `ModelInput` and `ModelOutput`, for example because you extend `AbstractSimpleModel`, the framework uses a trivial `ModelConvertor` by default, which ignores `modelConfig` entirely.
+With only the trivial convertor in place, constraint weight overrides submitted in a request are silently dropped: the request succeeds, but the override never reaches the solver.
+Provide your own `ModelConvertor` implementation, as shown below, to actually apply them.
+====
+
 .As part of the ModelConverter.
 [tabs]
 ====
@@ -169,14 +191,19 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
+import java.util.Map;
+
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
+import ai.timefold.solver.core.api.score.HardMediumSoftScore;
+
 TimetableConfigOverrides modelConfigOverrides = modelConfig.overrides();
 
-ConstraintWeightOverrides<HardMediumSoftLongScore> constraintWeightOverrides = ConstraintWeightOverrides.of(
+ConstraintWeightOverrides<HardMediumSoftScore> constraintWeightOverrides = ConstraintWeightOverrides.of(
         Map.ofEntries(
                 Map.entry(TimetableConstraintProvider.TEACHER_CONFLICT,
-                        HardMediumSoftLongScore.ofHard(modelConfigOverrides.getTeacherConflictWeight())),
+                        HardMediumSoftScore.ofHard(modelConfigOverrides.getTeacherConflictWeight())),
                 Map.entry(TimetableConstraintProvider.ROOM_CONFLICT,
-                        HardMediumSoftLongScore.ofSoft(modelConfigOverrides.getRoomConflictWeight()))
+                        HardMediumSoftScore.ofSoft(modelConfigOverrides.getRoomConflictWeight()))
         )
 );
 
@@ -189,14 +216,17 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides
+import ai.timefold.solver.core.api.score.HardMediumSoftScore
+
 val modelConfigOverrides = modelConfig.overrides()
 
 val constraintWeightOverrides = ConstraintWeightOverrides.of(
         mapOf(
                 TimetableConstraintProvider.TEACHER_CONFLICT to
-                        HardMediumSoftLongScore.ofHard(modelConfigOverrides.teacherConflictWeight),
+                        HardMediumSoftScore.ofHard(modelConfigOverrides.teacherConflictWeight),
                 TimetableConstraintProvider.ROOM_CONFLICT to
-                        HardMediumSoftLongScore.ofSoft(modelConfigOverrides.roomConflictWeight)
+                        HardMediumSoftScore.ofSoft(modelConfigOverrides.roomConflictWeight)
         )
 )
 

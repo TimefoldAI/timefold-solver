@@ -1,0 +1,108 @@
+[#_deploying_to_platform_introduction]
+= Deploying to the Timefold Platform (Preview)
+:description: Why deploy your service model to Timefold Platform.
+:doctype: book
+:icons: font
+
+include::../_attributes.adoc[]
+
+Building a model is only half of getting a planning problem solved in production.
+The other half is operational: hosting it, scaling it, exposing it to consumers through an API, and making its decisions explainable.
+
+Timefold Platform takes care of that other half, which is why deploying your model there is the natural next step once it's built.
+
+include::_preview-note.adoc[]
+
+NOTE: Using Timefold Platform, including deploying and running your own custom model, is subject to usage fees.
+
+== Platform layers
+
+The platform is organized in layers, each building on the one beneath it, per the platform's own https://docs.timefold.ai/timefold-platform/latest/introduction[introduction].
+From a model developer's perspective, each layer is plumbing you'd otherwise have to build yourself.
+
+[#_enterprise_edition_features]
+=== Enterprise Edition features
+
+These Timefold Solver Enterprise Edition capabilities are especially valuable once your model is deployed, since consumers interact with them directly through the platform UI and API.
+Using them requires building your model with the Enterprise Edition of the solver, as described in xref:deploying-to-platform/getting-started.adoc#_enterprise_edition[Build with the Enterprise Edition]; deploying to the platform by itself doesn't enable them.
+
+* *Explainability*: xref:constraints-and-score/understanding-the-score.adoc[Score analysis] breaks a solution down constraint-by-constraint, so consumers can see why the solver made the decisions it did, and what the impact would be of overriding one.
+* *Recommendations*: the xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API] suggests the best fit for a new assignment without a full re-solve.
+* *Performance*: xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[multithreaded solving], xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection], and xref:constraints-and-score/performance.adoc#constraintProfiling[constraint profiling] let the solver scale to larger datasets.
+
+[#_hosting_and_orchestration]
+=== Hosting and orchestration
+
+* *Hosting and scaling*: the platform builds, stores, and runs the container image, scaling it to the number of concurrent solve requests, so you're not managing a Kubernetes deployment or a fleet of containers.
+* *Compliance*: the platform is ISO and SOC certified, so you don't have to pursue and maintain those certifications yourself for your model's hosting.
+See https://trust.timefold.ai/[trust.timefold.ai] for details.
+* *A multi-tenant REST gateway*: consumers of your model authenticate with API keys scoped to a tenant, so authentication, rate limiting, and per-customer isolation come built in.
+* *Role-based access control*: https://docs.timefold.ai/timefold-platform/latest/how-tos/member-management-and-roles[member management and roles] gives tenants a built-in User/Administrator permission model, distinguishing who can view datasets from who can manage your model's configuration profiles, API keys, and members, so you don't have to build your own authorization layer.
+* *Solve queue*: when concurrent solve requests exceed provisioned resources, the https://docs.timefold.ai/timefold-platform/latest/how-tos/solve-queue[solve queue] automatically queues and runs them as capacity frees up, so you don't have to implement your own request throttling or backpressure.
+* *Audit logging*: configuration changes to your model, such as updates to a configuration profile, are automatically recorded in the https://docs.timefold.ai/timefold-platform/latest/how-tos/audit-log[audit log], with who made the change and when, without you building your own change-tracking system.
+
+[#_integrations]
+=== Integrations
+
+* *Result delivery*: consumers receive results via https://docs.timefold.ai/timefold-platform/latest/api/receiving-model-api-results/receiving-model-api-results[webhooks, server-sent events, or polling], so you don't have to design your own asynchronous job-notification mechanism.
+* *Self-service configuration profiles*: consumers can add their own configuration profiles (termination limits, thread counts, constraint weight overrides) without opening a pull request against your model.
+* *Parallel versions and staggered releases*: because a model's identifier includes its API version, you can run multiple major versions of your model side by side and let consumers migrate at their own pace.
+Within a version, you can stagger a release the same way https://docs.timefold.ai/timefold-platform/latest/models/versioning-and-maturity#_staggered_model_releases[Timefold does for its own models]: register a new implementation under its own registration key, restricted to a subset of tenants (for example a staging tenant), while other tenants keep running the previous implementation.
+See xref:#_registration_key[Registration key] for how registration keys make this possible.
+* *Incremental replanning*: the https://docs.timefold.ai/timefold-platform/latest/how-tos/from-patch-endpoint[`/from-patch` endpoint] lets consumers apply small, targeted changes to an existing dataset instead of resubmitting the full input, with built-in traceability and versioning between revisions, so you don't have to design your own patch protocol or dataset lineage tracking.
+* *Secrets management*: if your model calls out to external systems, for example through webhooks, https://docs.timefold.ai/timefold-platform/latest/how-tos/secrets-management[secrets management] lets consumers store credentials encrypted and write-only, instead of you building your own credential storage.
+* *Maps service*: for routing models, the https://docs.timefold.ai/timefold-platform/latest/how-tos/maps-service[maps service] calculates and caches distance and travel matrices for you, with incremental updates, throttling, and concurrency guarding against the map provider, instead of you integrating and managing a map provider yourself.
+It supports multiple providers out of the box, and consumers can configure which one to use through your model's xref:deploying-to-platform/model-metadata.adoc#_configuration_profiles[configuration profile].
+
+[#_explainability_and_trust]
+=== Explainability and trust
+
+* *A UI for your Model API consumers*: the platform UI lets consumers submit datasets, inspect the resulting plan, and read a constraint-by-constraint score analysis, without you building any of that tooling yourself.
+* *Dataset organization*: consumers can name, tag, search, and filter their datasets out of the box, as described in https://docs.timefold.ai/timefold-platform/latest/how-tos/categorizing-runs[categorizing datasets], instead of you building dataset management UI.
+* *Dataset comparison*: https://docs.timefold.ai/timefold-platform/latest/how-tos/comparing-runs[comparing datasets] lets consumers compare metrics, scores, and constraint breakdowns across multiple datasets side by side, including radar charts and saved comparisons, without you building any comparison tooling.
+
+[#_intelligence]
+=== Intelligence
+
+* *Insights*: https://docs.timefold.ai/timefold-platform/latest/how-tos/insights[Insights] tracks metric trends across datasets over time, so consumers can spot whether operational planning is improving or degrading, without you building your own analytics dashboard.
+* *Experiments*: https://docs.timefold.ai/timefold-platform/latest/how-tos/experiments[experiments] let consumers run many dataset and configuration-profile combinations in one batch and compare the results, including benchmarking different model versions against each other, instead of you building your own scenario-testing or benchmarking harness.
+
+In short, deploying to the platform turns your model from "a service I have to run" into "a product other people can safely self-serve."
+
+[#_platform_concepts]
+== Platform concepts
+
+A few terms come up throughout this section of the documentation:
+
+Custom model:: The model you build and deploy yourself, as opposed to one of Timefold's https://docs.timefold.ai/[pre-built, off-the-shelf models].
+This is what this section of the documentation is about.
+
+Model registration:: The act of publishing your model's descriptor and container image to the platform under a registration key, using `timefold:deploy`.
+See xref:deploying-to-platform/getting-started.adoc[Getting started: deploying to the platform] for the full walkthrough.
+
+[#_model_identifier]
+Model identifier:: Made up of your model's bare id and its API version, combined as `<model>_<version>` (for example `schooltimetabling_v1`).
+This is what appears in the consumer-facing API path (`/api/models/<model>/<version>`).
+The bare model id comes from your Quarkus application name, which defaults to your Maven artifact id unless you set `quarkus.application.name` explicitly.
+The version comes from `timefold.application.version`.
+Neither comes from `timefold.application.name` (which is only the human-readable display name shown in the UI) or from `timefold.application.description`.
+
+The bare id may only contain letters, numbers, and hyphens, and can't itself contain an underscore, since the version is appended with one.
+
+[#_registration_key]
+Registration key:: The `key` you set through the Maven plugin, as described in xref:deploying-to-platform/getting-started.adoc#_add_the_maven_plugin[Add the Maven plugin].
+This is an administrative identifier, used only for managing the deployment itself (updating, overwriting, or undeploying it) and isn't part of the consumer-facing API.
+Keeping it distinct from the model identifier matters once you deploy more than one implementation of the same model, for example a stable version and a private beta of the next version: both can share the same model identifier and API path, while each has its own registration key for independent management.
+
+[#_model_privacy]
+Model privacy:: Every registered model has a visibility scope that determines which tenants can see and use it: *Private* (a single tenant) or *Shared* (a selected set of tenants).
+The Maven plugin's `deploy` goal infers one of these automatically from how many tenants you list, as described in xref:deploying-to-platform/getting-started.adoc#_add_the_maven_plugin[Add the Maven plugin].
+A third scope, *Public* (visible to every tenant on the platform), also exists, but registering a model as Public is restricted to global admins of the platform, so it isn't a self-service option for model developers.
+
+Model consumers:: The tenant users, and the systems they build, that call your model's REST API: submitting datasets, reading results and score analysis, and managing configuration profiles.
+As the model developer, you typically aren't the consumer yourself; you're building something others on your tenant (or on tenants you share the model with) will use.
+
+Model subscription:: Tenants subscribe to a model by its model identifier (not its registration key) to get access to it.
+The Maven plugin can automate this for you: its `handleSubscription` setting subscribes your tenant when you register the model, and unsubscribes it when you undeploy.
+
+To get started, see xref:deploying-to-platform/getting-started.adoc[Getting started: deploying to the platform].
