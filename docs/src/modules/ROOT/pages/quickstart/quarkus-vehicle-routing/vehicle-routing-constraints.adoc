@@ -34,14 +34,6 @@ Create a `src/main/java/org/acme/vehiclerouting/solver/VehicleRoutingConstraintP
 ----
 package org.acme.vehiclerouting.solver;
 
-import ai.timefold.solver.core.api.score.HardSoftScore;
-import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
-import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-
-import org.acme.vehiclerouting.domain.Visit;
-import org.acme.vehiclerouting.domain.Vehicle;
-
 public class VehicleRoutingConstraintProvider implements ConstraintProvider {
 
     public static final String VEHICLE_CAPACITY = "vehicleCapacity";
