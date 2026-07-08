@@ -36,7 +36,7 @@
     <version.jakarta.enterprise.cdi-api>4.1.0</version.jakarta.enterprise.cdi-api>
     <version.io.quarkus>3.36.3</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
-    <version.org.apache.logging.log4j>2.26.0</version.org.apache.logging.log4j>
+    <version.org.apache.logging.log4j>2.26.1</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.7</version.org.assertj>
     <version.org.awaitility>4.3.0</version.org.awaitility>
     <version.org.eclipse.microprofile.config>3.1.1</version.org.eclipse.microprofile.config>
@@ -44,7 +44,7 @@
     <version.org.jspecify>1.0.0</version.org.jspecify>
     <version.org.junit.jupiter>6.1.1</version.org.junit.jupiter>
     <version.org.mapstruct>1.6.3</version.org.mapstruct>
-    <version.org.openrewrite.recipe>3.33.0</version.org.openrewrite.recipe>
+    <version.org.openrewrite.recipe>3.34.0</version.org.openrewrite.recipe>
     <version.org.testcontainers>2.0.5</version.org.testcontainers>
     <version.org.springframework.boot>4.1.0</version.org.springframework.boot>
     <version.org.wiremock>3.13.2</version.org.wiremock>
@@ -78,7 +78,7 @@
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
     <version.sonar.plugin>5.7.0.6970</version.sonar.plugin>
     <version.source.plugin>3.4.0</version.source.plugin>
-    <version.spotless.plugin>3.7.0</version.spotless.plugin>
+    <version.spotless.plugin>3.8.0</version.spotless.plugin>
     <version.surefire.plugin>3.5.6</version.surefire.plugin>
     <version.versions.plugin>2.21.0</version.versions.plugin>
     <version.git-commit-id.plugin>10.0.0</version.git-commit-id.plugin>
