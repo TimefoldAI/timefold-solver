@@ -92,13 +92,6 @@ Build and deploy your model in a single command.
 mvn clean package -Denterprise=true timefold:deploy
 ----
 
-[NOTE]
-====
-If this is the first time you're running a full build (`mvn clean package` or `mvn install`) rather than `mvn quarkus:dev`, and you haven't generated an OpenAPI baseline yet, the build fails by comparing against a `src/build/openapi.json` file that doesn't exist yet.
-Run `mvn clean package -Denterprise=true -Dupdate-api` once first to generate it, as described in xref:running-timefold-solver/service/rest-api.adoc#deliberateAPIChanges[Deliberate API changes], then retry the command above.
-Generate the baseline with the same `-Denterprise` value you intend to deploy with, since the generated API can differ between editions.
-====
-
 === Preview without pushing container
 To preview what would happen without actually pushing the container image or registering the model, add `-Dtimefold.dryRun=true`.
 This logs the requests that would have been made instead of sending them.
