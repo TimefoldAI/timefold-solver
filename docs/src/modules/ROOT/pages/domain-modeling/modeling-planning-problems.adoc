@@ -1800,7 +1800,7 @@ These paths must follow 1 of 3 syntactic forms:
 
 |Simple Variable Name
 |"variableName"
-|Refers to a variable (genuine or shadow) on the same planning entity. A planning list variable cannot be a source and fails fast, since the supplier would not be updated when the list variable or the shadow variables of its elements change.
+|Refers to a variable (genuine or shadow) on the same planning entity. A planning list variable cannot be a source and fails fast, since the shadow variable would not be updated when the list variable or the shadow variables of its elements change.
 
 |Chained Property Path
 |"a.b.c"

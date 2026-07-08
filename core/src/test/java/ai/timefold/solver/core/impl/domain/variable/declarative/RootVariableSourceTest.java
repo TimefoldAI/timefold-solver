@@ -560,8 +560,10 @@ class RootVariableSourceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContainingAll(
                         "The source path (values) starting from root class (TestdataInvalidDeclarativeEntity)"
-                                + " accesses a planning list variable (values), which is not supported.",
-                        "A planning list variable cannot be a source");
+                                + " accesses a planning list variable (values), which is not allowed.",
+                        "The shadow variable would not be updated when the list variable"
+                                + " or the shadow variables of its elements change.",
+                        "Maybe remove the source path (values) from the @ShadowSources?");
     }
 
     @Test

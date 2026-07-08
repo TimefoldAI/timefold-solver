@@ -132,10 +132,11 @@ public record RootVariableSource<Entity_, Value_>(
                                 PlanningListVariable.class) != null) {
                     throw new IllegalArgumentException(
                             """
-                                    The source path (%s) starting from root class (%s) accesses a planning list variable (%s), which is not supported.
-                                    A planning list variable cannot be a source, since its supplier would not be updated when the list variable or the shadow variables of its elements change,
-                                    and would therefore compute a stale value."""
-                                    .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart.name()));
+                                    The source path (%s) starting from root class (%s) accesses a planning list variable (%s), which is not allowed.
+                                    The shadow variable would not be updated when the list variable or the shadow variables of its elements change.
+                                    Maybe remove the source path (%s) from the @%s?"""
+                                    .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart.name(),
+                                            variablePath, ShadowSources.class.getSimpleName()));
                 }
                 chainToVariable.add(memberAccessor);
                 for (var chain : chainStartingFromSourceVariableList) {
