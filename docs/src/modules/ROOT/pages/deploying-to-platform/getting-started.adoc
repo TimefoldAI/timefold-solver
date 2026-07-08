@@ -24,6 +24,9 @@ To complete this guide, you need:
 See xref:#_generate_a_personal_access_token[Generate a Personal Access Token] below.
 * Push access to Timefold's container registry, since the `configure` goal builds and pushes your model's container image there.
 This access needs to be requested; mailto:info@timefold.ai[get in touch with the Timefold team] before you try to deploy.
+* An Enterprise Edition license, since Timefold Platform requires your model to be built with the Enterprise Edition of Timefold Solver.
+A free, time-limited trial is available if you don't have one yet.
+See xref:#_enterprise_edition[Build with the Enterprise Edition] below.
 
 [#_add_the_maven_plugin]
 == Add the Maven plugin
@@ -32,18 +35,18 @@ The `timefold-maven-plugin` connects your build to the platform's container regi
 Add it to your `pom.xml`, and configure it with your `platformUrl`, a registration `key` for your model, and the tenant(s) to register it under.
 
 Your `platformUrl` will typically be `https://app.timefold.ai`.
-See https://docs.timefold.ai/timefold-platform/latest/api/integration-scenarios/integration-scenarios#_our_recommendation[Integration scenarios] if you're deploying to a different installation, for example a self-hosted platform or a different data residency region.
+(See https://docs.timefold.ai/timefold-platform/latest/api/integration-scenarios/integration-scenarios#_our_recommendation[Integration scenarios] if you're deploying to a different installation, for example a self-hosted platform or a different data residency region.)
 
-Also set `handleSubscription` to `true`.
-Registering a model does not automatically subscribe your tenant to it; without this setting, your tenant won't see the model on the platform after you deploy it.
+Also set `handleSubscription` to `true`, so your tenant gets subscribed to the model when you deploy it; see xref:#_what_happens_on_deploy[What happens on deploy] below.
 
 Follow the setup instructions in the https://github.com/TimefoldAI/timefold-solver/blob/main/service/tools/maven-plugin/README.adoc[Maven plugin documentation] to add and configure it.
 
 [#_enterprise_edition]
 == Build with the Enterprise Edition
 
-By default, your build uses the Community Edition of Timefold Solver.
-The xref:deploying-to-platform/introduction.adoc#_enterprise_edition_features[Enterprise Edition features] surfaced by the platform, such as score analysis, are not included unless you opt in.
+Timefold Platform requires your model to be built with the Enterprise Edition of Timefold Solver; a Community Edition build cannot be deployed.
+By default, your build uses the Community Edition, so you need to opt in explicitly.
+This also gets you the xref:deploying-to-platform/introduction.adoc#_enterprise_edition_features[Enterprise Edition features] surfaced by the platform, such as score analysis.
 
 Build with `-Denterprise=true` to activate the `enterprise` Maven profile defined in `timefold-solver-service-parent`, which pulls in the Enterprise Edition dependencies:
 
@@ -52,15 +55,9 @@ Build with `-Denterprise=true` to activate the `enterprise` Maven profile define
 mvn clean package -Denterprise=true
 ----
 
-Verify it worked by checking that `target/timefold/<model>_v<version>/jsonschema/calculateScoreAnalysis.json` exists.
-If it's missing, the build used the Community Edition, and registering the model will fail with an error such as `Model descriptor is missing entry ^.+/jsonschema/calculateScoreAnalysis.json$`.
+The Enterprise Edition requires a license key to function at runtime, as described in xref:commercial-editions/installation.adoc[Installation].
 
-You'll need to pass `-Denterprise=true` on every build you intend to deploy, including the `timefold:deploy` command in the next step.
-
-NOTE: The Enterprise Edition also requires a license key to function at runtime, as described in xref:commercial-editions/installation.adoc[Installation].
-Check with the Timefold team on whether this is already configured for you in the sandbox environment.
-
-If you need your own license, sign up at the xref:commercial-editions/license-management.adoc[Timefold License Manager]: every new account starts with a 30-day free Enterprise trial, so you can get a working license without contacting sales first.
+If you need your own license, sign up at the xref:commercial-editions/license-management.adoc[Timefold License Manager]: every new account starts with a free, time-limited Enterprise trial, so you can get a working license without contacting sales first.
 
 [#_authenticate]
 == Authenticate
@@ -86,7 +83,8 @@ export TIMEFOLD_PAT=<your-personal-access-token>
 [#_build_and_deploy]
 == Build and deploy
 
-Build and deploy your model in a single command, including `-Denterprise=true` if you want the xref:deploying-to-platform/introduction.adoc#_enterprise_edition_features[Enterprise Edition features] to work on the platform:
+Build and deploy your model in a single command.
+`-Denterprise=true` is required, since the platform only accepts models built with the Enterprise Edition; see xref:#_enterprise_edition[Build with the Enterprise Edition] above.
 
 [source,bash,options="nowrap"]
 ----
@@ -113,6 +111,9 @@ The `timefold:deploy` goal uploads that archive and registers it against the pla
 
 If a model with the same `key` is already registered, the deploy fails with a conflict (HTTP 409) unless `overwrite` is enabled, in which case the existing registration is updated instead (`PATCH /api/platform/v1/models/<key>`).
 You can also set this from the command line with `-Dtimefold.model.overwrite=true`.
+
+Registering a model does not automatically subscribe your tenant to it; with `handleSubscription` set to `true`, the plugin also subscribes your tenant when it registers the model.
+Without it, your tenant won't see the model on the platform after you deploy it.
 
 [#_verify_on_the_platform]
 == Verify on the platform

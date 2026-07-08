@@ -24,7 +24,7 @@ From a model developer's perspective, each layer is plumbing you'd otherwise hav
 === Enterprise Edition features
 
 These Timefold Solver Enterprise Edition capabilities are especially valuable once your model is deployed, since consumers interact with them directly through the platform UI and API.
-Using them requires building your model with the Enterprise Edition of the solver, as described in xref:deploying-to-platform/getting-started.adoc#_enterprise_edition[Build with the Enterprise Edition]; deploying to the platform by itself doesn't enable them.
+Since deploying to the platform requires building your model with the Enterprise Edition, as described in xref:deploying-to-platform/getting-started.adoc#_enterprise_edition[Build with the Enterprise Edition], you get these for free.
 
 * *Explainability*: xref:constraints-and-score/understanding-the-score.adoc[Score analysis] breaks a solution down constraint-by-constraint, so consumers can see why the solver made the decisions it did, and what the impact would be of overriding one.
 * *Recommendations*: the xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API] suggests the best fit for a new assignment without a full re-solve.
@@ -82,12 +82,7 @@ See xref:deploying-to-platform/getting-started.adoc[Getting started: deploying t
 
 [#_model_identifier]
 Model identifier:: Made up of your model's bare id and its API version, combined as `<model>_<version>` (for example `schooltimetabling_v1`).
-This is what appears in the consumer-facing API path (`/api/models/<model>/<version>`).
-The bare model id comes from your Quarkus application name, which defaults to your Maven artifact id unless you set `quarkus.application.name` explicitly.
-The version comes from `timefold.application.version`.
-Neither comes from `timefold.application.name` (which is only the human-readable display name shown in the UI) or from `timefold.application.description`.
-
-The bare id may only contain letters, numbers, and hyphens, and can't itself contain an underscore, since the version is appended with one.
+This is what appears in the consumer-facing API path (`/api/models/<model>/<version>`). The version comes from `timefold.application.version`.
 
 [#_registration_key]
 Registration key:: The `key` you set through the Maven plugin, as described in xref:deploying-to-platform/getting-started.adoc#_add_the_maven_plugin[Add the Maven plugin].
