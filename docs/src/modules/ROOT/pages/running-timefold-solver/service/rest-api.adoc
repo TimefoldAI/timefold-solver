@@ -24,17 +24,6 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
-import java.util.List;
-
-import ai.timefold.solver.service.definition.api.ModelInput;
-import ai.timefold.solver.service.definition.api.ModelOutput;
-import ai.timefold.solver.service.rest.api.ModelRest;
-
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-
-import jakarta.ws.rs.Path;
-
 // TimetableDto.java
 public class TimetableDto implements ModelInput, ModelOutput {
 
@@ -62,15 +51,6 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
-import ai.timefold.solver.service.definition.api.ModelInput
-import ai.timefold.solver.service.definition.api.ModelOutput
-import ai.timefold.solver.service.rest.api.ModelRest
-
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-import org.eclipse.microprofile.openapi.annotations.tags.Tag
-
-import jakarta.ws.rs.Path
-
 // TimetableDto.kt
 class TimetableDto(
     @Schema(required = true, description = "The unique identifier of timetable")
@@ -265,15 +245,6 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
-import java.util.Optional;
-
-import ai.timefold.solver.core.api.score.HardSoftScore;
-import ai.timefold.solver.service.definition.api.ModelConvertor;
-import ai.timefold.solver.service.definition.api.domain.ModelConfig;
-import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelConfigOverrides;
-
-import jakarta.enterprise.context.ApplicationScoped;
-
 @ApplicationScoped
 public class TimetableConvertor implements ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
@@ -301,15 +272,6 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
-import java.util.Optional
-
-import ai.timefold.solver.core.api.score.HardSoftScore
-import ai.timefold.solver.service.definition.api.ModelConvertor
-import ai.timefold.solver.service.definition.api.domain.ModelConfig
-import ai.timefold.solver.service.quarkus.deployment.defaults.EmptyModelConfigOverrides
-
-import jakarta.enterprise.context.ApplicationScoped
-
 @ApplicationScoped
 class TimetableConvertor : ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
@@ -341,11 +303,6 @@ For enhancing the SolverModel, use the xref:./modeling-changes.adoc#solverModelE
 
 By default, validation on the input is based on the xref:./rest-api.adoc#openAPISpecification[OpenAPI Specification annotations].
 Additional validations can be added by implementing the `ModelValidator` interface.
-
-// TODO: verify against the current ValidationBuilder/IssueType/Issue API. As of this writing, ValidationBuilder.addIssue()
-// takes a single `Issue` argument, not `addIssue(IssueType, IssueDetail)` as shown below, and `IssueDetail` does not exist
-// anywhere in the codebase. The example below reflects an older API shape and needs a rewrite against the current
-// ai.timefold.solver.service.definition.api.validation package before it can be trusted.
 
 [#timetableValidatorExample]
 [tabs]
