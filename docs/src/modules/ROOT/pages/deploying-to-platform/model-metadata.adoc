@@ -105,12 +105,6 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
-import ai.timefold.solver.core.api.score.stream.Constraint
-import ai.timefold.solver.core.api.score.stream.ConstraintFactory
-import ai.timefold.solver.core.api.score.stream.ConstraintProvider
-import ai.timefold.solver.service.definition.api.description.ConstraintGroupInfo
-import ai.timefold.solver.service.definition.api.description.ConstraintInfo
-
 class TimetableConstraintProvider : ConstraintProvider {
 
     companion object {
