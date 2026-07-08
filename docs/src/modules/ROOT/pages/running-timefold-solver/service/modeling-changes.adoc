@@ -152,11 +152,6 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
-import ai.timefold.solver.service.definition.api.enrichment.SolverModelEnrichmentDirector
-
-import jakarta.enterprise.context.ApplicationScoped
-import jakarta.inject.Inject
-
 @ApplicationScoped
 class TimetableEnrichmentDirector @Inject constructor(
     private val timeslotEnricher: TimeslotHolidayEnricher

@@ -31,18 +31,6 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import ai.timefold.solver.service.definition.api.data.DemoData;
-import ai.timefold.solver.service.definition.api.data.DemoDataGenerator;
-import ai.timefold.solver.service.definition.api.data.DemoMetaData;
-import ai.timefold.solver.service.definition.api.domain.Configuration;
-import ai.timefold.solver.service.definition.api.domain.ModelRequest;
-
-import jakarta.enterprise.context.ApplicationScoped;
-
 @ApplicationScoped
 public class TimetableDemoDataGenerator implements DemoDataGenerator {
 
@@ -76,14 +64,11 @@ public class TimetableDemoDataGenerator implements DemoDataGenerator {
         }
 
         public ModelRequest<TimetableInput, TimetableConfigOverrides> generateBasicDemoData() {
-            TimetableInput input = // build a small, hardcoded dataset
-            return new ModelRequest<>(input);
+            // Generate basic request.
         }
 
         public ModelRequest<TimetableInput, TimetableConfigOverrides> generateComplexSet() {
-            TimetableInput input = // build a larger, hardcoded dataset
-            Configuration<TimetableConfigOverrides> configuration = // optionally, a non-default configuration
-            return new ModelRequest<>(configuration, input);
+            // Generate complex request.
         }
     }
 
@@ -107,14 +92,6 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
-import ai.timefold.solver.service.definition.api.data.DemoData
-import ai.timefold.solver.service.definition.api.data.DemoDataGenerator
-import ai.timefold.solver.service.definition.api.data.DemoMetaData
-import ai.timefold.solver.service.definition.api.domain.Configuration
-import ai.timefold.solver.service.definition.api.domain.ModelRequest
-
-import jakarta.enterprise.context.ApplicationScoped
-
 @ApplicationScoped
 class TimetableDemoDataGenerator : DemoDataGenerator {
 

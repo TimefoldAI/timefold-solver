@@ -30,14 +30,6 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
-import ai.timefold.solver.service.definition.api.domain.DataFormat;
-import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
-
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 public record TimetableInputMetrics(
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "lessons", title = "Lessons",
             format = DataFormat.Values.NUMBER, description = "The number of lessons submitted in the input dataset.",
@@ -54,14 +46,6 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
-import ai.timefold.solver.service.definition.api.domain.DataFormat
-import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics
-
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-
-import com.fasterxml.jackson.annotation.JsonFormat
-
 data class TimetableInputMetrics(
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "lessons", title = "Lessons",
             format = DataFormat.Values.NUMBER, description = "The number of lessons submitted in the input dataset.",
@@ -171,14 +155,6 @@ Java::
 --
 [source,java,options="nowrap"]
 ----
-import ai.timefold.solver.service.definition.api.domain.DataFormat;
-import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
-
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 public record TimetableOutputMetrics(
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "unassignedLessons", title = "Unassigned lessons",
             format = DataFormat.Values.NUMBER, description = "The number of lessons that could not be assigned a timeslot or room.",
@@ -195,14 +171,6 @@ Kotlin::
 --
 [source,kotlin,options="nowrap"]
 ----
-import ai.timefold.solver.service.definition.api.domain.DataFormat
-import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics
-
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType
-import org.eclipse.microprofile.openapi.annotations.media.Schema
-
-import com.fasterxml.jackson.annotation.JsonFormat
-
 data class TimetableOutputMetrics(
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT) @Schema(name = "unassignedLessons", title = "Unassigned lessons",
             format = DataFormat.Values.NUMBER, description = "The number of lessons that could not be assigned a timeslot or room.",
