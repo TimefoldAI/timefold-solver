@@ -57,7 +57,8 @@ mvn clean package -Denterprise=true
 
 The Enterprise Edition requires a license key to function at runtime, as described in xref:commercial-editions/installation.adoc[Installation].
 
-If you need your own license, sign up at the xref:commercial-editions/license-management.adoc[Timefold License Manager]: every new account starts with a free, time-limited Enterprise trial, so you can get a working license without contacting sales first.
+Every new account on the xref:commercial-editions/license-management.adoc[Timefold License Manager] starts with a free, time-limited Enterprise trial, so you can create and download fully functional Enterprise Edition license files without talking to sales first.
+We also offer free licenses to non-profit organizations and for academic research.
 
 [#_authenticate]
 == Authenticate
