@@ -113,14 +113,11 @@ class TimetableDemoDataGenerator : DemoDataGenerator {
         fun getDemoData(): DemoData = DemoData(metaData, requestFunction(this))
 
         fun generateBasicDemoData(): ModelRequest<TimetableInput, TimetableConfigOverrides> {
-            val input: TimetableInput = TODO("build a small, hardcoded dataset")
-            return ModelRequest(input)
+            return TODO("Generate basic request.")
         }
 
         fun generateComplexSet(): ModelRequest<TimetableInput, TimetableConfigOverrides> {
-            val input: TimetableInput = TODO("build a larger, hardcoded dataset")
-            val configuration: Configuration<TimetableConfigOverrides> = TODO("optionally, a non-default configuration")
-            return ModelRequest(configuration, input)
+            return TODO("Generate complex request.")
         }
     }
 
