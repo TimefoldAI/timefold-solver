@@ -8,7 +8,7 @@ _Timefold Solver Enterprise_ is a commercial product which offers additional fea
 such as xref:constraints-and-score/understanding-the-score.adoc[score analysis], xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[nearby selection] and xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[multithreaded solving].
 These features are essential to scale out to large datasets and build trust with your users.
 
-Unlike _Timefold Solver Community Edition_, Enterprise Edition is not open-source.
+Unlike _Timefold Solver Community Edition_, this commercial edition is not open-source.
 
 TIP: Looking for quicker time-to-value?
 Timefold offers https://docs.timefold.ai/[pre-built, fully tuned optimization models], no constraint building required.
@@ -20,16 +20,37 @@ Just plug into our API and start optimizing immediately.
 Every new account on the https://licenses.timefold.ai/[Timefold License Manager] starts with a free, time-limited Enterprise trial, so you can create and download fully functional Enterprise Edition license files without talking to sales first.
 We also offer free licenses to non-profit organizations and for academic research.
 
-See https://licenses.timefold.ai/[license portal] for how to sign up, create and download license files, and manage your team's access, then follow the xref:commercial-editions/installation.adoc[installation guide] to get started.
-
 == Features
 
-* xref:constraints-and-score/understanding-the-score.adoc[Score analysis]
-* xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API]
-* xref:commercial-editions/performance-improvements.adoc[Performance improvements]
-* xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection]
-* xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[Multithreaded solving]
-* xref:running-timefold-solver/multithreaded-solving.adoc#partitionedSearch[Partitioned search]
-* xref:constraints-and-score/performance.adoc#constraintProfiling[Constraint profiling]
-* xref:commercial-editions/multistage-moves.adoc[Multistage moves]
-* xref:running-timefold-solver/library/library-integration.adoc#throttlingBestSolutionEvents[Throttling best solution events]
+[cols="4,^1", options="header"]
+|===
+| Feature | Enterprise
+
+| xref:constraints-and-score/understanding-the-score.adoc[Score Analysis]
+| ✓
+
+| xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API]
+| ✓
+
+| xref:commercial-editions/performance-improvements.adoc[Performance improvements]
+| ✓
+
+| xref:optimization-algorithms/move-selector-reference.adoc#nearbySelection[Nearby selection]
+| ✓
+
+| xref:running-timefold-solver/multithreaded-solving.adoc#multithreadedIncrementalSolving[Multithreaded solving]
+| ✓
+
+| xref:running-timefold-solver/multithreaded-solving.adoc#partitionedSearch[Partitioned search]
+| ✓
+
+| xref:constraints-and-score/performance.adoc#constraintProfiling[Constraint profiling]
+| ✓
+
+| xref:commercial-editions/multistage-moves.adoc[Multistage moves]
+| ✓
+
+| xref:running-timefold-solver/library/library-integration.adoc#throttlingBestSolutionEvents[Throttling best solution events]
+| ✓
+
+|===

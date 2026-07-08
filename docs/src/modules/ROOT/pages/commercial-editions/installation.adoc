@@ -1,4 +1,4 @@
-= Installing Timefold Solver Enterprise Edition
+= Installing Timefold Solver Enterprise
 
 In order to work with the commercial edition of Timefold Solver, 2 actions need to be taken:
 
@@ -39,7 +39,7 @@ These artifacts are available from Maven Central, so no additional repositories 
 
 [NOTE]
 ====
-Features for your licensed version are enabled based on the provided license key.
+The Enterprise edition of Timefold Solver uses the `enterprise` artifacts.
 ====
 
 Replace references to open-source artifacts by their `enterprise` counterparts
