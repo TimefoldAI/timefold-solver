@@ -85,7 +85,8 @@ The plugin uses the JDK HttpClient API (java.net.http.HttpClient) to perform net
 
 == Example usage (pom)
 
-Add plugin configuration in your project's POM (example snippet):
+Add plugin configuration in your project's POM (example snippet).
+Bind `timefold:configure` to the `initialize` phase via `<executions>` so it runs automatically as part of `mvn package`. (It only actually does work when `timefold:deploy` is also among the requested goals, so this binding is safe to keep in place for regular builds.)
 
 [source,xml]
 ----
@@ -95,6 +96,15 @@ Add plugin configuration in your project's POM (example snippet):
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-maven-plugin</artifactId>
       <version>PUT_PLUGIN_VERSION_HERE</version>
+      <executions>
+        <execution>
+          <id>configure</id>
+          <phase>initialize</phase>
+          <goals>
+            <goal>configure</goal>
+          </goals>
+        </execution>
+      </executions>
       <configuration>
         <platformUrl>https://api.timefold.example</platformUrl>
         <key>my-model-key</key>
@@ -108,6 +118,8 @@ Add plugin configuration in your project's POM (example snippet):
   </plugins>
 </build>
 ----
+
+With this binding in place, `mvn clean package timefold:deploy` runs `configure` during the `initialize` phase (before the container image is built later in `package`). Without it, `configure` never runs unless invoked explicitly, and the container image build won't have the platform's required registry/group configuration.
 
 Or call the plugin directly from CLI with system properties and environment var:
 
