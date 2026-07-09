@@ -95,7 +95,7 @@ Bind `timefold:configure` to the `initialize` phase via `<executions>` so it run
     <plugin>
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-maven-plugin</artifactId>
-      <version>PUT_PLUGIN_VERSION_HERE</version>
+      <version>${project.parent.version}</version>
       <executions>
         <execution>
           <id>configure</id>
