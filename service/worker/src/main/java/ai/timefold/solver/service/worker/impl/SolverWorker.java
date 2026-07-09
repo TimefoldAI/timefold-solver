@@ -372,7 +372,6 @@ public class SolverWorker {
             sendEvent(datasetOutputsComputedEmitter,
                     new DatasetComputedEvent(metadata, solverModel, planName, tenantName, solveRequested,
                             mapEnrichmentContext.getResolvedMapLocation()));
-
         } catch (Throwable e) {
             notifyOnFailure(id, e);
         }
