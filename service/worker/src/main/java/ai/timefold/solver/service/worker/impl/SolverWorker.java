@@ -365,6 +365,13 @@ public class SolverWorker {
             sendEvent(datasetOutputsComputedEmitter,
                     new DatasetComputedEvent(metadata, solverModel, planName, tenantName, solveRequested,
                             mapEnrichmentContext.getResolvedMapLocation()));
+
+            String configuredLocation = System.getenv(EnvironmentVars.ENV_TIMEFOLD_PLATFORM_MAP_SERVICE_LOCATION);
+            if (EnvironmentVars.MAP_SERVICE_LOCATION_AUTO_SELECT.equalsIgnoreCase(configuredLocation)) {
+                LOGGER.info("Auto-select map resolved to '{}' for dataset {}.", mapEnrichmentContext.getResolvedMapLocation(),
+                        metadata.getId());
+            }
+
         } catch (Throwable e) {
             notifyOnFailure(id, e);
         }
