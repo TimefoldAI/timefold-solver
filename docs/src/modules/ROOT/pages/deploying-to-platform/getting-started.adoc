@@ -24,9 +24,8 @@ To complete this guide, you need:
 See xref:#_generate_a_personal_access_token[Generate a Personal Access Token] below.
 * Push access to Timefold's container registry, since the `configure` goal builds and pushes your model's container image there.
 This access needs to be requested; mailto:info@timefold.ai[get in touch with the Timefold team] before you try to deploy.
-* An Enterprise Edition license, since Timefold Platform requires your model to be built with the Enterprise Edition of Timefold Solver.
-A free, time-limited trial is available if you don't have one yet.
-See xref:#_enterprise_edition[Build with the Enterprise Edition] below.
+
+NOTE: Timefold Platform requires your model to be built with the Enterprise Edition of Timefold Solver, but building doesn't require a license, only running it does, and the platform provides that license when your model runs there. See xref:#_enterprise_edition[Build with the Enterprise Edition] below.
 
 [#_add_the_maven_plugin]
 == Add the Maven plugin
@@ -56,7 +55,10 @@ mvn clean package -Denterprise=true
 ----
 
 The Enterprise Edition requires a license key to function at runtime, as described in xref:commercial-editions/installation.adoc[Installation].
+Building with the Enterprise Edition does not require a license; a license is only checked when the model actually runs.
+When you deploy to Timefold Platform, the platform provides that license for you, so you don't need one of your own just to follow this guide.
 
+You still may want a license if you want to run your Enterprise Edition build locally, for example to test the model with `mvn quarkus:dev` before deploying it.
 Every new account on the xref:commercial-editions/license-management.adoc[Timefold License Manager] starts with a free, time-limited Enterprise trial, so you can create and download fully functional Enterprise Edition license files without talking to sales first.
 We also offer free licenses to non-profit organizations and for academic research.
 
