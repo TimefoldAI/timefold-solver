@@ -696,7 +696,6 @@ it will add and remove elements to the ``Collection``s of those shadow variables
 ====
 
 [#pinnedPlanningEntities]
-[#pinDownPlanningEntities]
 === Pinning a planning variable (`@PlanningPin`)
 
 A pinned planning entity doesn't change during solving.
@@ -1075,7 +1074,7 @@ all the contents of the list are pinned,
 but the list can still be extended by adding to the end of the list.
 
 To pin the entire list, preventing any modifications to the list whatsoever,
-<<pinDownPlanningEntities,`@PlanningPin`>> needs to be used on the entity itself.
+<<pinnedPlanningEntities,`@PlanningPin`>> needs to be used on the entity itself.
 In that case, the value of `@PlanningPinToIndex` must be zero (`0`).
 
 NOTE: Value of the index must never change during planning.
