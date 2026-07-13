@@ -10,6 +10,8 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
 public class TestdataInvalidDeclarativeEntity extends TestdataObject {
+    TestdataInvalidDeclarativeEntity fact;
+
     @PlanningListVariable
     List<TestdataInvalidDeclarativeValue> values;
 
@@ -23,9 +25,17 @@ public class TestdataInvalidDeclarativeEntity extends TestdataObject {
         super(code);
     }
 
-    @ShadowSources("values")
+    @ShadowSources("fact.shadow")
     public Integer shadowSupplier() {
-        return values.size();
+        return fact == null ? 0 : fact.getShadow();
+    }
+
+    public TestdataInvalidDeclarativeEntity getFact() {
+        return fact;
+    }
+
+    public void setFact(TestdataInvalidDeclarativeEntity fact) {
+        this.fact = fact;
     }
 
     public List<TestdataInvalidDeclarativeValue> getValues() {

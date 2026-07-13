@@ -11,8 +11,8 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 
 /**
  * Specifies that a bean property (or a field) is a custom shadow variable of 1 or more source variables.
- * The source variable may be a genuine {@link PlanningVariable}, {@link PlanningListVariable},
- * or another shadow variable.
+ * The source variable may be a genuine {@link PlanningVariable} or another shadow variable.
+ * A genuine {@link PlanningListVariable} cannot be a source.
  * <p>
  * It is specified on a getter of a java bean property (or a field) of a {@link PlanningEntity} class.
  */
