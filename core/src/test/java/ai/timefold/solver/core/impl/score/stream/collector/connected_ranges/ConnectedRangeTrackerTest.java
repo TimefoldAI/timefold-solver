@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.TreeSet;
@@ -17,51 +16,6 @@ import ai.timefold.solver.core.api.score.stream.common.RangeGap;
 import org.junit.jupiter.api.Test;
 
 class ConnectedRangeTrackerTest {
-    private static class TestRange {
-        int start;
-        int end;
-
-        public TestRange(int start, int end) {
-            this.start = start;
-            this.end = end;
-        }
-
-        public int getStart() {
-            return start;
-        }
-
-        public int getEnd() {
-            return end;
-        }
-
-        public void setStart(int start) {
-            this.start = start;
-        }
-
-        public void setEnd(int end) {
-            this.end = end;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            TestRange range = (TestRange) o;
-            return start == range.start && end == range.end;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(start, end);
-        }
-
-        @Override
-        public String toString() {
-            return "(" + start + ", " + end + ")";
-        }
-    }
 
     private ConnectedRangeTracker<TestRange, Integer, Integer> getIntegerConnectedRangeTracker() {
         return new ConnectedRangeTracker<>(TestRange::getStart, TestRange::getEnd, (a, b) -> b - a);
@@ -69,16 +23,15 @@ class ConnectedRangeTrackerTest {
 
     @Test
     void testNonConsecutiveRanges() {
-        ConnectedRangeTracker<TestRange, Integer, Integer> tree = getIntegerConnectedRangeTracker();
-        Range<TestRange, Integer> a = tree.getRange(new TestRange(0, 2));
-        Range<TestRange, Integer> b = tree.getRange(new TestRange(3, 4));
-        Range<TestRange, Integer> c = tree.getRange(new TestRange(5, 7));
+        var tree = getIntegerConnectedRangeTracker();
+        var a = tree.getRange(new TestRange(0, 2));
+        var b = tree.getRange(new TestRange(3, 4));
+        var c = tree.getRange(new TestRange(5, 7));
         tree.add(a);
         tree.add(b);
         tree.add(c);
 
-        var connectedRangeList =
-                new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
+        var connectedRangeList = new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
         assertThat(connectedRangeList).hasSize(3);
 
         assertThat(connectedRangeList.get(0)).containsExactly(new TestRange(0, 2));
@@ -101,16 +54,15 @@ class ConnectedRangeTrackerTest {
 
     @Test
     void testConsecutiveRanges() {
-        ConnectedRangeTracker<TestRange, Integer, Integer> tree = getIntegerConnectedRangeTracker();
-        Range<TestRange, Integer> a = tree.getRange(new TestRange(0, 2));
-        Range<TestRange, Integer> b = tree.getRange(new TestRange(2, 4));
-        Range<TestRange, Integer> c = tree.getRange(new TestRange(4, 7));
+        var tree = getIntegerConnectedRangeTracker();
+        var a = tree.getRange(new TestRange(0, 2));
+        var b = tree.getRange(new TestRange(2, 4));
+        var c = tree.getRange(new TestRange(4, 7));
         tree.add(a);
         tree.add(b);
         tree.add(c);
 
-        var connectedRangeList =
-                new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
+        var connectedRangeList = new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
         assertThat(connectedRangeList).hasSize(1);
 
         assertThat(connectedRangeList.get(0)).containsExactly(new TestRange(0, 2), new TestRange(2, 4), new TestRange(4, 7));
@@ -121,15 +73,14 @@ class ConnectedRangeTrackerTest {
 
     @Test
     void testDuplicateRanges() {
-        ConnectedRangeTracker<TestRange, Integer, Integer> tree = getIntegerConnectedRangeTracker();
-        Range<TestRange, Integer> a = tree.getRange(new TestRange(0, 2));
-        Range<TestRange, Integer> b = tree.getRange(new TestRange(4, 7));
+        var tree = getIntegerConnectedRangeTracker();
+        var a = tree.getRange(new TestRange(0, 2));
+        var b = tree.getRange(new TestRange(4, 7));
         tree.add(a);
         tree.add(a);
         tree.add(b);
 
-        var connectedRangeList =
-                new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
+        var connectedRangeList = new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
         assertThat(connectedRangeList).hasSize(2);
 
         assertThat(connectedRangeList.get(0)).containsExactly(a.getValue(), a.getValue());
@@ -143,11 +94,11 @@ class ConnectedRangeTrackerTest {
 
     @Test
     void testRangeRemoval() {
-        ConnectedRangeTracker<TestRange, Integer, Integer> tree = getIntegerConnectedRangeTracker();
-        TestRange removedRange = new TestRange(2, 4);
-        Range<TestRange, Integer> a = tree.getRange(new TestRange(0, 2));
-        Range<TestRange, Integer> b = tree.getRange(removedRange);
-        Range<TestRange, Integer> c = tree.getRange(new TestRange(4, 7));
+        var tree = getIntegerConnectedRangeTracker();
+        var removedRange = new TestRange(2, 4);
+        var a = tree.getRange(new TestRange(0, 2));
+        var b = tree.getRange(removedRange);
+        var c = tree.getRange(new TestRange(4, 7));
         tree.add(a);
         tree.add(b);
         tree.add(c);
@@ -158,8 +109,7 @@ class ConnectedRangeTrackerTest {
 
         tree.remove(b);
 
-        var connectedRangeList =
-                new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
+        var connectedRangeList = new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
         assertThat(connectedRangeList).hasSize(2);
 
         assertThat(connectedRangeList.get(0)).containsExactly(new TestRange(0, 2));
@@ -169,12 +119,12 @@ class ConnectedRangeTrackerTest {
 
     @Test
     void testRangeAddUpdatingOldGap() {
-        ConnectedRangeTracker<TestRange, Integer, Integer> tree = getIntegerConnectedRangeTracker();
-        TestRange beforeAll = new TestRange(1, 2);
-        TestRange newStart = new TestRange(3, 8);
-        TestRange oldStart = new TestRange(4, 5);
-        TestRange betweenOldAndNewStart = new TestRange(6, 7);
-        TestRange afterAll = new TestRange(9, 10);
+        var tree = getIntegerConnectedRangeTracker();
+        var beforeAll = new TestRange(1, 2);
+        var newStart = new TestRange(3, 8);
+        var oldStart = new TestRange(4, 5);
+        var betweenOldAndNewStart = new TestRange(6, 7);
+        var afterAll = new TestRange(9, 10);
 
         tree.add(tree.getRange(beforeAll));
         verifyGaps(tree);
@@ -194,17 +144,17 @@ class ConnectedRangeTrackerTest {
 
     @Test
     void testOverlappingRange() {
-        ConnectedRangeTracker<TestRange, Integer, Integer> tree = getIntegerConnectedRangeTracker();
-        Range<TestRange, Integer> a = tree.getRange(new TestRange(0, 2));
-        TestRange removedTestRange1 = new TestRange(1, 3);
-        Range<TestRange, Integer> removedRange1 = tree.getRange(removedTestRange1);
-        Range<TestRange, Integer> c = tree.getRange(new TestRange(2, 4));
+        var tree = getIntegerConnectedRangeTracker();
+        var a = tree.getRange(new TestRange(0, 2));
+        var removedTestRange1 = new TestRange(1, 3);
+        var removedRange1 = tree.getRange(removedTestRange1);
+        var c = tree.getRange(new TestRange(2, 4));
 
-        Range<TestRange, Integer> d = tree.getRange(new TestRange(5, 6));
+        var d = tree.getRange(new TestRange(5, 6));
 
-        Range<TestRange, Integer> e = tree.getRange(new TestRange(7, 9));
-        TestRange removedTestRange2 = new TestRange(7, 9);
-        Range<TestRange, Integer> removedRange2 = tree.getRange(removedTestRange2);
+        var e = tree.getRange(new TestRange(7, 9));
+        var removedTestRange2 = new TestRange(7, 9);
+        var removedRange2 = tree.getRange(removedTestRange2);
 
         tree.add(a);
         tree.add(removedRange1);
@@ -213,8 +163,7 @@ class ConnectedRangeTrackerTest {
         tree.add(e);
         tree.add(removedRange2);
 
-        var connectedRanges =
-                new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
+        var connectedRanges = new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
         assertThat(connectedRanges).hasSize(3);
 
         assertThat(connectedRanges.get(0)).containsExactly(a.getValue(), removedTestRange1, c.getValue());
@@ -284,7 +233,7 @@ class ConnectedRangeTrackerTest {
         assertThat(connectedRanges.get(2).getMaximumOverlap()).isEqualTo(1);
 
         verifyGaps(tree);
-        Range<TestRange, Integer> g = tree.getRange(new TestRange(6, 7));
+        var g = tree.getRange(new TestRange(6, 7));
         tree.add(g);
         connectedRanges = new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
         assertThat(connectedRanges).hasSize(2);
@@ -300,17 +249,47 @@ class ConnectedRangeTrackerTest {
         assertThat(connectedRanges.get(1).getMaximumOverlap()).isEqualTo(1);
     }
 
+    @Test
+    void testHashCodeConsistentWithEquals() {
+        var treeA = getIntegerConnectedRangeTracker();
+        treeA.add(treeA.getRange(new TestRange(0, 2)));
+        treeA.add(treeA.getRange(new TestRange(2, 4)));
+
+        var treeB = getIntegerConnectedRangeTracker();
+        treeB.add(treeB.getRange(new TestRange(0, 2)));
+        treeB.add(treeB.getRange(new TestRange(2, 4)));
+
+        var rangeA = new IterableList<>(treeA.getConnectedRangeChain().getConnectedRanges()).get(0);
+        var rangeB = new IterableList<>(treeB.getConnectedRangeChain().getConnectedRanges()).get(0);
+
+        assertThat(rangeA)
+                .isEqualTo(rangeB)
+                .hasSameHashCodeAs(rangeB);
+    }
+
+    @Test
+    void testHashCodeReflectsMutation() {
+        var tree = getIntegerConnectedRangeTracker();
+        tree.add(tree.getRange(new TestRange(0, 2)));
+        var range = new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges()).get(0);
+        var hashBefore = range.hashCode();
+
+        // Merges into the same ConnectedRange instance, so a stale cached hash would go unnoticed.
+        tree.add(tree.getRange(new TestRange(2, 4)));
+        var hashAfter = range.hashCode();
+
+        assertThat(hashAfter).isNotEqualTo(hashBefore);
+    }
+
     void verifyGaps(ConnectedRangeTracker<TestRange, Integer, Integer> tree) {
-        var connectedRangeList =
-                new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
-        var gapList =
-                new IterableList<>(tree.getConnectedRangeChain().getGaps());
+        var connectedRangeList = new IterableList<>(tree.getConnectedRangeChain().getConnectedRanges());
+        var gapList = new IterableList<>(tree.getConnectedRangeChain().getGaps());
 
         if (connectedRangeList.size() == 0) {
             return;
         }
         assertThat(gapList).hasSize(connectedRangeList.size() - 1);
-        for (int i = 0; i < connectedRangeList.size() - 1; i++) {
+        for (var i = 0; i < connectedRangeList.size() - 1; i++) {
             assertThat(gapList.get(i).getPreviousRangeEnd()).isEqualTo(connectedRangeList.get(i).getEnd());
             assertThat(gapList.get(i).getNextRangeStart()).isEqualTo(connectedRangeList.get(i + 1).getStart());
             assertThat(gapList.get(i).getLength())
@@ -326,7 +305,7 @@ class ConnectedRangeTrackerTest {
         if (a == null || b == null) {
             return (a == null) ? -1 : 1;
         }
-        boolean out = Objects.equals(a.getPreviousRangeEnd(), b.getPreviousRangeEnd()) &&
+        var out = Objects.equals(a.getPreviousRangeEnd(), b.getPreviousRangeEnd()) &&
                 Objects.equals(a.getNextRangeStart(), b.getNextRangeStart()) &&
                 Objects.equals(a.getLength(), b.getLength());
 
@@ -345,14 +324,12 @@ class ConnectedRangeTrackerTest {
             return (a == null) ? -1 : 1;
         }
 
-        if (!(a instanceof ConnectedRangeImpl) || !(b instanceof ConnectedRangeImpl)) {
+        if (!(a instanceof ConnectedRangeImpl<TestRange, Integer, Integer> first)
+                || !(b instanceof ConnectedRangeImpl<TestRange, Integer, Integer> second)) {
             throw new IllegalArgumentException("Expected (" + a + ") and (" + b + ") to both be ConnectedRangeImpl");
         }
 
-        var first = (ConnectedRangeImpl<TestRange, Integer, Integer>) a;
-        var second = (ConnectedRangeImpl<TestRange, Integer, Integer>) b;
-
-        boolean out = first.getStartSplitPoint().compareTo(second.getStartSplitPoint()) == 0 &&
+        var out = first.getStartSplitPoint().compareTo(second.getStartSplitPoint()) == 0 &&
                 first.getEndSplitPoint().compareTo(second.getEndSplitPoint()) == 0 &&
                 first.getMinimumOverlap() == second.getMinimumOverlap() &&
                 first.getMaximumOverlap() == second.getMaximumOverlap();
@@ -365,29 +342,26 @@ class ConnectedRangeTrackerTest {
     // Compare the mutable version with the recompute version
     @Test
     void testRandomRanges() {
-        Random random = new Random(1);
+        var random = new Random(1);
 
-        for (int i = 0; i < 100; i++) {
-            Map<TestRange, Range<TestRange, Integer>> rangeToInstanceMap = new HashMap<>();
-            TreeSet<RangeSplitPoint<TestRange, Integer>> splitPoints = new TreeSet<>();
-            ConnectedRangeTracker<TestRange, Integer, Integer> tree =
-                    new ConnectedRangeTracker<>(TestRange::getStart, TestRange::getEnd, (a, b) -> b - a);
-            for (int j = 0; j < 100; j++) {
+        for (var i = 0; i < 100; i++) {
+            var rangeToInstanceMap = new HashMap<TestRange, Range<TestRange, Integer>>();
+            var splitPoints = new TreeSet<RangeSplitPoint<TestRange, Integer>>();
+            var tree = new ConnectedRangeTracker<>(TestRange::getStart, TestRange::getEnd, (a, b) -> b - a);
+            for (var j = 0; j < 100; j++) {
                 // Create a random range
-                String old = formatConnectedRangeTracker(tree);
-                int from = random.nextInt(5);
-                int to = from + random.nextInt(5);
-                TestRange data = new TestRange(from, to);
-                Range<TestRange, Integer> range = rangeToInstanceMap.computeIfAbsent(data, tree::getRange);
-                Range<TestRange, Integer> treeRange =
-                        new Range<>(data, TestRange::getStart, TestRange::getEnd);
+                var old = formatConnectedRangeTracker(tree);
+                var from = random.nextInt(5);
+                var to = from + random.nextInt(5);
+                var data = new TestRange(from, to);
+                var range = rangeToInstanceMap.computeIfAbsent(data, tree::getRange);
+                var treeRange = new Range<>(data, TestRange::getStart, TestRange::getEnd);
                 splitPoints.add(treeRange.getStartSplitPoint());
                 splitPoints.add(treeRange.getEndSplitPoint());
 
                 // Get the split points from the set (since those split points have collections)
-                RangeSplitPoint<TestRange, Integer> startSplitPoint =
-                        splitPoints.floor(treeRange.getStartSplitPoint());
-                RangeSplitPoint<TestRange, Integer> endSplitPoint = splitPoints.floor(treeRange.getEndSplitPoint());
+                var startSplitPoint = splitPoints.floor(treeRange.getStartSplitPoint());
+                var endSplitPoint = splitPoints.floor(treeRange.getEndSplitPoint());
 
                 // Create the collections if they do not exist
                 if (startSplitPoint.startpointRangeToCountMap == null) {
@@ -419,21 +393,18 @@ class ConnectedRangeTrackerTest {
 
                 // Recompute all connected ranges
                 RangeSplitPoint<TestRange, Integer> previous = null;
-                RangeSplitPoint<TestRange, Integer> current = splitPoints.isEmpty() ? null : splitPoints.first();
+                var current = splitPoints.isEmpty() ? null : splitPoints.first();
                 List<ConnectedRangeImpl<TestRange, Integer, Integer>> rangeClusterList = new ArrayList<>();
                 List<RangeGapImpl<TestRange, Integer, Integer>> gapList = new ArrayList<>();
                 while (current != null) {
-                    rangeClusterList
-                            .add(ConnectedRangeImpl.getConnectedRangeStartingAt(splitPoints, (a, b) -> a - b, current));
+                    rangeClusterList.add(ConnectedRangeImpl.getConnectedRangeStartingAt(splitPoints, (a, b) -> a - b, current));
                     if (previous != null) {
-                        ConnectedRangeImpl<TestRange, Integer, Integer> before =
-                                rangeClusterList.get(rangeClusterList.size() - 2);
-                        ConnectedRangeImpl<TestRange, Integer, Integer> after =
-                                rangeClusterList.get(rangeClusterList.size() - 1);
+                        var before = rangeClusterList.get(rangeClusterList.size() - 2);
+                        var after = rangeClusterList.getLast();
                         gapList.add(new RangeGapImpl<>(before, after, after.getStart() - before.getEnd()));
                     }
                     previous = current;
-                    current = splitPoints.higher(rangeClusterList.get(rangeClusterList.size() - 1).getEndSplitPoint());
+                    current = splitPoints.higher(rangeClusterList.getLast().getEndSplitPoint());
                 }
 
                 // Verify the mutable version matches the recompute version
@@ -450,12 +421,11 @@ class ConnectedRangeTrackerTest {
         }
     }
 
-    private String formatConnectedRangeTracker(ConnectedRangeTracker<TestRange, Integer, Integer> rangeTree) {
-        List<List<TestRange>> listOfConnectedRanges = new ArrayList<>();
-        for (ConnectedRange<TestRange, Integer, Integer> cluster : rangeTree.getConnectedRangeChain()
-                .getConnectedRanges()) {
-            List<TestRange> rangesInCluster = new ArrayList<>();
-            for (TestRange range : cluster) {
+    private static String formatConnectedRangeTracker(ConnectedRangeTracker<TestRange, Integer, Integer> rangeTree) {
+        var listOfConnectedRanges = new ArrayList<List<TestRange>>();
+        for (var cluster : rangeTree.getConnectedRangeChain().getConnectedRanges()) {
+            var rangesInCluster = new ArrayList<TestRange>();
+            for (var range : cluster) {
                 rangesInCluster.add(range);
             }
             listOfConnectedRanges.add(rangesInCluster);
@@ -463,6 +433,52 @@ class ConnectedRangeTrackerTest {
         return listOfConnectedRanges.stream()
                 .map(cluster -> cluster.stream().map(TestRange::toString).collect(Collectors.joining(",", "[", "]")))
                 .collect(Collectors.joining(";", "{", "}"));
+    }
+
+    private static final class TestRange {
+        int start;
+        int end;
+
+        public TestRange(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public int getStart() {
+            return start;
+        }
+
+        public int getEnd() {
+            return end;
+        }
+
+        public void setStart(int start) {
+            this.start = start;
+        }
+
+        public void setEnd(int end) {
+            this.end = end;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            var range = (TestRange) o;
+            return start == range.start && end == range.end;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(start, end);
+        }
+
+        @Override
+        public String toString() {
+            return "(" + start + ", " + end + ")";
+        }
     }
 
 }

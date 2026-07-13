@@ -18,6 +18,7 @@ import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
  * @param arrayItemType the OpenAPI schema type for array items
  * @param format the data format which further specifies the schema type
  * @param schemaTypeRef the OpenAPI schema type reference (used when the schema type is not a primitive type)
+ * @param nullable whether the parameter accepts {@code null} as a value, as defined by the OpenAPI schema
  * @param constraintNameRef the constraint name reference (used when the parameter is a constraint weight or any other parameter
  *        related to a constraint)
  */
@@ -30,6 +31,7 @@ public record ModelConfigParameter(
         SchemaType arrayItemType,
         DataFormat format,
         String schemaTypeRef,
+        boolean nullable,
         String constraintNameRef) {
 
 }
