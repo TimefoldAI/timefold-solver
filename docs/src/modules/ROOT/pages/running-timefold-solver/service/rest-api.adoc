@@ -91,8 +91,7 @@ If your model provides xref:./demo-data.adoc[demo data], the following endpoints
 - `GET /<root>/demo-data`: Retrieve all available demo dataset ids.
 - `GET /<root>/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier
 
-// TODO See the xref:consumer-guide.adoc[service consumer guide] for information on how consumers of the service should interact with these API endpoints.
-// TODO https://github.com/TimefoldAI/timefold-solver/issues/2349
+See the xref:./consumer-guide.adoc[service consumer guide] for information on how consumers of the service should interact with these API endpoints.
 
 [#requestResponseStructure]
 == Request and response structure
