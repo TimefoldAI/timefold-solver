@@ -33,15 +33,17 @@ it will dominate solving time and make the solver unusably slow.
 == Best practices
 
 Do::
++
 * Make enrichers idempotent: calling `enrich()` twice should produce the same result.
 * Fail fast: if a required external resource is unavailable, throw an exception rather than silently returning an incomplete model.
 * Use the `SolverModelEnrichmentDirector` to control ordering when one enricher depends on another.
 
 Don't::
++
 * Do not perform heavy computation inside constraint streams. Move it to an enricher instead.
 * Do not modify planning entities' planning variables inside an enricher; only non-planning fields should be set.
 * Do not keep mutable state in enrichers; they may be invoked concurrently from multiple threads.
-* Do not use enrichment for validation that should happen at input time, reject bad input at the API boundary, not here.
+* Do not use enrichment for validation that should happen at input time; reject bad input at the API boundary, not here.
 
 [#implementingAnEnricher]
 == Implementing an enricher

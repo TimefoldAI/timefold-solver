@@ -285,7 +285,7 @@ class TimetableConvertor : ModelConvertor<HardSoftLongScore, TimetableDto, Empty
 [NOTE]
 ====
 This mechanism should only be used for ModelInput -> SolverModel -> ModelOutput mapping.
-For enhancing the SolverModel, use the xref:./model-enrichment.adoc[Model Enrichment] mechanism instead.
+For enhancing the SolverModel, use the xref:./model-enrichment.adoc#solverModelEnrichment[Model Enrichment] mechanism instead.
 ====
 
 [#validatingRestInput]
