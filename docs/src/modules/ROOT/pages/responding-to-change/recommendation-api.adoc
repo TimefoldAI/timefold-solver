@@ -5,7 +5,7 @@
 :sectnums:
 :icons: font
 
-include::../commercial-editions/_only-plus-and-enterprise.adoc[]
+include::../commercial-editions/_only-enterprise.adoc[]
 
 With xref:responding-to-change/real-time-planning.adoc[real-time planning], we can respond to a continuous stream of external changes.
 However, it is often necessary to respond to ad hoc changes too,
