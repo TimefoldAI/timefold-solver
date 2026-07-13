@@ -92,11 +92,6 @@
     <version.io.quarkus>3.36.3</version.io.quarkus>
     <version.org.assertj>3.27.7</version.org.assertj>
     <version.org.awaitility>4.3.0</version.org.awaitility>
-    <version.org.webjars.bootstrap>5.3.8</version.org.webjars.bootstrap>
-    <version.org.webjars.jquery>3.7.1</version.org.webjars.jquery>
-    <version.org.webjars.font-awesome>7.2.0</version.org.webjars.font-awesome>
-    <version.org.webjars.js-joda>1.11.0</version.org.webjars.js-joda>
-    <version.org.webjars.leaflet>1.8.0</version.org.webjars.leaflet>
 
     <!-- ************************************************************************ -->
     <!-- Plugins -->
@@ -150,32 +145,6 @@
         <artifactId>assertj-core</artifactId>
         <scope>test</scope>
         <version>${version.org.assertj}</version>
-      </dependency>
-      <!-- UI webjars -->
-      <dependency>
-        <groupId>org.webjars</groupId>
-        <artifactId>bootstrap</artifactId>
-        <version>${version.org.webjars.bootstrap}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.webjars</groupId>
-        <artifactId>jquery</artifactId>
-        <version>${version.org.webjars.jquery}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.webjars</groupId>
-        <artifactId>font-awesome</artifactId>
-        <version>${version.org.webjars.font-awesome}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.webjars.npm</groupId>
-        <artifactId>js-joda</artifactId>
-        <version>${version.org.webjars.js-joda}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.webjars</groupId>
-        <artifactId>leaflet</artifactId>
-        <version>${version.org.webjars.leaflet}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
