@@ -25,9 +25,11 @@ Common use cases include:
 == Why enrich the model instead of computing inside constraints?
 
 Constraint streams execute many times per second during solving.
-Any computation that happens inside a constraint is repeated on every score calculation.
-If that computation involves a remote call, a database query, or a complex algorithm,
-it will dominate solving time and make the solver unusably slow.
+Any enrichment which can be done before solving should be done before solving.
+
+WARNING: Never do computation which involves a remote call, a database query,
+or a complex algorithm while the solver is running (e.g. inside the constraint streams or shadow variables).
+This is an antipattern and will make the solver unusably slow.
 
 [#bestPractices]
 == Best practices
@@ -41,14 +43,13 @@ Do::
 Don't::
 +
 * Do not perform heavy computation inside constraint streams. Move it to an enricher instead.
-* Do not modify planning entities' planning variables inside an enricher; only non-planning fields should be set.
 * Do not keep mutable state in enrichers; they may be invoked concurrently from multiple threads.
 * Do not use enrichment for validation that should happen at input time; reject bad input at the API boundary, not here.
 
 [#implementingAnEnricher]
 == Implementing an enricher
 
-To enrich the model, implement `SolverModelEnricher` and annotate it so it is picked up by your DI container.
+To enrich the model, implement `SolverModelEnricher` and annotate it so it is picked up by your Dependency Injection (DI) container.
 
 In this example, the `Timetable` planning solution contains `Timeslot` objects.
 Each `Timeslot` has an `isHoliday` field that must be populated by consulting an external calendar service.
