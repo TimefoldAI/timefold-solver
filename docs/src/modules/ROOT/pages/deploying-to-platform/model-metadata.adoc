@@ -141,7 +141,7 @@ class TimetableConstraintProvider : ConstraintProvider {
 ====
 
 The `id` you pass into `ConstraintInfo` is still the identifier used by `@ConstraintReference` in your `ModelConfigOverrides`, as described in xref:running-timefold-solver/service/constraint-overrides.adoc[Adjusting constraint weights].
-The `name`, `description`, and `constraintGroup` are purely presentational: they are what the platform's score analysis view and configuration profile editor use to show your constraints to consumers, instead of falling back to the raw id.
+The `name`, `description`, and `constraintGroup` are purely presentational: they are what the platform's score analysis view and configuration profile editor use to show your constraints to consumers, instead of falling back to the raw ID.
 
 The UI groups constraints that don't specify a `constraintGroup` under a default group.
 
