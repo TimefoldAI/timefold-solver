@@ -9,7 +9,7 @@ Once your model is xref:deploying-to-platform/getting-started.adoc[deployed to T
 
 This page documents that platform-specific metadata: which identity properties describe your model on the platform, how to give your constraints human-readable names and groups, and how to ship a default configuration profile.
 
-See xref:deploying-to-platform/introduction.adoc[Deploying to the Timefold Platform] for why you'd want to do this in the first place, and xref:deploying-to-platform/introduction.adoc#_platform_concepts[Platform concepts] for how this metadata relates to your model's identifier, registration key, and visibility on the platform.
+See xref:deploying-to-platform/introduction.adoc[Deploying to the Timefold Platform] for why you'd want to do this, and xref:deploying-to-platform/introduction.adoc#_platform_concepts[Platform concepts] for how this metadata relates to your model's identifier, registration key, and visibility on the platform.
 
 include::_preview-note.adoc[]
 
