@@ -24,7 +24,7 @@ From a model developer's perspective, each layer is plumbing you'd otherwise hav
 === Enterprise Edition features
 
 These Timefold Solver Enterprise Edition capabilities are especially valuable once your model is deployed, since consumers interact with them directly through the platform UI and API.
-Since deploying to the platform requires building your model with the Enterprise Edition, as described in xref:deploying-to-platform/getting-started.adoc#_enterprise_edition[Build with the Enterprise Edition], you get these for free.
+Since deploying to the platform requires building your model with the Enterprise Edition, as described in xref:deploying-to-platform/guide.adoc#_enterprise_edition[Build with the Enterprise Edition], you get these for free.
 
 * *Explainability*: xref:constraints-and-score/understanding-the-score.adoc[Score analysis] breaks a solution down constraint-by-constraint, so consumers can see why the solver made the decisions it did, and what the impact would be of overriding one.
 * *Recommendations*: the xref:responding-to-change/recommendation-api.adoc#assignmentRecommendationAPI[Recommendation API] suggests the best fit for a new assignment without a full re-solve.
@@ -78,20 +78,20 @@ Custom model:: The model you build and deploy yourself, as opposed to one of Tim
 This is what this section of the documentation is about.
 
 Model registration:: The act of publishing your model's descriptor and container image to the platform under a registration key, using `timefold:deploy`.
-See xref:deploying-to-platform/getting-started.adoc[Getting started: deploying to the platform] for the full walkthrough.
+See xref:deploying-to-platform/guide.adoc[Deploying to the platform guide] for the full walkthrough.
 
 [#_model_identifier]
 Model identifier:: Made up of your model's bare ID and its API version, combined as `<model>_<version>` (for example `schooltimetabling_v1`).
 This is what appears in the consumer-facing API path (`/api/models/<model>/<version>`). The version comes from `timefold.application.version`.
 
 [#_registration_key]
-Registration key:: The `key` you set through the Maven plugin, as described in xref:deploying-to-platform/getting-started.adoc#_add_the_maven_plugin[Add the Maven plugin].
+Registration key:: The `key` you set through the Maven plugin, as described in xref:deploying-to-platform/guide.adoc#_add_the_maven_plugin[Add the Maven plugin].
 This is an administrative identifier, used only for managing the deployment itself (updating, overwriting, or undeploying it) and isn't part of the consumer-facing API.
 Keeping it distinct from the model identifier matters once you deploy more than one implementation of the same model, for example a stable version and a private beta of the next version: both can share the same model identifier and API path, while each has its own registration key for independent management.
 
 [#_model_privacy]
 Model privacy:: Every registered model has a visibility scope that determines which tenants can see and use it: *Private* (a single tenant) or *Shared* (a selected set of tenants).
-The Maven plugin's `deploy` goal infers one of these automatically from how many tenants you list, as described in xref:deploying-to-platform/getting-started.adoc#_add_the_maven_plugin[Add the Maven plugin].
+The Maven plugin's `deploy` goal infers one of these automatically from how many tenants you list, as described in xref:deploying-to-platform/guide.adoc#_add_the_maven_plugin[Add the Maven plugin].
 A third scope, *Public* (visible to every tenant on the platform), also exists, but registering a model as Public is restricted to global admins of the platform, so it isn't a self-service option for model developers.
 
 Model consumers:: The tenant users, and the systems they build, that call your model's REST API: submitting datasets, reading results and score analysis, and managing configuration profiles.
@@ -100,4 +100,4 @@ As the model developer, you typically aren't the consumer yourself; you're build
 Model subscription:: Tenants subscribe to a model by its model identifier (not its registration key) to get access to it.
 The Maven plugin can automate this for you: its `handleSubscription` setting subscribes your tenant when you register the model, and unsubscribes it when you undeploy.
 
-To get started, see xref:deploying-to-platform/getting-started.adoc[Getting started: deploying to the platform].
+To get started, see xref:deploying-to-platform/guide.adoc[Deploying to the platform guide].

@@ -1,4 +1,4 @@
-= Getting started: deploying to the platform (Preview)
+= Deploying to the platform guide (Preview)
 :description: Deploy the service you built to Timefold Platform
 :doctype: book
 :sectnums:
@@ -19,6 +19,7 @@ include::_preview-note.adoc[]
 To complete this guide, you need:
 
 * The School Timetabling service built in xref:quickstart/service/getting-started.adoc[Getting started: building a service].
+A finished version of this service is available in the https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/getting-started/service[`getting-started/service` quickstart].
 * A Timefold Platform account with tenant-admin access to the tenant you want to register the model in.
 * A Personal Access Token (PAT), scoped to the tenant you want to register the model in, with *Create*, *Read*, *Update*, and *Delete* permissions on the *Registered Model* resource.
 See xref:#_generate_a_personal_access_token[Generate a Personal Access Token] below.
@@ -54,8 +55,9 @@ Build with `-Denterprise=true` to activate the `enterprise` Maven profile define
 mvn clean package -Denterprise=true
 ----
 
-The Enterprise Edition requires a license key to function at runtime, as described in xref:commercial-editions/installation.adoc[Installation].
-Building with the Enterprise Edition does not require a license; a license is only checked when the model actually runs.
+Building with the Enterprise Edition does not itself require a license; a license is only checked when the model actually runs.
+However, if your build runs tests that exercise Enterprise Edition features, those tests run the solver, so the build fails without a valid license.
+See xref:commercial-editions/license-management.adoc[License management] to register for a free trial license.
 When you deploy to Timefold Platform, the platform provides that license for you, so you don't need one of your own just to follow this guide.
 
 You may still want a license if you want to run your Enterprise Edition build locally, for example to test the model with `mvn quarkus:dev` before deploying it.

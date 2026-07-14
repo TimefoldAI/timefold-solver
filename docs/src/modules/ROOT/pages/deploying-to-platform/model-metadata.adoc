@@ -5,7 +5,7 @@
 :sectnums:
 :icons: font
 
-Once your model is xref:deploying-to-platform/getting-started.adoc[deployed to Timefold Platform], the platform UI surfaces several pieces of your model's code and configuration directly.
+Once your model is xref:deploying-to-platform/guide.adoc[deployed to Timefold Platform], the platform UI surfaces several pieces of your model's code and configuration directly.
 
 This page documents that platform-specific metadata: which identity properties describe your model on the platform, how to give your constraints human-readable names and groups, and how to ship a default configuration profile.
 

@@ -9,7 +9,7 @@ include::../_attributes.adoc[]
 include::_preview-note.adoc[]
 
 Metrics aren't just extra fields in the API response.
-Once your model is xref:deploying-to-platform/getting-started.adoc[deployed to Timefold Platform], input and output metrics feed several platform features that would otherwise only show consumers a raw score and a solved dataset:
+Once your model is xref:deploying-to-platform/guide.adoc[deployed to Timefold Platform], input and output metrics feed several platform features that would otherwise only show consumers a raw score and a solved dataset:
 
 * *Solve graphs*: output metrics can be plotted alongside the hard, medium, and soft score as the solver runs, so consumers see how a metric evolves over time, not just its final value.
 See https://docs.timefold.ai/timefold-platform/latest/how-tos/interpreting-model-run-results#_solve_graphs[Solve graphs] for details.
@@ -26,4 +26,4 @@ You should also give each metric an OpenAPI `title`, `description`, and `format`
 These surface directly in the platform UI: in solve graphs, the comparison view, and Insights, consumers see the `title` as the metric's label and the `description` as its explanation, not the raw field name.
 A metric without a clear title and description is much harder for a consumer to interpret at a glance.
 
-Redeploy your model, as described in xref:deploying-to-platform/getting-started.adoc[Getting started: deploying to the platform], then submit a dataset and check that your metrics show up in the solve graphs, comparison view, and Insights.
+Redeploy your model, as described in xref:deploying-to-platform/guide.adoc[Deploying to the platform guide], then submit a dataset and check that your metrics show up in the solve graphs, comparison view, and Insights.

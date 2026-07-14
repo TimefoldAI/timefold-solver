@@ -40,7 +40,7 @@
 
 * Deploying to the Timefold Platform
 ** xref:deploying-to-platform/introduction.adoc[Overview]
-** xref:deploying-to-platform/getting-started.adoc[Getting started]
+** xref:deploying-to-platform/guide.adoc[Guide]
 ** xref:deploying-to-platform/model-metadata.adoc[leveloffset=+1]
 ** xref:deploying-to-platform/metrics.adoc[leveloffset=+1]
 
