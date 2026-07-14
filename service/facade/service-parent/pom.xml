@@ -239,7 +239,8 @@
           <configuration>
             <!-- Currently not running on the module path, despite including JPMS -->
             <useModulePath>false</useModulePath>
-            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+            <!-- Make sure test outputs are always visible -->
+            <redirectTestOutputToFile>false</redirectTestOutputToFile>
             <skipTests>${skipUTs}</skipTests>
             <!-- Avoid defining the argLine; it's configured in a profile for code coverage -->
           </configuration>
@@ -250,7 +251,8 @@
           <configuration>
             <!-- Currently not running on the module path, despite including JPMS -->
             <useModulePath>false</useModulePath>
-            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+            <!-- Make sure test outputs are always visible -->
+            <redirectTestOutputToFile>false</redirectTestOutputToFile>
             <skipTests>${skipTests}</skipTests>
             <skipITs>${skipITs}</skipITs>
           </configuration>
