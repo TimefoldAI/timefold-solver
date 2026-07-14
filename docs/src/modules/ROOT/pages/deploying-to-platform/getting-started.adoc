@@ -94,7 +94,7 @@ Build and deploy your model in a single command.
 mvn clean package -Denterprise=true timefold:deploy
 ----
 
-=== Preview without pushing container
+=== Preview without pushing the container
 To preview what would happen without actually pushing the container image or registering the model, add `-Dtimefold.dryRun=true`.
 This logs the requests that would have been made instead of sending them.
 
