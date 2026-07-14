@@ -69,7 +69,7 @@ We also offer free licenses to non-profit organizations and for academic researc
 === Generate a Personal Access Token
 
 Generate a PAT from your user menu on the platform (*User menu → Access tokens → Generate new token*).
-When selecting its permissions, scope the token to the tenant you want to register the model in, and grant *Create*, *Read*, *Update*, and *Delete* on the *Registered Model* resource, since the plugin needs all four to register, update, and later undeploy your model.
+When selecting its permissions, scope the token to the tenant you want to register the model in, and grant *Create*, *Read*, *Update*, and *Delete* on the *Registered Model* resource, since the plugin needs all 4 to register, update, and later undeploy your model.
 
 See https://docs.timefold.ai/timefold-platform/latest/api/platform-api#_authentication_with_personal_access_tokens[Authentication with Personal Access Tokens] for the full walkthrough, including screenshots of the token generation dialog.
 
