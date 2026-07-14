@@ -9,7 +9,7 @@ include::../_attributes.adoc[]
 This guide continues from xref:quickstart/service/getting-started.adoc[Getting started: building a service], where you built the School Timetabling model as a service.
 It walks you through deploying that same model to Timefold Platform, so it can be reached through a managed, multi-tenant REST API instead of `mvn quarkus:dev` on your own machine.
 
-For the reasoning behind why you'd want to do this, see xref:deploying-to-platform/introduction.adoc[Deploying to the Timefold Platform].
+Learn more about xref:deploying-to-platform/introduction.adoc[Deploying to the Timefold Platform].
 
 include::_preview-note.adoc[]
 
