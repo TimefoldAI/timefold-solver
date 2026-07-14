@@ -86,7 +86,7 @@ Inviting and managing team members requires the *admin* role within your company
 === Invite team members
 
 Open your company from the sidebar, go to the *Users* tab, and click *Invite user*.
-The invitee receives an email with an acceptance link valid for 14 days.
+The invitee receives an email with an acceptance link that is valid for 14 days.
 Once they accept, they join your company with the *user* role.
 
 If an invitation expires or wasn't received, find it in the *Users* tab and click *Resend* to send a fresh 14-day link.

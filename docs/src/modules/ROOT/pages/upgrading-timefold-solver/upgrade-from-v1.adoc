@@ -234,9 +234,9 @@ removed (`getConstraintStreamImplType()`, `setConstraintStreamImplType()`, `with
 In addition to the automated changes listed above, there are some changes that require manual intervention.
 Every upgrade note indicates how likely your code will be affected by that change:
 
-- icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
-- icon:info-circle[role=yellow] *Minor*: Less likely to affect your code, especially if you've been upgrading Timefold Solver regularly, paying attention to new deprecations.
-- icon:eye[] *Recommended*: We think this won't affect you, but we're listing this just to be safe.
+- icon:exclamation-triangle[role=red,set=fas] *Major*: Likely to affect your code.
+- icon:info-circle[role=yellow,set=fas] *Minor*: Less likely to affect your code, especially if you've been upgrading Timefold Solver regularly, paying attention to new deprecations.
+- icon:eye[set=far] *Recommended*: We think this won't affect you, but we're listing this just to be safe.
 
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin users to translate the changes accordingly.
@@ -246,7 +246,7 @@ We kindly ask Kotlin users to translate the changes accordingly.
 These changes are most likely to require you to change your code in a non-mechanical way,
 and they can only be automated partially, if at all.
 
-.icon:exclamation-triangle[role=red] Java 21 or later required
+.icon:exclamation-triangle[role=red,set=fas] Java 21 or later required
 [%collapsible%open]
 ====
 Timefold Solver 2.x requires Java 21 or later to run,
@@ -256,7 +256,7 @@ If you are using an older version of Java, you will need to upgrade your tooling
 
 '''
 
-.icon:exclamation-triangle[role=red] Spring Boot 4 and Jackson 3
+.icon:exclamation-triangle[role=red,set=fas] Spring Boot 4 and Jackson 3
 [%collapsible%open]
 ====
 Spring Boot integration has been upgraded to Spring Boot 4.
@@ -275,7 +275,7 @@ They continue to use the `quarkus-jackson` integration module, which remains on 
 
 '''
 
-.icon:exclamation-triangle[role=red] Chained planning variable support removed
+.icon:exclamation-triangle[role=red,set=fas] Chained planning variable support removed
 [%collapsible%open]
 ====
 Support for chained planning variables has been removed entirely.
@@ -286,7 +286,7 @@ We invite you to read the xref:upgrading-timefold-solver/migration-guides/chaine
 
 '''
 
-.icon:exclamation-triangle[role=red] Variable listeners removed
+.icon:exclamation-triangle[role=red,set=fas] Variable listeners removed
 [%collapsible%open]
 ====
 The variable listener mechanism has been removed.
@@ -297,7 +297,7 @@ We invite you to read the xref:upgrading-timefold-solver/migration-guides/variab
 
 '''
 
-.icon:exclamation-triangle[role=red] Score analysis no longer open-source
+.icon:exclamation-triangle[role=red,set=fas] Score analysis no longer open-source
 [%collapsible%open]
 ====
 `ScoreExplanation` has been removed.
@@ -334,7 +334,7 @@ There is no automated migration recipe for these changes; all changes must be ma
 
 '''
 
-.icon:exclamation-triangle[role=red] Recommended assignment no longer open-source
+.icon:exclamation-triangle[role=red,set=fas] Recommended assignment no longer open-source
 [%collapsible%open]
 ====
 The recommended assignment API is unchanged, but it now requires Timefold Solver Enterprise Edition on the classpath.
@@ -344,7 +344,7 @@ If you use Jackson serialization, register `TimefoldEnterpriseJacksonModule` in 
 
 '''
 
-.icon:exclamation-triangle[role=red] `Move` interface refactored
+.icon:exclamation-triangle[role=red,set=fas] `Move` interface refactored
 [%collapsible%open]
 ====
 Together with the introduction of the xref:optimization-algorithms/neighborhoods.adoc[Neighborhoods API],
@@ -359,7 +359,7 @@ which we believe is well worth the breaking change.
 
 '''
 
-.icon:info-circle[role=yellow] Planning solution diff no longer open-source
+.icon:info-circle[role=yellow,set=fas] Planning solution diff no longer open-source
 [%collapsible%open]
 ====
 The solution diff API is unchanged, but it now requires Timefold Solver Enterprise Edition on the classpath.
@@ -367,7 +367,7 @@ The solution diff API is unchanged, but it now requires Timefold Solver Enterpri
 
 '''
 
-.icon:info-circle[role=yellow] Full modularization under JPMS
+.icon:info-circle[role=yellow,set=fas] Full modularization under JPMS
 [%collapsible%open]
 ====
 Timefold Solver and all of its JARs are now modules https://en.wikipedia.org/wiki/Java_Platform_Module_System[under JPMS].
@@ -382,7 +382,7 @@ Please reach out if you notice any issues related to this change.
 
 '''
 
-.icon:info-circle[role=yellow] Getter and setter access rules enforced
+.icon:info-circle[role=yellow,set=fas] Getter and setter access rules enforced
 [%collapsible%open]
 ====
 When a planning annotation (`@PlanningVariable`, `@PlanningScore`, etc.) is placed on a getter method,
@@ -401,7 +401,7 @@ to allow the solver to access them via reflection.
 
 '''
 
-.icon:info-circle[role=yellow] Constraint ID now strictly validated
+.icon:info-circle[role=yellow,set=fas] Constraint ID now strictly validated
 [%collapsible%open]
 ====
 Constraint IDs are now validated more strictly.
@@ -411,7 +411,7 @@ If your constraint IDs do not comply, an exception will be thrown at solver init
 
 '''
 
-.icon:info-circle[role=yellow] `@ConstraintConfiguration` replaced by constraint weight overrides
+.icon:info-circle[role=yellow,set=fas] `@ConstraintConfiguration` replaced by constraint weight overrides
 [%collapsible%open]
 ====
 The `@ConstraintConfiguration`, `@ConstraintConfigurationProvider`, and `@ConstraintWeight` annotations have been removed.
@@ -465,7 +465,7 @@ After in `*Solution.java`:
 
 '''
 
-.icon:info-circle[role=yellow] `Indictment` removed
+.icon:info-circle[role=yellow,set=fas] `Indictment` removed
 [%collapsible%closed]
 ====
 The `Indictment` interface has been removed entirely, along with:
@@ -483,7 +483,7 @@ The OpenRewrite migration recipe automatically removes `indictWith()` call sites
 
 '''
 
-.icon:info-circle[role=yellow] `@PlanningEntity` `pinningFilter` removed
+.icon:info-circle[role=yellow,set=fas] `@PlanningEntity` `pinningFilter` removed
 [%collapsible%open]
 ====
 Pinning filters were an outdated way of specifying whether any particular entity might be changed by the solver.
@@ -494,7 +494,7 @@ and replaced it with xref:domain-modeling/modeling-planning-problems.adoc#pinned
 
 '''
 
-.icon:info-circle[role=yellow] `ScoreDirector` removed from public API
+.icon:info-circle[role=yellow,set=fas] `ScoreDirector` removed from public API
 [%collapsible%open]
 ====
 `ScoreDirector` is no longer a public interface.
@@ -509,7 +509,7 @@ If your `PhaseCommand` implementations used `ScoreDirector`, see the next upgrad
 
 '''
 
-.icon:info-circle[role=yellow] `PhaseCommand.changeWorkingSolution` signature changed
+.icon:info-circle[role=yellow,set=fas] `PhaseCommand.changeWorkingSolution` signature changed
 [%collapsible%open]
 ====
 `PhaseCommand.changeWorkingSolution(ScoreDirector, BooleanSupplier)` has been replaced by
@@ -560,7 +560,7 @@ public class MyPhaseCommand implements PhaseCommand<Timetable> {
 
 '''
 
-.icon:info-circle[role=yellow] `SolutionPartitioner` signature changed
+.icon:info-circle[role=yellow,set=fas] `SolutionPartitioner` signature changed
 [%collapsible%open]
 ====
 `SolutionPartitioner.splitWorkingSolution(ScoreDirector, Integer)` now takes the solution directly.
@@ -589,7 +589,7 @@ public List<Timetable> splitWorkingSolution(Timetable solution, Integer runnable
 
 '''
 
-.icon:eye[] `@PlanningSolution` `lookUpStrategyType` removed
+.icon:eye[set=far] `@PlanningSolution` `lookUpStrategyType` removed
 [%collapsible%closed]
 ====
 The `lookUpStrategyType` attribute has been removed from `@PlanningSolution`.
@@ -652,7 +652,7 @@ public class Lesson {
 
 '''
 
-.icon:eye[] `BenchmarkAggregator` moved to separate module
+.icon:eye[set=far] `BenchmarkAggregator` moved to separate module
 [%collapsible%closed]
 ====
 `BenchmarkAggregator` has been moved from `timefold-solver-benchmark` into a separate `timefold-solver-benchmark-aggregator` module.
@@ -667,7 +667,7 @@ For the following changes, we either provide an OpenRewrite recipe which does mo
 or we don't have an automated recipe at all.
 Manual review and adjustments may still be necessary.
 
-.icon:exclamation-triangle[role=red] Int-based score types removed
+.icon:exclamation-triangle[role=red,set=fas] Int-based score types removed
 [%collapsible%open]
 ====
 `HardSoftLongScore` and `HardSoftBigDecimalScore` are now `HardSoftScore` and `HardSoftBigDecimalScore` respectively,
@@ -677,7 +677,7 @@ The long variants (`HardSoftLongScore`, `HardMediumSoftLongScore`, `SimpleLongSc
 
 '''
 
-.icon:info-circle[role=yellow] `Score` can no longer be uninitialized
+.icon:info-circle[role=yellow,set=fas] `Score` can no longer be uninitialized
 [%collapsible%open]
 ====
 All score types lost their ability to be uninitialized; that is now considered an implementation detail
@@ -694,7 +694,7 @@ The following methods were removed from all score types:
 
 '''
 
-.icon:info-circle[role=yellow] `BendableScore` array type changed from `int[]` to `long[]`
+.icon:info-circle[role=yellow,set=fas] `BendableScore` array type changed from `int[]` to `long[]`
 [%collapsible%open]
 ====
 `BendableScore` and `BendableLongScore` have been merged into a single `BendableScore` backed by `long[]`.
@@ -717,7 +717,7 @@ BendableScore score = BendableScore.of(new long[]{0L, -1L}, new long[]{-2L});
 
 '''
 
-.icon:info-circle[role=yellow] Constraint stream `penalizeLong`, `rewardLong`, `impactLong` removed
+.icon:info-circle[role=yellow,set=fas] Constraint stream `penalizeLong`, `rewardLong`, `impactLong` removed
 [%collapsible%open]
 ====
 The `penalizeLong`, `rewardLong`, and `impactLong` methods on constraint streams have been removed.
@@ -726,7 +726,7 @@ Use `penalize`, `reward`, and `impact` respectively; they now also accept `long`
 
 '''
 
-.icon:info-circle[role=yellow] Deprecated `SolverManager` `solve` methods removed
+.icon:info-circle[role=yellow,set=fas] Deprecated `SolverManager` `solve` methods removed
 [%collapsible%open]
 ====
 Various previously deprecated overloads of `SolverManager.solve()` and `SolverManager.solveAndListen()` were removed.
@@ -735,7 +735,7 @@ Use the `SolverManager.solveBuilder()` method to build a `SolverJob` instead, as
 
 '''
 
-.icon:info-circle[role=yellow] `SolverJobBuilder` deprecated consumer methods removed
+.icon:info-circle[role=yellow,set=fas] `SolverJobBuilder` deprecated consumer methods removed
 [%collapsible%open]
 ====
 The following deprecated `SolverJobBuilder` methods have been removed:
@@ -837,7 +837,7 @@ instead of the now removed `ThrottlingBestSolutionConsumer`.
 
 '''
 
-.icon:info-circle[role=yellow] `SubList` selector configuration moved
+.icon:info-circle[role=yellow,set=fas] `SubList` selector configuration moved
 [%collapsible%open]
 ====
 Previously, sublist selector configuration was specified directly on `SubListChangeMoveSelectorConfig` and `SubListSwapMoveSelectorConfig` using the following methods / XML elements:
@@ -851,7 +851,7 @@ as the `subListSelectorConfig` property of those move selector configs.
 
 '''
 
-.icon:info-circle[role=yellow] `NoChangePhase` removed from XML configuration
+.icon:info-circle[role=yellow,set=fas] `NoChangePhase` removed from XML configuration
 [%collapsible%open]
 ====
 The `<noChangePhase>` element has been removed from the solver XML configuration,
@@ -862,7 +862,7 @@ If you used this phase as a placeholder, remove it from your configuration.
 
 '''
 
-.icon:info-circle[role=yellow] `EnvironmentMode` `FAST_ASSERT` and `REPRODUCIBLE` removed
+.icon:info-circle[role=yellow,set=fas] `EnvironmentMode` `FAST_ASSERT` and `REPRODUCIBLE` removed
 [%collapsible%open]
 ====
 `EnvironmentMode.FAST_ASSERT` and `EnvironmentMode.REPRODUCIBLE` have been removed.
@@ -873,7 +873,7 @@ See the 1.19.0 to 1.20.0 upgrade step for details.
 
 '''
 
-.icon:info-circle[role=yellow] All code must use `RandomGenerator` instead of `Random`
+.icon:info-circle[role=yellow,set=fas] All code must use `RandomGenerator` instead of `Random`
 [%collapsible%open]
 ====
 If you used any solver API which took a `Random` argument, change it to use `RandomGenerator` instead.
@@ -901,7 +901,7 @@ public Iterator<LocalDate> createRandomIterator(RandomGenerator workingRandom) {
 
 '''
 
-.icon:eye[] `Termination` can no longer be customized
+.icon:eye[set=far] `Termination` can no longer be customized
 [%collapsible%open]
 ====
 Custom `Termination` implementations are no longer supported.
@@ -912,7 +912,7 @@ including the `terminationClass` field in the solver configuration.
 
 '''
 
-.icon:eye[] `Score` can no longer be customized
+.icon:eye[set=far] `Score` can no longer be customized
 [%collapsible%open]
 ====
 Custom `Score` implementations are no longer supported.
@@ -923,7 +923,7 @@ including `ScoreDefinition` and `ScoreDefinitionType`.
 
 '''
 
-.icon:eye[] `ConstraintRef` package change and constraint packages removed
+.icon:eye[set=far] `ConstraintRef` package change and constraint packages removed
 [%collapsible%closed]
 ====
 `ConstraintRef` has been moved from `ai.timefold.solver.core.api.score.constraint` to `ai.timefold.solver.core.api.score.stream`.
@@ -936,7 +936,7 @@ most notably from `ConstraintAnalysis` and `Constraint`.
 
 '''
 
-.icon:eye[] `ConstraintMetadata` replaces string-based constraint description and group APIs
+.icon:eye[set=far] `ConstraintMetadata` replaces string-based constraint description and group APIs
 [%collapsible%closed]
 ====
 The old `asConstraintDescribed(String name, String description)` and `asConstraintDescribed(String name, String group, String description)` methods have been removed.
@@ -953,7 +953,7 @@ The following methods have also been renamed or removed:
 
 '''
 
-.icon:eye[] Deprecated `ConstraintCollectors` methods removed
+.icon:eye[set=far] Deprecated `ConstraintCollectors` methods removed
 [%collapsible%closed]
 ====
 Various previously deprecated static methods on `ConstraintCollectors` have been removed:
@@ -965,7 +965,7 @@ use the remaining overloads, which take a `Comparable` mapping instead.
 
 '''
 
-.icon:eye[] `count()` and `countDistinct()` now return `Long` instead of `Integer`
+.icon:eye[set=far] `count()` and `countDistinct()` now return `Long` instead of `Integer`
 [%collapsible%open]
 ====
 `ConstraintCollectors.count()` and `ConstraintCollectors.countDistinct(...)` previously returned `Integer`.
@@ -974,7 +974,7 @@ They now return `Long`.
 
 '''
 
-.icon:eye[] `sum(ToIntFunction)` removed
+.icon:eye[set=far] `sum(ToIntFunction)` removed
 [%collapsible%open]
 ====
 `ConstraintCollectors.sum(ToIntFunction)` has been removed.
@@ -983,7 +983,7 @@ Replace it with `sum(ToLongFunction)` and update the lambda accordingly.
 
 '''
 
-.icon:eye[] `AutoDiscoverMemberType` removed from `@PlanningSolution`
+.icon:eye[set=far] `AutoDiscoverMemberType` removed from `@PlanningSolution`
 [%collapsible%closed]
 ====
 The `autoDiscoverMemberType` attribute of `@PlanningSolution` has been removed.
@@ -994,7 +994,7 @@ The solver will throw helpful exceptions if any members are missing the necessar
 
 '''
 
-.icon:eye[] `DoubleValueRange` removed
+.icon:eye[set=far] `DoubleValueRange` removed
 [%collapsible%closed]
 ====
 `DoubleValueRange` was replaced by `BigDecimalValueRange`.
@@ -1004,7 +1004,7 @@ or, better yet, start using a collection-based value range if possible.
 
 '''
 
-.icon:eye[] `BestSolutionChangedEvent` is now an interface
+.icon:eye[set=far] `BestSolutionChangedEvent` is now an interface
 [%collapsible%closed]
 ====
 `BestSolutionChangedEvent` has been converted from a class to an interface.

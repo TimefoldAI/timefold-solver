@@ -22,7 +22,7 @@ Without input and output metrics, none of these views have anything model-specif
 
 See xref:running-timefold-solver/service/exposing-metrics.adoc[Exposing metrics] for how to define and implement input and output metrics on your model.
 
-While you're at it, give each metric a proper OpenAPI `title`, `description`, and `format` in its `@Schema` annotation.
+You should also give each metric an OpenAPI `title`, `description`, and `format` in its `@Schema` annotation.
 These surface directly in the platform UI: in solve graphs, the comparison view, and Insights, consumers see the `title` as the metric's label and the `description` as its explanation, not the raw field name.
 A metric without a clear title and description is much harder for a consumer to interpret at a glance.
 

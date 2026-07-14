@@ -81,7 +81,7 @@ Model registration:: The act of publishing your model's descriptor and container
 See xref:deploying-to-platform/getting-started.adoc[Getting started: deploying to the platform] for the full walkthrough.
 
 [#_model_identifier]
-Model identifier:: Made up of your model's bare id and its API version, combined as `<model>_<version>` (for example `schooltimetabling_v1`).
+Model identifier:: Made up of your model's bare ID and its API version, combined as `<model>_<version>` (for example `schooltimetabling_v1`).
 This is what appears in the consumer-facing API path (`/api/models/<model>/<version>`). The version comes from `timefold.application.version`.
 
 [#_registration_key]

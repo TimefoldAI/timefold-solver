@@ -9,7 +9,7 @@ include::../_attributes.adoc[]
 This guide continues from xref:quickstart/service/getting-started.adoc[Getting started: building a service], where you built the School Timetabling model as a service.
 It walks you through deploying that same model to Timefold Platform, so it can be reached through a managed, multi-tenant REST API instead of `mvn quarkus:dev` on your own machine.
 
-For the reasoning behind why you'd want to do this, see xref:deploying-to-platform/introduction.adoc[Deploying to the Timefold Platform].
+Learn more about xref:deploying-to-platform/introduction.adoc[Deploying to the Timefold Platform].
 
 include::_preview-note.adoc[]
 
@@ -58,7 +58,7 @@ The Enterprise Edition requires a license key to function at runtime, as describ
 Building with the Enterprise Edition does not require a license; a license is only checked when the model actually runs.
 When you deploy to Timefold Platform, the platform provides that license for you, so you don't need one of your own just to follow this guide.
 
-You still may want a license if you want to run your Enterprise Edition build locally, for example to test the model with `mvn quarkus:dev` before deploying it.
+You may still want a license if you want to run your Enterprise Edition build locally, for example to test the model with `mvn quarkus:dev` before deploying it.
 Every new account on the xref:commercial-editions/license-management.adoc[Timefold License Manager] starts with a free, time-limited Enterprise trial, so you can create and download fully functional Enterprise Edition license files without talking to sales first.
 We also offer free licenses to non-profit organizations and for academic research.
 
@@ -94,7 +94,7 @@ Build and deploy your model in a single command.
 mvn clean package -Denterprise=true timefold:deploy
 ----
 
-=== Preview without pushing container
+=== Preview without pushing the container
 To preview what would happen without actually pushing the container image or registering the model, add `-Dtimefold.dryRun=true`.
 This logs the requests that would have been made instead of sending them.
 

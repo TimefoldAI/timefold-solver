@@ -31,10 +31,10 @@
       The 'revision' property value is conserved by the flatten-maven-plugin, so the model project does not override it.
     -->
     <version.ai.timefold.solver>${revision}</version.ai.timefold.solver>
-    <version.ch.qos.logback>1.5.37</version.ch.qos.logback>
+    <version.ch.qos.logback>1.5.38</version.ch.qos.logback>
     <version.com.networknt.json-schem-validator>1.5.9</version.com.networknt.json-schem-validator>
     <version.jakarta.enterprise.cdi-api>4.1.0</version.jakarta.enterprise.cdi-api>
-    <version.io.quarkus>3.36.3</version.io.quarkus>
+    <version.io.quarkus>3.37.2</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.26.1</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.7</version.org.assertj>
@@ -42,7 +42,7 @@
     <version.org.eclipse.microprofile.config>3.1.1</version.org.eclipse.microprofile.config>
     <version.org.freemarker>2.3.34</version.org.freemarker>
     <version.org.jspecify>1.0.0</version.org.jspecify>
-    <version.org.junit.jupiter>6.1.1</version.org.junit.jupiter>
+    <version.org.junit.jupiter>6.1.2</version.org.junit.jupiter>
     <version.org.mapstruct>1.6.3</version.org.mapstruct>
     <version.org.openrewrite.recipe>3.34.0</version.org.openrewrite.recipe>
     <version.org.testcontainers>2.0.5</version.org.testcontainers>
@@ -50,7 +50,7 @@
     <version.org.wiremock>3.13.2</version.org.wiremock>
     <version.ow2.asm>9.10.1</version.ow2.asm>
     <!-- Upgrade Jackson and its annotations together; otherwise there may be runtime errors. -->
-    <version.tools.jackson>3.2.0</version.tools.jackson>
+    <version.tools.jackson>3.2.1</version.tools.jackson>
     <version.com.fasterxml.jackson.core>2.22</version.com.fasterxml.jackson.core>
 
     <!-- ************************************************************************ -->
