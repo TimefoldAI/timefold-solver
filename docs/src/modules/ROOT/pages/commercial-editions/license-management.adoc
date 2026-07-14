@@ -17,6 +17,8 @@ Your account and company are created immediately, and you're given a free, time-
 
 The first user to register for a company automatically becomes that company's *admin*.
 
+NOTE: You can change who holds the *admin* role at any time; see xref:commercial-editions/license-management.adoc#_change_a_users_role_or_remove_a_user[Change a user's role or remove a user].
+
 When the trial ends, you need a paid subscription to keep creating new licenses.
 
 == Managing licenses
