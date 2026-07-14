@@ -41,7 +41,7 @@ If exceptions force a change anyway (for example, someone calls in sick), minimi
 * _Draft_
 +
 Upcoming time periods after the published window that can change freely.
-They contain movable planning entities, except for any that are xref:domain-modeling/modeling-planning-problems.adoc#pinDownPlanningEntities[pinned by a user].
+They contain movable planning entities, except for any that are xref:domain-modeling/modeling-planning-problems.adoc#pinnedPlanningEntities[pinned by a user].
 +
 ** The first part of the draft, called the final draft, will be published in the next run, so these entities change one last time.
 The publishing frequency (for example, once per week) determines how many time periods move from _draft_ to _published_ each run.
