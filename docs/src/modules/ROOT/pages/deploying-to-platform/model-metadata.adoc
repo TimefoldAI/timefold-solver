@@ -180,7 +180,7 @@ This profile is what consumers get out of the box, before they add any profile o
 | Whether the default profile takes live traffic into account. Defaults to `false`.
 
 | `ai.timefold.model.default-config.termination.spent-limit`
-| The default maximum solving time, in the https://www.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm[ISO 8601 duration format]. This property is *required*.
+| The default maximum solving time, in the https://en.wikipedia.org/wiki/ISO_8601#Durations[ISO 8601 duration format]. This property is *required*.
 
 | `ai.timefold.model.default-config.termination.unimproved-spent-limit`
 | The default unimproved time limit. If not set, https://docs.timefold.ai/timefold-solver/latest/optimization-algorithms/overview#diminishedReturnsTermination[Diminished Returns termination] is used instead.
