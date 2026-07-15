@@ -158,24 +158,11 @@ The key field to capture is `metadata.id` — you will need it to poll for resul
 [source,json]
 ----
 {
-  "metadata": {
     "id": "7f3a91bc-4e2d-4c1a-b8f6-1234567890ab", <1>
     "name": "my-run",
     "solverStatus": "SOLVING_SCHEDULED", <2>
-    "score": null,
     "submitDateTime": "2025-06-01T09:00:00Z",
-    "startDateTime": null,
-    "activeDateTime": null,
-    "completeDateTime": null,
-    "shutdownDateTime": null,
-    "tags": ["production", "monday"],
-    "validationResult": {
-      "summary": "NO_ISSUES",
-      "errors": [],
-      "warnings": []
-    }
-  },
-  "modelOutput": null
+    "tags": ["production", "monday"]
 }
 ----
 <1> Store this `id` to poll for results.
