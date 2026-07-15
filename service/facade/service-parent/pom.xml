@@ -273,6 +273,8 @@
             <updatePomFile>true</updatePomFile>
             <flattenMode>resolveCiFriendliesOnly</flattenMode>
             <keepCommentsInPom>true</keepCommentsInPom>
+            <outputDirectory>${project.build.directory}</outputDirectory>
+            <flattenedPomFilename>.flattened-pom.xml</flattenedPomFilename>
           </configuration>
           <executions>
             <execution>
@@ -335,6 +337,8 @@
                   <version>${version.ai.timefold.solver}</version>
                   <type>jar</type>
                   <overWrite>true</overWrite>
+                  <!-- Quarkus container-image-jib copies files into the resulting image only from
+                       the fixed src/main/jib directory. -->
                   <outputDirectory>src/main/jib/timefold</outputDirectory>
                   <destFileName>diagnostic-tools.jar</destFileName>
                 </artifactItem>
@@ -348,6 +352,21 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <!-- Make sure the file gets deleted upon the clean plugin execution.-->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>src/main/jib/timefold</directory>
+              <includes>
+                <include>diagnostic-tools.jar</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
       </plugin>
     </plugins>
   </build>
