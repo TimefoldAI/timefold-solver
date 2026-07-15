@@ -15,6 +15,10 @@ import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElemen
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementEntity;
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementSolution;
 import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataListElementValue;
+import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataMixedListElementEntity;
+import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataMixedListElementSolution;
+import ai.timefold.solver.core.testdomain.shadow.list_element.TestdataMixedListElementValue;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 
@@ -95,6 +99,36 @@ class ListElementShadowVariableTest {
         SolutionManager.updateShadowVariables(solution);
         assertThat(entityA.getLastEndTime()).isEqualTo(2);
         assertThat(entityB.getLastEndTime()).isEqualTo(11);
+    }
+
+    @Test
+    void basicVariableChangeRetriggersAggregateWithoutListChange() {
+        var value1 = new TestdataMixedListElementValue("v1");
+        var value2 = new TestdataMixedListElementValue("v2");
+        value1.setDuration(2);
+        value2.setDuration(3);
+        var entity = new TestdataMixedListElementEntity("A");
+        entity.setValues(new ArrayList<>(List.of(value1, value2)));
+
+        var solution = new TestdataMixedListElementSolution();
+        solution.setEntities(List.of(entity));
+        solution.setValues(List.of(value1, value2));
+
+        var scoreDirector =
+                PlannerTestUtils.mockScoreDirector(TestdataMixedListElementSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.triggerVariableListeners();
+        assertThat(entity.getTotalDuration()).isEqualTo(3 + 4);
+
+        // Change a genuine basic variable on a single element; no list variable event fires.
+        scoreDirector.beforeVariableChanged(value1, "duration");
+        value1.setDuration(5);
+        scoreDirector.afterVariableChanged(value1, "duration");
+        scoreDirector.triggerVariableListeners();
+
+        // The aggregate is retriggered through the element edge alone.
+        assertThat(value1.getPaddedDuration()).isEqualTo(6);
+        assertThat(entity.getTotalDuration()).isEqualTo(6 + 4);
     }
 
     @Test
