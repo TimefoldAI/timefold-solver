@@ -110,9 +110,6 @@ The request body is a JSON envelope with two required top-level fields: `config`
       },
       "maxThreadCount": 1,
       "tags": ["production", "monday"]
-    },
-    "model": {
-      "overrides": {}
     }
   },
   "modelInput": { <1>
@@ -375,8 +372,10 @@ Depending on the model, it may also contain `inputMetrics` and `kpis`.
 ----
 
 The `score` field encodes solution quality.
-A score with `0hard` means all hard constraints are satisfied — the solution is feasible.
+A score with `0hard` means all hard constraints are satisfied and the solution is feasible.
 Negative soft scores indicate soft constraint violations; closer to zero is better.
+
+See xref:constraints-and-score/overview.adoc#whatIsAScore[score documentation] for more details.
 
 The timestamps track each phase of the optimization lifecycle:
 
