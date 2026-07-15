@@ -7,11 +7,9 @@ import static ai.timefold.solver.service.definition.internal.platform.Environmen
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -98,7 +96,6 @@ public class SolverWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolverWorker.class);
     private static final long COMPLETION_TIMEOUT = 60_000;
-    private static final long EMITTER_TIMEOUT = 5;
 
     private Optional<String> modelName;
     private Optional<String> modelVersion;
@@ -245,14 +242,24 @@ public class SolverWorker {
                 java, osArch, os, cores, totalMemory, memoryLimit, nodeName);
     }
 
+    /**
+     * Asynchronoysly emits events without waiting for acknowledge.
+     * Receivers/cosnumers are responsable to ensuring processing while solver continues processing.
+     * 
+     * @param emitter
+     * @param event
+     */
     private void sendEvent(Emitter emitter, AbstractEvent event) {
         try {
-            emitter.send(event).toCompletableFuture().get(EMITTER_TIMEOUT, TimeUnit.SECONDS);
-        } catch (ExecutionException | InterruptedException | TimeoutException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            LOGGER.error("Error sending event: {}, message: {}", event, e.getMessage(), e);
+            CompletionStage<Void> stage = emitter.send(event);
+            stage.whenComplete((v, ex) -> {
+                if (ex == null) {
+                    return;
+                }
+                LOGGER.error("Error sending event: {}, message: {}", event, ex.getMessage(), ex);
+            });
+        } catch (IllegalStateException e) {
+            LOGGER.error("Unable to send event: {}, message: {}", event, e.getMessage(), e);
         }
     }
 
