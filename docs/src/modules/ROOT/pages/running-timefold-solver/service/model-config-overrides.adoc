@@ -1,5 +1,5 @@
 = Model configuration overrides
-:page-aliases: service/constraint-weights.adoc, service/constraint-overrides.adoc
+:page-aliases: service/constraint-weights.adoc, service/constraint-overrides.adoc, running-timefold-solver/service/constraint-weights.adoc, running-timefold-solver/service/constraint-overrides.adoc
 :description: Learn how to implement per-request solver configuration using ModelConfigOverrides and @ConstraintReference.
 :doctype: book
 :sectnums:
