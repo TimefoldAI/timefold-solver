@@ -133,6 +133,7 @@ class TimetableDemoDataGenerator : DemoDataGenerator {
 --
 ====
 
+When implementing these generator methods, construct a `ModelRequest` to wrap the input.
 `ModelRequest` has two constructors: `ModelRequest(ModelInput_ modelInput)`, which defaults the configuration to null, and `ModelRequest(Configuration<ModelConfigurationOverrides_> configuration, ModelInput_ modelInput)`, if you also want to set a non-default configuration.
 There is no constructor that takes the model config overrides directly; overrides are wrapped in a `Configuration` object first.
 
