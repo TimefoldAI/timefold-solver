@@ -190,7 +190,7 @@ GET /<root>/{id}
 ----
 
 Returns the current state of a submitted run, including the best solution found so far.
-The response structure is identical to the submit response.
+Unlike the submit response (which returns `Metadata` only), this endpoint returns the full response envelope (`metadata`, `modelOutput`, `inputMetrics`, `kpis`).
 
 === Solver status lifecycle
 
