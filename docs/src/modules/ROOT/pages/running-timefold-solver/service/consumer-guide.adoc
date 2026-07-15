@@ -286,12 +286,12 @@ GET /<root>/{id}/events
 
 Opens an SSE stream for a submitted run.
 The service sends a `Metadata` JSON event whenever the run's metadata is updated (typically on status changes and when a new best solution is found).
-The stream closes automatically once the run reaches a terminal state (`SOLVING_COMPLETED`, `SOLVING_FAILED`, or `SOLVING_INCOMPLETE`).
+The stream closes automatically once the run reaches a final solving state (`SOLVING_COMPLETED`, `SOLVING_FAILED`, or `SOLVING_INCOMPLETE`).
 
-If the run is already in a terminal state (`SOLVING_COMPLETED`, `SOLVING_FAILED`, `SOLVING_INCOMPLETE`, or `DATASET_INVALID`) when you connect, the service returns HTTP 410 Gone.
+If the run is already in a final state (including `DATASET_INVALID`) when you connect, the service returns HTTP 410 Gone.
 In that case, retrieve the final result with a regular `GET /<root>/{id}` call.
 
-The endpoint accepts an optional `?status=` query parameter to receive events only for the specified statuses.
+The endpoint accepts an optional, repeatable `status` query parameter (for example, `?status=SOLVING_COMPLETED&status=SOLVING_FAILED`) to receive events only for the specified statuses.
 Omit it to receive all transitions.
 
 .Example: stream status events until complete
