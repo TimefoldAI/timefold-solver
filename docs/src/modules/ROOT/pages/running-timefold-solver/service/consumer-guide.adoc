@@ -281,7 +281,7 @@ while true; do
   echo "Status: $STATUS"
 
   case $STATUS in
-    SOLVING_COMPLETED|SOLVING_FAILED|NOT_SOLVING)
+    SOLVING_COMPLETED|SOLVING_FAILED|SOLVING_INCOMPLETE|DATASET_INVALID)
       echo "Done. Fetching full result..."
       curl -s http://localhost:8080/v1/timetables/$ID | jq '.metadata.score'
       break
@@ -301,7 +301,7 @@ GET /<root>/{id}/events
 ----
 
 Opens an SSE stream for a submitted run.
-The service sends a `Metadata` JSON event each time the run's status changes.
+The service sends a `Metadata` JSON event whenever the run's metadata is updated (typically on status changes and when a new best solution is found).
 The stream closes automatically once the run reaches a terminal state (`SOLVING_COMPLETED`, `SOLVING_FAILED`, or `SOLVING_INCOMPLETE`).
 
 If the run is already in a terminal state when you connect, the service returns HTTP 410 Gone.
