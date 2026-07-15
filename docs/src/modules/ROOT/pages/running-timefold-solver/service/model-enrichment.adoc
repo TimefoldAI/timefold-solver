@@ -27,8 +27,8 @@ Common use cases include:
 Constraint streams execute many times per second during solving.
 Any computation that can be done once before solving starts should be moved into model enrichment.
 
-WARNING: Never do computation which involves a remote call, a database query,
-or a complex algorithm while the solver is running (e.g. inside the constraint streams or shadow variables).
+WARNING: Never do computations that involve remote calls, database queries,
+or complex algorithms while the solver is running (e.g. inside constraint streams or shadow variables).
 This is an antipattern and will make the solver unusably slow.
 
 [#bestPractices]
