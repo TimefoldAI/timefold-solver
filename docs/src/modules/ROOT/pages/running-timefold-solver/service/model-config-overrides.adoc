@@ -1,0 +1,362 @@
+= Model configuration overrides
+:page-aliases: service/constraint-weights.adoc, service/constraint-overrides.adoc
+:description: Learn how to implement per-request solver configuration using ModelConfigOverrides and @ConstraintReference.
+:doctype: book
+:sectnums:
+:icons: font
+
+Model configuration overrides allow callers to tune the solver's objective function per request —
+adjusting how much weight is given to individual constraints, and passing constraint-specific parameters —
+without modifying the solver model itself.
+
+Three components work together to deliver this:
+
+[cols="1,3",options="header"]
+|===
+| Component | Role
+
+| `ModelConfigOverrides`
+| Marker interface. Your implementing class carries the tunable fields callers can set per request.
+
+| `@ConstraintReference`
+| Links a field to a specific constraint, either as a weight multiplier or as a typed parameter value.
+
+| `ModelConfig<T>`
+| Runtime container. Carries the caller's overrides instance into `ModelConvertor.toSolverModel()`.
+|===
+
+include::../../constraints-and-score/_constraint-config-shared.adoc[]
+
+[#_model_config_overrides]
+== ModelConfigOverrides
+
+`ModelConfigOverrides` is a marker interface from `ai.timefold.solver.service.definition.api`.
+Implement it with a plain class that declares all fields a caller can override per request.
+
+Fields linked to a specific constraint are annotated with `@ConstraintReference`.
+Fields that represent global configuration, not tied to any single constraint, require no annotation.
+
+[tabs]
+====
+Java::
++
+--
+[source,java,options="nowrap"]
+----
+public final class MyPlanConfigOverrides implements ModelConfigOverrides {
+
+    // Constraint weight fields
+    @ConstraintReference(MyConstraints.MINIMIZE_TRAVEL_TIME)
+    private long minimizeTravelTimeWeight = 1L;
+
+    @ConstraintReference(MyConstraints.PREFER_EARLY_COMPLETION)
+    private long preferEarlyCompletionWeight = 0L;
+
+    // Constraint parameter field
+    @ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
+    private Duration bufferBeforeShiftEnd = Duration.ZERO;
+
+    // Global config — not constraint-specific, no annotation required
+    private TravelTimeAdjustment travelTimeAdjustment;
+
+    // Standard getters, setters, and optional fluent "with" builders ...
+}
+----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+data class MyPlanConfigOverrides(
+    @ConstraintReference(MyConstraints.MINIMIZE_TRAVEL_TIME)
+    val minimizeTravelTimeWeight: Long = 1L,
+
+    @ConstraintReference(MyConstraints.PREFER_EARLY_COMPLETION)
+    val preferEarlyCompletionWeight: Long = 0L,
+
+    @ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
+    val bufferBeforeShiftEnd: Duration = Duration.ZERO,
+
+    val travelTimeAdjustment: TravelTimeAdjustment? = null
+) : ModelConfigOverrides
+----
+--
+====
+
+[NOTE]
+====
+Non-constraint global configuration that needs to vary per request can also live in this class.
+====
+
+[NOTE]
+====
+Be careful not to make your model overly configurable as that impacts usability.
+Usually, it doesn't make sense to allow weight overrides for _hard_ constraints.
+====
+
+[#_constraint_reference]
+== @ConstraintReference
+
+`@ConstraintReference` wires a field in your `ModelConfigOverrides` implementation to a named constraint.
+
+[cols="1,1,1,3",options="header"]
+|===
+| Attribute | Type | Default | Purpose
+
+| `value`
+| `String`
+| _(required)_
+| The constraint name. Must match the identifier used in your `ConstraintProvider`.
+
+| `kind`
+| `ParameterKind`
+| `WEIGHT`
+| Whether this field is a weight multiplier or a typed parameter passed into the constraint's logic.
+|===
+
+[#_weight_mode]
+=== Weight mode
+
+The default mode. Annotate a `long` field to make it a weight multiplier for that constraint.
+The value scales the constraint's score contribution relative to other soft constraints.
+
+A value of `0` effectively disables the constraint for that request.
+Higher values increase the constraint's priority relative to others.
+
+[source,java]
+----
+// Active by default
+@ConstraintReference(MyConstraints.MINIMIZE_TRAVEL_TIME)
+private long minimizeTravelTimeWeight = 1L;
+
+// Disabled by default; callers can enable it by setting the weight above 0
+@ConstraintReference(MyConstraints.PREFER_GROUPING_CO_LOCATED_VISITS)
+private long preferGroupingCoLocatedVisitsWeight = 0L;
+----
+
+[#_parameter_mode]
+=== Parameter mode
+
+When `kind = ParameterKind.PARAMETER`, the field supplies a typed value into the constraint's logic
+rather than scaling its score.
+Any serializable Java type is supported: `Duration`, `String`, `Double`, custom enums, and so on.
+
+[source,java]
+----
+@ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
+private Duration bufferBeforeShiftEnd = Duration.ZERO;
+
+@ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
+private String minimumPriorityLevel = "medium";
+----
+
+[#_multiple_references]
+=== Multiple references to the same constraint
+
+A single constraint can be referenced by multiple fields simultaneously —
+one as a weight and any number as parameters.
+This is the standard pattern when a constraint is both tunable in importance and requires domain-specific threshold values.
+
+[source,java]
+----
+// Controls importance
+@ConstraintReference(MyConstraints.MINIMIZE_COMPLETION_RISK)
+private long minimizeCompletionRiskWeight = 1L;
+
+// Controls threshold value — same constraint, different kind
+@ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
+private Duration bufferBeforeShiftEnd = Duration.ZERO;
+
+@ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
+private String minimumPriorityLevel = "medium";
+----
+
+[TIP]
+====
+Define all constraint names as `public static final String` constants in your `ConstraintProvider`
+and reference them symbolically in `@ConstraintReference`.
+This prevents typos and enables IDE navigation between the annotation and the constraint definition.
+====
+
+
+[#applyingOverrides]
+[#serviceWeightOverrides]
+== Applying overrides in ModelConvertor
+
+The `ModelConvertor` implementation translates the caller's overrides into the data structures the
+solver engine expects.
+It receives a `ModelConfig<T>` in `toSolverModel()` and must handle the case where the caller
+provided no overrides at all — `modelConfig` itself, or `modelConfig.overrides()`, may be `null`.
+
+[IMPORTANT]
+====
+This requires a custom `ModelConvertor`.
+If your `SolverModel` also serves as `ModelInput` and `ModelOutput`, for example because you extend `AbstractSimpleModel`, the framework uses a trivial `ModelConvertor` by default, which ignores `modelConfig` entirely.
+With only the trivial convertor in place, constraint weight overrides submitted in a request are silently dropped: the request succeeds, but the override never reaches the solver.
+Provide your own `ModelConvertor` implementation, as shown below, to actually apply them.
+====
+
+[#_reading_constraint_weights]
+=== Reading constraint weights
+
+Build a `Map<String, Score>` from constraint names to score values, then pass it to
+`ConstraintWeightOverrides.of(...)` when constructing the solver model.
+
+When no overrides are provided, fall back to a default-constructed instance of your overrides class
+so that all defaults are centralised in one place.
+
+[tabs]
+====
+Java::
++
+--
+[source,java,options="nowrap"]
+----
+private static Map<String, HardMediumSoftScore>
+        getConstraintWeightOverrides(ModelConfig<MyPlanConfigOverrides> modelConfig) {
+
+    MyPlanConfigOverrides overrides =
+            modelConfig != null && modelConfig.overrides() != null
+                    ? modelConfig.overrides()
+                    : new MyPlanConfigOverrides(); // defaults come from field initialisers
+
+    return Map.ofEntries(
+            Map.entry(MyConstraints.MINIMIZE_TRAVEL_TIME,
+                    HardMediumSoftScore.ofSoft(overrides.getMinimizeTravelTimeWeight())),
+            Map.entry(MyConstraints.PREFER_EARLY_COMPLETION,
+                    HardMediumSoftScore.ofSoft(overrides.getPreferEarlyCompletionWeight())),
+            Map.entry(MyConstraints.MINIMIZE_COMPLETION_RISK,
+                    HardMediumSoftScore.ofSoft(overrides.getMinimizeCompletionRiskWeight()))
+    );
+}
+----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+private fun getConstraintWeightOverrides(
+        modelConfig: ModelConfig<MyPlanConfigOverrides>?): Map<String, HardMediumSoftScore> {
+
+    val overrides = modelConfig?.overrides() ?: MyPlanConfigOverrides()
+
+    return mapOf(
+            MyConstraints.MINIMIZE_TRAVEL_TIME to
+                    HardMediumSoftScore.ofSoft(overrides.minimizeTravelTimeWeight),
+            MyConstraints.PREFER_EARLY_COMPLETION to
+                    HardMediumSoftScore.ofSoft(overrides.preferEarlyCompletionWeight),
+            MyConstraints.MINIMIZE_COMPLETION_RISK to
+                    HardMediumSoftScore.ofSoft(overrides.minimizeCompletionRiskWeight)
+    )
+}
+----
+--
+====
+
+[#_reading_constraint_parameters]
+=== Reading constraint parameters
+
+Extract parameter fields individually into a value object, or pass them directly to the solver model.
+Guard against null the same way as for weights.
+
+[source,java]
+----
+private static ConstraintParameters
+        getConstraintParameters(ModelConfig<MyPlanConfigOverrides> modelConfig) {
+
+    if (modelConfig == null || modelConfig.overrides() == null) {
+        return null;
+    }
+    MyPlanConfigOverrides overrides = modelConfig.overrides();
+    return new ConstraintParameters(
+            overrides.getBufferBeforeShiftEnd(),
+            overrides.getMinimumPriorityLevel()
+    );
+}
+----
+
+Apply both in `toSolverModel()`:
+
+[source,java]
+----
+@Override
+public MySolverModel toSolverModel(
+        MyPlanInput input,
+        ModelConfig<MyPlanConfigOverrides> modelConfig,
+        Optional<MyPlanOutput> previousSolution) {
+
+    Map<String, HardMediumSoftScore> weightOverrides = getConstraintWeightOverrides(modelConfig);
+    ConstraintParameters constraintParams = getConstraintParameters(modelConfig);
+
+    return new MySolverModel(...)
+            .withConstraintWeightOverrides(ConstraintWeightOverrides.of(weightOverrides))
+            .withConstraintParameters(constraintParams);
+}
+----
+
+[#_constraint_parameters_in_solver_model]
+=== ConstraintParameters in the solver model
+
+The `ConstraintParameters` object is stored on the planning solution class and annotated with
+`@ProblemFactProperty`, which makes it visible to the constraint engine.
+
+[source,java]
+----
+@ProblemFactProperty
+private ConstraintParameters constraintParameters;
+----
+
+Because it is a problem fact and not a planning entity, the constraint engine does not iterate over
+it automatically.
+Constraints that need the parameter values must explicitly join against `ConstraintParameters.class`
+in their constraint stream.
+
+[source,java]
+----
+protected Constraint minimizeCompletionRisk(ConstraintFactory factory) {
+    return factory.forEach(MyVisit.class)
+            .join(MyShift.class,
+                    Joiners.equal(MyVisit::getShift, Function.identity()))
+            .join(ConstraintParameters.class)  // <1>
+            .filter((visit, shift, params) ->
+                    visit.getDepartureTime().isAfter(
+                            shift.getEndTime().minus(params.bufferBeforeShiftEnd())))
+            .penalize(HardMediumSoftScore.ONE_SOFT, ...)
+            .asConstraint(MyConstraints.MINIMIZE_COMPLETION_RISK);
+}
+----
+<1> The join has no `Joiners` condition because there is exactly one `ConstraintParameters` instance.
+Every tuple from the preceding stream is paired with it unconditionally.
+
+[NOTE]
+====
+Constraints that do not use any parameter values do not need this join.
+Only add it where the constraint logic actually reads from `ConstraintParameters`.
+====
+
+[#_conventions]
+== Conventions
+
+* *Weight fields are `long` with a positive default.*
+  Use `0L` to disable a constraint by default; use `1L` or higher to enable it.
+  Weight values must be non-negative.
+
+* *Parameter fields carry a sensible domain default.*
+  Use `null` only when the absence of a value is meaningful to the constraint.
+  Otherwise initialise to a safe zero-value. e.g. `Duration.ZERO`, `0.0`, the lowest tier string, and so on.
+
+* *Constraint names are constants.*
+  Define every constraint name as a `public static final String` in your `ConstraintProvider`.
+  Never use inline string literals in `@ConstraintReference`.
+
+* *Global configuration is separate from constraints.*
+  Fields not linked to a specific constraint require no `@ConstraintReference` annotation.
+  Extract and apply them independently in the convertor.
+
+* *Fluent builders are optional but encouraged.*
+  Providing `withX()` methods on your overrides class makes test setup and programmatic request
+  construction significantly more readable.
