@@ -38,6 +38,12 @@
 ** xref:running-timefold-solver/benchmarking-and-tweaking.adoc[leveloffset=+1]
 ** xref:running-timefold-solver/solver-diagnostics.adoc[leveloffset=+1]
 
+* Deploying to the Timefold Platform
+** xref:deploying-to-platform/introduction.adoc[Overview]
+** xref:deploying-to-platform/guide.adoc[Guide]
+** xref:deploying-to-platform/model-metadata.adoc[leveloffset=+1]
+** xref:deploying-to-platform/metrics.adoc[leveloffset=+1]
+
 * Optimization algorithms
 ** xref:optimization-algorithms/overview.adoc[Overview]
 ** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
@@ -81,3 +87,4 @@
 ** xref:constraints-and-score/performance.adoc#constraintProfiling[Constraint profiling]
 ** xref:commercial-editions/multistage-moves.adoc[leveloffset=+1]
 ** xref:running-timefold-solver/library/library-integration.adoc#throttlingBestSolutionEvents[Throttling best solution events]
+** xref:commercial-editions/license-management.adoc[License management]
