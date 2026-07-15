@@ -28,7 +28,7 @@ include::../shared/_solutionsourcecode.adoc[]
 To complete this guide, you need:
 
 * **Tools**
-** {java-version} or higher
+** JDK {java-version} or higher
 ** Maven
 ** An IDE of your choice (IntelliJ IDEA, VSCode, ...)
 
@@ -476,7 +476,8 @@ See xref:running-timefold-solver/service/rest-api.adoc#deliberateAPIChanges[Deli
 Since this is a "Getting Started" guide, not everything is covered yet.
 
 * Learn about improvements you can make to your model:
-** How to enrich your model with xref:running-timefold-solver/service/modeling-changes.adoc[Model Enrichment].
+
+** How to enrich your model with xref:running-timefold-solver/service/modeling-changes.adoc[model enrichment].
 ** How to configure your xref:running-timefold-solver/service/rest-api.adoc[REST API] with validations, custom endpoints, etc.
 ** How to xref:deploying-to-platform/guide.adoc[deploy this model to Timefold Platform].
 ** How to xref:deploying-to-platform/metrics.adoc[use input and output metrics] to make platform features like solve graphs, comparison, and Insights more useful.
