@@ -239,7 +239,7 @@ Use `GET /<root>/{id}/metadata` for a lightweight status check when intermediate
 
 | *Terminal state handling*
 | Detect by checking `solverStatus` on each response.
-| Stream closes automatically when the run reaches a terminal state.
+| Stop reading after the terminal `solverStatus` event and close the connection client-side.
 |===
 
 === Polling
@@ -286,8 +286,7 @@ GET /<root>/{id}/events
 
 Opens an SSE stream for a submitted run.
 The service sends a `Metadata` JSON event whenever the run's metadata is updated (typically on status changes and when a new best solution is found).
-The stream closes automatically once the run reaches a final solving state (`SOLVING_COMPLETED`, `SOLVING_FAILED`, or `SOLVING_INCOMPLETE`).
-
+The service stops emitting events once the run reaches a final solving state (`SOLVING_COMPLETED`, `SOLVING_FAILED`, or `SOLVING_INCOMPLETE`); close the connection client-side after receiving the terminal event.
 If the run is already in a final state (including `DATASET_INVALID`) when you connect, the service returns HTTP 410 Gone.
 In that case, retrieve the final result with a regular `GET /<root>/{id}` call.
 
