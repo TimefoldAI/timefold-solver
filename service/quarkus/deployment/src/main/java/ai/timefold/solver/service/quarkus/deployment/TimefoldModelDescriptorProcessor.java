@@ -513,9 +513,9 @@ class TimefoldModelDescriptorProcessor {
 
     protected static void validateApplicationVersion(String version) {
         if (version == null || version.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The application version is missing. Set the '" + APPLICATION_VERSION_PROPERTY
-                            + "' property (e.g. in application.properties) so the build can proceed.");
+            throw new IllegalArgumentException("""
+                    The application version is missing. 
+                    Set the '%s' property (e.g. in application.properties) so the build can proceed.""".formatted(APPLICATION_VERSION_PROPERTY));
         }
     }
 
