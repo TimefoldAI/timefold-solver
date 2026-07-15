@@ -163,7 +163,7 @@ class TimefoldModelDescriptorProcessor {
 
     private static final String APPLICATION_NAME_PROPERTY = "timefold.application.name";
     private static final String APPLICATION_DESCRIPTION_PROPERTY = "timefold.application.description";
-    public static final String APPLICATION_VERSION_PROPERTY = "timefold.application.version";
+    static final String APPLICATION_VERSION_PROPERTY = "timefold.application.version";
 
     private static final String MODEL_TRIAL_DURATION_PROPERTY = "timefold.model.trial.duration";
     private static final String MODEL_TRIAL_MAX_EXTENSIONS_PROPERTY = "timefold.model.trial.max-extensions";
