@@ -96,7 +96,7 @@ The service starts solving asynchronously and returns a dataset ID immediately.
 
 === Request structure
 
-The request body is a JSON envelope with two required top-level fields: `config` and `modelInput`.
+The request body is a JSON envelope with one required top-level field (`modelInput`) and one optional field (`config`).
 
 [source,json]
 ----
@@ -152,8 +152,8 @@ so you get good results without tuning a fixed timeout per deployment.
 
 === Response
 
-The service responds with HTTP 202 (Accepted) and the initial solving response envelope.
-The key field to capture is `metadata.id` — you will need it to poll for results.
+The service responds with HTTP 202 (Accepted) and a `Metadata` object.
+The key field to capture is `id`, you will need it to poll for results.
 
 [source,json]
 ----
@@ -288,7 +288,7 @@ Opens an SSE stream for a submitted run.
 The service sends a `Metadata` JSON event whenever the run's metadata is updated (typically on status changes and when a new best solution is found).
 The stream closes automatically once the run reaches a terminal state (`SOLVING_COMPLETED`, `SOLVING_FAILED`, or `SOLVING_INCOMPLETE`).
 
-If the run is already in a terminal state when you connect, the service returns HTTP 410 Gone.
+If the run is already in a terminal state (`SOLVING_COMPLETED`, `SOLVING_FAILED`, `SOLVING_INCOMPLETE`, or `DATASET_INVALID`) when you connect, the service returns HTTP 410 Gone.
 In that case, retrieve the final result with a regular `GET /<root>/{id}` call.
 
 The endpoint accepts an optional `?status=` query parameter to receive events only for the specified statuses.
@@ -350,7 +350,7 @@ Depending on the model, it may also contain `inputMetrics` and `kpis`.
     "shutdownDateTime": "2025-06-01T09:05:01Z",
     "tags": ["production", "monday"],
     "validationResult": {
-      "summary": "NO_ISSUES",
+      "summary": "OK",
       "errors": [],
       "warnings": []
     }
@@ -472,7 +472,7 @@ If the input fails validation, the response includes error details in `metadata.
 ----
 {
   "metadata": {
-    "solverStatus": "SOLVING_FAILED",
+    "solverStatus": "DATASET_INVALID",
     "validationResult": {
       "summary": "ERRORS",
       "errors": ["Duplicate teacher names found."],
