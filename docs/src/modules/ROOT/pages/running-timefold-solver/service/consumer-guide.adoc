@@ -134,7 +134,7 @@ If omitted, the service uses its configured default termination (for example, fr
 
 | `termination.unimprovedSpentLimit`
 | Stops solving if no score improvement is found within this duration.
-If omitted, the xref:../../optimization-algorithms/overview.adoc#diminishedReturnsTermination[diminished returns termination] is used — this is the recommended default.
+If omitted, the xref:optimization-algorithms/overview.adoc#diminishedReturnsTermination[diminished returns termination] is used — this is the recommended default.
 
 | `maxThreadCount`
 | Number of solver threads. Defaults to 1.
