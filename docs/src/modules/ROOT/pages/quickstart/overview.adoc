@@ -20,7 +20,7 @@ Pick the approach that best fits your architecture:
 |===
 a|
 [.text-center]
-icon:server[4x]
+icon:server[4x,set=fas]
 
 [.text-center]
 *xref:#runAsAService[Run as a service]*
@@ -29,7 +29,7 @@ Deploy a fully isolated optimization service. This opinionated approach reduces 
 
 a|
 [.text-center]
-icon:cubes[4x]
+icon:cubes[4x,set=fas]
 
 [.text-center]
 *xref:#embedAsALibrary[Embed as a library]*

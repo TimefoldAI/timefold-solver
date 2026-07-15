@@ -87,9 +87,12 @@ The `<root>` is determined by the @Path annotation on the interface extending Mo
 - `DELETE /<root>/\{id\}`: Terminate a dataset optimization run
 
 If your model provides xref:./demo-data.adoc[demo data], the following endpoints are also created.
+These are *not* nested under `<root>`: they only share its version prefix (for example `/v1`), not the rest of the path.
+So for a `@Path("/v1/timetables")` resource, the demo data endpoints are at `/v1/demo-data`, not `/v1/timetables/demo-data`.
+If your resource path has no version prefix, the demo data endpoints are served at the root, without a version.
 
-- `GET /<root>/demo-data`: Retrieve all available demo dataset ids.
-- `GET /<root>/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier
+- `GET /v<version>/demo-data`: Retrieve all available demo dataset ids.
+- `GET /v<version>/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier
 
 See the xref:./consumer-guide.adoc[service consumer guide] for information on how consumers of the service should interact with these API endpoints.
 
@@ -165,6 +168,13 @@ Additionally, more fields might be added for specific model implementations:
 - `inputMetrics`: metrics about the input of the planning problem. See: xref:./exposing-metrics.adoc#modelInputMetrics[Input Metrics]
 - `kpis`: metrics about the output of the planning problem. See: xref:./exposing-metrics.adoc#modelOutputMetrics[Output Metrics]
 
+[NOTE]
+====
+This envelope is represented in Java/Kotlin by the `ModelResponse` record (`ai.timefold.solver.service.definition.api.domain.ModelResponse`).
+Its accessor is named `outputMetrics()`, not `kpis()`; only the JSON serialization uses the `kpis` key (via `@JsonProperty("kpis")`).
+The score itself is not a top-level field: it's nested inside `metadata.score`, not `metadata.run.score` or a top-level `score`.
+====
+
 .Example Response
 [source,json]
 ----
@@ -235,7 +245,7 @@ Java::
 [source,java,options="nowrap"]
 ----
 @ApplicationScoped
-public class TimetableConvertor implements ModelConvertor<HardSoftLongScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+public class TimetableConvertor implements ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     @Override
     public Timetable toSolverModel(TimetableDto modelInput, ModelConfig<EmptyModelConfigOverrides> modelConfig,
@@ -262,7 +272,7 @@ Kotlin::
 [source,kotlin,options="nowrap"]
 ----
 @ApplicationScoped
-class TimetableConvertor : ModelConvertor<HardSoftLongScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+class TimetableConvertor : ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     override fun toSolverModel(modelInput: TimetableDto, modelConfig: ModelConfig<EmptyModelConfigOverrides>,
             lastModelOutput: Optional<TimetableDto>): Timetable {
@@ -284,7 +294,7 @@ class TimetableConvertor : ModelConvertor<HardSoftLongScore, TimetableDto, Empty
 [NOTE]
 ====
 This mechanism should only be used for ModelInput -> SolverModel -> ModelOutput mapping.
-For enhancing the SolverModel, use the xref:./modeling-changes.adoc#solverModelEnrichment[Model Enrichment] mechanism instead.
+For enhancing the SolverModel, use the xref:./model-enrichment.adoc#solverModelEnrichment[Model Enrichment] mechanism instead.
 ====
 
 [#validatingRestInput]

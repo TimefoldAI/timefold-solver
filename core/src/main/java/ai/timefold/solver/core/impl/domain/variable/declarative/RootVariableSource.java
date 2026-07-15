@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
@@ -126,6 +127,16 @@ public record RootVariableSource<Entity_, Value_>(
                 }
 
                 var isVariable = isVariable(solutionMetaModel, memberAccessor.getDeclaringClass(), pathPart.name());
+                if (isVariable
+                        && getAnnotation(memberAccessor.getDeclaringClass(), pathPart.name(),
+                                PlanningListVariable.class) != null) {
+                    throw new IllegalArgumentException(
+                            """
+                                    The source path (%s) starting from root class (%s) accesses a planning list variable (%s), which is not allowed.
+                                    Maybe remove the source path (%s) from the @%s?"""
+                                    .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart.name(),
+                                            variablePath, ShadowSources.class.getSimpleName()));
+                }
                 chainToVariable.add(memberAccessor);
                 for (var chain : chainStartingFromSourceVariableList) {
                     chain.add(memberAccessor);

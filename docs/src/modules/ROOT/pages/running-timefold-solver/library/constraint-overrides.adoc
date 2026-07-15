@@ -9,8 +9,8 @@
 
 include::../../constraints-and-score/_constraint-config-shared.adoc[]
 
-[#applyingOverrides]
 [#libraryWeightOverrides]
+[#applyingOverrides]
 == Applying overrides
 
 Populate `ConstraintWeightOverrides` with the desired weights and set it on the solution before solving:
@@ -76,7 +76,7 @@ For example, a constraint may have to switch the minimum required pause length b
 based on the laws of the country that the data set is dealing with.
 
 To achieve this, you could have many variants of the same constraint in `ConstraintProvider`
-and disable some of them using <<applyingOverrides,overrides>>.
+and disable some of them using xref:#applyingOverrides[overrides].
 To avoid the code duplication that this would have caused,
 it is arguably better to have a single constraint that can be parameterized.
 This section shows how to achieve this

@@ -141,6 +141,12 @@ Like input metrics, they are exposed through the xref:./rest-api.adoc[REST API] 
 It is therefore necessary to add xref:./rest-api.adoc#openAPISpecification[OpenAPI Specification] annotations to the fields.
 ====
 
+[WARNING]
+====
+If a metric is a timestamp, use `java.time.OffsetDateTime` or `java.time.Instant`, not `java.time.LocalDateTime`.
+The platform's `date-time` format validation expects a timezone offset (for example `2027-02-02T09:00:00Z`); `LocalDateTime` serializes without one and fails validation.
+====
+
 .Example for School Timetabling
 [tabs]
 ====
