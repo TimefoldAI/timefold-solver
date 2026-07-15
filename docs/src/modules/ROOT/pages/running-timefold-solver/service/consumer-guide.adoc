@@ -37,7 +37,7 @@ This is the fastest way to test connectivity with the service.
 
 [source]
 ----
-GET /<root>/demo-data
+GET /v<version>/demo-data
 ----
 
 Returns a list of available demo dataset identifiers and their descriptions.
@@ -65,7 +65,7 @@ Returns a list of available demo dataset identifiers and their descriptions.
 
 [source]
 ----
-GET /<root>/demo-data/{demoDataId}
+GET /v<version>/demo-data/{demoDataId}
 ----
 
 Returns a fully formed solving request body, the same structure expected by `POST /<root>`.
@@ -75,12 +75,12 @@ You can submit it directly or use it as a template to understand the expected in
 [source,bash]
 ----
 # Retrieve the demo dataset
-curl http://localhost:8080/v1/timetables/demo-data/BASIC
+curl http://localhost:8080/v1/demo-data/BASIC
 
 # Pipe it directly into a solve request
 curl -X POST http://localhost:8080/v1/timetables \
   -H "Content-Type: application/json" \
-  -d "$(curl -s http://localhost:8080/v1/timetables/demo-data/BASIC)"
+  -d "$(curl -s http://localhost:8080/v1/demo-data/BASIC)"
 ----
 
 [#submittingARun]
