@@ -5,7 +5,7 @@
 :sectnums:
 :icons: font
 
-This guide is for developers who want to *consume* a service built with Timefold Solver built using the `service` module.
+This guide is for developers who want to *consume* a service built with Timefold Solver using the `service` module.
 
 A Timefold Solver service exposes a REST API with a predictable structure.
 Every service follows the same lifecycle: submit a problem, wait for the result, and optionally terminate early or inspect the score.
@@ -133,7 +133,7 @@ The `run` configuration controls how long the solver runs:
 
 | `termination.spentLimit`
 | Maximum wall-clock duration (ISO 8601, e.g. `PT5M` for 5 minutes).
-If omitted, platform limits apply.
+If omitted, the service uses its configured default termination (for example, from application configuration)
 
 | `termination.unimprovedSpentLimit`
 | Stops solving if no score improvement is found within this duration.
@@ -155,7 +155,7 @@ so you get good results without tuning a fixed timeout per deployment.
 
 === Response
 
-The service responds with HTTP 200 and the initial solving response envelope.
+The service responds with HTTP 202 (Accepted) and the initial solving response envelope.
 The key field to capture is `metadata.id` — you will need it to poll for results.
 
 [source,json]
@@ -197,7 +197,7 @@ The response structure is identical to the submit response.
 
 === Solver status lifecycle
 
-The `metadata.solverStatus` field progresses through the following states:
+The `metadata.solverStatus` field follows the dataset lifecycle and may include `DATASET_CREATED`, `DATASET_VALIDATED`, `DATASET_COMPUTED`, or `DATASET_INVALID` before/around the solving statuses below:
 
 [cols="1,3", options="header"]
 |===
@@ -220,11 +220,11 @@ Poll repeatedly to show progress.
 | `SOLVING_FAILED`
 | Solving terminated due to an error.
 
-| `NOT_SOLVING`
-| The run was terminated early via `DELETE /<root>/{id}`.
+| `SOLVING_INCOMPLETE`
+| Solving finished without producing a complete solution (for example, terminated before a first score was produced).
 |===
 
-The run is complete once `solverStatus` is `SOLVING_COMPLETED`, `SOLVING_FAILED`, or `NOT_SOLVING`.
+The run is complete once `solverStatus` is `SOLVING_COMPLETED`, `SOLVING_FAILED`, `SOLVING_INCOMPLETE`, or `DATASET_INVALID`.
 
 [#pollingVsSse]
 === Polling vs Server-Sent Events
@@ -429,6 +429,8 @@ and `kpis` to assess solution quality without parsing the full `modelOutput`.
 [#scoreAnalysis]
 == Inspect score analysis
 
+include::../../commercial-editions/_only-enterprise.adoc[]
+
 [source]
 ----
 GET /<root>/{id}/score-analysis
@@ -464,8 +466,7 @@ This is useful for debugging infeasible solutions or explaining results to end u
 DELETE /<root>/{id}
 ----
 
-Stops an active run and returns the best solution found so far.
-After termination, the `solverStatus` is `NOT_SOLVING`.
+After termination, the `solverStatus` is final (typically `SOLVING_COMPLETED`, or `SOLVING_INCOMPLETE` if no score was produced).
 
 Use this when the user no longer needs a result,
 or when a better input is available and you want to start a fresh run.
@@ -520,14 +521,3 @@ GET /<root>/{id}/validation-result
 ----
 
 See xref:./rest-api.adoc#validatingRestInput[Validating REST input] for details on how services implement validation.
-
-[#listingAllRuns]
-== List all runs
-
-[source]
-----
-GET /<root>
-----
-
-Returns all datasets currently known to the service, including their metadata and current status.
-Use this to build a dashboard or monitor multiple concurrent runs.
