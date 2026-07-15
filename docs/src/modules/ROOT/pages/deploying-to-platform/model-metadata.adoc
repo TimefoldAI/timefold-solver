@@ -1,0 +1,198 @@
+[#_platform_model_metadata]
+= Platform model metadata
+:description: Platform-specific model metadata that shapes the score analysis, configuration profile, and model identity UI.
+:doctype: book
+:sectnums:
+:icons: font
+
+Once your model is xref:deploying-to-platform/guide.adoc[deployed to Timefold Platform], the platform UI surfaces several pieces of your model's code and configuration directly.
+
+This page documents that platform-specific metadata: which identity properties describe your model on the platform, how to give your constraints human-readable names and groups, and how to ship a default configuration profile.
+
+See xref:deploying-to-platform/introduction.adoc[Deploying to the Timefold Platform] for why you'd want to do this, and xref:deploying-to-platform/introduction.adoc#_platform_concepts[Platform concepts] for how this metadata relates to your model's identifier, registration key, and visibility on the platform.
+
+include::_preview-note.adoc[]
+
+[#_model_identity_properties]
+== Model identity properties
+
+The following `application.properties` describe your model's identity on the platform.
+`timefold.application.name`, `timefold.application.version`, and the `timefold.application.contact.*` properties are covered in xref:quickstart/service/getting-started.adoc[Getting started: building a service], since they are required for every model, service or not.
+
+[cols="2,3", options="header"]
+|===
+| Property | Purpose
+
+| `timefold.application.description`
+| Description of the model, included in the generated OpenAPI specification and shown on the platform.
+
+| `timefold.model.maturity-level`
+| Maturity level of the model. Defaults to `Experimental` if not set.
+|===
+
+Use `timefold.model.maturity-level` to tell consumers how stable a given model is, using the same https://docs.timefold.ai/timefold-platform/latest/models/versioning-and-maturity[maturity levels] Timefold uses for its own models (`Example`, `Experimental`, `Preview`, `Stable`, `Deprecated`).
+This is especially useful once you're xref:deploying-to-platform/introduction.adoc#_integrations[running multiple versions of your model in parallel]: consumers can tell at a glance which version is safe to build on and which is still being validated, instead of having to ask you.
+
+=== Logo
+
+To give your model a custom logo on the platform, add a square `logo.png` file to a `model-images` folder at the root of your project, next to `pom.xml`:
+
+[source,options="nowrap"]
+----
+my-model/
+├── model-images/
+│   └── logo.png
+├── src/
+└── pom.xml
+----
+
+The build picks up any file in `model-images` automatically; `logo.png` specifically is used as the model's logo, and any other file is added as an additional model image.
+
+[#_constraint_descriptions_and_groups]
+== Constraint descriptions and groups
+
+By default, a constraint is identified only by the string you pass to `asConstraint(String id)`, which is also used as its display name.
+To give consumers a better score analysis and configuration profile experience, attach a `ConstraintInfo` to the constraint instead.
+
+`ConstraintInfo` and `ConstraintGroupInfo` live in `ai.timefold.solver.service.definition.api.description`:
+
+* `ConstraintInfo(id, name, description, constraintGroup)`: `id` is the stable identifier of the constraint, `name` is the human-readable name shown in the UI, `description` explains the constraint's goal, and `constraintGroup` optionally assigns the constraint to a `ConstraintGroupInfo`.
+* `ConstraintGroupInfo(id, name, description, icon, tags)`: groups related constraints under a shared category. `icon` accepts any icon name from https://tabler.io/icons[Tabler Icons], and `tags` are optional labels you can use to classify or filter groups.
+
+Extending the `TimetableConstraintProvider` from xref:running-timefold-solver/service/constraint-overrides.adoc[Adjusting constraint weights] with names, descriptions, and a group:
+
+.The ConstraintProvider class, with ConstraintInfo attached.
+[tabs]
+====
+Java::
++
+--
+[source,java,options="nowrap"]
+----
+public class TimetableConstraintProvider implements ConstraintProvider {
+
+    public static final String TEACHER_CONFLICT = "Teacher conflict";
+    public static final String ROOM_CONFLICT = "Room conflict";
+
+    private static final ConstraintGroupInfo CONFLICT_GROUP = new ConstraintGroupInfo(
+            "conflicts",
+            "Conflicts",
+            "Constraints that prevent double-booking of teachers and rooms.",
+            "alert-triangle",
+            new String[] { "hard-constraints" });
+
+    Constraint roomConflict(ConstraintFactory constraintFactory) {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(new ConstraintInfo(ROOM_CONFLICT, "Room conflict",
+                        "A room can be used for at most one lesson at the same time.", CONFLICT_GROUP));
+    }
+
+    Constraint teacherConflict(ConstraintFactory constraintFactory) {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(new ConstraintInfo(TEACHER_CONFLICT, "Teacher conflict",
+                        "A teacher can teach at most one lesson at the same time.", CONFLICT_GROUP));
+    }
+
+    // other constraints excluded
+}
+----
+--
+
+Kotlin::
++
+--
+[source,kotlin,options="nowrap"]
+----
+class TimetableConstraintProvider : ConstraintProvider {
+
+    companion object {
+        const val TEACHER_CONFLICT = "Teacher conflict"
+        const val ROOM_CONFLICT = "Room conflict"
+
+        private val CONFLICT_GROUP = ConstraintGroupInfo(
+            "conflicts",
+            "Conflicts",
+            "Constraints that prevent double-booking of teachers and rooms.",
+            "alert-triangle",
+            arrayOf("hard-constraints")
+        )
+    }
+
+    fun roomConflict(constraintFactory: ConstraintFactory): Constraint {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(ConstraintInfo(ROOM_CONFLICT, "Room conflict",
+                        "A room can be used for at most one lesson at the same time.", CONFLICT_GROUP))
+    }
+
+    fun teacherConflict(constraintFactory: ConstraintFactory): Constraint {
+        return constraintFactory
+                // constraint implementation excluded
+                .asConstraint(ConstraintInfo(TEACHER_CONFLICT, "Teacher conflict",
+                        "A teacher can teach at most one lesson at the same time.", CONFLICT_GROUP))
+    }
+
+    // other constraints excluded
+}
+----
+--
+====
+
+The `id` you pass into `ConstraintInfo` is still the identifier used by `@ConstraintReference` in your `ModelConfigOverrides`, as described in xref:running-timefold-solver/service/constraint-overrides.adoc[Adjusting constraint weights].
+The `name`, `description`, and `constraintGroup` are purely presentational: they are what the platform's score analysis view and configuration profile editor use to show your constraints to consumers, instead of falling back to the raw ID.
+
+The UI groups constraints that don't specify a `constraintGroup` under a default group.
+
+[#_configuration_profiles]
+== Configuration profiles
+
+Every model ships with a default configuration profile, defined through `ai.timefold.model.default-config.*` properties in `application.properties`.
+This profile is what consumers get out of the box, before they add any profile of their own.
+
+[cols="2,3", options="header"]
+|===
+| Property | Purpose
+
+| `ai.timefold.model.default-config.name`
+| Name of the default configuration profile.
+
+| `ai.timefold.model.default-config.description`
+| Description of the default configuration profile.
+
+| `ai.timefold.model.default-config.max-thread-count`
+| Default number of threads used for solving.
+
+| `ai.timefold.model.default-config.map.provider`
+| Default map provider, for models that require map data.
+
+| `ai.timefold.model.default-config.map.location`
+| Default map location, for models that require map data.
+
+| `ai.timefold.model.default-config.map.max-distance-from-road`
+| Default maximum distance from a road, for models that require map data.
+
+| `ai.timefold.model.default-config.map.transport-type`
+| Default transport type used when computing distances, for models that require map data.
+
+| `ai.timefold.model.default-config.map.use-traffic`
+| Whether the default profile takes live traffic into account. Defaults to `false`.
+
+| `ai.timefold.model.default-config.termination.spent-limit`
+| The default maximum solving time, in the https://en.wikipedia.org/wiki/ISO_8601#Durations[ISO 8601 duration format]. This property is *required*.
+
+| `ai.timefold.model.default-config.termination.unimproved-spent-limit`
+| The default unimproved time limit. If not set, https://docs.timefold.ai/timefold-solver/latest/optimization-algorithms/overview#diminishedReturnsTermination[Diminished Returns termination] is used instead.
+|===
+
+Once your model is deployed, tenant users can add additional configuration profiles on top of this default directly in the platform UI, without you making any code changes.
+A configuration profile is where per-request xref:running-timefold-solver/service/constraint-overrides.adoc[constraint weight overrides], thread count, memory, and termination limits are set for a specific use case.
+See https://docs.timefold.ai/timefold-platform/latest/how-tos/configuration-parameters-and-profiles[Configuration parameters and profiles] for how tenant users manage profiles from the platform side.
+
+[#_visualization]
+== Visualization
+
+There is currently no dedicated mechanism for adding a custom visualization UI for your model's solution on the platform.
+Consumers see the raw solution data and the generic score analysis view.
+This is an open area of the platform, so expect it to evolve in future releases.
