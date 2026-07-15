@@ -5,9 +5,7 @@ import static ai.timefold.solver.service.definition.internal.platform.Environmen
 import static ai.timefold.solver.service.definition.internal.platform.EnvironmentVars.ENV_TIMEFOLD_TENANT_NAME;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -47,14 +45,10 @@ import ai.timefold.solver.service.definition.api.metrics.InputMetricsAware;
 import ai.timefold.solver.service.definition.api.metrics.ModelInputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.ModelOutputMetrics;
 import ai.timefold.solver.service.definition.api.metrics.OutputMetricsAware;
-import ai.timefold.solver.service.definition.api.validation.Issue;
-import ai.timefold.solver.service.definition.api.validation.IssueSeverity;
 import ai.timefold.solver.service.definition.api.validation.LegacyValidationResult;
 import ai.timefold.solver.service.definition.api.validation.ModelValidator;
 import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
-import ai.timefold.solver.service.definition.api.validation.ValidationStatus;
 import ai.timefold.solver.service.definition.api.validation.dto.ValidationResult;
-import ai.timefold.solver.service.definition.api.validation.dto.ValidationSummary;
 import ai.timefold.solver.service.definition.internal.MapEnrichmentContext;
 import ai.timefold.solver.service.definition.internal.error.ErrorCodes;
 import ai.timefold.solver.service.definition.internal.error.ItemNotFoundException;
@@ -74,6 +68,7 @@ import ai.timefold.solver.service.definition.internal.events.ItemTerminated;
 import ai.timefold.solver.service.definition.internal.events.SolveStartCommand;
 import ai.timefold.solver.service.definition.internal.events.SolveTerminateCommand;
 import ai.timefold.solver.service.definition.internal.events.SolverChannels;
+import ai.timefold.solver.service.definition.internal.events.ValidationSummary;
 import ai.timefold.solver.service.definition.internal.platform.EnvironmentVars;
 import ai.timefold.solver.service.definition.internal.platform.OnStartCommand;
 import ai.timefold.solver.service.definition.internal.solver.BestSolutionConsumerDecorator;
@@ -481,7 +476,7 @@ public class SolverWorker {
         storageService.updateMetadata(metadata.getId(), metadata);
 
         sendEvent(datasetValidatedEventEmitter,
-                new DatasetValidatedEvent(metadata, toValidationSummary(validationResponse)));
+                new DatasetValidatedEvent(metadata, ValidationSummary.of(validationResponse)));
         return legacyValidationResult;
     }
 
@@ -840,25 +835,6 @@ public class SolverWorker {
         }
 
         return consumer;
-    }
-
-    private static ValidationSummary toValidationSummary(ValidationResult<?> validationResponse) {
-        if (validationResponse == null) {
-            return null;
-        }
-        ValidationStatus status = validationResponse.status();
-        if (status == ValidationStatus.VALIDATION_NOT_SUPPORTED) {
-            return new ValidationSummary(status, null, null, null, null);
-        }
-        Map<String, Integer> errorCountsByCode = new HashMap<>();
-        Map<String, Integer> warningCountsByCode = new HashMap<>();
-        for (Issue issue : validationResponse.issues()) {
-            var countsByCode = issue.getSeverity() == IssueSeverity.ERROR ? errorCountsByCode : warningCountsByCode;
-            countsByCode.merge(issue.getCode().value(), 1, Integer::sum);
-        }
-        int errorCount = errorCountsByCode.values().stream().mapToInt(Integer::intValue).sum();
-        int warningCount = warningCountsByCode.values().stream().mapToInt(Integer::intValue).sum();
-        return new ValidationSummary(status, errorCount, warningCount, errorCountsByCode, warningCountsByCode);
     }
 
 }
