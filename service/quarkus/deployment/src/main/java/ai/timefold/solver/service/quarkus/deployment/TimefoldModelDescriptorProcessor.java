@@ -537,8 +537,7 @@ class TimefoldModelDescriptorProcessor {
         descriptor.setModel(model);
         descriptor.setName(
                 config.getOptionalValue(APPLICATION_NAME_PROPERTY, String.class).orElse(openAPI.getInfo().getTitle()));
-        String applicationVersion =
-                config.getOptionalValue(APPLICATION_VERSION_PROPERTY, String.class).orElse(openAPI.getInfo().getVersion());
+        String applicationVersion = config.getOptionalValue(APPLICATION_VERSION_PROPERTY, String.class).orElse(null);
         validateApplicationVersion(applicationVersion);
         descriptor.setVersion(applicationVersion);
         descriptor.setResourceType(getResourceTypeFromRestResource(restResource));
