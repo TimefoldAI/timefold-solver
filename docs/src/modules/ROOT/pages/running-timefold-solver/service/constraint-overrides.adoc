@@ -161,6 +161,14 @@ Next, in the xref:running-timefold-solver/service/rest-api.adoc#modelConverter[m
 to a `ConstraintWeightOverrides` object and set it on the `@PlanningSolution` class
 xref:#enablingWeightOverrides[as described above]:
 
+[IMPORTANT]
+====
+This requires a custom `ModelConvertor`.
+If your `SolverModel` also serves as `ModelInput` and `ModelOutput`, for example because you extend `AbstractSimpleModel`, the framework uses a trivial `ModelConvertor` by default, which ignores `modelConfig` entirely.
+With only the trivial convertor in place, constraint weight overrides submitted in a request are silently dropped: the request succeeds, but the override never reaches the solver.
+Provide your own `ModelConvertor` implementation, as shown below, to actually apply them.
+====
+
 .As part of the ModelConverter.
 [tabs]
 ====
@@ -171,12 +179,12 @@ Java::
 ----
 TimetableConfigOverrides modelConfigOverrides = modelConfig.overrides();
 
-ConstraintWeightOverrides<HardMediumSoftLongScore> constraintWeightOverrides = ConstraintWeightOverrides.of(
+ConstraintWeightOverrides<HardMediumSoftScore> constraintWeightOverrides = ConstraintWeightOverrides.of(
         Map.ofEntries(
                 Map.entry(TimetableConstraintProvider.TEACHER_CONFLICT,
-                        HardMediumSoftLongScore.ofHard(modelConfigOverrides.getTeacherConflictWeight())),
+                        HardMediumSoftScore.ofHard(modelConfigOverrides.getTeacherConflictWeight())),
                 Map.entry(TimetableConstraintProvider.ROOM_CONFLICT,
-                        HardMediumSoftLongScore.ofSoft(modelConfigOverrides.getRoomConflictWeight()))
+                        HardMediumSoftScore.ofSoft(modelConfigOverrides.getRoomConflictWeight()))
         )
 );
 
@@ -194,9 +202,9 @@ val modelConfigOverrides = modelConfig.overrides()
 val constraintWeightOverrides = ConstraintWeightOverrides.of(
         mapOf(
                 TimetableConstraintProvider.TEACHER_CONFLICT to
-                        HardMediumSoftLongScore.ofHard(modelConfigOverrides.teacherConflictWeight),
+                        HardMediumSoftScore.ofHard(modelConfigOverrides.teacherConflictWeight),
                 TimetableConstraintProvider.ROOM_CONFLICT to
-                        HardMediumSoftLongScore.ofSoft(modelConfigOverrides.roomConflictWeight)
+                        HardMediumSoftScore.ofSoft(modelConfigOverrides.roomConflictWeight)
         )
 )
 
