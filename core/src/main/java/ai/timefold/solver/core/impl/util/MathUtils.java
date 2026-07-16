@@ -388,11 +388,10 @@ public class MathUtils {
         if (locale.equals(MathUtils.FORMATTER_LOCALE)) {
             return decimalFormat.format(number);
         }
-        try { // Slow path for corner cases where input locale doesn't match the default locale.
-            decimalFormat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(locale));
-            return decimalFormat.format(number);
-        } finally {
-            decimalFormat.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(MathUtils.FORMATTER_LOCALE));
-        }
+        // Slow path for corner cases where input locale doesn't match the default locale.
+        // To prevent issues with concurrent access, we create a copy of the decimalFormat.
+        DecimalFormat decimalFormatCopy =  new DecimalFormat(decimalFormat.toPattern());
+        decimalFormatCopy.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(locale));
+        return decimalFormatCopy.format(number);
     }
 }
