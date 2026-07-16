@@ -53,7 +53,7 @@ public final class MyPlanConfigOverrides implements ModelConfigOverrides {
     private long preferEarlyCompletionWeight = 0L;
 
     // Global config — not constraint-specific, no annotation required
-    private TravelTimeAdjustment travelTimeAdjustment;
+    private double travelTimeAdjustment;
 
     // Standard getters, setters, and optional fluent "with" builders ...
 }
@@ -72,7 +72,7 @@ data class MyPlanConfigOverrides(
     @ConstraintReference(MyConstraints.PREFER_EARLY_COMPLETION)
     val preferEarlyCompletionWeight: Long = 0L,
 
-    val travelTimeAdjustment: TravelTimeAdjustment? = null
+    val travelTimeAdjustment: Double? = null
 ) : ModelConfigOverrides
 ----
 --
