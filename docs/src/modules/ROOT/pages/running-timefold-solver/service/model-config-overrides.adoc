@@ -103,16 +103,12 @@ Usually, it doesn't make sense to allow weight overrides for _hard_ constraints.
 | _(required)_
 | The constraint name. Must match the identifier used in your `ConstraintProvider`.
 
-| `kind`
-| `ParameterKind`
-| `WEIGHT`
-| Whether this field is a weight multiplier or a typed parameter passed into the constraint's logic.
 |===
 
-[#_weight_mode]
-=== Weight mode
+[#_weight_multipliers]
+=== Weight multipliers
 
-The default mode. Annotate a `long` field to make it a weight multiplier for that constraint.
+Annotate a `long` field to make it a weight multiplier for that constraint.
 The value scales the constraint's score contribution relative to other soft constraints.
 
 A value of `0` effectively disables the constraint for that request.
