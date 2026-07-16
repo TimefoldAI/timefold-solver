@@ -1,5 +1,7 @@
 package ai.timefold.solver.service.quarkus.deployment.openapi;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Set;
@@ -47,6 +49,8 @@ public final class SchemaUtils {
                     return Schema.SchemaType.ARRAY;
                 } else if (isWrapperClass(type)) {
                     return resolvePrimitiveSchemaType(PrimitiveType.unbox(type.asClassType()).primitive());
+                } else if (isNumericObjectType(type)) {
+                    return Schema.SchemaType.NUMBER;
                 } else {
                     return Schema.SchemaType.OBJECT;
                 }
@@ -122,7 +126,7 @@ public final class SchemaUtils {
                                         field.declaringClass().name().toString()));
                     }
                     Type parameter = field.type().asParameterizedType().arguments().getFirst();
-                    if (isStringOrWrapperClass(parameter)) {
+                    if (isStringOrWrapperClass(parameter) || isNumericObjectType(parameter)) {
                         return null;
                     }
                     // Type argument can only be a class, so the schema type ref is the simple class name.
@@ -132,13 +136,13 @@ public final class SchemaUtils {
                     return field.type().asClassType().name().withoutPackagePrefix();
                 }
             case CLASS:
-                return isStringOrWrapperClass(field.type()) ? null
+                return isStringOrWrapperClass(field.type()) || isNumericObjectType(field.type()) ? null
                         : field.type().asClassType().name().withoutPackagePrefix();
             case ARRAY:
                 Type componentType = field.type().asArrayType().componentType();
                 switch (componentType.kind()) {
                     case CLASS:
-                        return isStringOrWrapperClass(componentType) ? null
+                        return isStringOrWrapperClass(componentType) || isNumericObjectType(componentType) ? null
                                 : componentType.asClassType().name().withoutPackagePrefix();
                     default:
                         return null;
@@ -166,5 +170,10 @@ public final class SchemaUtils {
 
     private static boolean isWrapperClass(Type type) {
         return WRAPPER_CLASSES.contains(type.name().toString());
+    }
+
+    private static boolean isNumericObjectType(Type type) {
+        var typeClass = JandexReflection.loadRawType(type);
+        return BigDecimal.class.isAssignableFrom(typeClass) || BigInteger.class.isAssignableFrom(typeClass);
     }
 }
