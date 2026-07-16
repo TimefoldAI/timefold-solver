@@ -28,7 +28,7 @@ include::../shared/_solutionsourcecode.adoc[]
 To complete this guide, you need:
 
 * **Tools**
-** {java-version} or higher
+** JDK {java-version} or higher
 ** Maven
 ** An IDE of your choice (IntelliJ IDEA, VSCode, ...)
 
