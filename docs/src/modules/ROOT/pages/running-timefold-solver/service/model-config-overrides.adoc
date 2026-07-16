@@ -134,7 +134,7 @@ private long preferGroupingCoLocatedVisitsWeight = 0L;
 The `ModelConvertor` implementation translates the caller's overrides into the data structures the
 solver engine expects.
 It receives a `ModelConfig<T>` in `toSolverModel()` and must handle the case where the caller
-provided no overrides at all — `modelConfig` itself, or `modelConfig.overrides()`, may be `null`.
+provided no overrides at all — `modelConfig.overrides()`, may be `null`.
 
 [IMPORTANT]
 ====
@@ -164,7 +164,7 @@ private static Map<String, HardMediumSoftScore>
         getConstraintWeightOverrides(ModelConfig<MyPlanConfigOverrides> modelConfig) {
 
     MyPlanConfigOverrides overrides =
-            modelConfig != null && modelConfig.overrides() != null
+            modelConfig.overrides() != null
                     ? modelConfig.overrides()
                     : new MyPlanConfigOverrides(); // defaults come from field initialisers
 
@@ -214,7 +214,7 @@ Guard against null the same way as for weights.
 private static ConstraintParameters
         getConstraintParameters(ModelConfig<MyPlanConfigOverrides> modelConfig) {
 
-    if (modelConfig == null || modelConfig.overrides() == null) {
+    if (modelConfig.overrides() == null) {
         return null;
     }
     MyPlanConfigOverrides overrides = modelConfig.overrides();
