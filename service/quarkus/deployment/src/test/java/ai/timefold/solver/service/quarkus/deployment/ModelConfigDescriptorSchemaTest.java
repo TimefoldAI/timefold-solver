@@ -13,7 +13,6 @@ import ai.timefold.solver.service.definition.api.domain.DataFormat;
 import ai.timefold.solver.service.definition.internal.descriptor.ModelConfigDescriptor;
 import ai.timefold.solver.service.definition.internal.descriptor.ModelConfigParameter;
 import ai.timefold.solver.service.definition.internal.descriptor.ParameterKind;
-import ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigschema.ObjectParameter;
 import ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigschema.TestdataConstraintProvider;
 import ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigschema.TestdataEntity;
 import ai.timefold.solver.service.quarkus.deployment.testdata.modelconfigschema.TestdataModelConfigOverrides;
@@ -35,7 +34,7 @@ public class ModelConfigDescriptorSchemaTest {
     @RegisterExtension
     static final QuarkusExtensionTest config =
             ExtensionTestUtil.createDeploymentWithMandatoryConfig(TestdataModelConfigOverrides.class,
-                    ObjectParameter.class, TestdataEntity.class, TestdataSolution.class, TestdataConstraintProvider.class,
+                    TestdataEntity.class, TestdataSolution.class, TestdataConstraintProvider.class,
                     TestdataModelConvertor.class, TestdataRest.class);
 
     @Inject
@@ -50,7 +49,7 @@ public class ModelConfigDescriptorSchemaTest {
 
         assertThat(modelConfigDescriptor.schemaTypeRef()).isEqualTo(TestdataModelConfigOverrides.class.getSimpleName());
 
-        assertThat(modelConfigDescriptor.configParameters()).hasSize(5);
+        assertThat(modelConfigDescriptor.configParameters()).hasSize(6);
         SoftAssertions.assertSoftly(softly -> {
             ModelConfigParameter constraintWeight = modelConfigDescriptor.configParameters().get(0);
             softly.assertThat(constraintWeight.id()).isEqualTo("constraintWeight");
@@ -94,6 +93,12 @@ public class ModelConfigDescriptorSchemaTest {
             softly.assertThat(string.type()).isEqualTo(Schema.SchemaType.STRING);
             softly.assertThat(string.schemaTypeRef()).isNull();
             softly.assertThat(string.nullable()).isTrue();
+
+            ModelConfigParameter bigDecimalConstraintWeight = modelConfigDescriptor.configParameters().get(5);
+            softly.assertThat(bigDecimalConstraintWeight.id()).isEqualTo("bigDecimalConstraintWeight");
+            softly.assertThat(bigDecimalConstraintWeight.kind()).isEqualTo(ParameterKind.WEIGHT);
+            softly.assertThat(bigDecimalConstraintWeight.type()).isEqualTo(Schema.SchemaType.NUMBER);
+            softly.assertThat(bigDecimalConstraintWeight.schemaTypeRef()).isNull();
         });
     }
 }
