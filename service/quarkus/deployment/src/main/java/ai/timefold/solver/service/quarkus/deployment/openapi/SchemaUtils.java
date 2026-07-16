@@ -117,8 +117,8 @@ public final class SchemaUtils {
      * @return the schema type reference
      */
     public static String resolveSchemaTypeRef(FieldInfo field) {
-        switch (field.type().kind()) {
-            case PARAMETERIZED_TYPE:
+        return switch (field.type().kind()) {
+            case PARAMETERIZED_TYPE -> {
                 if (isCollection(field.type())) {
                     if (field.type().asParameterizedType().arguments().size() > 1) {
                         throw new IllegalStateException(
@@ -127,29 +127,28 @@ public final class SchemaUtils {
                     }
                     Type parameter = field.type().asParameterizedType().arguments().getFirst();
                     if (isStringOrWrapperClass(parameter) || isNumericObjectType(parameter)) {
-                        return null;
+                        yield null;
                     }
                     // Type argument can only be a class, so the schema type ref is the simple class name.
-                    return parameter.asClassType().name().withoutPackagePrefix();
+                    yield parameter.asClassType().name().withoutPackagePrefix();
                 } else {
                     // Refer to the type itself and disregard the type parameter.
-                    return field.type().asClassType().name().withoutPackagePrefix();
+                    yield field.type().asClassType().name().withoutPackagePrefix();
                 }
-            case CLASS:
-                return isStringOrWrapperClass(field.type()) || isNumericObjectType(field.type()) ? null
-                        : field.type().asClassType().name().withoutPackagePrefix();
-            case ARRAY:
+            }
+            case CLASS -> isStringOrWrapperClass(field.type()) || isNumericObjectType(field.type()) ? null
+                    : field.type().asClassType().name().withoutPackagePrefix();
+            case ARRAY -> {
                 Type componentType = field.type().asArrayType().componentType();
-                switch (componentType.kind()) {
-                    case CLASS:
-                        return isStringOrWrapperClass(componentType) || isNumericObjectType(componentType) ? null
-                                : componentType.asClassType().name().withoutPackagePrefix();
-                    default:
-                        return null;
+                if (componentType.kind() == Type.Kind.CLASS) {
+                    yield isStringOrWrapperClass(componentType) || isNumericObjectType(componentType) ? null
+                            : componentType.asClassType().name().withoutPackagePrefix();
+                } else {
+                    yield null;
                 }
-            default:
-                return null;
-        }
+            }
+            default -> null;
+        };
     }
 
     private static boolean isStringOrWrapperClass(Type type) {
