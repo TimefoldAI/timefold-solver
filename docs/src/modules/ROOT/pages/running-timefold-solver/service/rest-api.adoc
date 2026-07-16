@@ -245,7 +245,7 @@ Java::
 [source,java,options="nowrap"]
 ----
 @ApplicationScoped
-public class TimetableConvertor implements ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+public class TimetableConvertor implements ModelConvertor<HardMediumSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     @Override
     public Timetable toSolverModel(TimetableDto modelInput, ModelConfig<EmptyModelConfigOverrides> modelConfig,
@@ -272,7 +272,7 @@ Kotlin::
 [source,kotlin,options="nowrap"]
 ----
 @ApplicationScoped
-class TimetableConvertor : ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+class TimetableConvertor : ModelConvertor<HardMediumSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     override fun toSolverModel(modelInput: TimetableDto, modelConfig: ModelConfig<EmptyModelConfigOverrides>,
             lastModelOutput: Optional<TimetableDto>): Timetable {
