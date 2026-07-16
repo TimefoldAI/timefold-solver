@@ -19,6 +19,7 @@ import ai.timefold.solver.core.impl.move.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
 public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
 
@@ -99,8 +100,10 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
             }
 
             for (var ruinedValue : ruinedValueList) {
-                var position = listVariableStateSupply.getElementPosition(ruinedValue)
-                        .ensureAssigned();
+                // Some ruined values may be left unassigned
+                if (!(listVariableStateSupply.getElementPosition(ruinedValue) instanceof PositionInList position)) {
+                    continue;
+                }
                 entityToNewPositionMap.computeIfAbsent(position.entity(), ignored -> new TreeSet<>())
                         .add(new RuinedPosition(ruinedValue, position.index()));
                 entityToInsertedValuesMap.computeIfAbsent(position.entity(), ignored -> new ArrayList<>()).add(ruinedValue);

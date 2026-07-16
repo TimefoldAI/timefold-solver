@@ -154,4 +154,42 @@ class ListRuinRecreateMoveSelectorTest extends AbstractMeterTest {
         assertDoesNotThrow(() -> solver.solve(problem));
     }
 
+    @Test
+    void testRuiningOnlyOneAssignedValues() {
+        var solverConfig = new SolverConfig()
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withSolutionClass(TestdataAllowsUnassignedValuesListSolution.class)
+                .withEntityClasses(TestdataAllowsUnassignedValuesListEntity.class,
+                        TestdataAllowsUnassignedValuesListValue.class)
+                .withConstraintProviderClass(TestdataOnlyOneAssignedValuesListMixedConstraintProvider.class)
+                .withPhaseList(List.of(
+                        new LocalSearchPhaseConfig()
+                                // Since the problem has 3 planning values, the R&R will select all of them
+                                .withMoveSelectorConfig(new ListRuinRecreateMoveSelectorConfig().withMinimumRuinedCount(3))
+                                .withTerminationConfig(new TerminationConfig()
+                                        .withStepCountLimit(1))));
+        var problem = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(3, 1);
+        // The problem involves one entity and three planning values,
+        // with the initial solution assigning all values to that single entity
+        problem.getEntityList().get(0).getValueList().addAll(problem.getValueList());
+        var solver = SolverFactory.create(solverConfig).buildSolver();
+        var solution = (TestdataAllowsUnassignedValuesListSolution) assertDoesNotThrow(() -> solver.solve(problem));
+        // Two values must remain unassigned
+        assertThat(solution.getEntityList().get(0).getValueList()).hasSize(1);
+    }
+
+    public static final class TestdataOnlyOneAssignedValuesListMixedConstraintProvider
+            implements ConstraintProvider {
+
+        @Override
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
+            return new Constraint[] {
+                    constraintFactory.forEach(TestdataAllowsUnassignedValuesListEntity.class)
+                            .filter(entity -> entity.getValueList().size() != 1)
+                            .penalize(SimpleScore.ONE)
+                            .asConstraint("Only One Assigned")
+            };
+        }
+    }
+
 }
