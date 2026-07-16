@@ -19,7 +19,7 @@ Three components work together to deliver this:
 | Marker interface. Your implementing class carries the tunable fields callers can set per request.
 
 | `@ConstraintReference`
-| Links a field to a specific constraint, either as a weight multiplier or as a typed parameter value.
+| Links a constraint weight multiplier field to a specific constraint.
 
 | `ModelConfig<T>`
 | Runtime container. Carries the caller's overrides instance into `ModelConvertor.toSolverModel()`.
@@ -52,10 +52,6 @@ public final class MyPlanConfigOverrides implements ModelConfigOverrides {
     @ConstraintReference(MyConstraints.PREFER_EARLY_COMPLETION)
     private long preferEarlyCompletionWeight = 0L;
 
-    // Constraint parameter field
-    @ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
-    private Duration bufferBeforeShiftEnd = Duration.ZERO;
-
     // Global config — not constraint-specific, no annotation required
     private TravelTimeAdjustment travelTimeAdjustment;
 
@@ -75,9 +71,6 @@ data class MyPlanConfigOverrides(
 
     @ConstraintReference(MyConstraints.PREFER_EARLY_COMPLETION)
     val preferEarlyCompletionWeight: Long = 0L,
-
-    @ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
-    val bufferBeforeShiftEnd: Duration = Duration.ZERO,
 
     val travelTimeAdjustment: TravelTimeAdjustment? = null
 ) : ModelConfigOverrides
@@ -124,6 +117,7 @@ The value scales the constraint's score contribution relative to other soft cons
 
 A value of `0` effectively disables the constraint for that request.
 Higher values increase the constraint's priority relative to others.
+Do keep the value significantly below `Long.MAX_VALUE`, since multiple constraints keep adding to the score impact across all their matches.
 
 [source,java]
 ----
@@ -135,50 +129,6 @@ private long minimizeTravelTimeWeight = 1L;
 @ConstraintReference(MyConstraints.PREFER_GROUPING_CO_LOCATED_VISITS)
 private long preferGroupingCoLocatedVisitsWeight = 0L;
 ----
-
-[#_parameter_mode]
-=== Parameter mode
-
-When `kind = ParameterKind.PARAMETER`, the field supplies a typed value into the constraint's logic
-rather than scaling its score.
-Any serializable Java type is supported: `Duration`, `String`, `Double`, custom enums, and so on.
-
-[source,java]
-----
-@ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
-private Duration bufferBeforeShiftEnd = Duration.ZERO;
-
-@ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
-private String minimumPriorityLevel = "medium";
-----
-
-[#_multiple_references]
-=== Multiple references to the same constraint
-
-A single constraint can be referenced by multiple fields simultaneously —
-one as a weight and any number as parameters.
-This is the standard pattern when a constraint is both tunable in importance and requires domain-specific threshold values.
-
-[source,java]
-----
-// Controls importance
-@ConstraintReference(MyConstraints.MINIMIZE_COMPLETION_RISK)
-private long minimizeCompletionRiskWeight = 1L;
-
-// Controls threshold value — same constraint, different kind
-@ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
-private Duration bufferBeforeShiftEnd = Duration.ZERO;
-
-@ConstraintReference(value = MyConstraints.MINIMIZE_COMPLETION_RISK, kind = ParameterKind.PARAMETER)
-private String minimumPriorityLevel = "medium";
-----
-
-[TIP]
-====
-Define all constraint names as `public static final String` constants in your `ConstraintProvider`
-and reference them symbolically in `@ConstraintReference`.
-This prevents typos and enables IDE navigation between the annotation and the constraint definition.
-====
 
 
 [#applyingOverrides]
