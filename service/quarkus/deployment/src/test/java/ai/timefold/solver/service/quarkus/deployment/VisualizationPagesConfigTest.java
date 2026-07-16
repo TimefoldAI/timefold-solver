@@ -45,6 +45,7 @@ class VisualizationPagesConfigTest {
                 .containsExactly(
                         new VisualizationPageDescriptor("data", "TbDatabase", "Data"),
                         new VisualizationPageDescriptor("visualization", "TbEye", "Visualization"));
+    }
 
     @Test
     void missingFieldFailsToBind() {
