@@ -128,14 +128,6 @@ The `run` configuration controls how long the solver runs:
 | `name`
 | A human-readable name for the run. Auto-generated if omitted.
 
-| `termination.spentLimit`
-| Maximum wall-clock duration (ISO 8601, e.g. `PT5M` for 5 minutes).
-If omitted, the service uses its configured default termination (for example, from application configuration)
-
-| `termination.unimprovedSpentLimit`
-| Stops solving if no score improvement is found within this duration.
-If omitted, the xref:optimization-algorithms/overview.adoc#diminishedReturnsTermination[diminished returns termination] is used — this is the recommended default.
-
 | `maxThreadCount`
 | Number of solver threads. Defaults to 1.
 
@@ -143,12 +135,20 @@ If omitted, the xref:optimization-algorithms/overview.adoc#diminishedReturnsTerm
 | Optional labels for filtering or grouping runs.
 |===
 
-[TIP]
-====
-Prefer leaving `unimprovedSpentLimit` unset and relying on diminished returns termination.
-It adapts to different problem sizes and hardware automatically,
-so you get good results without tuning a fixed timeout per deployment.
-====
+`Termination` settings can be specified per dataset to override the hardcoded termination settings.
+
+- `spentLimit` sets the maximum duration (in ISO 8601 duration format) for solving a dataset.
+
+- `unimprovedSpentLimit` sets the maximum duration (in ISO 8601 duration format) for solving a dataset since the dataset score improved.
+If no value is provided, the default diminished returns termination will apply. If set, stepCountLimit must be empty.
+_Warning_: using this option will disable the default diminished returns termination which is recommended for most use cases
+
+- `stepCountLimit` sets the maximum solver step count for solving a dataset. The solver will stop solving after a pre-determined amount of steps. Use when you require results independently of the hardware resources performance. Use this termination if you want to benchmark your models, not recommended for production use.
+If set, unimprovedSpentLimit must be empty. Warning: using this option will disable the default diminished returns termination which is recommended for most use cases.
+
+- `slidingWindowDuration` sets the sliding window (in ISO 8601 duration format) over which score improvement is measured by the diminished returns termination. Defaults to PT30S when omitted. Only takes effect when diminished returns termination is active (i.e. unimprovedSpentLimit and stepCountLimit are both empty).
+
+- `minimumImprovementRatio` sets the minimum ratio between current and initial improvement before the diminished returns termination kicks in. Must be strictly positive. Defaults to 0.0001 when omitted. Only takes effect when diminished returns termination is active (i.e. unimprovedSpentLimit and stepCountLimit are both empty).
 
 === Response
 
