@@ -494,27 +494,29 @@ public class BenchmarkAggregatorFrame extends JFrame {
     }
 
     private MixedCheckBox createPlannerBenchmarkCheckBox(PlannerBenchmarkResult plannerBenchmarkResult) {
-        String plannerBenchmarkDetail = String.format(
-                "Average score: %s%n"
-                        + "Average problem scale: %d",
-                plannerBenchmarkResult.getAverageScore(),
-                plannerBenchmarkResult.getAverageProblemScale());
+        var plannerBenchmarkDetail =
+                """
+                        Average score: %s
+                        Average problem scale: %s""".formatted(
+                        plannerBenchmarkResult.getAverageScore(),
+                        plannerBenchmarkResult.getAverageProblemScale());
         return new MixedCheckBox(plannerBenchmarkResult.getName(), plannerBenchmarkDetail, plannerBenchmarkResult);
     }
 
     private MixedCheckBox createSolverBenchmarkCheckBox(SolverBenchmarkResult solverBenchmarkResult) {
-        String solverCheckBoxName = solverBenchmarkResult.getName() + " (" + solverBenchmarkResult.getRanking() + ")";
-        String solverBenchmarkDetail = String.format(
-                "Total score: %s%n"
-                        + "Average score: %s%n"
-                        + "Total winning score difference: %s"
-                        + "Average time spent: %s%n",
-                solverBenchmarkResult.getTotalScore(),
-                solverBenchmarkResult.getAverageScore(),
-                solverBenchmarkResult.getTotalWinningScoreDifference(),
-                solverBenchmarkResult.getAverageTimeMillisSpent() == null
-                        ? ""
-                        : millisecondsSpentNumberFormat.format(solverBenchmarkResult.getAverageTimeMillisSpent()));
+        var solverCheckBoxName = "%s (%d)".formatted(solverBenchmarkResult.getName(), solverBenchmarkResult.getRanking());
+        var solverBenchmarkDetail =
+                """
+                        Total score: %s
+                        Average score: %s
+                        Total winning score difference: %s
+                        Average time spent: %s""".formatted(
+                        solverBenchmarkResult.getTotalScore(),
+                        solverBenchmarkResult.getAverageScore(),
+                        solverBenchmarkResult.getTotalWinningScoreDifference(),
+                        solverBenchmarkResult.getAverageTimeMillisSpent() == null
+                                ? ""
+                                : millisecondsSpentNumberFormat.format(solverBenchmarkResult.getAverageTimeMillisSpent()));
         solverBenchmarkResultNameMapping.put(solverBenchmarkResult, solverBenchmarkResult.getName());
         return new MixedCheckBox(solverCheckBoxName, solverBenchmarkDetail, solverBenchmarkResult);
     }
@@ -531,14 +533,15 @@ public class BenchmarkAggregatorFrame extends JFrame {
     }
 
     private MixedCheckBox createSingleBenchmarkCheckBox(SingleBenchmarkResult singleBenchmarkResult) {
-        String singleCheckBoxName = singleBenchmarkResult.getName() + " (" + singleBenchmarkResult.getRanking() + ")";
-        String singleBenchmarkDetail = String.format(
-                "Score: %s%n"
-                        + "Used memory: %s%n"
-                        + "Time spent: %s",
-                singleBenchmarkResult.getAverageScore(),
-                toEmptyStringIfNull(singleBenchmarkResult.getUsedMemoryAfterInputSolution()),
-                millisecondsSpentNumberFormat.format(singleBenchmarkResult.getTimeMillisSpent()));
+        var singleCheckBoxName = "%s (%d)".formatted(singleBenchmarkResult.getName(), singleBenchmarkResult.getRanking());
+        var singleBenchmarkDetail =
+                """
+                        Score: %s
+                        Used memory: %s
+                        Time spent: %s""".formatted(
+                        singleBenchmarkResult.getAverageScore(),
+                        toEmptyStringIfNull(singleBenchmarkResult.getUsedMemoryAfterInputSolution()),
+                        millisecondsSpentNumberFormat.format(singleBenchmarkResult.getTimeMillisSpent()));
         return new MixedCheckBox(singleCheckBoxName, singleBenchmarkDetail, singleBenchmarkResult);
     }
 
