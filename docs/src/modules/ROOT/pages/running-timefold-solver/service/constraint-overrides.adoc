@@ -179,12 +179,12 @@ Java::
 ----
 TimetableConfigOverrides modelConfigOverrides = modelConfig.overrides();
 
-ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides = ConstraintWeightOverrides.of(
+ConstraintWeightOverrides<HardMediumSoftScore> constraintWeightOverrides = ConstraintWeightOverrides.of(
         Map.ofEntries(
                 Map.entry(TimetableConstraintProvider.TEACHER_CONFLICT,
-                        HardSoftScore.ofHard(modelConfigOverrides.getTeacherConflictWeight())),
+                        HardMediumSoftScore.ofHard(modelConfigOverrides.getTeacherConflictWeight())),
                 Map.entry(TimetableConstraintProvider.ROOM_CONFLICT,
-                        HardSoftScore.ofSoft(modelConfigOverrides.getRoomConflictWeight()))
+                        HardMediumSoftScore.ofSoft(modelConfigOverrides.getRoomConflictWeight()))
         )
 );
 
@@ -202,9 +202,9 @@ val modelConfigOverrides = modelConfig.overrides()
 val constraintWeightOverrides = ConstraintWeightOverrides.of(
         mapOf(
                 TimetableConstraintProvider.TEACHER_CONFLICT to
-                        HardSoftScore.ofHard(modelConfigOverrides.teacherConflictWeight),
+                        HardMediumSoftScore.ofHard(modelConfigOverrides.teacherConflictWeight),
                 TimetableConstraintProvider.ROOM_CONFLICT to
-                        HardSoftScore.ofSoft(modelConfigOverrides.roomConflictWeight)
+                        HardMediumSoftScore.ofSoft(modelConfigOverrides.roomConflictWeight)
         )
 )
 
