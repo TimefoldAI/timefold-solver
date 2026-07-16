@@ -91,8 +91,8 @@ curl -X POST http://localhost:8080/v1/timetables \
 POST /<root>
 ----
 
-Submits a planning problem for optimization.
-The service starts solving asynchronously and returns a dataset ID immediately.
+Submits a planning problem for optimization and (by default) requests solving immediately.
+The service returns a dataset ID right away and processes validation/output computation/solving asynchronously; pass `?operation=NONE` to store/validate/compute without solving.
 
 === Request structure
 
@@ -160,13 +160,13 @@ The key field to capture is `id`, you will need it to poll for results.
 {
     "id": "7f3a91bc-4e2d-4c1a-b8f6-1234567890ab", <1>
     "name": "my-run",
-    "solverStatus": "SOLVING_SCHEDULED", <2>
+    "solverStatus": "DATASET_CREATED", <2>
     "submitDateTime": "2025-06-01T09:00:00Z",
     "tags": ["production", "monday"]
 }
 ----
 <1> Store this `id` to poll for results.
-<2> The solver is queued and will start soon.
+<2> The dataset was accepted and will be processed asynchronously (validation, output computation, and solving if requested).
 
 [#pollingForResults]
 == Poll for results
@@ -188,7 +188,7 @@ The `metadata.solverStatus` field follows the dataset lifecycle and may include 
 | Status | Meaning
 
 | `SOLVING_SCHEDULED`
-| The run is queued and waiting for a solver thread to become available.
+| Solving was requested for an existing dataset (for example `POST /<root>/{id}`) and is waiting to start; submit requests typically transition from `DATASET_COMPUTED` directly to `SOLVING_STARTED`.
 
 | `SOLVING_STARTED`
 | The run is initializing: the model is being built and enriched (e.g. loading external data).
