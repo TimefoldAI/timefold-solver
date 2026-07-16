@@ -143,7 +143,8 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
                             Use SortedSet or LinkedHashSet to ensure solver reproducibility.
                             """
                             .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set.getClass()));
-                } else if (set.contains(null)) {
+                } else if (containsNull(set)) {
+
                     throw new IllegalStateException("""
                             The @%s-annotated member (%s) called on bean (%s) returns a Set (%s) with a null element.
                             Maybe remove that null element from the dataset \
@@ -160,6 +161,18 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
         } else {
             var valueRange = (CountableValueRange<Value_>) valueRangeObject;
             return valueRange.isEmpty() ? EmptyValueRange.instance() : valueRange;
+        }
+    }
+
+    private <Value_> boolean containsNull(Set<Value_> set) {
+        try {
+            return set.contains(null);
+        } catch (NullPointerException e) {
+            // The Set contract states that implementations that do not allow null values must fail when null is read in some operations,
+            // such as add and contains.
+            // We ignore the NPE in such situations,
+            // as implementations like TreeSet with natural ordering will fail when reading null values.
+            return false;
         }
     }
 
