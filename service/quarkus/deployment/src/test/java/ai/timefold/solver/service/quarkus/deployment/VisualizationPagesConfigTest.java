@@ -43,9 +43,8 @@ class VisualizationPagesConfigTest {
 
         assertThat(TimefoldModelDescriptorProcessor.toVisualizationPageDescriptors(config))
                 .containsExactly(
-                        new VisualizationPageDescriptor("visualization", "TbEye", "Visualization"),
-                        new VisualizationPageDescriptor("data", "TbDatabase", "Data"));
-    }
+                        new VisualizationPageDescriptor("data", "TbDatabase", "Data"),
+                        new VisualizationPageDescriptor("visualization", "TbEye", "Visualization"));
 
     @Test
     void missingFieldFailsToBind() {
