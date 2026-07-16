@@ -1,7 +1,5 @@
 package ai.timefold.solver.service.quarkus.deployment;
 
-import static ai.timefold.solver.service.quarkus.deployment.DefaultConfigProfileProcessor.MODEL_CONFIG_TERMINATION_SPENT_LIMIT;
-import static ai.timefold.solver.service.worker.impl.termination.TerminationConfigParams.TERMINATION_SPENT_LIMIT;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import jakarta.inject.Inject;
@@ -24,20 +22,15 @@ import ai.timefold.solver.service.quarkus.deployment.testdata.storage.TestdataSo
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class ModelsExtensionStorageGenerationTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .withApplicationRoot((jar) -> jar
-                    .addClasses(TestdataEntity.class, TestdataModelConfig.class,
-                            TestdataModelConstraintJustification.class, TestdataModelInput.class,
-                            TestdataModelInputMetrics.class, TestdataModelOutput.class, TestdataModelOutputMetrics.class,
-                            TestdataSolution.class, TestdataConstraintProvider.class, TestdataRest.class,
-                            TestdataModelConvertor.class))
-            .overrideConfigKey(MODEL_CONFIG_TERMINATION_SPENT_LIMIT, "PT1S")
-            .overrideConfigKey(TERMINATION_SPENT_LIMIT, "PT1S");
+    static final QuarkusExtensionTest config = ExtensionTestUtil.createDeploymentWithMandatoryConfig(TestdataEntity.class,
+            TestdataModelConfig.class, TestdataModelConstraintJustification.class, TestdataModelInput.class,
+            TestdataModelInputMetrics.class, TestdataModelOutput.class, TestdataModelOutputMetrics.class,
+            TestdataSolution.class, TestdataConstraintProvider.class, TestdataRest.class, TestdataModelConvertor.class);
 
     @Inject
     Storage<TestdataModelOutput> storage;

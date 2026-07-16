@@ -163,7 +163,7 @@ class TimefoldModelDescriptorProcessor {
 
     private static final String APPLICATION_NAME_PROPERTY = "timefold.application.name";
     private static final String APPLICATION_DESCRIPTION_PROPERTY = "timefold.application.description";
-    private static final String APPLICATION_VERSION_PROPERTY = "timefold.application.version";
+    static final String APPLICATION_VERSION_PROPERTY = "timefold.application.version";
 
     private static final String MODEL_TRIAL_DURATION_PROPERTY = "timefold.model.trial.duration";
     private static final String MODEL_TRIAL_MAX_EXTENSIONS_PROPERTY = "timefold.model.trial.max-extensions";
@@ -511,6 +511,15 @@ class TimefoldModelDescriptorProcessor {
         }
     }
 
+    protected static void validateApplicationVersion(String version) {
+        if (version == null || version.trim().isEmpty()) {
+            throw new IllegalArgumentException("""
+                    The application version is missing.
+                    Set the '%s' property (e.g. in application.properties) so the build can proceed."""
+                    .formatted(APPLICATION_VERSION_PROPERTY));
+        }
+    }
+
     private void generateModelDescriptor(String modelId, String model, OpenAPI openAPI,
             Path outputDirectory,
             Optional<ClassInfo> restResource,
@@ -529,8 +538,9 @@ class TimefoldModelDescriptorProcessor {
         descriptor.setModel(model);
         descriptor.setName(
                 config.getOptionalValue(APPLICATION_NAME_PROPERTY, String.class).orElse(openAPI.getInfo().getTitle()));
-        descriptor.setVersion(
-                config.getOptionalValue(APPLICATION_VERSION_PROPERTY, String.class).orElse(openAPI.getInfo().getVersion()));
+        String applicationVersion = config.getOptionalValue(APPLICATION_VERSION_PROPERTY, String.class).orElse(null);
+        validateApplicationVersion(applicationVersion);
+        descriptor.setVersion(applicationVersion);
         descriptor.setResourceType(getResourceTypeFromRestResource(restResource));
         descriptor.setDescription(config.getOptionalValue(APPLICATION_DESCRIPTION_PROPERTY, String.class)
                 .orElse(openAPI.getInfo().getDescription()));

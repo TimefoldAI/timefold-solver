@@ -1,8 +1,5 @@
 package ai.timefold.solver.service.quarkus.deployment;
 
-import static ai.timefold.solver.service.quarkus.deployment.DefaultConfigProfileProcessor.MODEL_CONFIG_TERMINATION_SPENT_LIMIT;
-import static ai.timefold.solver.service.worker.impl.termination.TerminationConfigParams.TERMINATION_SPENT_LIMIT;
-
 import ai.timefold.solver.service.definition.api.validation.ValidationBuilder;
 import ai.timefold.solver.service.quarkus.deployment.testdata.validationduplicates.DuplicateTestIssue;
 import ai.timefold.solver.service.quarkus.deployment.testdata.validationduplicates.TestIssue;
@@ -17,23 +14,20 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 public class DuplicateValidationIssueTypesTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
+    static final QuarkusExtensionTest config = ExtensionTestUtil
+            .createDeploymentWithMandatoryConfig(TestdataEntity.class, TestdataSolution.class, TestdataConstraintProvider.class,
+                    TestdataModelValidator.class, ValidationBuilder.class, TestdataRest.class,
+                    TestdataAbstractIssue.class, TestIssue.class, DuplicateTestIssue.class)
             .assertException((throwable -> {
                 Assertions.assertThat(throwable).isInstanceOf(IllegalStateException.class);
                 Assertions.assertThat(throwable.getMessage())
                         .contains("IssueCode (%s) was found in 2 classes".formatted(TestIssue.ISSUE_CODE.toString()));
-            }))
-            .withApplicationRoot((jar) -> jar
-                    .addClasses(TestdataEntity.class, TestdataSolution.class, TestdataConstraintProvider.class,
-                            TestdataModelValidator.class, ValidationBuilder.class, TestdataRest.class,
-                            TestdataAbstractIssue.class, TestIssue.class, DuplicateTestIssue.class))
-            .overrideConfigKey(MODEL_CONFIG_TERMINATION_SPENT_LIMIT, "PT1S")
-            .overrideConfigKey(TERMINATION_SPENT_LIMIT, "PT1S");
+            }));
 
     @Test
     void validationIssueTypesDuplicateDetected() {
