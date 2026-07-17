@@ -1,6 +1,6 @@
 = Define the constraints and calculate the score
 :imagesdir: ../..
-:score-class: HardSoftScore@
+ifndef::score-class[:score-class: HardSoftScore]
 
 A _score_ represents the quality of a specific solution.
 The higher the better.
