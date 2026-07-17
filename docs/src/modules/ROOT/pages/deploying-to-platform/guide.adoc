@@ -126,7 +126,7 @@ If it's missing, double check that `handleSubscription` is set to `true` in the 
 * *Constraints show up by name in score analysis*: the score analysis breakdown should show your constraints under human-readable names, not raw identifiers.
 This requires the richer constraint metadata described in xref:deploying-to-platform/model-metadata.adoc#_constraint_descriptions_and_groups[Constraint descriptions and groups].
 * *Input and output metrics show up*: the dataset view should display the metrics you exposed, as described in xref:deploying-to-platform/metrics.adoc[Using metrics].
-* *You can add a configuration profile*: add a new configuration profile in the UI and override one of your xref:running-timefold-solver/service/constraint-overrides.adoc[constraint weights], then confirm a re-solve picks up the new weight.
+* *You can add a configuration profile*: add a new configuration profile in the UI and override one of your xref:running-timefold-solver/service/model-config-overrides.adoc[constraint weights], then confirm a re-solve picks up the new weight.
 See xref:deploying-to-platform/model-metadata.adoc#_configuration_profiles[Configuration profiles] for the properties that define the default profile shipped with your model.
 
 [sectnums!]
