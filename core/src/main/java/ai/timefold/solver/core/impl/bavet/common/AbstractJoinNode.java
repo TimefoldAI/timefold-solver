@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleList;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 
 import org.jspecify.annotations.Nullable;
 
@@ -77,6 +78,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTupl
         TupleList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         outTupleListRight.add(outTuple);
         outTuple.setStore(outputStoreIndexRightOutTupleList, outTupleListRight);
+        outTuple.setIndictmentSource(IndictmentSource.joining(leftTuple, rightTuple));
         propagationQueue.insert(outTuple);
     }
 

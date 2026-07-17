@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.bavet.common.tuple;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -22,6 +23,26 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public sealed interface Tuple permits BiTuple, QuadTuple, TriTuple, UniTuple {
+
+    static <Tuple_ extends Tuple> Tuple_ copyOf(Tuple_ originalTuple) {
+        var universalTuple = (UniversalTuple<?, ?, ?, ?>) originalTuple;
+        var copiedTuple = new UniversalTuple<>(universalTuple.storeSize(), universalTuple.cardinality());
+
+        copiedTuple.setA(universalTuple.getA());
+        copiedTuple.setB(universalTuple.getB());
+        copiedTuple.setC(universalTuple.getC());
+        copiedTuple.setD(universalTuple.getD());
+        copiedTuple.setState(universalTuple.getState());
+        copiedTuple.setIndictmentSource(universalTuple.getIndictmentSource());
+        for (var i = 0; i < universalTuple.storeSize(); i++) {
+            copiedTuple.setStore(i, universalTuple.getStore(i));
+        }
+        return (Tuple_) copiedTuple;
+    }
+
+    IndictmentSource getIndictmentSource();
+
+    void setIndictmentSource(IndictmentSource indictmentSource);
 
     TupleState getState();
 

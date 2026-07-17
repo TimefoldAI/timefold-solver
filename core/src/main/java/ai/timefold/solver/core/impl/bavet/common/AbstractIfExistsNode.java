@@ -5,6 +5,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -104,7 +105,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         }
     }
 
-    protected void incrementCounterRight(ExistsCounter<LeftTuple_> counter) {
+    protected void incrementCounterRightWithoutIndictment(ExistsCounter<LeftTuple_> counter) {
         if (counter.countRight == 0) {
             if (shouldExist) {
                 doInsertCounter(counter);
@@ -112,6 +113,18 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
                 doRetractCounter(counter);
             }
         } // Else do not even propagate an update
+        counter.countRight++;
+    }
+
+    protected void incrementCounterRightUpdatingIndictment(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
+        if (counter.countRight == 0) {
+            if (shouldExist) {
+                doInsertCounter(counter);
+            } else {
+                doRetractCounter(counter);
+            }
+        } // Else do not even propagate an update
+        counter.outTuple.setIndictmentSource(IndictmentSource.sourceWithSupport(counter.outTuple, rightTuple));
         counter.countRight++;
     }
 
@@ -243,7 +256,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
             return;
         }
         if (testFiltering(leftTuple, rightTuple)) {
-            incrementCounterRight(counter);
+            incrementCounterRightUpdatingIndictment(counter, rightTuple);
             var tracker = new FilteringTracker<>(counter, rightTuple);
             linkLeft(tracker);
             linkRight(tracker);
