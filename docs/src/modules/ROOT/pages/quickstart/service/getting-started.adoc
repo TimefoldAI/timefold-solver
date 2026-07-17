@@ -6,6 +6,7 @@
 
 include::../../_attributes.adoc[]
 :framework-quickstart-url: {service-quickstart-url}
+:score-class: HardMediumSoftScore
 
 This guide walks you through the process of creating an AI Optimization service.
 
