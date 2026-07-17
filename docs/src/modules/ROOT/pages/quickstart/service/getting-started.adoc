@@ -257,7 +257,7 @@ timefold.application.contact.url=https://example.com
 ----
 
 `ai.timefold.platform.termination.spent-limit` sets the default maximum time the solver will run.
-The value uses the https://www.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm[ISO 8601 duration format]: `PT30S` means 30 seconds.
+The value uses the https://en.wikipedia.org/wiki/ISO_8601#Durations[ISO 8601 duration format]: `PT30S` means 30 seconds.
 For production use, consider at least five minutes (`PT5M`) to allow the solver more time to find a better solution.
 
 NOTE: The per-request `config.run.termination.spentLimit` field in the POST body (shown later) overrides this default for individual runs.

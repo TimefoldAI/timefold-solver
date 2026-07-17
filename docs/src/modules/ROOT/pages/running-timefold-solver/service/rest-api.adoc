@@ -64,7 +64,7 @@ class TimetableDto(
 // TimetableSchedulingResource.kt
 @Tag(name = "School Timetabling",
         description = "School timetabling service assigning lessons to timeslots.") // OpenAPI documentation annotation
-@Path("/v1/timetables") //sets the root path
+@Path("/timetables") //sets the root path
 interface TimetableSchedulingResource : ModelRest
 ----
 --
