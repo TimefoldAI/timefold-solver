@@ -264,7 +264,7 @@ For production use, consider at least five minutes (`PT5M`) to allow the solver 
 NOTE: The per-request `config.run.termination.spentLimit` field in the POST body (shown later) overrides this default for individual runs.
 
 `timefold.application.name` and the contact fields are *required* metadata.
-`model.api.version` defaults to `v1`, but we recommend setting it explicitly.
+`model.api.version` is required (for example `v1`) and is used as the default for `timefold.application.version` and `quarkus.rest.path`.
 They are used to identify your service, validate the JSON schema of requests, and populate the generated OpenAPI specification.
 
 == REST API
