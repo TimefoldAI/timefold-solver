@@ -27,7 +27,7 @@
   </licenses>
 
   <properties>
-    <revision>2.4.0-rc-1</revision>
+    <revision>999-SNAPSHOT</revision>
     <version.flatten.plugin>1.7.3</version.flatten.plugin>
     <version.javadoc.plugin>3.12.0</version.javadoc.plugin>
     <version.rewrite.plugin>6.28.1</version.rewrite.plugin>
