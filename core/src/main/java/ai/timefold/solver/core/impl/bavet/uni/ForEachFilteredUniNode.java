@@ -24,8 +24,8 @@ public final class ForEachFilteredUniNode<A>
     private int tupleCountWithoutFiltering = 0;
 
     public ForEachFilteredUniNode(Class<A> forEachClass, Predicate<A> filter,
-            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
-        super(forEachClass, nextNodesTupleLifecycle, outputStoreSize);
+            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, boolean indictmentsEnabled, int outputStoreSize) {
+        super(forEachClass, nextNodesTupleLifecycle, indictmentsEnabled, outputStoreSize);
         this.nextNodesTupleLifecycle = Objects.requireNonNull(nextNodesTupleLifecycle);
         this.filter = Objects.requireNonNull(filter);
     }

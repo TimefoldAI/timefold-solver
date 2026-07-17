@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.Nullable;
@@ -207,7 +208,14 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends Tuple, Righ
 
     private void updateCounterLeft(UniTuple<Right_> rightTuple, Object compositeKey) {
         if (!isFiltering) {
-            forEachLeftCounter(rightTuple, compositeKey, this::incrementCounterRight);
+            // To prevent creating a dynamic lambda on the hot path,
+            // only call the 2-args version when indictments are enabled
+            if (rightTuple.getIndictmentSource() == IndictmentSource.DISABLED) {
+                forEachLeftCounter(rightTuple, compositeKey, this::incrementCounterRightWithoutIndictment);
+            } else {
+                forEachLeftCounter(rightTuple, compositeKey,
+                        counter -> incrementCounterRightUpdatingIndictment(counter, rightTuple));
+            }
         } else {
             // Defer the cross-match (the opposite-side read) to this node's own layer turn instead of computing it now,
             // at whatever layer the parent that produced rightTuple happens to be in.
