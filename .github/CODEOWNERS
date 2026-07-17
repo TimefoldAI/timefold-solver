@@ -31,5 +31,5 @@ spring-integration/** @triceo @Christopher-Chianelli
 
 service/** @triceo @rsynek
 
-docs/** @triceo @TomCools
-**/*.adoc @triceo @TomCools
+docs/** @triceo @TomCools @rsynek
+**/*.adoc @triceo @TomCools @rsynek
