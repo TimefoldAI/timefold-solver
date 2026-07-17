@@ -3,6 +3,8 @@ package ai.timefold.solver.core.impl.score.constraint;
 import static ai.timefold.solver.core.api.score.SimpleScore.ONE;
 import static ai.timefold.solver.core.api.score.SimpleScore.ZERO;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.ConstraintRef;
@@ -26,6 +28,7 @@ class ConstraintMatchTest {
             Object... facts) {
         return new ConstraintMatch<>(ConstraintRef.of(constraintName),
                 DefaultConstraintJustification.of(score, facts),
+                List.of(facts),
                 score);
     }
 
