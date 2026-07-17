@@ -334,7 +334,7 @@
           <executions>
             <execution>
               <id>spotless-formatting</id>
-              <phase>compile</phase>
+              <phase>validate</phase>
               <goals>
                 <goal>${spotless.goal}</goal>
               </goals>
