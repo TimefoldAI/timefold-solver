@@ -40,7 +40,7 @@ public class TimetableDto implements ModelInput, ModelOutput {
 // TimetableSchedulingResource.java
 @Tag(name = "School Timetabling",
         description = "School timetabling service assigning lessons to timeslots.") // OpenAPI documentation annotation
-@Path("/v1/timetables") //sets the root path
+@Path("/timetables") //sets the root path
 public interface TimetableSchedulingResource extends ModelRest {
 }
 ----
@@ -64,7 +64,7 @@ class TimetableDto(
 // TimetableSchedulingResource.kt
 @Tag(name = "School Timetabling",
         description = "School timetabling service assigning lessons to timeslots.") // OpenAPI documentation annotation
-@Path("/v1/timetables") //sets the root path
+@Path("/timetables") //sets the root path
 interface TimetableSchedulingResource : ModelRest
 ----
 --
@@ -78,7 +78,12 @@ Since an xref:#openAPISpecification[OpenAPI specification] will also be automati
 == Generated endpoints
 
 The REST module generates several endpoints; the following are the core endpoints.
-The `<root>` is determined by the @Path annotation on the interface extending ModelRest (`/v1/timetables` in the example above).
+The `<root>` is the full served path, which is the model API version prefix followed by the value of the `@Path` annotation.
+The SDK default configuration sets `quarkus.rest.path=${model.api.version}`, which Quarkus prepends to every `@Path` at runtime.
+So for `model.api.version=v1` and `@Path("/timetables")`, `<root>` is `/v1/timetables`.
+
+NOTE: Do not include the version in your `@Path` annotation. The SDK handles it automatically via `quarkus.rest.path`.
+Including it (e.g. `@Path("/v1/timetables")`) results in a doubled prefix (`/v1/v1/timetables`) at runtime.
 
 - `GET /<root>`: Retrieve all registered optimization datasets
 - `POST /<root>`: Create a new optimization dataset
@@ -87,14 +92,13 @@ The `<root>` is determined by the @Path annotation on the interface extending Mo
 - `DELETE /<root>/\{id\}`: Terminate a dataset optimization run
 
 If your model provides xref:./demo-data.adoc[demo data], the following endpoints are also created.
-These are *not* nested under `<root>`: they only share its version prefix (for example `/v1`), not the rest of the path.
-So for a `@Path("/v1/timetables")` resource, the demo data endpoints are at `/v1/demo-data`, not `/v1/timetables/demo-data`.
-If your resource path has no version prefix, the demo data endpoints are served at the root, without a version.
+These are *not* nested under `<root>`: the path is `/{model.api.version}/demo-data`, not `/<root>/demo-data`.
+For example, with `model.api.version=v1` this is `/v1/demo-data`.
 
 - `GET /v<version>/demo-data`: Retrieve all available demo dataset ids.
 - `GET /v<version>/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier
 
-See the xref:./consumer-guide.adoc[service consumer guide] for information on how consumers of the service should interact with these API endpoints.
+See the xref:running-timefold-solver/service/consumer-guide.adoc[service consumer guide] for information on how consumers of the service should interact with these API endpoints.
 
 [#requestResponseStructure]
 == Request and response structure
@@ -245,7 +249,7 @@ Java::
 [source,java,options="nowrap"]
 ----
 @ApplicationScoped
-public class TimetableConvertor implements ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+public class TimetableConvertor implements ModelConvertor<HardMediumSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     @Override
     public Timetable toSolverModel(TimetableDto modelInput, ModelConfig<EmptyModelConfigOverrides> modelConfig,
@@ -272,7 +276,7 @@ Kotlin::
 [source,kotlin,options="nowrap"]
 ----
 @ApplicationScoped
-class TimetableConvertor : ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+class TimetableConvertor : ModelConvertor<HardMediumSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     override fun toSolverModel(modelInput: TimetableDto, modelConfig: ModelConfig<EmptyModelConfigOverrides>,
             lastModelOutput: Optional<TimetableDto>): Timetable {
@@ -454,7 +458,7 @@ Java::
 ----
 @Tag(name = "School Timetabling",
         description = "School timetabling service assigning lessons to timeslots.") //OpenAPI documentation annotation
-@Path("/v1/timetables") //sets the root path
+@Path("/timetables") //sets the root path
 public interface TimetableSchedulingResource extends ModelRest {
 
     @APIResponses(value = {
@@ -484,7 +488,7 @@ Kotlin::
 ----
 @Tag(name = "School Timetabling",
         description = "School timetabling service assigning lessons to timeslots.") //OpenAPI documentation annotation
-@Path("/v1/timetables") //sets the root path
+@Path("/timetables") //sets the root path
 interface TimetableSchedulingResource : ModelRest {
 
     @APIResponses(value = [
