@@ -30,6 +30,7 @@ public abstract class AbstractMapNode<InTuple_ extends Tuple, OutTuple_ extends 
                     + ") was already added in the tupleStore.");
         }
         var outTuple = map(tuple);
+        outTuple.setIndictmentSource(tuple.getIndictmentSource());
         tuple.setStore(inputStoreIndex, outTuple);
         propagationQueue.insert(outTuple);
     }

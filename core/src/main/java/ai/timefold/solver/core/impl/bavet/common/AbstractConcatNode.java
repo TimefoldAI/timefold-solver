@@ -66,6 +66,7 @@ public abstract class AbstractConcatNode<LeftTuple_ extends Tuple, RightTuple_ e
     @Override
     public final void insertLeft(LeftTuple_ tuple) {
         var outTuple = getOutTupleFromLeft(tuple);
+        outTuple.setIndictmentSource(tuple.getIndictmentSource());
         tuple.setStore(leftSourceTupleCloneStoreIndex, outTuple);
         propagationQueue.insert(outTuple);
     }
@@ -109,6 +110,7 @@ public abstract class AbstractConcatNode<LeftTuple_ extends Tuple, RightTuple_ e
     @Override
     public final void insertRight(RightTuple_ tuple) {
         var outTuple = getOutTupleFromRight(tuple);
+        outTuple.setIndictmentSource(tuple.getIndictmentSource());
         tuple.setStore(rightSourceTupleCloneStoreIndex, outTuple);
         propagationQueue.insert(outTuple);
     }

@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.bavet.common.StreamKind;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -31,12 +32,14 @@ public abstract sealed class AbstractForEachUniNode<A>
     private final Class<A> forEachClass;
     private final int outputStoreSize;
     private final StaticPropagationQueue<UniTuple<A>> propagationQueue;
+    private final boolean indictmentsEnabled;
     protected final Map<A, UniTuple<A>> tupleMap = HashMap.newHashMap(1000);
 
     protected AbstractForEachUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
-            int outputStoreSize) {
+            boolean indictmentsEnabled, int outputStoreSize) {
         this.forEachClass = forEachClass;
         this.outputStoreSize = outputStoreSize;
+        this.indictmentsEnabled = indictmentsEnabled;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
@@ -58,6 +61,9 @@ public abstract sealed class AbstractForEachUniNode<A>
     @Override
     public void insert(@Nullable A a) {
         var tuple = UniTuple.of(a, outputStoreSize);
+        if (indictmentsEnabled) {
+            tuple.setIndictmentSource(IndictmentSource.of(a));
+        }
         var old = tupleMap.put(a, tuple);
         if (old != null) {
             throw new IllegalStateException("""
