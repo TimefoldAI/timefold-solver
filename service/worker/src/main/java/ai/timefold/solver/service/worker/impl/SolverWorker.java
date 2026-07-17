@@ -68,6 +68,7 @@ import ai.timefold.solver.service.definition.internal.events.ItemTerminated;
 import ai.timefold.solver.service.definition.internal.events.SolveStartCommand;
 import ai.timefold.solver.service.definition.internal.events.SolveTerminateCommand;
 import ai.timefold.solver.service.definition.internal.events.SolverChannels;
+import ai.timefold.solver.service.definition.internal.events.ValidationSummary;
 import ai.timefold.solver.service.definition.internal.platform.EnvironmentVars;
 import ai.timefold.solver.service.definition.internal.platform.OnStartCommand;
 import ai.timefold.solver.service.definition.internal.solver.BestSolutionConsumerDecorator;
@@ -474,7 +475,8 @@ public class SolverWorker {
         metadata.datasetValidated(legacyValidationResult);
         storageService.updateMetadata(metadata.getId(), metadata);
 
-        sendEvent(datasetValidatedEventEmitter, new DatasetValidatedEvent(metadata));
+        sendEvent(datasetValidatedEventEmitter,
+                new DatasetValidatedEvent(metadata, ValidationSummary.of(validationResponse)));
         return legacyValidationResult;
     }
 

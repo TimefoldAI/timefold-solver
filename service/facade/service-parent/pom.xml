@@ -107,6 +107,7 @@
     <version.jib-layer-filter-extension-maven>0.3.0</version.jib-layer-filter-extension-maven>
     <version.openapi-diff.plugin>2.1.7</version.openapi-diff.plugin>
     <version.openapi-generator.plugin>7.23.0</version.openapi-generator.plugin>
+    <version.spotless.plugin>3.8.0</version.spotless.plugin>
     <version.surefire.plugin>3.5.6</version.surefire.plugin>
 
     <!-- ************************************************************************ -->
@@ -116,6 +117,10 @@
     <openapi-diff.fail-on-changed>true</openapi-diff.fail-on-changed>
     <openapi-diff.fail-on-incompatible>true</openapi-diff.fail-on-incompatible>
     <ant.skip>true</ant.skip>
+
+    <spotless.skip>false</spotless.skip>
+    <!--Override to validate in the CI -->
+    <spotless.goal>apply</spotless.goal>
   </properties>
 
   <dependencyManagement>
@@ -315,6 +320,45 @@
           <artifactId>openapi-generator-maven-plugin</artifactId>
           <version>${version.openapi-generator.plugin}</version>
         </plugin>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>${version.spotless.plugin}</version>
+          <dependencies>
+            <dependency>
+              <groupId>ai.timefold.solver</groupId>
+              <artifactId>timefold-solver-ide-config</artifactId>
+              <version>${version.ai.timefold.solver}</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <id>spotless-formatting</id>
+              <phase>validate</phase>
+              <goals>
+                <goal>${spotless.goal}</goal>
+              </goals>
+              <configuration>
+                <skip>${spotless.skip}</skip>
+                <java>
+                  <eclipse>
+                    <file>eclipse-format.xml</file>
+                  </eclipse>
+                  <importOrder>
+                    <file>eclipse.importorder</file>
+                  </importOrder>
+                  <removeUnusedImports/>
+                  <replaceRegex> <!-- Wildcard imports will break the build. -->
+                    <name>Remove wildcard imports</name>
+                    <searchRegex>import\s+[^\*\s]+\*;(\r\n|\r|\n)</searchRegex>
+                    <replacement>$1</replacement>
+                  </replaceRegex>
+                </java>
+                <pom />
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -367,6 +411,10 @@
             </fileset>
           </filesets>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

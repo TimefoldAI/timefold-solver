@@ -23,8 +23,9 @@
 ** xref:running-timefold-solver/overview.adoc[Overview]
 ** xref:running-timefold-solver/service/overview.adoc[As a service]
 *** xref:running-timefold-solver/service/rest-api.adoc[leveloffset=+1]
+*** xref:running-timefold-solver/service/model-config-overrides.adoc[Model configuration overrides]
 *** xref:running-timefold-solver/service/model-enrichment.adoc[leveloffset=+1]
-*** xref:running-timefold-solver/service/constraint-overrides.adoc[Constraint weights]
+
 *** xref:running-timefold-solver/service/demo-data.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/service/exposing-metrics.adoc[leveloffset=+1]
 *** xref:running-timefold-solver/service/consumer-guide.adoc[Service consumer guide]
