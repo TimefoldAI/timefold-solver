@@ -11,6 +11,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
+import ai.timefold.solver.core.impl.bavet.common.tuple.indictment.IndictmentSource;
 
 public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extends Tuple, GroupKey_, ResultContainer_, Result_>
         extends AbstractSingleInputNode<InTuple_> {
@@ -111,6 +112,7 @@ public abstract class AbstractGroupNode<InTuple_ extends Tuple, OutTuple_ extend
         }
         tuple.setStore(groupStoreIndex, group);
         var outTuple = group.getTuple();
+        outTuple.setIndictmentSource(IndictmentSource.aggregating(tuple, outTuple));
         switch (outTuple.getState()) {
             case CREATING, UPDATING -> {
                 // Already in the correct state.

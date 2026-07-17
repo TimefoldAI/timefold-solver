@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.constraint;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,18 +69,32 @@ public final class ConstraintMatchTotal<Score_ extends Score<Score_>> implements
      * @return never null
      */
     public ConstraintMatch<Score_> addConstraintMatch(List<Object> justifications, Score_ score) {
-        return addConstraintMatch(DefaultConstraintJustification.of(score, justifications), score);
+        return addConstraintMatch(DefaultConstraintJustification.of(score, justifications), justifications, score);
     }
 
     /**
      * Creates a {@link ConstraintMatch} and adds it to the collection returned by {@link #getConstraintMatchSet()}.
-     * It will be justified with the provided {@link ConstraintJustification}.
+     * It will be justified with the provided {@link ConstraintJustification} and will indict the given objects.
+     *
+     * @param score never null
+     * @return never null
+     */
+    public ConstraintMatch<Score_> addConstraintMatch(ConstraintJustification justification, List<Object> indictedObjects,
+            Score_ score) {
+        var constraintMatch = new ConstraintMatch<>(constraintRef, justification, indictedObjects, score);
+        addConstraintMatch(constraintMatch);
+        return constraintMatch;
+    }
+
+    /**
+     * Creates a {@link ConstraintMatch} and adds it to the collection returned by {@link #getConstraintMatchSet()}.
+     * It will be justified with the provided {@link ConstraintJustification} and will indict no objects.
      *
      * @param score never null
      * @return never null
      */
     public ConstraintMatch<Score_> addConstraintMatch(ConstraintJustification justification, Score_ score) {
-        var constraintMatch = new ConstraintMatch<Score_>(constraintRef, justification, score);
+        var constraintMatch = new ConstraintMatch<>(constraintRef, justification, Collections.emptyList(), score);
         addConstraintMatch(constraintMatch);
         return constraintMatch;
     }
