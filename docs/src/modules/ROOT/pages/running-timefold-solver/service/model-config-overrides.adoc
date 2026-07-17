@@ -134,7 +134,7 @@ private long preferGroupingCoLocatedVisitsWeight = 0L;
 The `ModelConvertor` implementation translates the caller's overrides into the data structures the
 solver engine expects.
 It receives a `ModelConfig<T>` in `toSolverModel()` and must handle the case where the caller
-provided no overrides at all — `modelConfig.overrides()`, may be `null`.
+provided no overrides at all — `modelConfig.overrides()` may be `null`.
 
 [IMPORTANT]
 ====
