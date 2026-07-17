@@ -299,8 +299,8 @@ public interface TimetableResource extends ModelRest {
 This is the most basic version of the interface. The SDK will automatically create multiple xref:running-timefold-solver/service/rest-api.adoc[REST API endpoints] for optimization actions.
 The `@Path` annotation is used to configure the base path of all those endpoints.
 
-NOTE: Do not include an API version in `@Path`. The SDK default configuration sets `quarkus.rest.path=${model.api.version}` (default: `v1`), which Quarkus automatically prepends to every `@Path` at runtime.
-So `@Path("/timetables")` is served at `/v1/timetables` — locally and on the platform.
+NOTE: Do not include an API version in `@Path`. The SDK default configuration sets `quarkus.rest.path=${model.api.version}`, which Quarkus automatically prepends to every `@Path` at runtime.
+So with `model.api.version=v1`, `@Path("/timetables")` is served at `/v1/timetables` — locally and on the platform.
 
 == Running and manually testing the model
 

@@ -79,8 +79,8 @@ Since an xref:#openAPISpecification[OpenAPI specification] will also be automati
 
 The REST module generates several endpoints; the following are the core endpoints.
 The `<root>` is the full served path, which is the model API version prefix followed by the value of the `@Path` annotation.
-The SDK default configuration sets `quarkus.rest.path=${model.api.version}` (default: `v1`), which Quarkus prepends to every `@Path` at runtime.
-So for `@Path("/timetables")` with the default version, `<root>` is `/v1/timetables`.
+The SDK default configuration sets `quarkus.rest.path=${model.api.version}`, which Quarkus prepends to every `@Path` at runtime.
+So for `model.api.version=v1` and `@Path("/timetables")`, `<root>` is `/v1/timetables`.
 
 NOTE: Do not include the version in your `@Path` annotation. The SDK handles it automatically via `quarkus.rest.path`.
 Including it (e.g. `@Path("/v1/timetables")`) results in a doubled prefix (`/v1/v1/timetables`) at runtime.
@@ -93,7 +93,7 @@ Including it (e.g. `@Path("/v1/timetables")`) results in a doubled prefix (`/v1/
 
 If your model provides xref:./demo-data.adoc[demo data], the following endpoints are also created.
 These are *not* nested under `<root>`: the path is `/{model.api.version}/demo-data`, not `/<root>/demo-data`.
-For the default version (`v1`) this is `/v1/demo-data`.
+For example, with `model.api.version=v1` this is `/v1/demo-data`.
 
 - `GET /v<version>/demo-data`: Retrieve all available demo dataset ids.
 - `GET /v<version>/demo-data/\{demoDataId\}`: Retrieve the demo dataset with the given identifier
