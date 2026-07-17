@@ -249,7 +249,7 @@ Java::
 [source,java,options="nowrap"]
 ----
 @ApplicationScoped
-public class TimetableConvertor implements ModelConvertor<HardSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
+public class TimetableConvertor implements ModelConvertor<HardMediumSoftScore, TimetableDto, EmptyModelConfigOverrides, Timetable, TimetableDto> {
 
     @Override
     public Timetable toSolverModel(TimetableDto modelInput, ModelConfig<EmptyModelConfigOverrides> modelConfig,
