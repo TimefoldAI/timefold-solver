@@ -217,7 +217,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
 
     @Override
     public void triggerVariableListeners() {
-        variableChanges.add(new TriggerVariableListenersAction<>());
+        variableChanges.add(TriggerVariableListenersAction.instance());
         if (backingScoreDirector != null) {
             backingScoreDirector.triggerVariableListeners();
         }
