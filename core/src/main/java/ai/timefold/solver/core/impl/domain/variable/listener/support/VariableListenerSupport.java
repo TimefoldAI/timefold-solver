@@ -20,6 +20,7 @@ import java.util.function.IntFunction;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
@@ -81,6 +82,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     @Nullable
     private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply = null;
+    private final List<BasicVariableStateDemand<Solution_>> basicVariableStateDemandList = new ArrayList<>();
     private final List<ShadowVariableType> supportedShadowVariableTypeList;
 
     VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry,
@@ -120,17 +122,16 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                     // All information about elements in all shadow variables is tracked in a centralized place.
                     // Therefore, all list-related shadow variables need to be connected to that centralized place.
                     // Shadow variables which are not related to a list variable are processed normally.
-                    if (listVariableStateSupply == null) {
-                        processShadowVariableDescriptorWithoutListVariable(descriptor);
-                    } else {
+                    if (descriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor
+                            && !inverseRelationShadowVariableDescriptor.isListVariableSource()) {
+                        var basicVariableStateDemand = inverseRelationShadowVariableDescriptor.getProvidedDemand();
+                        demand(basicVariableStateDemand).externalize(inverseRelationShadowVariableDescriptor);
+                        basicVariableStateDemandList.add(basicVariableStateDemand);
+                    } else if (listVariableStateSupply != null && descriptor.isListVariableSource()) {
                         // When multiple variable types are used,
                         // the shadow variable process needs to account for each variable
                         // and process them according to their types.
-                        if (descriptor.isListVariableSource()) {
-                            processShadowVariableDescriptorWithListVariable(descriptor, listVariableStateSupply);
-                        } else {
-                            processShadowVariableDescriptorWithoutListVariable(descriptor);
-                        }
+                        processShadowVariableDescriptorWithListVariable(descriptor, listVariableStateSupply);
                     }
                 });
     }
@@ -146,24 +147,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         } else if (shadowVariableDescriptor instanceof NextElementShadowVariableDescriptor<Solution_> nextElementShadowVariableDescriptor) {
             listVariableStateSupply.externalize(nextElementShadowVariableDescriptor);
         } else { // The list variable supply supports no other shadow variables.
-            processShadowVariableDescriptorWithoutListVariable(shadowVariableDescriptor);
-        }
-    }
-
-    private void
-            processShadowVariableDescriptorWithoutListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        for (var listenerWithSources : shadowVariableDescriptor.buildVariableListeners(this)) {
-            var variableListener = listenerWithSources.getVariableListener();
-            if (variableListener instanceof Supply supply) {
-                // Non-sourced variable listeners (ie. ones provided by the user) can never be a supply.
-                var demand = shadowVariableDescriptor.getProvidedDemand();
-                supplyMap.put(demand, new SupplyWithDemandCount(supply, 1L));
-            }
-            var globalOrder = shadowVariableDescriptor.getGlobalShadowOrder();
-            notifiableRegistry.registerNotifiable(
-                    listenerWithSources.getSourceVariableDescriptors(),
-                    AbstractNotifiable.buildNotifiable(scoreDirector, variableListener, globalOrder));
-            nextGlobalOrder = globalOrder + 1;
+            throw new IllegalStateException(
+                    "Impossible state: list-variable-source shadow variable %s (%s) is not Index, InverseRelation, Previous, or Next."
+                            .formatted(shadowVariableDescriptor.getVariableName(),
+                                    shadowVariableDescriptor.getClass().getSimpleName()));
         }
     }
 
@@ -263,6 +250,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
         if (listVariableDescriptor != null && listVariableStateSupply != null) {
             cancel(listVariableDescriptor.getStateDemand());
+        }
+        for (var basicVariableStateDemand : basicVariableStateDemandList) {
+            cancel(basicVariableStateDemand);
         }
     }
 

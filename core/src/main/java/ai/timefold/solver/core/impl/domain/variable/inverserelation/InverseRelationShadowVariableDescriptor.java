@@ -12,15 +12,12 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableStateDemand;
+import ai.timefold.solver.core.impl.domain.variable.ExternalizedBasicVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
-import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -126,7 +123,7 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
             throw new UnsupportedOperationException("Impossible state: Handled by %s."
                     .formatted(ListVariableStateSupply.class.getSimpleName()));
         } else {
-            return Collections.singleton(CollectionInverseVariableListener.class);
+            return Collections.singleton(ExternalizedBasicVariableStateSupply.class);
         }
     }
 
@@ -135,26 +132,12 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
     // ************************************************************************
 
     @Override
-    public Demand<?> getProvidedDemand() {
+    public BasicVariableStateDemand<Solution_> getProvidedDemand() {
         if (singleton) {
             throw new UnsupportedOperationException("Impossible state: Handled by %s."
                     .formatted(ListVariableStateSupply.class.getSimpleName()));
         } else {
-            return new CollectionInverseVariableDemand<>(sourceVariableDescriptor);
-        }
-    }
-
-    @Override
-    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
-        return new VariableListenerWithSources<>(buildVariableListener(), sourceVariableDescriptor).toCollection();
-    }
-
-    private VariableListener<Solution_, BasicVariableChangeEvent<Object>> buildVariableListener() {
-        if (singleton) {
-            throw new UnsupportedOperationException("Impossible state: Handled by %s."
-                    .formatted(ListVariableStateSupply.class.getSimpleName()));
-        } else {
-            return new CollectionInverseVariableListener<>(this, sourceVariableDescriptor);
+            return new BasicVariableStateDemand<>(sourceVariableDescriptor);
         }
     }
 

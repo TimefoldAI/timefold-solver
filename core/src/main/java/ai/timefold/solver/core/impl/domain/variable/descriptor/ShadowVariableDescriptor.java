@@ -7,9 +7,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -67,13 +65,6 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
      * return true if the source variable is a list variable; otherwise, return false.
      */
     public abstract boolean isListVariableSource();
-
-    /**
-     * @param supplyManager never null
-     * @return never null
-     */
-    public abstract Iterable<VariableListenerWithSources>
-            buildVariableListeners(SupplyManager supplyManager);
 
     // ************************************************************************
     // Extraction methods

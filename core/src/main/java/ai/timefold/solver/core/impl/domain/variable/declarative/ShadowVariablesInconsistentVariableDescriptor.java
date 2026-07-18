@@ -9,9 +9,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 public class ShadowVariablesInconsistentVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
     public ShadowVariablesInconsistentVariableDescriptor(int ordinal,
@@ -38,11 +36,6 @@ public class ShadowVariablesInconsistentVariableDescriptor<Solution_> extends Sh
     @Override
     public Demand<?> getProvidedDemand() {
         return null;
-    }
-
-    @Override
-    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
-        return Collections.emptyList();
     }
 
     @Override
