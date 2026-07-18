@@ -14,9 +14,8 @@ import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
-import ai.timefold.solver.core.impl.util.CompositeListEntry;
 import ai.timefold.solver.core.impl.util.ListEntry;
-import ai.timefold.solver.core.impl.util.Pair;
+import ai.timefold.solver.core.impl.util.Triple;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -51,7 +50,7 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends SequencedCollectio
     public ListEntry<T> put(Object modifyCompositeKey, T tuple) {
         unremovedSize++;
         var indexKeyCollection = modifyKeyUnpacker.apply(modifyCompositeKey);
-        var children = new ArrayList<Pair<Key_, ListEntry<T>>>(indexKeyCollection.size());
+        var children = new ArrayList<Triple<Key_, Indexer<T>, ListEntry<T>>>(indexKeyCollection.size());
         for (var indexKey : indexKeyCollection) {
             // Avoids computeIfAbsent in order to not create lambdas on the hot path.
             var downstreamIndexer = downstreamIndexerMap.get(indexKey);
@@ -62,7 +61,8 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends SequencedCollectio
             // Even though this method puts a tuple in multiple downstreamIndexers, it does not break size() or forEach()
             // because at most one of those downstreamIndexers matches for a particular compositeKey
             var childListEntry = downstreamIndexer.put(modifyCompositeKey, tuple);
-            children.add(new Pair<>(indexKey, childListEntry));
+            // The downstream indexer rides along so that remove() doesn't need to look it up again.
+            children.add(new Triple<>(indexKey, downstreamIndexer, childListEntry));
         }
         return new CompositeListEntry<>(tuple, children);
     }
@@ -80,25 +80,12 @@ final class ContainingIndexer<T, Key_, KeyCollection_ extends SequencedCollectio
         }
         for (var i = 0; i < indexKeyCollection.size(); i++) { // Avoid creating an iterator on the hot path
             var child = children.get(i);
-            var indexKey = child.key();
-            var childListEntry = child.value();
-            // Avoids removeIfAbsent in order to not create lambdas on the hot path.
-            var downstreamIndexer = getDownstreamIndexer(modifyCompositeKey, indexKey);
-            downstreamIndexer.remove(modifyCompositeKey, childListEntry);
+            var downstreamIndexer = child.b();
+            downstreamIndexer.remove(modifyCompositeKey, child.c());
             if (downstreamIndexer.isRemovable()) {
-                downstreamIndexerMap.remove(indexKey);
+                downstreamIndexerMap.remove(child.a());
             }
         }
-    }
-
-    private Indexer<T> getDownstreamIndexer(Object compositeKey, Key_ indexerKey) {
-        var downstreamIndexer = downstreamIndexerMap.get(indexerKey);
-        if (downstreamIndexer == null) {
-            throw new IllegalStateException(
-                    "Impossible state: the composite key (%s) doesn't exist in the indexer %s."
-                            .formatted(compositeKey, this));
-        }
-        return downstreamIndexer;
     }
 
     @Override
