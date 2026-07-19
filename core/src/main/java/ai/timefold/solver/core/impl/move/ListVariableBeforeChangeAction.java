@@ -11,6 +11,12 @@ record ListVariableBeforeChangeAction<Solution_, Entity_, Value_>(Entity_ entity
 
     @Override
     public void undo(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector) {
+        if (oldValue.isEmpty()) {
+            // Nothing was captured here (fromIndex == toIndex), so there is nothing to restore.
+            // The sibling ListVariableAfterChangeAction's undo already fired the equivalent
+            // (fromIndex, fromIndex) notification for this same range; avoid firing it again.
+            return;
+        }
         variableDescriptor.getValue(entity).addAll(fromIndex, oldValue);
         scoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
