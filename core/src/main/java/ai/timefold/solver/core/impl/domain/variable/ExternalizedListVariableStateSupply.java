@@ -15,8 +15,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class ExternalizedListVariableStateSupply<Solution_, Entity_>
-        implements ListVariableStateSupply<Solution_, Entity_, Object> {
+final class ExternalizedListVariableStateSupply<Solution_>
+        implements ListVariableStateSupply<Solution_, Object, Object> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
     private final ListVariableState<Solution_> listVariableState;

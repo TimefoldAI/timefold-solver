@@ -3,20 +3,23 @@ package ai.timefold.solver.core.impl.domain.variable.violation;
 import java.util.ArrayList;
 import java.util.List;
 
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableChangeHandler;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
-import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Tracks shadow variable update events for a given {@link ai.timefold.solver.core.api.domain.variable.PlanningListVariable}.
+ * Tracks shadow variable update events for a given {@link PlanningListVariable}.
  */
 @NullMarked
-public class ListVariableTracker<Solution_> implements Supply {
+public class ListVariableTracker<Solution_>
+        implements ListVariableChangeHandler<Solution_> {
+
     private final ListVariableDescriptor<Solution_> variableDescriptor;
     private final List<Object> beforeVariableChangedEntityList;
     private final List<Object> afterVariableChangedEntityList;
@@ -27,24 +30,24 @@ public class ListVariableTracker<Solution_> implements Supply {
         afterVariableChangedEntityList = new ArrayList<>();
     }
 
+    @Override
     public VariableDescriptor<Solution_> getSourceVariableDescriptor() {
         return variableDescriptor;
     }
 
+    @Override
     public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
         beforeVariableChangedEntityList.clear();
         afterVariableChangedEntityList.clear();
     }
 
-    public void close() {
-        // No need to do anything for stateless implementations.
-    }
-
+    @Override
     public void beforeListVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, int fromIndex,
             int toIndex) {
         beforeVariableChangedEntityList.add(entity);
     }
 
+    @Override
     public void afterListVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, int fromIndex,
             int toIndex) {
         afterVariableChangedEntityList.add(entity);
@@ -78,6 +81,7 @@ public class ListVariableTracker<Solution_> implements Supply {
         return new TrackerDemand();
     }
 
+    @Override
     public void afterListElementUnassigned(InnerScoreDirector<Solution_, ?> scoreDirector, Object unassignedElement) {
         // Do nothing
     }

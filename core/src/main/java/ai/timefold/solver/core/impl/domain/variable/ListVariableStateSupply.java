@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import java.io.Closeable;
-
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
@@ -11,7 +9,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
@@ -40,22 +37,15 @@ import org.jspecify.annotations.Nullable;
  *      which doesn't care whether the variable is internal or externalized.
  */
 @NullMarked
-public interface ListVariableStateSupply<Solution_, Entity_, Element_> extends Supply, Closeable {
-
-    void beforeListVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, int fromIndex, int toIndex);
-
-    void afterListVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, int fromIndex, int toIndex);
-
-    /**
-     * Called when a list element is unassigned from every list variable, without becoming assigned to another one.
-     */
-    void afterListElementUnassigned(InnerScoreDirector<Solution_, ?> scoreDirector, Object unassignedElement);
+public interface ListVariableStateSupply<Solution_, Entity_, Element_>
+        extends ListVariableChangeHandler<Solution_> {
 
     /**
      * Called when the entire working solution changes. In this event, the other before..()/after...() methods will not
      * be called.
      * At this point, implementations should clear state, if any.
      */
+    @Override
     default void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
         // No need to do anything for stateless implementations.
     }
@@ -63,6 +53,7 @@ public interface ListVariableStateSupply<Solution_, Entity_, Element_> extends S
     /**
      * Called before this {@link ListVariableStateSupply} is thrown away and not used anymore.
      */
+    @Override
     default void close() {
         // No need to do anything for stateless implementations.
     }

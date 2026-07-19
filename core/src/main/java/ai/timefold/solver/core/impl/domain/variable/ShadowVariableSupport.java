@@ -66,15 +66,13 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
      * Indexed by [{@link EntityDescriptor#getOrdinal()}][{@link VariableDescriptor#getOrdinal()}].
      */
     private final List<BasicVariableChangeHandler<Solution_>>[][] basicVariableChangeHandlerArray;
-    private final List<ListVariableTracker<Solution_>> listVariableTrackerList = new ArrayList<>();
+    private final List<ListVariableChangeHandler<Solution_>> listVariableChangeHandlerList;
 
     private boolean dirty = false;
     @Nullable
     private DefaultShadowVariableSession<Solution_> shadowVariableSession = null;
     private ConsistencyTracker<Solution_> consistencyTracker = new ConsistencyTracker<>();
 
-    @Nullable
-    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply = null;
     private final List<BasicVariableStateDemand<Solution_>> basicVariableStateDemandList = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
@@ -96,6 +94,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
         // Fields specific to list variable; will be ignored if not necessary.
         this.listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        this.listVariableChangeHandlerList = listVariableDescriptor == null ? Collections.emptyList() : new ArrayList<>();
         this.cascadingUpdateShadowVarDescriptorList =
                 listVariableDescriptor != null ? solutionDescriptor.getEntityDescriptors().stream()
                         .flatMap(e -> e.getDeclaredCascadingUpdateShadowVariableDescriptors().stream())
@@ -108,7 +107,9 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     }
 
     public void linkShadowVariables() {
-        listVariableStateSupply = listVariableDescriptor == null ? null : demand(listVariableDescriptor.getStateDemand());
+        if (listVariableDescriptor != null) {
+            listVariableChangeHandlerList.add(demand(listVariableDescriptor.getStateDemand()));
+        }
         scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                 .map(EntityDescriptor::getDeclaredShadowVariableDescriptors)
                 .flatMap(Collection::stream)
@@ -120,6 +121,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     // Shadow variables which are not related to a list variable are processed normally.
     // Cascading, declarative, and inconsistent shadow variables are routed elsewhere and need no wiring here.
     private void linkShadowVariable(ShadowVariableDescriptor<Solution_> descriptor) {
+        var listVariableStateSupply = getListVariableStateSupply();
         if (descriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
             if (inverseRelationShadowVariableDescriptor.isListVariableSource()) {
                 if (listVariableStateSupply != null) {
@@ -140,6 +142,13 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
             // and process them according to their types.
             processShadowVariableDescriptorWithListVariable(descriptor, listVariableStateSupply);
         }
+    }
+
+    private @Nullable ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
+        if (listVariableChangeHandlerList.isEmpty()) {
+            return null;
+        }
+        return (ListVariableStateSupply<Solution_, Object, Object>) listVariableChangeHandlerList.getFirst();
     }
 
     private void processShadowVariableDescriptorWithListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
@@ -190,12 +199,12 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
             resetWorkingSolutionIfSet(() -> basicVariableChangeHandler.resetWorkingSolution(scoreDirector));
             registerBasicVariableChangeHandler(basicVariableChangeHandler);
         } else if (supply instanceof ListVariableStateSupply<?, ?, ?> rawListStateSupply) {
-            var listStateSupply = (ListVariableStateSupply<Solution_, ?, ?>) rawListStateSupply;
+            var listStateSupply = (ListVariableStateSupply<Solution_, Object, ?>) rawListStateSupply;
             resetWorkingSolutionIfSet(() -> listStateSupply.resetWorkingSolution(scoreDirector));
         } else if (supply instanceof ListVariableTracker<?> tracker) {
             var listVariableTracker = (ListVariableTracker<Solution_>) tracker;
             resetWorkingSolutionIfSet(() -> listVariableTracker.resetWorkingSolution(scoreDirector));
-            listVariableTrackerList.add(listVariableTracker);
+            listVariableChangeHandlerList.add(listVariableTracker);
         }
         return supply;
     }
@@ -257,8 +266,8 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     // ************************************************************************
 
     public void resetWorkingSolution() {
-        if (listVariableStateSupply != null) {
-            listVariableStateSupply.resetWorkingSolution(scoreDirector);
+        for (var handler : listVariableChangeHandlerList) {
+            handler.resetWorkingSolution(scoreDirector);
         }
         for (var handlerList : basicVariableChangeHandlerArray) {
             for (var handlers : handlerList) {
@@ -266,9 +275,6 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
                     handler.resetWorkingSolution(scoreDirector);
                 }
             }
-        }
-        for (var listVariableTracker : listVariableTrackerList) {
-            listVariableTracker.resetWorkingSolution(scoreDirector);
         }
 
         if (!scoreDirector.getSolutionDescriptor().getDeclarativeShadowVariableDescriptors().isEmpty()
@@ -283,8 +289,8 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     }
 
     public void close() {
-        if (listVariableStateSupply != null) {
-            listVariableStateSupply.close();
+        for (var handler : listVariableChangeHandlerList) {
+            handler.close();
         }
         for (var handlerList : basicVariableChangeHandlerArray) {
             for (var handlers : handlerList) {
@@ -293,10 +299,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
                 }
             }
         }
-        for (var listVariableTracker : listVariableTrackerList) {
-            listVariableTracker.close();
-        }
-        if (listVariableDescriptor != null && listVariableStateSupply != null) {
+        if (listVariableDescriptor != null && getListVariableStateSupply() != null) {
             cancel(listVariableDescriptor.getStateDemand());
         }
         for (var basicVariableStateDemand : basicVariableStateDemandList) {
@@ -326,11 +329,8 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     }
 
     public void afterElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        if (listVariableStateSupply != null) {
-            listVariableStateSupply.afterListElementUnassigned(scoreDirector, element);
-        }
-        for (var listVariableTracker : listVariableTrackerList) {
-            listVariableTracker.afterListElementUnassigned(scoreDirector, element);
+        for (var handler : listVariableChangeHandlerList) {
+            handler.afterListElementUnassigned(scoreDirector, element);
         }
         if (!cascadingUpdateShadowVarDescriptorList.isEmpty()) { // Only necessary if there is a cascade.
             unassignedValueWithEmptyInverseEntitySet.add(element);
@@ -345,21 +345,15 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
-        if (listVariableStateSupply != null) {
-            listVariableStateSupply.beforeListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
-        }
-        for (var listVariableTracker : listVariableTrackerList) {
-            listVariableTracker.beforeListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
+        for (var handler : listVariableChangeHandlerList) {
+            handler.beforeListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
         }
     }
 
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
-        if (listVariableStateSupply != null) {
-            listVariableStateSupply.afterListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
-        }
-        for (var listVariableTracker : listVariableTrackerList) {
-            listVariableTracker.afterListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
+        for (var handler : listVariableChangeHandlerList) {
+            handler.afterListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
         }
         if (!cascadingUpdateShadowVarDescriptorList.isEmpty()) { // Only necessary if there is a cascade.
             listVariableChangeList.add(new ListVariableChange(entity, fromIndex, toIndex));
@@ -506,14 +500,15 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     }
 
     public void assertShadowVariablesAreUpToDate() {
-        if (dirty) {
-            throw new IllegalStateException(
-                    """
-                            The shadow variables might be stale (%s) so score calculation is unreliable.
-                            Maybe a %s.before*() method was called without calling %s.updateShadowVariables(), before calling %s.calculateScore()."""
-                            .formatted(dirty, ScoreDirector.class.getSimpleName(),
-                                    ScoreDirector.class.getSimpleName(), ScoreDirector.class.getSimpleName()));
+        if (!dirty) {
+            return;
         }
+        throw new IllegalStateException(
+                """
+                        The shadow variables might be stale (%s) so score calculation is unreliable.
+                        Maybe a %s.before*() method was called without calling %s.updateShadowVariables(), before calling %s.calculateScore()."""
+                        .formatted(dirty, ScoreDirector.class.getSimpleName(),
+                                ScoreDirector.class.getSimpleName(), ScoreDirector.class.getSimpleName()));
     }
 
     private record ListVariableChange(Object entity, int fromIndex, int toIndex) {
