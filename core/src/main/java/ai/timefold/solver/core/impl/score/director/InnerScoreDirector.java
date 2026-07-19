@@ -318,6 +318,15 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void forceUpdateShadowVariables();
 
     /**
+     * Exists not to break models.
+     * @deprecated use {@link #forceUpdateShadowVariables()} directly.
+     */
+    @Deprecated(since = "2.5.0", forRemoval = true)
+    default void forceTriggerVariableListeners() {
+        updateShadowVariables();
+    }
+
+    /**
      * A derived score director is created from a root score director.
      * The derived score director can be used to create separate* instances for use cases like multithreaded solving.
      */
