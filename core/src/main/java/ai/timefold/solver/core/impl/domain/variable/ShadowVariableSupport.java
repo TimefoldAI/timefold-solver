@@ -1,9 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.BASIC;
-import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.CASCADING_UPDATE;
-import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.DECLARATIVE;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,10 +34,12 @@ import ai.timefold.solver.core.impl.domain.variable.violation.ShadowVariablesAss
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
-
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.BASIC;
+import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.CASCADING_UPDATE;
+import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.DECLARATIVE;
 
 /**
  * This class is not thread-safe.
@@ -65,7 +63,6 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     private final List<ListVariableChange> listVariableChangeList;
     private final Set<Object> unassignedValueWithEmptyInverseEntitySet;
     private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
-    @NonNull
     private final IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator;
 
     /**
@@ -86,8 +83,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     private final List<ShadowVariableType> supportedShadowVariableTypeList;
 
     @SuppressWarnings("unchecked")
-    ShadowVariableSupport(InnerScoreDirector<Solution_, ?> scoreDirector,
-            @NonNull IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator) {
+    ShadowVariableSupport(InnerScoreDirector<Solution_, ?> scoreDirector, IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator) {
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
 
         var solutionDescriptor = scoreDirector.getSolutionDescriptor();
@@ -149,8 +145,8 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
             }
         } else if (listVariableStateSupply != null
                 && (descriptor instanceof IndexShadowVariableDescriptor<Solution_>
-                        || descriptor instanceof PreviousElementShadowVariableDescriptor<Solution_>
-                        || descriptor instanceof NextElementShadowVariableDescriptor<Solution_>)) {
+                || descriptor instanceof PreviousElementShadowVariableDescriptor<Solution_>
+                || descriptor instanceof NextElementShadowVariableDescriptor<Solution_>)) {
             // When multiple variable types are used,
             // the shadow variable process needs to account for each variable
             // and process them according to their types.
@@ -159,20 +155,21 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     }
 
     private void processShadowVariableDescriptorWithListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
-            ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply) {
-        if (shadowVariableDescriptor instanceof IndexShadowVariableDescriptor<Solution_> indexShadowVariableDescriptor) {
-            listVariableStateSupply.externalize(indexShadowVariableDescriptor);
-        } else if (shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
-            listVariableStateSupply.externalize(inverseRelationShadowVariableDescriptor);
-        } else if (shadowVariableDescriptor instanceof PreviousElementShadowVariableDescriptor<Solution_> previousElementShadowVariableDescriptor) {
-            listVariableStateSupply.externalize(previousElementShadowVariableDescriptor);
-        } else if (shadowVariableDescriptor instanceof NextElementShadowVariableDescriptor<Solution_> nextElementShadowVariableDescriptor) {
-            listVariableStateSupply.externalize(nextElementShadowVariableDescriptor);
-        } else { // The list variable supply supports no other shadow variables.
-            throw new IllegalStateException(
-                    "Impossible state: list-variable-source shadow variable %s (%s) is not Index, InverseRelation, Previous, or Next."
-                            .formatted(shadowVariableDescriptor.getVariableName(),
-                                    shadowVariableDescriptor.getClass().getSimpleName()));
+                                                                 ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply) {
+        switch (shadowVariableDescriptor) {
+            case IndexShadowVariableDescriptor<Solution_> indexShadowVariableDescriptor ->
+                    listVariableStateSupply.externalize(indexShadowVariableDescriptor);
+            case InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor ->
+                    listVariableStateSupply.externalize(inverseRelationShadowVariableDescriptor);
+            case PreviousElementShadowVariableDescriptor<Solution_> previousElementShadowVariableDescriptor ->
+                    listVariableStateSupply.externalize(previousElementShadowVariableDescriptor);
+            case NextElementShadowVariableDescriptor<Solution_> nextElementShadowVariableDescriptor ->
+                    listVariableStateSupply.externalize(nextElementShadowVariableDescriptor);
+            default ->  // The list variable supply supports no other shadow variables.
+                    throw new IllegalStateException(
+                            "Impossible state: list-variable-source shadow variable %s (%s) is not Index, InverseRelation, Previous, or Next."
+                                    .formatted(shadowVariableDescriptor.getVariableName(),
+                                            shadowVariableDescriptor.getClass().getSimpleName()));
         }
     }
 
@@ -357,7 +354,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     }
 
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
-            int toIndex) {
+                                          int toIndex) {
         if (listVariableStateSupply != null) {
             listVariableStateSupply.beforeListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
         }
@@ -367,7 +364,7 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     }
 
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
-            int toIndex) {
+                                         int toIndex) {
         if (listVariableStateSupply != null) {
             listVariableStateSupply.afterListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
         }
@@ -439,8 +436,8 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     }
 
     private void cascadeListVariableValueUpdates(List<Object> values, int fromIndex, int toIndex,
-            CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
-        for (int currentIndex = fromIndex; currentIndex < values.size(); currentIndex++) {
+                                                 CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
+        for (var currentIndex = fromIndex; currentIndex < values.size(); currentIndex++) {
             var value = values.get(currentIndex);
             // The value is present in the unassigned values,
             // but the cascade logic is triggered by a list event.
@@ -520,12 +517,11 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
 
     public void assertShadowVariablesAreUpToDate() {
         if (dirty) {
-            throw new IllegalStateException(
-                    """
-                            The shadow variables might be stale (dirty (%s)) so score calculation is unreliable.
-                            Maybe a %s.before*() method was called without calling %s.updateShadowVariables(), before calling %s.calculateScore()."""
-                            .formatted(dirty, ScoreDirector.class.getSimpleName(),
-                                    ScoreDirector.class.getSimpleName(), ScoreDirector.class.getSimpleName()));
+            throw new IllegalStateException("""
+                    The shadow variables might be stale (%s) so score calculation is unreliable.
+                    Maybe a %s.before*() method was called without calling %s.updateShadowVariables(), before calling %s.calculateScore()."""
+                    .formatted(dirty, ScoreDirector.class.getSimpleName(),
+                            ScoreDirector.class.getSimpleName(), ScoreDirector.class.getSimpleName()));
         }
     }
 
