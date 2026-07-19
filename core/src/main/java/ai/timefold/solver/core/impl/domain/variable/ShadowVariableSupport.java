@@ -1,9 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.BASIC;
-import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.CASCADING_UPDATE;
-import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.DECLARATIVE;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -80,7 +76,6 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
     @Nullable
     private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply = null;
     private final List<BasicVariableStateDemand<Solution_>> basicVariableStateDemandList = new ArrayList<>();
-    private final List<ShadowVariableType> supportedShadowVariableTypeList;
 
     @SuppressWarnings("unchecked")
     ShadowVariableSupport(InnerScoreDirector<Solution_, ?> scoreDirector,
@@ -110,12 +105,6 @@ public final class ShadowVariableSupport<Solution_> implements SupplyManager {
         this.unassignedValueWithEmptyInverseEntitySet =
                 hasCascadingUpdates ? new LinkedIdentityHashSet<>() : Collections.emptySet();
         this.shadowVariableGraphCreator = shadowVariableGraphCreator;
-        // Existing dependencies rely on this list to ensure consistency in supporting all available shadow variable types.
-        this.supportedShadowVariableTypeList = List.of(BASIC, CASCADING_UPDATE, DECLARATIVE);
-    }
-
-    public List<ShadowVariableType> getSupportedShadowVariableTypes() {
-        return supportedShadowVariableTypeList;
     }
 
     public void linkShadowVariables() {
