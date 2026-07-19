@@ -44,7 +44,7 @@
     <version.org.jspecify>1.0.0</version.org.jspecify>
     <version.org.junit.jupiter>6.1.2</version.org.junit.jupiter>
     <version.org.mapstruct>1.6.3</version.org.mapstruct>
-    <version.org.openrewrite.recipe>3.34.0</version.org.openrewrite.recipe>
+    <version.org.openrewrite.recipe>3.35.0</version.org.openrewrite.recipe>
     <version.org.testcontainers>2.0.5</version.org.testcontainers>
     <version.org.springframework.boot>4.1.0</version.org.springframework.boot>
     <version.org.wiremock>3.13.2</version.org.wiremock>
