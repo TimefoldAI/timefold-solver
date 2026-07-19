@@ -102,7 +102,7 @@
     <version.deploy.plugin>3.1.4</version.deploy.plugin>
     <version.exec.plugin>3.6.3</version.exec.plugin>
     <version.flatten.plugin>1.7.3</version.flatten.plugin>
-    <version.google-jib>3.5.1</version.google-jib>
+    <version.google-jib>3.5.2</version.google-jib>
     <version.install.plugin>3.1.4</version.install.plugin>
     <version.jib-layer-filter-extension-maven>0.3.0</version.jib-layer-filter-extension-maven>
     <version.openapi-diff.plugin>2.1.7</version.openapi-diff.plugin>
