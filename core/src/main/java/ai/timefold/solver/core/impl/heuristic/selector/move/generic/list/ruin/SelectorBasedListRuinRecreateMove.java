@@ -152,7 +152,8 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
                     // and set it back to the one from the generated solution
                     listVariableDescriptor.getValue(entry.getKey()).clear();
                     listVariableDescriptor.getValue(entry.getKey()).addAll(originalElementList);
-                    onlyRecordingChangesScoreDirector.beforeListVariableChanged(listVariableDescriptor, entry.getKey(), 0,
+                    onlyRecordingChangesScoreDirector.beforeListVariableChanged(listVariableDescriptor, entry.getKey(),
+                            listVariableDescriptor.getFirstUnpinnedIndex(entry.getKey()),
                             originalElementList.size());
                     listVariableDescriptor.getValue(entry.getKey()).clear();
                     listVariableDescriptor.getValue(entry.getKey()).addAll(currentElementList);
