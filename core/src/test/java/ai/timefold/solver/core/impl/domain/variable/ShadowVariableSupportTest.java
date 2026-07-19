@@ -279,6 +279,46 @@ class ShadowVariableSupportTest {
     }
 
     @Test
+    void repeatedBasicVariableChangeOnSameEntityBeforeUpdateIsDispatchedCorrectly() {
+        var scoreDirector = basicScoreDirectorMock(TestdataSolution.buildSolutionDescriptor());
+        var shadowVariableSupport =
+                new ShadowVariableSupport<TestdataSolution>(scoreDirector, DefaultTopologicalOrderGraph::new);
+        shadowVariableSupport.linkShadowVariables();
+
+        var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
+        var supply = shadowVariableSupport.demand(new BasicVariableStateDemand<>(variableDescriptor));
+
+        var val1 = new TestdataValue("1");
+        var val2 = new TestdataValue("2");
+        var val3 = new TestdataValue("3");
+        var a = new TestdataEntity("a", val1);
+
+        var solution = new TestdataSolution("solution");
+        solution.setEntityList(List.of(a));
+        solution.setValueList(List.of(val1, val2, val3));
+
+        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+        shadowVariableSupport.resetWorkingSolution();
+
+        assertThat((Collection<Object>) supply.getInverseCollection(val1)).containsExactly(a);
+        assertThat((Collection<?>) supply.getInverseCollection(val2)).isEmpty();
+        assertThat((Collection<?>) supply.getInverseCollection(val3)).isEmpty();
+
+        // Two changes to the same entity back-to-back, with no call to updateShadowVariables() in between.
+        shadowVariableSupport.beforeVariableChanged(variableDescriptor, a);
+        a.setValue(val2);
+        shadowVariableSupport.afterVariableChanged(variableDescriptor, a);
+
+        shadowVariableSupport.beforeVariableChanged(variableDescriptor, a);
+        a.setValue(val3);
+        shadowVariableSupport.afterVariableChanged(variableDescriptor, a);
+
+        assertThat((Collection<?>) supply.getInverseCollection(val1)).isEmpty();
+        assertThat((Collection<?>) supply.getInverseCollection(val2)).isEmpty();
+        assertThat((Collection<Object>) supply.getInverseCollection(val3)).containsExactly(a);
+    }
+
+    @Test
     void listVariableChangeIsDispatchedEagerly() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
         var solutionDescriptor = variableDescriptor.getEntityDescriptor().getSolutionDescriptor();

@@ -46,12 +46,12 @@ public interface ScoreDirector<Solution_>
 
     /**
      * Exists not to break models.
+     * 
      * @deprecated use {@link #updateShadowVariables()} directly.
      */
     @Deprecated(since = "2.5.0", forRemoval = true)
     default void triggerVariableListeners() {
         updateShadowVariables();
     }
-
 
 }
