@@ -106,7 +106,7 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
                         listVariableDescriptor.getFirstUnpinnedIndex(entity),
                         listVariableDescriptor.getListSize(entity));
             }
-            scoreDirector.triggerVariableListeners();
+            scoreDirector.updateShadowVariables();
 
             var constructionHeuristicPhase =
                     (RuinRecreateConstructionHeuristicPhase<Solution_>) constructionHeuristicPhaseBuilder
@@ -122,7 +122,7 @@ public final class SelectorBasedListRuinRecreateMove<Solution_> extends Abstract
             constructionHeuristicPhase.solvingStarted(nestedSolverScope);
             constructionHeuristicPhase.solve(nestedSolverScope);
             constructionHeuristicPhase.solvingEnded(nestedSolverScope);
-            scoreDirector.triggerVariableListeners();
+            scoreDirector.updateShadowVariables();
 
             var entityToInsertedValuesMap = new IdentityHashMap<Object, List<Object>>();
             for (var entity : entityToOriginalPositionMap.keySet()) {

@@ -16,7 +16,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
-import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.VariableSnapshotTotal;
+import ai.timefold.solver.core.impl.domain.variable.violation.VariableSnapshotTotal;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;

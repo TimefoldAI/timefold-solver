@@ -57,9 +57,9 @@ class ExternalizedBasicVariableStateSupplyTest {
         assertThat(val2.getEntities()).isEmpty();
         assertThat(val3.getEntities()).containsExactly(c, d);
 
-        supply.beforeChange(scoreDirector, new BasicVariableChangeEvent<>(c));
+        supply.beforeVariableChanged(scoreDirector, c);
         c.setValue(val2);
-        supply.afterChange(scoreDirector, new BasicVariableChangeEvent<>(c));
+        supply.afterVariableChanged(scoreDirector, c);
 
         assertThat(val1.getEntities()).containsExactly(a, b);
         assertThat(val2.getEntities()).containsExactly(c);
@@ -100,9 +100,9 @@ class ExternalizedBasicVariableStateSupplyTest {
 
         Mockito.reset(scoreDirector, notifier);
 
-        supply.beforeChange(scoreDirector, new BasicVariableChangeEvent<>(c));
+        supply.beforeVariableChanged(scoreDirector, c);
         c.setValue(val2);
-        supply.afterChange(scoreDirector, new BasicVariableChangeEvent<>(c));
+        supply.afterVariableChanged(scoreDirector, c);
 
         assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val1)).containsExactlyInAnyOrder(a, b);
         assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val2)).containsExactly(c);

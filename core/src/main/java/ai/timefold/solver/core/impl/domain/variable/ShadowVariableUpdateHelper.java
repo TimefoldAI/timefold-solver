@@ -1,9 +1,8 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.BASIC;
-import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.CASCADING_UPDATE;
-import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.CUSTOM_LISTENER;
-import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.DECLARATIVE;
+import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.BASIC;
+import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.CASCADING_UPDATE;
+import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.DECLARATIVE;
 import static ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy.DISABLED;
 
 import java.util.ArrayList;
@@ -35,8 +34,6 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType;
-import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
@@ -55,7 +52,7 @@ import org.jspecify.annotations.Nullable;
 public final class ShadowVariableUpdateHelper<Solution_> {
 
     private static final EnumSet<ShadowVariableType> SUPPORTED_TYPES =
-            EnumSet.of(BASIC, CUSTOM_LISTENER, CASCADING_UPDATE, DECLARATIVE);
+            EnumSet.of(BASIC, CASCADING_UPDATE, DECLARATIVE);
 
     public static <Solution_> ShadowVariableUpdateHelper<Solution_> create() {
         return new ShadowVariableUpdateHelper<>(SUPPORTED_TYPES);
@@ -83,7 +80,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(solutionClass,
                 entityClassSet.toArray(new Class<?>[0]));
         try (var scoreDirector = new InternalScoreDirector.Builder<>(solutionDescriptor).build()) {
-            // When we have a solution, we can reuse the logic from VariableListenerSupport to update all variable types
+            // When we have a solution, we can reuse the logic from ShadowVariableSupport to update all variable types
             scoreDirector.setWorkingSolution(solution);
         }
     }
@@ -95,9 +92,9 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         var solutionDescriptor =
                 SolutionDescriptor.buildSolutionDescriptor(Objects.requireNonNull(solutionClass),
                         entityClassList.toArray(new Class<?>[0]));
-        var variableListenerSupport =
-                VariableListenerSupport.create(new InternalScoreDirector.Builder<>(solutionDescriptor).build());
-        var missingShadowVariableTypeList = variableListenerSupport.getSupportedShadowVariableTypes().stream()
+        var shadowVariableSupport =
+                ShadowVariableSupport.create(new InternalScoreDirector.Builder<>(solutionDescriptor).build());
+        var missingShadowVariableTypeList = shadowVariableSupport.getSupportedShadowVariableTypes().stream()
                 .filter(type -> !supportedShadowVariableTypes.contains(type))
                 .toList();
         if (!missingShadowVariableTypeList.isEmpty()) {

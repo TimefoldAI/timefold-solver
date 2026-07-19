@@ -84,18 +84,14 @@ final class ExternalizedListVariableStateSupply<Solution_, Entity_>
     }
 
     @Override
-    public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ListElementsChangeEvent<Entity_> changeEvent) {
+    public void beforeListVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, int fromIndex,
+            int toIndex) {
         // No need to do anything.
     }
 
     @Override
-    public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ListElementsChangeEvent<Entity_> changeEvent) {
-        var entity = changeEvent.entity();
-        var fromIndex = changeEvent.changeStartIndexInclusive();
-        var toIndex = changeEvent.changeEndIndexExclusive();
-
+    public void afterListVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, int fromIndex,
+            int toIndex) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         var elementCount = assignedElements.size();
         // Include the last element of the previous part of the list, if any, for the next element shadow var.

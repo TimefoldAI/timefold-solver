@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.BASIC;
+import static ai.timefold.solver.core.impl.domain.variable.ShadowVariableType.BASIC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -54,7 +54,7 @@ class ShadowVariableUpdateTest {
         var entity1 = new TestdataBasicVarEntity("e1", value1);
         assertThatCode(() -> shadowVariableHelper.updateShadowVariables(TestdataBasicVarSolution.class, entity1, value1))
                 .hasMessageContaining(
-                        "The following shadow variable types are not currently supported ([CUSTOM_LISTENER, CASCADING_UPDATE, DECLARATIVE])");
+                        "The following shadow variable types are not currently supported ([CASCADING_UPDATE, DECLARATIVE])");
     }
 
     @Test

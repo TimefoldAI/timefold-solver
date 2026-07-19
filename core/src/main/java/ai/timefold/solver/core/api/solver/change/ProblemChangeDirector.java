@@ -91,7 +91,7 @@ public interface ProblemChangeDirector
             Consumer<EntityOrProblemFact> problemFactOrEntityConsumer);
 
     /**
-     * Calls variable listeners on the external changes submitted so far.
+     * Updates shadow variables based on the changes submitted so far.
      *
      * <p>
      * This happens automatically after the entire {@link ProblemChange} has been processed,

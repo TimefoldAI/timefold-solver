@@ -10,8 +10,8 @@ public sealed interface VariableReferenceGraph
      * a source that was changed in either {@link #beforeVariableChanged(VariableMetaModel, Object)} or
      * {@link #afterVariableChanged(VariableMetaModel, Object)}.
      * <p>
-     * Called after all {@link ai.timefold.solver.core.impl.domain.variable.VariableListener} are
-     * triggered. Declarative {@link ai.timefold.solver.core.api.domain.variable.ShadowVariable}
+     * Called after all other shadow variables are
+     * updated. Declarative {@link ai.timefold.solver.core.api.domain.variable.ShadowVariable}
      * are guaranteed to be the last variables to update.
      */
     void updateChanged();

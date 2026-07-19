@@ -29,7 +29,7 @@ public class ShadowVariablesInconsistentVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Collection<Class<?>> getVariableListenerClasses() {
+    public Collection<Class<?>> getUpdaterClasses() {
         return Collections.emptyList();
     }
 

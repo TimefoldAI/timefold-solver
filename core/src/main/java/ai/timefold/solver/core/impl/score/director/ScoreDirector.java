@@ -42,6 +42,6 @@ public interface ScoreDirector<Solution_>
 
     void afterListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex);
 
-    void triggerVariableListeners();
+    void updateShadowVariables();
 
 }

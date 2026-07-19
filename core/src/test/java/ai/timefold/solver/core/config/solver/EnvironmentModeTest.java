@@ -93,7 +93,7 @@ class EnvironmentModeTest {
 
     @ParameterizedTest(name = "{0}")
     @EnumSource(EnvironmentMode.class)
-    void corruptedUndoShadowVariableListener(EnvironmentMode environmentMode) {
+    void corruptedUndoShadowVariable(EnvironmentMode environmentMode) {
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(environmentMode)
                 .withSolutionClass(CorruptedUndoShadowSolution.class)

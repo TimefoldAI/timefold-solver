@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.domain.variable;
 
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.CollectionInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.SourcedBasicVariableListener;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -17,7 +16,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public interface BasicVariableStateSupply<Solution_>
-        extends SourcedBasicVariableListener<Solution_, Object>, CollectionInverseVariableSupply {
+        extends BasicVariableChangeHandler<Solution_>, CollectionInverseVariableSupply {
 
     void externalize(InverseRelationShadowVariableDescriptor<Solution_> descriptor);
 

@@ -50,16 +50,15 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
      */
     public abstract List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList();
 
-    public abstract Collection<Class<?>> getVariableListenerClasses();
+    /**
+     * @return never null, the classes responsible for updating this shadow variable
+     */
+    public abstract Collection<Class<?>> getUpdaterClasses();
 
     /**
      * @return never null
      */
     public abstract Demand<?> getProvidedDemand();
-
-    public boolean hasVariableListener() {
-        return true;
-    }
 
     /**
      * return true if the source variable is a list variable; otherwise, return false.

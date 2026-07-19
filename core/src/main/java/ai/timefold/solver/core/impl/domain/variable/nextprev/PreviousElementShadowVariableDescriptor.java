@@ -26,7 +26,7 @@ public final class PreviousElementShadowVariableDescriptor<Solution_>
     }
 
     @Override
-    public Collection<Class<?>> getVariableListenerClasses() {
+    public Collection<Class<?>> getUpdaterClasses() {
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
                 .formatted(ListVariableStateSupply.class.getSimpleName()));
     }

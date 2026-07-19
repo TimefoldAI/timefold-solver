@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
 public sealed interface ChangeAction<Solution_>
         permits ListVariableAfterAssignmentAction, ListVariableAfterChangeAction, ListVariableAfterUnassignmentAction,
         ListVariableBeforeAssignmentAction, ListVariableBeforeChangeAction, ListVariableBeforeUnassignmentAction,
-        TriggerVariableListenersAction, VariableChangeAction {
+        UpdateShadowVariablesAction, VariableChangeAction {
 
     void undo(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector);
 

@@ -12,7 +12,6 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.MoveDirector;
@@ -250,7 +249,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void assertExpectedWorkingScore(InnerScore<Score_> expectedWorkingScore, Object completedAction);
 
     /**
-     * Asserts that if all {@link VariableListener}s are forcibly triggered,
+     * Asserts that if all shadow variables are forcibly updated,
      * and therefore all shadow variables are updated if needed,
      * that none of the shadow variables of the {@link PlanningSolution working solution} change,
      * Then also asserts that the {@link Score} calculated for the {@link PlanningSolution working solution} afterwards
@@ -312,11 +311,11 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void close();
 
     /**
-     * Unlike {@link #triggerVariableListeners()} which only triggers notifications already in the queue,
-     * this triggers every variable listener on every genuine variable.
+     * Unlike {@link #updateShadowVariables()} which only triggers notifications already in the queue,
+     * this updates shadow variables on every genuine variable.
      * This is useful in {@link SolutionManager#update(Object)} to fill in shadow variable values.
      */
-    void forceTriggerVariableListeners();
+    void forceUpdateShadowVariables();
 
     /**
      * A derived score director is created from a root score director.

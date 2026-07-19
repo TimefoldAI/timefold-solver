@@ -53,21 +53,32 @@ public final class ExternalizedBasicVariableStateSupply<Solution_> implements Ba
             sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(scoreDirector.getWorkingSolution(),
                     entity -> insert(scoreDirector, entity));
         } else {
-            VariableListener.forEachEntity(scoreDirector, shadowVariableDescriptor.getEntityDescriptor().getEntityClass(),
+            forEachEntity(scoreDirector, shadowVariableDescriptor.getEntityDescriptor().getEntityClass(),
                     value -> getInverseCollection(value).clear());
-            VariableListener.forEachEntity(scoreDirector, sourceVariableDescriptor.getEntityDescriptor().getEntityClass(),
+            forEachEntity(scoreDirector, sourceVariableDescriptor.getEntityDescriptor().getEntityClass(),
                     entity -> insert(scoreDirector, entity));
         }
     }
 
-    @Override
-    public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector, BasicVariableChangeEvent<Object> event) {
-        retract(scoreDirector, event.entity());
+    @SuppressWarnings("unchecked")
+    private static <Solution_, Entity_> void forEachEntity(InnerScoreDirector<Solution_, ?> scoreDirector,
+            Class<? extends Entity_> entityClass,
+            Consumer<Entity_> entityConsumer) {
+        scoreDirector.getSolutionDescriptor().visitEntitiesByEntityClass(scoreDirector.getWorkingSolution(),
+                entityClass, entity -> {
+                    entityConsumer.accept((Entity_) entity);
+                    return false;
+                });
     }
 
     @Override
-    public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector, BasicVariableChangeEvent<Object> event) {
-        insert(scoreDirector, event.entity());
+    public void beforeVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity) {
+        retract(scoreDirector, entity);
+    }
+
+    @Override
+    public void afterVariableChanged(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity) {
+        insert(scoreDirector, entity);
     }
 
     @Override

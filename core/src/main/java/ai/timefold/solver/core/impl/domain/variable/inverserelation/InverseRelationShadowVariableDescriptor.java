@@ -118,7 +118,7 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Collection<Class<?>> getVariableListenerClasses() {
+    public Collection<Class<?>> getUpdaterClasses() {
         if (singleton) {
             throw new UnsupportedOperationException("Impossible state: Handled by %s."
                     .formatted(ListVariableStateSupply.class.getSimpleName()));

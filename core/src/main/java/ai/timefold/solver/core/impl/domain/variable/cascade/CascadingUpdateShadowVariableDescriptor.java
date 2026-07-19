@@ -139,18 +139,13 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Collection<Class<?>> getVariableListenerClasses() {
+    public Collection<Class<?>> getUpdaterClasses() {
         return Collections.emptyList();
     }
 
     @Override
     public Demand<?> getProvidedDemand() {
         throw new UnsupportedOperationException("Cascade update element shadow variable cannot be demanded.");
-    }
-
-    @Override
-    public boolean hasVariableListener() {
-        return false;
     }
 
     @Override

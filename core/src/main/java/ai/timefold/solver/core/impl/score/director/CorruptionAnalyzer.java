@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
+import ai.timefold.solver.core.impl.domain.variable.ShadowVariableSupport;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchTotal;
@@ -89,13 +89,15 @@ final class CorruptionAnalyzer<Solution_, Score_ extends Score<Score_>> {
                     """.stripTrailing());
         } else {
             if (predicted) {
-                analysis.append("""
-                          If multi-threaded solving is active:
-                            - the working scoreDirector is probably not the corrupted scoreDirector.
-                            - maybe the rebase() method of the move is bugged.
-                            - maybe a VariableListener affected the moveThread's workingSolution after doing and undoing a move,
-                              but this didn't happen here on the solverThread, so we can't detect it.
-                        """.stripTrailing());
+                analysis.append(
+                        """
+                                  If multi-threaded solving is active:
+                                    - the working scoreDirector is probably not the corrupted scoreDirector.
+                                    - maybe the rebase() method of the move is bugged.
+                                    - maybe a shadow variable update affected the moveThread's workingSolution after doing and undoing a move,
+                                      but this didn't happen here on the solverThread, so we can't detect it.
+                                """
+                                .stripTrailing());
             } else {
                 analysis.append("  Impossible state. Maybe this is a bug in the scoreDirector (%s).".formatted(getClass()));
             }
@@ -179,7 +181,7 @@ final class CorruptionAnalyzer<Solution_, Score_ extends Score<Score_>> {
     @SuppressWarnings("unchecked")
     public String analyzeShadowVariables(boolean predicted) {
         var violationMessage =
-                ((VariableListenerSupport<Solution_>) scoreDirector.getSupplyManager()).createShadowVariablesViolationMessage();
+                ((ShadowVariableSupport<Solution_>) scoreDirector.getSupplyManager()).createShadowVariablesViolationMessage();
         var workingLabel = predicted ? "working" : "corrupted";
         if (violationMessage == null) {
             return """
