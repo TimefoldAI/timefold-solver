@@ -68,7 +68,6 @@
     <module>quarkus-integration</module>
     <module>tools</module>
     <module>service</module>
-    <module>docs</module>
   </modules>
 
   <build>
